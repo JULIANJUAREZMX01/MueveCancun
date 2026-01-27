@@ -49,3 +49,5 @@ __pycache__
 # Temporary files
 *.tmp
 tmp/
+.git
+.github

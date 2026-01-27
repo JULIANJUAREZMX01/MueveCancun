@@ -1,5 +1,14 @@
+mod utils;
+
 use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
+use crate::utils::geo::{Stop, find_closest_stop};
+
+#[derive(Serialize, Deserialize)]
+pub struct NearestStopResult {
+    pub stop: Stop,
+    pub distance_meters: f64,
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct RouteResult {
@@ -14,6 +23,21 @@ pub struct RouteStep {
     instruction: String,
     route: String,
     duration: u32,
+}
+
+#[wasm_bindgen]
+pub fn find_nearest_stop(user_lat: f64, user_lng: f64, stops_val: JsValue) -> JsValue {
+    let stops: Vec<Stop> = serde_wasm_bindgen::from_value(stops_val).unwrap_or_default();
+    
+    if let Some((stop, dist)) = find_closest_stop(user_lat, user_lng, &stops) {
+        let result = NearestStopResult {
+            stop,
+            distance_meters: dist,
+        };
+        serde_wasm_bindgen::to_value(&result).unwrap()
+    } else {
+        JsValue::NULL
+    }
 }
 
 #[wasm_bindgen]
