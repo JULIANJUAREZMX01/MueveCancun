@@ -44,8 +44,8 @@
     },
     {
       "id": "R10",
-      "name": "R-10: Puerto Juárez - Plaza Las Américas",
-      "description": "Ruta directa por Av. Bonampak hacia centros comerciales.",
+      "name": "R-10: Puerto Juárez - Plaza Las Américas - Punta Nizuc",
+      "description": "Ruta directa por Av. Bonampak. NO entra al Aeropuerto (Transbordo requerido en Punta Nizuc).",
       "fare_urban": 15,
       "fare_hz": 15,
       "color": "#76FF03",

@@ -1,0 +1,115 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import RouteCalculator from '../islands/RouteCalculator.tsx';
+import InteractiveMap from '../islands/InteractiveMap.tsx';
+
+const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
+---
+
+<MainLayout title="Inicio">
+  <!-- Hero Section -->
+  <section class="text-center mb-12 animate-fade-in">
+    <h1 class="text-5xl md:text-6xl font-display font-bold text-gray-900 mb-4">
+      Encuentra tu <span class="text-primary-500">Ruta</span> en Cancún
+    </h1>
+    <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+      60+ rutas actualizadas, información en tiempo real, y la comunidad más grande
+      de transporte público en la Riviera Maya.
+    </p>
+  </section>
+
+  <!-- Route Calculator Island -->
+  <section class="max-w-2xl mx-auto mb-12">
+    <RouteCalculator client:idle />
+  </section>
+
+  <!-- Popular Routes (Static SEO Content) -->
+  <section class="mb-12">
+    <h2 class="text-3xl font-display font-bold text-gray-900 mb-6">
+      Rutas Más Populares
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div class="flex items-center mb-4">
+          <span class="text-3xl mr-3">🚌</span>
+          <div>
+            <h3 class="font-bold text-lg">Ruta R1</h3>
+            <p class="text-sm text-gray-500">Crucero - Zona Hotelera</p>
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          Conecta el centro de Cancún con toda la Zona Hotelera.
+          Ideal para turistas y trabajadores.
+        </p>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-primary-500 font-medium">$15.00 MXN</span>
+          <a href="/ruta/R1" class="text-sky-500 hover:underline">Ver detalles →</a>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div class="flex items-center mb-4">
+          <span class="text-3xl mr-3">🚌</span>
+          <div>
+            <h3 class="font-bold text-lg">Ruta R2</h3>
+            <p class="text-sm text-gray-500">Puerto Juárez - Centro</p>
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          Conexión directa con la terminal de ferrys a Isla Mujeres.
+        </p>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-primary-500 font-medium">$15.00 MXN</span>
+          <a href="/ruta/R2" class="text-sky-500 hover:underline">Ver detalles →</a>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div class="flex items-center mb-4">
+          <span class="text-3xl mr-3">🚌</span>
+          <div>
+            <h3 class="font-bold text-lg">Ruta R10</h3>
+            <p class="text-sm text-gray-500">Las Américas - Aeropuerto</p>
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          La forma más económica de llegar al aeropuerto.
+        </p>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-primary-500 font-medium">$15.00 MXN</span>
+          <a href="/ruta/R10" class="text-sky-500 hover:underline">Ver detalles →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Map Island -->
+  <section class="mb-12">
+    <h2 class="text-3xl font-display font-bold text-gray-900 mb-6">
+      Mapa Interactivo
+    </h2>
+    <InteractiveMap client:visible mapboxToken={MAPBOX_TOKEN} />
+  </section>
+
+  <!-- Stats Section (Static) -->
+  <section class="bg-gradient-to-r from-primary-500 to-sky-500 rounded-lg shadow-xl p-8 text-white mb-12">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <div>
+        <div class="text-4xl font-bold mb-2">60+</div>
+        <div class="text-sm opacity-90">Rutas Documentadas</div>
+      </div>
+      <div>
+        <div class="text-4xl font-bold mb-2">247</div>
+        <div class="text-sm opacity-90">Paradas Validadas</div>
+      </div>
+      <div>
+        <div class="text-4xl font-bold mb-2">450km²</div>
+        <div class="text-sm opacity-90">Área de Cobertura</div>
+      </div>
+      <div>
+        <div class="text-4xl font-bold mb-2">2026</div>
+        <div class="text-sm opacity-90">Datos Actualizados</div>
+      </div>
+    </div>
+  </section>
+</MainLayout>

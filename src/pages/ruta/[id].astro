@@ -1,0 +1,124 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+export async function getStaticPaths() {
+  const routesPath = path.resolve('./src/data/master_routes.json');
+  // Fallback if not found, use public (depending on build process)
+  // For SSG we need access to the file. 
+  // Ideally this comes from a unified data layer.
+  // We'll assume the file is in public/data for runtime but we read from src/data for build if available
+  // or use import.
+  
+  // Reading from src/data/master_routes.json
+  const fileContent = await fs.readFile(routesPath, 'utf-8');
+  const routesData = JSON.parse(fileContent);
+  
+  return routesData.routes.map((route: any) => ({
+    params: { id: route.id },
+    props: { route },
+  }));
+}
+
+const { route } = Astro.props;
+
+if (!route) {
+  return Astro.redirect('/404');
+}
+
+const title = `Ruta ${route.id}: ${route.name}`;
+const description = `Información completa de la ${route.name}. Paradas, horarios, tarifas y más.`;
+---
+
+<MainLayout title={title} description={description}>
+  <!-- Route Header -->
+  <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-4xl font-display font-bold text-gray-900 mb-2">
+          Ruta {route.id}
+        </h1>
+        <p class="text-xl text-gray-600">{route.name}</p>
+      </div>
+      <div class="text-right">
+        <div class="text-3xl font-bold text-primary-500 mb-1">
+          ${route.fare_urban ? route.fare_urban : route.fare_mxn || 15} MXN
+        </div>
+        <div class="text-sm text-gray-500">por viaje</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+      <div class="bg-gray-50 rounded-lg p-4">
+        <div class="text-2xl font-bold text-gray-900 mb-1">
+          {route.statistics?.distance_km || 'N/A'}km
+        </div>
+        <div class="text-xs text-gray-500">Distancia Total</div>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <div class="text-2xl font-bold text-gray-900 mb-1">
+          {route.statistics?.avg_duration_minutes || 'N/A'}min
+        </div>
+        <div class="text-xs text-gray-500">Duración Promedio</div>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <div class="text-2xl font-bold text-gray-900 mb-1">
+          {route.schedule?.frequency_minutes || '10-15'}min
+        </div>
+        <div class="text-xs text-gray-500">Frecuencia</div>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <div class="text-2xl font-bold text-gray-900 mb-1">
+          {route.operator || 'Turicun/Autocar'}
+        </div>
+        <div class="text-xs text-gray-500">Operador</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Horarios -->
+  <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">⏰ Horarios</h2>
+    <div class="flex items-center space-x-4">
+      <div>
+        <span class="text-sm text-gray-500">Primer camión:</span>
+        <span class="font-bold text-gray-900 ml-2">{route.schedule?.start || '06:00'}</span>
+      </div>
+      <div>
+        <span class="text-sm text-gray-500">Último camión:</span>
+        <span class="font-bold text-gray-900 ml-2">{route.schedule?.end || '23:30'}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paradas -->
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">📍 Paradas</h2>
+    <div class="space-y-4">
+      {route.stops && route.stops.map((stop: any, index: number) => (
+        <div class="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold" 
+                 style={`background-color: ${route.color}`}>
+              {stop.order || index + 1}
+            </div>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-bold text-gray-900">{stop.name}</h3>
+            {stop.landmarks && (
+              <p class="text-sm text-gray-500 mt-1">{stop.landmarks}</p>
+            )}
+            {stop.amenities && stop.amenities.length > 0 && (
+              <div class="flex items-center space-x-2 mt-2">
+                {stop.amenities.includes('restrooms') && <span class="text-xs bg-gray-100 px-2 py-1 rounded">🚻 Baños</span>}
+                {stop.amenities.includes('wifi') && <span class="text-xs bg-gray-100 px-2 py-1 rounded">📶 WiFi</span>}
+                {stop.amenities.includes('ticket_booth') && <span class="text-xs bg-gray-100 px-2 py-1 rounded">🎫 Taquilla</span>}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</MainLayout>

@@ -1,0 +1,43 @@
+---
+// Header estático - No necesita JavaScript
+---
+
+<header class="bg-white shadow-md sticky top-0 z-50">
+  <div class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      <!-- Logo -->
+      <a href="/" class="flex items-center space-x-2 group">
+        <span class="text-4xl group-hover:scale-110 transition-transform">🚌</span>
+        <div>
+          <h1 class="text-2xl font-display font-bold text-gray-900">
+            Cancún<span class="text-primary-500">Mueve</span>
+          </h1>
+          <p class="text-xs text-gray-500">Tu guía de transporte</p>
+        </div>
+      </a>
+      
+      <!-- Navigation -->
+      <nav class="hidden md:flex space-x-6">
+        <a href="/" class="text-gray-700 hover:text-primary-500 font-medium transition-colors">
+          Inicio
+        </a>
+        <a href="/rutas" class="text-gray-700 hover:text-primary-500 font-medium transition-colors">
+          Rutas
+        </a>
+        <a href="/mapa" class="text-gray-700 hover:text-primary-500 font-medium transition-colors">
+          Mapa
+        </a>
+        <a href="/contribuir" class="text-gray-700 hover:text-primary-500 font-medium transition-colors">
+          Contribuir
+        </a>
+      </nav>
+      
+      <!-- Mobile menu button (will be island later) -->
+      <button class="md:hidden text-gray-700 hover:text-primary-500">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
