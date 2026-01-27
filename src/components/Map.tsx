@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { BusStopMarker, UserMarker } from './CustomMarkers';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || 'TU_MAPBOX_TOKEN_AQUI';
 
@@ -12,6 +14,9 @@ interface MapProps {
 const Map: React.FC<MapProps> = ({ center, userLocation }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const userMarkerRootRef = useRef<Root | null>(null);
+  const stopMarkersRef = useRef<{marker: mapboxgl.Marker, root: Root}[]>([]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -23,53 +28,59 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
       zoom: 12
     });
 
-    // Agregar controles
     map.current.addControl(new mapboxgl.NavigationControl());
     map.current.addControl(new mapboxgl.GeolocateControl({
       positionOptions: { enableHighAccuracy: true },
       trackUserLocation: true
     }));
 
-    // Cargar rutas desde routes.json
     map.current.on('load', async () => {
       try {
         const response = await fetch('/data/routes.json');
         const data = await response.json();
 
-        // Dibujar rutas
-        data.rutas.forEach((ruta: any) => {
-          map.current?.addSource(`route-${ruta.id}`, {
+        data.routes.forEach((route: any) => {
+          const coordinates = route.stops.map((stop: any) => [stop.lng, stop.lat]);
+
+          map.current?.addSource(`route-${route.id}`, {
             type: 'geojson',
             data: {
               type: 'Feature',
               properties: {},
               geometry: {
                 type: 'LineString',
-                coordinates: ruta.polyline
+                coordinates: coordinates
               }
             }
           });
 
           map.current?.addLayer({
-            id: `route-${ruta.id}`,
+            id: `route-${route.id}`,
             type: 'line',
-            source: `route-${ruta.id}`,
+            source: `route-${route.id}`,
             paint: {
-              'line-color': ruta.color,
-              'line-width': 4
+              'line-color': route.color,
+              'line-width': 4,
+              'line-opacity': 0.8
             }
           });
 
-          // Agregar paradas
-          ruta.paradas.forEach((parada: any) => {
-            new mapboxgl.Marker({ color: ruta.color })
-              .setLngLat([parada.lng, parada.lat])
-              .setPopup(new mapboxgl.Popup().setHTML(`
-                <strong>${parada.nombre}</strong><br>
-                Ruta: ${ruta.id}<br>
-                Tarifa: $${ruta.tarifa} MXN
+          route.stops.forEach((stop: any) => {
+            const el = document.createElement('div');
+            const root = createRoot(el);
+            root.render(<BusStopMarker />);
+
+            const marker = new mapboxgl.Marker(el)
+              .setLngLat([stop.lng, stop.lat])
+              .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                <div class="p-2 font-outfit">
+                  <strong class="text-deep-navy">${stop.name}</strong><br>
+                  <span class="text-caribbean-blue text-xs font-bold">Ruta: ${route.id}</span>
+                </div>
               `))
               .addTo(map.current!);
+
+            stopMarkersRef.current.push({ marker, root });
           });
         });
       } catch (error) {
@@ -77,20 +88,35 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
       }
     });
 
-    return () => map.current?.remove();
+    return () => {
+      stopMarkersRef.current.forEach(({ marker, root }) => {
+        marker.remove();
+        root.unmount();
+      });
+      stopMarkersRef.current = [];
+      map.current?.remove();
+    };
   }, [center]);
 
-  // Actualizar marcador de usuario
+  // Update user location marker
   useEffect(() => {
     if (userLocation && map.current) {
-      new mapboxgl.Marker({ color: '#0EA5E9' })
-        .setLngLat(userLocation)
-        .setPopup(new mapboxgl.Popup().setHTML('Tu ubicación'))
-        .addTo(map.current);
+      if (!userMarkerRef.current) {
+        const el = document.createElement('div');
+        userMarkerRootRef.current = createRoot(el);
+        userMarkerRootRef.current.render(<UserMarker />);
+
+        userMarkerRef.current = new mapboxgl.Marker(el)
+          .setLngLat(userLocation)
+          .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML('<strong class="p-2 block">Tu ubicación</strong>'))
+          .addTo(map.current);
+      } else {
+        userMarkerRef.current.setLngLat(userLocation);
+      }
     }
   }, [userLocation]);
 
-  return <div ref={mapContainer} className="w-full h-full min-h-[400px]" />;
+  return <div ref={mapContainer} className="w-full h-full" />;
 };
 
 export default Map;

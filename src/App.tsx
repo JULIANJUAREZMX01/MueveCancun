@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import Map from './components/Map';
 import RouteSearch from './components/RouteSearch';
 import RouteResults from './components/RouteResults';
-import init, { calculate_route } from './wasm/route_calculator/route_calculator';
+import init, { calculate_route } from './wasm/route_calculator';
+import { Bus } from 'lucide-react';
 
 interface RouteResult {
   route_id: string;
@@ -22,6 +23,7 @@ function App() {
   const [routeResults, setRouteResults] = useState<RouteResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [wasmReady, setWasmReady] = useState(false);
+  const [routesData, setRoutesData] = useState<any>(null);
 
   // Initialize WASM
   useEffect(() => {
@@ -29,6 +31,12 @@ function App() {
       setWasmReady(true);
       console.log('WASM loaded');
     }).catch(console.error);
+
+    // Fetch routes data for WASM processing
+    fetch('/data/routes.json')
+      .then(res => res.json())
+      .then(data => setRoutesData(data))
+      .catch(console.error);
   }, []);
 
   // Obtener ubicación del usuario
@@ -45,15 +53,14 @@ function App() {
 
   // Calcular ruta con WASM
   const handleSearch = async () => {
-    if (!wasmReady) {
+    if (!wasmReady || !routesData) {
       alert('Motor de rutas no está listo aún.');
       return;
     }
     setLoading(true);
     try {
-      // AQUÍ se llama al módulo WASM
-      const result = calculate_route(searchFrom, searchTo);
-      // calculate_route returns a single result in this mock, but we'll wrap it in an array
+      // Pasamos los datos de las rutas al módulo WASM para procesamiento local
+      const result = calculate_route(searchFrom, searchTo, routesData);
       setRouteResults([result as RouteResult]);
     } catch (error) {
       console.error('Error calculando ruta:', error);
@@ -63,31 +70,40 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-sky-600 text-white p-4 shadow-lg">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          🚌 CancúnMueve
-        </h1>
-        <p className="text-sky-100 text-sm">Tu guía de transporte público</p>
+    <div className="min-h-screen flex flex-col safe-area-bottom">
+      <header className="p-6 bg-transparent">
+        <div className="flex items-center gap-3">
+          <div className="bg-sun-yellow p-3 rounded-2xl shadow-lg">
+            <Bus className="text-deep-navy" size={32} />
+          </div>
+          <div>
+            <h1 className="text-3xl high-contrast-text uppercase">CancúnMueve</h1>
+            <p className="text-caribbean-blue font-bold text-sm tracking-widest uppercase">Tu guía de transporte público</p>
+          </div>
+        </div>
       </header>
 
-      <main className="container mx-auto p-4 space-y-4 flex-1 flex flex-col md:flex-row gap-4">
-        <div className="w-full md:w-1/3 space-y-4">
-          <RouteSearch
-            from={searchFrom}
-            to={searchTo}
-            onFromChange={setSearchFrom}
-            onToChange={setSearchTo}
-            onSearch={handleSearch}
-            loading={loading}
-          />
+      <main className="container mx-auto p-4 space-y-6 flex-1 flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:w-1/3 space-y-6">
+          <div className="sunny-card p-6">
+            <RouteSearch
+              from={searchFrom}
+              to={searchTo}
+              onFromChange={setSearchFrom}
+              onToChange={setSearchTo}
+              onSearch={handleSearch}
+              loading={loading}
+            />
+          </div>
 
           {routeResults.length > 0 && (
-            <RouteResults results={routeResults} />
+            <div className="sunny-card p-6 overflow-y-auto max-h-[60vh]">
+              <RouteResults results={routeResults} />
+            </div>
           )}
         </div>
 
-        <div className="w-full md:w-2/3 h-[50vh] md:h-auto rounded-xl overflow-hidden shadow-inner border border-gray-200">
+        <div className="w-full lg:w-2/3 h-[60vh] lg:h-auto sunny-card overflow-hidden relative min-h-[500px]">
           <Map
             center={userLocation || [-86.8515, 21.1619]}
             userLocation={userLocation}
@@ -95,8 +111,8 @@ function App() {
         </div>
       </main>
 
-      <footer className="bg-white border-t p-4 text-center text-gray-500 text-xs mt-auto">
-        &copy; 2025 CancúnMueve - Información de la comunidad
+      <footer className="p-8 text-center text-deep-navy/40 text-xs font-bold uppercase tracking-widest">
+        &copy; 2025 CancúnMueve - Información de la comunidad para la comunidad
       </footer>
     </div>
   );
