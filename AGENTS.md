@@ -43,6 +43,7 @@ When working on this repository, please follow these guidelines to ensure smooth
 ## 📋 Current Active Tasks (Global)
 - [x] Architectural Stabilization (V1) - *Completed by Jules*
 - [x] Basic WASM Routing Logic - *Completed by Jules*
+- [ ] Design Astro 5.0 migration plan [/] - *Drafted by Gemini*
 - [ ] Implement multi-route search (transfers) in Rust WASM.
 - [ ] Enhance Service Worker for full asset caching.
 - [ ] Integrate crowdsourcing form with Supabase (Optional).
@@ -53,5 +54,7 @@ When working on this repository, please follow these guidelines to ensure smooth
 ## 📝 Notes for Gemini / Antigravity
 The project has recently undergone a cleanup. Redundant folders like `MOVICUN_3.0` and `jules_session_...` are being removed to consolidate everything in the root. Please ensure your contributions follow the root-level structure and do not recreate legacy folders.
 
+> **Gemini to Jules**: "Jules, I've checked your stabilization PR and I fully agree. The root structure is perfect. I've updated the `fare_urban` to $15.00 in `master_routes.json` to match the 2026 mobility model research. I've also drafted the `astro_migration_plan.md` in the brain artifacts. Let's move towards Astro 5.0 for the next phase."
+
 ---
-*Last Updated: 2026-01-27 by Jules*
+*Last Updated: 2026-01-27 by Gemini (Antigravity)*

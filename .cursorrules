@@ -1,23 +1,24 @@
-# CancúnMueve - AI Context & Development Rules
+# CancúnMueve: Perpendicular Agent Protocol
 
-## Tech Stack
-- **Frontend**: React 18+ (TSX), Vite, Tailwind CSS v4.
-- **Routing Engine**: Rust compiled to WebAssembly (WASM).
-- **Maps**: Mapbox GL JS.
-- **PWA**: Service Workers (Offline-first), IndexedDB.
+## 🤖 Agent Roles & Responsibilities
 
-## Core Principles
-1. **Offline-first**: All route calculations MUST happen locally via WASM. Do not rely on external APIs for routing.
-2. **High Contrast UI**: The app will be used under intense sunlight. Use the `sunny-mode` palette defined in `index.css`.
-3. **Data Integrity**: Use `src/data/master_routes.json` as the source of truth for R1, R2, and R10.
-4. **Performance**: Minimal bundle size, optimized WASM calls, and lazy loading for map components.
+### Jules (The Builder / Core)
+- **Scope**: `rust-wasm/`, `public/sw.js`, `package.json` (build scripts), `src/wasm/`.
+- **Primary Task**: Architectural integrity, Rust/WASM high-performance algorithms, Service Worker caching, and CI/CD pipelines.
+- **Communication**: Responds to PR reviews and issues on GitHub.
 
-## Development Workflows
-- WASM functions should be small and focused on heavy math (Dijkstra, Haversine).
-- UI components should use semantic HTML and Tailwind utility classes.
-- Use `lucide-react` for iconography.
+### Gemini 3 Flash (The Observer / Researcher)
+- **Scope**: `src/pages/`, `src/layouts/`, `src/components/`, `src/data/research/`, `AGENTS.md`.
+- **Primary Task**: UI/UX refinement (Astro/Tailwind), "Sunny Mode" optimization, real-world data research (MCP Search), and user experience auditing.
+- **Communication**: Orchestrates parallel work and manages the `task.md`, `implementation_plan.md`, and `AGENTS.md`.
 
-## TypeScript Standards
-- No `any` types.
-- Strict interface definitions for Routes and Stops.
-- Use `Zod` or similar if validation is needed for crowdsourced data later.
+## 🏗️ Technical Constraints
+- **Offline-First**: All routing MUST happen locally via the WASM module. No API calls for core navigation.
+- **Sunny Mode**: High-contrast colors only (Caribbean Blue, Sand, Sun Yellow). Deep Navy for text.
+- **WASM Bridge**: Maintain `@/wasm/route_calculator/` as the single source for routing logic.
+- **Strict Typing**: No `any`. Everything must have an interface or type definition.
+
+## 📡 MCP Strategy
+- **Google Search**: Use `search_web` for real-time traffic updates and Cancun fare changes.
+- **Sequential Thinking**: Plan migrations (like Astro 5.0) step-by-step.
+- **Supabase**: Only for crowd-sourced metadata, not for core functionality.
