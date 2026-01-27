@@ -1,0 +1,38 @@
+{
+  "rutas": [
+    {
+      "id": "R1",
+      "nombre": "Crucero - Zona Hotelera",
+      "color": "#FF6B6B",
+      "tarifa": 13.00,
+      "horario": "05:00-23:00",
+      "frecuencia_minutos": 10,
+      "paradas": [
+        {
+          "id": "R1_001",
+          "nombre": "Parque La Rehoyada (Terminal)",
+          "lat": 21.1619,
+          "lng": -86.8515,
+          "orden": 1
+        },
+        {
+          "id": "R1_002",
+          "nombre": "Av. Tulum y Cobá",
+          "lat": 21.1665,
+          "lng": -86.8270,
+          "orden": 2
+        }
+      ],
+      "polyline": [[21.1619, -86.8515], [21.1665, -86.8270]]
+    }
+  ],
+  "destinos": [
+    {
+      "nombre": "Coco Bongo",
+      "categoria": "Entretenimiento",
+      "lat": 21.1385,
+      "lng": -86.7474,
+      "parada_cercana": "R1_045"
+    }
+  ]
+}
