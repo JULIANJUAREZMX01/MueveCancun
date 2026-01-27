@@ -1,5 +1,4 @@
 import React from 'react';
-import { Clock, DollarSign, Navigation } from 'lucide-react';
 
 interface RouteStep {
   instruction: string;
@@ -20,42 +19,30 @@ interface RouteResultsProps {
 
 const RouteResults: React.FC<RouteResultsProps> = ({ results }) => {
   return (
-    <div className="space-y-6">
-      <h3 className="text-xl high-contrast-text px-2 flex items-center gap-2">
-        <Navigation size={20} className="text-jungle-green" />
-        Resultados
-      </h3>
-
+    <div className="space-y-4">
+      <h3 className="text-lg font-bold text-gray-700 px-2">Resultados</h3>
       {results.map((result, idx) => (
-        <div key={idx} className="bg-sand/30 p-5 rounded-2xl border border-deep-navy/5">
-          <div className="flex justify-between items-start mb-4">
+        <div key={idx} className="bg-white p-5 rounded-xl shadow-md border-l-4 border-sky-500">
+          <div className="flex justify-between items-start mb-3">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-deep-navy/40">Ruta Recomendada</span>
-              <h4 className="text-2xl high-contrast-text text-caribbean-blue">Ruta {result.route_id}</h4>
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Ruta Recomendada</span>
+              <h4 className="text-xl font-bold text-sky-600">Ruta {result.route_id}</h4>
             </div>
             <div className="text-right">
-              <div className="flex items-center justify-end text-xl font-black text-deep-navy">
-                <DollarSign size={16} />
-                {result.total_cost}
-              </div>
-              <div className="flex items-center justify-end gap-1 text-[10px] font-bold text-deep-navy/40 uppercase tracking-wider">
-                <Clock size={10} />
-                {result.total_time} min
-              </div>
+              <div className="text-2xl font-black text-gray-800">${result.total_cost} <span className="text-xs font-normal">MXN</span></div>
+              <div className="text-sm text-gray-500">{result.total_time} min aprox.</div>
             </div>
           </div>
 
-          <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-deep-navy/5">
+          <div className="space-y-3 mt-4">
             {result.steps.map((step, sIdx) => (
-              <div key={sIdx} className="flex gap-4 items-start relative z-10">
-                <div className="w-6 h-6 rounded-full bg-sun-yellow text-deep-navy flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm">
+              <div key={sIdx} className="flex gap-3 items-start">
+                <div className="w-6 h-6 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                   {sIdx + 1}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-deep-navy leading-tight">{step.instruction}</p>
-                  <p className="text-[10px] font-black text-caribbean-blue uppercase tracking-widest mt-1">
-                    Tramo: {step.duration} min
-                  </p>
+                <div>
+                  <p className="text-sm text-gray-700">{step.instruction}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Duración: {step.duration} min</p>
                 </div>
               </div>
             ))}
