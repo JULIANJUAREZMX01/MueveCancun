@@ -8,9 +8,11 @@
     "build": "npm run check-wasm && tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest",
-    "build:wasm": "cd rust-wasm && npx wasm-pack build --target web --out-dir ../src/wasm/route_calculator",
+    "build:wasm": "npm run build:wasm:route && npm run build:wasm:spatial",
+    "build:wasm:route": "cd rust-wasm/route-calculator && wasm-pack build --target web --out-dir ../../public/wasm/route-calculator",
+    "build:wasm:spatial": "cd rust-wasm/spatial-index && wasm-pack build --target web --out-dir ../../public/wasm/spatial-index",
     "preview": "vite preview",
-    "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('./src/wasm/route_calculator/route_calculator_bg.wasm')) { console.error('❌ WASM binary missing! Run wasm-pack build first.'); process.exit(1); } else { console.log('✅ WASM binary found.'); }\""
+    "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('./public/wasm/route-calculator/route_calculator_bg.wasm')) { console.error('❌ WASM binary missing! Run build:wasm first.'); process.exit(1); } else { console.log('✅ WASM binaries found.'); }\""
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",

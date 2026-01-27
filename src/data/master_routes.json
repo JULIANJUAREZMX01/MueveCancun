@@ -4,7 +4,7 @@
       "id": "R1",
       "name": "R-1: Puerto Juárez - Zona Hotelera",
       "description": "Conecta el transbordador a Isla Mujeres con toda la Zona Hotelera.",
-      "fare_urban": 15,
+      "fare_urban": 13,
       "fare_hz": 15,
       "color": "#FFEA00",
       "stops": [
@@ -25,7 +25,7 @@
       "id": "R2",
       "name": "R-2: Villas Otoch - Mercado 28 - Z.H.",
       "description": "Ruta vital para trabajadores que cruza por el Mercado 28.",
-      "fare_urban": 15,
+      "fare_urban": 13,
       "fare_hz": 15,
       "color": "#00E5FF",
       "stops": [

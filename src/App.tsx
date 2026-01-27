@@ -3,7 +3,6 @@ import Map from './components/Map';
 import RouteSearch from './components/RouteSearch';
 import RouteResults from './components/RouteResults';
 import init, { calculate_route } from './wasm/route_calculator/route_calculator';
-import { Bus } from 'lucide-react';
 
 interface RouteResult {
   route_id: string;
@@ -44,7 +43,7 @@ function App() {
     }
   }, []);
 
-  // Calcular ruta
+  // Calcular ruta con WASM
   const handleSearch = async () => {
     if (!wasmReady) {
       alert('Motor de rutas no está listo aún.');
@@ -52,9 +51,9 @@ function App() {
     }
     setLoading(true);
     try {
-      // In a real scenario with the real WASM, we'd pass routesData
-      // For now, we call the mock/real calculate_route
+      // AQUÍ se llama al módulo WASM
       const result = calculate_route(searchFrom, searchTo);
+      // calculate_route returns a single result in this mock, but we'll wrap it in an array
       setRouteResults([result as RouteResult]);
     } catch (error) {
       console.error('Error calculando ruta:', error);
@@ -64,40 +63,31 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col safe-area-bottom">
-      <header className="p-6 bg-transparent">
-        <div className="flex items-center gap-3">
-          <div className="bg-sun-yellow p-3 rounded-2xl shadow-lg">
-            <Bus className="text-deep-navy" size={32} />
-          </div>
-          <div>
-            <h1 className="text-3xl high-contrast-text uppercase">CancúnMueve</h1>
-            <p className="text-caribbean-blue font-bold text-sm tracking-widest uppercase">Tu guía de transporte público</p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <header className="bg-sky-600 text-white p-4 shadow-lg">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          🚌 CancúnMueve
+        </h1>
+        <p className="text-sky-100 text-sm">Tu guía de transporte público</p>
       </header>
 
-      <main className="container mx-auto p-4 space-y-6 flex-1 flex flex-col lg:flex-row gap-6">
-        <div className="w-full lg:w-1/3 space-y-6">
-          <div className="sunny-card p-6">
-            <RouteSearch
-              from={searchFrom}
-              to={searchTo}
-              onFromChange={setSearchFrom}
-              onToChange={setSearchTo}
-              onSearch={handleSearch}
-              loading={loading}
-            />
-          </div>
+      <main className="container mx-auto p-4 space-y-4 flex-1 flex flex-col md:flex-row gap-4">
+        <div className="w-full md:w-1/3 space-y-4">
+          <RouteSearch
+            from={searchFrom}
+            to={searchTo}
+            onFromChange={setSearchFrom}
+            onToChange={setSearchTo}
+            onSearch={handleSearch}
+            loading={loading}
+          />
 
           {routeResults.length > 0 && (
-            <div className="sunny-card p-6 overflow-y-auto max-h-[60vh]">
-              <RouteResults results={routeResults} />
-            </div>
+            <RouteResults results={routeResults} />
           )}
         </div>
 
-        <div className="w-full lg:w-2/3 h-[60vh] lg:h-auto sunny-card overflow-hidden relative min-h-[500px]">
+        <div className="w-full md:w-2/3 h-[50vh] md:h-auto rounded-xl overflow-hidden shadow-inner border border-gray-200">
           <Map
             center={userLocation || [-86.8515, 21.1619]}
             userLocation={userLocation}
@@ -105,8 +95,8 @@ function App() {
         </div>
       </main>
 
-      <footer className="p-8 text-center text-deep-navy/40 text-xs font-bold uppercase tracking-widest">
-        &copy; 2025 CancúnMueve - Información de la comunidad para la comunidad
+      <footer className="bg-white border-t p-4 text-center text-gray-500 text-xs mt-auto">
+        &copy; 2025 CancúnMueve - Información de la comunidad
       </footer>
     </div>
   );

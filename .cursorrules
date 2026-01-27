@@ -1,34 +1,23 @@
-# CancúnMueve: Perpendicular Agent Protocol
+# CancúnMueve - AI Context & Development Rules
 
-## 🤖 Agent Roles & Responsibilities
+## Tech Stack
+- **Frontend**: React 18+ (TSX), Vite, Tailwind CSS v4.
+- **Routing Engine**: Rust compiled to WebAssembly (WASM).
+- **Maps**: Mapbox GL JS.
+- **PWA**: Service Workers (Offline-first), IndexedDB.
 
-### Jules (The Builder / Core)
-- **Scope**: `rust-wasm/`, `public/sw.js`, `package.json` (build scripts), `src/wasm/`.
-- **Primary Task**: Architectural integrity, Rust/WASM high-performance algorithms, Service Worker caching, and CI/CD pipelines.
-- **Communication**: Responds to PR reviews and issues on GitHub.
+## Core Principles
+1. **Offline-first**: All route calculations MUST happen locally via WASM. Do not rely on external APIs for routing.
+2. **High Contrast UI**: The app will be used under intense sunlight. Use the `sunny-mode` palette defined in `index.css`.
+3. **Data Integrity**: Use `src/data/master_routes.json` as the source of truth for R1, R2, and R10.
+4. **Performance**: Minimal bundle size, optimized WASM calls, and lazy loading for map components.
 
-### Gemini 3 Flash (The Observer / Researcher)
-- **Scope**: `src/pages/`, `src/layouts/`, `src/components/`, `src/data/research/`, `AGENTS.md`.
-- **Primary Task**: UI/UX refinement (Astro/Tailwind), "Sunny Mode" optimization, real-world data research (MCP Search), and user experience auditing.
-- **Communication**: Orchestrates parallel work and manages the `task.md`, `implementation_plan.md`, and `AGENTS.md`.
+## Development Workflows
+- WASM functions should be small and focused on heavy math (Dijkstra, Haversine).
+- UI components should use semantic HTML and Tailwind utility classes.
+- Use `lucide-react` for iconography.
 
-## 🏗️ Technical Constraints
-- **Offline-First**: All routing MUST happen locally via the WASM module. No API calls for core navigation.
-- **Sunny Mode**: High-contrast colors only (Caribbean Blue, Sand, Sun Yellow). Deep Navy for text.
-- **WASM Bridge**: Maintain `@/wasm/route_calculator/` as the single source for routing logic.
-- **Strict Typing**: No `any`. Everything must have an interface or type definition.
-
-## 📡 MCP Toolbelt (Active & Required)
-
-| Tool / Server | Status | Purpose in CancúnMueve |
-| :--- | :--- | :--- |
-| **GitKraken** | ✅ Active | Version control, PR management, and history audit. |
-| **Google Search** | ✅ Active | Researching 2026 mobility changes, fares, and traffic updates. |
-| **Sequential Thinking** | ❌ Required | Critical for planning the Astro 5.0 migration steps without architectural breaks. |
-| **PostgreSQL / Supabase** | ❌ Required | Storing crowd-sourced user reports (delays, blocked roads). |
-| **FileSystem** | ✅ Active | Managing the project root and creating artifacts. |
-
-### 🛠️ Instructions for Jules
-1.  **Access:** You have full access to the **Active** tools through Gemini's orchestration.
-2.  **Request:** If you need deep database access, request the activation of the **Supabase MCP** via a PR comment.
-3.  **Docs:** Refer to the official [Model Context Protocol](https://modelcontextprotocol.io) documentation for server implementations.
+## TypeScript Standards
+- No `any` types.
+- Strict interface definitions for Routes and Stops.
+- Use `Zod` or similar if validation is needed for crowdsourced data later.

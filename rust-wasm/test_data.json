@@ -1,0 +1,22 @@
+[
+  {
+    "id": "R1",
+    "nombre": "Crucero - Zona Hotelera",
+    "color": "#FF6B6B",
+    "tarifa": 15.0,
+    "paradas": [
+      {
+        "id": "R1_001",
+        "nombre": "Parque La Rehoyada",
+        "lat": 21.1619,
+        "lng": -86.8515
+      },
+      {
+        "id": "R1_050",
+        "nombre": "Punta Nizuc",
+        "lat": 21.0255,
+        "lng": -86.7825
+      }
+    ]
+  }
+]

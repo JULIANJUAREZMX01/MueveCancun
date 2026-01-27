@@ -1,0 +1,67 @@
+{
+  "version": "2.0.0",
+  "last_updated": "2026-01-27T00:00:00Z",
+  "metadata": {
+    "total_routes": 60,
+    "documented_routes": 3,
+    "total_stops": 30,
+    "coverage_area_km2": 450
+  },
+  "routes": [
+    {
+      "id": "R1",
+      "name": "Crucero - Zona Hotelera",
+      "color": "#FF6B6B",
+      "operator": "Autocar",
+      "fare_mxn": 15.0,
+      "schedule": {
+        "start": "05:00",
+        "end": "23:50",
+        "frequency_minutes": 10
+      },
+      "stops": [
+        {
+          "id": "R1_001",
+          "name": "Parque La Rehoyada",
+          "location": {
+            "type": "Point",
+            "coordinates": [-86.8515, 21.1619]
+          },
+          "order": 1,
+          "is_terminal": true,
+          "amenities": ["restrooms", "ticket_booth"],
+          "landmarks": "Terminal Crucero",
+          "validated_by": 25,
+          "last_validated": "2026-01-20"
+        },
+        {
+          "id": "R1_007",
+          "name": "Coco Bongo / Forum",
+          "location": {
+            "type": "Point",
+            "coordinates": [-86.7474, 21.1385]
+          },
+          "order": 7,
+          "is_terminal": false,
+          "amenities": ["wifi"],
+          "landmarks": "Corazón de la ZH",
+          "validated_by": 50,
+          "last_validated": "2026-01-25"
+        }
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-86.8515, 21.1619], [-86.8270, 21.1665], [-86.8234, 21.1472], [-86.8095, 21.1462],
+          [-86.7912, 21.1425], [-86.7725, 21.1398], [-86.7474, 21.1385], [-86.7628, 21.1112],
+          [-86.7801, 21.0611], [-86.7825, 21.0255]
+        ]
+      },
+      "statistics": {
+        "avg_duration_minutes": 45,
+        "distance_km": 18.5,
+        "reliability_score": 0.98
+      }
+    }
+  ]
+}
