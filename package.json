@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "npm run check-wasm && tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest",
     "preview": "vite preview",
     "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('./src/wasm/route_calculator_bg.wasm')) { console.error('❌ WASM binary missing! Run wasm-pack build first.'); process.exit(1); } else { console.log('✅ WASM binary found.'); }\""
   },

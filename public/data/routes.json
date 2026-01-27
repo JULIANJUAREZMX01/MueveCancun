@@ -1,66 +1,196 @@
 {
-  "routes": [
+  "rutas": [
     {
       "id": "R1",
-      "name": "R-1: Puerto Juárez - Zona Hotelera",
-      "description": "Conecta el transbordador a Isla Mujeres con toda la Zona Hotelera.",
-      "fare_urban": 13,
-      "fare_hz": 15,
+      "nombre": "R-1: Puerto Juárez - Zona Hotelera",
       "color": "#FFEA00",
-      "stops": [
-        {"name": "Puerto Juárez (Ferry)", "lat": 21.1822, "lng": -86.8086},
-        {"name": "El Crucero (Av. Tulum)", "lat": 21.1732, "lng": -86.8273},
-        {"name": "Ayuntamiento", "lat": 21.1648, "lng": -86.8268},
-        {"name": "ADO Terminal", "lat": 21.1611, "lng": -86.8273},
-        {"name": "Glorieta el Ceviche", "lat": 21.1578, "lng": -86.8265},
-        {"name": "Plaza Las Américas", "lat": 21.1465, "lng": -86.8232},
-        {"name": "Playa Tortugas (Km 6.5)", "lat": 21.1378, "lng": -86.7845},
-        {"name": "Playa Langosta (Km 5)", "lat": 21.1415, "lng": -86.7972},
-        {"name": "Coco Bongo / Punta Cancún", "lat": 21.1329, "lng": -86.7472},
-        {"name": "La Isla Shopping Village", "lat": 21.1091, "lng": -86.7628},
-        {"name": "Playa Delfines / El Mirador", "lat": 21.0609, "lng": -86.7790}
-      ]
+      "tarifa": 13.00,
+      "horario": "05:00-23:00",
+      "frecuencia_minutos": 10,
+      "paradas": [
+        {
+          "id": "R1_001",
+          "nombre": "Puerto Juárez (Ferry)",
+          "lat": 21.1822,
+          "lng": -86.8086,
+          "orden": 1
+        },
+        {
+          "id": "R1_002",
+          "nombre": "El Crucero (Av. Tulum)",
+          "lat": 21.1732,
+          "lng": -86.8273,
+          "orden": 2
+        },
+        {
+          "id": "R1_003",
+          "nombre": "Ayuntamiento",
+          "lat": 21.1648,
+          "lng": -86.8268,
+          "orden": 3
+        },
+        {
+          "id": "R1_004",
+          "nombre": "ADO Terminal",
+          "lat": 21.1611,
+          "lng": -86.8273,
+          "orden": 4
+        },
+        {
+          "id": "R1_005",
+          "nombre": "Glorieta el Ceviche",
+          "lat": 21.1578,
+          "lng": -86.8265,
+          "orden": 5
+        },
+        {
+          "id": "R1_006",
+          "nombre": "Plaza Las Américas",
+          "lat": 21.1465,
+          "lng": -86.8232,
+          "orden": 6
+        },
+        {
+          "id": "R1_007",
+          "nombre": "Playa Tortugas (Km 6.5)",
+          "lat": 21.1378,
+          "lng": -86.7845,
+          "orden": 7
+        },
+        {
+          "id": "R1_008",
+          "nombre": "Playa Langosta (Km 5)",
+          "lat": 21.1415,
+          "lng": -86.7972,
+          "orden": 8
+        },
+        {
+          "id": "R1_009",
+          "nombre": "Coco Bongo / Punta Cancún",
+          "lat": 21.1329,
+          "lng": -86.7472,
+          "orden": 9
+        },
+        {
+          "id": "R1_010",
+          "nombre": "La Isla Shopping Village",
+          "lat": 21.1091,
+          "lng": -86.7628,
+          "orden": 10
+        },
+        {
+          "id": "R1_011",
+          "nombre": "Playa Delfines / El Mirador",
+          "lat": 21.0609,
+          "lng": -86.7790,
+          "orden": 11
+        }
+      ],
+      "polyline": [[21.1822, -86.8086], [21.1732, -86.8273], [21.1648, -86.8268], [21.1611, -86.8273], [21.1578, -86.8265], [21.1465, -86.8232], [21.1378, -86.7845], [21.1415, -86.7972], [21.1329, -86.7472], [21.1091, -86.7628], [21.0609, -86.7790]]
     },
     {
       "id": "R2",
-      "name": "R-2: Villas Otoch - Mercado 28 - Z.H.",
-      "description": "Ruta vital para trabajadores que cruza por el Mercado 28.",
-      "fare_urban": 13,
-      "fare_hz": 15,
+      "nombre": "R-2: Villas Otoch - Mercado 28 - Z.H.",
       "color": "#00E5FF",
-      "stops": [
-        {"name": "Villas Otoch Paraíso", "lat": 21.2055, "lng": -86.8920},
-        {"name": "Multiplaza Kabah", "lat": 21.1805, "lng": -86.8612},
-        {"name": "Av. Lopez Portillo", "lat": 21.1735, "lng": -86.8455},
-        {"name": "Mercado 28", "lat": 21.1601, "lng": -86.8394},
-        {"name": "Walmart Centro", "lat": 21.1565, "lng": -86.8335},
-        {"name": "Plaza Las Américas", "lat": 21.1465, "lng": -86.8232},
-        {"name": "Entrada Zona Hotelera", "lat": 21.1524, "lng": -86.8123},
-        {"name": "Playa Tortugas", "lat": 21.1378, "lng": -86.7845},
-        {"name": "Coco Bongo / Punta Cancún", "lat": 21.1329, "lng": -86.7472},
-        {"name": "Riu Palace", "lat": 21.1354, "lng": -86.7584},
-        {"name": "Captain's Cove", "lat": 21.0772, "lng": -86.7788}
-      ]
+      "tarifa": 13.00,
+      "horario": "05:00-23:00",
+      "frecuencia_minutos": 12,
+      "paradas": [
+        {
+          "id": "R2_001",
+          "nombre": "Villas Otoch Paraíso",
+          "lat": 21.2055,
+          "lng": -86.8920,
+          "orden": 1
+        },
+        {
+          "id": "R2_002",
+          "nombre": "Multiplaza Kabah",
+          "lat": 21.1805,
+          "lng": -86.8612,
+          "orden": 2
+        },
+        {
+          "id": "R2_003",
+          "nombre": "Av. Lopez Portillo",
+          "lat": 21.1735,
+          "lng": -86.8455,
+          "orden": 3
+        },
+        {
+          "id": "R2_004",
+          "nombre": "Mercado 28",
+          "lat": 21.1601,
+          "lng": -86.8394,
+          "orden": 4
+        },
+        {
+          "id": "R2_005",
+          "nombre": "Walmart Centro",
+          "lat": 21.1565,
+          "lng": -86.8335,
+          "orden": 5
+        },
+        {
+          "id": "R2_006",
+          "nombre": "Plaza Las Américas",
+          "lat": 21.1465,
+          "lng": -86.8232,
+          "orden": 6
+        },
+        {
+          "id": "R2_007",
+          "nombre": "Entrada Zona Hotelera",
+          "lat": 21.1524,
+          "lng": -86.8123,
+          "orden": 7
+        },
+        {
+          "id": "R2_008",
+          "nombre": "Playa Tortugas",
+          "lat": 21.1378,
+          "lng": -86.7845,
+          "orden": 8
+        },
+        {
+          "id": "R2_009",
+          "nombre": "Coco Bongo / Punta Cancún",
+          "lat": 21.1329,
+          "lng": -86.7472,
+          "orden": 9
+        },
+        {
+          "id": "R2_010",
+          "nombre": "Riu Palace",
+          "lat": 21.1354,
+          "lng": -86.7584,
+          "orden": 10
+        },
+        {
+          "id": "R2_011",
+          "nombre": "Captain's Cove",
+          "lat": 21.0772,
+          "lng": -86.7788,
+          "orden": 11
+        }
+      ],
+      "polyline": [[21.2055, -86.8920], [21.1805, -86.8612], [21.1735, -86.8455], [21.1601, -86.8394], [21.1565, -86.8335], [21.1465, -86.8232], [21.1524, -86.8123], [21.1378, -86.7845], [21.1329, -86.7472], [21.1354, -86.7584], [21.0772, -86.7788]]
+    }
+  ],
+  "destinos": [
+    {
+      "nombre": "Coco Bongo",
+      "categoria": "Entretenimiento",
+      "lat": 21.1385,
+      "lng": -86.7474,
+      "parada_cercana": "R1_009"
     },
     {
-      "id": "R10",
-      "name": "R-10: Puerto Juárez - Plaza Las Américas",
-      "description": "Ruta directa por Av. Bonampak hacia centros comerciales.",
-      "fare_urban": 13,
-      "fare_hz": 15,
-      "color": "#76FF03",
-      "stops": [
-        {"name": "Puerto Juárez (Terminal Marítima)", "lat": 21.1822, "lng": -86.8086},
-        {"name": "Av. Bonampak", "lat": 21.1788, "lng": -86.8155},
-        {"name": "Puerto Cancún", "lat": 21.1668, "lng": -86.8185},
-        {"name": "Malecon Américas", "lat": 21.1485, "lng": -86.8225},
-        {"name": "Plaza Las Américas", "lat": 21.1465, "lng": -86.8232},
-        {"name": "Av. Sayil", "lat": 21.1455, "lng": -86.8322},
-        {"name": "Hospital Galenia", "lat": 21.1385, "lng": -86.8355},
-        {"name": "Plataforma Malecón", "lat": 21.1425, "lng": -86.8255},
-        {"name": "Av. Tulum Sur", "lat": 21.1548, "lng": -86.8255},
-        {"name": "Km 0 Blvd. Kukulcan", "lat": 21.1545, "lng": -86.8115}
-      ]
+      "nombre": "Plaza Las Américas",
+      "categoria": "Compras",
+      "lat": 21.1465,
+      "lng": -86.8232,
+      "parada_cercana": "R1_006"
     }
   ]
 }

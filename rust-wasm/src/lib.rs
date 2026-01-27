@@ -4,7 +4,7 @@ use strsim::levenshtein;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Stop {
-    name: String,
+    nombre: String,
     lat: f64,
     lng: f64,
 }
@@ -12,14 +12,14 @@ pub struct Stop {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Route {
     id: String,
-    name: String,
+    nombre: String,
     color: String,
-    stops: Vec<Stop>,
+    paradas: Vec<Stop>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct RouteData {
-    routes: Vec<Route>,
+    rutas: Vec<Route>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -39,7 +39,7 @@ pub struct RouteStep {
 
 #[wasm_bindgen]
 pub fn calculate_route(from: &str, to: &str, data: JsValue) -> JsValue {
-    let route_data: RouteData = serde_wasm_bindgen::from_value(data).unwrap_or(RouteData { routes: vec![] });
+    let route_data: RouteData = serde_wasm_bindgen::from_value(data).unwrap_or(RouteData { rutas: vec![] });
 
     // Buscar la parada más cercana para 'from' y 'to' basándose en el nombre
     let mut best_from_stop: Option<&Stop> = None;
@@ -48,10 +48,10 @@ pub fn calculate_route(from: &str, to: &str, data: JsValue) -> JsValue {
     let mut best_to_dist = usize::MAX;
     let mut best_route_id = "Desconocida".to_string();
 
-    for route in &route_data.routes {
-        for stop in &route.stops {
-            let d_from = levenshtein(&stop.name.to_lowercase(), &from.to_lowercase());
-            let d_to = levenshtein(&stop.name.to_lowercase(), &to.to_lowercase());
+    for route in &route_data.rutas {
+        for stop in &route.paradas {
+            let d_from = levenshtein(&stop.nombre.to_lowercase(), &from.to_lowercase());
+            let d_to = levenshtein(&stop.nombre.to_lowercase(), &to.to_lowercase());
 
             if d_from < best_from_dist {
                 best_from_dist = d_from;
@@ -65,8 +65,8 @@ pub fn calculate_route(from: &str, to: &str, data: JsValue) -> JsValue {
         }
     }
 
-    let from_name = best_from_stop.map(|s| s.name.clone()).unwrap_or(from.to_string());
-    let to_name = best_to_stop.map(|s| s.name.clone()).unwrap_or(to.to_string());
+    let from_name = best_from_stop.map(|s| s.nombre.clone()).unwrap_or(from.to_string());
+    let to_name = best_to_stop.map(|s| s.nombre.clone()).unwrap_or(to.to_string());
 
     let result = RouteResult {
         route_id: best_route_id.clone(),

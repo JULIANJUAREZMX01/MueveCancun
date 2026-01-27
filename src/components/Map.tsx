@@ -39,8 +39,8 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
         const response = await fetch('/data/routes.json');
         const data = await response.json();
 
-        data.routes.forEach((route: any) => {
-          const coordinates = route.stops.map((stop: any) => [stop.lng, stop.lat]);
+        data.rutas.forEach((route: any) => {
+          const coordinates = route.paradas.map((stop: any) => [stop.lng, stop.lat]);
 
           map.current?.addSource(`route-${route.id}`, {
             type: 'geojson',
@@ -65,7 +65,7 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
             }
           });
 
-          route.stops.forEach((stop: any) => {
+          route.paradas.forEach((stop: any) => {
             const el = document.createElement('div');
             const root = createRoot(el);
             root.render(<BusStopMarker />);
@@ -74,7 +74,7 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
               .setLngLat([stop.lng, stop.lat])
               .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
                 <div class="p-2 font-outfit">
-                  <strong class="text-deep-navy">${stop.name}</strong><br>
+                  <strong class="text-deep-navy">${stop.nombre}</strong><br>
                   <span class="text-caribbean-blue text-xs font-bold">Ruta: ${route.id}</span>
                 </div>
               `))
