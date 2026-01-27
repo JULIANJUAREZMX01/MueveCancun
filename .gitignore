@@ -1,44 +1,54 @@
-# Logs
-logs
+# IDEs and Editors
+.vscode
+.idea
+*.suo
+*.sln
+*.sw?
+.DS_Store
+
+# Environment and Logs
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 *.log
+logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+.venv
+pip-wheel-metadata
+
+# Build Outputs
 dist
 dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Rust
-/rust-wasm/target
-/src/wasm/route_calculator/pkg
-.codersinflow
-.vscode
-.env
-.venv
-.codex
 out
-*.vsix
+target
+build
+
+# Project Specific
+.codersinflow
 .claude
 CLAUDE.md
-.git
-*.tmp
+.codex
+*.vsix
 __pycache__
 *.pyc
-.env.local
 .next
+
+# Rust / WASM
+/rust-wasm/target
+/src/wasm/route_calculator/pkg
+
+# Temporary files
+*.tmp
+tmp/
+
+# Github
 .github
