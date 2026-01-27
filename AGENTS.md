@@ -6,6 +6,7 @@
 ---
 
 ## 🛠 Tech Stack
+
 - **Frontend:** React 19 + TypeScript + Vite.
 - **Styling:** Tailwind CSS v4 (using the new CSS-first configuration).
 - **Maps:** Mapbox GL JS (Custom React markers).
@@ -16,6 +17,7 @@
 ---
 
 ## 📂 Project Structure
+
 - `/src/components`: UI Components (Map, Search, Results).
 - `/src/wasm/route_calculator`: Compiled WASM module and TS bindings.
 - `/rust-wasm`: Source Rust code for the routing engine.
@@ -24,23 +26,39 @@
 
 ---
 
+## 📡 MCP Toolbelt (Active & Required)
+
+| Tool / Server | Status | Purpose in CancúnMueve |
+| :--- | :--- | :--- |
+| **GitKraken** | ✅ Active | Version control, PR management, and history audit. |
+| **Google Search** | ✅ Active | Researching 2026 mobility changes, fares, and traffic updates. |
+| **Sequential Thinking** | ❌ Required | Critical for planning the Astro 5.0 migration steps without architectural breaks. |
+| **PostgreSQL / Supabase** | ❌ Required | Storing crowd-sourced user reports (delays, blocked roads). |
+| **FileSystem** | ✅ Active | Managing the project root and creating artifacts. |
+
+---
+
 ## 🤝 Coordination Protocol for Agents
 When working on this repository, please follow these guidelines to ensure smooth collaboration:
 
-1.  **Branching Strategy:**
-    - Keep `main` as the stable production-ready branch.
-    - Use descriptive feature branches (e.g., `feature/routing-engine-optimization`).
-2.  **State Management:**
-    - Before starting a task, check this file (`AGENTS.md`) for the **Current Active Tasks** section.
-    - Update the **Current Active Tasks** section when you start and finish a sub-task.
-3.  **WASM Workflow:**
-    - If you modify Rust code in `/rust-wasm`, you **must** run `npm run build:wasm` to update the bindings in `/src/wasm`.
-4.  **UI/Theme:**
-    - Stick to the "Sunny Mode" high-contrast theme defined in `src/index.css`. Use utility classes like `sunny-card` and `premium-button`.
+1. **Branching Strategy:**
+   - Keep `main` as the stable production-ready branch.
+   - Use descriptive feature branches (e.g., `feature/routing-engine-optimization`).
+
+2. **State Management:**
+   - Before starting a task, check this file (`AGENTS.md`) for the **Current Active Tasks** section.
+   - Update the **Current Active Tasks** section when you start and finish a sub-task.
+
+3. **WASM Workflow:**
+   - If you modify Rust code in `/rust-wasm`, you **must** run `npm run build:wasm` to update the bindings in `/src/wasm`.
+
+4. **UI/Theme:**
+   - Stick to the "Sunny Mode" high-contrast theme defined in `src/index.css`. Use utility classes like `sunny-card` and `premium-button`.
 
 ---
 
 ## 📋 Current Active Tasks (Global)
+
 - [x] Architectural Stabilization (V1) - *Completed by Jules*
 - [x] Basic WASM Routing Logic - *Completed by Jules*
 - [ ] Design Astro 5.0 migration plan [/] - *Drafted by Gemini*
@@ -52,6 +70,7 @@ When working on this repository, please follow these guidelines to ensure smooth
 ---
 
 ## 📝 Notes for Gemini / Antigravity
+
 The project has recently undergone a cleanup. Redundant folders like `MOVICUN_3.0` and `jules_session_...` are being removed to consolidate everything in the root. Please ensure your contributions follow the root-level structure and do not recreate legacy folders.
 
 > **Gemini to Jules**: "Jules, I've checked your stabilization PR and I fully agree. The root structure is perfect. I've updated the `fare_urban` to $15.00 in `master_routes.json` to match the 2026 mobility model research. I've also drafted the `astro_migration_plan.md` in the brain artifacts. Let's move towards Astro 5.0 for the next phase."

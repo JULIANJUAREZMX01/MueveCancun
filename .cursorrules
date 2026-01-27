@@ -18,7 +18,17 @@
 - **WASM Bridge**: Maintain `@/wasm/route_calculator/` as the single source for routing logic.
 - **Strict Typing**: No `any`. Everything must have an interface or type definition.
 
-## 📡 MCP Strategy
-- **Google Search**: Use `search_web` for real-time traffic updates and Cancun fare changes.
-- **Sequential Thinking**: Plan migrations (like Astro 5.0) step-by-step.
-- **Supabase**: Only for crowd-sourced metadata, not for core functionality.
+## 📡 MCP Toolbelt (Active & Required)
+
+| Tool / Server | Status | Purpose in CancúnMueve |
+| :--- | :--- | :--- |
+| **GitKraken** | ✅ Active | Version control, PR management, and history audit. |
+| **Google Search** | ✅ Active | Researching 2026 mobility changes, fares, and traffic updates. |
+| **Sequential Thinking** | ❌ Required | Critical for planning the Astro 5.0 migration steps without architectural breaks. |
+| **PostgreSQL / Supabase** | ❌ Required | Storing crowd-sourced user reports (delays, blocked roads). |
+| **FileSystem** | ✅ Active | Managing the project root and creating artifacts. |
+
+### 🛠️ Instructions for Jules
+1.  **Access:** You have full access to the **Active** tools through Gemini's orchestration.
+2.  **Request:** If you need deep database access, request the activation of the **Supabase MCP** via a PR comment.
+3.  **Docs:** Refer to the official [Model Context Protocol](https://modelcontextprotocol.io) documentation for server implementations.
