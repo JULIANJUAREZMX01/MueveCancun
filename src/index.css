@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --color-caribbean-blue: #00A3E0;
+  --color-sand: #F5F5F1;
+  --color-sun-yellow: #FFD700;
+  --color-jungle-green: #2ECC71;
+  --color-coral: #FF5A5F;
+  --color-deep-navy: #003366;
+
+  --font-outfit: "Outfit", sans-serif;
+}
+
+:root {
+  --background: #F5F5F1;
+  --foreground: #003366;
+  --primary: #00A3E0;
+  --secondary: #FFD700;
+
+  font-family: var(--font-outfit), Inter, system-ui, sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+@layer base {
+  body {
+    @apply m-0 flex flex-col min-h-screen antialiased;
+    background: radial-gradient(circle at top right, #E0F2FE 0%, #F5F5F1 100%);
+  }
+}
+
+@layer components {
+  .sunny-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl transition-all duration-300;
+    box-shadow: 0 8px 32px 0 rgba(0, 51, 102, 0.1);
+  }
+
+  .premium-button {
+    @apply px-6 py-3 rounded-2xl font-bold transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2;
+    background: linear-gradient(135deg, #00A3E0 0%, #0076BE 100%);
+    color: white;
+  }
+
+  .high-contrast-text {
+    @apply font-black tracking-tight text-deep-navy;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  }
+
+  /* Map Markers */
+  .bus-stop-marker {
+    @apply w-10 h-10 flex items-center justify-center rounded-full border-2 border-white shadow-lg cursor-pointer transform transition-transform hover:scale-125;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
+  }
+
+  .user-location-marker {
+    @apply w-6 h-6 bg-caribbean-blue rounded-full border-4 border-white shadow-2xl relative;
+  }
+
+  .user-location-marker::after {
+    content: '';
+    @apply absolute -inset-2 bg-caribbean-blue/20 rounded-full animate-ping;
+  }
+}
+
+/* PWA specific safe areas */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
