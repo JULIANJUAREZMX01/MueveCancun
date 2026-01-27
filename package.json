@@ -13,7 +13,6 @@
     "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('./src/wasm/route_calculator/route_calculator_bg.wasm')) { console.error('❌ WASM binary missing! Run wasm-pack build first.'); process.exit(1); } else { console.log('✅ WASM binary found.'); }\""
   },
   "dependencies": {
-    "@playwright/test": "^1.58.0",
     "@tailwindcss/vite": "^4.1.18",
     "idb": "^8.0.3",
     "lucide-react": "^0.563.0",

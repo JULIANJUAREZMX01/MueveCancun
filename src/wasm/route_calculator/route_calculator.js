@@ -3,15 +3,14 @@
 /**
  * @param {string} from
  * @param {string} to
- * @param {any} routes_val
  * @returns {any}
  */
-export function calculate_route(from, to, routes_val) {
+export function calculate_route(from, to) {
     const ptr0 = passStringToWasm0(from, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
     const ptr1 = passStringToWasm0(to, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.calculate_route(ptr0, len0, ptr1, len1, routes_val);
+    const ret = wasm.calculate_route(ptr0, len0, ptr1, len1);
     return ret;
 }
 
@@ -27,14 +26,13 @@ export function find_nearest_stop(user_lat, user_lng, stops_val) {
 }
 
 /**
- * @param {string} query
- * @param {any} routes_val
+ * @param {string} _query
  * @returns {any}
  */
-export function search_destinations(query, routes_val) {
-    const ptr0 = passStringToWasm0(query, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+export function search_destinations(_query) {
+    const ptr0 = passStringToWasm0(_query, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.search_destinations(ptr0, len0, routes_val);
+    const ret = wasm.search_destinations(ptr0, len0);
     return ret;
 }
 

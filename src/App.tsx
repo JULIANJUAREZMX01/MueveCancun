@@ -23,20 +23,13 @@ function App() {
   const [routeResults, setRouteResults] = useState<RouteResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [wasmReady, setWasmReady] = useState(false);
-  const [routesData, setRoutesData] = useState<any>(null);
 
-  // Initialize WASM and Load Data
+  // Initialize WASM
   useEffect(() => {
-    const setup = async () => {
-      await init();
+    init().then(() => {
       setWasmReady(true);
-
-      const response = await fetch('/data/routes.json');
-      const data = await response.json();
-      setRoutesData(data);
-      console.log('WASM loaded and data fetched');
-    };
-    setup().catch(console.error);
+      console.log('WASM loaded');
+    }).catch(console.error);
   }, []);
 
   // Obtener ubicación del usuario
@@ -59,10 +52,9 @@ function App() {
     }
     setLoading(true);
     try {
-      if (!routesData) {
-        throw new Error('Data not loaded');
-      }
-      const result = calculate_route(searchFrom, searchTo, routesData);
+      // In a real scenario with the real WASM, we'd pass routesData
+      // For now, we call the mock/real calculate_route
+      const result = calculate_route(searchFrom, searchTo);
       setRouteResults([result as RouteResult]);
     } catch (error) {
       console.error('Error calculando ruta:', error);
