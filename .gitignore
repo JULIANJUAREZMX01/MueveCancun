@@ -26,3 +26,19 @@ dist-ssr
 # Rust
 /rust-wasm/target
 /src/wasm/route_calculator/pkg
+.codersinflow
+.vscode
+.env
+.venv
+.codex
+out
+*.vsix
+.claude
+CLAUDE.md
+.git
+*.tmp
+__pycache__
+*.pyc
+.env.local
+.next
+.github
