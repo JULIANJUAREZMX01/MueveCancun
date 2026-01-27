@@ -4,6 +4,8 @@ import RouteSearch from './components/RouteSearch';
 import RouteResults from './components/RouteResults';
 import init, { calculate_route } from './wasm/route_calculator';
 import { Bus } from 'lucide-react';
+import { getRoutes, saveRoutes } from './utils/db';
+import { getCurrentPosition } from './utils/geolocation';
 
 interface RouteResult {
   route_id: string;
@@ -25,30 +27,39 @@ function App() {
   const [wasmReady, setWasmReady] = useState(false);
   const [routesData, setRoutesData] = useState<any>(null);
 
-  // Initialize WASM
+  // Initialize WASM and Data
   useEffect(() => {
     init().then(() => {
       setWasmReady(true);
       console.log('WASM loaded');
     }).catch(console.error);
 
-    // Fetch routes data for WASM processing
-    fetch('/data/routes.json')
-      .then(res => res.json())
-      .then(data => setRoutesData(data))
-      .catch(console.error);
+    const loadData = async () => {
+      try {
+        // Try to get from IndexedDB first
+        const cached = await getRoutes();
+        if (cached) {
+          setRoutesData(cached);
+        }
+
+        // Fetch fresh data and update cache
+        const res = await fetch('/data/routes.json');
+        const data = await res.json();
+        setRoutesData(data);
+        await saveRoutes(data);
+      } catch (error) {
+        console.error('Error loading routes data:', error);
+      }
+    };
+
+    loadData();
   }, []);
 
   // Obtener ubicación del usuario
   useEffect(() => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation([position.coords.longitude, position.coords.latitude]);
-        },
-        (error) => console.error('Error obteniendo ubicación:', error)
-      );
-    }
+    getCurrentPosition()
+      .then(setUserLocation)
+      .catch(err => console.error('Error obteniendo ubicación:', err));
   }, []);
 
   // Calcular ruta con WASM
