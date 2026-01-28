@@ -5,24 +5,31 @@ const DB_VERSION = 2;
 
 export const initDB = async () => {
   const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion) {
-      if (oldVersion < 1) {
+    upgrade(db) {
+      if (!db.objectStoreNames.contains('routes')) {
         db.createObjectStore('routes');
+      }
+      if (!db.objectStoreNames.contains('user-reports')) {
         db.createObjectStore('user-reports');
       }
-      if (oldVersion < 2) {
-        db.createObjectStore('wallet-status');
+      if (!db.objectStoreNames.contains('wallet-status')) {
+        db.createObjectStore('wallet-status', { keyPath: 'id' });
       }
     },
   });
 
-  // Initialize test balance if empty
+  // Initialize with default/test data if empty
   const tx = db.transaction('wallet-status', 'readwrite');
   const store = tx.objectStore('wallet-status');
-  const balance = await store.get('current_balance');
-
-  if (balance === undefined) {
-    await store.put({ id: 'current_balance', amount: 10.00, currency: 'USD' });
+  const existing = await store.get('driver_current');
+  
+  if (!existing) {
+    await store.put({ 
+      id: 'driver_current', 
+      balance_mxn: 180.0, // $10 USD
+      balance_usd: 10.0, 
+      status: 'active' 
+    });
   }
 
   await tx.done;
@@ -31,14 +38,16 @@ export const initDB = async () => {
 
 export const getWalletBalance = async () => {
   const db = await initDB();
-  return db.get('wallet-status', 'current_balance');
+  return db.get('wallet-status', 'driver_current');
 };
 
-export const updateWalletBalance = async (amount: number) => {
+export const updateWalletBalance = async (amountMx: number) => {
   const db = await initDB();
-  const balance = await db.get('wallet-status', 'current_balance');
-  if (balance) {
-    balance.amount += amount;
-    await db.put('wallet-status', balance);
+  const wallet = await db.get('wallet-status', 'driver_current');
+  if (wallet) {
+    wallet.balance_mxn += amountMx;
+    // Also update USD for reference (mock rate 18)
+    wallet.balance_usd = wallet.balance_mxn / 18.0;
+    await db.put('wallet-status', wallet);
   }
 };
