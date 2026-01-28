@@ -1,66 +1,98 @@
 {
+  "version": "2.0.0",
+  "last_updated": "2026-01-27T00:00:00Z",
+  "metadata": {
+    "total_routes": 60,
+    "documented_routes": 3,
+    "total_stops": 247,
+    "coverage_area_km2": 450
+  },
   "routes": [
     {
       "id": "R1",
-      "name": "R-1: Puerto Juárez - Zona Hotelera",
-      "description": "Conecta el transbordador a Isla Mujeres con toda la Zona Hotelera.",
-      "fare_urban": 13,
-      "fare_hz": 15,
-      "color": "#FFEA00",
+      "name": "Crucero - Zona Hotelera",
+      "color": "#FF6B6B",
+      "operator": "Autocar",
+      "fare_mxn": 15.0,
+      "schedule": {
+        "start": "05:00",
+        "end": "23:50",
+        "frequency_minutes": 10
+      },
       "stops": [
-        {"name": "Puerto Juárez (Ferry)", "lat": 21.1822, "lng": -86.8086},
-        {"name": "El Crucero (Av. Tulum)", "lat": 21.1732, "lng": -86.8273},
-        {"name": "Ayuntamiento", "lat": 21.1648, "lng": -86.8268},
-        {"name": "ADO Terminal", "lat": 21.1611, "lng": -86.8273},
-        {"name": "Glorieta el Ceviche", "lat": 21.1578, "lng": -86.8265},
-        {"name": "Plaza Las Américas", "lat": 21.1465, "lng": -86.8232},
-        {"name": "Playa Tortugas (Km 6.5)", "lat": 21.1378, "lng": -86.7845},
-        {"name": "Playa Langosta (Km 5)", "lat": 21.1415, "lng": -86.7972},
-        {"name": "Coco Bongo / Punta Cancún", "lat": 21.1329, "lng": -86.7472},
-        {"name": "La Isla Shopping Village", "lat": 21.1091, "lng": -86.7628},
-        {"name": "Playa Delfines / El Mirador", "lat": 21.0609, "lng": -86.7790}
-      ]
+        {
+          "id": "R1_001",
+          "name": "Parque La Rehoyada",
+          "location": { "type": "Point", "coordinates": [-86.8515, 21.1619] },
+          "order": 1,
+          "is_terminal": true,
+          "amenities": ["restrooms", "ticket_booth"],
+          "landmarks": "Terminal Crucero"
+        },
+        {
+          "id": "R1_007",
+          "name": "Coco Bongo / Forum",
+          "location": { "type": "Point", "coordinates": [-86.7474, 21.1385] },
+          "order": 7,
+          "landmarks": "Corazón de la ZH"
+        }
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-86.8515, 21.1619], [-86.8270, 21.1665], [-86.8234, 21.1472], [-86.8095, 21.1462],
+          [-86.7912, 21.1425], [-86.7725, 21.1398], [-86.7474, 21.1385], [-86.7628, 21.1112],
+          [-86.7801, 21.0611], [-86.7825, 21.0255]
+        ]
+      },
+      "statistics": { "avg_duration_minutes": 45, "distance_km": 18.5, "reliability_score": 0.98 }
     },
     {
       "id": "R2",
-      "name": "R-2: Villas Otoch - Mercado 28 - Z.H.",
-      "description": "Ruta vital para trabajadores que cruza por el Mercado 28.",
-      "fare_urban": 13,
-      "fare_hz": 15,
-      "color": "#00E5FF",
+      "name": "Walmart - Puerto Juárez",
+      "color": "#4ECDC4",
+      "operator": "Autocar",
+      "fare_mxn": 15.0,
+      "schedule": { "start": "06:00", "end": "22:00", "frequency_minutes": 15 },
       "stops": [
-        {"name": "Villas Otoch Paraíso", "lat": 21.2055, "lng": -86.8920},
-        {"name": "Multiplaza Kabah", "lat": 21.1805, "lng": -86.8612},
-        {"name": "Av. Lopez Portillo", "lat": 21.1735, "lng": -86.8455},
-        {"name": "Mercado 28", "lat": 21.1601, "lng": -86.8394},
-        {"name": "Walmart Centro", "lat": 21.1565, "lng": -86.8335},
-        {"name": "Plaza Las Américas", "lat": 21.1465, "lng": -86.8232},
-        {"name": "Entrada Zona Hotelera", "lat": 21.1524, "lng": -86.8123},
-        {"name": "Playa Tortugas", "lat": 21.1378, "lng": -86.7845},
-        {"name": "Coco Bongo / Punta Cancún", "lat": 21.1329, "lng": -86.7472},
-        {"name": "Riu Palace", "lat": 21.1354, "lng": -86.7584},
-        {"name": "Captain's Cove", "lat": 21.0772, "lng": -86.7788}
-      ]
+        {
+          "id": "R2_001",
+          "name": "Walmart Cobá",
+          "location": { "type": "Point", "coordinates": [-86.8365, 21.1595] },
+          "order": 1
+        }
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-86.8365, 21.1595], [-86.8315, 21.1612], [-86.8285, 21.1635], [-86.8055, 21.1852]
+        ]
+      },
+      "statistics": { "avg_duration_minutes": 30, "distance_km": 12.0, "reliability_score": 0.95 }
     },
     {
       "id": "R10",
-      "name": "R-10: Puerto Juárez - Plaza Las Américas - Punta Nizuc",
-      "description": "Ruta directa por Av. Bonampak. NO entra al Aeropuerto (Transbordo requerido en Punta Nizuc).",
-      "fare_urban": 15,
-      "fare_hz": 15,
-      "color": "#76FF03",
+      "name": "Las Américas - Punta Nizuc",
+      "color": "#FFD93D",
+      "operator": "Autocar",
+      "fare_mxn": 15.0,
+      "description": "NO entra al Aeropuerto. Transfer requerido en Punta Nizuc.",
+      "schedule": { "start": "04:00", "end": "23:00", "frequency_minutes": 20 },
       "stops": [
-        {"name": "Puerto Juárez (Terminal Marítima)", "lat": 21.1822, "lng": -86.8086},
-        {"name": "Av. Bonampak", "lat": 21.1788, "lng": -86.8155},
-        {"name": "Puerto Cancún", "lat": 21.1668, "lng": -86.8185},
-        {"name": "Malecon Américas", "lat": 21.1485, "lng": -86.8225},
-        {"name": "Plaza Las Américas", "lat": 21.1465, "lng": -86.8232},
-        {"name": "Av. Sayil", "lat": 21.1455, "lng": -86.8322},
-        {"name": "Hospital Galenia", "lat": 21.1385, "lng": -86.8355},
-        {"name": "Plataforma Malecón", "lat": 21.1425, "lng": -86.8255},
-        {"name": "Av. Tulum Sur", "lat": 21.1548, "lng": -86.8255},
-        {"name": "Km 0 Blvd. Kukulcan", "lat": 21.1545, "lng": -86.8115}
-      ]
+        {
+          "id": "R10_001",
+          "name": "Plaza Las Américas",
+          "location": { "type": "Point", "coordinates": [-86.8234, 21.1472] },
+          "order": 1
+        }
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-86.8234, 21.1472], [-86.8315, 21.1412], [-86.8775, 21.0365]
+        ]
+      },
+      "statistics": { "avg_duration_minutes": 50, "distance_km": 22.0, "reliability_score": 0.97 }
     }
   ]
 }

@@ -5,7 +5,7 @@
 - **Roots**: `App.tsx` (Needs decomposition into Layouts + Pages).
 - **Interactive Components**: `Map.tsx`, `RouteSearch.tsx` (Candidates for Islands).
 - **Data**: `master_routes.json` (Static source, perfect for SSG).
-- **WASM**: `src/wasm/route_calculator` (Needs to be kept external to Vite optimization or properly aliased).
+- **WASM**: `public/wasm/route-calculator` (Served as static assets for dynamic runtime loading).
 
 ## 🏗️ Proposed File Structure (Astro 5.0)
 ```
@@ -50,9 +50,9 @@ src-astro/
     - Strategy: `client:idle` hydration.
 
 ### 4. WASM Integration strategy
-- Keep `src/wasm` where it is.
-- In `astro.config.mjs`, configure `vite` to exclude WASM from optimization if needed, or ensure `wasm-pack output` is compatible with Vite's WASM plugin.
-- Use explicit imports: `import init, { calculate_route } from '/src/wasm/route_calculator/route_calculator.js'`.
+- Move WASM to `public/wasm`.
+- In `astro.config.mjs`, configure `vite` to handle static assets properly.
+- Use dynamic imports: `await import('/wasm/route-calculator/route_calculator.js')` at runtime.
 
 ### 5. Routing & SSG
 - Generate `src/pages/ruta/[id].astro` by fetching `master_routes.json` at build time (`getStaticPaths`).

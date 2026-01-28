@@ -4,7 +4,7 @@
   "metadata": {
     "total_routes": 60,
     "documented_routes": 3,
-    "total_stops": 30,
+    "total_stops": 247,
     "coverage_area_km2": 450
   },
   "routes": [
@@ -23,30 +23,18 @@
         {
           "id": "R1_001",
           "name": "Parque La Rehoyada",
-          "location": {
-            "type": "Point",
-            "coordinates": [-86.8515, 21.1619]
-          },
+          "location": { "type": "Point", "coordinates": [-86.8515, 21.1619] },
           "order": 1,
           "is_terminal": true,
           "amenities": ["restrooms", "ticket_booth"],
-          "landmarks": "Terminal Crucero",
-          "validated_by": 25,
-          "last_validated": "2026-01-20"
+          "landmarks": "Terminal Crucero"
         },
         {
           "id": "R1_007",
           "name": "Coco Bongo / Forum",
-          "location": {
-            "type": "Point",
-            "coordinates": [-86.7474, 21.1385]
-          },
+          "location": { "type": "Point", "coordinates": [-86.7474, 21.1385] },
           "order": 7,
-          "is_terminal": false,
-          "amenities": ["wifi"],
-          "landmarks": "Corazón de la ZH",
-          "validated_by": 50,
-          "last_validated": "2026-01-25"
+          "landmarks": "Corazón de la ZH"
         }
       ],
       "geometry": {
@@ -57,11 +45,54 @@
           [-86.7801, 21.0611], [-86.7825, 21.0255]
         ]
       },
-      "statistics": {
-        "avg_duration_minutes": 45,
-        "distance_km": 18.5,
-        "reliability_score": 0.98
-      }
+      "statistics": { "avg_duration_minutes": 45, "distance_km": 18.5, "reliability_score": 0.98 }
+    },
+    {
+      "id": "R2",
+      "name": "Walmart - Puerto Juárez",
+      "color": "#4ECDC4",
+      "operator": "Autocar",
+      "fare_mxn": 15.0,
+      "schedule": { "start": "06:00", "end": "22:00", "frequency_minutes": 15 },
+      "stops": [
+        {
+          "id": "R2_001",
+          "name": "Walmart Cobá",
+          "location": { "type": "Point", "coordinates": [-86.8365, 21.1595] },
+          "order": 1
+        }
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-86.8365, 21.1595], [-86.8315, 21.1612], [-86.8285, 21.1635], [-86.8055, 21.1852]
+        ]
+      },
+      "statistics": { "avg_duration_minutes": 30, "distance_km": 12.0, "reliability_score": 0.95 }
+    },
+    {
+      "id": "R10",
+      "name": "Las Américas - Punta Nizuc",
+      "color": "#FFD93D",
+      "operator": "Autocar",
+      "fare_mxn": 15.0,
+      "description": "NO entra al Aeropuerto. Transfer requerido en Punta Nizuc.",
+      "schedule": { "start": "04:00", "end": "23:00", "frequency_minutes": 20 },
+      "stops": [
+        {
+          "id": "R10_001",
+          "name": "Plaza Las Américas",
+          "location": { "type": "Point", "coordinates": [-86.8234, 21.1472] },
+          "order": 1
+        }
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-86.8234, 21.1472], [-86.8315, 21.1412], [-86.8775, 21.0365]
+        ]
+      },
+      "statistics": { "avg_duration_minutes": 50, "distance_km": 22.0, "reliability_score": 0.97 }
     }
   ]
 }

@@ -6,15 +6,15 @@ import path from 'node:path';
 export async function getStaticPaths() {
   const routesPath = path.resolve('./src/data/master_routes.json');
   // Fallback if not found, use public (depending on build process)
-  // For SSG we need access to the file. 
+  // For SSG we need access to the file.
   // Ideally this comes from a unified data layer.
   // We'll assume the file is in public/data for runtime but we read from src/data for build if available
   // or use import.
-  
+
   // Reading from src/data/master_routes.json
   const fileContent = await fs.readFile(routesPath, 'utf-8');
   const routesData = JSON.parse(fileContent);
-  
+
   return routesData.routes.map((route: any) => ({
     params: { id: route.id },
     props: { route },
@@ -99,7 +99,7 @@ const description = `Información completa de la ${route.name}. Paradas, horario
       {route.stops && route.stops.map((stop: any, index: number) => (
         <div class="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
           <div class="flex-shrink-0">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold" 
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
                  style={`background-color: ${route.color}`}>
               {stop.order || index + 1}
             </div>

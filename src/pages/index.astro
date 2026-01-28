@@ -20,7 +20,7 @@ const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 
   <!-- Route Calculator Island -->
   <section class="max-w-2xl mx-auto mb-12">
-    <RouteCalculator client:idle />
+    <RouteCalculator client:only="react" />
   </section>
 
   <!-- Popular Routes (Static SEO Content) -->
@@ -29,11 +29,11 @@ const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
       Rutas Más Populares
     </h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+      <div class="sunny-card p-6 hover:scale-105 transition-transform">
         <div class="flex items-center mb-4">
           <span class="text-3xl mr-3">🚌</span>
           <div>
-            <h3 class="font-bold text-lg">Ruta R1</h3>
+            <h3 class="font-black text-lg text-deep-navy">Ruta R1</h3>
             <p class="text-sm text-gray-500">Crucero - Zona Hotelera</p>
           </div>
         </div>
@@ -42,16 +42,16 @@ const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
           Ideal para turistas y trabajadores.
         </p>
         <div class="flex items-center justify-between text-sm">
-          <span class="text-primary-500 font-medium">$15.00 MXN</span>
-          <a href="/ruta/R1" class="text-sky-500 hover:underline">Ver detalles →</a>
+          <span class="text-primary-500 font-bold">$15.00 MXN</span>
+          <a href="/ruta/R1" class="premium-button !py-1 !px-3 !text-xs">Ver detalles →</a>
         </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+      <div class="sunny-card p-6 hover:scale-105 transition-transform">
         <div class="flex items-center mb-4">
           <span class="text-3xl mr-3">🚌</span>
           <div>
-            <h3 class="font-bold text-lg">Ruta R2</h3>
+            <h3 class="font-black text-lg text-deep-navy">Ruta R2</h3>
             <p class="text-sm text-gray-500">Puerto Juárez - Centro</p>
           </div>
         </div>
@@ -59,16 +59,16 @@ const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
           Conexión directa con la terminal de ferrys a Isla Mujeres.
         </p>
         <div class="flex items-center justify-between text-sm">
-          <span class="text-primary-500 font-medium">$15.00 MXN</span>
-          <a href="/ruta/R2" class="text-sky-500 hover:underline">Ver detalles →</a>
+          <span class="text-primary-500 font-bold">$15.00 MXN</span>
+          <a href="/ruta/R2" class="premium-button !py-1 !px-3 !text-xs">Ver detalles →</a>
         </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+      <div class="sunny-card p-6 hover:scale-105 transition-transform">
         <div class="flex items-center mb-4">
           <span class="text-3xl mr-3">🚌</span>
           <div>
-            <h3 class="font-bold text-lg">Ruta R10</h3>
+            <h3 class="font-black text-lg text-deep-navy">Ruta R10</h3>
             <p class="text-sm text-gray-500">Las Américas - Aeropuerto</p>
           </div>
         </div>
@@ -76,8 +76,8 @@ const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
           La forma más económica de llegar al aeropuerto.
         </p>
         <div class="flex items-center justify-between text-sm">
-          <span class="text-primary-500 font-medium">$15.00 MXN</span>
-          <a href="/ruta/R10" class="text-sky-500 hover:underline">Ver detalles →</a>
+          <span class="text-primary-500 font-bold">$15.00 MXN</span>
+          <a href="/ruta/R10" class="premium-button !py-1 !px-3 !text-xs">Ver detalles →</a>
         </div>
       </div>
     </div>
@@ -88,7 +88,7 @@ const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
     <h2 class="text-3xl font-display font-bold text-gray-900 mb-6">
       Mapa Interactivo
     </h2>
-    <InteractiveMap client:visible mapboxToken={MAPBOX_TOKEN} />
+    <InteractiveMap client:only="react" mapboxToken={MAPBOX_TOKEN} />
   </section>
 
   <!-- Stats Section (Static) -->

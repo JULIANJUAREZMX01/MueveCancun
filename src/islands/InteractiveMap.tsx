@@ -31,7 +31,7 @@ export default function InteractiveMap({
 
     // Add navigation controls
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    
+
     // Add geolocate control
     map.current.addControl(
       new mapboxgl.GeolocateControl({
@@ -47,7 +47,7 @@ export default function InteractiveMap({
       try {
         const response = await fetch('/data/master_routes.json');
         const data = await response.json();
-        
+
         // Add routes to map
         data.routes.forEach((route: any) => {
           // Add route line
@@ -102,9 +102,9 @@ export default function InteractiveMap({
   }, [mapboxToken, center, zoom]);
 
   return (
-    <div className="relative w-full h-96 rounded-lg shadow-lg overflow-hidden">
+    <div className="relative w-full h-96 sunny-card overflow-hidden">
       <div ref={mapContainer} className="w-full h-full" />
-      
+
       {!mapLoaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
           <div className="text-center">

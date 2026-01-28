@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "npm run check-wasm && tsc -b && vite build",
+    "dev": "astro dev",
+    "build": "npm run check-wasm && astro build",
+    "astro": "astro",
     "lint": "eslint .",
     "test": "vitest",
     "build:wasm": "npm run build:wasm:route && npm run build:wasm:spatial",
@@ -15,6 +16,9 @@
     "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('./public/wasm/route-calculator/route_calculator_bg.wasm')) { console.error('❌ WASM binary missing! Run build:wasm first.'); process.exit(1); } else { console.log('✅ WASM binaries found.'); }\""
   },
   "dependencies": {
+    "astro": "^5.16.15",
+    "@astrojs/react": "^4.2.1",
+    "@astrojs/sitemap": "^3.2.1",
     "@tailwindcss/vite": "^4.1.18",
     "idb": "^8.0.3",
     "lucide-react": "^0.563.0",

@@ -1,22 +1,20 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
-import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   site: 'https://cancunmueve.com',
-  
+
   output: 'static', // SSG para máximo performance
-  
+
   integrations: [
     react(), // Para islands
-    tailwind({
-      applyBaseStyles: false, // Usamos Tailwind v4 custom
-    }),
     sitemap(),
   ],
-  
+
   vite: {
+    plugins: [tailwindcss()],
     build: {
       rollupOptions: {
         external: [
@@ -29,17 +27,13 @@ export default defineConfig({
       exclude: ['@mapbox/mapbox-gl-geocoder']
     }
   },
-  
+
   server: {
     port: 3000,
     host: true
   },
-  
+
   build: {
     inlineStylesheets: 'auto',
-  },
-  
-  experimental: {
-    contentCollectionCache: true,
   }
 });

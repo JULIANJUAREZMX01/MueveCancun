@@ -4,8 +4,8 @@ interface RouteCalculatorProps {
   wasmPath?: string;
 }
 
-export default function RouteCalculator({ 
-  wasmPath = '/src/wasm/route_calculator/route_calculator.js' 
+export default function RouteCalculator({
+  wasmPath = '/wasm/route-calculator/route_calculator.js'
 }: RouteCalculatorProps) {
   const [wasmModule, setWasmModule] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -18,8 +18,8 @@ export default function RouteCalculator({
   useEffect(() => {
     async function loadWasm() {
       try {
-        // @ts-ignore - Dynamic import of WASM
-        const wasm = await import(/* @vite-ignore */ wasmPath);
+        // @ts-ignore - Relative import of WASM
+        const wasm = await import('../wasm/route-calculator/route_calculator.js');
         await wasm.default(); // Initialize WASM
         setWasmModule(wasm);
         setLoading(false);
@@ -30,11 +30,11 @@ export default function RouteCalculator({
       }
     }
     loadWasm();
-  }, [wasmPath]);
+  }, []);
 
   const handleSearch = async () => {
     if (!wasmModule || !from || !to) return;
-    
+
     setCalculating(true);
     try {
       // Fetch master data for WASM
@@ -54,25 +54,26 @@ export default function RouteCalculator({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex items-center justify-center p-8" role="status" aria-label="Cargando motor de rutas">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 animate-fade-in">
-      <h2 className="text-2xl font-display font-bold text-gray-900 mb-6">
+    <div className="sunny-card p-6 animate-fade-in">
+      <h2 className="text-2xl font-display font-bold text-deep-navy mb-6 high-contrast-text">
         🔍 Encuentra tu Ruta
       </h2>
-      
+
       <div className="space-y-4">
         {/* From input */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="from-input" className="block text-sm font-medium text-gray-700 mb-2">
             📍 Desde
           </label>
           <input
+            id="from-input"
             type="text"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
@@ -83,10 +84,11 @@ export default function RouteCalculator({
 
         {/* To input */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="to-input" className="block text-sm font-medium text-gray-700 mb-2">
             📍 Hasta
           </label>
           <input
+            id="to-input"
             type="text"
             value={to}
             onChange={(e) => setTo(e.target.value)}
@@ -99,7 +101,7 @@ export default function RouteCalculator({
         <button
           onClick={handleSearch}
           disabled={calculating || !from || !to}
-          className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95"
+          className="w-full premium-button disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105"
         >
           {calculating ? (
             <span className="flex items-center justify-center">
@@ -110,7 +112,10 @@ export default function RouteCalculator({
               Calculando...
             </span>
           ) : (
-            '🚌 Buscar Ruta'
+            <>
+              <span>🚌</span>
+              <span>Buscar Ruta</span>
+            </>
           )}
         </button>
       </div>
