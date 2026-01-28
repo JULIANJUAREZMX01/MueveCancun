@@ -33,14 +33,79 @@ struct GraphNode {
     lng: f64,
 }
 
+// Cost Constants per km (MXN)
+const PRICE_3_SEATS: f64 = 20.0;
+const PRICE_2_SEATS: f64 = 25.0;
+const PRICE_1_SEAT: f64 = 29.0;
+const USD_RATE: f64 = 18.0;
+
+#[wasm_bindgen]
+pub fn calculate_trip_cost(distance_km: f64, seats: u8, is_tourist: bool, wallet_val: JsValue) -> JsValue {
+    // 1. Gatekeeper Check ($5.00 USD threshold approx 90 MXN, but user said $5.00 USD in prompt, previous code used 5.0 MXN. 
+    // The prompt now says "$5.00 USD". I will update this to reflect 5 USD * 18 = 90 MXN or just use the logic given)
+    // User text: "si el balance es menor a $5.00 USD, la función debe retornar un error de 'Blocked'."
+    
+    let wallet_balance_mxn = if !wallet_val.is_null() && !wallet_val.is_undefined() {
+        let wallet: shared_types::DriverWallet = match serde_wasm_bindgen::from_value(wallet_val) {
+            Ok(w) => w,
+            Err(_) => return serde_wasm_bindgen::to_value(&error_response("invalid_wallet")).unwrap(),
+        };
+        wallet.balance_mxn
+    } else {
+        0.0 // Treat missing wallet as 0 balance
+    };
+
+    let min_balance_mxn = 5.0 * USD_RATE; // $5 USD
+    if wallet_balance_mxn < min_balance_mxn {
+         return serde_wasm_bindgen::to_value(&error_response("blocked_insufficient_funds")).unwrap();
+    }
+
+    // 2. Calculate Base Cost
+    let price_per_km = match seats {
+        3 => PRICE_3_SEATS,
+        2 => PRICE_2_SEATS,
+        _ => PRICE_1_SEAT, // Default to most expensive/private
+    };
+
+    let mut total_cost = distance_km * price_per_km;
+
+    // 3. Currency Conversion
+    if is_tourist {
+        total_cost = total_cost / USD_RATE;
+    }
+
+    // Return simple JSON object
+    let result = serde_json::json!({
+        "success": true,
+        "cost": total_cost,
+        "currency": if is_tourist { "USD" } else { "MXN" },
+        "rate_applied": price_per_km
+    });
+
+    serde_wasm_bindgen::to_value(&result).unwrap()
+}
+
 #[wasm_bindgen]
 pub fn calculate_route(
     origin_lat: f64,
     origin_lng: f64,
     dest_lat: f64,
     dest_lng: f64,
-    routes_val: JsValue
+    routes_val: JsValue,
+    wallet_val: JsValue
 ) -> JsValue {
+    // 1. Check Wallet Status (Gatekeeper Logic)
+    if !wallet_val.is_null() && !wallet_val.is_undefined() {
+        let wallet: shared_types::DriverWallet = match serde_wasm_bindgen::from_value(wallet_val) {
+            Ok(w) => w,
+            Err(_) => return serde_wasm_bindgen::to_value(&error_response("invalid_wallet")).unwrap(),
+        };
+
+        if wallet.balance_mxn < (5.0 * USD_RATE) { 
+             return serde_wasm_bindgen::to_value(&error_response("insufficient_funds")).unwrap();
+        }
+    }
+
     let data: RootData = match serde_wasm_bindgen::from_value(routes_val) {
         Ok(d) => d,
         Err(_e) => {
@@ -223,29 +288,6 @@ pub fn find_route_internal(
     res
 }
 
-#[wasm_bindgen]
-pub fn calculate_trip_cost(distance: f64, seats: u32, is_tourist: bool) -> JsValue {
-    let base_price = if is_tourist {
-        29.0
-    } else if distance > 15.0 {
-        25.0
-    } else {
-        20.0
-    };
-
-    let total_mxn = base_price * (seats as f64);
-
-    // Simple mock Gatekeeper check:
-    // In a real scenario, this would check against a wallet balance passed in or stored.
-    // For now, we return the cost and a 'gatekeeper_pass' flag.
-    serde_wasm_bindgen::to_value(&serde_json::json!({
-        "cost_mxn": total_mxn,
-        "base_price": base_price,
-        "currency": "MXN",
-        "gatekeeper_pass": true, // Antigravity will handle the $5 USD check in the UI/DB
-        "seats": seats
-    })).unwrap()
-}
 
 fn error_response(error_key: &str) -> RouteResponse {
     let error_msg = match error_key {
