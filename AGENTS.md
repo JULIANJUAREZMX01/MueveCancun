@@ -16,13 +16,13 @@
 ---
 
 ## ⚙️ Environment Setup (Master Protocol)
-> Jules: Your environment must be initialized with this idempotent sequence. Use **pnpm** exclusively.
+> Jules: Your environment must be synchronized with both **pnpm** and the **Astro CLI**.
 1. **Rust Toolchain**: Install `wasm-pack` via curl if not present in `$HOME/.cargo/bin`.
-2. **Pathing**: Ensure Cargo binaries are in your current session `export PATH="$HOME/.cargo/bin:$PATH"`.
-3. **Dependencies**: Use `pnpm install --frozen-lockfile` (or `pnpm i`). **Never use npm.**
+2. **Dependencies**: Use `pnpm install --frozen-lockfile`. **npm is strictly forbidden.**
+3. **Astro CLI Sync**: Execute `pnpm astro sync` to generate types and link content collections.
 4. **WASM Build**: Execute `wasm-pack build --target web --out-dir ../public/wasm/route-calculator --release` inside `rust-wasm/`.
-5. **Astro Dev**: Run `pnpm dev` to verify the project.
-6. **Clean State**: Always verify that `public/wasm/route-calculator/route_calculator_bg.wasm` exists before completing a task.
+5. **Validation**: Use `pnpm astro info` to confirm the environment and `pnpm dev` for local testing.
+6. **Clean State**: Always verify that `public/wasm/route-calculator/route_calculator_bg.wasm` exists.
 
 ---
 
