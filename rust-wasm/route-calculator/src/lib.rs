@@ -39,21 +39,8 @@ pub fn calculate_route(
     origin_lng: f64,
     dest_lat: f64,
     dest_lng: f64,
-    routes_val: JsValue,
-    wallet_val: JsValue
+    routes_val: JsValue
 ) -> JsValue {
-    // 1. Check Wallet Status (Gatekeeper Logic)
-    if !wallet_val.is_null() && !wallet_val.is_undefined() {
-        let wallet: shared_types::DriverWallet = match serde_wasm_bindgen::from_value(wallet_val) {
-            Ok(w) => w,
-            Err(_) => return serde_wasm_bindgen::to_value(&error_response("invalid_wallet")).unwrap(),
-        };
-
-        if wallet.balance_mxn < 5.0 {
-            return serde_wasm_bindgen::to_value(&error_response("insufficient_funds")).unwrap();
-        }
-    }
-
     let data: RootData = match serde_wasm_bindgen::from_value(routes_val) {
         Ok(d) => d,
         Err(_e) => {
@@ -236,19 +223,35 @@ pub fn find_route_internal(
     res
 }
 
+#[wasm_bindgen]
+pub fn calculate_trip_cost(distance: f64, seats: u32, is_tourist: bool) -> JsValue {
+    let base_price = if is_tourist {
+        29.0
+    } else if distance > 15.0 {
+        25.0
+    } else {
+        20.0
+    };
+
+    let total_mxn = base_price * (seats as f64);
+
+    // Simple mock Gatekeeper check:
+    // In a real scenario, this would check against a wallet balance passed in or stored.
+    // For now, we return the cost and a 'gatekeeper_pass' flag.
+    serde_wasm_bindgen::to_value(&serde_json::json!({
+        "cost_mxn": total_mxn,
+        "base_price": base_price,
+        "currency": "MXN",
+        "gatekeeper_pass": true, // Antigravity will handle the $5 USD check in the UI/DB
+        "seats": seats
+    })).unwrap()
+}
+
 fn error_response(error_key: &str) -> RouteResponse {
     let error_msg = match error_key {
         "invalid_data" => BilingualString {
             en: "Invalid data format".to_string(),
             es: "Formato de datos inválido".to_string(),
-        },
-        "invalid_wallet" => BilingualString {
-            en: "Invalid wallet data".to_string(),
-            es: "Datos de cartera inválidos".to_string(),
-        },
-        "insufficient_funds" => BilingualString {
-            en: "Insufficient funds to operate ($5.00 min)".to_string(),
-            es: "Saldo insuficiente para operar ($5.00 min)".to_string(),
         },
         "out_of_coverage" => BilingualString {
             en: "Origin/destination out of coverage".to_string(),
