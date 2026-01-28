@@ -15,12 +15,13 @@
 
 ---
 
-## ⚙️ Environment Setup (Hints for Jules)
-> Jules: Use the following steps to prepare your environment.
-1. **Rust Toolchain**: Ensure `rustc` and `wasm-pack` are installed.
-2. **Build WASM**: Run `wasm-pack build --target web --out-dir ../public/wasm/route-calculator` inside `rust-wasm/`.
-3. **Dependencies**: Run `npm install` in the root.
-4. **Dev Server**: Use `npm run dev` to verify hydration.
+## ⚙️ Environment Setup (Master Protocol)
+> Jules: Your environment must be initialized with this idempotent sequence.
+1. **Rust Toolchain**: Install `wasm-pack` via curl if not present in `$HOME/.cargo/bin`.
+2. **Pathing**: Ensure Cargo binaries are in your current session `export PATH="$HOME/.cargo/bin:$PATH"`.
+3. **Dependencies**: Prefer `npm ci` for predictable node_modules state.
+4. **WASM Build**: Execute `wasm-pack build --target web --out-dir ../public/wasm/route-calculator --release` inside `rust-wasm/`.
+5. **Clean State**: Always verify that `public/wasm/route-calculator/route_calculator_bg.wasm` exists before completing a task.
 
 ---
 
