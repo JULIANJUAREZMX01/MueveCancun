@@ -8,20 +8,11 @@ on:
   pull_request:
     branches: [main]
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build-wasm:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -45,19 +36,14 @@ jobs:
       - name: Check bundle sizes
         run: |
           echo "route-calculator size:"
-          du -h public/wasm/route-calculator/route_calculator_bg.wasm || echo "File missing"
+          du -h public/wasm/route-calculator/route_calculator_bg.wasm
           echo "spatial-index size:"
-          du -h public/wasm/spatial-index/spatial_index_bg.wasm || echo "File missing"
+          du -h public/wasm/spatial-index/spatial_index_bg.wasm
 
       - name: Commit built files
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add public/wasm/
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "chore: auto-build WASM modules [skip ci]"
-            git push origin ${GITHUB_REF_NAME}
-          fi
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: auto-build WASM modules [skip ci]"
+          git push

@@ -15,8 +15,3 @@ geo = "0.28"
 geojson = "0.24"
 petgraph = "0.6"
 shared-types = { path = "../shared-types" }
-
-[profile.release]
-opt-level = "z"
-lto = true
-codegen-units = 1

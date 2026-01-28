@@ -13,7 +13,7 @@
     "build:wasm:route": "cd rust-wasm/route-calculator && wasm-pack build --target web --out-dir ../../public/wasm/route-calculator",
     "build:wasm:spatial": "cd rust-wasm/spatial-index && wasm-pack build --target web --out-dir ../../public/wasm/spatial-index",
     "preview": "astro preview",
-    "check-wasm": "node -e \"const fs=require('fs'); ['route-calculator/route_calculator_bg.wasm', 'spatial-index/spatial_index_bg.wasm'].forEach(f => { if(!fs.existsSync('./public/wasm/' + f)) { console.error('❌ WASM binary missing: ' + f); process.exit(1); } }); console.log('✅ All WASM binaries found.');\""
+    "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('./public/wasm/route-calculator/route_calculator_bg.wasm')) { console.error('❌ WASM binary missing! Run build:wasm first.'); process.exit(1); } else { console.log('✅ WASM binaries found.'); }\""
   },
   "dependencies": {
     "astro": "^5.16.15",

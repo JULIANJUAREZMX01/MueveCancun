@@ -8,7 +8,11 @@ const CRITICAL_ASSETS = [
   '/wasm/route-calculator/route_calculator_bg.wasm',
   '/wasm/spatial-index/spatial_index.js',
   '/wasm/spatial-index/spatial_index_bg.wasm',
-  '/data/master_routes.json'
+  '/data/master_routes.json',
+  '/manifest.json',
+  '/logo.png',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
 const MAPBOX_TILES_PATTERN = /https:\/\/api\.mapbox\.com\/v4\//;
@@ -65,30 +69,22 @@ async function cacheFirst(request) {
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
-    }
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, response.clone());
     return response;
   } catch (error) {
-    const cached = await caches.match(request);
-    return cached || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+    return caches.match(request);
   }
 }
 
 async function staleWhileRevalidate(request) {
   const cached = await caches.match(request);
-  const fetchPromise = fetch(request).then(async (response) => {
-    if (response && response.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      await cache.put(request, response.clone());
-    }
+  const fetchPromise = fetch(request).then(response => {
+    const cache = caches.open(CACHE_NAME);
+    cache.then(c => c.put(request, response.clone()));
     return response;
-  }).catch(async () => {
-    const cachedFallback = await caches.match(request);
-    return cachedFallback || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
   });
-  return (await cached) || fetchPromise;
+  return cached || fetchPromise;
 }
 
 // Background Sync para reportes offline

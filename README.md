@@ -20,19 +20,10 @@ Tu guía definitiva de transporte público en Cancún. Una Progressive Web App (
 - `/src`: Aplicación React y componentes.
 - `/public/data`: Base de datos de rutas (JSON).
 
-## 📋 Prerrequisitos
-- **Node.js**: v18.0.0+ 
-- **wasm-pack**: Para compilar los módulos de Rust.
-- **Mapbox API Key**: Necesaria para el Mapa Interactivo. Obtén una en [mapbox.com](https://www.mapbox.com/).
-
 ## 🛠️ Desarrollo
 1. `npm install`
 2. `npm run build:wasm` (requiere wasm-pack)
-3. **Configuración de Mapbox**:
-   - Crea un archivo `.env` en la raíz.
-   - Añade tu clave: `VITE_MAPBOX_API_KEY=your_mapbox_public_token_here`
-   - (Nota: El proyecto también reconoce `PUBLIC_MAPBOX_TOKEN`).
-4. `npm run dev`
+3. `npm run dev`
 
 ---
 *Desarrollado con ❤️ para los viajeros de Cancún por el equipo de CancúnMueve.*

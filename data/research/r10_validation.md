@@ -7,7 +7,7 @@
 
 **Validated Stops (Key Landmarks):**
 1. **Mall Las Américas:** (Confirmed stop for shopping/transfer).
-   - Coordinates: 21.1465, -86.8232 (Validated).
+   - Coordenadas: 21.1465, -86.8232 (Validated).
 2. **Puerto Juárez:** (Ferry access).
 3. **Zona Hotelera (Partial):** Connects via Bonampak to Kukulcan km 0.
 

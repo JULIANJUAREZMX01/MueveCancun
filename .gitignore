@@ -31,14 +31,6 @@ dist-ssr
 out
 target
 build
-.astro/
-
-# Agent History & Logs
-AGENTS_HISTORY.md
-docs/history/
-pr_comments.md
-.agent_context
-.next
 
 # Project Specific
 .codersinflow
@@ -48,6 +40,7 @@ CLAUDE.md
 *.vsix
 __pycache__
 *.pyc
+.next
 
 # Rust / WASM
 /rust-wasm/target
@@ -56,3 +49,7 @@ __pycache__
 # Temporary files
 *.tmp
 tmp/
+
+# Frameworks / Tooling
+.astro
+test-results
