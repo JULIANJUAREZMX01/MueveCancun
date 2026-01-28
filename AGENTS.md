@@ -16,12 +16,13 @@
 ---
 
 ## ⚙️ Environment Setup (Master Protocol)
-> Jules: Your environment must be initialized with this idempotent sequence.
+> Jules: Your environment must be initialized with this idempotent sequence. Use **pnpm** exclusively.
 1. **Rust Toolchain**: Install `wasm-pack` via curl if not present in `$HOME/.cargo/bin`.
 2. **Pathing**: Ensure Cargo binaries are in your current session `export PATH="$HOME/.cargo/bin:$PATH"`.
-3. **Dependencies**: Prefer `npm ci` for predictable node_modules state.
+3. **Dependencies**: Use `pnpm install --frozen-lockfile` (or `pnpm i`). **Never use npm.**
 4. **WASM Build**: Execute `wasm-pack build --target web --out-dir ../public/wasm/route-calculator --release` inside `rust-wasm/`.
-5. **Clean State**: Always verify that `public/wasm/route-calculator/route_calculator_bg.wasm` exists before completing a task.
+5. **Astro Dev**: Run `pnpm dev` to verify the project.
+6. **Clean State**: Always verify that `public/wasm/route-calculator/route_calculator_bg.wasm` exists before completing a task.
 
 ---
 
