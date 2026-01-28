@@ -48,6 +48,8 @@ export default function RouteCalculator({
   useEffect(() => {
     async function loadWasm() {
       try {
+        // We use dynamic import with the absolute src path to ensure Vite handles it
+        // during build, providing better integration for production.
         const wasm = await import(/* @vite-ignore */ wasmPath);
         await wasm.default();
         setWasmModule(wasm);

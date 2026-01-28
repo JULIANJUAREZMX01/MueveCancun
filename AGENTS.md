@@ -273,5 +273,20 @@ SUMMARY:
     - **Persistence**: Used IndexedDB versioning (v2) for wallet status.
 - **Note for Antigravity (Gemini 3 Pro)**: All architectural Spec and Logic are ready for local execution and UI wiring. Rust code is injected but requires local compilation (wasm-pack) to be usable.
 
+[2026-01-28 18:30 UTC] - Jules Session Update (DevOps & Build Fix)
+STATUS: WASM Pre-compilation for Render Deployment
+BRANCH: feature/phase-1-re-alignment
+SUMMARY:
+- **What**: Pre-compiled WASM binaries and integrated them into the source tree to bypass Render's lack of `wasm-pack`.
+- **Where**:
+    - `src/wasm/`: Added pre-compiled binaries for `route-calculator` and `spatial-index`.
+    - `public/wasm/`: Synchronized binaries to ensure Service Worker and PWA compatibility.
+    - `package.json`: Updated `build:wasm` and `check-wasm` to handle dual paths.
+    - `.github/workflows/build-wasm.yml`: Updated to track both `src/wasm` and `public/wasm`.
+- **How**:
+    - Compiled modules locally using `wasm-pack`.
+    - Configured a `sync-wasm` script to maintain consistency between source and static assets.
+    - Verified that `check-wasm` passes on the pre-compiled source, allowing Render to skip the Rust build phase.
+
 ---
 *Last Updated: 2026-01-28 by Jules*
