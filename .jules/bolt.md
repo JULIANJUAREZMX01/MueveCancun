@@ -1,0 +1,3 @@
+## 2025-01-28 - [Unintended Map Re-initialization]
+**Learning:** Initializing heavy components like Mapbox inside a `useEffect` with dependencies that change frequently (or have unstable references) causes the component to be destroyed and recreated on every render. In this case, passing an array literal `[lng, lat]` as a prop to a non-memoized component caused a 100% recreate rate on every keystroke in search inputs.
+**Action:** Always stabilize object/array props passed to heavy components using `useMemo`, constants, or state. Wrap heavy components in `React.memo` and refactor their initialization to be independent of frequent prop updates.

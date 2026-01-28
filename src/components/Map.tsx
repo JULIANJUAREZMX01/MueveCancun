@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, memo } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -9,12 +9,33 @@ interface MapProps {
   userLocation: [number, number] | null;
 }
 
-const Map: React.FC<MapProps> = ({ center, userLocation }) => {
+interface Stop {
+  lng: number;
+  lat: number;
+  nombre: string;
+}
+
+interface Route {
+  id: string;
+  polyline: [number, number][];
+  color: string;
+  tarifa: number;
+  paradas: Stop[];
+}
+
+/**
+ * Componente de Mapa optimizado.
+ * Utiliza React.memo para evitar re-renderizados innecesarios.
+ * Inicializa Mapbox una sola vez y actualiza el centro dinámicamente.
+ */
+const Map: React.FC<MapProps> = memo(({ center, userLocation }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const userMarker = useRef<mapboxgl.Marker | null>(null);
 
+  // Inicialización única del mapa
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || map.current) return;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -36,8 +57,10 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
         const response = await fetch('/data/routes.json');
         const data = await response.json();
 
+        if (!map.current) return;
+
         // Dibujar rutas
-        data.rutas.forEach((ruta: any) => {
+        (data.rutas as Route[]).forEach((ruta) => {
           map.current?.addSource(`route-${ruta.id}`, {
             type: 'geojson',
             data: {
@@ -61,7 +84,7 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
           });
 
           // Agregar paradas
-          ruta.paradas.forEach((parada: any) => {
+          ruta.paradas.forEach((parada) => {
             new mapboxgl.Marker({ color: ruta.color })
               .setLngLat([parada.lng, parada.lat])
               .setPopup(new mapboxgl.Popup().setHTML(`
@@ -77,13 +100,29 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
       }
     });
 
-    return () => map.current?.remove();
+    return () => {
+      map.current?.remove();
+      map.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Solo se ejecuta al montar
+
+  // Actualizar el centro del mapa cuando cambie el prop center
+  useEffect(() => {
+    if (map.current) {
+      map.current.flyTo({ center, zoom: 14, speed: 1.2 });
+    }
   }, [center]);
 
   // Actualizar marcador de usuario
   useEffect(() => {
     if (userLocation && map.current) {
-      new mapboxgl.Marker({ color: '#0EA5E9' })
+      // Eliminar marcador previo si existe
+      if (userMarker.current) {
+        userMarker.current.remove();
+      }
+
+      userMarker.current = new mapboxgl.Marker({ color: '#0EA5E9' })
         .setLngLat(userLocation)
         .setPopup(new mapboxgl.Popup().setHTML('Tu ubicación'))
         .addTo(map.current);
@@ -91,6 +130,6 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
   }, [userLocation]);
 
   return <div ref={mapContainer} className="w-full h-full min-h-[400px]" />;
-};
+});
 
 export default Map;
