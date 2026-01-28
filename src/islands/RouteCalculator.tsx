@@ -8,45 +8,57 @@ export default function RouteCalculator({
   wasmPath = '/wasm/route-calculator/route_calculator.js'
 }: RouteCalculatorProps) {
   const [wasmModule, setWasmModule] = useState<any>(null);
+  const [wasmError, setWasmError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [calculating, setCalculating] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   // Load WASM module
   useEffect(() => {
     async function loadWasm() {
       try {
-        // @ts-ignore - Relative import of WASM
-        const wasm = await import('../wasm/route-calculator/route_calculator.js');
+        setLoading(true);
+        setWasmError(false);
+        // Dynamic import using the prop path
+        const wasm = await import(/* @vite-ignore */ wasmPath);
         await wasm.default(); // Initialize WASM
         setWasmModule(wasm);
-        setLoading(false);
         console.log('✅ WASM module loaded successfully');
       } catch (error) {
         console.error('❌ Failed to load WASM:', error);
+        setWasmError(true);
+      } finally {
         setLoading(false);
       }
     }
     loadWasm();
-  }, []);
+  }, [wasmPath]);
 
   const handleSearch = async () => {
     if (!wasmModule || !from || !to) return;
 
     setCalculating(true);
+    setSearchError(null);
     try {
       // Fetch master data for WASM
       const response = await fetch('/data/master_routes.json');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const routesData = await response.json();
 
       // Call WASM function with new signature (from, to, data)
-      const routes = wasmModule.calculate_route(from, to, routesData);
-      setResults(Array.isArray(routes) ? routes : [routes]);
-      console.log('Route calculated:', routes);
-    } catch (error) {
+      const result = wasmModule.calculate_route(from, to, routesData);
+      if (result) {
+        setResults(Array.isArray(result) ? result : [result]);
+      } else {
+        setSearchError('No se encontró una ruta válida.');
+        setResults([]);
+      }
+    } catch (error: any) {
       console.error('Route calculation error:', error);
+      setSearchError(error.message || 'Error al calcular la ruta.');
     } finally {
       setCalculating(false);
     }
@@ -54,8 +66,18 @@ export default function RouteCalculator({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8" role="status" aria-label="Cargando motor de rutas">
+      <div className="flex flex-col items-center justify-center p-8 space-y-4" role="status" aria-label="Cargando motor de rutas">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
+        <p className="text-gray-500">Iniciando motor...</p>
+      </div>
+    );
+  }
+
+  if (wasmError) {
+    return (
+      <div className="sunny-card p-6 border-red-200 bg-red-50">
+        <h2 className="text-xl font-bold text-red-700 mb-2">🚨 Error de Sistema</h2>
+        <p className="text-red-600">No se pudo cargar el motor de ruteo. Por favor, recarga la página.</p>
       </div>
     );
   }
@@ -119,6 +141,15 @@ export default function RouteCalculator({
           )}
         </button>
       </div>
+
+      {/* Error Message */}
+      {searchError && (
+        <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg animate-fade-in">
+          <p className="text-orange-700 text-sm flex items-center">
+            <span className="mr-2">⚠️</span> {searchError}
+          </p>
+        </div>
+      )}
 
       {/* Results */}
       {results.length > 0 && (

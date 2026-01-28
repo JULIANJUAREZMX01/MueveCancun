@@ -20,6 +20,11 @@ Tu guía definitiva de transporte público en Cancún. Una Progressive Web App (
 - `/src`: Aplicación React y componentes.
 - `/public/data`: Base de datos de rutas (JSON).
 
+## 📋 Prerrequisitos
+- **Node.js**: v18.0.0+ 
+- **wasm-pack**: Para compilar los módulos de Rust.
+- **Mapbox API Key**: Necesaria para el Mapa Interactivo.
+
 ## 🛠️ Desarrollo
 1. `npm install`
 2. `npm run build:wasm` (requiere wasm-pack)

@@ -16,6 +16,7 @@ export default function InteractiveMap({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [centerLng, centerLat] = center;
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -46,17 +47,22 @@ export default function InteractiveMap({
     map.current.on('load', async () => {
       try {
         const response = await fetch('/data/master_routes.json');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
+
+        if (!map.current) return;
 
         // Add routes to map
         data.routes.forEach((route: any) => {
+          if (!map.current) return;
+
           // Add route line
-          map.current!.addSource(`route-${route.id}`, {
+          map.current.addSource(`route-${route.id}`, {
             type: 'geojson',
             data: route.geometry
           });
 
-          map.current!.addLayer({
+          map.current.addLayer({
             id: `route-${route.id}`,
             type: 'line',
             source: `route-${route.id}`,
@@ -69,6 +75,7 @@ export default function InteractiveMap({
 
           // Add stops
           route.stops.forEach((stop: any) => {
+            if (!map.current) return;
             const el = document.createElement('div');
             el.className = 'stop-marker';
             el.style.backgroundColor = route.color;
@@ -87,7 +94,7 @@ export default function InteractiveMap({
                   Tarifa: $${route.fare_mxn} MXN
                 `)
               )
-              .addTo(map.current!);
+              .addTo(map.current);
           });
         });
 
@@ -98,8 +105,11 @@ export default function InteractiveMap({
       }
     });
 
-    return () => map.current?.remove();
-  }, [mapboxToken, center, zoom]);
+    return () => {
+      map.current?.remove();
+      map.current = null;
+    };
+  }, [mapboxToken, centerLng, centerLat, zoom]);
 
   return (
     <div className="relative w-full h-96 sunny-card overflow-hidden">

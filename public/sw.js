@@ -63,8 +63,10 @@ async function cacheFirst(request) {
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
-    const cache = await caches.open(CACHE_NAME);
-    cache.put(request, response.clone());
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
     return response;
   } catch (error) {
     return caches.match(request);
@@ -73,10 +75,15 @@ async function networkFirst(request) {
 
 async function staleWhileRevalidate(request) {
   const cached = await caches.match(request);
-  const fetchPromise = fetch(request).then(response => {
-    const cache = caches.open(CACHE_NAME);
-    cache.then(c => c.put(request, response.clone()));
+  const fetchPromise = fetch(request).then(async (response) => {
+    if (response && response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(request, response.clone());
+    }
     return response;
+  }).catch(() => {
+    // Silent catch to prevent unhandled rejections
+    return cached;
   });
   return cached || fetchPromise;
 }

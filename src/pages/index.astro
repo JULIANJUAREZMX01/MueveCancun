@@ -88,7 +88,14 @@ const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
     <h2 class="text-3xl font-display font-bold text-gray-900 mb-6">
       Mapa Interactivo
     </h2>
-    <InteractiveMap client:only="react" mapboxToken={MAPBOX_TOKEN} />
+    {MAPBOX_TOKEN ? (
+      <InteractiveMap client:only="react" mapboxToken={MAPBOX_TOKEN} />
+    ) : (
+      <div class="sunny-card p-12 text-center bg-gray-50 border-dashed border-2 border-gray-300">
+        <p class="text-gray-500 mb-4">Mapbox token missing. Map cannot be initialized.</p>
+        <code class="text-xs bg-gray-100 p-2 rounded">PUBLIC_MAPBOX_TOKEN is required in .env</code>
+      </div>
+    )}
   </section>
 
   <!-- Stats Section (Static) -->

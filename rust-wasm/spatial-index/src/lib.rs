@@ -29,7 +29,17 @@ pub struct NearestStopResult {
 
 #[wasm_bindgen]
 pub fn find_nearest_stop(user_lat: f64, user_lng: f64, stops_val: JsValue) -> JsValue {
-    let stops: Vec<Stop> = serde_wasm_bindgen::from_value(stops_val).unwrap_or_default();
+    let stops_res: Result<Vec<Stop>, _> = serde_wasm_bindgen::from_value(stops_val);
+    
+    let stops = match stops_res {
+        Ok(s) => s,
+        Err(e) => return JsValue::from_str(&format!("Invalid stops data: {}", e)),
+    };
+
+    if stops.is_empty() {
+        return JsValue::NULL;
+    }
+
     let wrappers: Vec<StopWrapper> = stops.into_iter().map(StopWrapper).collect();
     let rtree = RTree::bulk_load(wrappers);
 
@@ -39,7 +49,7 @@ pub fn find_nearest_stop(user_lat: f64, user_lng: f64, stops_val: JsValue) -> Js
             stop: nearest.0.clone(),
             distance_meters: dist,
         };
-        serde_wasm_bindgen::to_value(&result).unwrap()
+        serde_wasm_bindgen::to_value(&result).unwrap_or(JsValue::NULL)
     } else {
         JsValue::NULL
     }
@@ -48,12 +58,18 @@ pub fn find_nearest_stop(user_lat: f64, user_lng: f64, stops_val: JsValue) -> Js
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::time::Instant;
 
     #[test]
-    fn test_spatial_search_performance() {
-        let start = Instant::now();
-        let duration = start.elapsed();
-        assert!(duration.as_millis() < 10);
+    fn test_spatial_search() {
+        let stop1 = Stop { id: "1".into(), nombre: "A".into(), lat: 21.0, lng: -86.0 };
+        let stop2 = Stop { id: "2".into(), nombre: "B".into(), lat: 22.0, lng: -87.0 };
+        
+        let stops = vec![stop1, stop2];
+        let wrappers: Vec<StopWrapper> = stops.into_iter().map(StopWrapper).collect();
+        let rtree = RTree::bulk_load(wrappers);
+
+        // Search near stop 2
+        let nearest = rtree.nearest_neighbor(&[22.1, -87.1]).unwrap();
+        assert_eq!(nearest.0.id, "2");
     }
 }

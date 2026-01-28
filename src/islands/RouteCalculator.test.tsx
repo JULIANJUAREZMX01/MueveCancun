@@ -9,9 +9,10 @@ afterEach(() => {
 });
 
 describe('RouteCalculator', () => {
-  it('renders the search inputs', () => {
+  it('renders the search inputs', async () => {
     render(<RouteCalculator />);
-    // RouteCalculator starts in loading state while WASM loads
-    expect(screen.getByRole('status') || screen.getByText(/Encuentra tu Ruta/)).toBeInTheDocument();
+    // Wait for the loading or main content
+    const element = await screen.findByRole('heading', { name: /Encuentra tu Ruta/i });
+    expect(element).toBeInTheDocument();
   });
 });
