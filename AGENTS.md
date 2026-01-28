@@ -57,6 +57,41 @@
 
 ---
 
+# PHASE 2 TRACKER
+
+## BLOQUE 1:
+- [ ] Jules Smoke Test
+- [ ] Gemini Research
+
+## BLOQUE 2:
+- [ ] Jules Blocker #2
+- [ ] Gemini Content Collections
+
+## BLOQUE 3:
+- [ ] Jules WASM Bridge
+- [ ] Gemini Hydration
+
+## BLOQUEADORES ACTIVOS:
+[None]
+
+## ÚLTIMO UPDATE:
+[2026-01-27 23:15 UTC]
+
+---
+
+## 🚀 ACTIVE COMMANDS (BLOCK 1)
+
+### # JULES - Smoke Test
+**Action:** Run `pnpm astro dev` and confirm server starts.
+**Output Required:** Screenshot of localhost:4321 + Console errors.
+**Report in AGENTS.md:** Create section `### Jules Smoke Test`.
+
+### # GEMINI - Research Content Collections
+**Action:** Investigation on Astro 5 Content Collections.
+**Output:** Create `docs/RESEARCH_NOTES.md`.
+
+---
+
 ## 📡 Agent-to-Agent Communication (A2A)
 
 1. **Manual Sync**: Before starting any task, run `git pull origin feature/main` (or active branch) and check this file.
