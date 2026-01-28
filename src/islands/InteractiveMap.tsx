@@ -102,7 +102,7 @@ export default function InteractiveMap({
   }, [mapboxToken, center, zoom]);
 
   return (
-    <div className="relative w-full h-96 sunny-card overflow-hidden">
+    <div className="relative w-full h-[500px] sunny-card overflow-hidden">
       <div ref={mapContainer} className="w-full h-full" />
 
       {!mapLoaded && (
