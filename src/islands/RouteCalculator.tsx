@@ -5,7 +5,7 @@ interface RouteCalculatorProps {
 }
 
 export default function RouteCalculator({ 
-  wasmPath = '/wasm/route_calculator/route_calculator.js' 
+  wasmPath = '/src/wasm/route_calculator/route_calculator.js' 
 }: RouteCalculatorProps) {
   const [wasmModule, setWasmModule] = useState<any>(null);
   const [loading, setLoading] = useState(true);
