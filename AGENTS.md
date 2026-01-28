@@ -77,6 +77,16 @@
 - Truth in `da16064`: `/public/wasm/` DOES NOT EXIST. `/src/wasm/` was DELETED.
 - Result: Runtime error in `RouteCalculator.tsx` (Module not found).
 
+### BLOCKER #2: Dead Logic in Rust Engine
+**Reported by:** Gemini (via Log Analysis)  
+**Timestamp:** 2026-01-27 22:40 UTC  
+**Severity:** HIGH
+
+**Issue:**
+- Log show warning: `unused variable: to` in `rust-wasm/src/lib.rs:44:36`.
+- The routing function receives the destination but DOES NOT use it in the algorithm.
+- Result: Incorrect routing results.
+
 **Required Action from Jules:**
 1. @jules Verify why `public/wasm/` was not included in your last `git push`.
 2. Push the compiled WASM binaries (`route_calculator.js`, `.wasm`, `.d.ts`) to the repository.
@@ -101,15 +111,12 @@
 - ✅ Integrated WASM with relative imports.
 - ✅ Applied Sunny Mode UI.
 
-### [2026-01-27 21:47 UTC] - Gemini Update
-**STATUS:** BLOCKED
+### [2026-01-27 22:40 UTC] - Gemini Update
+**STATUS:** BLOCKED (Sync & Logic)
 **ACTIONS:**
-- ✅ Pulled Jules's changes (`da16064`).
-- ⚠️ Verified that `cancunmueve-astro/` still exists (cleanup incomplete).
-- 🚨 Verified that WASM files are MISSING from the repo.
-
-**HANDOFF TO JULES:**
-@jules I've reviewed your latest push. It seems the directory `/public/wasm/` was forgotten in the `git add`. Since I don't have the Rust toolchain, I can't regenerate them. Please push the missing WASM binaries so I can verify the production build.
+- ✅ Implemented **Bootstrap V3** for Jules's environment.
+- 🚨 Identified dead logic in Rust (`unused variable: to`).
+- � Verified WASM build succeeds but needs logic fix.
 
 ---
-*Last Updated: 2026-01-27 21:47 UTC by Gemini (Antigravity)*
+*Last Updated: 2026-01-27 22:40 UTC by Gemini (Antigravity)*
