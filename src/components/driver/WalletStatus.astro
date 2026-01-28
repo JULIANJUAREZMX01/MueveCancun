@@ -1,0 +1,81 @@
+---
+/**
+ * WalletDashboard Component (Driver Edition)
+ * Reacciona en tiempo real al saldo del chofer.
+ * Implementa la lógica de "Masa Negativa" y "Islands de Control".
+ */
+
+interface Props {
+  driverId: string;
+  balance: number;
+  lastTopup: string;
+}
+
+const { driverId, balance, lastTopup } = Astro.props;
+
+const isBlocked = balance < 5.0;
+const statusColor = isBlocked ? "bg-red-500" : "bg-green-500";
+const statusText = isBlocked ? "Acceso Bloqueado" : "Buscando Colectivos";
+---
+
+<div class="sunny-card p-6 border-t-4 border-t-deep-navy animate-fade-in" id="wallet-dashboard">
+  <div class="flex justify-between items-start mb-6">
+    <div>
+      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Tu Cartera (Driver)</h3>
+      <p class="text-sm font-medium text-gray-900">ID: {driverId}</p>
+    </div>
+    <div class={`px-3 py-1 rounded-full text-[10px] font-black uppercase text-white shadow-sm ${statusColor} animate-pulse-subtle`}>
+      {statusText}
+    </div>
+  </div>
+
+  <div class="mb-8">
+    <div class="text-5xl font-display font-black text-gray-900 tracking-tight">
+      ${balance.toFixed(2)}
+      <span class="text-lg text-gray-400 font-bold ml-1 uppercase">MXN</span>
+    </div>
+    <p class="text-xs text-primary-500 font-bold mt-2 flex items-center gap-1">
+      <span>⚡</span> Tu comisión (7%) se descuenta en tiempo real.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <button 
+      class={`
+        h-14 rounded-2xl font-display font-bold transition-all transform active:scale-95 flex items-center justify-center gap-2
+        ${isBlocked ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-primary-500 text-white shadow-xl hover:bg-primary-600 hover:-translate-y-1'}
+      `}
+      disabled={isBlocked}
+    >
+      <span>🚕</span> {isBlocked ? 'Saldo Insuficiente' : 'Activar Ruta'}
+    </button>
+    
+    <button class="h-14 rounded-2xl bg-deep-navy text-white font-display font-bold shadow-lg hover:bg-gray-800 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+      <span>💳</span> Recargar
+    </button>
+  </div>
+
+  {isBlocked && (
+    <div class="mt-4 p-3 bg-red-50 border border-red-100 rounded-xl">
+      <p class="text-xs text-red-700 font-medium leading-relaxed">
+        <strong>¡Atención!</strong> Debes tener al menos $5.00 MXN para poder aceptar pasajeros. 
+        <a href="#" class="underline font-bold ml-1">Recarga inmediata aquí.</a>
+      </p>
+    </div>
+  )}
+
+  <div class="mt-6 pt-6 border-t border-gray-100 flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+     <span>Última Recarga: {lastTopup}</span>
+     <span class="text-primary-400">v3.0.0 Stable</span>
+  </div>
+</div>
+
+<style>
+  .animate-pulse-subtle {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .8; }
+  }
+</style>

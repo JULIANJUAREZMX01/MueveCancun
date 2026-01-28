@@ -29,6 +29,14 @@ pub struct RootData {
     pub routes: Vec<Route>,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct DriverWallet {
+    pub driver_id: String,
+    pub balance_mxn: f64,
+    pub last_topup: String,
+    pub commission_rate: f64,
+}
+
 pub fn haversine_distance(lat1: f64, lng1: f64, lat2: f64, lng2: f64) -> f64 {
     let r = 6371.0; // Earth radius in km
     let phi1 = lat1.to_radians();
