@@ -1,0 +1,13 @@
+# CancúnMueve - Agent Context Status
+Last Sync: 2026-01-28
+
+## Situation Map
+- **Framework**: Astro 5.0 (Stable)
+- **Styling**: Tailwind CSS v4 (Sunny Mode active)
+- **Engine**: Rust WASM (route-calculator & spatial-index)
+- **Data**: master_routes.json v2.0.0
+- **PWA**: Service Worker v2.0.0
+- **Islands**: RouteCalculator, InteractiveMap (Hydration ready)
+
+## Next Phase
+- Phase 2: Interconnection & Advanced Routing.
