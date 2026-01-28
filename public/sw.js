@@ -9,6 +9,7 @@ const CRITICAL_ASSETS = [
   '/wasm/spatial-index/spatial_index.js',
   '/wasm/spatial-index/spatial_index_bg.wasm',
   '/data/master_routes.json',
+  '/data/routes.json',
   '/manifest.json',
   '/logo.png',
   '/icons/icon-192.png',
