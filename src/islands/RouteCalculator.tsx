@@ -37,8 +37,12 @@ export default function RouteCalculator({
     
     setCalculating(true);
     try {
-      // Call WASM function
-      const routes = wasmModule.calculate_route(from, to);
+      // Fetch master data for WASM
+      const response = await fetch('/data/master_routes.json');
+      const routesData = await response.json();
+
+      // Call WASM function with new signature (from, to, data)
+      const routes = wasmModule.calculate_route(from, to, routesData);
       setResults(Array.isArray(routes) ? routes : [routes]);
       console.log('Route calculated:', routes);
     } catch (error) {
