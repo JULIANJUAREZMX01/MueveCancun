@@ -61,7 +61,7 @@
 
 ## BLOQUE 1:
 - [ ] Jules Smoke Test
-- [ ] Gemini Research
+- [x] Gemini Research
 
 ## BLOQUE 2:
 - [ ] Jules Blocker #2
