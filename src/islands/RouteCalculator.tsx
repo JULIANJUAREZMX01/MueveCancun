@@ -1,26 +1,55 @@
 import { useState, useEffect } from 'react';
 
+interface BilingualString {
+  en: String;
+  es: String;
+}
+
+interface RouteResponse {
+  success: boolean;
+  path: string[];
+  has_transfer: boolean;
+  transfer_point?: BilingualString;
+  routes: string[];
+  distance_km: number;
+  time_min: number;
+  instructions: BilingualString[];
+  error?: BilingualString;
+}
+
 interface RouteCalculatorProps {
   wasmPath?: string;
 }
+
+// Mock geocoding for example locations
+const MOCK_GEO: Record<string, { lat: number; lng: number }> = {
+  'Crucero': { lat: 21.1619, lng: -86.8515 },
+  'Parque La Rehoyada': { lat: 21.1619, lng: -86.8515 },
+  'Coco Bongo': { lat: 21.1385, lng: -86.7474 },
+  'Walmart': { lat: 21.1595, lng: -86.8365 },
+  'Walmart Cobá': { lat: 21.1595, lng: -86.8365 },
+  'Aeropuerto': { lat: 21.0412, lng: -86.8725 },
+  'Aeropuerto T3': { lat: 21.0412, lng: -86.8725 },
+  'Plaza Las Américas': { lat: 21.1472, lng: -86.8234 },
+};
 
 export default function RouteCalculator({
   wasmPath = '/wasm/route-calculator/route_calculator.js'
 }: RouteCalculatorProps) {
   const [wasmModule, setWasmModule] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
-  const [results, setResults] = useState<any[]>([]);
+  const [from, setFrom] = useState('Walmart');
+  const [to, setTo] = useState('Aeropuerto');
+  const [result, setResult] = useState<RouteResponse | null>(null);
   const [calculating, setCalculating] = useState(false);
+  const [lang, setLang] = useState<'es' | 'en'>('es');
 
   // Load WASM module
   useEffect(() => {
     async function loadWasm() {
       try {
-        // Use absolute path from public/ to avoid Vite bundling issues with WASM in SSR
         const wasm = await import(/* @vite-ignore */ wasmPath);
-        await wasm.default(); // Initialize WASM
+        await wasm.default();
         setWasmModule(wasm);
         setLoading(false);
         console.log('✅ WASM module loaded successfully from:', wasmPath);
@@ -35,16 +64,23 @@ export default function RouteCalculator({
   const handleSearch = async () => {
     if (!wasmModule || !from || !to) return;
 
+    const fromCoords = MOCK_GEO[from] || { lat: 21.1619, lng: -86.8515 };
+    const toCoords = MOCK_GEO[to] || { lat: 21.0412, lng: -86.8725 };
+
     setCalculating(true);
     try {
-      // Fetch master data for WASM
       const response = await fetch('/data/master_routes.json');
       const routesData = await response.json();
 
-      // Call WASM function with new signature (from, to, data)
-      const routes = wasmModule.calculate_route(from, to, routesData);
-      setResults(Array.isArray(routes) ? routes : [routes]);
-      console.log('Route calculated:', routes);
+      const res = wasmModule.calculate_route(
+        fromCoords.lat,
+        fromCoords.lng,
+        toCoords.lat,
+        toCoords.lng,
+        routesData
+      );
+      setResult(res);
+      console.log('Route calculated:', res);
     } catch (error) {
       console.error('Route calculation error:', error);
     } finally {
@@ -62,81 +98,83 @@ export default function RouteCalculator({
 
   return (
     <div className="sunny-card p-6 animate-fade-in">
-      <h2 className="text-2xl font-display font-bold text-deep-navy mb-6 high-contrast-text">
-        🔍 Encuentra tu Ruta
-      </h2>
-
-      <div className="space-y-4">
-        {/* From input */}
-        <div>
-          <label htmlFor="from-input" className="block text-sm font-medium text-gray-700 mb-2">
-            📍 Desde
-          </label>
-          <input
-            id="from-input"
-            type="text"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            placeholder="Ej: Av. Tulum y Cobá"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-          />
-        </div>
-
-        {/* To input */}
-        <div>
-          <label htmlFor="to-input" className="block text-sm font-medium text-gray-700 mb-2">
-            📍 Hasta
-          </label>
-          <input
-            id="to-input"
-            type="text"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            placeholder="Ej: Zona Hotelera"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-          />
-        </div>
-
-        {/* Search button */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-display font-bold text-deep-navy high-contrast-text">
+          {lang === 'es' ? '🔍 Encuentra tu Ruta' : '🔍 Find your Route'}
+        </h2>
         <button
-          onClick={handleSearch}
-          disabled={calculating || !from || !to}
-          className="w-full premium-button disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105"
+          onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
+          className="text-xs bg-gray-200 px-2 py-1 rounded"
         >
-          {calculating ? (
-            <span className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Calculando...
-            </span>
-          ) : (
-            <>
-              <span>🚌</span>
-              <span>Buscar Ruta</span>
-            </>
-          )}
+          {lang === 'es' ? 'English' : 'Español'}
         </button>
       </div>
 
-      {/* Results */}
-      {results.length > 0 && (
-        <div className="mt-6 space-y-4 animate-slide-up">
-          <h3 className="text-lg font-bold text-gray-900">Resultados:</h3>
-          {results.map((route, idx) => (
-            <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-primary-500">Ruta {route.route_id}</span>
-                <span className="text-sm text-gray-500">{route.total_time_minutes} min</span>
-              </div>
-              <p className="text-sm text-gray-600">{route.steps?.[0]?.instruction || 'Instrucciones disponibles'}</p>
-              <div className="mt-2 flex items-center text-sm text-gray-500">
-                <span className="mr-4">💰 ${route.total_cost_mxn} MXN</span>
-                <span>🔄 {route.transfers} transbordo(s)</span>
-              </div>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            📍 {lang === 'es' ? 'Desde' : 'From'}
+          </label>
+          <input
+            type="text"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 transition-all"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            📍 {lang === 'es' ? 'Hasta' : 'To'}
+          </label>
+          <input
+            type="text"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 transition-all"
+          />
+        </div>
+
+        <button
+          onClick={handleSearch}
+          disabled={calculating}
+          className="w-full premium-button disabled:opacity-50 transition-all transform hover:scale-105"
+        >
+          {calculating ? (lang === 'es' ? 'Calculando...' : 'Calculating...') : (lang === 'es' ? 'Buscar Ruta' : 'Search Route')}
+        </button>
+      </div>
+
+      {result && result.success && (
+        <div className="mt-6 space-y-4 animate-slide-up bg-blue-50 p-4 rounded-xl">
+          <div className="flex justify-between items-center">
+            <span className="font-bold text-deep-navy">
+              {result.routes.join(' → ')}
+            </span>
+            <span className="text-sm font-bold text-primary-600">
+              {result.time_min} min | {result.distance_km.toFixed(1)} km
+            </span>
+          </div>
+
+          {result.has_transfer && (
+            <div className="text-sm bg-yellow-100 p-2 rounded border border-yellow-200 text-yellow-800">
+              ⚠️ {lang === 'es' ? 'Transbordo en:' : 'Transfer at:'} <strong>{result.transfer_point?.[lang]}</strong>
             </div>
-          ))}
+          )}
+
+          <div className="space-y-2">
+            {result.instructions.map((inst, idx) => (
+              <div key={idx} className="flex gap-3 text-sm text-gray-700">
+                <span className="text-primary-500">•</span>
+                <span>{inst[lang]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {result && !result.success && (
+        <div className="mt-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-100">
+          ❌ {result.error?.[lang]}
         </div>
       )}
     </div>

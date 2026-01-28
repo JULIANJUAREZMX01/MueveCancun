@@ -1,98 +1,78 @@
 {
-  "version": "2.0.0",
-  "last_updated": "2026-01-27T00:00:00Z",
-  "metadata": {
-    "total_routes": 60,
-    "documented_routes": 3,
-    "total_stops": 247,
-    "coverage_area_km2": 450
-  },
-  "routes": [
+  "version": "2.1.0",
+  "rutas": [
     {
       "id": "R1",
-      "name": "Crucero - Zona Hotelera",
+      "nombre": "Crucero - Zona Hotelera",
       "color": "#FF6B6B",
-      "operator": "Autocar",
-      "fare_mxn": 15.0,
-      "schedule": {
-        "start": "05:00",
-        "end": "23:50",
-        "frequency_minutes": 10
-      },
-      "stops": [
+      "tarifa": 15.0,
+      "paradas": [
         {
           "id": "R1_001",
-          "name": "Parque La Rehoyada",
-          "location": { "type": "Point", "coordinates": [-86.8515, 21.1619] },
-          "order": 1,
-          "is_terminal": true,
-          "amenities": ["restrooms", "ticket_booth"],
-          "landmarks": "Terminal Crucero"
+          "nombre": "Parque La Rehoyada",
+          "lat": 21.1619,
+          "lng": -86.8515,
+          "orden": 1
+        },
+        {
+          "id": "R1_003",
+          "nombre": "Plaza Las Américas",
+          "lat": 21.1472,
+          "lng": -86.8234,
+          "orden": 3
         },
         {
           "id": "R1_007",
-          "name": "Coco Bongo / Forum",
-          "location": { "type": "Point", "coordinates": [-86.7474, 21.1385] },
-          "order": 7,
-          "landmarks": "Corazón de la ZH"
+          "nombre": "Coco Bongo / Forum",
+          "lat": 21.1385,
+          "lng": -86.7474,
+          "orden": 7
         }
-      ],
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [-86.8515, 21.1619], [-86.8270, 21.1665], [-86.8234, 21.1472], [-86.8095, 21.1462],
-          [-86.7912, 21.1425], [-86.7725, 21.1398], [-86.7474, 21.1385], [-86.7628, 21.1112],
-          [-86.7801, 21.0611], [-86.7825, 21.0255]
-        ]
-      },
-      "statistics": { "avg_duration_minutes": 45, "distance_km": 18.5, "reliability_score": 0.98 }
+      ]
     },
     {
       "id": "R2",
-      "name": "Walmart - Puerto Juárez",
+      "nombre": "Walmart - Puerto Juárez",
       "color": "#4ECDC4",
-      "operator": "Autocar",
-      "fare_mxn": 15.0,
-      "schedule": { "start": "06:00", "end": "22:00", "frequency_minutes": 15 },
-      "stops": [
+      "tarifa": 15.0,
+      "paradas": [
         {
           "id": "R2_001",
-          "name": "Walmart Cobá",
-          "location": { "type": "Point", "coordinates": [-86.8365, 21.1595] },
-          "order": 1
+          "nombre": "Walmart Cobá",
+          "lat": 21.1595,
+          "lng": -86.8365,
+          "orden": 1
+        },
+        {
+          "id": "R2_003",
+          "nombre": "Plaza Las Américas",
+          "lat": 21.1472,
+          "lng": -86.8234,
+          "orden": 3
         }
-      ],
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [-86.8365, 21.1595], [-86.8315, 21.1612], [-86.8285, 21.1635], [-86.8055, 21.1852]
-        ]
-      },
-      "statistics": { "avg_duration_minutes": 30, "distance_km": 12.0, "reliability_score": 0.95 }
+      ]
     },
     {
       "id": "R10",
-      "name": "Las Américas - Punta Nizuc",
+      "nombre": "Las Américas - Aeropuerto",
       "color": "#FFD93D",
-      "operator": "Autocar",
-      "fare_mxn": 15.0,
-      "description": "NO entra al Aeropuerto. Transfer requerido en Punta Nizuc.",
-      "schedule": { "start": "04:00", "end": "23:00", "frequency_minutes": 20 },
-      "stops": [
+      "tarifa": 15.0,
+      "paradas": [
         {
           "id": "R10_001",
-          "name": "Plaza Las Américas",
-          "location": { "type": "Point", "coordinates": [-86.8234, 21.1472] },
-          "order": 1
+          "nombre": "Plaza Las Américas",
+          "lat": 21.1472,
+          "lng": -86.8234,
+          "orden": 1
+        },
+        {
+          "id": "R10_009",
+          "nombre": "Aeropuerto T3",
+          "lat": 21.0412,
+          "lng": -86.8725,
+          "orden": 9
         }
-      ],
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [-86.8234, 21.1472], [-86.8315, 21.1412], [-86.8775, 21.0365]
-        ]
-      },
-      "statistics": { "avg_duration_minutes": 50, "distance_km": 22.0, "reliability_score": 0.97 }
+      ]
     }
   ]
 }

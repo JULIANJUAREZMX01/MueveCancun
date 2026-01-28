@@ -3,22 +3,34 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Stop {
     pub id: String,
-    pub nombre: String,
+    #[serde(rename = "nombre")]
+    pub name: String,
     pub lat: f64,
     pub lng: f64,
+    #[serde(rename = "orden")]
+    pub order: u32,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Route {
     pub id: String,
-    pub nombre: String,
+    #[serde(rename = "nombre")]
+    pub name: String,
     pub color: String,
-    pub tarifa: f64,
-    pub paradas: Vec<Stop>,
+    #[serde(rename = "tarifa")]
+    pub fare: f64,
+    #[serde(rename = "paradas")]
+    pub stops: Vec<Stop>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct RootData {
+    #[serde(rename = "rutas")]
+    pub routes: Vec<Route>,
 }
 
 pub fn haversine_distance(lat1: f64, lng1: f64, lat2: f64, lng2: f64) -> f64 {
-    let r = 6371000.0; // Radio de la Tierra en metros
+    let r = 6371.0; // Earth radius in km
     let phi1 = lat1.to_radians();
     let phi2 = lat2.to_radians();
     let delta_phi = (lat2 - lat1).to_radians();
