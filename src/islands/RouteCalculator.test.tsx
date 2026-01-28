@@ -9,7 +9,7 @@ afterEach(() => {
 });
 
 describe('RouteCalculator', () => {
-  it('renders the search inputs', async () => {
+  it('renders the main heading', async () => {
     render(<RouteCalculator />);
     // Wait for the loading or main content
     const element = await screen.findByRole('heading', { name: /Encuentra tu Ruta/i });

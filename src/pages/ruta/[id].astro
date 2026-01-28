@@ -3,18 +3,41 @@ import MainLayout from '../../layouts/MainLayout.astro';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+interface Stop {
+  name: string;
+  location: {
+    coordinates: [number, number];
+  };
+  order?: number;
+  landmarks?: string;
+  amenities?: string[];
+}
+
+interface Route {
+  id: string;
+  name: string;
+  color: string;
+  fare_urban?: number;
+  fare_mxn?: number;
+  statistics?: {
+    distance_km?: number;
+    avg_duration_minutes?: number;
+  };
+  schedule?: {
+    frequency_minutes?: number;
+    start?: string;
+    end?: string;
+  };
+  operator?: string;
+  stops: Stop[];
+}
+
 export async function getStaticPaths() {
-  const routesPath = path.resolve('./src/data/master_routes.json');
+  const routesPath = path.resolve('./public/data/master_routes.json');
   
   try {
     const fileContent = await fs.readFile(routesPath, 'utf-8');
     const routesData = JSON.parse(fileContent);
-
-    interface Route {
-      id: string;
-      name: string;
-      // other fields can be added as needed or use Record
-    }
 
     return routesData.routes.map((route: Route) => ({
       params: { id: route.id },
@@ -26,7 +49,7 @@ export async function getStaticPaths() {
   }
 }
 
-const { route } = Astro.props as { route: any };
+const { route } = Astro.props as { route: Route };
 
 if (!route) {
   return Astro.redirect('/404');
@@ -101,7 +124,7 @@ const description = `Información completa de la ${route.name}. Paradas, horario
   <div class="bg-white rounded-lg shadow-md p-6">
     <h2 class="text-2xl font-bold text-gray-900 mb-6">📍 Paradas</h2>
     <div class="space-y-4">
-      {route.stops && route.stops.map((stop: any, index: number) => (
+      {route.stops && route.stops.map((stop: Stop, index: number) => (
         <div class="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
           <div class="flex-shrink-0">
             <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"

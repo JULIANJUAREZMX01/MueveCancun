@@ -16,6 +16,7 @@ export default function InteractiveMap({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [centerLng, centerLat] = center;
 
   useEffect(() => {
@@ -85,23 +86,30 @@ export default function InteractiveMap({
             el.style.border = '2px solid white';
             el.style.cursor = 'pointer';
 
-            new mapboxgl.Marker(el)
-              .setLngLat(stop.location.coordinates)
-              .setPopup(
-                new mapboxgl.Popup({ offset: 25 }).setHTML(`
-                  <strong>${stop.name}</strong><br>
-                  Ruta: ${route.id}<br>
-                  Tarifa: $${route.fare_mxn} MXN
-                `)
-              )
+              const popupContainer = document.createElement('div');
+              const nameEl = document.createElement('strong');
+              nameEl.textContent = stop.name;
+              popupContainer.appendChild(nameEl);
+              popupContainer.appendChild(document.createElement('br'));
+              popupContainer.appendChild(document.createTextNode(`Ruta: ${route.id}`));
+              popupContainer.appendChild(document.createElement('br'));
+              popupContainer.appendChild(document.createTextNode(`Tarifa: $${route.fare_mxn ?? 0} MXN`));
+
+              new mapboxgl.Marker(el)
+                .setLngLat(stop.location.coordinates)
+                .setPopup(
+                  new mapboxgl.Popup({ offset: 25 }).setDOMContent(popupContainer)
+                )
               .addTo(map.current);
           });
         });
 
         setMapLoaded(true);
         console.log('✅ Map loaded with routes');
-      } catch (error) {
-        console.error('Failed to load routes:', error);
+      } catch (err: any) {
+        console.error('Failed to load routes:', err);
+        setError(err.message || String(err));
+        setMapLoaded(true);
       }
     });
 
@@ -120,6 +128,16 @@ export default function InteractiveMap({
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
             <p className="text-gray-600">Cargando mapa...</p>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-red-50 p-4">
+          <div className="text-center">
+            <span className="text-4xl mb-4 block">⚠️</span>
+            <p className="text-red-700 font-bold mb-2">Error al cargar rutas</p>
+            <p className="text-red-600 text-sm">{error}</p>
           </div>
         </div>
       )}

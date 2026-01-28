@@ -15,8 +15,10 @@ impl rstar::RTreeObject for StopWrapper {
 
 impl PointDistance for StopWrapper {
     fn distance_2(&self, point: &[f64; 2]) -> f64 {
-        let d_lat = self.0.lat - point[0];
-        let d_lng = self.0.lng - point[1];
+        let deg_to_rad = std::f64::consts::PI / 180.0;
+        let avg_lat = ((self.0.lat + point[0]) / 2.0) * deg_to_rad;
+        let d_lat = (self.0.lat - point[0]) * deg_to_rad;
+        let d_lng = (self.0.lng - point[1]) * deg_to_rad * avg_lat.cos();
         d_lat * d_lat + d_lng * d_lng
     }
 }

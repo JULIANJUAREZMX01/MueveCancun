@@ -2,9 +2,10 @@
   "version": "2.0.0",
   "last_updated": "2026-01-27T00:00:00Z",
   "metadata": {
-    "total_routes": 60,
-    "documented_routes": 3,
-    "total_stops": 247,
+    "version": "2.1.0",
+    "last_updated": "2026-01-27",
+    "total_routes": 3,
+    "total_stops": 4,
     "coverage_area_km2": 450
   },
   "routes": [

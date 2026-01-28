@@ -32,12 +32,23 @@
         </a>
       </nav>
 
-      <!-- Mobile menu button (will be island later) -->
-      <button class="md:hidden text-gray-700 hover:text-primary-500" aria-label="Abrir menú de navegación">
+      <!-- Mobile menu toggle (CSS only) -->
+      <label for="mobile-menu-toggle" class="md:hidden text-gray-700 hover:text-primary-500 cursor-pointer" aria-label="Abrir menú de navegación" role="button" aria-expanded="false">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
-      </button>
+      </label>
+      <input type="checkbox" id="mobile-menu-toggle" class="hidden peer" />
+
+      <!-- Mobile Navigation (shown when checkbox is checked) -->
+      <div class="fixed inset-x-0 top-[72px] bg-white shadow-xl md:hidden transform translate-x-full peer-checked:translate-x-0 transition-transform duration-300 z-50 border-t border-gray-100">
+        <nav class="flex flex-col p-4 space-y-4">
+          <a href="/" class="text-gray-700 hover:text-primary-500 font-medium transition-colors">Inicio</a>
+          <a href="/rutas" class="text-gray-700 hover:text-primary-500 font-medium transition-colors">Rutas</a>
+          <a href="/mapa" class="text-gray-700 hover:text-primary-500 font-medium transition-colors">Mapa</a>
+          <a href="/contribuir" class="text-gray-700 hover:text-primary-500 font-medium transition-colors">Contribuir</a>
+        </nav>
+      </div>
     </div>
   </div>
 </header>

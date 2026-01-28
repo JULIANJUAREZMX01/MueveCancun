@@ -117,7 +117,7 @@ declare module 'astro:content' {
 		id: E,
 	): E extends keyof DataEntryMap[C]
 		? string extends keyof DataEntryMap[C]
-			? Promise<DataEntryMap[C][E]> | undefined
+			? Promise<DataEntryMap[C][E] | undefined>
 			: Promise<DataEntryMap[C][E]>
 		: Promise<CollectionEntry<C> | undefined>;
 	export function getLiveEntry<C extends keyof LiveContentConfig['collections']>(

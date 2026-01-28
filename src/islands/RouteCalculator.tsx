@@ -18,23 +18,28 @@ export default function RouteCalculator({
 
   // Load WASM module
   useEffect(() => {
+    let aborted = false;
     async function loadWasm() {
       try {
-        setLoading(true);
-        setWasmError(false);
+        if (!aborted) setLoading(true);
+        if (!aborted) setWasmError(false);
         // Dynamic import using the prop path
         const wasm = await import(/* @vite-ignore */ wasmPath);
+        if (aborted) return;
         await wasm.default(); // Initialize WASM
+        if (aborted) return;
         setWasmModule(wasm);
         console.log('✅ WASM module loaded successfully');
       } catch (error) {
+        if (aborted) return;
         console.error('❌ Failed to load WASM:', error);
         setWasmError(true);
       } finally {
-        setLoading(false);
+        if (!aborted) setLoading(false);
       }
     }
     loadWasm();
+    return () => { aborted = true; };
   }, [wasmPath]);
 
   const handleSearch = async () => {
@@ -155,16 +160,16 @@ export default function RouteCalculator({
       {results.length > 0 && (
         <div className="mt-6 space-y-4 animate-slide-up">
           <h3 className="text-lg font-bold text-gray-900">Resultados:</h3>
-          {results.map((route, idx) => (
-            <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          {results.map((route) => (
+            <div key={route.route_id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-bold text-primary-500">Ruta {route.route_id}</span>
-                <span className="text-sm text-gray-500">{route.total_time_minutes} min</span>
+                <span className="text-sm text-gray-500">{route.total_time_minutes ?? '—'} min</span>
               </div>
               <p className="text-sm text-gray-600">{route.steps?.[0]?.instruction || 'Instrucciones disponibles'}</p>
               <div className="mt-2 flex items-center text-sm text-gray-500">
-                <span className="mr-4">💰 ${route.total_cost_mxn} MXN</span>
-                <span>🔄 {route.transfers} transbordo(s)</span>
+                <span className="mr-4">💰 ${route.total_cost_mxn ?? '—'} MXN</span>
+                <span>🔄 {route.transfers ?? 0} transbordo(s)</span>
               </div>
             </div>
           ))}

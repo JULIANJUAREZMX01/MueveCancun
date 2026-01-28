@@ -8,13 +8,13 @@
 
 ---
 
-## ⚡️ Real-Time Dashbard (Status)
+## ⚡️ Real-Time Dashboard (Status)
 
 | Task | Status | Owner | Notes |
 | :--- | :--- | :--- | :--- |
 | **Infrastructure Stabilization** | ✅ Complete | Jules | GAB v5.1 applied. |
 | **Code Quality Audit** | ✅ Complete | Gemini | 15+ issues resolved (Astro, SW, WASM). |
-| **Advanced Dijkstra** | 🔄 In Progress | Gemini | Implementing multi-route transfers in Rust. |
+| **Advanced Dijkstra** | 🚀 Ignition | Gemini | Modeling multi-route transfers in Rust (Dijkstra). |
 | **Service Worker v2** | 🔄 In Progress | Jules | Advanced caching & Background Sync. |
 | **Crowdsourcing UI** | ⏳ Pending | Gemini | Supabase integration path. |
 
@@ -44,4 +44,4 @@
 - **Token**: `PUBLIC_MAPBOX_TOKEN` (Required in local `.env`)
 
 ---
-*Last Updated: 2026-01-28 00:15 UTC*
+*Last Updated: 2026-01-28 01:35 UTC - Phase 2 Ignition*

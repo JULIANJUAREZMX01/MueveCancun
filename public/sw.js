@@ -4,7 +4,9 @@ const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 const CRITICAL_ASSETS = [
   '/',
   '/index.html',
+  '/wasm/route-calculator/route_calculator.js',
   '/wasm/route-calculator/route_calculator_bg.wasm',
+  '/wasm/spatial-index/spatial_index.js',
   '/wasm/spatial-index/spatial_index_bg.wasm',
   '/data/master_routes.json'
 ];
@@ -69,7 +71,8 @@ async function networkFirst(request) {
     }
     return response;
   } catch (error) {
-    return caches.match(request);
+    const cached = await caches.match(request);
+    return cached || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
   }
 }
 
@@ -81,11 +84,11 @@ async function staleWhileRevalidate(request) {
       await cache.put(request, response.clone());
     }
     return response;
-  }).catch(() => {
-    // Silent catch to prevent unhandled rejections
-    return cached;
+  }).catch(async () => {
+    const cachedFallback = await caches.match(request);
+    return cachedFallback || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
   });
-  return cached || fetchPromise;
+  return (await cached) || fetchPromise;
 }
 
 // Background Sync para reportes offline
