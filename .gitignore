@@ -53,3 +53,5 @@ tmp/
 # Frameworks / Tooling
 .astro
 test-results
+.git
+.github
