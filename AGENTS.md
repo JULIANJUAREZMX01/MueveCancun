@@ -15,6 +15,15 @@
 
 ---
 
+## ⚙️ Environment Setup (Hints for Jules)
+> Jules: Use the following steps to prepare your environment.
+1. **Rust Toolchain**: Ensure `rustc` and `wasm-pack` are installed.
+2. **Build WASM**: Run `wasm-pack build --target web --out-dir ../public/wasm/route-calculator` inside `rust-wasm/`.
+3. **Dependencies**: Run `npm install` in the root.
+4. **Dev Server**: Use `npm run dev` to verify hydration.
+
+---
+
 ## 🤖 Active Agents
 
 ### Agent: Jules (Google AI)
