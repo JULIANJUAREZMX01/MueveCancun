@@ -9,7 +9,7 @@ interface RouteSearchProps {
   loading: boolean;
 }
 
-const RouteSearch: React.FC<RouteSearchProps> = ({
+const RouteSearch: React.FC<RouteSearchProps> = React.memo(({
   from,
   to,
   onFromChange,
@@ -63,6 +63,6 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default RouteSearch;
