@@ -23,6 +23,12 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [wasmReady, setWasmReady] = useState(false);
 
+  const handleSwap = () => {
+    const temp = searchFrom;
+    setSearchFrom(searchTo);
+    setSearchTo(temp);
+  };
+
   // Initialize WASM
   useEffect(() => {
     init().then(() => {
@@ -79,6 +85,7 @@ function App() {
             onFromChange={setSearchFrom}
             onToChange={setSearchTo}
             onSearch={handleSearch}
+            onSwap={handleSwap}
             loading={loading}
           />
 
