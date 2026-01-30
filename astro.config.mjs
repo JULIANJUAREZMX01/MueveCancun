@@ -1,5 +1,4 @@
 import { defineConfig } from 'astro/config';
-import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -9,7 +8,6 @@ export default defineConfig({
   output: 'static', // SSG para máximo performance
 
   integrations: [
-    react(), // Para islands
     sitemap(),
   ],
 
@@ -19,7 +17,8 @@ export default defineConfig({
       rollupOptions: {
         external: [
           '/wasm/route-calculator/route_calculator_bg.wasm',
-          '/wasm/spatial-index/spatial_index_bg.wasm'
+          '/wasm/spatial-index/spatial_index_bg.wasm',
+          '/wasm/route-calculator/route_calculator.js'
         ]
       }
     },

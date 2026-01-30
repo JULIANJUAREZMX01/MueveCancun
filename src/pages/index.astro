@@ -1,7 +1,7 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import RouteCalculator from '../islands/RouteCalculator.tsx';
-import InteractiveMap from '../islands/InteractiveMap.tsx';
+import RouteCalculator from '../components/RouteCalculator.astro';
+import InteractiveMap from '../components/InteractiveMap.astro';
 
 const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 ---
@@ -20,7 +20,7 @@ const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 
   <!-- Route Calculator Island -->
   <section class="max-w-2xl mx-auto mb-12">
-    <RouteCalculator client:only="react" />
+    <RouteCalculator />
   </section>
 
   <!-- Popular Routes (Static SEO Content) -->
@@ -88,7 +88,7 @@ const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
     <h2 class="text-3xl font-display font-bold text-gray-900 mb-6">
       Mapa Interactivo
     </h2>
-    <InteractiveMap client:only="react" mapboxToken={MAPBOX_TOKEN} />
+    <InteractiveMap mapboxToken={MAPBOX_TOKEN} />
   </section>
 
   <!-- Stats Section (Static) -->

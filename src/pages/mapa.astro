@@ -1,6 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import InteractiveMap from '../islands/InteractiveMap';
+import InteractiveMap from '../components/InteractiveMap.astro';
 
 const mapboxToken = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 ---
@@ -17,7 +17,7 @@ const mapboxToken = import.meta.env.PUBLIC_MAPBOX_TOKEN;
     </header>
 
     <div class="sunny-card overflow-hidden h-[70vh]">
-      <InteractiveMap client:only="react" mapboxToken={mapboxToken} />
+      <InteractiveMap mapboxToken={mapboxToken} />
     </div>
   </div>
 </MainLayout>
