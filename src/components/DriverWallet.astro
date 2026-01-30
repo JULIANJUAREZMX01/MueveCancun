@@ -1,0 +1,97 @@
+---
+---
+<div id="driver-wallet-container" class="bg-deep-navy text-white p-6 rounded-2xl shadow-2xl border-4 border-primary-500 min-h-[300px]">
+  <div id="wallet-loading" class="animate-pulse bg-gray-700 h-64 rounded-2xl w-full"></div>
+
+  <div id="wallet-content" class="hidden">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-black uppercase tracking-tighter text-primary-400">Pilot Wallet</h2>
+      <span class="bg-primary-500 text-[10px] px-2 py-1 rounded-md font-black shadow-lg">BETA 2.2</span>
+    </div>
+
+    <div class="bg-white/5 p-6 rounded-xl border border-white/10 mb-6 text-center">
+      <div class="text-5xl font-black mb-1 text-primary-400">
+        $<span id="display-balance">0</span> <span class="text-lg text-white/50">MXN</span>
+      </div>
+      <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Saldo de Operación Verificado</p>
+    </div>
+
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <button class="top-up-btn bg-green-600 hover:bg-green-500 py-2 rounded-xl font-black text-xs transition-all active:scale-95 shadow-lg" data-amount="100">+$100 MXN</button>
+        <button class="top-up-btn bg-green-600 hover:bg-green-500 py-2 rounded-xl font-black text-xs transition-all active:scale-95 shadow-lg" data-amount="500">+$500 MXN</button>
+      </div>
+      <button class="w-full bg-primary-600 hover:bg-primary-500 py-4 rounded-xl font-black text-sm transition-all transform active:scale-95 shadow-xl">
+        RETIRAR FONDOS (WITHDRAW)
+      </button>
+      <button class="w-full bg-white/5 hover:bg-white/10 py-4 rounded-xl font-black text-xs transition-all border border-white/10">
+        HISTORIAL DE VIAJES
+      </button>
+    </div>
+
+    <div class="mt-8 pt-6 border-t border-white/10">
+      <div class="flex items-center gap-3 text-[10px] text-primary-400 font-black uppercase tracking-widest">
+        <span class="relative flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
+        </span>
+        Sincronizado: Nodo Cancún 05
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { openDB } from 'idb';
+
+  const loader = document.getElementById('wallet-loading');
+  const content = document.getElementById('wallet-content');
+  const displayBalance = document.getElementById('display-balance');
+  const topUpBtns = document.querySelectorAll('.top-up-btn');
+
+  async function initDB() {
+    const db = await openDB('cancunmueve-db', 2, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('wallet-status')) {
+          db.createObjectStore('wallet-status');
+        }
+      },
+    });
+    return db;
+  }
+
+  async function updateBalanceDisplay() {
+    const db = await initDB();
+    let currentBalance = await db.get('wallet-status', 'driver_current');
+    if (currentBalance === undefined) {
+      currentBalance = 180.0;
+      await db.put('wallet-status', currentBalance, 'driver_current');
+    }
+    if (displayBalance) displayBalance.textContent = currentBalance.toFixed(0);
+
+    if (loader) loader.classList.add('hidden');
+    if (content) content.classList.remove('hidden');
+  }
+
+  topUpBtns.forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const amount = parseInt((e.currentTarget as HTMLElement).dataset.amount || '0');
+      const db = await initDB();
+      let currentBalance = await db.get('wallet-status', 'driver_current') || 0;
+      currentBalance += amount;
+      await db.put('wallet-status', currentBalance, 'driver_current');
+
+      // Update display
+      if (displayBalance) displayBalance.textContent = currentBalance.toFixed(0);
+
+      // Visual feedback
+      const container = document.getElementById('driver-wallet-container');
+      if (container) {
+        container.classList.add('ring-4', 'ring-green-500');
+        setTimeout(() => container.classList.remove('ring-4', 'ring-green-500'), 500);
+      }
+    });
+  });
+
+  updateBalanceDisplay();
+</script>

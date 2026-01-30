@@ -1,6 +1,6 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import DriverWallet from '../../islands/DriverWallet.tsx';
+import DriverWallet from '../../components/DriverWallet.astro';
 ---
 
 <MainLayout title="Driver Dashboard">
@@ -13,9 +13,9 @@ import DriverWallet from '../../islands/DriverWallet.tsx';
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-      <DriverWallet client:only="react" />
+      <DriverWallet />
 
-      <div className="space-y-6">
+      <div class="space-y-6">
         <div class="sunny-card p-6 border-l-8 border-primary-500">
           <h3 class="text-lg font-black text-deep-navy mb-2">Instrucciones de Servicio</h3>
           <ul class="text-sm text-gray-600 space-y-3 font-medium">

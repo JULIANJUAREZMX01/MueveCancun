@@ -1,8 +1,8 @@
 {
-  "version": "1.0.0-enriched",
+  "version": "2.3.0-normalized",
   "metadata": {
-    "version": "1.0.0",
-    "fecha_actualizacion": "2026-01-29",
+    "version": "2.3.0",
+    "fecha_actualizacion": "2026-01-30",
     "fuentes": "70+ documentos web (español/inglés)",
     "status_sistema": "En transición hacia MOBI 2025-2027",
     "advertencia_critica": "Tarifas aumentadas el 1 dic 2025. Sistema sujeto a cambios mayores 2026-2027"
@@ -29,7 +29,7 @@
       "id": "HUB_CRUCERO_001",
       "nombre": "El Crucero / Parque Leona Vicario",
       "lat": 21.1576,
-      "lon": -86.8269,
+      "lng": -86.8269,
       "tipo": "hub_principal",
       "importancia": "MAXIMA - Nodo central de TODO el sistema",
       "rutas_convergentes": [
@@ -54,7 +54,7 @@
       "id": "HUB_PLAZA_AMERICAS_001",
       "nombre": "Plaza Las Américas",
       "lat": 21.141,
-      "lon": -86.843,
+      "lng": -86.843,
       "tipo": "hub_secundario",
       "importancia": "ALTA - Terminal urbana y comercial",
       "rutas_convergentes": [
@@ -72,7 +72,7 @@
       "id": "HUB_ADO_CENTRO_001",
       "nombre": "Terminal ADO Cancún Centro",
       "lat": 21.1586,
-      "lon": -86.8259,
+      "lng": -86.8259,
       "tipo": "hub_foraneo",
       "importancia": "MAXIMA - Conexión foránea",
       "servicios": [
@@ -394,13 +394,13 @@
   },
   "sistema_mobi": {
     "status": "En implementación fase 1 (2025-2027)",
-    "cambios": {
+    "changes": {
       "tarifas": "Ya implementado +3 pesos (1 dic 2025)",
       "flota": "Renovación inicia 2026 (Chetumal → Cancún)",
       "combis": "Desaparición gradual",
       "pago": "Sistema digital en desarrollo"
     },
-    "impacto": "Rutas actuales CAMBIARÁN significativamente en 2026-2027"
+    "impacto": "Rutas actuales CAMBIARÁN significativamente in 2026-2027"
   },
   "apps_recomendadas": [
     "Moovit (rutas IMOVEQROO en tiempo real)",

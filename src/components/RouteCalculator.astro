@@ -1,0 +1,311 @@
+---
+---
+<div class="sunny-card p-6 animate-fade-in shadow-xl border-2 border-primary-100" id="route-calculator">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-display font-black text-deep-navy uppercase tracking-tighter" id="title-text">
+      🧭 Brújula Urbana
+    </h2>
+    <div class="flex items-center gap-3">
+       <div id="balance-badge" class="text-[10px] font-black px-2 py-1 rounded shadow-inner bg-gray-100 text-gray-700">
+         PILOTO: <span id="balance-amount">0</span> MXN
+       </div>
+      <button
+        id="lang-toggle"
+        class="text-xs bg-gray-200 px-2 py-1 rounded font-black hover:bg-gray-300 transition-colors"
+      >
+        EN
+      </button>
+    </div>
+  </div>
+
+  <div id="balance-warning" class="hidden mb-4 p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-800 text-xs font-black uppercase tracking-tight">
+    ⚠️ <span id="warning-text">Saldo insuficiente para activar Brújula Urbana ($180 MXN req).</span>
+  </div>
+
+  <div class="space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label for="origin-input" class="block text-[10px] font-black text-gray-400 uppercase mb-1">📍 <span id="label-origin">Origen</span></label>
+        <input
+          id="origin-input"
+          type="text"
+          value="Walmart"
+          class="w-full px-3 py-2 border-2 rounded-xl focus:ring-2 focus:ring-primary-500 border-gray-100 font-bold"
+          list="locations"
+        />
+      </div>
+      <div>
+        <label for="destination-input" class="block text-[10px] font-black text-gray-400 uppercase mb-1">🏁 <span id="label-destination">Destino</span></label>
+        <input
+          id="destination-input"
+          type="text"
+          value="Aeropuerto Terminal 2"
+          class="w-full px-3 py-2 border-2 rounded-xl focus:ring-2 focus:ring-primary-500 border-gray-100 font-bold"
+          list="locations"
+        />
+      </div>
+      <datalist id="locations">
+        <option value="El Crucero Hub"></option>
+        <option value="ADO Centro / Terminal"></option>
+        <option value="Plaza Las Américas"></option>
+        <option value="Aeropuerto Terminal 2"></option>
+        <option value="Aeropuerto Terminal 4"></option>
+        <option value="Muelle Ultramar (Puerto Juárez)"></option>
+        <option value="Playa Delfines (El Mirador)"></option>
+        <option value="Playa del Carmen Centro"></option>
+        <option value="Walmart"></option>
+        <option value="Villas Otoch Paraíso"></option>
+        <option value="Hospital General (Av. Kabah)"></option>
+      </datalist>
+    </div>
+
+    <div class="flex items-center space-x-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+      <div class="flex items-center space-x-2">
+        <label class="text-[10px] font-black uppercase text-gray-500">💺 <span id="label-seats">Asientos</span></label>
+        <select id="seats-input" class="border rounded-md px-1 font-black bg-white">
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
+      <div class="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="tourist-checkbox"
+          class="w-4 h-4 rounded text-primary-600 border-gray-300"
+        />
+        <label for="tourist-checkbox" class="text-[10px] font-black uppercase text-gray-500 cursor-pointer">🌴 <span id="label-tourist">Turista</span></label>
+      </div>
+    </div>
+
+    <button
+      id="calculate-btn"
+      class="w-full premium-button py-4 text-xl disabled:opacity-50 disabled:cursor-not-allowed font-black uppercase tracking-tighter shadow-lg"
+    >
+      <span id="btn-text">Trazar Ruta</span>
+    </button>
+  </div>
+
+  <div id="results-container" class="hidden"></div>
+</div>
+
+<script>
+  import init, { calculate_route, calculate_trip_cost } from '../wasm/route-calculator/route_calculator.js';
+  import { openDB } from 'idb';
+
+  const MOCK_GEO = {
+    'El Crucero Hub': { lat: 21.1576, lng: -86.8269 },
+    'ADO Centro / Terminal': { lat: 21.1586, lng: -86.8259 },
+    'Plaza Las Américas': { lat: 21.1410, lng: -86.8430 },
+    'Aeropuerto Terminal 2': { lat: 21.0417, lng: -86.8761 },
+    'Aeropuerto Terminal 4': { lat: 21.0400, lng: -86.8750 },
+    'Muelle Ultramar (Puerto Juárez)': { lat: 21.2070, lng: -86.8020 },
+    'Playa Delfines (El Mirador)': { lat: 21.0850, lng: -86.7750 },
+    'Playa del Carmen Centro': { lat: 20.6296, lng: -87.0739 },
+    'Walmart': { lat: 21.1595, lng: -86.8365 },
+    'Villas Otoch Paraíso': { lat: 21.1380, lng: -86.8650 },
+    'Hospital General (Av. Kabah)': { lat: 21.1500, lng: -86.8400 },
+  };
+
+  const TRANSLATIONS = {
+    es: {
+      title: '🧭 Brújula Urbana',
+      pilot: 'PILOTO:',
+      warning: 'Saldo insuficiente para activar Brújula Urbana ($180 MXN req).',
+      origin: 'Origen',
+      destination: 'Destino',
+      seats: 'Asientos',
+      tourist: 'Turista',
+      calculate: 'Trazar Ruta',
+      calculating: 'Calculando...',
+      suggested: 'Conexión Sugerida',
+      cashOnly: 'Pago en Efectivo',
+      instructions: 'Instrucciones'
+    },
+    en: {
+      title: '🧭 Urban Compass',
+      pilot: 'PILOT:',
+      warning: 'Insufficient balance to activate Urban Compass ($180 MXN req).',
+      origin: 'Origin',
+      destination: 'Destination',
+      seats: 'Seats',
+      tourist: 'Tourist',
+      calculate: 'Find Route',
+      calculating: 'Calculating...',
+      suggested: 'Suggested Connection',
+      cashOnly: 'Cash Only',
+      instructions: 'Instructions'
+    }
+  };
+
+  let currentLang = 'es';
+  let balance = 0;
+  let hasBalance = false;
+  let wasmLoaded = false;
+
+  const btn = document.getElementById('calculate-btn');
+  const resultsContainer = document.getElementById('results-container');
+  const langToggle = document.getElementById('lang-toggle');
+  const balanceAmount = document.getElementById('balance-amount');
+  const balanceBadge = document.getElementById('balance-badge');
+  const balanceWarning = document.getElementById('balance-warning');
+
+  async function updateBalance() {
+    const db = await openDB('cancunmueve-db', 2);
+    let currentBalance = await db.get('wallet-status', 'driver_current');
+    if (currentBalance === undefined) {
+      currentBalance = 180.0;
+      await db.put('wallet-status', currentBalance, 'driver_current');
+    }
+    balance = currentBalance;
+    hasBalance = balance >= 180.0;
+
+    if (balanceAmount) balanceAmount.textContent = balance.toFixed(0);
+
+    if (balanceBadge) {
+      balanceBadge.className = `text-[10px] font-black px-2 py-1 rounded shadow-inner ${hasBalance ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+    }
+
+    if (balanceWarning) {
+      balanceWarning.classList.toggle('hidden', hasBalance);
+    }
+
+    if (btn) (btn as HTMLButtonElement).disabled = !hasBalance || !wasmLoaded;
+  }
+
+  function updateUI() {
+    const t = TRANSLATIONS[currentLang];
+    const titleText = document.getElementById('title-text');
+    if (titleText) titleText.textContent = t.title;
+
+    const labelOrigin = document.getElementById('label-origin');
+    if (labelOrigin) labelOrigin.textContent = t.origin;
+
+    const labelDestination = document.getElementById('label-destination');
+    if (labelDestination) labelDestination.textContent = t.destination;
+
+    const labelSeats = document.getElementById('label-seats');
+    if (labelSeats) labelSeats.textContent = t.seats;
+
+    const labelTourist = document.getElementById('label-tourist');
+    if (labelTourist) labelTourist.textContent = t.tourist;
+
+    const btnText = document.getElementById('btn-text');
+    if (btnText) btnText.textContent = t.calculate;
+
+    const warningText = document.getElementById('warning-text');
+    if (warningText) warningText.textContent = t.warning;
+
+    if (langToggle) langToggle.textContent = currentLang === 'es' ? 'EN' : 'ES';
+  }
+
+  async function start() {
+    try {
+      await init();
+      wasmLoaded = true;
+      await updateBalance();
+      updateUI();
+    } catch (e) {
+      console.error("WASM Load Error", e);
+    }
+  }
+
+  langToggle?.addEventListener('click', () => {
+    currentLang = currentLang === 'es' ? 'en' : 'es';
+    updateUI();
+  });
+
+  btn?.addEventListener('click', async () => {
+    if (!wasmLoaded || !hasBalance) return;
+
+    const fromVal = (document.getElementById('origin-input') as HTMLInputElement).value;
+    const toVal = (document.getElementById('destination-input') as HTMLInputElement).value;
+    const seatsVal = parseInt((document.getElementById('seats-input') as HTMLSelectElement).value);
+    const isTouristVal = (document.getElementById('tourist-checkbox') as HTMLInputElement).checked;
+
+    const fromCoords = MOCK_GEO[fromVal] || { lat: 21.1619, lng: -86.8515 };
+    const toCoords = MOCK_GEO[toVal] || { lat: 21.0412, lng: -86.8725 };
+
+    const btnText = document.getElementById('btn-text');
+    if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculating;
+    (btn as HTMLButtonElement).disabled = true;
+
+    try {
+      const response = await fetch('/data/master_routes.json');
+      const routesData = await response.json();
+
+      const res = calculate_route(
+        fromCoords.lat,
+        fromCoords.lng,
+        toCoords.lat,
+        toCoords.lng,
+        routesData
+      );
+
+      if (res.success) {
+        const costRes = calculate_trip_cost(res.distance_km, seatsVal, isTouristVal);
+        renderResults(res, costRes);
+      } else {
+        renderError(res.error?.[currentLang] || "Unknown Error");
+      }
+    } catch (error) {
+      console.error('Calculation error:', error);
+      renderError("Calculation error");
+    } finally {
+      if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculate;
+      (btn as HTMLButtonElement).disabled = false;
+    }
+  });
+
+  function renderResults(res, cost) {
+    if (!resultsContainer) return;
+    const t = TRANSLATIONS[currentLang];
+
+    resultsContainer.className = "mt-6 space-y-4 animate-slide-up bg-white p-5 rounded-2xl border-4 border-primary-500 shadow-2xl block";
+    resultsContainer.innerHTML = `
+      <div class="flex justify-between items-start border-b pb-4">
+        <div>
+          <span class="text-[10px] uppercase font-black text-primary-600 tracking-widest">${t.suggested}</span>
+          <div class="text-xl font-black text-deep-navy">${res.routes.join(' ➔ ')}</div>
+        </div>
+        <div class="text-right">
+          <div class="text-3xl font-black text-primary-600">$${cost.cost_mxn.toFixed(0)}</div>
+          <div class="text-[10px] font-black text-gray-400 uppercase tracking-tighter leading-none">${t.cashOnly}</div>
+        </div>
+      </div>
+
+      ${res.airport_warning ? `
+        <div class="p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-700 text-[11px] font-black flex items-start gap-3 leading-tight shadow-sm">
+          <span class="text-2xl">🚨</span>
+          <p>${res.airport_warning[currentLang]}</p>
+        </div>
+      ` : ''}
+
+      <div class="space-y-4">
+        <h4 class="text-[10px] uppercase font-black text-gray-300 tracking-widest">${t.instructions}</h4>
+        ${res.instructions.map((inst, idx) => `
+          <div class="flex gap-4 text-sm font-black text-gray-800 items-start">
+            <span class="flex-shrink-0 w-6 h-6 bg-deep-navy text-white rounded-full flex items-center justify-center text-[10px] font-black shadow-md border-2 border-primary-400">${idx + 1}</span>
+            <span class="pt-0.5">${inst[currentLang]}</span>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="pt-4 mt-2 border-t text-[10px] text-gray-400 font-black italic text-center uppercase tracking-widest">
+        ${cost.info[currentLang]}
+      </div>
+    `;
+  }
+
+  function renderError(msg) {
+    if (!resultsContainer) return;
+    resultsContainer.className = "mt-6 p-4 bg-red-50 text-red-700 rounded-xl border-2 border-red-100 font-black text-xs flex items-center gap-2 uppercase block";
+    resultsContainer.innerHTML = `
+      <span>❌</span>
+      <span>${msg}</span>
+    `;
+  }
+
+  start();
+</script>

@@ -1,39 +1,52 @@
-import { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-
-interface InteractiveMapProps {
+---
+interface Props {
   mapboxToken: string;
   center?: [number, number];
   zoom?: number;
 }
 
-export default function InteractiveMap({
+const {
   mapboxToken,
-  center = [-86.8515, 21.1619], // Default: Cancún center
+  center = [-86.8515, 21.1619],
   zoom = 12
-}: InteractiveMapProps) {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
+} = Astro.props;
+---
 
-  useEffect(() => {
-    if (!mapContainer.current) return;
+<div class="relative w-full h-[500px] overflow-hidden rounded-xl border border-gray-200 shadow-inner">
+  <div id="map-container" class="w-full h-full" data-token={mapboxToken} data-center={JSON.stringify(center)} data-zoom={zoom}></div>
 
-    mapboxgl.accessToken = mapboxToken;
+  <div id="map-loader" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
+      <p class="text-gray-600 font-medium">Cargando mapa de CancúnMueve...</p>
+    </div>
+  </div>
+</div>
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
+<script>
+  import mapboxgl from 'mapbox-gl';
+  import 'mapbox-gl/dist/mapbox-gl.css';
+
+  const container = document.getElementById('map-container');
+  const loader = document.getElementById('map-loader');
+
+  if (container) {
+    const token = container.dataset.token;
+    const center = JSON.parse(container.dataset.center);
+    const zoom = parseFloat(container.dataset.zoom);
+
+    mapboxgl.accessToken = token;
+
+    const map = new mapboxgl.Map({
+      container: 'map-container',
       style: 'mapbox://styles/mapbox/streets-v12',
       center: center,
       zoom: zoom,
     });
 
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Add geolocate control
-    map.current.addControl(
+    map.addControl(
       new mapboxgl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
         trackUserLocation: true,
@@ -42,22 +55,19 @@ export default function InteractiveMap({
       'top-right'
     );
 
-    // Load routes when map loads
-    map.current.on('load', async () => {
+    map.on('load', async () => {
       try {
         const response = await fetch('/data/master_routes.json');
         const data = await response.json();
 
-        // Add routes to map
-        data.rutas.forEach((route: any) => {
-          // If we have geometry, use it. Otherwise, we could draw lines between stops.
+        data.rutas.forEach((route) => {
           if (route.geometry) {
-            map.current!.addSource(`route-${route.id}`, {
+            map.addSource(`route-${route.id}`, {
               type: 'geojson',
               data: route.geometry
             });
 
-            map.current!.addLayer({
+            map.addLayer({
               id: `route-${route.id}`,
               type: 'line',
               source: `route-${route.id}`,
@@ -68,9 +78,8 @@ export default function InteractiveMap({
               }
             });
           } else if (route.paradas && route.paradas.length > 1) {
-            // Fallback: draw straight lines between stops
-            const coordinates = route.paradas.map((s: any) => [s.lng, s.lat]);
-            map.current!.addSource(`route-${route.id}`, {
+            const coordinates = route.paradas.map((s) => [s.lng, s.lat]);
+            map.addSource(`route-${route.id}`, {
               type: 'geojson',
               data: {
                 type: 'Feature',
@@ -82,7 +91,7 @@ export default function InteractiveMap({
               }
             });
 
-            map.current!.addLayer({
+            map.addLayer({
               id: `route-${route.id}`,
               type: 'line',
               source: `route-${route.id}`,
@@ -95,9 +104,8 @@ export default function InteractiveMap({
             });
           }
 
-          // Add stops
           if (route.paradas) {
-            route.paradas.forEach((stop: any) => {
+            route.paradas.forEach((stop) => {
               const el = document.createElement('div');
               el.className = 'stop-marker';
               el.style.backgroundColor = route.color;
@@ -118,33 +126,16 @@ export default function InteractiveMap({
                     </div>
                   `)
                 )
-                .addTo(map.current!);
+                .addTo(map);
             });
           }
         });
 
-        setMapLoaded(true);
+        if (loader) loader.classList.add('hidden');
         console.log('✅ Map loaded with routes');
       } catch (error) {
         console.error('Failed to load routes:', error);
       }
     });
-
-    return () => map.current?.remove();
-  }, [mapboxToken, center, zoom]);
-
-  return (
-    <div className="relative w-full h-full overflow-hidden rounded-xl border border-gray-200 shadow-inner">
-      <div ref={mapContainer} className="w-full h-full" />
-
-      {!mapLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-            <p className="text-gray-600 font-medium">Cargando mapa de CancúnMueve...</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+  }
+</script>
