@@ -43,8 +43,14 @@ const MOCK_GEO: Record<string, { lat: number; lng: number }> = {
   'OXXO Villas Otoch Paraíso': { lat: 21.1685, lng: -86.8850 }
 };
 
+interface WasmModule {
+  calculate_route: (lat1: number, lon1: number, lat2: number, lon2: number, routes: Record<string, unknown>) => RouteResponse;
+  calculate_trip_cost: (distance: number, seats: number, isTourist: boolean) => CostResponse;
+  default: () => Promise<unknown>;
+}
+
 export default function RouteCalculator() {
-  const [wasmModule, setWasmModule] = useState<any>(null);
+  const [wasmModule, setWasmModule] = useState<WasmModule | null>(null);
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState<number>(0);
   const [hasSufficientBalance, setHasSufficientBalance] = useState(false);

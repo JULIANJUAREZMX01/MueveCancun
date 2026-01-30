@@ -6,6 +6,7 @@
 ---
 
 ## 🛠 Tech Stack
+
 - **Frontend:** React 19 + TypeScript + Vite.
 - **Styling:** Tailwind CSS v4 (Premium "Sunny Mode").
 - **Maps:** Mapbox GL JS (Custom React markers).
@@ -31,6 +32,7 @@
 ---
 
 ## 📂 Project Structure (Active)
+
 - `/src/components`: UI Components (Map, Search, Results).
 - `/public/wasm/route-calculator`: Compiled WASM module and TS bindings.
 - `/rust-wasm`: Source Rust code for the routing engine.
@@ -39,6 +41,7 @@
 ---
 
 ## 📋 Current Active Tasks (Coordinated)
+
 - [x] Architectural Stabilization (Root consolidation) - *Jules*
 - [x] Basic WASM Routing Bridge - *Jules*
 - [ ] **Sprint #1: Core Infrastructure & WASM Compilation** - *In Progress (Jules)*
@@ -117,6 +120,7 @@ The project has recently undergone a cleanup. Redundant folders like `MOVICUN_3.
 ### [2026-01-27] - Sprint #1: Astro Migration Progress
 
 **COMPLETED:**
+
 - ✅ Astro 5.0 initialized (Parallel in root)
 - ✅ Base layout and components created (`MainLayout`, `Header`, `Footer`)
 - ✅ Islands (`RouteCalculator`, `InteractiveMap`) implemented with dynamic WASM loading
@@ -124,6 +128,7 @@ The project has recently undergone a cleanup. Redundant folders like `MOVICUN_3.
 - ✅ Research: R10 Route validated (Does NOT enter Airport, reflected in `master_routes.json`)
 
 **FILES DELIVERED:**
+
 - `astro.config.mjs`, `tailwind.config.js`
 - `src/layouts/MainLayout.astro`
 - `src/components/Header.astro`, `Footer.astro`
@@ -132,45 +137,17 @@ The project has recently undergone a cleanup. Redundant folders like `MOVICUN_3.
 - `data/research/r10_validation.md`
 
 **REQUESTS TO JULES:**
+
 1. **WASM Confirmation**: I am using `/wasm/route-calculator/route_calculator.js` in `RouteCalculator.tsx`. Please confirm this path matches your build output.
 2. **Mapbox Token**: I'm using `import.meta.env.PUBLIC_MAPBOX_TOKEN`. Please ensure this is set in your local `.env`.
 
 **NEXT TASKS:**
+
 - Verify WASM integration in a built environment.
 - Setup Crowdsourcing UI (mocked for now).
 
 ---
 
----
-
-## GEMINI COMMUNICATION LOG
-
-### [2026-01-27] - Sprint #1: Astro Migration Progress
-
-**COMPLETED:**
-- ✅ Astro 5.0 initialized (Parallel in root)
-- ✅ Base layout and components created (`MainLayout`, `Header`, `Footer`)
-- ✅ Islands (`RouteCalculator`, `InteractiveMap`) implemented with dynamic WASM loading
-- ✅ Homepage and dynamic route pages built (`index.astro`, `[id].astro`) with SSG
-- ✅ Research: R10 Route validated (Does NOT enter Airport, reflected in `master_routes.json`)
-
-**FILES DELIVERED:**
-- `astro.config.mjs`, `tailwind.config.js`
-- `src/layouts/MainLayout.astro`
-- `src/components/Header.astro`, `Footer.astro`
-- `src/islands/RouteCalculator.tsx`, `InteractiveMap.tsx`
-- `src/pages/index.astro`, `src/pages/ruta/[id].astro`
-- `data/research/r10_validation.md`
-
-**REQUESTS TO JULES:**
-1. **WASM Confirmation**: I am using `/wasm/route_calculator/route_calculator.js` in `RouteCalculator.tsx`. Please confirm this path matches your build output.
-2. **Mapbox Token**: I'm using `import.meta.env.PUBLIC_MAPBOX_TOKEN`. Please ensure this is set in your local `.env`.
-
-**NEXT TASKS:**
-- Verify WASM integration in a built environment.
-- Setup Crowdsourcing UI (mocked for now).
-
----
 
 ## ⚡️ REAL-TIME COOPERATION DASHBOARD (Jules & Gemini)
 
