@@ -27,6 +27,321 @@
 
 ---
 
+## 🎨 PHASE 0: UI TEMPLATE INTEGRATION (CRITICAL - DO FIRST)
+
+**INSTRUCTION:** The current UI uses custom CSS. You MUST replace it with a beautiful, pre-built Astro template.
+
+### Recommended Templates:
+1. **Astro Sphere** (Modern, clean)
+   - https://github.com/markhorn-dev/astro-sphere
+   - Perfect for PWAs with dark mode support
+
+2. **Astro Paper** (Documentation-focused)
+   - https://github.com/satnaing/astro-paper
+   - Lightweight, fast, SEO-optimized
+
+3. **Astro Wind** (Landing pages)
+   - https://github.com/onwidget/astrowind
+   - Beautiful components, no custom CSS needed
+
+### Integration Steps:
+```bash
+# 1. Clone template into temp directory
+git clone https://github.com/markhorn-dev/astro-sphere astro-template-temp
+
+# 2. Copy template structure
+cp -r astro-template-temp/src/layouts/* src/layouts/
+cp -r astro-template-temp/src/components/* src/components/
+cp astro-template-temp/tailwind.config.mjs .
+cp astro-template-temp/astro.config.mjs . # Merge with existing config
+
+# 3. Update dependencies
+pnpm add @astrojs/tailwind tailwindcss
+
+# 4. Remove custom CSS
+rm -rf src/styles/*.css  # Keep only template styles
+```
+
+### UI Requirements:
+- ✅ **Dark Mode Toggle** (preserve user preference in localStorage)
+- ✅ **Responsive Navigation** (mobile hamburger menu)
+- ✅ **Card Components** for routes display
+- ✅ **Form Components** for RouteCalculator inputs
+- ✅ **Modal/Dialog** for warnings (Airport Gatekeeper)
+- ✅ **Loading States** for WASM operations
+
+**DO NOT write any custom CSS. Use template utility classes only.**
+
+---
+
+## 📊 PHASE 00: BRANCH MANAGEMENT & CLEANUP (DO SECOND)
+
+### Current Branch Situation:
+```bash
+# List current branches
+git branch -a
+
+# Expected output shows messy branch names like:
+# - feature/cancunmueve-base-structure-phase-1-2-3-5-15744161379540395713
+# - feature/urban-compass-v2-sync
+```
+
+### Your Tasks:
+
+#### 1. Resolve All Merge Conflicts
+```bash
+# Switch to main/master branch
+git checkout master  # or main
+
+# Attempt merge from long branch name
+git merge feature/cancunmueve-base-structure-phase-1-2-3-5-15744161379540395713
+
+# If conflicts occur:
+# - Manually resolve in VS Code
+# - Prefer INCOMING changes (newer code)
+# - Test build after each resolution
+# - Commit: git commit -m "chore: resolve merge conflicts"
+
+# Merge urban-compass branch
+git merge feature/urban-compass-v2-sync
+```
+
+#### 2. Rename Branches to Logical Names
+```bash
+# Rename messy branch to logical name
+git branch -m feature/cancunmueve-base-structure-phase-1-2-3-5-15744161379540395713 feature/astro-base
+
+# Rename urban-compass (optional, it's already decent)
+git branch -m feature/urban-compass-v2-sync feature/astro-wasm-migration
+
+# Push renamed branches
+git push origin :feature/cancunmueve-base-structure-phase-1-2-3-5-15744161379540395713
+git push origin feature/astro-base
+
+git push origin :feature/urban-compass-v2-sync
+git push origin feature/astro-wasm-migration
+```
+
+#### 3. Create Clean Development Branch
+```bash
+# Create new main development branch from master
+git checkout master
+git pull origin master
+git checkout -b develop
+
+# Push to remote
+git push -u origin develop
+```
+
+#### 4. Establish Branch Naming Convention
+**From now on, use this convention:**
+
+- `feature/[component]-[action]` - New features
+  - Example: `feature/wallet-balance-gatekeeper`
+  - Example: `feature/map-route-rendering`
+
+- `fix/[issue]-[description]` - Bug fixes
+  - Example: `fix/wasm-loading-timeout`
+  - Example: `fix/idb-connection-error`
+
+- `refactor/[component]` - Code improvements
+  - Example: `refactor/route-calculator`
+
+- `docs/[section]` - Documentation updates
+  - Example: `docs/deployment-guide`
+
+**Document this in `.github/BRANCH_NAMING.md`**
+
+---
+
+## 🔌 PHASE 000: COMPONENT WIRING & LOGIC INTEGRATION (DO THIRD)
+
+**CRITICAL:** All UI components must be fully functional. No broken buttons or disconnected logic.
+
+### RouteCalculator.astro - Complete Wiring Checklist
+
+#### HTML Structure Audit:
+```html
+<!-- REQUIRED ELEMENTS (verify IDs match JavaScript) -->
+<input id="origin-input" />
+<input id="destination-input" />
+<button id="swap-btn">⇆ Swap</button>
+<button id="calculate-btn">Trazar Ruta</button>
+<input type="number" id="seats-input" value="1" />
+<input type="checkbox" id="tourist-checkbox" />
+<div id="balance-display">PILOTO: <span id="balance-amount">0</span> MXN</div>
+<div id="results-container"></div>
+```
+
+#### JavaScript Event Listeners Checklist:
+```javascript
+// VERIFY ALL OF THESE EXIST AND WORK:
+
+// 1. Swap Button
+document.getElementById('swap-btn').addEventListener('click', () => {
+  const origin = originInput.value;
+  originInput.value = destInput.value;
+  destInput.value = origin;
+});
+
+// 2. Calculate Button
+document.getElementById('calculate-btn').addEventListener('click', async () => {
+  // Check balance >= 180
+  // Call WASM calculate_route
+  // Display results
+  // Show airport warning if applicable
+});
+
+// 3. Seats Input (update cost on change)
+seatsInput.addEventListener('input', () => {
+  updateCostEstimate();
+});
+
+// 4. Tourist Checkbox (update cost on change)
+touristCheckbox.addEventListener('change', () => {
+  updateCostEstimate();
+});
+```
+
+#### WASM Integration Checklist:
+```javascript
+// VERIFY THIS FLOW WORKS:
+const wasmModule = await import(/* @vite-ignore */ '/wasm/route-calculator/route_calculator.js');
+await wasmModule.default();
+
+const routeData = await fetch('/data/master_routes.json').then(r => r.json());
+
+const result = wasmModule.calculate_route(
+  originLat, originLng,
+  destLat, destLng,
+  routeData
+);
+
+// Display result.instructions
+// Show result.airport_warning if exists
+// Display result.estimated_cost_mxn
+```
+
+### InteractiveMap.astro - Complete Wiring Checklist
+
+#### Mapbox Integration:
+```javascript
+// VERIFY:
+import mapboxgl from 'mapbox-gl';
+
+mapboxgl.accessToken = mapboxToken;
+const map = new mapboxgl.Map({
+  container: 'map-container',
+  style: 'mapbox://styles/mapbox/dark-v11', // Use dark theme
+  center: [-86.8515, 21.1619],
+  zoom: 12
+});
+
+// Add controls
+map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+map.addControl(
+  new mapboxgl.GeolocateControl({
+    positionOptions: { enableHighAccuracy: true },
+    trackUserLocation: true
+  }),
+  'top-right'
+);
+
+// Load routes on map load
+map.on('load', async () => {
+  const routes = await fetch('/data/master_routes.json').then(r => r.json());
+  
+  routes.rutas.forEach(route => {
+    // Add route polyline
+    // Add stop markers
+    // Add popups with route info
+  });
+});
+```
+
+### DriverWallet.astro - Complete Wiring Checklist
+
+#### Top-Up Buttons:
+```javascript
+// VERIFY ALL BUTTONS WORK:
+document.querySelectorAll('.top-up-btn').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    const amount = parseInt(e.target.dataset.amount);
+    
+    // 1. Get current balance from IDB
+    const db = await openDB('cancunmueve-db', 2);
+    const current = await db.get('wallet-status', 'driver_current') || 0;
+    
+    // 2. Add amount
+    const newBalance = current + amount;
+    
+    // 3. Save to IDB
+    await db.put('wallet-status', newBalance, 'driver_current');
+    
+    // 4. Update UI
+    document.getElementById('wallet-amount').textContent = `$${newBalance}`;
+    
+    // 5. Animate
+    // ... green flash effect
+  });
+});
+```
+
+### Navigation Menu - Wiring Checklist
+
+#### Verify All Links Work:
+```html
+<nav>
+  <a href="/">Inicio</a>
+  <a href="/mapa">Mapa Interactivo</a>
+  <a href="/rutas">Todas las Rutas</a>
+  <a href="/driver">Panel Conductor</a>
+  <a href="/contribuir">Contribuir</a>
+</nav>
+```
+
+#### Mobile Menu Toggle:
+```javascript
+// VERIFY:
+const menuToggle = document.getElementById('mobile-menu-toggle');
+const mobileMenu = document.getElementById('mobile-menu');
+
+menuToggle.addEventListener('click', () => {
+  mobileMenu.classList.toggle('hidden');
+});
+```
+
+### Testing Script for Wiring:
+```javascript
+// Create: scripts/test-wiring.mjs
+console.log('🔌 Testing Component Wiring...\n');
+
+// Test 1: RouteCalculator buttons exist
+const calcBtn = document.getElementById('calculate-btn');
+const swapBtn = document.getElementById('swap-btn');
+console.log('RouteCalculator buttons:', {
+  calculate: !!calcBtn,
+  swap: !!swapBtn
+});
+
+// Test 2: Event listeners attached
+console.log('Event listeners:', {
+  calculate: calcBtn?._events?.click !== undefined,
+  swap: swapBtn?._events?.click !== undefined
+});
+
+// Test 3: WASM loaded
+console.log('WASM module:', window.wasmModule ? 'LOADED' : 'NOT LOADED');
+
+// Test 4: IndexedDB accessible
+const dbTest = await openDB('cancunmueve-db', 2);
+console.log('IndexedDB:', dbTest ? 'CONNECTED' : 'FAILED');
+
+console.log('\n✅ Wiring test complete');
+```
+
+---
+
 ## 🔍 YOUR MISSION (Complete Autonomously)
 
 ### Phase 1: Environment Setup & Validation (30 min)
