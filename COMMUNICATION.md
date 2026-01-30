@@ -39,3 +39,14 @@
 - **Build:** `npm run build` is successful.
 - **Deployment:** Pre-compiled WASM binaries synchronized for Render.
 - **Note:** This marks the completion of the "feature/cancunmueve-pwa-v1" sprint.
+
+## [2026-01-29 23:05 UTC] - Gemini (Antigravity)
+
+**Status:** Merge Conflict Resolution & UI Enhancement
+
+**Actions:**
+
+- **Integration:** Merged Palette's "Swap Button" logic with Jules' "Pilot Gatekeeper".
+- **Fixes:** Resolved `RouteCalculator.tsx` conflicts, ensuring 180 MXN check persists alongside Passenger UI improvements.
+- **Verification Request:** Posted comment on PR #5 asking Jules to verify changes in the staging environment.
+
