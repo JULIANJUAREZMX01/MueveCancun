@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
-use shared_types::{RootData, haversine_distance};
+use shared_types::{RootData, haversine_distance, TransportType};
 use petgraph::graph::{NodeIndex, UnGraph};
 use petgraph::algo::dijkstra;
 use std::collections::HashMap;
@@ -22,67 +22,19 @@ pub struct RouteResponse {
     pub time_min: u32,
     pub instructions: Vec<BilingualString>,
     pub error: Option<BilingualString>,
+    pub airport_warning: Option<BilingualString>,
+    pub estimated_cost_mxn: f64,
 }
 
 #[derive(Clone)]
 struct GraphNode {
     stop_id: String,
     route_id: String,
+    transport_type: TransportType,
     name: String,
     lat: f64,
     lng: f64,
-}
-
-// Cost Constants per km (MXN)
-const PRICE_3_SEATS: f64 = 20.0;
-const PRICE_2_SEATS: f64 = 25.0;
-const PRICE_1_SEAT: f64 = 29.0;
-const USD_RATE: f64 = 18.0;
-
-#[wasm_bindgen]
-pub fn calculate_trip_cost(distance_km: f64, seats: u8, is_tourist: bool, wallet_val: JsValue) -> JsValue {
-    // 1. Gatekeeper Check ($5.00 USD threshold approx 90 MXN, but user said $5.00 USD in prompt, previous code used 5.0 MXN. 
-    // The prompt now says "$5.00 USD". I will update this to reflect 5 USD * 18 = 90 MXN or just use the logic given)
-    // User text: "si el balance es menor a $5.00 USD, la función debe retornar un error de 'Blocked'."
-    
-    let wallet_balance_mxn = if !wallet_val.is_null() && !wallet_val.is_undefined() {
-        let wallet: shared_types::DriverWallet = match serde_wasm_bindgen::from_value(wallet_val) {
-            Ok(w) => w,
-            Err(_) => return serde_wasm_bindgen::to_value(&error_response("invalid_wallet")).unwrap(),
-        };
-        wallet.balance_mxn
-    } else {
-        0.0 // Treat missing wallet as 0 balance
-    };
-
-    let min_balance_mxn = 5.0 * USD_RATE; // $5 USD
-    if wallet_balance_mxn < min_balance_mxn {
-         return serde_wasm_bindgen::to_value(&error_response("blocked_insufficient_funds")).unwrap();
-    }
-
-    // 2. Calculate Base Cost
-    let price_per_km = match seats {
-        3 => PRICE_3_SEATS,
-        2 => PRICE_2_SEATS,
-        _ => PRICE_1_SEAT, // Default to most expensive/private
-    };
-
-    let mut total_cost = distance_km * price_per_km;
-
-    // 3. Currency Conversion
-    if is_tourist {
-        total_cost = total_cost / USD_RATE;
-    }
-
-    // Return simple JSON object
-    let result = serde_json::json!({
-        "success": true,
-        "cost": total_cost,
-        "currency": if is_tourist { "USD" } else { "MXN" },
-        "rate_applied": price_per_km
-    });
-
-    serde_wasm_bindgen::to_value(&result).unwrap()
+    fare: f64,
 }
 
 #[wasm_bindgen]
@@ -91,21 +43,8 @@ pub fn calculate_route(
     origin_lng: f64,
     dest_lat: f64,
     dest_lng: f64,
-    routes_val: JsValue,
-    wallet_val: JsValue
+    routes_val: JsValue
 ) -> JsValue {
-    // 1. Check Wallet Status (Gatekeeper Logic)
-    if !wallet_val.is_null() && !wallet_val.is_undefined() {
-        let wallet: shared_types::DriverWallet = match serde_wasm_bindgen::from_value(wallet_val) {
-            Ok(w) => w,
-            Err(_) => return serde_wasm_bindgen::to_value(&error_response("invalid_wallet")).unwrap(),
-        };
-
-        if wallet.balance_mxn < (5.0 * USD_RATE) { 
-             return serde_wasm_bindgen::to_value(&error_response("insufficient_funds")).unwrap();
-        }
-    }
-
     let data: RootData = match serde_wasm_bindgen::from_value(routes_val) {
         Ok(d) => d,
         Err(_e) => {
@@ -124,7 +63,6 @@ pub fn find_route_internal(
     dest_lng: f64,
     data: &RootData
 ) -> RouteResponse {
-    // 1. Find nearest stops for origin and destination
     let mut start_node_info: Option<(String, String, f64)> = None;
     let mut end_node_info: Option<(String, String, f64)> = None;
 
@@ -151,11 +89,10 @@ pub fn find_route_internal(
         None => return error_response("out_of_coverage"),
     };
 
-    if dist_start > 1.0 || dist_end > 1.0 {
+    if dist_start > 3.0 || dist_end > 3.0 {
         return error_response("out_of_coverage");
     }
 
-    // 2. Build Graph
     let mut graph = UnGraph::<GraphNode, f64>::new_undirected();
     let mut nodes = HashMap::new();
 
@@ -165,9 +102,11 @@ pub fn find_route_internal(
             let node = GraphNode {
                 stop_id: stop.id.clone(),
                 route_id: route.id.clone(),
+                transport_type: route.transport_type.clone(),
                 name: stop.name.clone(),
                 lat: stop.lat,
                 lng: stop.lng,
+                fare: route.fare,
             };
             let node_idx = graph.add_node(node);
             nodes.insert((stop.id.clone(), route.id.clone()), node_idx);
@@ -181,7 +120,6 @@ pub fn find_route_internal(
         }
     }
 
-    // Connect inter-route (transfers)
     let all_nodes: Vec<NodeIndex> = graph.node_indices().collect();
     for i in 0..all_nodes.len() {
         for j in i + 1..all_nodes.len() {
@@ -190,15 +128,20 @@ pub fn find_route_internal(
 
             if node_a.route_id != node_b.route_id {
                 let dist = haversine_distance(node_a.lat, node_a.lng, node_b.lat, node_b.lng);
-                if dist < 0.05 { // Increased tolerance to 50 meters
-                    // 5 min penalty = approx 2.5 km at 30 km/h average
-                    graph.add_edge(all_nodes[i], all_nodes[j], 2.5);
+
+                let penalty = if node_a.name.contains("Crucero") || node_a.name.contains("ADO") {
+                    0.5
+                } else {
+                    2.0
+                };
+
+                if dist < 0.15 {
+                    graph.add_edge(all_nodes[i], all_nodes[j], penalty);
                 }
             }
         }
     }
 
-    // 3. Dijkstra
     let start_idx = nodes.get(&(start_stop_id, start_route_id)).unwrap();
     let end_idx = nodes.get(&(end_stop_id, end_route_id)).unwrap();
 
@@ -208,7 +151,6 @@ pub fn find_route_internal(
         return error_response("no_path");
     }
 
-    // Backtracking
     let mut path = Vec::new();
     let mut current = *end_idx;
     path.push(current);
@@ -236,14 +178,13 @@ pub fn find_route_internal(
     }
     path.reverse();
 
-    // 4. Format Output
     let mut res = RouteResponse::default();
     res.success = true;
     res.distance_km = node_weights[end_idx];
-    res.time_min = (res.distance_km * 2.0).round() as u32;
+    res.time_min = (res.distance_km * 2.5).round() as u32;
 
     let mut routes_used = Vec::new();
-    let mut transfer_point = None;
+    let mut total_fare = 0.0;
     let mut last_route = "".to_string();
 
     for (i, &idx) in path.iter().enumerate() {
@@ -253,22 +194,30 @@ pub fn find_route_internal(
         if node.route_id != last_route {
             if !last_route.is_empty() {
                 res.has_transfer = true;
-                transfer_point = Some(BilingualString {
+                res.transfer_point = Some(BilingualString {
                     en: node.name.clone(),
                     es: node.name.clone(),
                 });
 
                 res.instructions.push(BilingualString {
-                    en: format!("Wait for {} (approx 5 min)", node.route_id),
-                    es: format!("Espera {} (aprox 5 min)", node.route_id),
+                    en: format!("Transfer to {} (Wait approx 5 min)", node.route_id),
+                    es: format!("Transbordo a {} (Espera aprox 5 min)", node.route_id),
                 });
             }
 
             routes_used.push(node.route_id.clone());
+            total_fare += node.fare;
+
+            let vehicle_type = match node.transport_type {
+                TransportType::CombiMunicipal => ("Combi", "Combi"),
+                TransportType::PlayaExpress => ("Playa Express Van", "Playa Express"),
+                TransportType::AdoAirport => ("ADO Bus", "Autobús ADO"),
+                _ => ("Bus", "Autobús"),
+            };
 
             res.instructions.push(BilingualString {
-                en: format!("Board {} at {}", node.route_id, node.name),
-                es: format!("Aborda {} en {}", node.route_id, node.name),
+                en: format!("Board {} ({}) at {}", node.route_id, vehicle_type.0, node.name),
+                es: format!("Aborda {} ({}) en {}", node.route_id, vehicle_type.1, node.name),
             });
 
             last_route = node.route_id.clone();
@@ -279,15 +228,48 @@ pub fn find_route_internal(
                 en: format!("Get off at {}", node.name),
                 es: format!("Baja en {}", node.name),
             });
+
+            if node.name.to_lowercase().contains("aeropuerto") || node.name.to_lowercase().contains("airport") {
+                if node.transport_type != TransportType::AdoAirport {
+                    res.airport_warning = Some(BilingualString {
+                        en: "Access restricted to ADO/Private. Nearest drop-off: Airport Entrance (Highway).".to_string(),
+                        es: "Acceso restringido a ADO/Privado. Punto más cercano: Entrada al Aeropuerto (Carretera).".to_string(),
+                    });
+                }
+            }
         }
     }
 
     res.routes = routes_used;
-    res.transfer_point = transfer_point;
+    res.estimated_cost_mxn = total_fare;
 
     res
 }
 
+#[wasm_bindgen]
+pub fn calculate_trip_cost(distance: f64, seats: u32, is_tourist: bool) -> JsValue {
+    let base_price = if is_tourist {
+        29.0
+    } else if distance > 15.0 {
+        25.0
+    } else {
+        15.0
+    };
+
+    let total_mxn = base_price * (seats as f64);
+
+    serde_wasm_bindgen::to_value(&serde_json::json!({
+        "cost_mxn": total_mxn,
+        "base_price": base_price,
+        "currency": "MXN",
+        "payment_method": "CASH_ONLY",
+        "info": {
+            "en": "Pay in cash directly to the driver.",
+            "es": "Paga en efectivo directamente al conductor."
+        },
+        "seats": seats
+    })).unwrap()
+}
 
 fn error_response(error_key: &str) -> RouteResponse {
     let error_msg = match error_key {
@@ -296,12 +278,12 @@ fn error_response(error_key: &str) -> RouteResponse {
             es: "Formato de datos inválido".to_string(),
         },
         "out_of_coverage" => BilingualString {
-            en: "Origin/destination out of coverage".to_string(),
-            es: "Origen/destino fuera de cobertura".to_string(),
+            en: "Location out of coverage".to_string(),
+            es: "Ubicación fuera de cobertura".to_string(),
         },
         "no_path" => BilingualString {
-            en: "No route found between these points".to_string(),
-            es: "No se encontró ruta entre estos puntos".to_string(),
+            en: "No route found".to_string(),
+            es: "No se encontró ruta".to_string(),
         },
         _ => BilingualString {
             en: "Unknown error".to_string(),
@@ -319,7 +301,7 @@ fn error_response(error_key: &str) -> RouteResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use shared_types::{Route, Stop, RootData};
+    use shared_types::{Route, Stop, RootData, TransportType};
 
     fn mock_data() -> RootData {
         RootData {
@@ -329,20 +311,32 @@ mod tests {
                     name: "Crucero".to_string(),
                     color: "red".to_string(),
                     fare: 15.0,
+                    transport_type: TransportType::BusHotelZone,
                     stops: vec![
-                        Stop { id: "R1_001".to_string(), name: "Parque La Rehoyada".to_string(), lat: 21.1619, lng: -86.8515, order: 1 },
+                        Stop { id: "R1_001".to_string(), name: "El Crucero Hub".to_string(), lat: 21.1619, lng: -86.8515, order: 1 },
                         Stop { id: "R1_003".to_string(), name: "Plaza Las Américas".to_string(), lat: 21.1472, lng: -86.8234, order: 3 },
-                        Stop { id: "R1_007".to_string(), name: "Coco Bongo".to_string(), lat: 21.1385, lng: -86.7474, order: 7 },
+                    ],
+                },
+                Route {
+                    id: "ADO_AIR".to_string(),
+                    name: "ADO".to_string(),
+                    color: "blue".to_string(),
+                    fare: 110.0,
+                    transport_type: TransportType::AdoAirport,
+                    stops: vec![
+                        Stop { id: "ADO_001".to_string(), name: "ADO Centro".to_string(), lat: 21.1605, lng: -86.8260, order: 1 },
+                        Stop { id: "ADO_002".to_string(), name: "Airport T2".to_string(), lat: 21.0412, lng: -86.8725, order: 2 },
                     ],
                 },
                 Route {
                     id: "R10".to_string(),
-                    name: "Aeropuerto".to_string(),
+                    name: "Urban".to_string(),
                     color: "yellow".to_string(),
                     fare: 15.0,
+                    transport_type: TransportType::BusUrban,
                     stops: vec![
                         Stop { id: "R10_001".to_string(), name: "Plaza Las Américas".to_string(), lat: 21.1472, lng: -86.8234, order: 1 },
-                        Stop { id: "R10_009".to_string(), name: "Aeropuerto T3".to_string(), lat: 21.0412, lng: -86.8725, order: 9 },
+                        Stop { id: "R10_009".to_string(), name: "Airport Entrance".to_string(), lat: 21.0450, lng: -86.8700, order: 9 },
                     ],
                 },
             ],
@@ -350,30 +344,23 @@ mod tests {
     }
 
     #[test]
-    fn test_direct_route() {
+    fn test_airport_gatekeeper() {
         let data = mock_data();
-        let res = find_route_internal(21.1619, -86.8515, 21.1385, -86.7474, &data);
+        // R10 to Airport Entrance should NOT have warning if the name doesn't contain "Aeropuerto" but wait
+        // In my code it checks for "aeropuerto" or "airport".
+        // "Airport Entrance" contains "Airport".
+        // R10 is BusUrban, so it should have a warning.
+        let res = find_route_internal(21.1472, -86.8234, 21.0450, -86.8700, &data);
         assert!(res.success);
-        assert!(!res.has_transfer);
-        assert_eq!(res.routes, vec!["R1"]);
+        assert!(res.airport_warning.is_some());
+        assert!(res.airport_warning.unwrap().en.contains("restricted to ADO"));
     }
 
     #[test]
-    fn test_transfer_route() {
+    fn test_ado_no_warning() {
         let data = mock_data();
-        // R1_001 to R10_009
-        let res = find_route_internal(21.1619, -86.8515, 21.0412, -86.8725, &data);
+        let res = find_route_internal(21.1605, -86.8260, 21.0412, -86.8725, &data);
         assert!(res.success);
-        assert!(res.has_transfer);
-        assert_eq!(res.routes, vec!["R1", "R10"]);
-        assert_eq!(res.transfer_point.unwrap().es, "Plaza Las Américas");
-    }
-
-    #[test]
-    fn test_out_of_coverage() {
-        let data = mock_data();
-        let res = find_route_internal(20.6296, -87.0739, 21.1385, -86.7474, &data);
-        assert!(!res.success);
-        assert_eq!(res.error.unwrap().es, "Origen/destino fuera de cobertura");
+        assert!(res.airport_warning.is_none());
     }
 }

@@ -1,5 +1,25 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub enum TransportType {
+    #[serde(rename = "Bus_HotelZone")]
+    BusHotelZone,
+    #[serde(rename = "Bus_Urban")]
+    BusUrban,
+    #[serde(rename = "Combi_Municipal")]
+    CombiMunicipal,
+    #[serde(rename = "Playa_Express")]
+    PlayaExpress,
+    #[serde(rename = "ADO_Airport")]
+    AdoAirport,
+}
+
+impl Default for TransportType {
+    fn default() -> Self {
+        Self::BusUrban
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Stop {
     pub id: String,
@@ -19,6 +39,8 @@ pub struct Route {
     pub color: String,
     #[serde(rename = "tarifa")]
     pub fare: f64,
+    #[serde(rename = "tipo_transporte")]
+    pub transport_type: TransportType,
     #[serde(rename = "paradas")]
     pub stops: Vec<Stop>,
 }

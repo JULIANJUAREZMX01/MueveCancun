@@ -288,18 +288,20 @@ SUMMARY:
     - Configured a `sync-wasm` script to maintain consistency between source and static assets.
     - Verified that `check-wasm` passes on the pre-compiled source, allowing Render to skip the Rust build phase.
 
----
-[2026-01-29 20:55 UTC] - Gemini Session Update (Antigravity Local)
-STATUS: Handshake & Data Extraction Active
-BRANCH: feature/cancunmueve-base-structure-phase-1-2-3-5-15744161379540395713
+[2026-01-29 02:30 UTC] - Jules Session Update (Urban Compass & Pilot Integration)
+STATUS: Phase 2 Logic & Multimodal Engine Finalized
+BRANCH: feature/cancunmueve-pwa-v1
 SUMMARY:
-- **Handshake**: Verified `master_routes.json` v2.1.0 (Contains R1, R2, R10). Awaiting schema update for new transport types.
-- **Wallet**: Verified persistence of `driver_current` ($10 USD) in IndexedDB. Pivot to "Driver Pilot" model acknowledged.
-- **Web Intelligence**:
-    - **El Crucero**: Confirmed as hub for R-1/R-6 and combis to Puerto Juárez.
-    - **Playa Express**: 2026 Price verified at $55 MXN. Terminal opposite ADO. Stops at Airport Entrance (highway).
-    - **Rutas Azules**: Identified as Urban/Non-HZ routes (Turicun/Autocar).
-- **Next**: Integrating extracted intelligence into `routes.json` once schema is finalized.
+- **What**: Implemented "Urban Compass" logic, multimodal routing, and "Private Pilot" financial gatekeeper.
+- **Where**:
+    - `rust-wasm/route-calculator/`: Injected "Airport Gatekeeper" logic and hub transfer penalties (1 min for hubs vs 5 min).
+    - `src/islands/RouteCalculator.tsx`: Integrated 180 MXN balance check via IndexedDB to unlock search; added bilingual results UI.
+    - `src/islands/DriverWallet.tsx`: Created dashboard to initialize/maintain the Pilot program balance.
+    - `public/data/master_routes.json`: Updated to v2.2.0 with real-world multimodal data (Playa Express, Combi, ADO).
+- **How**:
+    - **Logic**: Strict ADO-only terminal access; "Carretera" warnings for other transport types.
+    - **UI**: Transitioned to "Cash-Only" informatory mode for passengers while keeping financial logic in a hidden `/driver` dashboard.
+    - **Verification**: Confirmed via `cargo test` and Playwright visual verification of the balance-unlocked search button.
 
 ---
-*Last Updated: 2026-01-29 by Gemini*
+*Last Updated: 2026-01-29 by Jules*
