@@ -30,33 +30,27 @@ interface CostResponse {
 }
 
 const MOCK_GEO: Record<string, { lat: number; lng: number }> = {
-  'Crucero': { lat: 21.1619, lng: -86.8515 },
-  'El Crucero': { lat: 21.1619, lng: -86.8515 },
-  'ADO Centro': { lat: 21.1605, lng: -86.8260 },
-  'ADO Cancún Hub': { lat: 21.1605, lng: -86.8260 },
-  'Coco Bongo': { lat: 21.1385, lng: -86.7474 },
+  'El Crucero Hub': { lat: 21.1576, lng: -86.8269 },
+  'ADO Centro / Terminal': { lat: 21.1586, lng: -86.8259 },
+  'Plaza Las Américas': { lat: 21.1410, lng: -86.8430 },
+  'Aeropuerto Terminal 2': { lat: 21.0417, lng: -86.8761 },
+  'Aeropuerto Terminal 4': { lat: 21.0400, lng: -86.8750 },
+  'Muelle Ultramar (Puerto Juárez)': { lat: 21.2070, lng: -86.8020 },
+  'Playa Delfines (El Mirador)': { lat: 21.0850, lng: -86.7750 },
+  'Playa del Carmen Centro': { lat: 20.6296, lng: -87.0739 },
   'Walmart': { lat: 21.1595, lng: -86.8365 },
-  'Aeropuerto T2': { lat: 21.0412, lng: -86.8725 },
-  'Plaza Las Américas': { lat: 21.1472, lng: -86.8234 },
-  'Puerto Juárez': { lat: 21.1850, lng: -86.8030 },
-  'Playa del Carmen': { lat: 20.6296, lng: -87.0739 },
-  'OXXO Villas Otoch Paraíso': { lat: 21.1685, lng: -86.8850 }
+  'Villas Otoch Paraíso': { lat: 21.1380, lng: -86.8650 },
+  'Hospital General (Av. Kabah)': { lat: 21.1500, lng: -86.8400 },
 };
 
-interface WasmModule {
-  calculate_route: (lat1: number, lon1: number, lat2: number, lon2: number, routes: Record<string, unknown>) => RouteResponse;
-  calculate_trip_cost: (distance: number, seats: number, isTourist: boolean) => CostResponse;
-  default: () => Promise<unknown>;
-}
-
 export default function RouteCalculator() {
-  const [wasmModule, setWasmModule] = useState<WasmModule | null>(null);
+  const [wasmModule, setWasmModule] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState<number>(0);
   const [hasSufficientBalance, setHasSufficientBalance] = useState(false);
 
   const [from, setFrom] = useState('Walmart');
-  const [to, setTo] = useState('Aeropuerto T2');
+  const [to, setTo] = useState('Aeropuerto Terminal 2');
   const [seats, setSeats] = useState(1);
   const [isTourist, setIsTourist] = useState(false);
 
@@ -64,13 +58,11 @@ export default function RouteCalculator() {
   const [cost, setCost] = useState<CostResponse | null>(null);
   const [calculating, setCalculating] = useState(false);
   const [lang, setLang] = useState<'es' | 'en'>('es');
-  // const [wallet, setWallet] = useState<any>(null); // Removed as per pivot
 
   // Load WASM and check Balance
   useEffect(() => {
     async function init() {
       try {
-        // Use dynamic import relative to src to satisfy Vite
         const wasm = await import('../wasm/route-calculator/route_calculator.js');
         await wasm.default();
         setWasmModule(wasm);
@@ -110,7 +102,6 @@ export default function RouteCalculator() {
     const toCoords = MOCK_GEO[to] || { lat: 21.0412, lng: -86.8725 };
 
     setCalculating(true);
-
     try {
       const response = await fetch('/data/master_routes.json');
       const routesData = await response.json();
@@ -123,7 +114,6 @@ export default function RouteCalculator() {
         routesData
       );
       setResult(res);
-      console.log('Route calculated:', res);
 
       if (res.success) {
         const costRes = wasmModule.calculate_trip_cost(res.distance_km, seats, isTourist);
@@ -174,26 +164,11 @@ export default function RouteCalculator() {
       )}
 
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
-          
-          {/* Swap Button */}
-          <button
-            onClick={() => {
-              const temp = from;
-              setFrom(to);
-              setTo(temp);
-            }}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white border border-gray-300 rounded-full p-2 shadow-sm hover:bg-gray-50 hover:scale-110 transition-all group hidden md:block"
-            title={lang === 'es' ? 'Intercambiar' : 'Swap'}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500 group-hover:text-primary-600 transition-colors">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-            </svg>
-          </button>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">📍 {lang === 'es' ? 'Origen' : 'Origin'}</label>
+            <label htmlFor="origin" className="block text-[10px] font-black text-gray-400 uppercase mb-1">📍 {lang === 'es' ? 'Origen' : 'Origin'}</label>
             <input
+              id="origin"
               type="text"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
@@ -202,8 +177,9 @@ export default function RouteCalculator() {
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">🏁 {lang === 'es' ? 'Destino' : 'Destination'}</label>
+            <label htmlFor="destination" className="block text-[10px] font-black text-gray-400 uppercase mb-1">🏁 {lang === 'es' ? 'Destino' : 'Destination'}</label>
             <input
+              id="destination"
               type="text"
               value={to}
               onChange={(e) => setTo(e.target.value)}
@@ -263,7 +239,7 @@ export default function RouteCalculator() {
               <p>{result.airport_warning[lang]}</p>
             </div>
           )}
-          
+
           <div className="space-y-4">
             <h4 className="text-[10px] uppercase font-black text-gray-300 tracking-widest">{lang === 'es' ? 'Instrucciones' : 'Instructions'}</h4>
             {result.instructions.map((inst, idx) => (
