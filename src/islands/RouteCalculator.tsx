@@ -40,6 +40,7 @@ const MOCK_GEO: Record<string, { lat: number; lng: number }> = {
   'Plaza Las Américas': { lat: 21.1472, lng: -86.8234 },
   'Puerto Juárez': { lat: 21.1850, lng: -86.8030 },
   'Playa del Carmen': { lat: 20.6296, lng: -87.0739 },
+  'OXXO Villas Otoch Paraíso': { lat: 21.1685, lng: -86.8850 }
 };
 
 export default function RouteCalculator() {
@@ -57,11 +58,13 @@ export default function RouteCalculator() {
   const [cost, setCost] = useState<CostResponse | null>(null);
   const [calculating, setCalculating] = useState(false);
   const [lang, setLang] = useState<'es' | 'en'>('es');
+  // const [wallet, setWallet] = useState<any>(null); // Removed as per pivot
 
   // Load WASM and check Balance
   useEffect(() => {
     async function init() {
       try {
+        // Use dynamic import relative to src to satisfy Vite
         const wasm = await import('../wasm/route-calculator/route_calculator.js');
         await wasm.default();
         setWasmModule(wasm);
@@ -101,6 +104,7 @@ export default function RouteCalculator() {
     const toCoords = MOCK_GEO[to] || { lat: 21.0412, lng: -86.8725 };
 
     setCalculating(true);
+
     try {
       const response = await fetch('/data/master_routes.json');
       const routesData = await response.json();
@@ -113,6 +117,7 @@ export default function RouteCalculator() {
         routesData
       );
       setResult(res);
+      console.log('Route calculated:', res);
 
       if (res.success) {
         const costRes = wasmModule.calculate_trip_cost(res.distance_km, seats, isTourist);
@@ -163,7 +168,23 @@ export default function RouteCalculator() {
       )}
 
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+          
+          {/* Swap Button */}
+          <button
+            onClick={() => {
+              const temp = from;
+              setFrom(to);
+              setTo(temp);
+            }}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white border border-gray-300 rounded-full p-2 shadow-sm hover:bg-gray-50 hover:scale-110 transition-all group hidden md:block"
+            title={lang === 'es' ? 'Intercambiar' : 'Swap'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500 group-hover:text-primary-600 transition-colors">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+            </svg>
+          </button>
+
           <div>
             <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">📍 {lang === 'es' ? 'Origen' : 'Origin'}</label>
             <input
@@ -236,7 +257,7 @@ export default function RouteCalculator() {
               <p>{result.airport_warning[lang]}</p>
             </div>
           )}
-
+          
           <div className="space-y-4">
             <h4 className="text-[10px] uppercase font-black text-gray-300 tracking-widest">{lang === 'es' ? 'Instrucciones' : 'Instructions'}</h4>
             {result.instructions.map((inst, idx) => (
