@@ -1,4 +1,4 @@
-# 🎯 JULES: CancúnMueve PWA - React Elimination & Astro Migration Review & Deployment
+# 🎯 JULES: CancúnMueve PWA - Astro + WASM Architecture Review & Deployment
 
 ## 📌 CONTEXT & HANDOFF
 
@@ -10,20 +10,20 @@
 
 ---
 
-## 🚨 CRITICAL ARCHITECTURAL CHANGE
+## 🏗️ CURRENT ARCHITECTURE
 
-**WE ELIMINATED REACT ENTIRELY** from the CancúnMueve PWA. This was **NOT** in the original directive but represents a major optimization:
+**Tech Stack:**
+- **Framework:** Astro 5.0 (Static Site Generation)
+- **Client-Side:** Vanilla JavaScript + TypeScript
+- **Routing Engine:** Rust/WASM (Dijkstra algorithm)
+- **Map Rendering:** Mapbox GL JS
+- **Data Storage:** IndexedDB + JSON
+- **Package Manager:** pnpm (exclusively)
 
-### Before:
-- Astro 5.0 + React Islands (RouteCalculator, InteractiveMap, DriverWallet)
-- Dependencies: react, react-dom, @astrojs/react
-- Hydration strategy: `client:only="react"`
-
-### After:
-- **Pure Astro 5.0** with Vanilla JavaScript
-- **Zero React dependencies**
-- Direct WASM integration using `/* @vite-ignore */` for dynamic imports
-- **40% smaller bundle size** (estimated)
+**Key Components:**
+- `RouteCalculator.astro` - WASM integration with wallet balance gatekeeper
+- `InteractiveMap.astro` - Mapbox GL JS with route/stop rendering
+- `DriverWallet.astro` - IndexedDB-powered balance simulator
 
 ---
 
@@ -35,14 +35,10 @@
 git fetch origin
 git checkout feature/urban-compass-v2-sync
 
-# 2. Verify dependencies
-pnpm install  # Should complete WITHOUT React packages
+# 2. Install dependencies with pnpm
+pnpm install
 
-# 3. Check for any lingering React references
-grep -r "react" src/  # Should return ZERO results
-grep -r "client:only" src/  # Should return ZERO results
-
-# 4. Verify WASM binaries exist
+# 3. Verify WASM binaries exist
 ls -la src/wasm/route-calculator/
 ls -la public/wasm/route-calculator/
 
@@ -53,9 +49,9 @@ ls -la public/wasm/route-calculator/
 ```
 
 **Success Criteria:**
-- ✅ No React packages in `node_modules`
-- ✅ No React imports in source code
+- ✅ All dependencies installed successfully with pnpm
 - ✅ WASM binaries present in both `src/wasm/` and `public/wasm/`
+- ✅ TypeScript types available for WASM modules
 
 ---
 
@@ -389,16 +385,17 @@ output: 'static',
 # CancúnMueve PWA - Deployment Guide
 
 ## Architecture
-- Framework: Astro 5.0 (Static Site Generation)
-- Client Logic: Vanilla JavaScript
-- Routing Engine: Rust/WASM (Dijkstra algorithm)
-- Data: IndexedDB + JSON
-- Maps: Mapbox GL JS
+- **Framework:** Astro 5.0 (Static Site Generation)
+- **Client Logic:** Vanilla JavaScript + TypeScript
+- **Routing Engine:** Rust/WASM (Dijkstra algorithm)
+- **Data Storage:** IndexedDB + JSON
+- **Map Rendering:** Mapbox GL JS
+- **Package Manager:** pnpm
 
 ## Production Build
 \`\`\`bash
 pnpm install
-pnpm run build:wasm  # If WASM changed
+pnpm run build:wasm  # If WASM source changed
 pnpm run build
 \`\`\`
 
@@ -415,23 +412,25 @@ pnpm run build
 ### WASM fails to load
 - Check `public/wasm/` directory exists
 - Verify `/* @vite-ignore */` in RouteCalculator.astro
+- Check browser console for module errors
 
 ### Map doesn't render
 - Verify MAPBOX_TOKEN is set
 - Check browser console for GL errors
+- Ensure Mapbox GL CSS is loaded
 ```
 
 **Update `COMMUNICATION.md`:**
 ```markdown
 ## [2026-01-30 XX:XX UTC] - Jules (Google Gemini)
 
-**Status:** React Elimination Validated
+**Status:** Astro + WASM Architecture Validated
 
 **Actions:**
 - All test cases passed (5/5)
 - Production build successful
-- WASM engine verified
-- Data schema normalized
+- WASM engine verified with cargo tests
+- Data schema normalized (v2.3.0)
 - PWA offline mode confirmed
 - Lighthouse score: XX/100
 
@@ -508,8 +507,9 @@ You must **escalate** to human review if:
 **Gemini (Antigravity) signing off.**  
 **Jules, the project is yours. Execute the mission and report findings.**
 
+**Stack:** Astro 5.0 + Vanilla JS/TS + Rust/WASM  
 **Expected completion time:** 3-4 hours  
-**Priority:** High (React elimination is major architecture change)  
-**Risk Level:** Medium (comprehensive testing required)
+**Priority:** High (comprehensive architecture validation required)  
+**Risk Level:** Medium (WASM integration and PWA features need thorough testing)
 
 **Good luck, and may your builds be green. 🟢**
