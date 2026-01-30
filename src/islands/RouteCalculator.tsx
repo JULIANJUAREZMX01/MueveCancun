@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 
 interface BilingualString {
-  en: String;
-  es: String;
+  en: string;
+  es: string;
 }
 
 interface RouteResponse {
@@ -15,6 +15,14 @@ interface RouteResponse {
   time_min: number;
   instructions: BilingualString[];
   error?: BilingualString;
+}
+
+interface CostResponse {
+  cost_mxn: number;
+  base_price: number;
+  currency: string;
+  gatekeeper_pass: boolean;
+  seats: number;
 }
 
 interface RouteCalculatorProps {
@@ -40,7 +48,11 @@ export default function RouteCalculator({
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState('Walmart');
   const [to, setTo] = useState('Aeropuerto');
+  const [seats, setSeats] = useState(1);
+  const [isTourist, setIsTourist] = useState(false);
+
   const [result, setResult] = useState<RouteResponse | null>(null);
+  const [cost, setCost] = useState<CostResponse | null>(null);
   const [calculating, setCalculating] = useState(false);
   const [lang, setLang] = useState<'es' | 'en'>('es');
 
@@ -48,8 +60,7 @@ export default function RouteCalculator({
   useEffect(() => {
     async function loadWasm() {
       try {
-        // We use dynamic import with the absolute src path to ensure Vite handles it
-        // during build, providing better integration for production.
+        // Correct dynamic loading from src/
         const wasm = await import(/* @vite-ignore */ wasmPath);
         await wasm.default();
         setWasmModule(wasm);
@@ -74,6 +85,7 @@ export default function RouteCalculator({
       const response = await fetch('/data/master_routes.json');
       const routesData = await response.json();
 
+      // 1. Calculate Route (Dijkstra)
       const res = wasmModule.calculate_route(
         fromCoords.lat,
         fromCoords.lng,
@@ -82,9 +94,18 @@ export default function RouteCalculator({
         routesData
       );
       setResult(res);
-      console.log('Route calculated:', res);
+
+      // 2. Calculate Cost (Financial Logic)
+      if (res.success) {
+        const costRes = wasmModule.calculate_trip_cost(res.distance_km, seats, isTourist);
+        setCost(costRes);
+      } else {
+        setCost(null);
+      }
+
+      console.log('Route & Cost calculated:', { res, cost: costRes });
     } catch (error) {
-      console.error('Route calculation error:', error);
+      console.error('Calculation error:', error);
     } finally {
       setCalculating(false);
     }
@@ -113,70 +134,112 @@ export default function RouteCalculator({
       </div>
 
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            📍 {lang === 'es' ? 'Desde' : 'From'}
-          </label>
-          <input
-            type="text"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 transition-all"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="from" className="block text-sm font-medium text-gray-700 mb-2">
+              📍 {lang === 'es' ? 'Desde' : 'From'}
+            </label>
+            <input
+              id="from"
+              type="text"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="to" className="block text-sm font-medium text-gray-700 mb-2">
+              📍 {lang === 'es' ? 'Hasta' : 'To'}
+            </label>
+            <input
+              id="to"
+              type="text"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            📍 {lang === 'es' ? 'Hasta' : 'To'}
-          </label>
-          <input
-            type="text"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 transition-all"
-          />
+        <div className="flex items-center space-x-6 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium text-gray-700">💺 {lang === 'es' ? 'Asientos' : 'Seats'}</label>
+            <select
+              value={seats}
+              onChange={(e) => setSeats(Number(e.target.value))}
+              className="border rounded px-2 py-1"
+            >
+              {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="tourist"
+              checked={isTourist}
+              onChange={(e) => setIsTourist(e.target.checked)}
+              className="w-4 h-4 text-primary-600 rounded"
+            />
+            <label htmlFor="tourist" className="text-sm font-medium text-gray-700">🌴 {lang === 'es' ? 'Turista' : 'Tourist'}</label>
+          </div>
         </div>
 
         <button
           onClick={handleSearch}
           disabled={calculating}
-          className="w-full premium-button disabled:opacity-50 transition-all transform hover:scale-105"
+          className="w-full premium-button disabled:opacity-50"
         >
           {calculating ? (lang === 'es' ? 'Calculando...' : 'Calculating...') : (lang === 'es' ? 'Buscar Ruta' : 'Search Route')}
         </button>
       </div>
 
       {result && result.success && (
-        <div className="mt-6 space-y-4 animate-slide-up bg-blue-50 p-4 rounded-xl">
-          <div className="flex justify-between items-center">
-            <span className="font-bold text-deep-navy">
-              {result.routes.join(' → ')}
-            </span>
-            <span className="text-sm font-bold text-primary-600">
-              {result.time_min} min | {result.distance_km.toFixed(1)} km
-            </span>
+        <div className="mt-6 space-y-4 animate-slide-up bg-blue-50 p-4 rounded-xl border border-blue-100">
+          <div className="flex justify-between items-end border-b border-blue-200 pb-3">
+            <div>
+              <span className="text-xs uppercase tracking-wider text-blue-600 font-bold">{lang === 'es' ? 'Ruta Sugerida' : 'Suggested Route'}</span>
+              <div className="text-xl font-bold text-deep-navy">{result.routes.join(' → ')}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-black text-primary-600">${cost?.cost_mxn.toFixed(2)} MXN</div>
+              <div className="text-xs text-gray-500">{result.time_min} min | {result.distance_km.toFixed(1)} km</div>
+            </div>
           </div>
 
           {result.has_transfer && (
-            <div className="text-sm bg-yellow-100 p-2 rounded border border-yellow-200 text-yellow-800">
-              ⚠️ {lang === 'es' ? 'Transbordo en:' : 'Transfer at:'} <strong>{result.transfer_point?.[lang]}</strong>
+            <div className="text-sm bg-yellow-100 p-3 rounded-lg border border-yellow-200 text-yellow-800 flex items-start space-x-2">
+              <span>⚠️</span>
+              <div>
+                <strong>{lang === 'es' ? 'Transbordo necesario' : 'Transfer required'}</strong>
+                <p>{lang === 'es' ? 'Cambia de ruta en:' : 'Change route at:'} {result.transfer_point?.[lang]}</p>
+              </div>
             </div>
           )}
 
-          <div className="space-y-2">
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold text-blue-800 uppercase tracking-widest">{lang === 'es' ? 'Instrucciones' : 'Instructions'}</h4>
             {result.instructions.map((inst, idx) => (
-              <div key={idx} className="flex gap-3 text-sm text-gray-700">
-                <span className="text-primary-500">•</span>
+              <div key={idx} className="flex gap-3 text-sm text-gray-700 items-start">
+                <span className="flex-shrink-0 w-5 h-5 bg-white rounded-full border border-blue-200 flex items-center justify-center text-[10px] font-bold text-blue-500">{idx + 1}</span>
                 <span>{inst[lang]}</span>
               </div>
             ))}
           </div>
+
+          {cost && !cost.gatekeeper_pass && (
+            <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-800 text-xs italic">
+              * {lang === 'es' ? 'Saldo insuficiente en DriverWallet. Verifica tu cuenta.' : 'Insufficient balance in DriverWallet. Check your account.'}
+            </div>
+          )}
         </div>
       )}
 
       {result && !result.success && (
-        <div className="mt-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-100">
-          ❌ {result.error?.[lang]}
+        <div className="mt-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-100 flex items-center space-x-2">
+          <span>❌</span>
+          <span>{result.error?.[lang]}</span>
         </div>
       )}
     </div>
