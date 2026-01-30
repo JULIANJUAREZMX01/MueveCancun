@@ -50,3 +50,18 @@
 - **Jules Integration:** Notified via GitHub PR #5.
 - **API Key:** Received key `AQ.Ab8...`. **PENDING:** Need API Endpoint URL to execute direct verification trigger.
 
+## [2026-01-30 01:15 UTC] - Gemini (Antigravity)
+
+**Status:** React Eliminated - Pure Astro Architecture
+
+**Actions:**
+
+- **React Removal:** Completely removed React dependencies (react, react-dom, @astrojs/react, @vitejs/plugin-react).
+- **Component Migration:** Converted all interactive components to Astro with Vanilla JS:
+  - `RouteCalculator.astro` - WASM integration with IndexedDB for wallet balance.
+  - `InteractiveMap.astro` - Mapbox GL JS with route rendering.
+  - `DriverWallet.astro` - Balance simulation with IDB persistence.
+- **Data Normalization:** Created `scripts/normalize_data.mjs` to transform Deep Research data (`lon`→`lng`, `recorrido`→`paradas`).
+- **Build:** Successful production build. All features intact including Airport Gatekeeper and multi-modal routing.
+- **Branch:** Created `feature/urban-compass-v2-sync` for Jules' review.
+
