@@ -17,6 +17,7 @@ describe('RouteSearch', () => {
         onFromChange={() => {}}
         onToChange={() => {}}
         onSearch={() => {}}
+        onSwap={() => {}}
         loading={false}
       />
     );
@@ -33,11 +34,30 @@ describe('RouteSearch', () => {
         onFromChange={() => {}}
         onToChange={() => {}}
         onSearch={onSearch}
+        onSwap={() => {}}
         loading={false}
       />
     );
     const button = screen.getByRole('button', { name: /Buscar Ruta/i });
     fireEvent.click(button);
     expect(onSearch).toHaveBeenCalled();
+  });
+
+  it('calls onSwap when swap button is clicked', () => {
+    const onSwap = vi.fn();
+    render(
+      <RouteSearch
+        from="A"
+        to="B"
+        onFromChange={() => {}}
+        onToChange={() => {}}
+        onSearch={() => {}}
+        onSwap={onSwap}
+        loading={false}
+      />
+    );
+    const swapButton = screen.getByLabelText('Intercambiar origen y destino');
+    fireEvent.click(swapButton);
+    expect(onSwap).toHaveBeenCalled();
   });
 });

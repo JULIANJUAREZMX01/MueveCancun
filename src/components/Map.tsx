@@ -4,6 +4,20 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || 'TU_MAPBOX_TOKEN_AQUI';
 
+interface Parada {
+  lng: number;
+  lat: number;
+  nombre: string;
+}
+
+interface Ruta {
+  id: string;
+  polyline: [number, number][];
+  color: string;
+  tarifa: number;
+  paradas: Parada[];
+}
+
 interface MapProps {
   center: [number, number];
   userLocation: [number, number] | null;
@@ -37,7 +51,7 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
         const data = await response.json();
 
         // Dibujar rutas
-        data.rutas.forEach((ruta: any) => {
+        data.rutas.forEach((ruta: Ruta) => {
           map.current?.addSource(`route-${ruta.id}`, {
             type: 'geojson',
             data: {
@@ -61,7 +75,7 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
           });
 
           // Agregar paradas
-          ruta.paradas.forEach((parada: any) => {
+          ruta.paradas.forEach((parada: Parada) => {
             new mapboxgl.Marker({ color: ruta.color })
               .setLngLat([parada.lng, parada.lat])
               .setPopup(new mapboxgl.Popup().setHTML(`
