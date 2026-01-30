@@ -37,6 +37,7 @@ const MOCK_GEO: Record<string, { lat: number; lng: number }> = {
 export default function RouteCalculator({
   wasmPath = '/wasm/route-calculator/route_calculator.js'
 }: RouteCalculatorProps) {
+
   const [wasmModule, setWasmModule] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState('Walmart');
@@ -47,16 +48,34 @@ export default function RouteCalculator({
   const [lang, setLang] = useState<'es' | 'en'>('es');
   const [wallet, setWallet] = useState<any>(null);
   
+<<<<<<< HEAD
+=======
+  // Financial State - REMOVED for Public Passenger View (Pivot: Cash Payments)
+  // const [seats, setSeats] = useState<1 | 2 | 3>(1);
+  // const [isTourist, setIsTourist] = useState(false);
+  // const [costResult, setCostResult] = useState<any>(null);
+
+>>>>>>> 4c04824 (feat(pivot): separate driver wallet from passenger UI)
   // Load WASM module
   useEffect(() => {
     async function loadWasm() {
       try {
         let wasm;
+<<<<<<< HEAD
         if (wasmPath === '/wasm/route-calculator/route_calculator.js') {
+=======
+        // Check if we are using the default path which maps to our src location
+        if (wasmPath === '/wasm/route-calculator/route_calculator.js') {
+             // Import from src during dev/build to satisfy Vite
+>>>>>>> 4c04824 (feat(pivot): separate driver wallet from passenger UI)
              wasm = await import('../wasm/route-calculator/route_calculator.js');
         } else {
              wasm = await import(/* @vite-ignore */ wasmPath);
         }
+<<<<<<< HEAD
+=======
+        
+>>>>>>> 4c04824 (feat(pivot): separate driver wallet from passenger UI)
         await wasm.default();
         setWasmModule(wasm);
         setLoading(false);
@@ -95,6 +114,10 @@ export default function RouteCalculator({
     const toCoords = MOCK_GEO[to] || { lat: 21.0412, lng: -86.8725 };
 
     setCalculating(true);
+<<<<<<< HEAD
+=======
+    // setCostResult(null); // Removed
+>>>>>>> 4c04824 (feat(pivot): separate driver wallet from passenger UI)
     try {
       const response = await fetch('/data/master_routes.json');
       const routesData = await response.json();
@@ -111,7 +134,22 @@ export default function RouteCalculator({
       setResult(res);
       console.log('Route calculated:', res);
 
+<<<<<<< HEAD
       // Financial Cost Logic - DISABLED for Passengers
+=======
+      // 2. Financial Cost Logic - DISABLED for Passengers
+      /*
+      if (res.success && wasmModule.calculate_trip_cost) {
+        const cost = wasmModule.calculate_trip_cost(
+            res.distance_km, 
+            seats, 
+            isTourist, 
+            currentWallet
+        );
+        setCostResult(cost);
+      }
+      */
+>>>>>>> 4c04824 (feat(pivot): separate driver wallet from passenger UI)
     } catch (error) {
       console.error('Route calculation error:', error);
     } finally {
@@ -194,6 +232,11 @@ export default function RouteCalculator({
             </div>
           )}
           
+<<<<<<< HEAD
+=======
+          {/* Financial Result Display REMOVED */}
+
+>>>>>>> 4c04824 (feat(pivot): separate driver wallet from passenger UI)
           <div className="space-y-2">
             {result.instructions.map((inst, idx) => (
               <div key={idx} className="flex gap-3 text-sm text-gray-700">
