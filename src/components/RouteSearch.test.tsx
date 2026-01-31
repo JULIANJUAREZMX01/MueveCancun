@@ -19,6 +19,7 @@ describe('RouteSearch', () => {
         onSearch={() => {}}
         onSwap={() => {}}
         loading={false}
+        balance={200}
       />
     );
     expect(screen.getByPlaceholderText('Ej: Av. Tulum y Cobá')).toBeInTheDocument();
@@ -36,9 +37,10 @@ describe('RouteSearch', () => {
         onSearch={onSearch}
         onSwap={() => {}}
         loading={false}
+        balance={200}
       />
     );
-    const button = screen.getByRole('button', { name: /Buscar Ruta/i });
+    const button = screen.getByRole('button', { name: /Trazar Ruta/i });
     fireEvent.click(button);
     expect(onSearch).toHaveBeenCalled();
   });
@@ -54,10 +56,31 @@ describe('RouteSearch', () => {
         onSearch={() => {}}
         onSwap={onSwap}
         loading={false}
+        balance={200}
       />
     );
     const swapButton = screen.getByLabelText('Intercambiar origen y destino');
     fireEvent.click(swapButton);
     expect(onSwap).toHaveBeenCalled();
+  });
+
+  it('disables search button if balance is below 180', () => {
+    const onSearch = vi.fn();
+    render(
+      <RouteSearch
+        from="A"
+        to="B"
+        onFromChange={() => {}}
+        onToChange={() => {}}
+        onSearch={onSearch}
+        onSwap={() => {}}
+        loading={false}
+        balance={150}
+      />
+    );
+    const button = screen.getByRole('button', { name: /Trazar Ruta \(Bloqueado\)/i });
+    expect(button).toBeDisabled();
+    fireEvent.click(button);
+    expect(onSearch).not.toHaveBeenCalled();
   });
 });

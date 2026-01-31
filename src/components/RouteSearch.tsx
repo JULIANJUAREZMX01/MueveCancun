@@ -9,6 +9,7 @@ interface RouteSearchProps {
   onSearch: () => void;
   onSwap: () => void;
   loading: boolean;
+  balance: number;
 }
 
 const RouteSearch: React.FC<RouteSearchProps> = ({
@@ -19,7 +20,9 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
   onSearch,
   onSwap,
   loading,
+  balance,
 }) => {
+  const isLocked = balance < 180;
   return (
     <div className="sunny-card p-6 space-y-4">
       <h2 className="text-xl font-bold text-deep-navy flex items-center gap-2">
@@ -69,8 +72,8 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
 
         <button
           onClick={onSearch}
-          disabled={loading || !from || !to}
-          className="premium-button w-full disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={loading || !from || !to || isLocked}
+          className={`premium-button w-full disabled:opacity-50 disabled:cursor-not-allowed ${isLocked ? 'bg-gray-400 grayscale' : ''}`}
         >
           {loading ? (
             <>
@@ -80,10 +83,17 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
           ) : (
             <>
               <Search className="w-5 h-5" />
-              Buscar Ruta
+              {isLocked ? 'Trazar Ruta (Bloqueado)' : 'Trazar Ruta'}
             </>
           )}
         </button>
+
+        {isLocked && (
+          <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-xs text-center">
+            ⚠️ Saldo insuficiente ($180.00 MXN mínimos). <br/>
+            Saldo actual: <strong>${balance.toFixed(2)} MXN</strong>
+          </div>
+        )}
       </div>
 
       <div className="text-xs text-gray-500 text-center italic">
