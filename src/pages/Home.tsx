@@ -27,6 +27,9 @@ interface HomeProps {
   userLocation: [number, number] | null;
 }
 
+// Performance Optimization: Stable reference for default center coordinates
+const DEFAULT_CENTER: [number, number] = [-86.8515, 21.1619];
+
 const Home: React.FC<HomeProps> = ({
   searchFrom,
   searchTo,
@@ -39,6 +42,9 @@ const Home: React.FC<HomeProps> = ({
   balance,
   userLocation,
 }) => {
+  // Performance Optimization: Ensure the center prop doesn't change on every render when userLocation is null
+  const mapCenter = userLocation || DEFAULT_CENTER;
+
   return (
     <div className="flex flex-col md:flex-row gap-4 h-full">
       <div className="w-full md:w-1/3 space-y-4 overflow-y-auto pr-2">
@@ -67,7 +73,7 @@ const Home: React.FC<HomeProps> = ({
 
       <div className="w-full md:w-2/3 h-[50vh] md:h-auto rounded-xl overflow-hidden shadow-inner border border-gray-200">
         <Map
-          center={userLocation || [-86.8515, 21.1619]}
+          center={mapCenter}
           userLocation={userLocation}
         />
       </div>
