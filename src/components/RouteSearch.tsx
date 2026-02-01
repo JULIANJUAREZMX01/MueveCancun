@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Search, ArrowUpDown, Loader2 } from 'lucide-react';
+import { MapPin, Search, ArrowUpDown, Loader2, X } from 'lucide-react';
 
 interface RouteSearchProps {
   from: string;
@@ -26,47 +26,69 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
   return (
     <div className="sunny-card p-6 space-y-4">
       <h2 className="text-xl font-bold text-deep-navy flex items-center gap-2">
-        <Search className="w-5 h-5 text-caribbean-blue" /> Encuentra tu ruta
+        <Search className="w-5 h-5 text-caribbean-blue" aria-hidden="true" /> Encuentra tu ruta
       </h2>
       <div className="space-y-3 relative">
         <div className="space-y-4">
           <div>
             <label htmlFor="search-from" className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
-              <MapPin className="w-4 h-4 text-caribbean-blue" /> Desde
+              <MapPin className="w-4 h-4 text-caribbean-blue" aria-hidden="true" /> Desde
             </label>
-            <input
-              id="search-from"
-              type="text"
-              value={from}
-              onChange={(e) => onFromChange(e.target.value)}
-              placeholder="Ej: Av. Tulum y Cobá"
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-caribbean-blue focus:border-transparent outline-none transition-all bg-white/50"
-            />
+            <div className="relative flex items-center">
+              <input
+                id="search-from"
+                type="text"
+                value={from}
+                onChange={(e) => onFromChange(e.target.value)}
+                placeholder="Ej: Av. Tulum y Cobá"
+                className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-caribbean-blue focus:border-transparent outline-none transition-all bg-white/50"
+              />
+              {from && (
+                <button
+                  onClick={() => onFromChange('')}
+                  aria-label="Limpiar origen"
+                  className="absolute right-2 p-1 text-gray-400 hover:text-caribbean-blue transition-colors"
+                >
+                  <X className="w-4 h-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Swap Button */}
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 pointer-events-none pr-0">
              <button
               onClick={onSwap}
               aria-label="Intercambiar origen y destino"
               className="pointer-events-auto p-2 bg-white rounded-full shadow-md border border-gray-100 text-caribbean-blue hover:bg-caribbean-blue hover:text-white transition-colors active:scale-90"
             >
-              <ArrowUpDown className="w-4 h-4" />
+              <ArrowUpDown className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
 
           <div>
             <label htmlFor="search-to" className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
-              <MapPin className="w-4 h-4 text-coral" /> Hasta
+              <MapPin className="w-4 h-4 text-coral" aria-hidden="true" /> Hasta
             </label>
-            <input
-              id="search-to"
-              type="text"
-              value={to}
-              onChange={(e) => onToChange(e.target.value)}
-              placeholder="Ej: Coco Bongo"
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-caribbean-blue focus:border-transparent outline-none transition-all bg-white/50"
-            />
+            <div className="relative flex items-center">
+              <input
+                id="search-to"
+                type="text"
+                value={to}
+                onChange={(e) => onToChange(e.target.value)}
+                placeholder="Ej: Coco Bongo"
+                className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-caribbean-blue focus:border-transparent outline-none transition-all bg-white/50"
+              />
+              {to && (
+                <button
+                  onClick={() => onToChange('')}
+                  aria-label="Limpiar destino"
+                  className="absolute right-2 p-1 text-gray-400 hover:text-caribbean-blue transition-colors"
+                >
+                  <X className="w-4 h-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -77,12 +99,12 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
         >
           {loading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
               Calculando...
             </>
           ) : (
             <>
-              <Search className="w-5 h-5" />
+              <Search className="w-5 h-5" aria-hidden="true" />
               {isLocked ? 'Trazar Ruta (Bloqueado)' : 'Trazar Ruta'}
             </>
           )}
