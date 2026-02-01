@@ -23,17 +23,19 @@ interface MapProps {
   userLocation: [number, number] | null;
 }
 
-const Map: React.FC<MapProps> = ({ center, userLocation }) => {
+const Map: React.FC<MapProps> = React.memo(({ center, userLocation }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const initialCenter = useRef(center);
+  const userMarker = useRef<mapboxgl.Marker | null>(null);
 
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || map.current) return;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: center,
+      center: initialCenter.current,
       zoom: 12
     });
 
@@ -52,7 +54,8 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
 
         // Dibujar rutas
         data.rutas.forEach((ruta: Ruta) => {
-          map.current?.addSource(`route-${ruta.id}`, {
+          if (!map.current) return;
+          map.current.addSource(`route-${ruta.id}`, {
             type: 'geojson',
             data: {
               type: 'Feature',
@@ -64,7 +67,7 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
             }
           });
 
-          map.current?.addLayer({
+          map.current.addLayer({
             id: `route-${ruta.id}`,
             type: 'line',
             source: `route-${ruta.id}`,
@@ -91,20 +94,36 @@ const Map: React.FC<MapProps> = ({ center, userLocation }) => {
       }
     });
 
-    return () => map.current?.remove();
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, []);
+
+  // Update center smoothly
+  useEffect(() => {
+    if (map.current) {
+      map.current.setCenter(center);
+    }
   }, [center]);
 
   // Actualizar marcador de usuario
   useEffect(() => {
-    if (userLocation && map.current) {
-      new mapboxgl.Marker({ color: '#0EA5E9' })
+    if (!map.current || !userLocation) return;
+
+    if (!userMarker.current) {
+      userMarker.current = new mapboxgl.Marker({ color: '#0EA5E9' })
         .setLngLat(userLocation)
         .setPopup(new mapboxgl.Popup().setHTML('Tu ubicación'))
         .addTo(map.current);
+    } else {
+      userMarker.current.setLngLat(userLocation);
     }
   }, [userLocation]);
 
   return <div ref={mapContainer} className="w-full h-full min-h-[400px]" />;
-};
+});
 
 export default Map;
