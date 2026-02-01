@@ -2,9 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Map from '../components/Map';
 
+/**
+ * MapaPage Component
+ * Standard template for the interactive map view.
+ */
 const MapaPage: React.FC = () => {
   return (
-    <div className="flex flex-col h-full space-y-4">
+    <div className="flex flex-col h-full space-y-4 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-deep-navy">Mapa de Red</h2>
         <Link to="/" className="text-caribbean-blue hover:underline text-sm">← Volver al buscador</Link>

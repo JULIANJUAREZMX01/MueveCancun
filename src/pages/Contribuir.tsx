@@ -2,9 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, MessageSquare } from 'lucide-react';
 
+/**
+ * ContribuirPage Component
+ * Allows users to provide feedback and report issues.
+ */
 const ContribuirPage: React.FC = () => {
   return (
-    <div className="max-w-2xl mx-auto space-y-6 py-8">
+    <div className="max-w-2xl mx-auto space-y-6 py-8 animate-in fade-in duration-500">
       <div className="text-center space-y-2">
         <Heart className="w-12 h-12 text-coral mx-auto" />
         <h2 className="text-3xl font-bold text-deep-navy">Tu voz importa</h2>

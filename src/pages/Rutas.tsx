@@ -2,9 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Bus } from 'lucide-react';
 
+/**
+ * RutasPage Component
+ * Displays the directory of available transport routes.
+ */
 const RutasPage: React.FC = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-deep-navy flex items-center gap-2">
           <Bus className="w-6 h-6 text-caribbean-blue" /> Directorio de Rutas
@@ -29,8 +33,8 @@ const RutasPage: React.FC = () => {
         ))}
       </div>
 
-      <div className="p-4 bg-sky-50 border border-sky-100 rounded-xl text-sm text-sky-800 italic">
-        Nota: Próximamente podrás ver los horarios en tiempo real.
+      <div className="p-4 bg-sky-50 border border-sky-100 rounded-xl text-sm text-sky-800 flex items-center gap-2">
+        <span className="flex-1 italic">Consulta las frecuencias y horarios oficiales en las terminales.</span>
       </div>
     </div>
   );

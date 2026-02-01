@@ -1,20 +1,6 @@
 /* @ts-self-types="./route_calculator.d.ts" */
 
 /**
- * @param {string} from
- * @param {string} to
- * @returns {any}
- */
-export function calculate_route(from, to) {
-    const ptr0 = passStringToWasm0(from, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passStringToWasm0(to, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.calculate_route(ptr0, len0, ptr1, len1);
-    return ret;
-}
-
-/**
  * @param {number} user_lat
  * @param {number} user_lng
  * @param {any} stops_val
@@ -22,6 +8,20 @@ export function calculate_route(from, to) {
  */
 export function find_nearest_stop(user_lat, user_lng, stops_val) {
     const ret = wasm.find_nearest_stop(user_lat, user_lng, stops_val);
+    return ret;
+}
+
+/**
+ * @param {string} from
+ * @param {string} to
+ * @returns {any}
+ */
+export function find_route(from, to) {
+    const ptr0 = passStringToWasm0(from, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(to, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.find_route(ptr0, len0, ptr1, len1);
     return ret;
 }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import RouteSearch from '../components/RouteSearch';
+import RouteCalculator from '../components/RouteCalculator';
 import RouteResults from '../components/RouteResults';
 import Map from '../components/Map';
 
@@ -49,7 +49,7 @@ const Home: React.FC<HomeProps> = ({
           </span>
         </div>
 
-        <RouteSearch
+        <RouteCalculator
           from={searchFrom}
           to={searchTo}
           onFromChange={setSearchFrom}

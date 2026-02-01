@@ -2,16 +2,16 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import RouteSearch from './RouteSearch';
+import RouteCalculator from './RouteCalculator';
 
 afterEach(() => {
   cleanup();
 });
 
-describe('RouteSearch', () => {
+describe('RouteCalculator', () => {
   it('renders the search inputs', () => {
     render(
-      <RouteSearch
+      <RouteCalculator
         from=""
         to=""
         onFromChange={() => {}}
@@ -29,7 +29,7 @@ describe('RouteSearch', () => {
   it('calls onSearch when button is clicked', () => {
     const onSearch = vi.fn();
     render(
-      <RouteSearch
+      <RouteCalculator
         from="A"
         to="B"
         onFromChange={() => {}}
@@ -48,7 +48,7 @@ describe('RouteSearch', () => {
   it('calls onSwap when swap button is clicked', () => {
     const onSwap = vi.fn();
     render(
-      <RouteSearch
+      <RouteCalculator
         from="A"
         to="B"
         onFromChange={() => {}}
@@ -67,7 +67,7 @@ describe('RouteSearch', () => {
   it('disables search button if balance is below 180', () => {
     const onSearch = vi.fn();
     render(
-      <RouteSearch
+      <RouteCalculator
         from="A"
         to="B"
         onFromChange={() => {}}

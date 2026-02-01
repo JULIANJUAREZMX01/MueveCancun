@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapPin, Search, ArrowUpDown, Loader2 } from 'lucide-react';
 
-interface RouteSearchProps {
+interface RouteCalculatorProps {
   from: string;
   to: string;
   onFromChange: (value: string) => void;
@@ -12,7 +12,7 @@ interface RouteSearchProps {
   balance: number;
 }
 
-const RouteSearch: React.FC<RouteSearchProps> = ({
+const RouteCalculator: React.FC<RouteCalculatorProps> = ({
   from,
   to,
   onFromChange,
@@ -103,4 +103,4 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
   );
 };
 
-export default RouteSearch;
+export default RouteCalculator;

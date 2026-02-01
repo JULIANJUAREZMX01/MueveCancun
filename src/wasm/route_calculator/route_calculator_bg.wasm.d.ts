@@ -1,8 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
-export const calculate_route: (a: number, b: number, c: number, d: number) => any;
 export const find_nearest_stop: (a: number, b: number, c: any) => any;
+export const find_route: (a: number, b: number, c: number, d: number) => any;
 export const search_destinations: (a: number, b: number) => any;
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

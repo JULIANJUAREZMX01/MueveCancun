@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, NavLink } from 'react-router-dom';
 import { Map as MapIcon, Route as RouteIcon, Heart, Search } from 'lucide-react';
-import init, { calculate_route } from './wasm/route_calculator/route_calculator';
+import init, { find_route } from './wasm/route_calculator/route_calculator';
 import { getBalance } from './utils/db';
 
 // Pages
@@ -68,7 +68,7 @@ function App() {
     }
     setLoading(true);
     try {
-      const result = calculate_route(searchFrom, searchTo);
+      const result = find_route(searchFrom, searchTo);
       setRouteResults([result as RouteResult]);
     } catch (error) {
       console.error('Error calculando ruta:', error);

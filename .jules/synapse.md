@@ -16,3 +16,10 @@
 - **Routes**: `react-router-dom` implemented. All 404 dead ends (/mapa, /rutas, /contribuir) resolved with functional pages.
 - **SW**: Service Worker updated with optimized caching for WASM and Data.
 - **Verification**: `pnpm build` passed. `pnpm vitest run` passed with 4/4 tests.
+
+### 2025-02-01 12:00
+- **Status**: SYNAPSE: WASM connected. 404s resolved. Ready for local UI testing.
+- **BRIDGE**: `calculate_route` renamed to `find_route` in both Rust and JS bindings.
+- **WIRING**: UI components updated to call the new `find_route` function. `RouteSearch` renamed to `RouteCalculator`.
+- **GATEKEEPER**: $180 MXN balance check verified in `RouteCalculator` component and `App.tsx` state.
+- **VERIFICATION**: `pnpm build` and `vitest` pass after refactoring. `test_wasm.js` updated and verified.
