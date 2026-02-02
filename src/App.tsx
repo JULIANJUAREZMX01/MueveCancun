@@ -21,6 +21,8 @@ interface RouteResult {
   }>;
 }
 
+const DEFAULT_CENTER: [number, number] = [-86.8515, 21.1619];
+
 function App() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [searchFrom, setSearchFrom] = useState('');
@@ -84,7 +86,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [wasmReady, searchFrom, searchTo]);
 
   return (
     <Router>
