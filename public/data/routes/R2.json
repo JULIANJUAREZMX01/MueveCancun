@@ -1,0 +1,26 @@
+{
+  "rutas": [
+    {
+      "id": "R2",
+      "nombre": "Walmart - Puerto Juárez",
+      "color": "#4ECDC4",
+      "tarifa": 15.0,
+      "paradas": [
+        {
+          "id": "R2_001",
+          "nombre": "Walmart Cobá",
+          "lat": 21.1595,
+          "lng": -86.8365,
+          "orden": 1
+        },
+        {
+          "id": "R2_003",
+          "nombre": "Plaza Las Américas",
+          "lat": 21.1472,
+          "lng": -86.8234,
+          "orden": 3
+        }
+      ]
+    }
+  ]
+}

@@ -1,3 +1,15 @@
+[workspace]
+members = [
+    "route-calculator",
+    "spatial-index",
+    "shared-types",
+]
+resolver = "2"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
 [package]
 name = "route-calculator"
 version = "0.1.0"

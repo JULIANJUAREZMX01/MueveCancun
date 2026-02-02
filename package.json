@@ -4,6 +4,24 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "dev": "astro dev",
+    "build": "pnpm run check-wasm && astro build",
+    "astro": "astro",
+    "lint": "eslint .",
+    "test": "vitest",
+    "build:wasm": "pnpm run build:wasm:route && pnpm run build:wasm:spatial && pnpm run sync-wasm",
+    "build:wasm:route": "cd rust-wasm/route-calculator && wasm-pack build --target web --out-dir ../../src/wasm/route-calculator",
+    "build:wasm:spatial": "cd rust-wasm/spatial-index && wasm-pack build --target web --out-dir ../../src/wasm/spatial-index",
+    "sync-wasm": "mkdir -p public/wasm && cp -r src/wasm/* public/wasm/",
+    "preview": "astro preview",
+    "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('./src/wasm/route-calculator/route_calculator_bg.wasm')) { console.error('❌ WASM binary missing! Run build:wasm first.'); process.exit(1); } else { console.log('✅ WASM binaries found.'); }\""
+  },
+  "dependencies": {
+    "astro": "^5.16.15",
+    "@astrojs/sitemap": "^3.2.1",
+    "@tailwindcss/vite": "^4.1.18",
+    "idb": "^8.0.3",
+    "mapbox-gl": "^3.18.1"
     "dev": "vite",
     "build": "npm run check-wasm && tsc -b && vite build",
     "lint": "eslint .",
@@ -22,6 +40,9 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@testing-library/jest-dom": "^6.9.1",
+    "@types/node": "^24.10.1",
+    "autoprefixer": "^10.4.23",
+    "eslint": "^9.39.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",

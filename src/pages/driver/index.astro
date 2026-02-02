@@ -1,0 +1,44 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import DriverWallet from '../../components/DriverWallet.astro';
+---
+
+<MainLayout title="Driver Dashboard">
+  <div class="max-w-4xl mx-auto py-12 px-4">
+    <header class="mb-12 text-center">
+      <h1 class="text-4xl font-black text-deep-navy mb-2 uppercase tracking-tighter">
+        Panel de Control <span class="text-primary-600">Conductor</span>
+      </h1>
+      <p class="text-gray-500 font-bold uppercase text-xs">Programa Piloto Privado v2.2</p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+      <DriverWallet />
+
+      <div className="space-y-6">
+        <div class="sunny-card p-6 border-l-8 border-primary-500">
+          <h3 class="text-lg font-black text-deep-navy mb-2">Instrucciones de Servicio</h3>
+          <ul class="text-sm text-gray-600 space-y-3 font-medium">
+            <li class="flex gap-2"><span>✅</span> Mantener el GPS activo en todo momento.</li>
+            <li class="flex gap-2"><span>✅</span> Reportar cualquier cambio de tarifa en El Crucero.</li>
+            <li class="flex gap-2"><span>✅</span> Los pagos de pasajeros son exclusivamente en EFECTIVO.</li>
+          </ul>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h3 class="text-sm font-black text-gray-400 uppercase mb-4">Métricas del Turno</h3>
+          <div class="grid grid-cols-2 gap-4 text-center">
+            <div class="p-3 bg-gray-50 rounded-xl">
+              <div class="text-xl font-black text-deep-navy">12</div>
+              <div class="text-[10px] text-gray-400 font-bold uppercase">Viajes</div>
+            </div>
+            <div class="p-3 bg-gray-50 rounded-xl">
+              <div class="text-xl font-black text-deep-navy">4.8</div>
+              <div class="text-[10px] text-gray-400 font-bold uppercase">Rating</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</MainLayout>
