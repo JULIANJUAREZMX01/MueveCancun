@@ -135,7 +135,7 @@ pub fn find_route_internal(
                     2.0
                 };
 
-                if dist < 0.15 {
+                if dist < 0.5 {
                     graph.add_edge(all_nodes[i], all_nodes[j], penalty);
                 }
             }
@@ -161,11 +161,13 @@ pub fn find_route_internal(
         let mut next_node = None;
 
         for neighbor in neighbors {
-            let edge = graph.find_edge(current, neighbor).unwrap();
-            let weight = graph.edge_weight(edge).unwrap();
-            if (current_dist - weight - node_weights[&neighbor]).abs() < 0.0001 {
-                next_node = Some(neighbor);
-                break;
+            if let Some(&neighbor_dist) = node_weights.get(&neighbor) {
+                let edge = graph.find_edge(current, neighbor).unwrap();
+                let weight = graph.edge_weight(edge).unwrap();
+                if (current_dist - weight - neighbor_dist).abs() < 0.0001 {
+                    next_node = Some(neighbor);
+                    break;
+                }
             }
         }
 
@@ -362,5 +364,27 @@ mod tests {
         let res = find_route_internal(21.1605, -86.8260, 21.0412, -86.8725, &data);
         assert!(res.success);
         assert!(res.airport_warning.is_none());
+    }
+
+    #[test]
+    fn test_real_data_integration() {
+        let file_path = "../../public/data/master_routes.json";
+        let file_content = std::fs::read_to_string(file_path).expect("Failed to read master_routes.json");
+        let data: RootData = serde_json::from_str(&file_content).expect("Failed to parse master_routes.json");
+
+        // Test ADO Centro to Airport T2 (Terminal 2)
+        // ADO_AEROPUERTO_001_004: Terminal ADO Centro Cancún (21.1586, -86.8259)
+        // ADO_AEROPUERTO_001_001: Terminal 2 Aeropuerto (21.0417, -86.8761)
+        let res = find_route_internal(21.1586, -86.8259, 21.0417, -86.8761, &data);
+        assert!(res.success, "Should find route with real data");
+        println!("Routes found: {:?}", res.routes);
+        println!("Airport warning: {:?}", res.airport_warning);
+
+        if res.routes.contains(&"VAN_PLAYA_EXPRESS_001".to_string()) {
+             assert!(res.airport_warning.is_some(), "Playa Express should have airport warning");
+        } else {
+             assert!(res.routes.contains(&"ADO_AEROPUERTO_001".to_string()));
+             assert!(res.airport_warning.is_none(), "ADO should NOT have airport warning");
+        }
     }
 }
