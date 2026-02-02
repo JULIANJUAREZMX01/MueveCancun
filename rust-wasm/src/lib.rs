@@ -41,8 +41,9 @@ pub fn find_nearest_stop(user_lat: f64, user_lng: f64, stops_val: JsValue) -> Js
 }
 
 #[wasm_bindgen]
-pub fn calculate_route(from: &str, to: &str) -> JsValue {
+pub fn find_route(from: &str, to: &str, _routes_val: JsValue) -> JsValue {
     // Algoritmo simplificado (placeholder)
+    // En una implementación real, usaríamos _routes_val para buscar el camino óptimo.
     let result = RouteResult {
         route_id: "R1".to_string(),
         total_time: 25,

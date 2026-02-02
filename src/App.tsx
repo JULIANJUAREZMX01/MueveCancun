@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, NavLink } from 'react-router-dom';
 import { Map as MapIcon, Route as RouteIcon, Heart, Search } from 'lucide-react';
-import init, { calculate_route } from './wasm/route_calculator/route_calculator';
+import init, { find_route } from './wasm/route_calculator/route_calculator';
 import { getBalance } from './utils/db';
 
 // Pages
@@ -29,6 +29,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [wasmReady, setWasmReady] = useState(false);
   const [balance, setBalance] = useState<number>(0);
+  const [masterRoutes, setMasterRoutes] = useState<unknown>(null);
 
   const handleSwap = () => {
     const temp = searchFrom;
@@ -36,7 +37,7 @@ function App() {
     setSearchTo(temp);
   };
 
-  // Initialize WASM and Balance
+  // Initialize WASM, Balance and Routes
   useEffect(() => {
     init().then(() => {
       setWasmReady(true);
@@ -46,6 +47,14 @@ function App() {
     getBalance().then(val => {
       setBalance(val);
     }).catch(console.error);
+
+    fetch('/data/master_routes.json')
+      .then(res => res.json())
+      .then(data => {
+        setMasterRoutes(data);
+        console.log('Master routes loaded');
+      })
+      .catch(console.error);
   }, []);
 
   // Obtener ubicación del usuario
@@ -62,13 +71,13 @@ function App() {
 
   // Calcular ruta con WASM
   const handleSearch = async () => {
-    if (!wasmReady) {
-      alert('Motor de rutas no está listo aún.');
+    if (!wasmReady || !masterRoutes) {
+      alert('Motor de rutas o datos no están listos aún.');
       return;
     }
     setLoading(true);
     try {
-      const result = calculate_route(searchFrom, searchTo);
+      const result = find_route(searchFrom, searchTo, masterRoutes);
       setRouteResults([result as RouteResult]);
     } catch (error) {
       console.error('Error calculando ruta:', error);
