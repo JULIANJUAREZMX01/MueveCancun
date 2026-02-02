@@ -38,6 +38,13 @@ struct GraphNode {
 }
 
 #[wasm_bindgen]
+pub fn validate_operator_funds(balance: f64) -> bool {
+    // Threshold is 180 MXN (approx 9 USD)
+    // If balance is below this, they cannot operate "Compass"
+    balance >= 180.0
+}
+
+#[wasm_bindgen]
 pub fn calculate_route(
     origin_lat: f64,
     origin_lng: f64,
