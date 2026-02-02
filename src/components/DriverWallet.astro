@@ -17,7 +17,8 @@
     </div>
 
     <div class="space-y-4">
-      <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <button class="top-up-btn bg-green-600 hover:bg-green-500 py-2 rounded-xl font-black text-xs transition-all active:scale-95 shadow-lg" data-amount="50">+$50 MXN</button>
         <button class="top-up-btn bg-green-600 hover:bg-green-500 py-2 rounded-xl font-black text-xs transition-all active:scale-95 shadow-lg" data-amount="100">+$100 MXN</button>
         <button class="top-up-btn bg-green-600 hover:bg-green-500 py-2 rounded-xl font-black text-xs transition-all active:scale-95 shadow-lg" data-amount="500">+$500 MXN</button>
       </div>
@@ -64,8 +65,8 @@
   async function checkFunds(balance) {
       try {
           // Dynamic import to avoid build errors with Vite
-          const wasm = await import(/* @vite-ignore */ '/wasm/route-calculator/route_calculator.js');
-          await wasm.default('/wasm/route-calculator/route_calculator_bg.wasm');
+          const wasm = await import('../wasm/route_calculator.js');
+          await wasm.default();
           return wasm.validate_operator_funds(balance);
       } catch (e) {
           console.error("WASM Validation Error:", e);
