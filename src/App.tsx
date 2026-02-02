@@ -100,15 +100,29 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        <header className="bg-sky-600 text-white p-4 shadow-lg sticky top-0 z-50">
+        <header className="bg-caribbean-blue text-white p-4 shadow-lg sticky top-0 z-50">
           <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
+              <Link to="/" aria-label="Volver al inicio / Back to home" className="text-2xl font-bold flex items-center gap-2 hover:text-sky-100 transition-colors">
+                🚌 <span className="high-contrast-text text-white shadow-none">CancúnMueve</span>
               <Link viewTransition to="/" className="text-2xl font-bold flex items-center gap-2 hover:text-sky-100 transition-colors">
                 🚌 CancúnMueve
               </Link>
               <p className="text-sky-100 text-sm hidden md:block">Tu guía de transporte público</p>
             </div>
 
+            <nav className="flex gap-1 bg-sky-900/20 p-1 rounded-xl">
+              <NavLink viewTransition to="/" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-caribbean-blue shadow-sm' : 'text-sky-100 hover:bg-white/10'}`}>
+                <Search className="w-4 h-4" aria-hidden="true" /> Buscar
+              </NavLink>
+              <NavLink viewTransition to="/mapa" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-caribbean-blue shadow-sm' : 'text-sky-100 hover:bg-white/10'}`}>
+                <MapIcon className="w-4 h-4" aria-hidden="true" /> Mapa
+              </NavLink>
+              <NavLink viewTransition to="/rutas" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-caribbean-blue shadow-sm' : 'text-sky-100 hover:bg-white/10'}`}>
+                <RouteIcon className="w-4 h-4" aria-hidden="true" /> Rutas
+              </NavLink>
+              <NavLink viewTransition to="/contribuir" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-caribbean-blue shadow-sm' : 'text-sky-100 hover:bg-white/10'}`}>
+                <Heart className="w-4 h-4" aria-hidden="true" /> Feedback
             <nav className="flex gap-1 bg-sky-700/50 p-1 rounded-xl">
               <NavLink viewTransition to="/" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-sky-600 shadow-sm' : 'text-sky-100 hover:bg-sky-600'}`}>
                 <Search className="w-4 h-4" /> Buscar

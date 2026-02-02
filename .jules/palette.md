@@ -1,3 +1,6 @@
+## 2025-02-01 - [Enhanced Search & Navigation UX]
+**Learning:** Native View Transitions in React Router 7 provide an "app-like" experience with zero extra dependencies. Clear buttons in search inputs significantly improve mobile usability and accessibility.
+**Action:** Always enable 'viewTransition' on NavLinks and provide clear/reset buttons for all text-heavy search inputs. Use 'aria-hidden="true"' on all Lucide icons to reduce screen reader noise.
 ## 2025-05-22 - [Form Accessibility and Swap Delight]
 **Learning:** Found that core search inputs lack proper label associations (htmlFor/id), hindering screen reader users. Added a 'Swap' interaction which is a standard expectation in transit apps but was missing.
 **Action:** Always ensure form inputs have unique IDs and matching labels. Use standard transit UI patterns like 'Swap' to improve efficiency.

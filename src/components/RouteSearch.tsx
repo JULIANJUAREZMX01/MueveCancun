@@ -26,14 +26,15 @@ const RouteSearch: React.FC<RouteSearchProps> = React.memo(({
   return (
     <div className="sunny-card p-6 space-y-4">
       <h2 className="text-xl font-bold text-deep-navy flex items-center gap-2">
-        <Search className="w-5 h-5 text-caribbean-blue" /> Encuentra tu ruta
+        <Search className="w-5 h-5 text-caribbean-blue" aria-hidden="true" /> Encuentra tu ruta
       </h2>
       <div className="space-y-3 relative">
         <div className="space-y-4">
           <div>
             <label htmlFor="search-from" className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
-              <MapPin className="w-4 h-4 text-caribbean-blue" /> Desde
+              <MapPin className="w-4 h-4 text-caribbean-blue" aria-hidden="true" /> Desde
             </label>
+            <div className="relative flex items-center">
             <div className="relative">
               <input
                 id="search-from"
@@ -46,6 +47,10 @@ const RouteSearch: React.FC<RouteSearchProps> = React.memo(({
               {from && (
                 <button
                   onClick={() => onFromChange('')}
+                  aria-label="Limpiar origen"
+                  className="absolute right-2 p-1 text-gray-400 hover:text-caribbean-blue transition-colors"
+                >
+                  <X className="w-4 h-4" aria-hidden="true" />
                   aria-label="Limpiar origen / Clear origin"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-caribbean-blue transition-colors"
                 >
@@ -56,20 +61,21 @@ const RouteSearch: React.FC<RouteSearchProps> = React.memo(({
           </div>
 
           {/* Swap Button */}
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 pointer-events-none pr-0">
              <button
               onClick={onSwap}
               aria-label="Intercambiar origen y destino"
               className="pointer-events-auto p-2 bg-white rounded-full shadow-md border border-gray-100 text-caribbean-blue hover:bg-caribbean-blue hover:text-white transition-colors active:scale-90"
             >
-              <ArrowUpDown className="w-4 h-4" />
+              <ArrowUpDown className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
 
           <div>
             <label htmlFor="search-to" className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
-              <MapPin className="w-4 h-4 text-coral" /> Hasta
+              <MapPin className="w-4 h-4 text-coral" aria-hidden="true" /> Hasta
             </label>
+            <div className="relative flex items-center">
             <div className="relative">
               <input
                 id="search-to"
@@ -82,6 +88,10 @@ const RouteSearch: React.FC<RouteSearchProps> = React.memo(({
               {to && (
                 <button
                   onClick={() => onToChange('')}
+                  aria-label="Limpiar destino"
+                  className="absolute right-2 p-1 text-gray-400 hover:text-caribbean-blue transition-colors"
+                >
+                  <X className="w-4 h-4" aria-hidden="true" />
                   aria-label="Limpiar destino / Clear destination"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-coral transition-colors"
                 >
@@ -99,12 +109,12 @@ const RouteSearch: React.FC<RouteSearchProps> = React.memo(({
         >
           {loading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
               Calculando...
             </>
           ) : (
             <>
-              <Search className="w-5 h-5" />
+              <Search className="w-5 h-5" aria-hidden="true" />
               {isLocked ? 'Trazar Ruta (Bloqueado)' : 'Trazar Ruta'}
             </>
           )}

@@ -22,7 +22,7 @@ const RouteResults: React.FC<RouteResultsProps> = React.memo(({ results }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-bold text-deep-navy px-2 flex items-center gap-2">
-        <Info className="w-5 h-5 text-caribbean-blue" />
+        <Info className="w-5 h-5 text-caribbean-blue" aria-hidden="true" />
         Resultados <span className="text-gray-400 font-normal">/ Results</span>
       </h3>
       {results.map((result, idx) => (
@@ -35,12 +35,12 @@ const RouteResults: React.FC<RouteResultsProps> = React.memo(({ results }) => {
               <h4 className="text-xl font-black text-caribbean-blue">Ruta {result.route_id}</h4>
             </div>
             <div className="text-right">
-              <div className="flex items-center justify-end gap-1 text-2xl font-black text-deep-navy">
-                <Banknote className="w-5 h-5 text-jungle-green" />
+              <div className="flex items-center justify-end gap-1 text-2xl font-black text-deep-navy" aria-label={`Costo: ${result.total_cost} pesos mexicanos`}>
+                <Banknote className="w-5 h-5 text-jungle-green" aria-hidden="true" />
                 ${result.total_cost} <span className="text-xs font-normal text-gray-400">MXN</span>
               </div>
-              <div className="flex items-center justify-end gap-1 text-sm text-gray-500 font-medium">
-                <Clock className="w-4 h-4" />
+              <div className="flex items-center justify-end gap-1 text-sm text-gray-500 font-medium" aria-label={`Tiempo estimado: ${result.total_time} minutos`}>
+                <Clock className="w-4 h-4" aria-hidden="true" />
                 {result.total_time} min <span className="text-[10px] text-gray-400">aprox. / approx.</span>
               </div>
             </div>
@@ -54,8 +54,8 @@ const RouteResults: React.FC<RouteResultsProps> = React.memo(({ results }) => {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-gray-700 leading-relaxed font-medium">{step.instruction}</p>
-                  <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-tight">
-                    <Navigation className="w-3 h-3" />
+                  <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-tight" aria-label={`Duración del paso: ${step.duration} minutos`}>
+                    <Navigation className="w-3 h-3" aria-hidden="true" />
                     Duración <span className="lowercase font-normal">/ Duration</span>: {step.duration} min
                   </div>
                 </div>
