@@ -16,14 +16,6 @@ const {
   <div id="map-container" class="w-full h-full" data-token={mapboxToken} data-center={JSON.stringify(center)} data-zoom={zoom}></div>
 
   <div id="map-loader" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
-const { mapboxToken, center = [-86.8515, 21.1619], zoom = 12 } = Astro.props;
----
-
-<div class="relative w-full h-full overflow-hidden rounded-xl border border-gray-200 shadow-inner" id="map-wrapper" data-token={mapboxToken} data-center={JSON.stringify(center)} data-zoom={zoom}>
-  <div id="map-container" class="w-full h-full"></div>
-
-  <!-- Loading Overlay -->
-  <div id="map-loading" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
     <div class="text-center">
       <div class="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
       <p class="text-gray-600 font-medium">Cargando mapa de CancúnMueve...</p>
@@ -43,16 +35,6 @@ const { mapboxToken, center = [-86.8515, 21.1619], zoom = 12 } = Astro.props;
     const center = JSON.parse(container.dataset.center);
     const zoom = parseFloat(container.dataset.zoom);
 
-<link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
-<script>
-  import mapboxgl from 'mapbox-gl';
-
-  const wrapper = document.getElementById('map-wrapper');
-  const token = wrapper?.dataset.token;
-  const center = JSON.parse(wrapper?.dataset.center || '[-86.8515, 21.1619]');
-  const zoom = Number(wrapper?.dataset.zoom || 12);
-
-  if (token) {
     mapboxgl.accessToken = token;
 
     const map = new mapboxgl.Map({
@@ -135,64 +117,12 @@ const { mapboxToken, center = [-86.8515, 21.1619], zoom = 12 } = Astro.props;
 
               new mapboxgl.Marker(el)
                 .setLngLat([stop.lng, stop.lat])
-        // Hide loading
-        document.getElementById('map-loading')?.classList.add('hidden');
-        console.log('✅ Map loaded');
-
-        // Add routes
-        data.rutas.forEach((route) => {
-           // Draw Lines
-           if (route.paradas && route.paradas.length > 1) {
-              const coordinates = route.paradas.map((s) => [s.lng || s.lon, s.lat]); // Handle lng vs lon schema from Deep Research
-              
-              if (!map.getSource(`route-${route.id}`)) {
-                map.addSource(`route-${route.id}`, {
-                  type: 'geojson',
-                  data: {
-                    type: 'Feature',
-                    properties: {},
-                    geometry: {
-                      type: 'LineString',
-                      coordinates: coordinates
-                    }
-                  }
-                });
-
-                map.addLayer({
-                  id: `route-${route.id}`,
-                  type: 'line',
-                  source: `route-${route.id}`,
-                  paint: {
-                    'line-color': route.color || '#333',
-                    'line-width': 3,
-                    'line-opacity': 0.6,
-                    'line-dasharray': [2, 1]
-                  }
-                });
-              }
-           }
-
-           // Draw Markers
-           if (route.paradas) {
-             route.paradas.forEach((stop) => {
-               const el = document.createElement('div');
-               el.className = 'stop-marker';
-               el.style.backgroundColor = route.color || '#333';
-               el.style.width = '10px';
-               el.style.height = '10px';
-               el.style.borderRadius = '50%';
-               el.style.border = '2px solid white';
-               el.style.cursor = 'pointer';
-
-               new mapboxgl.Marker(el)
-                .setLngLat([stop.lng || stop.lon, stop.lat])
                 .setPopup(
                   new mapboxgl.Popup({ offset: 25 }).setHTML(`
                     <div class="p-2">
                       <strong class="text-deep-navy">${stop.nombre}</strong><br>
                       <span class="text-xs text-gray-500">Ruta: ${route.id}</span><br>
                       <span class="text-sm font-bold text-primary-600">$${route.tarifa.toFixed(2)} MXN</span>
-                      <span class="text-sm font-bold text-primary-600">$${route.tarifa?.toFixed(2) || '0.00'} MXN</span>
                     </div>
                   `)
                 )
@@ -203,14 +133,9 @@ const { mapboxToken, center = [-86.8515, 21.1619], zoom = 12 } = Astro.props;
 
         if (loader) loader.classList.add('hidden');
         console.log('✅ Map loaded with routes');
-             });
-           }
-        });
-
       } catch (error) {
         console.error('Failed to load routes:', error);
       }
     });
-
   }
 </script>

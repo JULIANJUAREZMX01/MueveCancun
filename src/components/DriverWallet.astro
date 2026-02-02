@@ -36,38 +36,6 @@
           <span class="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
         </span>
         Sincronizado: Nodo Cancún 05
-<div class="sunny-card p-8 animate-fade-in relative overflow-hidden" id="driver-wallet">
-  <div class="absolute top-0 right-0 p-4 opacity-10">
-    <span class="text-8xl">💳</span>
-  </div>
-
-  <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Tu Saldo Actual</h2>
-  <div class="flex items-baseline gap-2 mb-6">
-    <span id="wallet-amount" class="text-5xl font-black text-deep-navy tracking-tighter">$0</span>
-    <span class="text-xl font-bold text-gray-400">MXN</span>
-  </div>
-
-  <div class="space-y-4 relative z-10">
-    <p class="text-[10px] font-bold text-gray-400 uppercase text-center mb-2">Recarga Rápida (Simulación)</p>
-    <div class="grid grid-cols-3 gap-2">
-      <button data-amount="50" class="top-up-btn bg-white border-2 border-gray-100 hover:border-primary-500 hover:text-primary-600 text-gray-500 font-black py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs">
-        +$50
-      </button>
-      <button data-amount="100" class="top-up-btn bg-white border-2 border-gray-100 hover:border-primary-500 hover:text-primary-600 text-gray-500 font-black py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs">
-        +$100
-      </button>
-      <button data-amount="200" class="top-up-btn bg-white border-2 border-gray-100 hover:border-primary-500 hover:text-primary-600 text-gray-500 font-black py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs">
-        +$200
-      </button>
-    </div>
-
-    <div class="mt-6 pt-6 border-t border-dashed border-gray-200">
-      <div class="flex justify-between items-center text-xs font-bold text-gray-500 mb-2">
-        <span>Estado de Cuenta</span>
-        <span class="text-green-600">● Activo</span>
-      </div>
-      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-        <div class="h-full bg-primary-500 w-[85%] rounded-full"></div>
       </div>
     </div>
   </div>
@@ -80,6 +48,7 @@
   const content = document.getElementById('wallet-content');
   const displayBalance = document.getElementById('display-balance');
   const topUpBtns = document.querySelectorAll('.top-up-btn');
+  const container = document.getElementById('driver-wallet-container');
 
   async function initDB() {
     const db = await openDB('cancunmueve-db', 2, {
@@ -92,6 +61,19 @@
     return db;
   }
 
+  async function checkFunds(balance) {
+      try {
+          // Dynamic import to avoid build errors with Vite
+          const wasm = await import(/* @vite-ignore */ '/wasm/route-calculator/route_calculator.js');
+          await wasm.default('/wasm/route-calculator/route_calculator_bg.wasm');
+          return wasm.validate_operator_funds(balance);
+      } catch (e) {
+          console.error("WASM Validation Error:", e);
+          // Fallback if WASM fails (e.g. network issue loading it)
+          return balance >= 180.0;
+      }
+  }
+
   async function updateBalanceDisplay() {
     const db = await initDB();
     let currentBalance = await db.get('wallet-status', 'driver_current');
@@ -99,7 +81,21 @@
       currentBalance = 180.0;
       await db.put('wallet-status', currentBalance, 'driver_current');
     }
+
     if (displayBalance) displayBalance.textContent = currentBalance.toFixed(0);
+
+    const isValid = await checkFunds(currentBalance);
+
+    // Status Indicator
+    if (container) {
+        if (isValid) {
+            container.classList.remove('border-red-500');
+            container.classList.add('border-primary-500');
+        } else {
+            container.classList.remove('border-primary-500');
+            container.classList.add('border-red-500');
+        }
+    }
 
     if (loader) loader.classList.add('hidden');
     if (content) content.classList.remove('hidden');
@@ -107,17 +103,15 @@
 
   topUpBtns.forEach(btn => {
     btn.addEventListener('click', async (e) => {
-      const amount = parseInt((e.currentTarget as HTMLElement).dataset.amount || '0');
+      const amount = parseInt((e.currentTarget).dataset.amount || '0');
       const db = await initDB();
       let currentBalance = await db.get('wallet-status', 'driver_current') || 0;
       currentBalance += amount;
       await db.put('wallet-status', currentBalance, 'driver_current');
 
-      // Update display
-      if (displayBalance) displayBalance.textContent = currentBalance.toFixed(0);
+      await updateBalanceDisplay();
 
       // Visual feedback
-      const container = document.getElementById('driver-wallet-container');
       if (container) {
         container.classList.add('ring-4', 'ring-green-500');
         setTimeout(() => container.classList.remove('ring-4', 'ring-green-500'), 500);
@@ -126,48 +120,4 @@
   });
 
   updateBalanceDisplay();
-  const elAmount = document.getElementById('wallet-amount');
-  const btns = document.querySelectorAll('.top-up-btn');
-  const DB_NAME = 'cancunmueve-db';
-
-  async function getDB() {
-    return openDB(DB_NAME, 2, {
-      upgrade(db) {
-         if (!db.objectStoreNames.contains('wallet-status')) {
-            db.createObjectStore('wallet-status');
-         }
-      },
-    });
-  }
-
-  async function updateBalanceDisplay() {
-    const db = await getDB();
-    const bal = await db.get('wallet-status', 'driver_current');
-    elAmount.innerText = `$${Number(bal || 0).toFixed(0)}`;
-  }
-
-  async function addFunds(amount) {
-    const db = await getDB();
-    const current = Number(await db.get('wallet-status', 'driver_current') || 0);
-    const newBal = current + Number(amount);
-    await db.put('wallet-status', newBal, 'driver_current');
-    await updateBalanceDisplay();
-    
-    // Animate
-    elAmount.classList.add('text-green-500', 'scale-110');
-    setTimeout(() => {
-        elAmount.classList.remove('text-green-500', 'scale-110');
-    }, 300);
-  }
-
-  // Init
-  updateBalanceDisplay();
-
-  // Listeners
-  btns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const amt = e.target.dataset.amount;
-      if (amt) addFunds(amt);
-    });
-  });
 </script>

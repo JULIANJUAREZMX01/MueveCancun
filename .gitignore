@@ -53,5 +53,10 @@ tmp/
 # Frameworks / Tooling
 .astro
 test-results
-# Github
-.github
+node_modules/
+dist/
+public/wasm/
+src/wasm/
+.astro/
+pnpm-lock.yaml
+Cargo.lock
