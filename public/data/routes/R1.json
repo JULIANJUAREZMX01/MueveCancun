@@ -1,0 +1,33 @@
+{
+  "rutas": [
+    {
+      "id": "R1",
+      "nombre": "Crucero - Zona Hotelera",
+      "color": "#FF6B6B",
+      "tarifa": 15.0,
+      "paradas": [
+        {
+          "id": "R1_001",
+          "nombre": "Parque La Rehoyada",
+          "lat": 21.1619,
+          "lng": -86.8515,
+          "orden": 1
+        },
+        {
+          "id": "R1_003",
+          "nombre": "Plaza Las Américas",
+          "lat": 21.1472,
+          "lng": -86.8234,
+          "orden": 3
+        },
+        {
+          "id": "R1_007",
+          "nombre": "Coco Bongo / Forum",
+          "lat": 21.1385,
+          "lng": -86.7474,
+          "orden": 7
+        }
+      ]
+    }
+  ]
+}

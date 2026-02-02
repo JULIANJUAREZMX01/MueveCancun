@@ -1,0 +1,15 @@
+{
+  "name": "spatial-index",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "spatial_index_bg.wasm",
+    "spatial_index.js",
+    "spatial_index.d.ts"
+  ],
+  "main": "spatial_index.js",
+  "types": "spatial_index.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

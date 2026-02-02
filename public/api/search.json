@@ -1,0 +1,4 @@
+{
+  "searchable_fields": ["stops.name", "routes.name", "landmarks"],
+  "index_version": "1.0.0"
+}

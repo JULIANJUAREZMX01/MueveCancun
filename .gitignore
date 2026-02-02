@@ -50,5 +50,13 @@ __pycache__
 *.tmp
 tmp/
 
-# Github
-.github
+# Frameworks / Tooling
+.astro
+test-results
+node_modules/
+dist/
+public/wasm/
+src/wasm/
+.astro/
+pnpm-lock.yaml
+Cargo.lock
