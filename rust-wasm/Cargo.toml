@@ -10,3 +10,19 @@ resolver = "2"
 opt-level = "z"
 lto = true
 codegen-units = 1
+[package]
+name = "route-calculator"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde-wasm-bindgen = "0.6"
+geo = "0.27"
+js-sys = "0.3"
+strsim = "0.11.1"

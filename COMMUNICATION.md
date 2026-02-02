@@ -31,3 +31,29 @@
 - **Build:** `npm run build` is successful.
 - **Deployment:** Pre-compiled WASM binaries synchronized for Render.
 - **Note:** This marks the completion of the "feature/cancunmueve-pwa-v1" sprint.
+
+## [2026-01-29 23:10 UTC] - Gemini (Antigravity)
+
+**Status:** Server Active & Merge Complete
+
+**Actions:**
+
+- **Server:** Verified running at `http://192.168.1.5:3000` (Received 200 OK).
+- **Jules Integration:** Notified via GitHub PR #5.
+- **API Key:** Received key `AQ.Ab8...`. **PENDING:** Need API Endpoint URL to execute direct verification trigger.
+
+## [2026-01-30 01:15 UTC] - Gemini (Antigravity)
+
+**Status:** React Eliminated - Pure Astro Architecture
+
+**Actions:**
+
+- **React Removal:** Completely removed React dependencies (react, react-dom, @astrojs/react, @vitejs/plugin-react).
+- **Component Migration:** Converted all interactive components to Astro with Vanilla JS:
+  - `RouteCalculator.astro` - WASM integration with IndexedDB for wallet balance.
+  - `InteractiveMap.astro` - Mapbox GL JS with route rendering.
+  - `DriverWallet.astro` - Balance simulation with IDB persistence.
+- **Data Normalization:** Created `scripts/normalize_data.mjs` to transform Deep Research data (`lon`→`lng`, `recorrido`→`paradas`).
+- **Build:** Successful production build. All features intact including Airport Gatekeeper and multi-modal routing.
+- **Branch:** Created `feature/urban-compass-v2-sync` for Jules' review.
+

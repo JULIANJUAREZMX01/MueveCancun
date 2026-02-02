@@ -8,6 +8,7 @@
   --color-coral: #FF5A5F;
   --color-deep-navy: #003366;
 
+  
   --font-outfit: "Outfit", sans-serif;
 }
 
@@ -17,6 +18,7 @@
   --primary: #00A3E0;
   --secondary: #FFD700;
 
+  
   font-family: var(--font-outfit), Inter, system-ui, sans-serif;
   background-color: var(--background);
   color: var(--foreground);

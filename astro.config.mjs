@@ -4,6 +4,9 @@ import sitemap from "@astrojs/sitemap"
 import tailwindv4 from "@tailwindcss/vite"
 import path from "path"
 import { fileURLToPath } from "url"
+import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -13,6 +16,7 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap()
+    sitemap(),
   ],
   vite: {
     plugins: [tailwindv4()],
@@ -24,6 +28,14 @@ export default defineConfig({
         "@lib": path.resolve(__dirname, "src/lib"),
         "@consts": path.resolve(__dirname, "src/consts.ts"),
         "@types": path.resolve(__dirname, "src/types.ts")
+    plugins: [tailwindcss()],
+    build: {
+      rollupOptions: {
+        external: [
+          '/wasm/route-calculator/route_calculator_bg.wasm',
+          '/wasm/spatial-index/spatial_index_bg.wasm',
+          '/wasm/route-calculator/route_calculator.js'
+        ]
       }
     }
   }
