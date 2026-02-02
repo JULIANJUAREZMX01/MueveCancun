@@ -14,14 +14,19 @@ interface MueveDB extends DBSchema {
 const DATABASE_NAME = 'cancunmueve-db';
 const DATABASE_VERSION = 1;
 
-export async function initDB(): Promise<IDBPDatabase<MueveDB>> {
-  return openDB<MueveDB>(DATABASE_NAME, DATABASE_VERSION, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains('wallet-status')) {
-        db.createObjectStore('wallet-status', { keyPath: 'id' });
-      }
-    },
-  });
+let dbPromise: Promise<IDBPDatabase<MueveDB>> | undefined;
+
+export function initDB(): Promise<IDBPDatabase<MueveDB>> {
+  if (!dbPromise) {
+    dbPromise = openDB<MueveDB>(DATABASE_NAME, DATABASE_VERSION, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('wallet-status')) {
+          db.createObjectStore('wallet-status', { keyPath: 'id' });
+        }
+      },
+    });
+  }
+  return dbPromise;
 }
 
 export async function getBalance(): Promise<number> {
