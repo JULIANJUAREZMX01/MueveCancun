@@ -1,0 +1,26 @@
+{
+  "rutas": [
+    {
+      "id": "R10",
+      "nombre": "Las Américas - Aeropuerto",
+      "color": "#FFD93D",
+      "tarifa": 15.0,
+      "paradas": [
+        {
+          "id": "R10_001",
+          "nombre": "Plaza Las Américas",
+          "lat": 21.1472,
+          "lng": -86.8234,
+          "orden": 1
+        },
+        {
+          "id": "R10_009",
+          "nombre": "Aeropuerto T3",
+          "lat": 21.0412,
+          "lng": -86.8725,
+          "orden": 9
+        }
+      ]
+    }
+  ]
+}

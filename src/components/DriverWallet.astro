@@ -1,0 +1,173 @@
+---
+---
+<div id="driver-wallet-container" class="bg-deep-navy text-white p-6 rounded-2xl shadow-2xl border-4 border-primary-500 min-h-[300px]">
+  <div id="wallet-loading" class="animate-pulse bg-gray-700 h-64 rounded-2xl w-full"></div>
+
+  <div id="wallet-content" class="hidden">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-black uppercase tracking-tighter text-primary-400">Pilot Wallet</h2>
+      <span class="bg-primary-500 text-[10px] px-2 py-1 rounded-md font-black shadow-lg">BETA 2.2</span>
+    </div>
+
+    <div class="bg-white/5 p-6 rounded-xl border border-white/10 mb-6 text-center">
+      <div class="text-5xl font-black mb-1 text-primary-400">
+        $<span id="display-balance">0</span> <span class="text-lg text-white/50">MXN</span>
+      </div>
+      <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Saldo de Operación Verificado</p>
+    </div>
+
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <button class="top-up-btn bg-green-600 hover:bg-green-500 py-2 rounded-xl font-black text-xs transition-all active:scale-95 shadow-lg" data-amount="100">+$100 MXN</button>
+        <button class="top-up-btn bg-green-600 hover:bg-green-500 py-2 rounded-xl font-black text-xs transition-all active:scale-95 shadow-lg" data-amount="500">+$500 MXN</button>
+      </div>
+      <button class="w-full bg-primary-600 hover:bg-primary-500 py-4 rounded-xl font-black text-sm transition-all transform active:scale-95 shadow-xl">
+        RETIRAR FONDOS (WITHDRAW)
+      </button>
+      <button class="w-full bg-white/5 hover:bg-white/10 py-4 rounded-xl font-black text-xs transition-all border border-white/10">
+        HISTORIAL DE VIAJES
+      </button>
+    </div>
+
+    <div class="mt-8 pt-6 border-t border-white/10">
+      <div class="flex items-center gap-3 text-[10px] text-primary-400 font-black uppercase tracking-widest">
+        <span class="relative flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
+        </span>
+        Sincronizado: Nodo Cancún 05
+<div class="sunny-card p-8 animate-fade-in relative overflow-hidden" id="driver-wallet">
+  <div class="absolute top-0 right-0 p-4 opacity-10">
+    <span class="text-8xl">💳</span>
+  </div>
+
+  <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Tu Saldo Actual</h2>
+  <div class="flex items-baseline gap-2 mb-6">
+    <span id="wallet-amount" class="text-5xl font-black text-deep-navy tracking-tighter">$0</span>
+    <span class="text-xl font-bold text-gray-400">MXN</span>
+  </div>
+
+  <div class="space-y-4 relative z-10">
+    <p class="text-[10px] font-bold text-gray-400 uppercase text-center mb-2">Recarga Rápida (Simulación)</p>
+    <div class="grid grid-cols-3 gap-2">
+      <button data-amount="50" class="top-up-btn bg-white border-2 border-gray-100 hover:border-primary-500 hover:text-primary-600 text-gray-500 font-black py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs">
+        +$50
+      </button>
+      <button data-amount="100" class="top-up-btn bg-white border-2 border-gray-100 hover:border-primary-500 hover:text-primary-600 text-gray-500 font-black py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs">
+        +$100
+      </button>
+      <button data-amount="200" class="top-up-btn bg-white border-2 border-gray-100 hover:border-primary-500 hover:text-primary-600 text-gray-500 font-black py-2 rounded-xl transition-all shadow-sm active:scale-95 text-xs">
+        +$200
+      </button>
+    </div>
+
+    <div class="mt-6 pt-6 border-t border-dashed border-gray-200">
+      <div class="flex justify-between items-center text-xs font-bold text-gray-500 mb-2">
+        <span>Estado de Cuenta</span>
+        <span class="text-green-600">● Activo</span>
+      </div>
+      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div class="h-full bg-primary-500 w-[85%] rounded-full"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { openDB } from 'idb';
+
+  const loader = document.getElementById('wallet-loading');
+  const content = document.getElementById('wallet-content');
+  const displayBalance = document.getElementById('display-balance');
+  const topUpBtns = document.querySelectorAll('.top-up-btn');
+
+  async function initDB() {
+    const db = await openDB('cancunmueve-db', 2, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('wallet-status')) {
+          db.createObjectStore('wallet-status');
+        }
+      },
+    });
+    return db;
+  }
+
+  async function updateBalanceDisplay() {
+    const db = await initDB();
+    let currentBalance = await db.get('wallet-status', 'driver_current');
+    if (currentBalance === undefined) {
+      currentBalance = 180.0;
+      await db.put('wallet-status', currentBalance, 'driver_current');
+    }
+    if (displayBalance) displayBalance.textContent = currentBalance.toFixed(0);
+
+    if (loader) loader.classList.add('hidden');
+    if (content) content.classList.remove('hidden');
+  }
+
+  topUpBtns.forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const amount = parseInt((e.currentTarget as HTMLElement).dataset.amount || '0');
+      const db = await initDB();
+      let currentBalance = await db.get('wallet-status', 'driver_current') || 0;
+      currentBalance += amount;
+      await db.put('wallet-status', currentBalance, 'driver_current');
+
+      // Update display
+      if (displayBalance) displayBalance.textContent = currentBalance.toFixed(0);
+
+      // Visual feedback
+      const container = document.getElementById('driver-wallet-container');
+      if (container) {
+        container.classList.add('ring-4', 'ring-green-500');
+        setTimeout(() => container.classList.remove('ring-4', 'ring-green-500'), 500);
+      }
+    });
+  });
+
+  updateBalanceDisplay();
+  const elAmount = document.getElementById('wallet-amount');
+  const btns = document.querySelectorAll('.top-up-btn');
+  const DB_NAME = 'cancunmueve-db';
+
+  async function getDB() {
+    return openDB(DB_NAME, 2, {
+      upgrade(db) {
+         if (!db.objectStoreNames.contains('wallet-status')) {
+            db.createObjectStore('wallet-status');
+         }
+      },
+    });
+  }
+
+  async function updateBalanceDisplay() {
+    const db = await getDB();
+    const bal = await db.get('wallet-status', 'driver_current');
+    elAmount.innerText = `$${Number(bal || 0).toFixed(0)}`;
+  }
+
+  async function addFunds(amount) {
+    const db = await getDB();
+    const current = Number(await db.get('wallet-status', 'driver_current') || 0);
+    const newBal = current + Number(amount);
+    await db.put('wallet-status', newBal, 'driver_current');
+    await updateBalanceDisplay();
+    
+    // Animate
+    elAmount.classList.add('text-green-500', 'scale-110');
+    setTimeout(() => {
+        elAmount.classList.remove('text-green-500', 'scale-110');
+    }, 300);
+  }
+
+  // Init
+  updateBalanceDisplay();
+
+  // Listeners
+  btns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const amt = e.target.dataset.amount;
+      if (amt) addFunds(amt);
+    });
+  });
+</script>

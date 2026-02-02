@@ -50,5 +50,8 @@ __pycache__
 *.tmp
 tmp/
 
+# Frameworks / Tooling
+.astro
+test-results
 # Github
 .github

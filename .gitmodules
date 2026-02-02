@@ -1,0 +1,4 @@
+# .gitmodules - cleaned to remove broken submodule entries
+# Removed reference to 'astro-template-temp' which caused CI error "No url found for submodule path 'astro-template-temp' in .gitmodules"
+
+# No submodules configured
