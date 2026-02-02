@@ -8,7 +8,7 @@
     "build": "npm run check-wasm && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('./src/wasm/route_calculator_bg.wasm')) { console.error('❌ WASM binary missing! Run wasm-pack build first.'); process.exit(1); } else { console.log('✅ WASM binary found.'); }\""
+    "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('./src/wasm/route_calculator/route_calculator_bg.wasm')) { console.error('❌ WASM binary missing! Run wasm-pack build first.'); process.exit(1); } else { console.log('✅ WASM binary found.'); }\""
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -16,7 +16,8 @@
     "lucide-react": "^0.563.0",
     "mapbox-gl": "^3.18.1",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.13.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

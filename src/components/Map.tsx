@@ -4,64 +4,64 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || 'TU_MAPBOX_TOKEN_AQUI';
 
-interface MapProps {
-  center: [number, number];
-  userLocation: [number, number] | null;
-}
-
-interface Stop {
+interface Parada {
   lng: number;
   lat: number;
   nombre: string;
 }
 
-interface Route {
+interface Ruta {
   id: string;
   polyline: [number, number][];
   color: string;
   tarifa: number;
-  paradas: Stop[];
+  paradas: Parada[];
 }
 
-/**
- * Componente de Mapa optimizado.
- * Utiliza React.memo para evitar re-renderizados innecesarios.
- * Inicializa Mapbox una sola vez y actualiza el centro dinámicamente.
- */
-const Map: React.FC<MapProps> = memo(({ center, userLocation }) => {
+interface MapProps {
+  center: [number, number];
+  userLocation: [number, number] | null;
+}
+
+const Map: React.FC<MapProps> = React.memo(({ center, userLocation }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const initialCenter = useRef(center);
   const userMarker = useRef<mapboxgl.Marker | null>(null);
 
-  // Inicialización única del mapa
+  // Initialize map only once on mount
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    map.current = new mapboxgl.Map({
+    const m = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: center,
+      center: initialCenter.current,
       zoom: 12
     });
+    map.current = m;
 
-    // Agregar controles
-    map.current.addControl(new mapboxgl.NavigationControl());
-    map.current.addControl(new mapboxgl.GeolocateControl({
+    // Add controls
+    m.addControl(new mapboxgl.NavigationControl());
+    m.addControl(new mapboxgl.GeolocateControl({
       positionOptions: { enableHighAccuracy: true },
       trackUserLocation: true
     }));
 
-    // Cargar rutas desde routes.json
-    map.current.on('load', async () => {
+    // Load routes data
+    m.on('load', async () => {
       try {
         const response = await fetch('/data/routes.json');
+        if (!response.ok) throw new Error('Failed to fetch routes');
         const data = await response.json();
 
-        if (!map.current) return;
+        // Draw routes and markers
+        data.rutas.forEach((ruta: Ruta) => {
+          if (!m || !m.getStyle()) return;
 
-        // Dibujar rutas
-        (data.rutas as Route[]).forEach((ruta) => {
-          map.current?.addSource(`route-${ruta.id}`, {
+          m.addSource(`route-${ruta.id}`, {
+          if (!map.current) return;
+          map.current.addSource(`route-${ruta.id}`, {
             type: 'geojson',
             data: {
               type: 'Feature',
@@ -73,7 +73,8 @@ const Map: React.FC<MapProps> = memo(({ center, userLocation }) => {
             }
           });
 
-          map.current?.addLayer({
+          m.addLayer({
+          map.current.addLayer({
             id: `route-${ruta.id}`,
             type: 'line',
             source: `route-${ruta.id}`,
@@ -83,49 +84,71 @@ const Map: React.FC<MapProps> = memo(({ center, userLocation }) => {
             }
           });
 
-          // Agregar paradas
-          ruta.paradas.forEach((parada) => {
+          // Add bus stop markers
+          ruta.paradas.forEach((parada: Parada) => {
             new mapboxgl.Marker({ color: ruta.color })
               .setLngLat([parada.lng, parada.lat])
               .setPopup(new mapboxgl.Popup().setHTML(`
-                <strong>${parada.nombre}</strong><br>
-                Ruta: ${ruta.id}<br>
-                Tarifa: $${ruta.tarifa} MXN
+                <div class="p-1">
+                  <strong class="text-deep-navy">${parada.nombre}</strong><br>
+                  <span class="text-xs text-gray-600">Ruta: ${ruta.id}</span><br>
+                  <span class="text-xs font-bold text-caribbean-blue">$${ruta.tarifa} MXN</span>
+                </div>
               `))
-              .addTo(map.current!);
+              .addTo(m);
           });
         });
       } catch (error) {
-        console.error('Error loading routes to map:', error);
+        console.error('Bolt ⚡ Performance Trace: Error loading routes to map:', error);
       }
     });
 
     return () => {
-      map.current?.remove();
+      if (userMarker.current) {
+        userMarker.current.remove();
+        userMarker.current = null;
+      }
+      m.remove();
       map.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Solo se ejecuta al montar
+  }, []); // Initialize only ONCE to prevent heavy destruction/re-creation
 
-  // Actualizar el centro del mapa cuando cambie el prop center
+  // Performance Optimization: Update center without destroying the map
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, []);
+
+  // Update center smoothly
   useEffect(() => {
     if (map.current) {
-      map.current.flyTo({ center, zoom: 14, speed: 1.2 });
+      map.current.setCenter(center);
     }
   }, [center]);
 
-  // Actualizar marcador de usuario
+  // Performance Optimization: Update user marker position without creating new instances
   useEffect(() => {
     if (userLocation && map.current) {
-      // Eliminar marcador previo si existe
       if (userMarker.current) {
-        userMarker.current.remove();
+        userMarker.current.setLngLat(userLocation);
+      } else {
+        userMarker.current = new mapboxgl.Marker({ color: '#0EA5E9' })
+          .setLngLat(userLocation)
+          .setPopup(new mapboxgl.Popup().setHTML('Tu ubicación'))
+          .addTo(map.current);
       }
+    if (!map.current || !userLocation) return;
 
+    if (!userMarker.current) {
       userMarker.current = new mapboxgl.Marker({ color: '#0EA5E9' })
         .setLngLat(userLocation)
         .setPopup(new mapboxgl.Popup().setHTML('Tu ubicación'))
         .addTo(map.current);
+    } else {
+      userMarker.current.setLngLat(userLocation);
     }
   }, [userLocation]);
 

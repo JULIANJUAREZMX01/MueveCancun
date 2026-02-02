@@ -1,3 +1,3 @@
-## 2025-01-28 - [Unintended Map Re-initialization]
-**Learning:** Initializing heavy components like Mapbox inside a `useEffect` with dependencies that change frequently (or have unstable references) causes the component to be destroyed and recreated on every render. In this case, passing an array literal `[lng, lat]` as a prop to a non-memoized component caused a 100% recreate rate on every keystroke in search inputs.
-**Action:** Always stabilize object/array props passed to heavy components using `useMemo`, constants, or state. Wrap heavy components in `React.memo` and refactor their initialization to be independent of frequent prop updates.
+## 2025-05-22 - [Mapbox Optimization & Regression Prevention]
+**Learning:** Adding dependencies to a useEffect cleanup function that calls destructive methods (like `map.remove()`) will cause the entire component to be destroyed and recreated whenever those dependencies change, even if the effect logic itself has a guard. This is because React calls the cleanup of the previous effect before running the new one.
+**Action:** Use an empty dependency array `[]` for initialization effects with cleanup. If you need to satisfy the linter for variables used during initialization, use a ref (`useRef`) to store those values stably. Perform updates in separate effects using imperative API calls.
