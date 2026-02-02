@@ -16,3 +16,11 @@
 - **Routes**: `react-router-dom` implemented. All 404 dead ends (/mapa, /rutas, /contribuir) resolved with functional pages.
 - **SW**: Service Worker updated with optimized caching for WASM and Data.
 - **Verification**: `pnpm build` passed. `pnpm vitest run` passed with 4/4 tests.
+
+### 2025-05-20 12:00
+- **Status**: Logic/Integration Fix - Unified WASM Routing Engine.
+- **WASM**: Renamed `calculate_route` to `find_route` and added `routes_val` parameter to `rust-wasm/src/lib.rs`.
+- **Integration**: Updated `src/App.tsx` to fetch `master_routes.json` and pass it to `find_route`.
+- **Type Safety**: Replaced `any` with `unknown` for `masterRoutes` state to satisfy ESLint.
+- **Verification**: `pnpm run lint`, `pnpm exec vitest run`, and `pnpm build` all passed.
+- **Log**: SYNAPSE: WASM connected. 404s resolved. Ready for local UI testing.
