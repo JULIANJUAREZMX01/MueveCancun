@@ -5,3 +5,7 @@
 ## 2025-05-23 - [Bilingual Accessibility and Visual Scannability]
 **Learning:** Transit information (cost, time, steps) is highly critical and should be scannable without reading full text. Bilingual support in tourist destinations is a fundamental UX requirement. Semantic HTML (<ol>/<li>) is essential for navigable route steps.
 **Action:** Use Lucide icons for key metrics. Always provide bilingual labels for international users. Use semantic list tags for sequential information.
+
+## 2025-05-24 - [Micro-UX Clear Pattern and View Transitions]
+**Learning:** Adding a "Clear" button (X) to search inputs significantly improves efficiency for users wanting to reset their search. Enabling Native View Transitions in SPA navigation provides an "app-like" feel with minimal code overhead.
+**Action:** Implement "Clear" buttons on all high-use search inputs. Use `viewTransition` prop in React Router to leverage modern browser animation APIs.

@@ -1,3 +1,3 @@
-## 2025-05-15 - [Mapbox Re-initialization Bottleneck]
-**Learning:** Re-initializing Mapbox GL on every render (triggered by parent state changes or unstable array literals for coordinates) causes significant performance degradation and visual flickering.
-**Action:** Always initialize Mapbox only once using an empty dependency array in `useEffect`. Update map state (center, markers) using imperative Mapbox API calls in separate, targeted effects. Use `React.memo` and stable prop references (constants outside components) to shield the Map component from unnecessary parent re-renders.
+## 2025-05-22 - [Mapbox Optimization & Regression Prevention]
+**Learning:** Adding dependencies to a useEffect cleanup function that calls destructive methods (like `map.remove()`) will cause the entire component to be destroyed and recreated whenever those dependencies change, even if the effect logic itself has a guard. This is because React calls the cleanup of the previous effect before running the new one.
+**Action:** Use an empty dependency array `[]` for initialization effects with cleanup. If you need to satisfy the linter for variables used during initialization, use a ref (`useRef`) to store those values stably. Perform updates in separate effects using imperative API calls.

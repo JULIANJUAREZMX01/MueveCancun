@@ -26,16 +26,17 @@ interface MapProps {
 const Map: React.FC<MapProps> = React.memo(({ center, userLocation }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const initialCenter = useRef(center);
   const userMarker = useRef<mapboxgl.Marker | null>(null);
 
   // Initialize map only once on mount
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || map.current) return;
 
     const m = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: center,
+      center: initialCenter.current,
       zoom: 12
     });
     map.current = m;
@@ -59,6 +60,8 @@ const Map: React.FC<MapProps> = React.memo(({ center, userLocation }) => {
           if (!m || !m.getStyle()) return;
 
           m.addSource(`route-${ruta.id}`, {
+          if (!map.current) return;
+          map.current.addSource(`route-${ruta.id}`, {
             type: 'geojson',
             data: {
               type: 'Feature',
@@ -71,6 +74,7 @@ const Map: React.FC<MapProps> = React.memo(({ center, userLocation }) => {
           });
 
           m.addLayer({
+          map.current.addLayer({
             id: `route-${ruta.id}`,
             type: 'line',
             source: `route-${ruta.id}`,
@@ -111,6 +115,14 @@ const Map: React.FC<MapProps> = React.memo(({ center, userLocation }) => {
   }, []); // Initialize only ONCE to prevent heavy destruction/re-creation
 
   // Performance Optimization: Update center without destroying the map
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, []);
+
+  // Update center smoothly
   useEffect(() => {
     if (map.current) {
       map.current.setCenter(center);
@@ -128,6 +140,15 @@ const Map: React.FC<MapProps> = React.memo(({ center, userLocation }) => {
           .setPopup(new mapboxgl.Popup().setHTML('Tu ubicación'))
           .addTo(map.current);
       }
+    if (!map.current || !userLocation) return;
+
+    if (!userMarker.current) {
+      userMarker.current = new mapboxgl.Marker({ color: '#0EA5E9' })
+        .setLngLat(userLocation)
+        .setPopup(new mapboxgl.Popup().setHTML('Tu ubicación'))
+        .addTo(map.current);
+    } else {
+      userMarker.current.setLngLat(userLocation);
     }
   }, [userLocation]);
 

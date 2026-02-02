@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, NavLink } from 'react-router-dom';
 import { Map as MapIcon, Route as RouteIcon, Heart, Search } from 'lucide-react';
-import init, { calculate_route } from './wasm/route_calculator/route_calculator';
+import init, { find_route } from './wasm/route_calculator/route_calculator';
 import { getBalance } from './utils/db';
 
 // Pages
@@ -29,6 +29,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [wasmReady, setWasmReady] = useState(false);
   const [balance, setBalance] = useState<number>(0);
+  const [masterRoutes, setMasterRoutes] = useState<unknown>(null);
 
   const handleSwap = () => {
     const temp = searchFrom;
@@ -36,7 +37,7 @@ function App() {
     setSearchTo(temp);
   };
 
-  // Initialize WASM and Balance
+  // Initialize WASM, Balance and Routes
   useEffect(() => {
     init().then(() => {
       setWasmReady(true);
@@ -46,6 +47,14 @@ function App() {
     getBalance().then(val => {
       setBalance(val);
     }).catch(console.error);
+
+    fetch('/data/master_routes.json')
+      .then(res => res.json())
+      .then(data => {
+        setMasterRoutes(data);
+        console.log('Master routes loaded');
+      })
+      .catch(console.error);
   }, []);
 
   // Obtener ubicación del usuario
@@ -62,13 +71,13 @@ function App() {
 
   // Calcular ruta con WASM
   const handleSearch = async () => {
-    if (!wasmReady) {
-      alert('Motor de rutas no está listo aún.');
+    if (!wasmReady || !masterRoutes) {
+      alert('Motor de rutas o datos no están listos aún.');
       return;
     }
     setLoading(true);
     try {
-      const result = calculate_route(searchFrom, searchTo);
+      const result = find_route(searchFrom, searchTo, masterRoutes);
       setRouteResults([result as RouteResult]);
     } catch (error) {
       console.error('Error calculando ruta:', error);
@@ -83,23 +92,23 @@ function App() {
         <header className="bg-sky-600 text-white p-4 shadow-lg sticky top-0 z-50">
           <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-              <Link to="/" className="text-2xl font-bold flex items-center gap-2 hover:text-sky-100 transition-colors">
+              <Link viewTransition to="/" className="text-2xl font-bold flex items-center gap-2 hover:text-sky-100 transition-colors">
                 🚌 CancúnMueve
               </Link>
               <p className="text-sky-100 text-sm hidden md:block">Tu guía de transporte público</p>
             </div>
 
             <nav className="flex gap-1 bg-sky-700/50 p-1 rounded-xl">
-              <NavLink to="/" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-sky-600 shadow-sm' : 'text-sky-100 hover:bg-sky-600'}`}>
+              <NavLink viewTransition to="/" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-sky-600 shadow-sm' : 'text-sky-100 hover:bg-sky-600'}`}>
                 <Search className="w-4 h-4" /> Buscar
               </NavLink>
-              <NavLink to="/mapa" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-sky-600 shadow-sm' : 'text-sky-100 hover:bg-sky-600'}`}>
+              <NavLink viewTransition to="/mapa" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-sky-600 shadow-sm' : 'text-sky-100 hover:bg-sky-600'}`}>
                 <MapIcon className="w-4 h-4" /> Mapa
               </NavLink>
-              <NavLink to="/rutas" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-sky-600 shadow-sm' : 'text-sky-100 hover:bg-sky-600'}`}>
+              <NavLink viewTransition to="/rutas" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-sky-600 shadow-sm' : 'text-sky-100 hover:bg-sky-600'}`}>
                 <RouteIcon className="w-4 h-4" /> Rutas
               </NavLink>
-              <NavLink to="/contribuir" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-sky-600 shadow-sm' : 'text-sky-100 hover:bg-sky-600'}`}>
+              <NavLink viewTransition to="/contribuir" className={({isActive}) => `flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-white text-sky-600 shadow-sm' : 'text-sky-100 hover:bg-sky-600'}`}>
                 <Heart className="w-4 h-4" /> Feedback
               </NavLink>
             </nav>
@@ -129,7 +138,7 @@ function App() {
               <div className="flex flex-col items-center justify-center py-20 space-y-4 text-center">
                 <h2 className="text-6xl font-bold text-sky-200">404</h2>
                 <p className="text-xl text-gray-600 font-medium">¡Vaya! Esta ruta no existe en nuestro mapa.</p>
-                <Link to="/" className="premium-button inline-flex items-center gap-2">
+                <Link viewTransition to="/" className="premium-button inline-flex items-center gap-2">
                   <Search className="w-5 h-5" /> Volver al Inicio
                 </Link>
               </div>
@@ -141,9 +150,9 @@ function App() {
           <div className="container mx-auto space-y-2">
             <p>&copy; 2025 CancúnMueve - Información de la comunidad para la comunidad.</p>
             <div className="flex justify-center gap-4 text-sky-600 font-medium">
-              <Link to="/mapa" className="hover:underline">Mapa</Link>
-              <Link to="/rutas" className="hover:underline">Rutas</Link>
-              <Link to="/contribuir" className="hover:underline">Feedback</Link>
+              <Link viewTransition to="/mapa" className="hover:underline">Mapa</Link>
+              <Link viewTransition to="/rutas" className="hover:underline">Rutas</Link>
+              <Link viewTransition to="/contribuir" className="hover:underline">Feedback</Link>
             </div>
           </div>
         </footer>

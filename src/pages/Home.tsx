@@ -74,6 +74,7 @@ const Home: React.FC<HomeProps> = ({
       <div className="w-full md:w-2/3 h-[50vh] md:h-auto rounded-xl overflow-hidden shadow-inner border border-gray-200">
         <Map
           center={mapCenter}
+          center={userLocation || DEFAULT_CENTER}
           userLocation={userLocation}
         />
       </div>
