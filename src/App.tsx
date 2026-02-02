@@ -77,6 +77,13 @@ function App() {
       alert('Motor de rutas o datos no están listos aún.');
       return;
     }
+
+    // Gatekeeper check: 180 MXN required
+    if (balance !== null && balance < 180) {
+      alert('Saldo insuficiente. Se requiere un mínimo de $180.00 MXN para usar el buscador.');
+      return;
+    }
+
     setLoading(true);
     try {
       const result = find_route(searchFrom, searchTo, masterRoutes);
@@ -87,6 +94,8 @@ function App() {
       setLoading(false);
     }
   }, [wasmReady, searchFrom, searchTo]);
+
+  const location = useLocation();
 
   return (
     <Router>
