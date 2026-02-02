@@ -12,7 +12,7 @@ interface RouteSearchProps {
   balance: number;
 }
 
-const RouteSearch: React.FC<RouteSearchProps> = ({
+const RouteSearch: React.FC<RouteSearchProps> = React.memo(({
   from,
   to,
   onFromChange,
@@ -35,6 +35,7 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
               <MapPin className="w-4 h-4 text-caribbean-blue" aria-hidden="true" /> Desde
             </label>
             <div className="relative flex items-center">
+            <div className="relative">
               <input
                 id="search-from"
                 type="text"
@@ -50,6 +51,10 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
                   className="absolute right-2 p-1 text-gray-400 hover:text-caribbean-blue transition-colors"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
+                  aria-label="Limpiar origen / Clear origin"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-caribbean-blue transition-colors"
+                >
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -71,6 +76,7 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
               <MapPin className="w-4 h-4 text-coral" aria-hidden="true" /> Hasta
             </label>
             <div className="relative flex items-center">
+            <div className="relative">
               <input
                 id="search-to"
                 type="text"
@@ -86,6 +92,10 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
                   className="absolute right-2 p-1 text-gray-400 hover:text-caribbean-blue transition-colors"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
+                  aria-label="Limpiar destino / Clear destination"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-coral transition-colors"
+                >
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -123,6 +133,6 @@ const RouteSearch: React.FC<RouteSearchProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default RouteSearch;

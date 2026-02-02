@@ -1,9 +1,12 @@
+export default function init(): Promise<void>;
+export function calculate_route(from: string, to: string): unknown;
+export function find_nearest_stop(lat: number, lng: number, stops: unknown): unknown;
 /* tslint:disable */
 /* eslint-disable */
 
-export function calculate_route(from: string, to: string): any;
-
 export function find_nearest_stop(user_lat: number, user_lng: number, stops_val: any): any;
+
+export function find_route(from: string, to: string, _routes_val: any): any;
 
 export function search_destinations(_query: string): any;
 
@@ -11,8 +14,8 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
-    readonly calculate_route: (a: number, b: number, c: number, d: number) => any;
     readonly find_nearest_stop: (a: number, b: number, c: any) => any;
+    readonly find_route: (a: number, b: number, c: number, d: number, e: any) => any;
     readonly search_destinations: (a: number, b: number) => any;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

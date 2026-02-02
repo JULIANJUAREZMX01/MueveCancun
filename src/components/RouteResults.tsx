@@ -18,7 +18,7 @@ interface RouteResultsProps {
   results: RouteResult[];
 }
 
-const RouteResults: React.FC<RouteResultsProps> = ({ results }) => {
+const RouteResults: React.FC<RouteResultsProps> = React.memo(({ results }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-bold text-deep-navy px-2 flex items-center gap-2">
@@ -66,6 +66,6 @@ const RouteResults: React.FC<RouteResultsProps> = ({ results }) => {
       ))}
     </div>
   );
-};
+});
 
 export default RouteResults;

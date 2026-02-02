@@ -7,6 +7,7 @@
   --color-jungle-green: #2ECC71;
   --color-coral: #FF5A5F;
   --color-deep-navy: #003366;
+
   
   --font-outfit: "Outfit", sans-serif;
 }
@@ -16,6 +17,7 @@
   --foreground: #003366;
   --primary: #00A3E0;
   --secondary: #FFD700;
+
   
   font-family: var(--font-outfit), Inter, system-ui, sans-serif;
   background-color: var(--background);

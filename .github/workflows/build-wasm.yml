@@ -1,0 +1,50 @@
+name: Build and Deploy WASM Modules
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'rust-wasm/**'
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build route-calculator
+        run: |
+          cd rust-wasm/route-calculator
+          wasm-pack build --target web --out-dir ../../src/wasm/route-calculator
+
+      - name: Build spatial-index
+        run: |
+          cd rust-wasm/spatial-index
+          wasm-pack build --target web --out-dir ../../src/wasm/spatial-index
+
+      - name: Check bundle sizes
+        run: |
+          echo "route-calculator size:"
+          du -h src/wasm/route-calculator/route_calculator_bg.wasm
+          echo "spatial-index size:"
+          du -h src/wasm/spatial-index/spatial_index_bg.wasm
+
+      - name: Commit built files
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add src/wasm/
+          git add public/wasm/
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: auto-build WASM modules [skip ci]"
+          git push
