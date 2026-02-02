@@ -12,6 +12,15 @@ pub struct NearestStopResult {
     pub distance_meters: f64,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SearchResult {
+    pub id: String,
+    pub name: String,
+    pub lat: f64,
+    pub lng: f64,
+    pub category: String,
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct RouteResult {
     pub route_id: String,
@@ -130,10 +139,95 @@ pub fn find_route(from: &str, to: &str, _routes_val: JsValue) -> JsValue {
     }
 }
 
+pub fn search_destinations_impl(query: &str, data: &MasterRoutes) -> Vec<SearchResult> {
+    if query.trim().is_empty() {
+        return Vec::new();
+    }
+
+    let query_lower = query.to_lowercase();
+    let mut results: Vec<(f64, SearchResult)> = Vec::new();
+
+    // Search Destinations
+    for dest in &data.destinos {
+        let name_lower = dest.name.to_lowercase();
+        let score = strsim::jaro_winkler(&query_lower, &name_lower);
+
+        // Boost for contains
+        let final_score = if name_lower.contains(&query_lower) {
+            if name_lower == query_lower { 1.0 } else { 0.8_f64.max(score) }
+        } else {
+            score
+        };
+
+        if final_score > 0.6 {
+            results.push((
+                final_score,
+                SearchResult {
+                    id: dest.name.clone(), // Use name as ID for destinations
+                    name: dest.name.clone(),
+                    lat: dest.lat,
+                    lng: dest.lng,
+                    category: dest.categoria.clone(),
+                },
+            ));
+        }
+    }
+
+    // Search Stops
+    for route in &data.rutas {
+        for stop in &route.paradas {
+            let name_lower = stop.name.to_lowercase();
+            let score = strsim::jaro_winkler(&query_lower, &name_lower);
+
+            // Boost for contains
+            let final_score = if name_lower.contains(&query_lower) {
+                if name_lower == query_lower { 1.0 } else { 0.8_f64.max(score) }
+            } else {
+                score
+            };
+
+            if final_score > 0.6 {
+                results.push((
+                    final_score,
+                    SearchResult {
+                        id: stop.id.clone(),
+                        name: stop.name.clone(),
+                        lat: stop.lat,
+                        lng: stop.lng,
+                        category: "Stop".to_string(),
+                    },
+                ));
+            }
+        }
+    }
+
+    // Sort by score descending
+    results.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
+
+    // Dedup by ID and limit
+    let mut unique_results = Vec::new();
+    let mut seen_ids = std::collections::HashSet::new();
+
+    for (_, res) in results {
+        if seen_ids.insert(res.id.clone()) {
+            unique_results.push(res);
+        }
+        if unique_results.len() >= 20 {
+            break;
+        }
+    }
+
+    unique_results
+}
+
 #[wasm_bindgen]
-pub fn search_destinations(_query: &str) -> JsValue {
-    // Búsqueda fuzzy (placeholder)
-    let results = vec!["Coco Bongo", "Parque La Rehoyada", "Zona Hotelera"];
+pub fn search_destinations(query: &str, routes_val: JsValue) -> JsValue {
+    let routes_data: MasterRoutes = match serde_wasm_bindgen::from_value(routes_val) {
+        Ok(data) => data,
+        Err(_) => return JsValue::NULL,
+    };
+
+    let results = search_destinations_impl(query, &routes_data);
     serde_wasm_bindgen::to_value(&results).unwrap()
 }
 
@@ -206,5 +300,55 @@ mod tests {
         let data = mock_data();
         let result = calculate_route("Stop A", "NonExistent", &data);
         assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_search_destinations_exact() {
+        let data = mock_data();
+        let results = search_destinations_impl("Mall", &data);
+        assert!(!results.is_empty());
+        assert_eq!(results[0].name, "Mall");
+        assert_eq!(results[0].category, "Shop");
+    }
+
+    #[test]
+    fn test_search_destinations_fuzzy() {
+        let data = mock_data();
+        // "Mal" instead of "Mall"
+        let results = search_destinations_impl("Mal", &data);
+        assert!(!results.is_empty());
+        assert_eq!(results[0].name, "Mall");
+    }
+
+    #[test]
+    fn test_search_stop_exact() {
+        let data = mock_data();
+        let results = search_destinations_impl("Stop A", &data);
+        assert!(!results.is_empty());
+        assert_eq!(results[0].name, "Stop A");
+        assert_eq!(results[0].category, "Stop");
+    }
+
+    #[test]
+    fn test_search_stop_fuzzy() {
+        let data = mock_data();
+        // "StopA" or "Stp A"
+        let results = search_destinations_impl("Stp A", &data);
+        assert!(!results.is_empty());
+        assert_eq!(results[0].name, "Stop A");
+    }
+
+    #[test]
+    fn test_search_empty() {
+        let data = mock_data();
+        let results = search_destinations_impl("", &data);
+        assert!(results.is_empty());
+    }
+
+    #[test]
+    fn test_search_no_match() {
+        let data = mock_data();
+        let results = search_destinations_impl("Xylophone", &data);
+        assert!(results.is_empty());
     }
 }
