@@ -171,7 +171,13 @@
   const balanceWarning = document.getElementById('balance-warning');
 
   async function updateBalance() {
-    const db = await openDB('cancunmueve-db', 2);
+    const db = await openDB('cancunmueve-db', 2, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('wallet-status')) {
+          db.createObjectStore('wallet-status');
+        }
+      },
+    });
     let currentBalance = await db.get('wallet-status', 'driver_current');
     if (currentBalance === undefined) {
       currentBalance = 180.0;
@@ -234,8 +240,8 @@
     try {
       console.log('🚀 Initializing Route Calculator WASM...');
       // Dynamic import
-      wasmModule = await import(/* @vite-ignore */ '/wasm/route-calculator/route_calculator.js');
-      await wasmModule.default('/wasm/route-calculator/route_calculator_bg.wasm');
+      wasmModule = await import('../wasm/route_calculator.js');
+      await wasmModule.default();
 
       wasmLoaded = true;
       console.log('✅ WASM Module Loaded Successfully');
