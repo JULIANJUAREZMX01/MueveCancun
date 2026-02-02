@@ -17,7 +17,7 @@ Tu guía definitiva de transporte público en Cancún. Una Progressive Web App (
 
 ## 📦 Estructura del Proyecto
 - `/rust-wasm`: Lógica central en Rust.
-- `/src`: Aplicación React y componentes.
+- `/src`: ASTRO / Ccomponentes.
 - `/public/data`: Base de datos de rutas (JSON).
 
 ## 🛠️ Desarrollo
