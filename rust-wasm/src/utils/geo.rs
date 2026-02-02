@@ -28,7 +28,31 @@ pub fn find_closest_stop(user_lat: f64, user_lng: f64, stops: &[Stop]) -> Option
     stops.iter()
         .map(|stop| {
             let dist = haversine_distance(user_lat, user_lng, stop.lat, stop.lng);
-            (stop.clone(), dist)
+            (stop, dist)
         })
         .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
+        .map(|(stop, dist)| (stop.clone(), dist))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_find_closest_stop_correctness() {
+        let stops = vec![
+            Stop { name: "Stop A".to_string(), lat: 10.0, lng: 10.0 },
+            Stop { name: "Stop B".to_string(), lat: 10.1, lng: 10.1 },
+            Stop { name: "Stop C".to_string(), lat: 10.2, lng: 10.2 },
+        ];
+
+        // User is at 10.0, 10.0 -> Closest should be Stop A
+        let (closest, dist) = find_closest_stop(10.0, 10.0, &stops).unwrap();
+        assert_eq!(closest.name, "Stop A");
+        assert!(dist < 1.0);
+
+        // User is at 10.09, 10.09 -> Closest should be Stop B (approx)
+        let (closest, _dist) = find_closest_stop(10.09, 10.09, &stops).unwrap();
+        assert_eq!(closest.name, "Stop B");
+    }
 }
