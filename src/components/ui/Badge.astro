@@ -4,7 +4,7 @@ interface Props {
   class?: string;
 }
 
-const { variant = 'default', class: className } = Astro.props;
+const { variant = 'default', class: className, ...rest } = Astro.props;
 
 const variants = {
   default: "bg-slate-100 text-slate-600",
@@ -17,6 +17,6 @@ const variants = {
 const styles = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide ${variants[variant]} ${className || ''}`;
 ---
 
-<span class={styles}>
+<span class={styles} {...rest}>
   <slot />
 </span>

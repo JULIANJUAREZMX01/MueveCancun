@@ -15,3 +15,4 @@ geo = "0.28"
 geojson = "0.24"
 petgraph = "0.6"
 shared-types = { path = "../shared-types" }
+strsim = "0.10"
