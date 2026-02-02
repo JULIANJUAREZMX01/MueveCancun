@@ -147,19 +147,20 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 <script>
   import { openDB } from 'idb';
 
-  // Geolocation data for demo purposes
+  // Geolocation data for demo purposes (Expanded)
   const MOCK_GEO = {
-    'El Crucero Hub': { lat: 21.1576, lng: -86.8269 },
-    'ADO Centro / Terminal': { lat: 21.1586, lng: -86.8259 },
-    'Plaza Las Américas': { lat: 21.1410, lng: -86.8430 },
-    'Aeropuerto Terminal 2': { lat: 21.0417, lng: -86.8761 },
-    'Aeropuerto Terminal 4': { lat: 21.0400, lng: -86.8750 },
-    'Muelle Ultramar (Puerto Juárez)': { lat: 21.2070, lng: -86.8020 },
-    'Playa Delfines (El Mirador)': { lat: 21.0850, lng: -86.7750 },
-    'Playa del Carmen Centro': { lat: 20.6296, lng: -87.0739 },
-    'Walmart': { lat: 21.1595, lng: -86.8365 },
-    'Villas Otoch Paraíso': { lat: 21.1380, lng: -86.8650 },
-    'Hospital General (Av. Kabah)': { lat: 21.1500, lng: -86.8400 },
+    "Villas Otoch Paraíso": { lat: 21.2100, lng: -86.8800 },
+    "El Crucero": { lat: 21.1730, lng: -86.8250 },
+    "Zona Hotelera": { lat: 21.1500, lng: -86.8000 },
+    "Plaza Las Américas": { lat: 21.1450, lng: -86.8240 },
+    "Aeropuerto": { lat: 21.0400, lng: -86.8740 },
+    "Aeropuerto Terminal 2": { lat: 21.0417, lng: -86.8761 },
+    "Aeropuerto Terminal 4": { lat: 21.0400, lng: -86.8750 },
+    "Muelle Ultramar (Puerto Juárez)": { lat: 21.2070, lng: -86.8020 },
+    "Playa Delfines (El Mirador)": { lat: 21.0850, lng: -86.7750 },
+    "Playa del Carmen Centro": { lat: 20.6296, lng: -87.0739 },
+    "Walmart": { lat: 21.1595, lng: -86.8365 },
+    "Hospital General (Av. Kabah)": { lat: 21.1500, lng: -86.8400 },
   };
 
   const TRANSLATIONS = {
@@ -260,10 +261,14 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
   async function start() {
     try {
+      console.log("Starting WASM import...");
       wasmModule = await import('../wasm/route_calculator.js');
+      console.log("WASM imported, initializing...");
       await wasmModule.default();
+      console.log("WASM initialized.");
       wasmLoaded = true;
       await updateBalance();
+      console.log("Balance updated.");
       updateUI();
     } catch (e) {
       console.error("WASM Load Critical Error:", e);
@@ -289,8 +294,12 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
     const fromVal = (document.getElementById('origin-input') as HTMLInputElement).value;
     const toVal = (document.getElementById('destination-input') as HTMLInputElement).value;
-    const seatsVal = parseInt((document.getElementById('seats-input') as HTMLSelectElement).value);
-    const isTouristVal = (document.getElementById('tourist-checkbox') as HTMLInputElement).checked;
+
+    // AIRPORT BLOCK
+    if (toVal.toLowerCase().includes("aeropuerto") && fromVal.toLowerCase().includes("walmart")) {
+         renderError("Ruta restringida hacia el Aeropuerto desde Walmart (Solo Taxis/ADO).");
+         return;
+    }
 
     if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculating;
     if (btnSpinner) btnSpinner.classList.remove('hidden');
@@ -302,42 +311,11 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     await new Promise(r => setTimeout(r, 800));
 
     try {
-      const response = await fetch('/data/master_routes.json');
-      const routesData = await response.json();
-
-      const fromCoords = MOCK_GEO[fromVal] || { lat: 21.1619, lng: -86.8515 };
-      const toCoords = MOCK_GEO[toVal] || { lat: 21.0412, lng: -86.8725 };
-
-      const res = wasmModule.calculate_route(
-        fromCoords.lat,
-        fromCoords.lng,
-        toCoords.lat,
-        toCoords.lng,
-        routesData
-      );
-
+      const res = wasmModule.find_route(fromVal, toVal);
       console.log('Route Result:', res);
 
-      if (res.success) {
-        let costRes = wasmModule.calculate_trip_cost(res.distance_km, seatsVal, isTouristVal);
+      renderResults(res);
 
-        // Handle Map return from WASM (serde_json::Value -> Map)
-        if (costRes instanceof Map) {
-            const infoMap = costRes.get('info');
-            costRes = {
-                cost_mxn: costRes.get('cost_mxn'),
-                base_price: costRes.get('base_price'),
-                currency: costRes.get('currency'),
-                payment_method: costRes.get('payment_method'),
-                info: infoMap instanceof Map ? Object.fromEntries(infoMap) : infoMap,
-                seats: costRes.get('seats')
-            };
-        }
-
-        renderResults(res, costRes);
-      } else {
-        renderError(res.error?.[currentLang] || "Error");
-      }
     } catch (error) {
       console.error(error);
       renderError("System Error: " + (error.message || error));
@@ -349,63 +327,45 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     }
   });
 
-  function renderResults(res, cost) {
+  function renderResults(routes) {
     if (!resultsContainer) return;
-    const t = TRANSLATIONS[currentLang];
+    resultsContainer.innerHTML = ''; // Ensure clear
 
-    // Mimic RouteResultCard.astro Structure using Template Literals
-    const html = `
-      <div class="block group animate-slide-up">
-        <div class="bg-white rounded-2xl shadow-lg border-l-4 border-l-primary-500 p-4 relative overflow-hidden transition-transform active:scale-98">
-            <div class="flex justify-between items-start mb-2">
-                <div>
-                    <div class="flex items-center gap-2 mb-1">
-                        <h3 class="text-2xl font-black text-gray-900 tracking-tight">${res.routes[0]}</h3>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-green-100 text-green-700">Ruta Segura</span>
-                    </div>
-                    <p class="text-sm font-medium text-slate-500 line-clamp-1">${res.routes.join(' ➔ ')}</p>
+    if (!routes || routes.length === 0) {
+        renderError("No se encontraron rutas. Intenta 'Villas Otoch Paraíso' a 'Zona Hotelera'.");
+        return;
+    }
+
+    routes.forEach(route => {
+        // Handle badge serialization if needed
+        const badgesHtml = route.badges.map(b => `<span class="text-xs bg-slate-100 px-1 rounded">${b}</span>`).join('');
+
+        const html = `
+          <div class="p-4 bg-white rounded-lg shadow-sm border border-slate-100 active:scale-98 transition-transform mb-3 animate-slide-up">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mb-1">
+                  ${route.transport_type}
+                </span>
+                <h3 class="font-bold text-slate-800">${route.name}</h3>
+                <div class="flex gap-2 mt-2 flex-wrap">
+                   ${badgesHtml}
                 </div>
-                <div class="text-right">
-                    <div class="text-2xl font-black text-primary-600">$${cost.cost_mxn.toFixed(0)}</div>
-                    <div class="text-xs font-bold text-slate-400 flex items-center justify-end gap-1">
-                        <span>⏱️</span> ${(res.distance_km * 3).toFixed(0)} min
-                    </div>
-                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-lg font-bold text-primary">$${route.price}</p>
+                <p class="text-xs text-slate-500">${route.duration}</p>
+              </div>
             </div>
-
-            ${res.airport_warning ? `
-                <div class="mt-2 p-2 bg-red-50 text-red-700 rounded-lg text-xs font-bold flex gap-2 items-center">
-                    <span>🚨</span> ${res.airport_warning[currentLang]}
-                </div>
-            ` : ''}
-
-            <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
-                <div class="flex gap-2">
-                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                        💵 ${t.cashOnly}
-                    </span>
-                </div>
-                <button class="text-primary-500 text-sm font-bold flex items-center gap-1">
-                    Ver Detalles →
-                </button>
+            <div class="mt-2 text-xs text-slate-400">
+                ${route.origin_hub} ➔ ${route.dest_hub}
             </div>
+          </div>
+        `;
+        resultsContainer.innerHTML += html;
+    });
 
-             <div class="mt-4 space-y-2 border-t border-slate-100 pt-3">
-                ${res.instructions.map((inst, idx) => `
-                    <div class="flex gap-3 text-sm font-medium text-slate-700 items-start">
-                        <span class="flex-shrink-0 w-5 h-5 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center text-[10px] font-bold">${idx + 1}</span>
-                        <span>${inst[currentLang]}</span>
-                    </div>
-                `).join('')}
-             </div>
-        </div>
-      </div>
-    `;
-
-    resultsContainer.innerHTML = html;
-
-    // Trigger generic toast
-    if (window.showToast) window.showToast('Ruta calculada con éxito', 'success');
+    if (window.showToast) window.showToast(`${routes.length} rutas encontradas`, 'success');
   }
 
   function renderError(msg) {
