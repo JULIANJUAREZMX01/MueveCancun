@@ -1,0 +1,26 @@
+---
+interface Props {
+  variant?: 'primary' | 'ghost' | 'danger' | 'secondary';
+  type?: 'button' | 'submit' | 'reset';
+  id?: string;
+  class?: string;
+  disabled?: boolean;
+}
+
+const { variant = 'primary', type = 'button', id, class: className, disabled = false } = Astro.props;
+
+const baseStyles = "min-h-[44px] px-6 py-3 rounded-2xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 select-none";
+
+const variants = {
+  primary: "bg-primary-500 text-white shadow-lg hover:bg-primary-600",
+  secondary: "bg-sky-500 text-white shadow-lg hover:bg-sky-600",
+  ghost: "bg-transparent text-gray-600 hover:bg-gray-100 border border-transparent",
+  danger: "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+};
+
+const styles = `${baseStyles} ${variants[variant]} ${className || ''}`;
+---
+
+<button type={type} id={id} class={styles} disabled={disabled}>
+  <slot />
+</button>

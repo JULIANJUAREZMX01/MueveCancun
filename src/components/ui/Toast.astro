@@ -1,0 +1,52 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = 'toast-notification' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="fixed top-4 left-4 right-4 z-50 transform -translate-y-[150%] transition-transform duration-300 ease-out flex items-center justify-center pointer-events-none"
+>
+  <div class="bg-gray-900/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 pointer-events-auto min-h-[44px]">
+    <span id={`${id}-icon`} class="text-xl">ℹ️</span>
+    <p id={`${id}-message`} class="text-sm font-bold tracking-tight">Notification</p>
+  </div>
+</div>
+
+<style>
+  .toast-visible {
+    transform: translateY(0) !important;
+  }
+</style>
+
+<script define:vars={{ id }}>
+  // Simple global toast controller pattern
+  window.showToast = (message, type = 'info', duration = 3000) => {
+    const toast = document.getElementById(id);
+    const msgEl = document.getElementById(`${id}-message`);
+    const iconEl = document.getElementById(`${id}-icon`);
+
+    if (!toast || !msgEl || !iconEl) return;
+
+    msgEl.textContent = message;
+
+    const icons = {
+      success: '✅',
+      error: '❌',
+      warning: '⚠️',
+      info: 'ℹ️'
+    };
+    iconEl.textContent = icons[type] || icons.info;
+
+    toast.classList.add('toast-visible');
+
+    if (window.toastTimeout) clearTimeout(window.toastTimeout);
+
+    window.toastTimeout = setTimeout(() => {
+      toast.classList.remove('toast-visible');
+    }, duration);
+  };
+</script>

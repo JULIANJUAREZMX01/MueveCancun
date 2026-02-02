@@ -1,0 +1,57 @@
+---
+import Card from './Card.astro';
+import Badge from './Badge.astro';
+
+interface Props {
+  routeName: string;
+  routeDescription?: string;
+  price: number;
+  duration?: string;
+  isSafe?: boolean;
+  isCashOnly?: boolean;
+  href?: string;
+}
+
+const { routeName, routeDescription, price, duration, isSafe, isCashOnly, href } = Astro.props;
+---
+
+<a href={href || '#'} class="block group">
+  <Card class="transition-transform active:scale-98 hover:shadow-md border-l-4 border-l-primary-500 relative overflow-hidden">
+    <div class="flex justify-between items-start mb-2">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <h3 class="text-2xl font-black text-gray-900 tracking-tight group-hover:text-primary-600 transition-colors">
+            {routeName}
+          </h3>
+          {isSafe && <Badge variant="success">Segura</Badge>}
+        </div>
+        <p class="text-sm font-medium text-slate-500 line-clamp-1">
+          {routeDescription}
+        </p>
+      </div>
+      <div class="text-right">
+        <div class="text-2xl font-black text-primary-600">
+          ${price.toFixed(2)}
+        </div>
+        {duration && (
+            <div class="text-xs font-bold text-slate-400 flex items-center justify-end gap-1">
+                <span>⏱️</span> {duration}
+            </div>
+        )}
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+        <div class="flex gap-2">
+            {isCashOnly && (
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    💵 Solo Efectivo
+                </span>
+            )}
+        </div>
+        <span class="text-primary-500 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transform duration-200">
+            Ver Ruta →
+        </span>
+    </div>
+  </Card>
+</a>
