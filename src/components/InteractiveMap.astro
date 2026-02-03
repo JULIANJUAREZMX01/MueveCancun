@@ -73,6 +73,64 @@ const {
 
     if (loader) loader.classList.add('hidden');
 
+    // Check for Picker Mode
+    const urlParams = new URLSearchParams(window.location.search);
+    const isPicker = urlParams.get('picker');
+
+    if (isPicker) {
+        if (window.showToast) window.showToast("Toque el mapa para seleccionar una parada cercana", "info");
+
+        // Add visual indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'absolute top-4 left-1/2 -translate-x-1/2 bg-primary-600 text-white px-4 py-2 rounded-full shadow-lg z-[1000] font-bold text-sm animate-bounce';
+        indicator.textContent = "📍 Modo Selección";
+        container.parentElement.appendChild(indicator);
+
+        map.on('click', (e) => {
+            const { lat, lng } = e.latlng;
+            let minDist = Infinity;
+            let nearest = '';
+
+            // Leaflet map.distance returns meters
+            Object.entries(coordinatesDB).forEach(([name, coords]) => {
+                const d = map.distance(e.latlng, coords);
+                if (d < minDist) {
+                    minDist = d;
+                    nearest = name;
+                }
+            });
+
+            // Threshold: 1000 meters
+            if (minDist < 1000 && nearest) {
+                // Show confirmation popup at location
+                window.L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(`
+                        <div class="text-center">
+                            <p class="font-bold mb-2">¿Seleccionar "${nearest}"?</p>
+                            <button id="confirm-pick-btn" class="bg-primary-500 text-white px-3 py-1 rounded text-xs font-bold">
+                                ✅ Confirmar
+                            </button>
+                        </div>
+                    `)
+                    .openOn(map);
+
+                // Bind click to button (need delay for DOM)
+                setTimeout(() => {
+                    document.getElementById('confirm-pick-btn')?.addEventListener('click', () => {
+                         window.location.href = `/?selected_stop=${encodeURIComponent(nearest)}`;
+                    });
+                }, 100);
+
+            } else {
+                 if (window.showToast) window.showToast("No hay paradas registradas cerca", "warning");
+            }
+        });
+
+        // Return early to avoid drawing routes or default markers that might confuse
+        return;
+    }
+
     // Check for pending route from other pages
     const pendingRoute = localStorage.getItem('pending_route');
     if (pendingRoute) {
