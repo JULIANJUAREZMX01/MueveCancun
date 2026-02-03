@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -41,10 +43,11 @@ jobs:
           du -h src/wasm/spatial-index/spatial_index_bg.wasm
 
       - name: Commit built files
+        if: github.event_name == 'push'
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add src/wasm/
           git add public/wasm/
           git diff --quiet && git diff --staged --quiet || git commit -m "chore: auto-build WASM modules [skip ci]"
-          git push
+          git push origin HEAD:${{ github.ref_name }}
