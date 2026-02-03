@@ -35,11 +35,13 @@ const {
         return;
     }
 
+    if (container._leaflet_id) return; // Prevent double init
+
     const center = JSON.parse(container.dataset.center);
     const zoom = parseFloat(container.dataset.zoom);
 
     // Initialize Leaflet
-    map = window.L.map('map-container').setView(center, zoom);
+    map = window.L.map('map-container', { preferCanvas: true }).setView(center, zoom);
 
     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -83,11 +85,21 @@ const {
   }
 
   function drawRoute({ stops }) {
-    if (!map || !layerGroup) return;
+    if (!map) return;
 
-    layerGroup.clearLayers();
+    // Remove old layer group to avoid overhead during additions
+    if (layerGroup) {
+        layerGroup.clearLayers();
+        layerGroup.remove();
+    }
 
-    if (!stops || stops.length === 0) return;
+    // Prepare new layers array for batch addition
+    const newLayers = [];
+
+    if (!stops || stops.length === 0) {
+        layerGroup = window.L.layerGroup().addTo(map);
+        return;
+    }
 
     const routeCoords = [];
     const validStops = [];
@@ -113,38 +125,39 @@ const {
 
         // Draw Polyline
         const polyline = window.L.polyline(routeCoords, { color: '#F97316', weight: 5, opacity: 0.8 });
-        layers.push(polyline);
-
-        map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+        newLayers.push(polyline);
 
         // Add Markers (Start and End)
         const start = validStops[0];
         const end = validStops[validStops.length - 1];
 
-        const startMarker = window.L.marker(start.latlng).bindPopup(`<b>Inicio:</b> ${start.name}`);
-        layers.push(startMarker);
+        const startMarker = window.L.marker(start.latlng)
+            .bindPopup(`<b>Inicio:</b> ${start.name}`);
 
-        layers.push(
-            window.L.marker(end.latlng).bindPopup(`<b>Fin:</b> ${end.name}`)
-        );
+        const endMarker = window.L.marker(end.latlng)
+            .bindPopup(`<b>Fin:</b> ${end.name}`);
 
-        // Intermediate dots
+        newLayers.push(startMarker);
+        newLayers.push(endMarker);
+
+        // Intermediate dots (optimized with Canvas via map preference)
         validStops.slice(1, -1).forEach(stop => {
-             layers.push(
+             newLayers.push(
                 window.L.circleMarker(stop.latlng, { radius: 5, color: '#334155', fillOpacity: 1 })
                 .bindPopup(stop.name)
              );
         });
 
-        // Batch add
-        layers.forEach(layer => layer.addTo(layerGroup));
+        // Batch add to map
+        layerGroup = window.L.layerGroup(newLayers).addTo(map);
 
-        // Open popup after adding
+        map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
         startMarker.openPopup();
 
     } else {
         console.warn("No coordinates found for stops:", stops);
         if (window.showToast) window.showToast("No se pudieron visualizar los puntos de esta ruta.", "error");
+        layerGroup = window.L.layerGroup().addTo(map);
     }
   }
 
