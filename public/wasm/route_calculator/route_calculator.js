@@ -39,6 +39,14 @@ export function find_route(origin, dest) {
 }
 
 /**
+ * @returns {any}
+ */
+export function get_all_routes() {
+    const ret = wasm.get_all_routes();
+    return ret;
+}
+
+/**
  * @param {number} balance
  * @returns {boolean}
  */
