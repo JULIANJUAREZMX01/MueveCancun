@@ -11,89 +11,168 @@ use std::collections::HashMap;
 pub struct Route {
     pub id: String,
     pub name: String,
-    pub transport_type: String, // "Bus", "Combi", "Van"
+    pub transport_type: TransportType,
     pub price: f64,
     pub duration: String,
-    pub badges: Vec<String>, // e.g., "Aire Acondicionado", "Solo Efectivo"
+    pub badges: Vec<String>,
     pub origin_hub: String,
     pub dest_hub: String,
+    // New Fields
+    pub stops: Vec<String>,
+    pub operator: String,
+    pub schedule: String,
+    pub frequency: String,
+}
+
+fn load_static_catalog() -> Vec<Route> {
+    let raw_data = vec![
+        (
+            "R2_94_VILLAS_OTOCH_001",
+            "R-2-94 Villas Otoch (Eje Kabah - ZH)",
+            TransportType::Bus,
+            15.0,
+            "05:00 - 22:30 (Guardia 03:00-05:00)",
+            "10 min",
+            vec!["OXXO Villas Otoch Paraíso", "Chedraui Lakin", "Av. Kabah", "Plaza Las Américas", "Entrada Zona Hotelera", "Zona Hotelera"],
+            "",
+        ),
+        (
+            "CR_PTO_JUAREZ_001",
+            "Combi Roja Puerto Juárez (Ultramar)",
+            TransportType::Combi,
+            13.0,
+            "05:30 - 00:30",
+            "15 min",
+            vec!["La Rehoyada", "El Crucero", "Av. Tulum Norte", "Playa del Niño", "Muelle Ultramar"],
+            "Autocar",
+        ),
+        (
+            "R1_ZONA_HOTELERA_001",
+            "R-1 Centro - Zona Hotelera",
+            TransportType::Bus,
+            15.0,
+            "06:00 - 22:30",
+            "10 min",
+            vec!["La Rehoyada", "El Crucero", "Av. Tulum Sur", "El Cebiche", "Zona Hotelera", "Playa Delfines"],
+            "SEA / Maya Caribe",
+        ),
+        (
+            "VAN_PLAYA_EXPRESS_001",
+            "Playa Express (Cancún - Playa del Carmen)",
+            TransportType::Van,
+            55.0,
+            "05:00 - 00:00",
+            "30 min",
+            vec!["Terminal ADO Centro", "Entrada Aeropuerto", "Gasolinera López Portillo", "Puerto Morelos", "Playa Maroma", "Playa del Carmen Centro"],
+            "",
+        ),
+        (
+            "R28_VILLAS_OTOCH_001",
+            "R-28 Villas Otoch - Av. Tulum",
+            TransportType::Bus,
+            13.0,
+            "", // No schedule in JSON
+            "", // No frequency in JSON
+            vec!["Villas Otoch Paraíso", "Paseos Kabah", "Hospital General", "El Crucero"],
+            "",
+        ),
+        (
+            "R19_VILLAS_OTOCH_002",
+            "R-19 Villas Otoch - Crucero",
+            TransportType::Bus,
+            13.0,
+            "",
+            "",
+            vec!["Villas Otoch", "Hospital General", "Zona Industrial", "Mercado 28", "El Crucero"],
+            "",
+        ),
+        (
+            "ADO_AEROPUERTO_001",
+            "ADO Aeropuerto - Centro",
+            TransportType::Bus,
+            150.0,
+            "",
+            "",
+            vec!["Aeropuerto T2", "Aeropuerto T3", "Aeropuerto T4", "Terminal ADO Centro"],
+            "",
+        ),
+        (
+            "R10_AEROPUERTO",
+            "R-10 Las Américas - Aeropuerto (Trabajadores)",
+            TransportType::Bus,
+            15.0,
+            "04:00-23:00",
+            "",
+            vec!["Plaza Las Américas", "Av. Nichupté", "Av. Kabah", "Av. La Luna", "Av. Las Torres", "Av. Huayacán", "Carr. Federal 307", "UT Cancún", "Aeropuerto T3", "Aeropuerto T2"],
+            "",
+        ),
+    ];
+
+    raw_data.into_iter().map(|(id, name, t_type, price, schedule, frequency, stops, operator)| {
+        let stops_vec: Vec<String> = stops.into_iter().map(|s| s.to_string()).collect();
+        let origin = stops_vec.first().cloned().unwrap_or_else(|| "Unknown".to_string());
+        let dest = stops_vec.last().cloned().unwrap_or_else(|| "Unknown".to_string());
+
+        // Infer duration or default
+        let duration = if !frequency.is_empty() {
+             format!("Freq: {}", frequency)
+        } else {
+             "Unknown".to_string()
+        };
+
+        Route {
+            id: id.to_string(),
+            name: name.to_string(),
+            transport_type: t_type,
+            price,
+            duration,
+            badges: vec![],
+            origin_hub: origin,
+            dest_hub: dest,
+            stops: stops_vec,
+            operator: operator.to_string(),
+            schedule: schedule.to_string(),
+            frequency: frequency.to_string(),
+        }
+    }).collect()
 }
 
 fn get_all_routes() -> Vec<Route> {
-    vec![
-        Route {
-            id: "R-2-94".to_string(),
-            name: "Ruta 2-94".to_string(),
-            transport_type: "Bus".to_string(),
-            price: 15.0,
-            duration: "45 min".to_string(),
-            badges: vec!["Aire Acondicionado".to_string(), "Muy Frecuente".to_string()],
-            origin_hub: "Villas Otoch Paraíso".to_string(),
-            dest_hub: "Zona Hotelera".to_string(),
-        },
-        Route {
-            id: "R-19".to_string(),
-            name: "Ruta 19".to_string(),
-            transport_type: "Bus".to_string(),
-            price: 12.0,
-            duration: "55 min".to_string(),
-            badges: vec!["Rápido".to_string(), "Inseguro de noche".to_string()],
-            origin_hub: "Villas Otoch Paraíso".to_string(),
-            dest_hub: "El Crucero".to_string(),
-        },
-        Route {
-            id: "Combi-Roja".to_string(),
-            name: "Combi Roja".to_string(),
-            transport_type: "Combi".to_string(),
-            price: 10.0,
-            duration: "30 min".to_string(),
-            badges: vec!["Solo Efectivo".to_string()],
-            origin_hub: "Puerto Juárez".to_string(),
-            dest_hub: "El Crucero".to_string(),
-        },
-        Route {
-            id: "Playa-Express".to_string(),
-            name: "Playa Express".to_string(),
-            transport_type: "Van".to_string(),
-            price: 55.0,
-            duration: "60 min".to_string(),
-            badges: vec!["Aire Acondicionado".to_string(), "Viaje Directo".to_string()],
-            origin_hub: "El Crucero".to_string(),
-            dest_hub: "Playa del Carmen".to_string(),
-        },
-    ]
+    load_static_catalog()
 }
 
 pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Route> {
     let origin_norm = origin.to_lowercase();
     let dest_norm = dest.to_lowercase();
-
-    // Fallback/Demo Override
-    if origin_norm.contains("villas otoch") || origin_norm.contains("paraíso") {
-        let routes = get_all_routes();
-        // Return R-2-94 and R-19 specifically
-        return routes.into_iter()
-            .filter(|r| r.id == "R-2-94" || r.id == "R-19")
-            .collect();
-    }
-
     let all_routes = get_all_routes();
     let mut matched_routes = Vec::new();
 
     for route in all_routes {
-        // Fuzzy match logic
-        // Check if origin matches route's origin_hub
-        let origin_score = strsim::jaro_winkler(&origin_norm, &route.origin_hub.to_lowercase());
-        let origin_contains = route.origin_hub.to_lowercase().contains(&origin_norm) || origin_norm.contains(&route.origin_hub.to_lowercase());
+        // Search Logic: Fuzzy match user input against ANY stop in the route
 
-        // Check if dest matches route's dest_hub
-        let dest_score = strsim::jaro_winkler(&dest_norm, &route.dest_hub.to_lowercase());
-        let dest_contains = route.dest_hub.to_lowercase().contains(&dest_norm) || dest_norm.contains(&route.dest_hub.to_lowercase());
+        // 1. Check Origin Match
+        let mut is_origin_match = false;
+        for stop in &route.stops {
+            let stop_lower = stop.to_lowercase();
+            let score = strsim::jaro_winkler(&origin_norm, &stop_lower);
+            if score > 0.8 || stop_lower.contains(&origin_norm) || origin_norm.contains(&stop_lower) {
+                is_origin_match = true;
+                break;
+            }
+        }
 
-        let is_origin_match = origin_score > 0.8 || origin_contains;
-        let is_dest_match = dest_score > 0.8 || dest_contains;
+        // 2. Check Dest Match
+        let mut is_dest_match = false;
+        for stop in &route.stops {
+             let stop_lower = stop.to_lowercase();
+             let score = strsim::jaro_winkler(&dest_norm, &stop_lower);
+             if score > 0.8 || stop_lower.contains(&dest_norm) || dest_norm.contains(&stop_lower) {
+                 is_dest_match = true;
+                 break;
+             }
+        }
 
-        if is_origin_match || is_dest_match {
+        if is_origin_match && is_dest_match {
             matched_routes.push(route);
         }
     }
@@ -473,23 +552,22 @@ mod tests {
         assert!(res.airport_warning.is_none());
     }
 
-    // Updated test for truth of the street logic
     #[test]
     fn test_find_route_demo_override() {
-        let res = find_route_rs("Villas Otoch Paraíso", "Anywhere");
+        // Matches R-2-94: "OXXO Villas Otoch Paraíso" -> "Zona Hotelera"
+        let res = find_route_rs("Villas Otoch Paraíso", "Zona Hotelera");
 
-        assert!(res.len() >= 2);
-        assert!(res.iter().any(|r| r.id == "R-2-94"));
-        assert!(res.iter().any(|r| r.id == "R-19"));
+        assert!(!res.is_empty());
+        assert!(res.iter().any(|r| r.id == "R2_94_VILLAS_OTOCH_001"));
     }
 
     #[test]
     fn test_find_route_fuzzy() {
-        // "El Crocero" is a typo for "El Crucero"
-        let res = find_route_rs("Puerto Juárez", "El Crocero");
+        // "Ultramar" (part of "Muelle Ultramar") to "El Crocero" (typo of "El Crucero")
+        // Both are stops in CR_PTO_JUAREZ_001
+        let res = find_route_rs("Ultramar", "El Crocero");
 
-        // Should find "Combi-Roja" which goes from Puerto Juárez to El Crucero
         assert!(!res.is_empty());
-        assert!(res.iter().any(|r| r.id == "Combi-Roja"));
+        assert!(res.iter().any(|r| r.id == "CR_PTO_JUAREZ_001"));
     }
 }
