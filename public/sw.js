@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2.0.0';
+const CACHE_VERSION = 'v2.0.1';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 
 const CRITICAL_ASSETS = [
@@ -9,14 +9,28 @@ const CRITICAL_ASSETS = [
   '/wasm/spatial-index/spatial_index.js',
   '/wasm/spatial-index/spatial_index_bg.wasm',
   '/data/master_routes.json',
-  '/data/routes.json',
+  '/coordinates.json',
   '/manifest.json',
   '/logo.png',
   '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/icons/icon-512.png',
+  '/icons/bus.svg',
+  '/icons/compass.svg',
+  '/icons/map-pin.svg',
+  '/icons/credit-card.svg',
+  '/icons/alert.svg',
+  '/icons/flag.svg',
+  '/icons/swap.svg',
+  '/icons/home.svg',
+  '/icons/briefcase.svg',
+  '/icons/plane.svg',
+  '/icons/palm-tree.svg',
+  '/icons/loader.svg'
 ];
 
-const MAPBOX_TILES_PATTERN = /https:\/\/api\.mapbox\.com\/v4\//;
+// Regex for OSM tiles (Zoom 12-16 only)
+// Matches https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+const OSM_TILES_PATTERN = /^https:\/\/[a-c]\.tile\.openstreetmap\.org\/(1[2-6])\/.*\.png$/;
 
 // Install: Cache crítico
 self.addEventListener('install', (event) => {
@@ -41,7 +55,14 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: Network-first para datos, cache-first para assets
+// Message: Handle Skip Waiting
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Fetch: Network-first para datos, cache-first para assets y tiles
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
@@ -49,14 +70,14 @@ self.addEventListener('fetch', (event) => {
   if (request.url.includes('/data/')) {
     // Datos: Network-first
     event.respondWith(networkFirst(request));
-  } else if (request.url.includes('/wasm/')) {
-    // WASM: Cache-first (inmutable)
+  } else if (request.url.includes('/wasm/') || request.url.includes('/icons/') || request.url.includes('coordinates.json')) {
+    // Assets inmutables o estáticos: Cache-first
     event.respondWith(cacheFirst(request));
-  } else if (MAPBOX_TILES_PATTERN.test(request.url)) {
-    // Tiles de mapbox: Cache con expire (stale while revalidate)
-    event.respondWith(staleWhileRevalidate(request));
+  } else if (OSM_TILES_PATTERN.test(request.url)) {
+    // OSM Tiles (Zoom 12-16): Cache-first
+    event.respondWith(cacheFirst(request));
   } else {
-    // Default: Network-first
+    // Default: Network-first (HTML, etc.)
     event.respondWith(networkFirst(request));
   }
 });
@@ -64,7 +85,22 @@ self.addEventListener('fetch', (event) => {
 // Estrategias de caching
 async function cacheFirst(request) {
   const cached = await caches.match(request);
-  return cached || fetch(request);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const response = await fetch(request);
+    // Cache valid responses for tiles/assets
+    if (response && response.status === 200) {
+       const cache = await caches.open(CACHE_NAME);
+       cache.put(request, response.clone());
+    }
+    return response;
+  } catch (e) {
+    // If offline and not in cache, we can't do much for images/tiles
+    return new Response('', { status: 408, statusText: 'Request timed out' });
+  }
 }
 
 async function networkFirst(request) {
@@ -76,26 +112,4 @@ async function networkFirst(request) {
   } catch (error) {
     return caches.match(request);
   }
-}
-
-async function staleWhileRevalidate(request) {
-  const cached = await caches.match(request);
-  const fetchPromise = fetch(request).then(response => {
-    const cache = caches.open(CACHE_NAME);
-    cache.then(c => c.put(request, response.clone()));
-    return response;
-  });
-  return cached || fetchPromise;
-}
-
-// Background Sync para reportes offline
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-reports') {
-    event.waitUntil(syncPendingReports());
-  }
-});
-
-async function syncPendingReports() {
-  // Implementar cuando Gemini configure Supabase
-  console.log('[SW] Syncing pending reports...');
 }

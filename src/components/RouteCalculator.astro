@@ -260,6 +260,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       wasmLoaded = true;
     } catch (e) {
       console.error("WASM Load Critical Error:", e);
+      renderWasmError();
     } finally {
       await updateBalance();
       updateUI();
@@ -495,6 +496,20 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
           </div>
       `;
       resultsContainer.innerHTML += html;
+  }
+
+  function renderWasmError() {
+    if (!resultsContainer) return;
+    resultsContainer.innerHTML = `
+        <div class="p-6 bg-amber-50 rounded-xl border border-amber-200 text-center animate-slide-up">
+            <div class="text-4xl mb-3">📡</div>
+            <h3 class="font-bold text-slate-800 mb-2">Modo Offline Limitado</h3>
+            <p class="text-sm text-slate-600 mb-4">No se pudo cargar el motor de búsqueda. Puedes consultar las rutas estáticas y el mapa.</p>
+            <a href="/rutas" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+               📋 Ver Rutas
+            </a>
+        </div>
+    `;
   }
 
   function renderError(msg) {
