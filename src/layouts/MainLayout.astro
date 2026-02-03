@@ -56,13 +56,12 @@ const navItems = [
 
     <!-- Top Bar (Mobile) -->
     <header class="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/50 h-14 px-4 flex items-center justify-between shadow-sm lg:hidden">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-gradient-to-tr from-primary-500 to-primary-400 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md">
-          CM
-        </div>
-        <span class="brand-container font-display font-black text-lg tracking-tight text-deep-navy" data-original="true">Cancún<span class="text-primary-500">Mueve</span></span>
+      <div class="flex items-center gap-2 overflow-hidden">
+        <a href="/" class="font-display font-black text-[1.27rem] tracking-tight text-deep-navy whitespace-nowrap truncate">
+          Que ruta me lleva? <span id="city-swapper-mobile" class="transition-all duration-500 ease-in-out" style="color: #006847">cancún</span>
+        </a>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 flex-shrink-0">
          <!-- Placeholder for user profile or settings -->
          <button class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
             <span class="text-xs">👤</span>
@@ -73,7 +72,9 @@ const navItems = [
     <!-- Desktop Header (Simple) -->
     <header class="hidden lg:flex fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 h-16 px-8 items-center justify-between">
         <div class="flex items-center gap-2">
-            <span class="brand-container font-display font-black text-2xl tracking-tight text-deep-navy" data-original="true">Cancún<span class="text-primary-500">Mueve</span></span>
+            <a href="/" class="font-display font-black text-[1.7rem] tracking-tight text-deep-navy">
+                Que ruta me lleva? <span id="city-swapper-desktop" class="transition-all duration-500 ease-in-out" style="color: #006847">cancún</span>
+            </a>
         </div>
         <nav class="flex gap-6">
             {navItems.map(item => (
@@ -175,44 +176,61 @@ const navItems = [
     </script>
 
     <script is:inline>
-      document.addEventListener('astro:page-load', () => {
-          // Clean up old listeners to prevent duplicates (though astro:page-load usually means fresh)
-          // Actually Astro view transitions might keep the listener if attached to window?
-          // Using a named function handler is better but for now we rely on the event.
+      const CITIES = ["cancún", "costa mujeres", "riviera maya", "puerto morelos", "puerto juárez", "playa del carmen", "isla mujeres"];
+      const CITY_COLORS = {
+        "cancún": "#006847",
+        "costa mujeres": "#FF8200",
+        "riviera maya": "#00B2A9",
+        "puerto morelos": "#E03C31",
+        "puerto juárez": "#0033A0",
+        "playa del carmen": "#D0006F",
+        "isla mujeres": "#FFCD00"
+      };
 
-          const handleBrandUpdate = (e) => {
-              const phase = e.detail.phase;
-              const containers = document.querySelectorAll('.brand-container');
+      let cityIndex = 0;
 
-              containers.forEach(container => {
-                  if (phase === 1) {
-                      // Cancún -> CancúnENMueve
-                      if (container.dataset.phase === '1') return;
-                      container.innerHTML = `Cancún<span class="text-[#006847] animate-pop-in inline-block mx-[1px]">EN</span><span class="text-primary-500">Mueve</span>`;
-                      container.dataset.phase = '1';
-                  } else if (phase === 2) {
-                      // -> CancúnENMueveTE
-                      if (container.dataset.phase === '2') return;
-                      // Ensure base state first if jumped
-                      container.innerHTML = `Cancún<span class="text-[#006847] mx-[1px]">EN</span><span class="text-primary-500">Mueve</span><span class="text-[#CE1126] animate-pop-in inline-block">TE</span>`;
-                      container.dataset.phase = '2';
-                  } else if (phase === 3) {
-                      // Tetris -> ¡MUEVETE EN CANCUN!
-                      if (container.dataset.phase === '3') return;
+      function startCityRotation() {
+          // Clear existing interval if stored on window to prevent leaks/double-speed
+          if (window.cityRotationInterval) clearInterval(window.cityRotationInterval);
 
-                      container.innerHTML = `
-                        <div class="flex items-center gap-1.5 leading-none">
-                            <span class="text-[#006847] animate-tetris-1">¡MUEVETE</span>
-                            <span class="text-slate-900 bg-white border border-slate-900 px-1 rounded text-[0.8em] animate-tetris-2 self-center">EN</span>
-                            <span class="text-[#CE1126] animate-tetris-3">CANCUN!</span>
-                        </div>
-                      `;
-                      container.dataset.phase = '3';
-                  }
-              });
+          const rotateCity = () => {
+              cityIndex = (cityIndex + 1) % CITIES.length;
+              const newCity = CITIES[cityIndex];
+              const newColor = CITY_COLORS[newCity];
+
+              const mobileSpan = document.getElementById('city-swapper-mobile');
+              const desktopSpan = document.getElementById('city-swapper-desktop');
+
+              // If elements are missing (e.g. during navigation swap), stop.
+              if (!mobileSpan && !desktopSpan) return;
+
+              const updateSpan = (span) => {
+                  if(!span) return;
+                  span.style.opacity = '0';
+                  setTimeout(() => {
+                      span.textContent = newCity;
+                      span.style.color = newColor;
+                      span.style.opacity = '1';
+                  }, 500);
+              };
+
+              updateSpan(mobileSpan);
+              updateSpan(desktopSpan);
           };
 
-          window.addEventListener('BRAND_UPDATE', handleBrandUpdate);
+          window.cityRotationInterval = setInterval(rotateCity, 4000);
+      }
+
+      // Cleanup on swap to be clean
+      document.addEventListener('astro:before-swap', () => {
+          if (window.cityRotationInterval) {
+              clearInterval(window.cityRotationInterval);
+              window.cityRotationInterval = null;
+          }
+      });
+
+      document.addEventListener('astro:page-load', () => {
+          startCityRotation();
       });
     </script>
 
@@ -220,21 +238,6 @@ const navItems = [
       .filter-primary {
         filter: invert(49%) sepia(83%) saturate(1900%) hue-rotate(349deg) brightness(98%) contrast(98%); /* Orange-ish filter approx */
       }
-
-      @keyframes pop-in {
-        0% { transform: scale(0); opacity: 0; }
-        80% { transform: scale(1.2); opacity: 1; }
-        100% { transform: scale(1); }
-      }
-      .animate-pop-in { animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-      @keyframes fall-down {
-        0% { transform: translateY(-20px); opacity: 0; }
-        100% { transform: translateY(0); opacity: 1; }
-      }
-      .animate-tetris-1 { animation: fall-down 0.5s ease-out forwards; display: inline-block; }
-      .animate-tetris-2 { animation: fall-down 0.5s ease-out 0.2s forwards; opacity: 0; display: inline-block; }
-      .animate-tetris-3 { animation: fall-down 0.5s ease-out 0.4s forwards; opacity: 0; display: inline-block; }
     </style>
   </body>
 </html>
