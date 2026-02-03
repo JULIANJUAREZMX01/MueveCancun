@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "dev:network": "astro dev --host",
     "build": "pnpm run build:wasm && pnpm run check-wasm && astro build",
-    "build:wasm": "cd rust-wasm/route-calculator && wasm-pack build --target web --out-dir ../../public/wasm/route_calculator && rm ../../public/wasm/route_calculator/.gitignore && mkdir -p ../../src/wasm && cp ../../public/wasm/route_calculator/* ../../src/wasm/",
+    "build:wasm": "cd rust-wasm/route-calculator && wasm-pack build --target web --out-dir ../../public/wasm/route-calculator && rm ../../public/wasm/route-calculator/.gitignore && mkdir -p ../../src/wasm && cp ../../public/wasm/route-calculator/* ../../src/wasm/",
     "astro": "astro",
     "lint": "eslint .",
     "preview": "astro preview",
