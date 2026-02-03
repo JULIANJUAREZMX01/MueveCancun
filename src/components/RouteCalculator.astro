@@ -366,7 +366,17 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     resultsContainer.innerHTML = ''; // Ensure clear
 
     if (!routes || routes.length === 0) {
-        renderError("No se encontraron rutas. Intenta 'Villas Otoch Paraíso' a 'Zona Hotelera'.");
+        resultsContainer.innerHTML = `
+          <div class="p-6 bg-slate-50 rounded-xl border border-slate-200 text-center animate-slide-up">
+            <div class="text-4xl mb-3">🤷‍♂️</div>
+            <h3 class="font-bold text-slate-800 mb-2">No encontramos una ruta exacta</h3>
+            <p class="text-sm text-slate-600 mb-4">Intenta usar palabras clave como "Centro", "Zona Hotelera" o "Crucero".</p>
+            <a href="/rutas" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+               📋 Ver todas las rutas
+            </a>
+          </div>
+        `;
+        if (window.showToast) window.showToast("No se encontraron rutas exactas", "info");
         return;
     }
 

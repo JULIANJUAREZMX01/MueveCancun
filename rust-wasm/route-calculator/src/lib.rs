@@ -155,7 +155,8 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Route> {
         let mut is_origin_match = false;
         for stop_lower in &route.stops_normalized {
             let score = strsim::jaro_winkler(&origin_norm, stop_lower);
-            if score > 0.8 || stop_lower.contains(&origin_norm) || origin_norm.contains(stop_lower) {
+            // Threshold set to 0.6 (relaxed from 0.8, but stricter than 0.35 to avoid noise)
+            if score > 0.6 || stop_lower.contains(&origin_norm) || origin_norm.contains(stop_lower) {
                 is_origin_match = true;
                 break;
             }
@@ -165,7 +166,8 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Route> {
         let mut is_dest_match = false;
         for stop_lower in &route.stops_normalized {
              let score = strsim::jaro_winkler(&dest_norm, stop_lower);
-             if score > 0.8 || stop_lower.contains(&dest_norm) || dest_norm.contains(stop_lower) {
+             // Threshold set to 0.6 (relaxed from 0.8, but stricter than 0.35 to avoid noise)
+             if score > 0.6 || stop_lower.contains(&dest_norm) || dest_norm.contains(stop_lower) {
                  is_dest_match = true;
                  break;
              }
@@ -574,6 +576,12 @@ mod tests {
 
         assert!(!res.is_empty());
         assert!(res.iter().any(|r| r.id == "CR_PTO_JUAREZ_001"));
+    }
+
+    #[test]
+    fn test_garbage_input() {
+        let res = find_route_rs("XyZ123Rubbish", "AbC987Junk");
+        assert!(res.is_empty(), "Should return empty for garbage input, got {} routes", res.len());
     }
 
 }
