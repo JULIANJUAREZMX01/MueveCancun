@@ -55,7 +55,6 @@ tmp/
 test-results
 node_modules/
 dist/
-public/wasm/
 .astro/
 pnpm-lock.yaml
 Cargo.lock
