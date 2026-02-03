@@ -23,16 +23,19 @@ const { type = 'text', id, name, placeholder, value, list, class: className, lab
       {label}
     </label>
   )}
-  <input
-    type={type}
-    id={id}
-    name={name}
-    placeholder={placeholder}
-    value={value}
-    list={list}
-    aria-controls={ariaControls}
-    aria-expanded={ariaExpanded}
-    class="w-full min-h-[44px] px-4 py-3 bg-white border-2 border-slate-200 rounded-xl text-lg font-bold text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all placeholder:text-gray-300"
-  />
+  <div class="relative">
+    <input
+      type={type}
+      id={id}
+      name={name}
+      placeholder={placeholder}
+      value={value}
+      list={list}
+      aria-controls={ariaControls}
+      aria-expanded={ariaExpanded}
+      class="w-full min-h-[44px] px-4 py-3 bg-white border-2 border-slate-200 rounded-xl text-lg font-bold text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all placeholder:text-gray-300 pr-12"
+    />
+    <slot name="action" />
+  </div>
   <slot name="datalist" />
 </div>

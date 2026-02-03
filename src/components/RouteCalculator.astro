@@ -10,13 +10,19 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
   <Card class="relative overflow-hidden border-0 !p-0 shadow-lg ring-1 ring-black/5">
     <!-- Header / Status Bar -->
-    <div class="bg-slate-50 border-b border-slate-100 p-4 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <img src="/icons/compass.svg" class="w-6 h-6" alt="Compass" />
-        <h2 class="text-lg font-black text-deep-navy tracking-tight" id="title-text">Brújula Urbana</h2>
+    <div class="bg-slate-50 border-b border-slate-100 p-4 relative flex items-center justify-center min-h-[64px]">
+      <div class="absolute left-4 flex items-center gap-2 lg:hidden">
+         <!-- Mobile spacer or branding if needed, currently empty to allow centering -->
       </div>
-      <div class="flex items-center gap-2">
-        <div id="balance-badge-container">
+
+      <h2 class="font-black text-deep-navy tracking-tight text-center w-full"
+          style="font-size: calc(1.125rem * 1.13);"
+          id="title-text">
+        Que ruta me lleva?
+      </h2>
+
+      <div class="absolute right-4 flex items-center gap-2">
+        <div id="balance-badge-container" class="hidden sm:block">
            <Badge variant="default" class="font-mono" id="balance-badge">Loading...</Badge>
         </div>
         <button id="lang-toggle" class="text-xs font-bold bg-white border border-slate-200 px-2 py-1 rounded-lg uppercase text-slate-500">EN</button>
@@ -46,7 +52,11 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
             list="locations"
             aria-controls="locations"
             aria-expanded="false"
-          />
+          >
+            <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" title="Usar mi ubicación">
+              <img src="/icons/gps.svg" class="w-5 h-5" alt="GPS" />
+            </button>
+          </Input>
         </div>
 
         <!-- Swap Button -->
@@ -66,6 +76,10 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
             aria-controls="locations"
             aria-expanded="false"
           />
+            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" title="Seleccionar en mapa">
+              <img src="/icons/map-plus.svg" class="w-5 h-5" alt="Map Picker" />
+            </button>
+          </Input>
         </div>
       </div>
 
@@ -153,7 +167,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
   const TRANSLATIONS = {
     es: {
-      title: 'Brújula Urbana',
+      title: 'Que ruta me lleva?',
       warning: 'Saldo insuficiente. Recarga tu cuenta ($180 MXN).',
       calculate: 'TRAZAR RUTA',
       calculating: 'CALCULANDO...',
@@ -162,7 +176,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       instructions: 'Pasos a seguir'
     },
     en: {
-      title: 'Urban Compass',
+      title: 'What route do I take?',
       warning: 'Insufficient balance. Top up required ($180 MXN).',
       calculate: 'FIND ROUTE',
       calculating: 'ROUTING...',
@@ -264,7 +278,129 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     } finally {
       await updateBalance();
       updateUI();
+      initGPSLogic();
     }
+  }
+
+  let coordinatesDB = {};
+
+  async function loadCoordinates() {
+      try {
+          const res = await fetch('/coordinates.json');
+          coordinatesDB = await res.json();
+      } catch (e) {
+          console.error("Failed to load coordinates for GPS features", e);
+      }
+  }
+
+  function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+    var R = 6371; // Radius of the earth in km
+    var dLat = deg2rad(lat2-lat1);
+    var dLon = deg2rad(lon2-lon1);
+    var a =
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon/2) * Math.sin(dLon/2)
+      ;
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var d = R * c; // Distance in km
+    return d;
+  }
+
+  function deg2rad(deg) {
+    return deg * (Math.PI/180)
+  }
+
+  function initGPSLogic() {
+      loadCoordinates();
+
+      const gpsBtn = document.getElementById('gps-btn');
+      const mapPickerBtn = document.getElementById('map-picker-btn');
+      const originInput = document.getElementById('origin-input');
+      const destInput = document.getElementById('destination-input');
+
+      // Brand Phase Triggers
+      originInput?.addEventListener('blur', (e) => {
+          if ((e.target as HTMLInputElement).value.length > 0) {
+              window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 1 } }));
+          }
+      });
+
+      destInput?.addEventListener('blur', (e) => {
+          if ((e.target as HTMLInputElement).value.length > 0) {
+              window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 2 } }));
+          }
+      });
+
+      gpsBtn?.addEventListener('click', () => {
+          if (!navigator.geolocation) {
+              if (window.showToast) window.showToast("Geolocalización no soportada", "error");
+              return;
+          }
+
+          const originInput = document.getElementById('origin-input');
+          const parent = originInput.parentElement;
+          parent.classList.add('opacity-50', 'pointer-events-none');
+
+          navigator.geolocation.getCurrentPosition((pos) => {
+              const { latitude, longitude } = pos.coords;
+              let minDist = Infinity;
+              let nearest = '';
+
+              Object.entries(coordinatesDB).forEach(([name, coords]) => {
+                  const d = getDistanceFromLatLonInKm(latitude, longitude, coords[0], coords[1]);
+                  if (d < minDist) {
+                      minDist = d;
+                      nearest = name;
+                  }
+              });
+
+              if (nearest) {
+                  (originInput as HTMLInputElement).value = nearest;
+                  // Trigger Phase 1
+                  window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 1 } }));
+                  if (window.showToast) window.showToast(`Ubicación: ${nearest}`, "success");
+              } else {
+                   if (window.showToast) window.showToast("No se encontraron paradas cercanas", "warning");
+              }
+              parent.classList.remove('opacity-50', 'pointer-events-none');
+          }, (err) => {
+              console.error(err);
+              parent.classList.remove('opacity-50', 'pointer-events-none');
+              if (window.showToast) window.showToast("Error al obtener ubicación", "error");
+          });
+      });
+
+      mapPickerBtn?.addEventListener('click', () => {
+          const originInput = document.getElementById('origin-input');
+          const destInput = document.getElementById('destination-input');
+
+          sessionStorage.setItem('temp_origin', (originInput as HTMLInputElement).value);
+          // We don't save dest as we are about to pick it
+
+          window.location.href = '/mapa?picker=destination';
+      });
+
+      // Check return
+      const urlParams = new URLSearchParams(window.location.search);
+      const pickedStop = urlParams.get('selected_stop');
+
+      if (pickedStop) {
+          const originInput = document.getElementById('origin-input');
+          const destInput = document.getElementById('destination-input');
+          const savedOrigin = sessionStorage.getItem('temp_origin');
+
+          if (savedOrigin) (originInput as HTMLInputElement).value = savedOrigin;
+          if (destInput) (destInput as HTMLInputElement).value = pickedStop;
+
+          window.history.replaceState({}, document.title, window.location.pathname);
+          sessionStorage.removeItem('temp_origin');
+
+          // Trigger Phase 2 immediately
+          setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 2 } }));
+          }, 500);
+      }
   }
 
   document.addEventListener('astro:page-load', start);
@@ -297,6 +433,9 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
          renderError("Ruta restringida hacia el Aeropuerto desde Walmart (Solo Taxis/ADO).");
          return;
     }
+
+    // Trigger Phase 3 (Tetris)
+    window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 3 } }));
 
     if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculating;
     if (btnSpinner) btnSpinner.classList.remove('hidden');
