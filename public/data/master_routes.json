@@ -1,11 +1,13 @@
 {
   "version": "2.3.0-normalized",
   "metadata": {
-    "version": "2.3.0",
+    "version": "2.3.0-normalized",
     "fecha_actualizacion": "2026-01-30",
-    "fuentes": "70+ documentos web (español/inglés)",
-    "status_sistema": "En transición hacia MOBI 2025-2027",
-    "advertencia_critica": "Tarifas aumentadas el 1 dic 2025. Sistema sujeto a cambios mayores 2026-2027"
+    "fuentes": "Investigación de campo (Villas Otoch 3:00 AM) + Documentación oficial",
+    "status_sistema": "MOBI 2025-2027 (Fase 1)",
+    "nota_tripulacion": "Datos aumentados con lógica nocturna y rutas críticas de personal",
+    "advertencia_critica": "Horarios de madrugada (3am-5am) sujetos a sistema de llenado. Tarifas oficiales desde 1 dic 2025.",
+    "normalization_date": "2026-01-30T06:16:46.258Z"
   },
   "tarifas": {
     "zona_urbana": {
@@ -26,6 +28,25 @@
   },
   "hubs": [
     {
+      "id": "HUB_VILLAS_OTOCH_001",
+      "nombre": "Villas Otoch Paraíso (El Arco / OXXO)",
+      "lat": 21.1685,
+      "lon": -86.885,
+      "tipo": "hub_residencial_critico",
+      "importancia": "CRITICA - Epicentro laboral madrugada",
+      "servicios": [
+        "Punto de reunión Transporte de Personal (3:00 AM - 5:00 AM)",
+        "Salida Vans de Guardia hacia Crucero/ZH",
+        "OXXO 24h (Punto de seguridad iluminado)"
+      ],
+      "rutas_convergentes": [
+        "R-2-94",
+        "R-19",
+        "R-28",
+        "Transporte Personal"
+      ]
+    },
+    {
       "id": "HUB_CRUCERO_001",
       "nombre": "El Crucero / Parque Leona Vicario",
       "lat": 21.1576,
@@ -42,7 +63,8 @@
         "R-66",
         "R-97-99",
         "R-12",
-        "R-48"
+        "R-48",
+        "Combi Roja"
       ],
       "servicios": [
         "Transbordo a Zona Hotelera (R-1/R-2)",
@@ -55,13 +77,15 @@
       "nombre": "Plaza Las Américas",
       "lat": 21.141,
       "lng": -86.843,
+      "lon": -86.843,
       "tipo": "hub_secundario",
       "importancia": "ALTA - Terminal urbana y comercial",
       "rutas_convergentes": [
         "R-27",
         "R-1",
         "R-2",
-        "múltiples urbanas"
+        "múltiples urbanas",
+        "R-2-94"
       ],
       "servicios": [
         "Transbordo a Zona Hotelera (R-27)",
@@ -84,18 +108,101 @@
   ],
   "rutas": [
     {
+
+      "id": "R2_94_VILLAS_OTOCH_001",
+      "nombre": "R-2-94 Villas Otoch (Eje Kabah - ZH)",
+      "tarifa": 15,
+      "moneda": "MXN",
+      "hub_conexion": "Plaza Las Américas / Chedraui Lakin",
+      "frecuencia_minutos": 10,
+      "horario": {
+        "inicio_oficial": "05:00",
+        "fin_oficial": "22:30",
+        "guardia_nocturna": "03:00 - 05:00 (Sistema de llenado en OXXO)"
+      },
+      "advertencias_usuario": [
+        "Madrugada (3-5am): Tarifa puede subir a $20 MXN (ajuste chofer)",
+        "Salidas de guardia dependen de llenado, no horario fijo",
+        "Es la ruta principal para trabajadores de ZH desde Villas Otoch"
+      ],
+      "paradas": [
+        {
+          "parada": "OXXO Villas Otoch Paraíso (El Arco)",
+          "lat": 21.1685,
+          "orden": 1,
+          "tipo": "origen_madrugada",
+          "horario_salida_primer_turno": "03:55",
+          "advertencia": "Punto de agrupación 'La Guardia'",
+          "lng": -86.885
+        },
+        {
+          "parada": "Chedraui Lakin / Av. Talleres",
+          "lat": 21.165,
+          "orden": 2,
+          "tipo": "nodo_conexion",
+          "lng": -86.879
+        },
+        {
+          "parada": "Av. Kabah (Ruta 4)",
+          "lat": 21.16,
+          "orden": 3,
+          "tipo": "tramo_rapido",
+          "lng": -86.845
+        },
+        {
+          "parada": "Plaza Las Américas (Transbordo)",
+          "lat": 21.141,
+          "orden": 4,
+          "tipo": "hub_secundario",
+          "conexiones": [
+            "R-1",
+            "R-2"
+          ],
+          "lng": -86.843
+        },
+        {
+          "parada": "Entrada Zona Hotelera (Km 0)",
+          "lat": 21.153,
+          "orden": 5,
+          "tipo": "entrada_zh",
+          "lng": -86.815
+        },
+        {
+          "parada": "Zona Hotelera (Hasta retornar)",
+          "lat": 21.135,
+          "orden": 6,
+          "tipo": "zona_hotelera",
+          "lng": -86.768
+        }
+      ],
+      "tipo_transporte": "Bus_Urbano_Isla"
+    },
+    {
       "id": "CR_PTO_JUAREZ_001",
       "nombre": "Combi Roja Puerto Juárez → Ultramar",
-      "color": "#F59E0B",
-      "tarifa": 13.0,
-      "tipo_transporte": "Combi_Municipal",
+      "empresa": "Autocar (Controladora SEA)",
+      "tarifa": 13,
+      "moneda": "MXN",
+      "color_identificacion": "Rojo completo con logo SEA",
+      "letrero_clave": "PUERTO JUÁREZ o PTO. JUÁREZ (obligatorio verificar)",
+      "hub_conexion": "El Crucero",
+      "frecuencia_minutos": 15,
+      "horario": {
+        "inicio": "05:30",
+        "fin": "00:30"
+      },
+      "duracion_minutos": 20,
+      "advertencias_usuario": [
+        "Solo las unidades con letrero 'PUERTO JUÁREZ' llegan al muelle"
+      ],
       "paradas": [
         {
           "id": "CR_PTO_JUAREZ_001_001",
           "nombre": "La Rehoyada (Base Operativa)",
           "lat": 21.1619,
           "lng": -86.8515,
-          "orden": 1
+          "orden": 1,
+          "tipo": "origen_base"
         },
         {
           "id": "CR_PTO_JUAREZ_001_002",
@@ -125,7 +232,9 @@
           "lng": -86.802,
           "orden": 5
         }
-      ]
+      ],
+
+      "tipo_transporte": "Combi_Municipal"
     },
     {
       "id": "R1_ZONA_HOTELERA_001",
@@ -133,13 +242,27 @@
       "color": "#FF6B6B",
       "tarifa": 15.0,
       "tipo_transporte": "Bus_HotelZone",
+      "empresas": [
+        "Controladora SEA (rojas)",
+        "Maya Caribe (blancas)"
+      ],
+      "tarifa": 15,
+      "moneda": "MXN",
+      "hub_conexion": "El Crucero",
+      "frecuencia_minutos": 10,
+      "horario": {
+        "inicio": "06:00",
+        "fin": "22:30"
+      },
+      "duracion_minutos": 45,
       "paradas": [
         {
           "id": "R1_ZONA_HOTELERA_001_001",
           "nombre": "La Rehoyada / Villas Otoch (Origenes)",
           "lat": 21.1619,
           "lng": -86.8515,
-          "orden": 1
+          "orden": 1,
+          "tipo": "origen_multiple"
         },
         {
           "id": "R1_ZONA_HOTELERA_001_002",
@@ -176,7 +299,8 @@
           "lng": -86.775,
           "orden": 6
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urban"
     },
     {
       "id": "VAN_PLAYA_EXPRESS_001",
@@ -184,13 +308,21 @@
       "color": "#10B981",
       "tarifa": 55.0,
       "tipo_transporte": "Playa_Express",
+      "moneda": "MXN",
+      "hub_conexion": "Terminal ADO Centro",
+      "frecuencia_minutos": 30,
+      "horario": {
+        "inicio": "05:00",
+        "fin": "00:00"
+      },
       "paradas": [
         {
           "id": "VAN_PLAYA_EXPRESS_001_001",
           "nombre": "Terminal ADO Cancún Centro",
           "lat": 21.1586,
           "lng": -86.8259,
-          "orden": 1
+          "orden": 1,
+          "tipo": "origen_principal"
         },
         {
           "id": "VAN_PLAYA_EXPRESS_001_002",
@@ -205,6 +337,7 @@
           "lat": 21.175,
           "lng": -86.84,
           "orden": 3
+
         },
         {
           "id": "VAN_PLAYA_EXPRESS_001_004",
@@ -234,7 +367,8 @@
           "lng": -87.0739,
           "orden": 7
         }
-      ]
+      ],
+      "tipo_transporte": "Van_Foranea"
     },
     {
       "id": "R28_VILLAS_OTOCH_001",
@@ -271,7 +405,9 @@
           "lng": -86.8269,
           "orden": 4
         }
-      ]
+
+      ],
+      "tipo_transporte": "Bus_Urban"
     },
     {
       "id": "R19_VILLAS_OTOCH_002",
@@ -307,15 +443,46 @@
           "lat": 21.162,
           "lng": -86.828,
           "orden": 4
+        }
+      ],
+      "tipo_transporte": "Bus_Urban"
+    },
+    {
+      "id": "R19_VILLAS_OTOCH_002",
+      "nombre": "R-19 Villas Otoch - Crucero",
+      "color": "#3B82F6",
+      "tarifa": 13,
+      "moneda": "MXN",
+      "hub_conexion": "El Crucero",
+      "frecuencia_minutos": 25,
+      "horario": {
+        "inicio": "06:00",
+        "fin": "22:30"
+      },
+      "paradas": [
+        {
+          "parada": "Villas Otoch",
+          "lat": 21.138,
+          "orden": 1,
+          "tipo": "origen_colonia",
+          "lng": -86.865
         },
         {
-          "id": "R19_VILLAS_OTOCH_002_005",
-          "nombre": "López Portillo con Av. Tulum",
+          "parada": "Hospital General (Av. Kabah)",
+          "lat": 21.15,
+          "orden": 2,
+          "tipo": "servicio_salud",
+          "lng": -86.84
+        },
+        {
+          "parada": "López Portillo con Av. Tulum",
           "lat": 21.1576,
-          "lng": -86.8269,
-          "orden": 5
+          "orden": 3,
+          "tipo": "hub_principal",
+          "lng": -86.8269
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urban"
     },
     {
       "id": "ADO_AEROPUERTO_001",
@@ -349,9 +516,36 @@
           "id": "ADO_AEROPUERTO_001_004",
           "nombre": "Terminal ADO Centro Cancún",
           "lat": 21.1586,
-          "lng": -86.8259,
-          "orden": 4
+          "orden": 4,
+          "tipo": "destino_final",
+          "lng": -86.8259
         }
+      ],
+      "tipo_transporte": "Bus_Foraneo"
+    },
+    {
+      "id": "R10",
+      "nombre": "Las Américas - Aeropuerto",
+      "color": "#FFD93D",
+      "tarifa": 15.00,
+      "horario": "04:00-23:00",
+      "frecuencia_minutos": 20,
+      "paradas": [
+        {"id": "R10_001", "nombre": "Plaza Las Américas", "lat": 21.1472, "lng": -86.8234, "orden": 1, "referencias": "Av. Sayil"},
+        {"id": "R10_002", "nombre": "Av. Nichupté", "lat": 21.1412, "lng": -86.8315, "orden": 2, "referencias": "Cerca de Pabellón Caribe"},
+        {"id": "R10_003", "nombre": "Av. Kabah", "lat": 21.1355, "lng": -86.8412, "orden": 3, "referencias": "Supermercado Soriana"},
+        {"id": "R10_004", "nombre": "Av. La Luna", "lat": 21.1285, "lng": -86.8485, "orden": 4, "referencias": "Plaza La Luna"},
+        {"id": "R10_005", "nombre": "Av. Las Torres", "lat": 21.1155, "lng": -86.8555, "orden": 5, "referencias": "Parque Kabah Sur"},
+        {"id": "R10_006", "nombre": "Av. Huayacán", "lat": 21.1025, "lng": -86.8612, "orden": 6, "referencias": "Zona Residencial"},
+        {"id": "R10_007", "nombre": "Carr. Federal 307", "lat": 21.0855, "lng": -86.8525, "orden": 7, "referencias": "Entrada Bonfil"},
+        {"id": "R10_008", "nombre": "UT Cancún", "lat": 21.0555, "lng": -86.8415, "orden": 8, "referencias": "Universidad"},
+        {"id": "R10_009", "nombre": "T3 Aeropuerto", "lat": 21.0412, "lng": -86.8725, "orden": 9, "referencias": "Vuelos Internacionales"},
+        {"id": "R10_010", "nombre": "T2 Aeropuerto", "lat": 21.0365, "lng": -86.8775, "orden": 10, "referencias": "Vuelos Nacionales"}
+      ],
+      "polyline": [
+        [-86.8234, 21.1472], [-86.8315, 21.1412], [-86.8412, 21.1355], [-86.8485, 21.1285],
+        [-86.8555, 21.1155], [-86.8612, 21.1025], [-86.8525, 21.0855], [-86.8415, 21.0555],
+        [-86.8725, 21.0412], [-86.8775, 21.0365]
       ]
     }
   ],
@@ -406,5 +600,10 @@
     "Moovit (rutas IMOVEQROO en tiempo real)",
     "MiMovilidad QRoo (oficial gobierno)",
     "Google Maps (limitado para rutas urbanas)"
+  ],
+  "destinos": [
+    {"nombre": "Coco Bongo", "categoria": "Entretenimiento", "lat": 21.1385, "lng": -86.7474, "parada_cercana": "R1_007"},
+    {"nombre": "Aeropuerto", "categoria": "Transporte", "lat": 21.0365, "lng": -86.8775, "parada_cercana": "R10_010"},
+    {"nombre": "Plaza Las Américas", "categoria": "Compras", "lat": 21.1472, "lng": -86.8234, "parada_cercana": "R1_003"}
   ]
 }
