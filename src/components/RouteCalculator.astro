@@ -214,21 +214,15 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
   async function updateBalance() {
     try {
-        const db = await openDB('cancunmueve-db', 2, {
-        upgrade(db) {
-            if (!db.objectStoreNames.contains('wallet-status')) {
-            db.createObjectStore('wallet-status');
-            }
-        },
-        });
-        let currentBalance = await db.get('wallet-status', 'driver_current');
-        if (currentBalance === undefined) {
-            currentBalance = 180.0;
-            await db.put('wallet-status', currentBalance, 'driver_current');
+        const stored = localStorage.getItem('user_balance');
+        if (stored !== null) {
+            balance = parseFloat(stored);
+        } else {
+            balance = 180.0;
+            localStorage.setItem('user_balance', balance.toString());
         }
-        balance = currentBalance;
     } catch (e) {
-        console.warn("IDB Error, using default balance:", e);
+        console.warn("Storage Error, using default balance:", e);
         balance = 180.0;
     }
 
@@ -420,6 +414,10 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
                     💰 $${route.price.toFixed(2)}
                 </span>
                 <p class="text-xs text-slate-500 mt-1">${route.duration}</p>
+
+                <button class="mt-2 text-[10px] font-bold text-primary-600 border border-primary-200 bg-primary-50 px-2 py-1 rounded hover:bg-primary-100 transition-colors view-map-btn" data-stops='${JSON.stringify(route.stops || [])}'>
+                    🗺️ Ver en Mapa
+                </button>
               </div>
             </div>
 
@@ -430,6 +428,24 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
           </div>
         `;
         resultsContainer.innerHTML += html;
+    });
+
+    // Add event listeners to new map buttons
+    document.querySelectorAll('.view-map-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const stops = JSON.parse((e.currentTarget).dataset.stops);
+
+            // 1. Dispatch event (if map is on page)
+            window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { stops } }));
+
+            // 2. Persist and Navigate (if map is elsewhere)
+            localStorage.setItem('pending_route', JSON.stringify(stops));
+
+            // Only navigate if we are not already on map page (which we aren't here)
+            // But just in case user wants full view
+            window.location.href = '/mapa';
+        });
     });
 
     if (window.showToast) window.showToast(`${routes.length} rutas encontradas`, 'success');
