@@ -137,14 +137,10 @@ fn load_static_catalog() -> Vec<Route> {
     }).collect()
 }
 
-fn get_all_routes() -> Vec<Route> {
-    load_static_catalog()
-}
-
 pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Route> {
     let origin_norm = origin.to_lowercase();
     let dest_norm = dest.to_lowercase();
-    let all_routes = get_all_routes();
+    let all_routes = load_static_catalog();
     let mut matched_routes = Vec::new();
 
     for route in all_routes {
@@ -183,6 +179,12 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Route> {
 #[wasm_bindgen]
 pub fn find_route(origin: &str, dest: &str) -> JsValue {
     let routes = find_route_rs(origin, dest);
+    serde_wasm_bindgen::to_value(&routes).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn get_all_routes() -> JsValue {
+    let routes = load_static_catalog();
     serde_wasm_bindgen::to_value(&routes).unwrap()
 }
 
