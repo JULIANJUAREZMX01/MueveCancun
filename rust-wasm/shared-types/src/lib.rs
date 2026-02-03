@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum TransportType {
+    // Legacy Variants (Keep for compatibility)
     #[serde(rename = "Bus_HotelZone")]
     BusHotelZone,
     #[serde(rename = "Bus_Urban")]
@@ -12,6 +13,16 @@ pub enum TransportType {
     PlayaExpress,
     #[serde(rename = "ADO_Airport")]
     AdoAirport,
+
+    // New Generic Variants (For Truth of the Street)
+    #[serde(rename = "Bus")]
+    Bus,
+    #[serde(rename = "Combi")]
+    Combi,
+    #[serde(rename = "Van")]
+    Van,
+    #[serde(rename = "ADO")]
+    ADO,
 }
 
 impl Default for TransportType {
