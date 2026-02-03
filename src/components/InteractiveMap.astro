@@ -64,8 +64,13 @@ const {
     const pendingRoute = localStorage.getItem('pending_route');
     if (pendingRoute) {
         try {
-            const stops = JSON.parse(pendingRoute);
-            drawRoute({ stops });
+            const data = JSON.parse(pendingRoute);
+            // Normalize to object if it's just an array of strings (legacy)
+            if (Array.isArray(data)) {
+                drawRoute({ stops: data });
+            } else {
+                drawRoute(data);
+            }
             localStorage.removeItem('pending_route');
         } catch (e) {
             console.error("Error parsing pending route", e);
@@ -84,7 +89,7 @@ const {
     }
   }
 
-  function drawRoute({ stops }) {
+  function drawRoute(data) {
     if (!map) return;
 
     // Remove old layer group to avoid overhead during additions
@@ -93,73 +98,105 @@ const {
         layerGroup.remove();
     }
 
-    // Prepare new layers array for batch addition
-    const newLayers = [];
-
-    if (!stops || stops.length === 0) {
-        layerGroup = window.L.layerGroup().addTo(map);
-        return;
+    // Normalize input to legs array
+    let legs = [];
+    if (data.legs && Array.isArray(data.legs)) {
+        legs = data.legs;
+    } else if (data.stops && Array.isArray(data.stops)) {
+        legs = [{ stops: data.stops }];
+    } else {
+         layerGroup = window.L.layerGroup().addTo(map);
+         return;
     }
 
-    const routeCoords = [];
-    const validStops = [];
+    const newLayers = [];
+    const allBounds = [];
 
-    stops.forEach(stopName => {
-        // Fuzzy match or exact match
-        let coords = coordinatesDB[stopName];
+    legs.forEach((leg, index) => {
+        const stops = leg.stops || [];
+        const routeCoords = [];
+        const validStops = [];
 
-        // Simple fuzzy fallback if exact missing (e.g. "Av. Kabah" vs "Hospital General (Av. Kabah)")
-        if (!coords) {
-             const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
-             if (key) coords = coordinatesDB[key];
-        }
+        stops.forEach(stopName => {
+            // Fuzzy match or exact match
+            let coords = coordinatesDB[stopName];
 
-        if (coords) {
-            routeCoords.push(coords);
-            validStops.push({ name: stopName, latlng: coords });
+            // Simple fuzzy fallback if exact missing (e.g. "Av. Kabah" vs "Hospital General (Av. Kabah)")
+            if (!coords) {
+                 const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
+                 if (key) coords = coordinatesDB[key];
+            }
+
+            if (coords) {
+                routeCoords.push(coords);
+                validStops.push({ name: stopName, latlng: coords });
+                allBounds.push(coords);
+            } else {
+                console.warn(`[InteractiveMap] Skipping stop with missing coordinates: ${stopName}`);
+            }
+        });
+
+        if (routeCoords.length > 0) {
+            // Style based on index (Leg 1 vs Leg 2)
+            const isFirst = index === 0;
+            const color = '#F97316';
+            // Visual distinction: Leg 2 is dashed
+            const dashArray = isFirst ? null : '10, 10';
+            const weight = 4;
+
+            const polyline = window.L.polyline(routeCoords, {
+                color,
+                weight,
+                opacity: 0.8,
+                dashArray
+            });
+            newLayers.push(polyline);
+
+            // Start Marker (only for first leg)
+            if (index === 0) {
+                 const start = validStops[0];
+                 newLayers.push(window.L.marker(start.latlng)
+                    .bindPopup(`<b>Inicio:</b> ${start.name}`));
+            }
+
+            // End Marker (only for last leg)
+            if (index === legs.length - 1) {
+                 const end = validStops[validStops.length - 1];
+                 newLayers.push(window.L.marker(end.latlng)
+                    .bindPopup(`<b>Fin:</b> ${end.name}`));
+            }
+
+            // Transfer Marker (if not last leg)
+            if (index < legs.length - 1) {
+                const end = validStops[validStops.length - 1];
+                 newLayers.push(window.L.marker(end.latlng, {
+                     // Custom icon for transfer? Or just a marker.
+                     // Using default marker but maybe distinct popup
+                 }).bindPopup(`<b>Transbordo:</b> ${end.name}`));
+            }
+
+            // Intermediate dots (optimized with Canvas via map preference)
+            validStops.slice(1, -1).forEach(stop => {
+                 newLayers.push(
+                    window.L.circleMarker(stop.latlng, { radius: 4, color: '#334155', fillOpacity: 1 })
+                    .bindPopup(stop.name)
+                 );
+            });
+
         } else {
-            console.warn(`[InteractiveMap] Skipping stop with missing coordinates: ${stopName}`);
+            console.warn("No coordinates found for stops:", stops);
         }
     });
 
-    if (routeCoords.length > 0) {
-        const layers = [];
-
-        // Draw Polyline
-        const polyline = window.L.polyline(routeCoords, { color: '#F97316', weight: 4, opacity: 0.8 });
-        newLayers.push(polyline);
-
-        // Add Markers (Start and End)
-        const start = validStops[0];
-        const end = validStops[validStops.length - 1];
-
-        const startMarker = window.L.marker(start.latlng)
-            .bindPopup(`<b>Inicio:</b> ${start.name}`);
-
-        const endMarker = window.L.marker(end.latlng)
-            .bindPopup(`<b>Fin:</b> ${end.name}`);
-
-        newLayers.push(startMarker);
-        newLayers.push(endMarker);
-
-        // Intermediate dots (optimized with Canvas via map preference)
-        validStops.slice(1, -1).forEach(stop => {
-             newLayers.push(
-                window.L.circleMarker(stop.latlng, { radius: 5, color: '#334155', fillOpacity: 1 })
-                .bindPopup(stop.name)
-             );
-        });
-
+    if (newLayers.length > 0) {
         // Batch add to map
         layerGroup = window.L.layerGroup(newLayers).addTo(map);
-
-        map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
-        startMarker.openPopup();
-
+        if (allBounds.length > 0) {
+             map.fitBounds(allBounds, { padding: [50, 50] });
+        }
     } else {
-        console.warn("No coordinates found for stops:", stops);
-        if (window.showToast) window.showToast("No se pudieron visualizar los puntos de esta ruta.", "error");
-        layerGroup = window.L.layerGroup().addTo(map);
+         if (window.showToast) window.showToast("No se pudieron visualizar los puntos de esta ruta.", "error");
+         layerGroup = window.L.layerGroup().addTo(map);
     }
   }
 

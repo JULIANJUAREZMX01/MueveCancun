@@ -24,6 +24,37 @@ export function calculate_trip_cost(distance, seats, is_tourist) {
     return ret;
 }
 
+/**
+ * @param {string} origin
+ * @param {string} dest
+ * @returns {any}
+ */
+export function find_route(origin, dest) {
+    const ptr0 = passStringToWasm0(origin, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(dest, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.find_route(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * @returns {any}
+ */
+export function get_all_routes() {
+    const ret = wasm.get_all_routes();
+    return ret;
+}
+
+/**
+ * @param {number} balance
+ * @returns {boolean}
+ */
+export function validate_operator_funds(balance) {
+    const ret = wasm.validate_operator_funds(balance);
+    return ret !== 0;
+}
+
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
