@@ -58,7 +58,7 @@ const navItems = [
     <header class="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/50 h-14 px-4 flex items-center justify-between shadow-sm lg:hidden">
       <div class="flex items-center gap-2 overflow-hidden">
         <a href="/" class="font-display font-black text-[1.27rem] tracking-tight text-deep-navy whitespace-nowrap truncate">
-          Que ruta me lleva? <span id="city-swapper-mobile" class="text-primary-500 transition-opacity duration-500">CANCUN</span>
+          Que ruta me lleva? <span id="city-swapper-mobile" class="transition-all duration-500 ease-in-out" style="color: #006847">cancún</span>
         </a>
       </div>
       <div class="flex items-center gap-3 flex-shrink-0">
@@ -73,7 +73,7 @@ const navItems = [
     <header class="hidden lg:flex fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 h-16 px-8 items-center justify-between">
         <div class="flex items-center gap-2">
             <a href="/" class="font-display font-black text-[1.7rem] tracking-tight text-deep-navy">
-                Que ruta me lleva? <span id="city-swapper-desktop" class="text-primary-500 transition-opacity duration-500">CANCUN</span>
+                Que ruta me lleva? <span id="city-swapper-desktop" class="transition-all duration-500 ease-in-out" style="color: #006847">cancún</span>
             </a>
         </div>
         <nav class="flex gap-6">
@@ -176,24 +176,40 @@ const navItems = [
     </script>
 
     <script is:inline>
-      const CITIES = ["CANCUN", "COSTA MUJERES", "RIVIERA MAYA", "PUERTO MORELOS", "PUERTO JUAREZ", "PLAYA DEL CARMEN", "ISLA MUJERES"];
+      const CITIES = ["cancún", "costa mujeres", "riviera maya", "puerto morelos", "puerto juárez", "playa del carmen", "isla mujeres"];
+      const CITY_COLORS = {
+        "cancún": "#006847",
+        "costa mujeres": "#FF8200",
+        "riviera maya": "#00B2A9",
+        "puerto morelos": "#E03C31",
+        "puerto juárez": "#0033A0",
+        "playa del carmen": "#D0006F",
+        "isla mujeres": "#FFCD00"
+      };
+
       let cityIndex = 0;
-      let intervalId = null;
 
       function startCityRotation() {
-          if (intervalId) clearInterval(intervalId);
+          // Clear existing interval if stored on window to prevent leaks/double-speed
+          if (window.cityRotationInterval) clearInterval(window.cityRotationInterval);
 
           const rotateCity = () => {
               cityIndex = (cityIndex + 1) % CITIES.length;
               const newCity = CITIES[cityIndex];
+              const newColor = CITY_COLORS[newCity];
+
               const mobileSpan = document.getElementById('city-swapper-mobile');
               const desktopSpan = document.getElementById('city-swapper-desktop');
+
+              // If elements are missing (e.g. during navigation swap), stop.
+              if (!mobileSpan && !desktopSpan) return;
 
               const updateSpan = (span) => {
                   if(!span) return;
                   span.style.opacity = '0';
                   setTimeout(() => {
                       span.textContent = newCity;
+                      span.style.color = newColor;
                       span.style.opacity = '1';
                   }, 500);
               };
@@ -202,8 +218,16 @@ const navItems = [
               updateSpan(desktopSpan);
           };
 
-          intervalId = setInterval(rotateCity, 4000);
+          window.cityRotationInterval = setInterval(rotateCity, 4000);
       }
+
+      // Cleanup on swap to be clean
+      document.addEventListener('astro:before-swap', () => {
+          if (window.cityRotationInterval) {
+              clearInterval(window.cityRotationInterval);
+              window.cityRotationInterval = null;
+          }
+      });
 
       document.addEventListener('astro:page-load', () => {
           startCityRotation();
