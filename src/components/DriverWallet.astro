@@ -64,8 +64,6 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 </div>
 
 <script>
-  import { openDB } from 'idb';
-
   const loader = document.getElementById('wallet-loading');
   const content = document.getElementById('wallet-content');
   const displayBalance = document.getElementById('display-balance');
@@ -87,35 +85,20 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     topUpOptions?.classList.add('hidden');
   });
 
-  async function initDB() {
-    const db = await openDB('cancunmueve-db', 2, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains('wallet-status')) {
-          db.createObjectStore('wallet-status');
-        }
-      },
-    });
-    return db;
+  function getBalance() {
+      const stored = localStorage.getItem('user_balance');
+      return stored ? parseFloat(stored) : 180.0;
   }
 
-  async function checkFunds(balance) {
-      try {
-          // Dynamic import to avoid build errors with Vite
-          const wasm = await import('../wasm/route_calculator.js');
-          await wasm.default();
-          return wasm.validate_operator_funds(balance);
-      } catch (e) {
-          console.error("WASM Validation Error:", e);
-          return balance >= 180.0;
-      }
+  function setBalance(amount) {
+      localStorage.setItem('user_balance', amount.toString());
   }
 
   async function updateBalanceDisplay() {
-    const db = await initDB();
-    let currentBalance = await db.get('wallet-status', 'driver_current');
-    if (currentBalance === undefined) {
-      currentBalance = 180.0;
-      await db.put('wallet-status', currentBalance, 'driver_current');
+    let currentBalance = getBalance();
+    // Ensure default is set if missing
+    if (localStorage.getItem('user_balance') === null) {
+        setBalance(currentBalance);
     }
 
     if (displayBalance) {
@@ -147,14 +130,13 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   }
 
   topUpBtns.forEach(btn => {
-    btn.addEventListener('click', async (e) => {
+    btn.addEventListener('click', (e) => {
       const amount = parseInt((e.currentTarget).dataset.amount || '0');
-      const db = await initDB();
-      let currentBalance = await db.get('wallet-status', 'driver_current') || 0;
+      let currentBalance = getBalance();
       currentBalance += amount;
-      await db.put('wallet-status', currentBalance, 'driver_current');
+      setBalance(currentBalance);
 
-      await updateBalanceDisplay();
+      updateBalanceDisplay();
 
       if (window.showToast) window.showToast(`Recarga exitosa: +$${amount}`, 'success');
     });
