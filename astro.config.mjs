@@ -1,7 +1,7 @@
 import { defineConfig } from "astro/config"
 import mdx from "@astrojs/mdx"
 import sitemap from "@astrojs/sitemap"
-import tailwindv4 from "@tailwindcss/vite"
+import tailwind from "@astrojs/tailwind"
 import path from "path"
 import { fileURLToPath } from "url"
 
@@ -12,14 +12,14 @@ export default defineConfig({
   site: "https://cancunmueve.com",
   integrations: [
     mdx(),
-    sitemap()
+    sitemap(),
+    tailwind()
   ],
   vite: {
-    plugins: [tailwindv4()],
     build: {
       rollupOptions: {
         external: [
-          "/wasm/route-calculator/route_calculator.js",
+          "/wasm/route_calculator/route_calculator.js",
           "/wasm/spatial-index/spatial_index.js"
         ]
       }
