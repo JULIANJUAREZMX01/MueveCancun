@@ -116,6 +116,64 @@ const navItems = [
 
     <Toast />
 
+    <!-- PWA Update Notification -->
+    <div id="pwa-update-toast" class="hidden fixed bottom-20 left-4 right-4 z-50 bg-slate-900/90 text-white p-4 rounded-xl shadow-2xl backdrop-blur-sm border border-slate-700 animate-slide-up">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <h4 class="font-bold text-sm">Nueva versión disponible</h4>
+                <p class="text-xs text-slate-300 mt-1">Recarga para ver los cambios.</p>
+            </div>
+            <button id="pwa-refresh-btn" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-lg shadow-primary-500/30">
+                ACTUALIZAR
+            </button>
+        </div>
+    </div>
+
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('SW registered: ', registration);
+
+            // Check if there is already a waiting worker
+            if (registration.waiting) {
+                const toast = document.getElementById('pwa-update-toast');
+                if (toast) toast.classList.remove('hidden');
+            }
+
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              console.log('New worker installing...');
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('New update available!');
+                    const toast = document.getElementById('pwa-update-toast');
+                    if (toast) toast.classList.remove('hidden');
+                }
+              });
+            });
+          }).catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+        });
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            window.location.reload();
+            refreshing = true;
+        });
+
+        document.getElementById('pwa-refresh-btn')?.addEventListener('click', () => {
+            navigator.serviceWorker.ready.then(registration => {
+                if (registration.waiting) {
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+            });
+        });
+      }
+    </script>
+
     <style>
       .filter-primary {
         filter: invert(49%) sepia(83%) saturate(1900%) hue-rotate(349deg) brightness(98%) contrast(98%); /* Orange-ish filter approx */
