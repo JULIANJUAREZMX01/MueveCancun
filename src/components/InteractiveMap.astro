@@ -74,12 +74,13 @@ const {
 
     // Default markers for key hubs if no route
     if (!pendingRoute) {
+        const markers = [];
         Object.entries(coordinatesDB).forEach(([name, coords]) => {
             if (["El Crucero", "Zona Hotelera", "Aeropuerto T2", "Plaza Las Américas"].includes(name)) {
-                 window.L.marker(coords).addTo(layerGroup)
-                    .bindPopup(`<b>${name}</b>`);
+                 markers.push(window.L.marker(coords).bindPopup(`<b>${name}</b>`));
             }
         });
+        markers.forEach(layer => layer.addTo(layerGroup));
     }
   }
 
@@ -120,6 +121,8 @@ const {
     });
 
     if (routeCoords.length > 0) {
+        const layers = [];
+
         // Draw Polyline
         const polyline = window.L.polyline(routeCoords, { color: '#F97316', weight: 5, opacity: 0.8 });
         newLayers.push(polyline);
