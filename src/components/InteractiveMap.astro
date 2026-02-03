@@ -117,6 +117,8 @@ const {
         if (coords) {
             routeCoords.push(coords);
             validStops.push({ name: stopName, latlng: coords });
+        } else {
+            console.warn(`[InteractiveMap] Skipping stop with missing coordinates: ${stopName}`);
         }
     });
 
@@ -124,7 +126,7 @@ const {
         const layers = [];
 
         // Draw Polyline
-        const polyline = window.L.polyline(routeCoords, { color: '#F97316', weight: 5, opacity: 0.8 });
+        const polyline = window.L.polyline(routeCoords, { color: '#F97316', weight: 4, opacity: 0.8 });
         newLayers.push(polyline);
 
         // Add Markers (Start and End)
