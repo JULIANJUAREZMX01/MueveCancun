@@ -37,7 +37,7 @@ import path from 'path';
     console.log('--- Step 2: Map Check ---');
     await page.goto('http://localhost:3000/mapa');
     try {
-        await page.waitForSelector('.mapboxgl-canvas', { timeout: 10000 });
+        await page.waitForSelector('.leaflet-container', { timeout: 10000 });
         console.log('✅ Map canvas detected.');
     } catch(e) {
         console.warn('⚠️ Map canvas not detected within timeout (might be loading or hidden).');
