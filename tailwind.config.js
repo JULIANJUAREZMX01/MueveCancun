@@ -1,10 +1,15 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
-
   theme: {
     extend: {
       colors: {
+        'deep-navy': '#003366',
+        'caribbean-blue': '#00A3E0',
+        'sand': '#F5F5F1',
+        'sun-yellow': '#FFD700',
+        'jungle-green': '#2ECC71',
+        'coral': '#FF5A5F',
         // Sunny Mode palette
         primary: {
           50: '#FFF7ED',
@@ -17,6 +22,7 @@ export default {
           700: '#C2410C',
           800: '#9A3412',
           900: '#7C2D12',
+          DEFAULT: '#F97316',
         },
         sky: {
           50: '#F0F9FF',
@@ -40,6 +46,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Poppins', 'sans-serif'],
+        outfit: ['Outfit', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
@@ -57,6 +64,7 @@ export default {
       },
     },
   },
-
-  plugins: [],
+  plugins: [
+      require('@tailwindcss/typography'),
+  ],
 };

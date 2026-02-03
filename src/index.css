@@ -1,15 +1,6 @@
-@import "tailwindcss";
-
-@theme {
-  --color-caribbean-blue: #00A3E0;
-  --color-sand: #F5F5F1;
-  --color-sun-yellow: #FFD700;
-  --color-jungle-green: #2ECC71;
-  --color-coral: #FF5A5F;
-  --color-deep-navy: #003366;
-
-  --font-outfit: "Outfit", sans-serif;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #F5F5F1;
@@ -17,12 +8,21 @@
   --primary: #00A3E0;
   --secondary: #FFD700;
 
-  font-family: var(--font-outfit), Inter, system-ui, sans-serif;
-  background-color: var(--background);
-  color: var(--foreground);
+  --color-caribbean-blue: #00A3E0;
+  --color-sand: #F5F5F1;
+  --color-sun-yellow: #FFD700;
+  --color-jungle-green: #2ECC71;
+  --color-coral: #FF5A5F;
+  --color-deep-navy: #003366;
 }
 
 @layer base {
+  html {
+    font-family: 'Outfit', Inter, system-ui, sans-serif;
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
   body {
     @apply m-0 flex flex-col min-h-screen antialiased;
     background: radial-gradient(circle at top right, #E0F2FE 0%, #F5F5F1 100%);

@@ -12,7 +12,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     <!-- Header / Status Bar -->
     <div class="bg-slate-50 border-b border-slate-100 p-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
-        <span class="text-xl">🧭</span>
+        <img src="/icons/compass.svg" class="w-6 h-6" alt="Compass" />
         <h2 class="text-lg font-black text-deep-navy tracking-tight" id="title-text">Brújula Urbana</h2>
       </div>
       <div class="flex items-center gap-2">
@@ -27,7 +27,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       <!-- Alerts -->
       <div id="balance-warning" class="hidden">
         <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded-r-md flex items-start gap-3">
-          <span class="text-red-500 mt-0.5">⚠️</span>
+          <img src="/icons/alert.svg" class="w-5 h-5 mt-0.5" alt="Alert" />
           <div>
             <p class="text-xs font-bold text-red-800 uppercase tracking-wide">Saldo Insuficiente</p>
             <p class="text-xs text-red-600 font-medium mt-1" id="warning-text">Requiere $180 MXN para operar.</p>
@@ -44,6 +44,8 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
             icon="/icons/map-pin.svg"
             placeholder="¿Dónde estás?"
             list="locations"
+            aria-controls="locations"
+            aria-expanded="false"
           />
         </div>
 
@@ -61,25 +63,27 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
             icon="/icons/flag.svg"
             placeholder="¿A dónde vas?"
             list="locations"
+            aria-controls="locations"
+            aria-expanded="false"
           />
         </div>
       </div>
 
       <!-- Quick Actions (Horizontal Scroll) -->
       <div>
-        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Accesos Rápidos</label>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Accesos Rápidos</span>
         <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
           <button class="quick-action-btn snap-start flex-shrink-0 bg-slate-50 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-2 transition-colors active:scale-95" data-dest="Walmart">
-            <span>🏠</span> <span class="text-sm font-bold">Casa</span>
+            <img src="/icons/home.svg" class="w-5 h-5" alt="Casa" /> <span class="text-sm font-bold">Casa</span>
           </button>
           <button class="quick-action-btn snap-start flex-shrink-0 bg-slate-50 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-2 transition-colors active:scale-95" data-dest="Plaza Las Américas">
-            <span>💼</span> <span class="text-sm font-bold">Trabajo</span>
+            <img src="/icons/briefcase.svg" class="w-5 h-5" alt="Trabajo" /> <span class="text-sm font-bold">Trabajo</span>
           </button>
           <button class="quick-action-btn snap-start flex-shrink-0 bg-slate-50 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-2 transition-colors active:scale-95" data-dest="Aeropuerto Terminal 2">
-            <span>✈️</span> <span class="text-sm font-bold">Aeropuerto</span>
+            <img src="/icons/plane.svg" class="w-5 h-5" alt="Aeropuerto" /> <span class="text-sm font-bold">Aeropuerto</span>
           </button>
            <button class="quick-action-btn snap-start flex-shrink-0 bg-slate-50 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-2 transition-colors active:scale-95" data-dest="Playa Delfines (El Mirador)">
-            <span>🏖️</span> <span class="text-sm font-bold">Playa</span>
+            <img src="/icons/palm-tree.svg" class="w-5 h-5" alt="Playa" /> <span class="text-sm font-bold">Playa</span>
           </button>
         </div>
       </div>
@@ -99,7 +103,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
           </div>
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Modo</label>
+          <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Modo</span>
           <label class="flex items-center h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 cursor-pointer hover:bg-slate-100 transition-colors">
             <input type="checkbox" id="tourist-checkbox" class="w-5 h-5 rounded text-primary-500 border-gray-300 focus:ring-primary-500 mr-3" />
             <span class="text-sm font-bold text-slate-700">Turista</span>
@@ -188,7 +192,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   let balance = 0;
   let hasBalance = false;
   let wasmLoaded = false;
-  let wasmModule = null;
+  let find_route, validate_operator_funds;
 
   const btn = document.getElementById('calculate-btn');
   const resultsContainer = document.getElementById('results-container');
@@ -223,10 +227,11 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     }
     balance = currentBalance;
 
-    if (wasmLoaded && wasmModule) {
+    if (wasmLoaded) {
         try {
-            hasBalance = wasmModule.validate_operator_funds(balance);
+            hasBalance = validate_operator_funds(balance);
         } catch (e) {
+            console.warn("WASM validation failed, fallback to strict check", e);
             hasBalance = balance >= 180.0;
         }
     } else {
@@ -261,19 +266,26 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
   async function start() {
     try {
-      console.log("Starting WASM import...");
-      wasmModule = await import('../wasm/route_calculator.js');
-      console.log("WASM imported, initializing...");
-      await wasmModule.default();
+      console.log("Initializing WASM...");
+      // Use dynamic import to bypass Vite's public folder restriction
+      // We use a full URL constructed at runtime to prevent Vite from intercepting the request
+      const wasmPath = new URL('/wasm/route_calculator/route_calculator.js', window.location.href).href;
+      const module = await import(/* @vite-ignore */ wasmPath);
+      await module.default();
+      find_route = module.find_route;
+      validate_operator_funds = module.validate_operator_funds;
+
       console.log("WASM initialized.");
       wasmLoaded = true;
       await updateBalance();
-      console.log("Balance updated.");
       updateUI();
     } catch (e) {
       console.error("WASM Load Critical Error:", e);
     }
   }
+
+  // Ensure WASM inits on page load (supports view transitions)
+  document.addEventListener('astro:page-load', start);
 
   langToggle?.addEventListener('click', () => {
     currentLang = currentLang === 'es' ? 'en' : 'es';
@@ -290,7 +302,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   });
 
   btn?.addEventListener('click', async () => {
-    if (!wasmLoaded || !wasmModule || !hasBalance) return;
+    if (!wasmLoaded || !hasBalance) return;
 
     const fromVal = (document.getElementById('origin-input') as HTMLInputElement).value;
     const toVal = (document.getElementById('destination-input') as HTMLInputElement).value;
@@ -311,7 +323,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     await new Promise(r => setTimeout(r, 800));
 
     try {
-      const res = wasmModule.find_route(fromVal, toVal);
+      const res = find_route(fromVal, toVal);
       console.log('Route Result:', res);
 
       renderResults(res);
@@ -372,11 +384,10 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     if (!resultsContainer) return;
     resultsContainer.innerHTML = `
         <div class="bg-red-50 p-4 rounded-xl border border-red-100 text-red-700 font-bold text-sm flex items-center gap-2 animate-slide-up">
-            <span>❌</span> ${msg}
+            <img src="/icons/alert.svg" class="w-5 h-5" alt="Error" /> ${msg}
         </div>
     `;
     if (window.showToast) window.showToast(msg, 'error');
   }
 
-  start();
 </script>
