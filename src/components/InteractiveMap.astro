@@ -72,12 +72,13 @@ const {
 
     // Default markers for key hubs if no route
     if (!pendingRoute) {
+        const markers = [];
         Object.entries(coordinatesDB).forEach(([name, coords]) => {
             if (["El Crucero", "Zona Hotelera", "Aeropuerto T2", "Plaza Las Américas"].includes(name)) {
-                 window.L.marker(coords).addTo(layerGroup)
-                    .bindPopup(`<b>${name}</b>`);
+                 markers.push(window.L.marker(coords).bindPopup(`<b>${name}</b>`));
             }
         });
+        markers.forEach(layer => layer.addTo(layerGroup));
     }
   }
 
@@ -108,25 +109,39 @@ const {
     });
 
     if (routeCoords.length > 0) {
+        const layers = [];
+
         // Draw Polyline
-        const polyline = window.L.polyline(routeCoords, { color: '#F97316', weight: 5, opacity: 0.8 }).addTo(layerGroup);
+        const polyline = window.L.polyline(routeCoords, { color: '#F97316', weight: 5, opacity: 0.8 });
+        layers.push(polyline);
+
         map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
 
         // Add Markers (Start and End)
         const start = validStops[0];
         const end = validStops[validStops.length - 1];
 
-        window.L.marker(start.latlng).addTo(layerGroup)
-            .bindPopup(`<b>Inicio:</b> ${start.name}`).openPopup();
+        const startMarker = window.L.marker(start.latlng).bindPopup(`<b>Inicio:</b> ${start.name}`);
+        layers.push(startMarker);
 
-        window.L.marker(end.latlng).addTo(layerGroup)
-            .bindPopup(`<b>Fin:</b> ${end.name}`);
+        layers.push(
+            window.L.marker(end.latlng).bindPopup(`<b>Fin:</b> ${end.name}`)
+        );
 
         // Intermediate dots
         validStops.slice(1, -1).forEach(stop => {
-             window.L.circleMarker(stop.latlng, { radius: 5, color: '#334155', fillOpacity: 1 }).addTo(layerGroup)
-                .bindPopup(stop.name);
+             layers.push(
+                window.L.circleMarker(stop.latlng, { radius: 5, color: '#334155', fillOpacity: 1 })
+                .bindPopup(stop.name)
+             );
         });
+
+        // Batch add
+        layers.forEach(layer => layer.addTo(layerGroup));
+
+        // Open popup after adding
+        startMarker.openPopup();
+
     } else {
         console.warn("No coordinates found for stops:", stops);
         if (window.showToast) window.showToast("No se pudieron visualizar los puntos de esta ruta.", "error");
