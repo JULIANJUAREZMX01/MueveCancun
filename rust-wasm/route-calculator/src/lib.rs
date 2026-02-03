@@ -4,6 +4,7 @@ use shared_types::{RootData, haversine_distance, TransportType};
 use petgraph::graph::{NodeIndex, UnGraph};
 use petgraph::algo::dijkstra;
 use std::collections::HashMap;
+use once_cell::sync::Lazy;
 
 // --- SYSTEM OVERRIDE: TRUTH OF THE STREET ---
 
@@ -19,12 +20,14 @@ pub struct Route {
     pub dest_hub: String,
     // New Fields
     pub stops: Vec<String>,
+    #[serde(skip)]
+    pub stops_normalized: Vec<String>,
     pub operator: String,
     pub schedule: String,
     pub frequency: String,
 }
 
-fn load_static_catalog() -> Vec<Route> {
+static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
     let raw_data = vec![
         (
             "R2_94_VILLAS_OTOCH_001",
@@ -110,6 +113,7 @@ fn load_static_catalog() -> Vec<Route> {
 
     raw_data.into_iter().map(|(id, name, t_type, price, schedule, frequency, stops, operator)| {
         let stops_vec: Vec<String> = stops.into_iter().map(|s| s.to_string()).collect();
+        let stops_normalized: Vec<String> = stops_vec.iter().map(|s| s.to_lowercase()).collect();
         let origin = stops_vec.first().cloned().unwrap_or_else(|| "Unknown".to_string());
         let dest = stops_vec.last().cloned().unwrap_or_else(|| "Unknown".to_string());
 
@@ -130,17 +134,18 @@ fn load_static_catalog() -> Vec<Route> {
             origin_hub: origin,
             dest_hub: dest,
             stops: stops_vec,
+            stops_normalized,
             operator: operator.to_string(),
             schedule: schedule.to_string(),
             frequency: frequency.to_string(),
         }
     }).collect()
-}
+});
 
 pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Route> {
     let origin_norm = origin.to_lowercase();
     let dest_norm = dest.to_lowercase();
-    let all_routes = load_static_catalog();
+    let all_routes = &*CATALOG;
     let mut matched_routes = Vec::new();
 
     for route in all_routes {
@@ -148,10 +153,9 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Route> {
 
         // 1. Check Origin Match
         let mut is_origin_match = false;
-        for stop in &route.stops {
-            let stop_lower = stop.to_lowercase();
-            let score = strsim::jaro_winkler(&origin_norm, &stop_lower);
-            if score > 0.8 || stop_lower.contains(&origin_norm) || origin_norm.contains(&stop_lower) {
+        for stop_lower in &route.stops_normalized {
+            let score = strsim::jaro_winkler(&origin_norm, stop_lower);
+            if score > 0.8 || stop_lower.contains(&origin_norm) || origin_norm.contains(stop_lower) {
                 is_origin_match = true;
                 break;
             }
@@ -159,17 +163,16 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Route> {
 
         // 2. Check Dest Match
         let mut is_dest_match = false;
-        for stop in &route.stops {
-             let stop_lower = stop.to_lowercase();
-             let score = strsim::jaro_winkler(&dest_norm, &stop_lower);
-             if score > 0.8 || stop_lower.contains(&dest_norm) || dest_norm.contains(&stop_lower) {
+        for stop_lower in &route.stops_normalized {
+             let score = strsim::jaro_winkler(&dest_norm, stop_lower);
+             if score > 0.8 || stop_lower.contains(&dest_norm) || dest_norm.contains(stop_lower) {
                  is_dest_match = true;
                  break;
              }
         }
 
         if is_origin_match && is_dest_match {
-            matched_routes.push(route);
+            matched_routes.push(route.clone());
         }
     }
 
@@ -184,8 +187,8 @@ pub fn find_route(origin: &str, dest: &str) -> JsValue {
 
 #[wasm_bindgen]
 pub fn get_all_routes() -> JsValue {
-    let routes = load_static_catalog();
-    serde_wasm_bindgen::to_value(&routes).unwrap()
+    let routes = &*CATALOG;
+    serde_wasm_bindgen::to_value(routes).unwrap()
 }
 
 // --- LEGACY GRAPH LOGIC (Kept for compilation, bypassed for now) ---
@@ -572,4 +575,5 @@ mod tests {
         assert!(!res.is_empty());
         assert!(res.iter().any(|r| r.id == "CR_PTO_JUAREZ_001"));
     }
+
 }
