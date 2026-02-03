@@ -20,6 +20,7 @@ const pathname = Astro.url.pathname;
 const navItems = [
   { href: '/', icon: '/icons/compass.svg', label: 'Inicio', activePattern: /^\/$/ },
   { href: '/mapa', icon: '/icons/map-pin.svg', label: 'Mapa', activePattern: /^\/mapa/ },
+  { href: '/rutas', icon: '/icons/bus.svg', label: 'Rutas', activePattern: /^\/rutas/ },
   { href: '/driver', icon: '/icons/credit-card.svg', label: 'Mi Tarjeta', activePattern: /^\/driver/ },
 ];
 ---
@@ -45,9 +46,8 @@ const navItems = [
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
 
-    <!-- Mapbox Preload -->
-    <link rel="preload" as="script" href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js" />
-    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" />
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
     <ClientRouter />
   </head>
@@ -89,7 +89,7 @@ const navItems = [
 
     <!-- Sticky Bottom Nav (Mobile) -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] lg:hidden">
-      <div class="grid grid-cols-3 h-16">
+      <div class="grid grid-cols-4 h-16">
         {navItems.map((item) => {
           const isActive = item.activePattern.test(pathname);
           return (
@@ -114,6 +114,16 @@ const navItems = [
     </nav>
 
     <Toast />
+
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registered!', reg.scope))
+            .catch(err => console.log('SW failed:', err));
+        });
+      }
+    </script>
 
     <style>
       .filter-primary {

@@ -149,8 +149,6 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 </div>
 
 <script>
-  import { openDB } from 'idb';
-
   // Geolocation data for demo purposes (Expanded)
   const MOCK_GEO = {
     "Villas Otoch Paraíso": { lat: 21.2100, lng: -86.8800 },
@@ -214,21 +212,15 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
   async function updateBalance() {
     try {
-        const db = await openDB('cancunmueve-db', 2, {
-        upgrade(db) {
-            if (!db.objectStoreNames.contains('wallet-status')) {
-            db.createObjectStore('wallet-status');
-            }
-        },
-        });
-        let currentBalance = await db.get('wallet-status', 'driver_current');
-        if (currentBalance === undefined) {
-            currentBalance = 180.0;
-            await db.put('wallet-status', currentBalance, 'driver_current');
+        const stored = localStorage.getItem('user_balance');
+        if (stored !== null) {
+            balance = parseFloat(stored);
+        } else {
+            balance = 180.0;
+            localStorage.setItem('user_balance', balance.toString());
         }
-        balance = currentBalance;
     } catch (e) {
-        console.warn("IDB Error, using default balance:", e);
+        console.warn("Storage Error, using default balance:", e);
         balance = 180.0;
     }
 

@@ -64,8 +64,6 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 </div>
 
 <script>
-  import { openDB } from 'idb';
-
   const loader = document.getElementById('wallet-loading');
   const content = document.getElementById('wallet-content');
   const displayBalance = document.getElementById('display-balance');
@@ -87,17 +85,6 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     topUpOptions?.classList.add('hidden');
   });
 
-  async function initDB() {
-    const db = await openDB('cancunmueve-db', 2, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains('wallet-status')) {
-          db.createObjectStore('wallet-status');
-        }
-      },
-    });
-    return db;
-  }
-
   async function checkFunds(balance) {
       try {
           // Dynamic import to avoid build errors with Vite
@@ -111,11 +98,16 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   }
 
   async function updateBalanceDisplay() {
-    const db = await initDB();
-    let currentBalance = await db.get('wallet-status', 'driver_current');
-    if (currentBalance === undefined) {
-      currentBalance = 180.0;
-      await db.put('wallet-status', currentBalance, 'driver_current');
+    let currentBalance = 180.0;
+    try {
+        const stored = localStorage.getItem('user_balance');
+        if (stored !== null) {
+            currentBalance = parseFloat(stored);
+        } else {
+            localStorage.setItem('user_balance', currentBalance.toString());
+        }
+    } catch (e) {
+        console.warn("Storage Error:", e);
     }
 
     if (displayBalance) {
@@ -149,10 +141,14 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   topUpBtns.forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const amount = parseInt((e.currentTarget).dataset.amount || '0');
-      const db = await initDB();
-      let currentBalance = await db.get('wallet-status', 'driver_current') || 0;
+
+      let currentBalance = 180.0;
+      const stored = localStorage.getItem('user_balance');
+      if (stored !== null) {
+          currentBalance = parseFloat(stored);
+      }
       currentBalance += amount;
-      await db.put('wallet-status', currentBalance, 'driver_current');
+      localStorage.setItem('user_balance', currentBalance.toString());
 
       await updateBalanceDisplay();
 
