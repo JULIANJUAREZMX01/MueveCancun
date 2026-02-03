@@ -29,7 +29,7 @@ import path from 'path';
     // 1. Boot & Network Check (Home)
     console.log('--- Step 1: Boot & Home Check ---');
     await page.goto('http://localhost:3000/');
-    await page.waitForSelector('#route-calculator');
+    await page.waitForSelector('#route-calculator-wrapper');
     await page.screenshot({ path: 'evidence/home.png' });
     console.log('✅ Home loaded and screenshot taken.');
 
@@ -50,6 +50,10 @@ import path from 'path';
     console.log('--- Step 3: Wallet Check ---');
     await page.goto('http://localhost:3000/driver');
     await page.waitForSelector('#driver-wallet-container');
+
+    // Click Top Up Trigger to reveal buttons
+    await page.click('#top-up-trigger');
+    await page.waitForTimeout(500);
 
     // Click +$50 MXN button
     const btn50 = page.locator('button[data-amount="50"]');
@@ -73,11 +77,11 @@ import path from 'path';
 
     // Wait for WASM to be ready (button might be disabled initially)
     await page.waitForFunction(() => {
-        const btn = document.querySelector('#calculate-btn');
+        const btn = document.querySelector('#search-btn');
         return btn && !btn.disabled;
     }, { timeout: 10000 }).catch(() => console.warn('Button still disabled?'));
 
-    await page.click('#calculate-btn');
+    await page.click('#search-btn');
 
     // Wait for results
     try {
@@ -98,25 +102,21 @@ import path from 'path';
     await page.fill('#origin-input', 'Walmart');
     await page.fill('#destination-input', 'Aeropuerto');
 
-    // Handle dialog
-    let dialogHandled = false;
-    page.once('dialog', async dialog => {
-      console.log(`✅ Dialog detected: ${dialog.message()}`);
-      await dialog.dismiss(); // Dismiss to block the action (simulate user seeing warning)
-      dialogHandled = true;
-    });
-
     // Ensure button is enabled
-    await page.waitForFunction(() => !document.querySelector('#calculate-btn').disabled);
-    await page.click('#calculate-btn');
+    await page.waitForFunction(() => !document.querySelector('#search-btn').disabled);
+    await page.click('#search-btn');
 
-    // Wait a bit
-    await page.waitForTimeout(1000);
-
-    if (dialogHandled) {
-        console.log('✅ Airport warning dialog appeared and handled.');
-    } else {
-        console.warn('⚠️ No dialog detected.');
+    // Wait for error message in results
+    try {
+        await page.waitForSelector('#results-container', { state: 'visible', timeout: 5000 });
+        const content = await page.textContent('#results-container');
+        if (content.includes("Ruta restringida")) {
+            console.log('✅ Airport restriction message detected.');
+        } else {
+            console.warn('⚠️ Restriction message NOT found in results.');
+        }
+    } catch(e) {
+        console.error('❌ Failed to see results/error container.');
     }
 
     await page.screenshot({ path: 'evidence/route_blocked.png' });
