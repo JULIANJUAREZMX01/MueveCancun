@@ -111,7 +111,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
         </div>
       </div>
 
-      <Button id="calculate-btn" class="w-full text-lg shadow-xl shadow-primary-500/20">
+      <Button id="search-btn" class="w-full text-lg shadow-xl shadow-primary-500/20">
         <span id="btn-text">TRAZAR RUTA</span>
         <img src="/icons/loader.svg" class="w-5 h-5 animate-spin hidden" id="btn-spinner" alt="Loading" />
       </Button>
@@ -194,7 +194,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   let wasmLoaded = false;
   let find_route, validate_operator_funds;
 
-  const btn = document.getElementById('calculate-btn');
+  const btn = document.getElementById('search-btn');
   const resultsContainer = document.getElementById('results-container');
   const langToggle = document.getElementById('lang-toggle');
   const balanceBadge = document.getElementById('balance-badge');
@@ -213,21 +213,26 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   });
 
   async function updateBalance() {
-    const db = await openDB('cancunmueve-db', 2, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains('wallet-status')) {
-          db.createObjectStore('wallet-status');
+    try {
+        const db = await openDB('cancunmueve-db', 2, {
+        upgrade(db) {
+            if (!db.objectStoreNames.contains('wallet-status')) {
+            db.createObjectStore('wallet-status');
+            }
+        },
+        });
+        let currentBalance = await db.get('wallet-status', 'driver_current');
+        if (currentBalance === undefined) {
+            currentBalance = 180.0;
+            await db.put('wallet-status', currentBalance, 'driver_current');
         }
-      },
-    });
-    let currentBalance = await db.get('wallet-status', 'driver_current');
-    if (currentBalance === undefined) {
-      currentBalance = 180.0;
-      await db.put('wallet-status', currentBalance, 'driver_current');
+        balance = currentBalance;
+    } catch (e) {
+        console.warn("IDB Error, using default balance:", e);
+        balance = 180.0;
     }
-    balance = currentBalance;
 
-    if (wasmLoaded) {
+    if (wasmLoaded && typeof validate_operator_funds === 'function') {
         try {
             hasBalance = validate_operator_funds(balance);
         } catch (e) {
@@ -251,7 +256,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       balanceWarning.classList.toggle('hidden', hasBalance);
     }
 
-    if (btn) (btn as HTMLButtonElement).disabled = !hasBalance || !wasmLoaded;
+    if (btn) (btn as HTMLButtonElement).disabled = !hasBalance;
   }
 
   function updateUI() {
@@ -277,10 +282,11 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
       console.log("WASM initialized.");
       wasmLoaded = true;
-      await updateBalance();
-      updateUI();
     } catch (e) {
       console.error("WASM Load Critical Error:", e);
+    } finally {
+      await updateBalance();
+      updateUI();
     }
   }
 
@@ -302,7 +308,11 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   });
 
   btn?.addEventListener('click', async () => {
-    if (!wasmLoaded || !hasBalance) return;
+    if (!wasmLoaded) {
+         renderError("El sistema no está listo (WASM offline).");
+         return;
+    }
+    if (!hasBalance) return;
 
     const fromVal = (document.getElementById('origin-input') as HTMLInputElement).value;
     const toVal = (document.getElementById('destination-input') as HTMLInputElement).value;
