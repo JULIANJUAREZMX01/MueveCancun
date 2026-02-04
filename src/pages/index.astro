@@ -1,232 +1,37 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import RouteCalculator from '../components/RouteCalculator.astro';
-import InteractiveMap from '../components/InteractiveMap.astro';
-import RouteCatalog from '../components/RouteCatalog.astro';
-import BrandHero from '../components/BrandHero.astro';
 ---
 
 <MainLayout title="Inicio">
-  <!-- View Manager Container -->
-  <div id="view-manager" class="view-search relative min-h-[calc(100vh-80px)]">
+  <div class="space-y-8 animate-fade-in">
+    <!-- Hero / Greeting -->
+    <section class="text-center pt-6 pb-2">
+      <h1 class="text-3xl font-display font-black text-deep-navy tracking-tight mb-2">
+        ¿A dónde vamos hoy?
+      </h1>
+      <p class="text-slate-500 font-medium">
+        Encuentra la mejor ruta en transporte público.
+      </p>
+    </section>
 
-    <!-- SEARCH STATE (Default) -->
-    <div id="search-view" class="space-y-8 animate-fade-in transition-all duration-500">
-      <!-- Hero / Greeting -->
-      <section class="text-center pt-6 pb-2">
-        <div class="flex flex-col items-center justify-center gap-1 mb-4">
-           <!-- Dynamic City Rotator -->
-           <div class="flex flex-col items-center leading-none mb-4">
-              <span class="text-lg text-slate-400 font-bold tracking-tight">¿Que ruta me lleva?</span>
-              <span id="hero-city-rotator" class="text-4xl font-black text-[#006847] tracking-tight transition-opacity duration-500 mt-1">
-                  cancún
-              </span>
-           </div>
+    <!-- Calculator Widget -->
+    <section>
+      <RouteCalculator />
+    </section>
 
-           <!-- Brand Animation -->
-           <div style="font-size: 1.13em;">
-             <BrandHero />
-           </div>
-        </div>
-        <p class="text-slate-500 font-medium">
-          Encuentra la mejor ruta en transporte público.
-        </p>
-      </section>
+    <!-- Catalog Link -->
+    <section class="text-center pt-2">
+      <a href="/rutas" class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-primary-600 transition-colors border-b border-transparent hover:border-primary-600 pb-0.5">
+        <span>🚌</span> Ver todas las rutas
+      </a>
+    </section>
 
-      <!-- Calculator Widget -->
-      <section class="relative z-10">
-        <RouteCalculator />
-      </section>
-
-      <!-- Catalog Link (Fallback / Direct) -->
-      <section class="text-center pt-2">
-        <button id="btn-open-catalog" class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-primary-600 transition-colors border-b border-transparent hover:border-primary-600 pb-0.5">
-          <span>🚌</span> Ver todas las rutas
-        </button>
-      </section>
-
-      <!-- Promo / Info (Subtle) -->
-      <section class="text-center py-8 opacity-60">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Powered by RouteEngine™ v2.2 WASM
-        </p>
-      </section>
-    </div>
-
-    <!-- MAP STATE (Hidden) -->
-    <div id="map-view" class="hidden absolute inset-0 z-0 bg-slate-50 pt-2 flex-col h-full animate-fade-in">
-       <div class="flex-1 relative w-full h-full">
-          <!-- Load map on interaction or lazily -->
-          <InteractiveMap />
-       </div>
-       <!-- Summary Bar (Replacing Close Map) -->
-       <div id="summary-bar" class="absolute top-4 left-4 right-4 z-[1001] bg-white rounded-xl shadow-lg border border-slate-200 p-3 flex items-center justify-between gap-3 animate-slide-down hidden">
-            <div class="flex items-center gap-2 text-sm overflow-hidden flex-1">
-                 <div class="flex flex-col gap-1 w-full">
-                    <span class="flex items-center gap-2 font-bold text-slate-700 truncate w-full">
-                        <img src="/icons/map-pin.svg" class="w-3 h-3 text-slate-400 shrink-0" alt="Origen" />
-                        <span id="summary-origin" class="truncate text-xs uppercase tracking-wide">Origen</span>
-                    </span>
-                     <span class="flex items-center gap-2 font-bold text-slate-700 truncate w-full">
-                        <img src="/icons/flag.svg" class="w-3 h-3 text-slate-400 shrink-0" alt="Destino" />
-                        <span id="summary-dest" class="truncate text-xs uppercase tracking-wide">Destino</span>
-                    </span>
-                 </div>
-            </div>
-            <button id="edit-search-btn" class="p-2 hover:bg-slate-50 rounded-lg text-primary-500 transition-colors shrink-0 border border-slate-100 shadow-sm bg-slate-50/50">
-                <span class="text-lg">✏️</span>
-            </button>
-       </div>
-    </div>
-
-    <!-- CATALOG STATE (Hidden) -->
-    <div id="catalog-view" class="hidden absolute inset-0 z-10 bg-slate-50 animate-fade-in min-h-full">
-        <RouteCatalog />
-    </div>
-
+    <!-- Promo / Info (Subtle) -->
+    <section class="text-center py-8 opacity-60">
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+        Powered by RouteEngine™ v2.2 WASM
+      </p>
+    </section>
   </div>
-
-  <script is:inline>
-    // View Manager Logic
-    window.handleViewChange = window.handleViewChange || ((state) => {
-        const searchView = document.getElementById('search-view');
-        const mapView = document.getElementById('map-view');
-        const catalogView = document.getElementById('catalog-view');
-        const mainContainer = document.querySelector('main');
-
-        // Reset all first
-        searchView.classList.add('hidden');
-        mapView.classList.add('hidden');
-        mapView.classList.remove('flex');
-        catalogView.classList.add('hidden');
-
-        // Restore Main Container Defaults
-        if (mainContainer) {
-            mainContainer.classList.remove('!max-w-none', '!px-0', '!pt-16');
-        }
-
-        if (state === 'MAP') {
-            mapView.classList.remove('hidden');
-            mapView.classList.add('flex');
-
-            // Expand main container for Map
-            if (mainContainer) mainContainer.classList.add('!max-w-none', '!px-0', '!pt-16');
-
-            // Trigger Map Resize
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-                const mapContainer = document.getElementById('map-container');
-                if (mapContainer && window.map) {
-                   window.map.invalidateSize();
-                }
-            }, 100);
-
-        } else if (state === 'CATALOG') {
-            catalogView.classList.remove('hidden');
-            // Initialize Catalog if needed
-            if (window.initCatalog) window.initCatalog();
-
-        } else { // SEARCH (Default)
-            searchView.classList.remove('hidden');
-        }
-    });
-
-    document.addEventListener('astro:page-load', () => {
-        // Event Listeners
-        window.addEventListener('CHANGE_VIEW', (e) => {
-            window.handleViewChange(e.detail.state);
-        });
-
-        document.getElementById('edit-search-btn')?.addEventListener('click', () => {
-            window.handleViewChange('SEARCH');
-            document.getElementById('summary-bar')?.classList.add('hidden');
-        });
-
-        document.getElementById('btn-open-catalog')?.addEventListener('click', () => {
-            window.handleViewChange('CATALOG');
-        });
-
-        // Intercept SHOW_ROUTE_ON_MAP to switch view automatically
-        window.addEventListener('SHOW_ROUTE_ON_MAP', (e) => {
-             window.handleViewChange('MAP');
-
-             // Populate Summary
-             const journey = e.detail;
-             const origin = document.getElementById('summary-origin');
-             const dest = document.getElementById('summary-dest');
-             const bar = document.getElementById('summary-bar');
-
-             let originText = "Origen";
-             let destText = "Destino";
-
-             if (journey && journey.legs && journey.legs.length > 0) {
-                 const firstLeg = journey.legs[0];
-                 const lastLeg = journey.legs[journey.legs.length - 1];
-                 originText = firstLeg.origin_hub || firstLeg.stops[0];
-                 destText = lastLeg.dest_hub || lastLeg.stops[lastLeg.stops.length - 1];
-             }
-
-             if (origin) origin.textContent = originText;
-             if (dest) dest.textContent = destText;
-
-             if (bar) bar.classList.remove('hidden');
-        });
-
-        // Deep Linking / Initial State
-        const urlParams = new URLSearchParams(window.location.search);
-        const viewParam = urlParams.get('view');
-        if (viewParam === 'map') {
-            window.handleViewChange('MAP');
-        } else if (viewParam === 'routes' || viewParam === 'catalog') {
-            window.handleViewChange('CATALOG');
-        }
-
-        // City Rotator (Hero)
-        const cityElement = document.getElementById('hero-city-rotator');
-        if (cityElement) {
-              const cities = [
-                  { name: "cancún", color: "text-[#006847]" },
-                  { name: "costa mujeres", color: "text-[#FF8200]" },
-                  { name: "riviera maya", color: "text-[#00B2A9]" },
-                  { name: "puerto morelos", color: "text-[#E03C31]" },
-                  { name: "puerto juárez", color: "text-[#0033A0]" },
-                  { name: "playa del carmen", color: "text-[#D0006F]" },
-                  { name: "isla mujeres", color: "text-[#FFCD00]" }
-              ];
-              let index = 0;
-
-              if (window.cityRotationInterval) clearInterval(window.cityRotationInterval);
-
-              window.cityRotationInterval = setInterval(() => {
-                  index = (index + 1) % cities.length;
-                  const city = cities[index];
-
-                  cityElement.style.opacity = '0';
-                  setTimeout(() => {
-                      cityElement.textContent = city.name;
-                      cityElement.className = `text-4xl font-black tracking-tight transition-opacity duration-500 mt-1 ${city.color}`;
-                      cityElement.style.opacity = '1';
-                  }, 500);
-              }, 3000);
-          }
-    });
-  </script>
-
-  <style is:global>
-    /* Global Animations needed for dynamic content */
-    @keyframes pop-in {
-      0% { transform: scale(0); opacity: 0; }
-      80% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(1); }
-    }
-    .animate-pop-in { animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-    @keyframes fall-down {
-      0% { transform: translateY(-20px); opacity: 0; }
-      100% { transform: translateY(0); opacity: 1; }
-    }
-    .animate-tetris-1 { animation: fall-down 0.5s ease-out forwards; display: inline-block; }
-    .animate-tetris-2 { animation: fall-down 0.5s ease-out 0.2s forwards; opacity: 0; display: inline-block; }
-    .animate-tetris-3 { animation: fall-down 0.5s ease-out 0.4s forwards; opacity: 0; display: inline-block; }
-  </style>
 </MainLayout>
