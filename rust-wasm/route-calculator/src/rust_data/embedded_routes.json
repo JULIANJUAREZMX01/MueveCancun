@@ -1,366 +1,121 @@
 {
   "routes": [
     {
-      "id": "R2_94_VILLAS_OTOCH_001",
-      "name": "R-2-94 Villas Otoch (Eje Kabah - ZH)",
-      "transport_type": "Bus",
-      "price": 15,
-      "duration": "Freq: 10 min",
-      "badges": [],
-      "origin_hub": "OXXO Villas Otoch Paraíso (El Arco)",
-      "dest_hub": "Zona Hotelera (Hasta retornar)",
+      "id": "TURICUN_Ruta_5",
+      "name": "Ruta 5",
+      "color": "#0ea5e9",
+      "fare": 15,
+      "transport_type": "BusUrban",
       "stops": [
-        "OXXO Villas Otoch Paraíso (El Arco)",
-        "Chedraui Lakin / Av. Talleres",
-        "Av. Kabah (Ruta 4)",
-        "Plaza Las Américas (Kabah)",
-        "Entrada Zona Hotelera (Km 0)",
-        "Zona Hotelera (Hasta retornar)"
-      ],
-      "operator": "",
-      "schedule": "05:00 - 22:30",
-      "frequency": "10 min"
+        {
+          "id": "TURICUN_Ruta 5_1",
+          "name": "Mercado 23",
+          "lat": 21.1456211962889,
+          "lng": -86.86014867200211,
+          "order": 1
+        }
+      ]
     },
     {
-      "id": "CR_PTO_JUAREZ_001",
-      "name": "Combi Roja Puerto Juárez → Ultramar",
-      "transport_type": "Combi",
-      "price": 13,
-      "duration": "20 min",
-      "badges": [],
-      "origin_hub": "La Rehoyada (Base Operativa)",
-      "dest_hub": "Muelle Ultramar (Puerto Juárez)",
+      "id": "TURICUN_Ruta_5",
+      "name": "Ruta 5",
+      "color": "#0ea5e9",
+      "fare": 15,
+      "transport_type": "BusUrban",
       "stops": [
-        "La Rehoyada (Base Operativa)",
-        "El Crucero",
-        "Av. Tulum Norte (Tramo)",
-        "Playa del Niño",
-        "Muelle Ultramar (Puerto Juárez)"
-      ],
-      "operator": "Autocar (Controladora SEA)",
-      "schedule": "05:30 - 00:30",
-      "frequency": "15 min"
+        {
+          "id": "TURICUN_Ruta 5_1",
+          "name": "Puerto Cancun",
+          "lat": 21.171657874329153,
+          "lng": -86.83896898441569,
+          "order": 1
+        }
+      ]
     },
     {
-      "id": "R1_ZONA_HOTELERA_001",
-      "name": "R-1 Centro → Zona Hotelera",
-      "transport_type": "Bus",
-      "price": 15,
-      "duration": "45 min",
-      "badges": [],
-      "origin_hub": "La Rehoyada / Villas Otoch (Origenes)",
-      "dest_hub": "Playa Delfines (El Mirador)",
+      "id": "TURICUN_Ruta_5",
+      "name": "Ruta 5",
+      "color": "#0ea5e9",
+      "fare": 15,
+      "transport_type": "BusUrban",
       "stops": [
-        "La Rehoyada / Villas Otoch (Origenes)",
-        "El Crucero",
-        "Av. Tulum Sur",
-        "El Cebiche (Entrada Zona Hotelera)",
-        "Boulevard Kukulcán (Zona Hotelera)",
-        "Playa Delfines (El Mirador)"
-      ],
-      "operator": "Controladora SEA (rojas), Maya Caribe (blancas)",
-      "schedule": "06:00 - 22:30",
-      "frequency": "10 min"
+        {
+          "id": "TURICUN_Ruta 5_1",
+          "name": "Zona Hotelera Km 12",
+          "lat": 21.160127407988142,
+          "lng": -86.86451020209557,
+          "order": 1
+        }
+      ]
     },
     {
-      "id": "VAN_PLAYA_EXPRESS_001",
-      "name": "Playa Express Cancún → Playa del Carmen",
-      "transport_type": "Van",
-      "price": 55,
-      "duration": "Freq: 30 min",
-      "badges": [],
-      "origin_hub": "Terminal ADO Cancún Centro",
-      "dest_hub": "Playa del Carmen Centro (Calle 2 x 5ta Av.)",
+      "id": "SATURMEX_R-44",
+      "name": "R-44",
+      "color": "#F97316",
+      "fare": 15,
+      "transport_type": "BusHotelZone",
       "stops": [
-        "Terminal ADO Cancún Centro",
-        "Entrada Aeropuerto (Carr. Fed. 307)",
-        "Gasolinera López Portillo",
-        "Puerto Morelos (Carr. 307)",
-        "Playa Maroma",
-        "Punta Bete",
-        "Playa del Carmen Centro (Calle 2 x 5ta Av.)"
-      ],
-      "operator": "",
-      "schedule": "05:00 - 00:00",
-      "frequency": "30 min"
+        {
+          "id": "SATURMEX_R-44_1",
+          "name": "Plaza Outlet",
+          "lat": 21.138718317501834,
+          "lng": -86.85655443103946,
+          "order": 1
+        },
+        {
+          "id": "SATURMEX_R-44_2",
+          "name": "06:00",
+          "lat": 0,
+          "lng": 0,
+          "order": 2
+        }
+      ]
     },
     {
-      "id": "R28_VILLAS_OTOCH_001",
-      "name": "R-28 Villas Otoch → Av. Tulum",
-      "transport_type": "Bus",
-      "price": 13,
-      "duration": "Unknown",
-      "badges": [],
-      "origin_hub": "Villas Otoch Paraíso",
-      "dest_hub": "El Crucero",
+      "id": "SATURMEX_R-44",
+      "name": "R-44",
+      "color": "#F97316",
+      "fare": 15,
+      "transport_type": "BusHotelZone",
       "stops": [
-        "Villas Otoch Paraíso",
-        "Paseos Kabah",
-        "Av. Kabah (Hospital General)",
-        "El Crucero"
-      ],
-      "operator": "",
-      "schedule": "",
-      "frequency": ""
+        {
+          "id": "SATURMEX_R-44_1",
+          "name": "Gran Plaza",
+          "lat": 21.182501580377522,
+          "lng": -86.87075455354119,
+          "order": 1
+        },
+        {
+          "id": "SATURMEX_R-44_2",
+          "name": "06:15",
+          "lat": 0,
+          "lng": 0,
+          "order": 2
+        }
+      ]
     },
     {
-      "id": "R19_VILLAS_OTOCH_002",
-      "name": "R-19 Villas Otoch → López Portillo",
-      "transport_type": "Bus",
-      "price": 13,
-      "duration": "Unknown",
-      "badges": [],
-      "origin_hub": "Villas Otoch",
-      "dest_hub": "Mercado 28",
+      "id": "SATURMEX_R-44",
+      "name": "R-44",
+      "color": "#F97316",
+      "fare": 15,
+      "transport_type": "BusHotelZone",
       "stops": [
-        "Villas Otoch",
-        "Hospital General (Av. Kabah)",
-        "Zona Industrial",
-        "Mercado 28"
-      ],
-      "operator": "",
-      "schedule": "",
-      "frequency": ""
-    },
-    {
-      "id": "R19_VILLAS_OTOCH_002",
-      "name": "R-19 Villas Otoch - Crucero",
-      "transport_type": "Bus",
-      "price": 13,
-      "duration": "Freq: 25 min",
-      "badges": [],
-      "origin_hub": "Villas Otoch",
-      "dest_hub": "El Crucero",
-      "stops": [
-        "Villas Otoch",
-        "Hospital General (Av. Kabah)",
-        "El Crucero"
-      ],
-      "operator": "",
-      "schedule": "06:00 - 22:30",
-      "frequency": "25 min"
-    },
-    {
-      "id": "ADO_AEROPUERTO_001",
-      "name": "ADO Aeropuerto → Centro Cancún",
-      "transport_type": "ADO",
-      "price": 150,
-      "duration": "Unknown",
-      "badges": [],
-      "origin_hub": "Terminal 2 Aeropuerto",
-      "dest_hub": "Terminal ADO Centro Cancún",
-      "stops": [
-        "Terminal 2 Aeropuerto",
-        "Terminal 3 Aeropuerto",
-        "Terminal 4 Aeropuerto",
-        "Terminal ADO Centro Cancún"
-      ],
-      "operator": "",
-      "schedule": "",
-      "frequency": ""
-    },
-    {
-      "id": "R10",
-      "name": "Las Américas - Aeropuerto",
-      "transport_type": "Bus",
-      "price": 15,
-      "duration": "Freq: 20 min",
-      "badges": [],
-      "origin_hub": "Plaza Las Américas",
-      "dest_hub": "T2 Aeropuerto",
-      "stops": [
-        "Plaza Las Américas",
-        "Av. Nichupté",
-        "Av. Kabah",
-        "Av. La Luna",
-        "Av. Las Torres",
-        "Av. Huayacán",
-        "Carr. Federal 307",
-        "UT Cancún",
-        "T3 Aeropuerto",
-        "T2 Aeropuerto"
-      ],
-      "operator": "",
-      "schedule": "04:00-23:00",
-      "frequency": "20 min"
+        {
+          "id": "SATURMEX_R-44_1",
+          "name": "Tecnológico",
+          "lat": 21.142717452967588,
+          "lng": -86.86973932290414,
+          "order": 1
+        },
+        {
+          "id": "SATURMEX_R-44_2",
+          "name": "06:30",
+          "lat": 0,
+          "lng": 0,
+          "order": 2
+        }
+      ]
     }
-  ],
-  "stops": {
-    "OXXO Villas Otoch Paraíso (El Arco)": [
-      21.1685,
-      -86.885
-    ],
-    "Chedraui Lakin / Av. Talleres": [
-      21.165,
-      -86.879
-    ],
-    "Av. Kabah (Ruta 4)": [
-      21.16,
-      -86.845
-    ],
-    "Plaza Las Américas (Kabah)": [
-      21.141,
-      -86.843
-    ],
-    "Entrada Zona Hotelera (Km 0)": [
-      21.153,
-      -86.815
-    ],
-    "Zona Hotelera (Hasta retornar)": [
-      21.135,
-      -86.768
-    ],
-    "La Rehoyada (Base Operativa)": [
-      21.1619,
-      -86.8515
-    ],
-    "El Crucero": [
-      21.1576,
-      -86.8269
-    ],
-    "Av. Tulum Norte (Tramo)": [
-      21.165,
-      -86.823
-    ],
-    "Playa del Niño": [
-      21.195,
-      -86.81
-    ],
-    "Muelle Ultramar (Puerto Juárez)": [
-      21.207,
-      -86.802
-    ],
-    "La Rehoyada / Villas Otoch (Origenes)": [
-      21.1619,
-      -86.8515
-    ],
-    "Av. Tulum Sur": [
-      21.155,
-      -86.825
-    ],
-    "El Cebiche (Entrada Zona Hotelera)": [
-      21.153,
-      -86.815
-    ],
-    "Boulevard Kukulcán (Zona Hotelera)": [
-      21.135,
-      -86.768
-    ],
-    "Playa Delfines (El Mirador)": [
-      21.085,
-      -86.775
-    ],
-    "Terminal ADO Cancún Centro": [
-      21.1586,
-      -86.8259
-    ],
-    "Entrada Aeropuerto (Carr. Fed. 307)": [
-      21.0417,
-      -86.8761
-    ],
-    "Gasolinera López Portillo": [
-      21.175,
-      -86.84
-    ],
-    "Puerto Morelos (Carr. 307)": [
-      20.8495,
-      -86.872
-    ],
-    "Playa Maroma": [
-      20.785,
-      -86.895
-    ],
-    "Punta Bete": [
-      20.715,
-      -87.005
-    ],
-    "Playa del Carmen Centro (Calle 2 x 5ta Av.)": [
-      20.6296,
-      -87.0739
-    ],
-    "Villas Otoch Paraíso": [
-      21.138,
-      -86.865
-    ],
-    "Paseos Kabah": [
-      21.142,
-      -86.855
-    ],
-    "Av. Kabah (Hospital General)": [
-      21.15,
-      -86.84
-    ],
-    "Villas Otoch": [
-      21.138,
-      -86.865
-    ],
-    "Hospital General (Av. Kabah)": [
-      21.15,
-      -86.84
-    ],
-    "Zona Industrial": [
-      21.16,
-      -86.83
-    ],
-    "Mercado 28": [
-      21.162,
-      -86.828
-    ],
-    "Terminal 2 Aeropuerto": [
-      21.0417,
-      -86.8761
-    ],
-    "Terminal 3 Aeropuerto": [
-      21.041,
-      -86.8755
-    ],
-    "Terminal 4 Aeropuerto": [
-      21.04,
-      -86.875
-    ],
-    "Terminal ADO Centro Cancún": [
-      21.1586,
-      -86.8259
-    ],
-    "Plaza Las Américas": [
-      21.1472,
-      -86.8234
-    ],
-    "Av. Nichupté": [
-      21.1412,
-      -86.8315
-    ],
-    "Av. Kabah": [
-      21.1355,
-      -86.8412
-    ],
-    "Av. La Luna": [
-      21.1285,
-      -86.8485
-    ],
-    "Av. Las Torres": [
-      21.1155,
-      -86.8555
-    ],
-    "Av. Huayacán": [
-      21.1025,
-      -86.8612
-    ],
-    "Carr. Federal 307": [
-      21.0855,
-      -86.8525
-    ],
-    "UT Cancún": [
-      21.0555,
-      -86.8415
-    ],
-    "T3 Aeropuerto": [
-      21.0412,
-      -86.8725
-    ],
-    "T2 Aeropuerto": [
-      21.0365,
-      -86.8775
-    ]
-  }
+  ]
 }
