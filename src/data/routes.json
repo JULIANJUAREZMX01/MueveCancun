@@ -150,7 +150,7 @@
           "lng": -86.845
         },
         {
-          "parada": "Plaza Las Américas (Transbordo)",
+          "parada": "Plaza Las Américas (Kabah)",
           "lat": 21.141,
           "orden": 4,
           "tipo": "hub_secundario",
@@ -206,7 +206,7 @@
         },
         {
           "id": "CR_PTO_JUAREZ_001_002",
-          "nombre": "El Crucero (Av. Tulum x López Portillo)",
+          "nombre": "El Crucero",
           "lat": 21.1576,
           "lng": -86.8269,
           "orden": 2
@@ -400,7 +400,7 @@
         },
         {
           "id": "R28_VILLAS_OTOCH_001_004",
-          "nombre": "El Crucero (Av. Tulum)",
+          "nombre": "El Crucero",
           "lat": 21.1576,
           "lng": -86.8269,
           "orden": 4
@@ -475,7 +475,7 @@
           "lng": -86.84
         },
         {
-          "parada": "López Portillo con Av. Tulum",
+          "parada": "El Crucero",
           "lat": 21.1576,
           "orden": 3,
           "tipo": "hub_principal",

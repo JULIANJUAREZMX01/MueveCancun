@@ -22,44 +22,58 @@ pub struct GapAnalysis {
     pub recommendation: String, // "Walk", "Private", "NoPublicCoverage"
 }
 
+// Embed the JSON
+const EMBEDDED_ROUTES_JSON: &str = include_str!("rust_data/embedded_routes.json");
+
+#[derive(Deserialize)]
+struct EmbeddedData {
+    routes: Vec<EmbeddedRoute>,
+    stops: HashMap<String, Vec<f64>>,
+}
+
+#[derive(Deserialize)]
+struct EmbeddedRoute {
+     id: String,
+     name: String,
+     transport_type: TransportType,
+     price: f64,
+     duration: String,
+     #[serde(default)]
+     badges: Vec<String>,
+     origin_hub: String,
+     dest_hub: String,
+     stops: Vec<String>,
+     operator: String,
+     schedule: String,
+     frequency: String,
+}
+
 // Dynamic Stop Database for Last Mile Logic
 static STOPS_DB: Lazy<RwLock<HashMap<String, (f64, f64)>>> = Lazy::new(|| {
     let mut m = HashMap::new();
-    m.insert("OXXO Villas Otoch Paraíso".to_string(), (21.1685, -86.885));
-    m.insert("Chedraui Lakin".to_string(), (21.165, -86.879));
-    m.insert("Av. Kabah".to_string(), (21.16, -86.845));
-    m.insert("Plaza Las Américas".to_string(), (21.141, -86.843));
-    m.insert("Entrada Zona Hotelera".to_string(), (21.153, -86.815));
-    m.insert("Zona Hotelera".to_string(), (21.135, -86.768));
-    m.insert("La Rehoyada".to_string(), (21.1619, -86.8515));
-    m.insert("El Crucero".to_string(), (21.1576, -86.8269));
-    m.insert("Av. Tulum Norte".to_string(), (21.165, -86.823));
-    m.insert("Playa del Niño".to_string(), (21.195, -86.81));
-    m.insert("Muelle Ultramar".to_string(), (21.207, -86.802));
-    m.insert("Terminal ADO Centro".to_string(), (21.1586, -86.8259));
-    m.insert("Aeropuerto T2".to_string(), (21.0417, -86.8761));
-    m.insert("Aeropuerto T3".to_string(), (21.041, -86.8755));
-    m.insert("Aeropuerto T4".to_string(), (21.04, -86.875));
-    m.insert("Playa del Carmen Centro".to_string(), (20.6296, -87.0739));
-    m.insert("Villas Otoch Paraíso".to_string(), (21.1685, -86.885));
-    m.insert("Villas Otoch".to_string(), (21.1685, -86.885));
-    m.insert("Hospital General".to_string(), (21.15, -86.84));
-    m.insert("Mercado 28".to_string(), (21.162, -86.828));
+
+    // Parse Embedded Data and Populate
+    if let Ok(data) = serde_json::from_str::<EmbeddedData>(EMBEDDED_ROUTES_JSON) {
+        for (name, coords) in data.stops {
+             if coords.len() >= 2 {
+                 m.insert(name, (coords[0], coords[1]));
+             }
+        }
+    }
+
+    // Hardcoded Fallbacks (merged / overridden if present in JSON)
+    // These ensure some critical points exist even if JSON is missing them
+    if !m.contains_key("OXXO Villas Otoch Paraíso") { m.insert("OXXO Villas Otoch Paraíso".to_string(), (21.1685, -86.885)); }
+    if !m.contains_key("Chedraui Lakin") { m.insert("Chedraui Lakin".to_string(), (21.165, -86.879)); }
+
     RwLock::new(m)
 });
 
 #[wasm_bindgen]
 pub fn load_stops_data(val: JsValue) {
-    // Expecting a JSON object: { "Stop Name": [lat, lng], ... }
-    // Using simple array format for coords to match JS extraction output [lat, lng]
-    // HashMap<String, Vec<f64>> or HashMap<String, (f64, f64)>?
-    // serde_wasm_bindgen should handle [f64, f64] as (f64, f64) tuple or Vec<f64>.
-    // Let's use Vec<f64> for safety and convert.
-
     let new_data: HashMap<String, Vec<f64>> = match serde_wasm_bindgen::from_value(val) {
         Ok(d) => d,
         Err(_) => {
-            // console::error not available, silently fail or use println
             return;
         }
     };
@@ -85,7 +99,6 @@ pub struct Route {
     pub badges: Vec<String>,
     pub origin_hub: String,
     pub dest_hub: String,
-    // New Fields
     pub stops: Vec<String>,
     #[serde(skip)]
     pub stops_normalized: Vec<String>,
@@ -104,118 +117,34 @@ pub struct Journey {
 }
 
 static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
-    let raw_data = vec![
-        (
-            "R2_94_VILLAS_OTOCH_001",
-            "R-2-94 Villas Otoch (Eje Kabah - ZH)",
-            TransportType::Bus,
-            15.0,
-            "05:00 - 22:30 (Guardia 03:00-05:00)",
-            "10 min",
-            vec!["OXXO Villas Otoch Paraíso", "Chedraui Lakin", "Av. Kabah", "Plaza Las Américas", "Entrada Zona Hotelera", "Zona Hotelera"],
-            "",
-        ),
-        (
-            "CR_PTO_JUAREZ_001",
-            "Combi Roja Puerto Juárez (Ultramar)",
-            TransportType::Combi,
-            13.0,
-            "05:30 - 00:30",
-            "15 min",
-            vec!["La Rehoyada", "El Crucero", "Av. Tulum Norte", "Playa del Niño", "Muelle Ultramar"],
-            "Autocar",
-        ),
-        (
-            "R1_ZONA_HOTELERA_001",
-            "R-1 Centro - Zona Hotelera",
-            TransportType::Bus,
-            15.0,
-            "06:00 - 22:30",
-            "10 min",
-            vec!["La Rehoyada", "El Crucero", "Av. Tulum Sur", "El Cebiche", "Zona Hotelera", "Playa Delfines"],
-            "SEA / Maya Caribe",
-        ),
-        (
-            "VAN_PLAYA_EXPRESS_001",
-            "Playa Express (Cancún - Playa del Carmen)",
-            TransportType::Van,
-            55.0,
-            "05:00 - 00:00",
-            "30 min",
-            vec!["Terminal ADO Centro", "Entrada Aeropuerto", "Gasolinera López Portillo", "Puerto Morelos", "Playa Maroma", "Playa del Carmen Centro"],
-            "",
-        ),
-        (
-            "R28_VILLAS_OTOCH_001",
-            "R-28 Villas Otoch - Av. Tulum",
-            TransportType::Bus,
-            13.0,
-            "", // No schedule in JSON
-            "", // No frequency in JSON
-            vec!["Villas Otoch Paraíso", "Paseos Kabah", "Hospital General", "El Crucero"],
-            "",
-        ),
-        (
-            "R19_VILLAS_OTOCH_002",
-            "R-19 Villas Otoch - Crucero",
-            TransportType::Bus,
-            13.0,
-            "",
-            "",
-            vec!["Villas Otoch", "Hospital General", "Zona Industrial", "Mercado 28", "El Crucero"],
-            "",
-        ),
-        (
-            "ADO_AEROPUERTO_001",
-            "ADO Aeropuerto - Centro",
-            TransportType::Bus,
-            150.0,
-            "",
-            "",
-            vec!["Aeropuerto T2", "Aeropuerto T3", "Aeropuerto T4", "Terminal ADO Centro"],
-            "",
-        ),
-        (
-            "R10_AEROPUERTO",
-            "R-10 Las Américas - Aeropuerto (Trabajadores)",
-            TransportType::Bus,
-            15.0,
-            "04:00-23:00",
-            "",
-            vec!["Plaza Las Américas", "Av. Nichupté", "Av. Kabah", "Av. La Luna", "Av. Las Torres", "Av. Huayacán", "Carr. Federal 307", "UT Cancún", "Aeropuerto T3", "Aeropuerto T2"],
-            "",
-        ),
-    ];
+    let mut routes = Vec::new();
 
-    raw_data.into_iter().map(|(id, name, t_type, price, schedule, frequency, stops, operator)| {
-        let stops_vec: Vec<String> = stops.into_iter().map(|s| s.to_string()).collect();
-        let stops_normalized: Vec<String> = stops_vec.iter().map(|s| s.to_lowercase()).collect();
-        let origin = stops_vec.first().cloned().unwrap_or_else(|| "Unknown".to_string());
-        let dest = stops_vec.last().cloned().unwrap_or_else(|| "Unknown".to_string());
-
-        // Infer duration or default
-        let duration = if !frequency.is_empty() {
-             format!("Freq: {}", frequency)
-        } else {
-             "Unknown".to_string()
-        };
-
-        Route {
-            id: id.to_string(),
-            name: name.to_string(),
-            transport_type: t_type,
-            price,
-            duration,
-            badges: vec![],
-            origin_hub: origin,
-            dest_hub: dest,
-            stops: stops_vec,
-            stops_normalized,
-            operator: operator.to_string(),
-            schedule: schedule.to_string(),
-            frequency: frequency.to_string(),
+    // Parse Embedded Data
+    if let Ok(data) = serde_json::from_str::<EmbeddedData>(EMBEDDED_ROUTES_JSON) {
+        for r in data.routes {
+             let stops_normalized: Vec<String> = r.stops.iter().map(|s| s.to_lowercase()).collect();
+             routes.push(Route {
+                 id: r.id,
+                 name: r.name,
+                 transport_type: r.transport_type,
+                 price: r.price,
+                 duration: r.duration,
+                 badges: r.badges,
+                 origin_hub: r.origin_hub,
+                 dest_hub: r.dest_hub,
+                 stops: r.stops,
+                 stops_normalized,
+                 operator: r.operator,
+                 schedule: r.schedule,
+                 frequency: r.frequency,
+             });
         }
-    }).collect()
+    } else {
+        // Fallback only if JSON fails (which implies build error really)
+        // Leaving empty or adding hardcoded
+    }
+
+    routes
 });
 
 fn match_stop(query: &str, route: &Route) -> Option<usize> {
@@ -227,9 +156,6 @@ fn match_stop(query: &str, route: &Route) -> Option<usize> {
 
         // Boost score for containment
         let score = if stop_lower.contains(&query_norm) || query_norm.contains(stop_lower) {
-            // If it contains, we treat it as a very high match, but maybe prefer exact Jaro match if better?
-            // Actually, if contains, it's usually the one we want unless it's a very short string in a long one.
-            // Let's take max of jaro and 0.95 (arbitrary high score).
             f64::max(jaro_score, 0.95)
         } else {
             jaro_score
@@ -273,16 +199,6 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
         }
     }
 
-    // If we have direct routes, we might still want to show transfers if they are significantly cheaper or faster?
-    // For now, if we have direct routes, we just return them, unless user specifically requested "All options".
-    // But the requirement says "If NO direct routes" in the prompt, BUT typically we might want to show alternatives.
-    // However, the prompt strictly says: "Search for Direct Routes first. If found, return them... If NO direct routes: Identify all routes passing through origin..."
-    // Let's stick to the prompt for now to avoid noise, but maybe add a TODO.
-
-    // if !journeys.is_empty() {
-    //     return journeys;
-    // }
-
     // 2. Transfer Routes (1-Stop)
     let mut routes_from_origin = Vec::new();
     let mut routes_to_dest = Vec::new();
@@ -306,10 +222,6 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
             }
 
             // Find intersection
-            // We need a common stop that is AFTER origin in A and BEFORE dest in B.
-            // Also, typically we want the intersection to be exact string match or very close.
-            // Since we control data, we can try exact match on normalized strings or name.
-
             for (idx_a, stop_a) in route_a.stops_normalized.iter().enumerate() {
                 // Must be after origin
                 if idx_a <= *origin_idx_a { continue; }
@@ -321,9 +233,6 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
                     if stop_a == stop_b {
                         // Found a transfer point!
                         let transfer_name = route_a.stops[idx_a].clone();
-
-                        // Check if it's a preferred hub (used for sorting later)
-                        let _is_hub = preferred_hubs.iter().any(|h| transfer_name.contains(h));
 
                         journeys.push(Journey {
                             type_: "Transfer".to_string(),
@@ -338,13 +247,6 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
     }
 
     // Deduplicate and Sort
-    // We might have multiple transfer points for the same route pair.
-    // Or multiple route pairs.
-    // Sort by:
-    // 1. Is Preferred Hub (Transfer point)
-    // 2. Total Price
-    // 3. Duration (if we had it parsed)
-
     journeys.sort_by(|a, b| {
         // Score: Direct=2, Hub Transfer=1, Other=0
         let get_score = |j: &Journey| {
@@ -419,13 +321,6 @@ pub fn analyze_gap_rs(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64
         }
     } else {
         rec = "NoPublicCoverage".to_string();
-    }
-
-    // Secondary check for destination
-    if let Some(ref ds) = dest_stop {
-        if ds.distance_km > 3.0 && rec != "NoPublicCoverage" {
-             // Optional logic
-        }
     }
 
     GapAnalysis {
@@ -879,11 +774,11 @@ mod tests {
 
     #[test]
     fn test_nearest_stop() {
-        // "Plaza Las Américas" [21.141, -86.843]
+        // "Plaza Las Américas (Kabah)" [21.141, -86.843]
         // Point slightly off
         let res = find_nearest_stop_rs(21.1415, -86.8435);
         assert!(res.is_some());
-        assert_eq!(res.unwrap().name, "Plaza Las Américas");
+        assert_eq!(res.unwrap().name, "Plaza Las Américas (Kabah)");
     }
 
     #[test]
@@ -898,11 +793,11 @@ mod tests {
         // Point in between Plaza Las Américas and Entrada Zona Hotelera, but > 500m from both
         // Plaza: 21.141, -86.843
         // Entrada ZH: 21.153, -86.815
-        // Test Point: 21.145, -86.83 (Approx middle of nowhere in downtown)
+        // Test Point: 21.150, -86.83 (Shifted to avoid Av. Nichupté)
 
         // Nearest might be Plaza Las Américas (approx 1.5km) or others.
         // Let's verify distance > 0.5km
-        let res = analyze_gap_rs(21.145, -86.83, 21.1685, -86.885);
+        let res = analyze_gap_rs(21.150, -86.83, 21.1685, -86.885);
 
         // Debug print if it fails
         if res.recommendation != "Private" {

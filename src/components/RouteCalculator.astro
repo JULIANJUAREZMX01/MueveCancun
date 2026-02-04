@@ -166,6 +166,12 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   let wasmLoaded = false;
   let find_route, validate_operator_funds, analyze_gap_wasm, load_stops_data;
   let coordinatesDB = {};
+  let realOriginCoords = null;
+
+  function renderError(msg) {
+      if (window.showToast) window.showToast(msg, 'error');
+      else console.error(msg);
+  }
 
   async function initWasm() {
     if(wasmLoaded) return;
@@ -316,7 +322,11 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       }
 
       btn?.addEventListener('click', async () => {
-          if (!wasmLoaded) return;
+          // Offline / WASM Check
+          if (!wasmLoaded) {
+              renderError("Modo Offline: No se pudo cargar el motor de búsqueda. Verifica tu conexión para descargar rutas actualizadas.");
+              return;
+          }
           if (!hasBalance) return;
 
           const fromVal = originInput.value;
@@ -334,28 +344,37 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
           btn.disabled = true;
 
           try {
-              gapRes = analyze_gap_wasm(originCoords[0], originCoords[1], destCoords[0], destCoords[1]);
-          } catch(e) { console.warn("Gap Analysis failed", e); }
-      }
+              let gapRes = null;
+              // Resolve coords for gap analysis
+              const originCoords = resolveCoords(fromVal);
+              const destCoords = resolveCoords(toVal);
 
-      // Optimize search if Gap Analysis found a better nearby hub
-      // But for now we stick to what the user sees in the input to avoid confusion
-      const res = find_route(fromVal, toVal);
+              if (originCoords) realOriginCoords = originCoords;
 
-      console.log('Route Result:', res, 'Gap:', gapRes);
+              if (originCoords && destCoords) {
+                   try {
+                       gapRes = analyze_gap_wasm(originCoords[0], originCoords[1], destCoords[0], destCoords[1]);
+                   } catch(e) { console.warn("Gap Analysis failed", e); }
+              }
 
-      // Pass both journeys and gap info
-      renderResults({ journeys: res, gap: gapRes });
-    } catch (error) {
-      console.error(error);
-      renderError("System Error: " + (error.message || error));
-    } finally {
-      if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculate;
-      if (btnSpinner) btnSpinner.classList.add('hidden');
-      if (calculationLoader) calculationLoader.classList.add('hidden');
-      (btn as HTMLButtonElement).disabled = false;
-    }
-  });
+              // Optimize search if Gap Analysis found a better nearby hub
+              // But for now we stick to what the user sees in the input to avoid confusion
+              const res = find_route(fromVal, toVal);
+
+              console.log('Route Result:', res, 'Gap:', gapRes);
+
+              // Pass both journeys and gap info
+              renderResults({ journeys: res, gap: gapRes });
+          } catch (error) {
+              console.error(error);
+              renderError("System Error: " + (error.message || error));
+          } finally {
+              if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculate;
+              if (btnSpinner) btnSpinner.classList.add('hidden');
+              if (loader) loader.classList.add('hidden');
+              btn.disabled = false;
+          }
+      });
 
   const TRANSPORT_LABELS = {
     "Bus": "Autobús",
