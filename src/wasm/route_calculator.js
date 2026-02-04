@@ -69,6 +69,13 @@ export function get_all_routes() {
 }
 
 /**
+ * @param {any} val
+ */
+export function load_stops_data(val) {
+    wasm.load_stops_data(val);
+}
+
+/**
  * @param {number} balance
  * @returns {boolean}
  */

@@ -17,13 +17,6 @@ const {
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
-
-const navItems = [
-  { href: '/', icon: '/icons/compass.svg', label: 'Inicio', activePattern: /^\/$/ },
-  { href: '/rutas', icon: '/icons/bus.svg', label: 'Rutas', activePattern: /^\/rutas/ },
-  { href: '/mapa', icon: '/icons/map-pin.svg', label: 'Mapa', activePattern: /^\/mapa/ },
-  { href: '/driver', icon: '/icons/credit-card.svg', label: 'Mi Tarjeta', activePattern: /^\/driver/ },
-];
 ---
 
 <!DOCTYPE html>
@@ -53,78 +46,44 @@ const navItems = [
 
     <ClientRouter />
   </head>
-  <body class="bg-slate-50 min-h-screen text-slate-900 font-sans antialiased pb-20 selection:bg-primary-200 selection:text-primary-900">
+  <body class="bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased pb-0 selection:bg-primary-200 selection:text-primary-900">
 
+    <!-- Map Layer (Z-0) -->
     <InteractiveMap class="fixed inset-0 z-0 h-screen w-screen" transition:persist />
 
-    <!-- Top Bar (Mobile) -->
-    <header class="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/50 h-14 px-4 flex items-center justify-between shadow-sm lg:hidden pointer-events-auto">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-gradient-to-tr from-primary-500 to-primary-400 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md">
-          CM
+    <!-- Mobile Header: Floating Glass Pill (Z-40) -->
+    <header class="fixed top-4 left-4 z-40 lg:hidden pointer-events-auto">
+        <div class="glass-pill">
+             <div class="w-6 h-6 bg-gradient-to-tr from-primary-500 to-primary-400 rounded-md flex items-center justify-center text-white font-black text-[10px] shadow-sm">
+              CM
+            </div>
+             <span class="brand-container font-display font-black text-sm tracking-tight text-deep-navy dark:text-white" data-original="true">Cancún<span class="text-primary-500">Mueve</span></span>
+             <div class="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+             <button id="theme-toggle-mobile" class="text-slate-500 dark:text-slate-300 hover:text-primary-500 transition-colors">
+                <!-- Sun Icon -->
+                <svg class="w-5 h-5 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                <!-- Moon Icon -->
+                <svg class="w-5 h-5 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+             </button>
         </div>
-        <span class="brand-container font-display font-black text-lg tracking-tight text-deep-navy" data-original="true">Cancún<span class="text-primary-500">Mueve</span></span>
-      </div>
-      <div class="flex items-center gap-3">
-         <!-- Placeholder for user profile or settings -->
-         <button class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-            <span class="text-xs">👤</span>
-         </button>
-      </div>
     </header>
 
-    <!-- Desktop Header (Simple) -->
-    <header class="hidden lg:flex fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 h-16 px-8 items-center justify-between pointer-events-auto">
-        <div class="flex items-center gap-2">
-            <span class="brand-container font-display font-black text-2xl tracking-tight text-deep-navy" data-original="true">Cancún<span class="text-primary-500">Mueve</span></span>
-        </div>
-        <nav class="flex gap-6">
-            {navItems.map(item => (
-                <a href={item.href} class={`font-bold hover:text-primary-500 transition-colors ${item.activePattern.test(pathname) ? 'text-primary-500' : 'text-slate-500'}`}>
-                    {item.label}
-                </a>
-            ))}
-        </nav>
-    </header>
+    <!-- Content Slot (Z-10) -->
+    <!-- The layout responsibility for positioning (Dock/Sheet) moves to index.astro -->
+    <!-- But we provide a container that sits above the map -->
+    <div class="relative z-10 w-full h-full pointer-events-none">
+        <slot />
+    </div>
 
-    <main class="w-full max-w-md mx-auto lg:max-w-4xl pt-16 lg:pt-24 px-4 min-h-[calc(100vh-80px)] relative z-10 pointer-events-auto">
-      <slot />
-    </main>
-
-    <!-- Sticky Bottom Nav (Mobile) -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] lg:hidden pointer-events-auto">
-      <div class="grid grid-cols-4 h-16">
-        {navItems.map((item) => {
-          const isActive = item.activePattern.test(pathname);
-          return (
-            <a
-              href={item.href}
-              class="flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
-            >
-              <div class={`p-1.5 rounded-xl transition-colors ${isActive ? 'bg-primary-50' : 'bg-transparent'}`}>
-                <img
-                  src={item.icon}
-                  class={`w-6 h-6 transition-all ${isActive ? 'filter-primary' : 'grayscale opacity-50'}`}
-                  alt={item.label}
-                />
-              </div>
-              <span class={`text-[10px] font-bold tracking-wide transition-colors ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
-                {item.label}
-              </span>
-            </a>
-          );
-        })}
-      </div>
-    </nav>
-
+    <!-- Toast Notification -->
     <Toast />
 
     <!-- PWA Update Notification -->
-    <div id="pwa-update-toast" class="hidden fixed bottom-20 left-4 right-4 z-50 bg-slate-900/90 text-white p-4 rounded-xl shadow-2xl backdrop-blur-sm border border-slate-700 animate-slide-up">
+    <div id="pwa-update-toast" class="hidden fixed bottom-20 left-4 right-4 z-50 glass-panel p-4 rounded-xl backdrop-blur-md animate-slide-up pointer-events-auto">
         <div class="flex items-center justify-between gap-4">
             <div>
-                <h4 class="font-bold text-sm">Nueva versión disponible</h4>
-                <p class="text-xs text-slate-300 mt-1">Recarga para ver los cambios.</p>
+                <h4 class="font-bold text-sm text-slate-800 dark:text-white">Nueva versión disponible</h4>
+                <p class="text-xs text-slate-500 dark:text-slate-300 mt-1">Recarga para ver los cambios.</p>
             </div>
             <button id="pwa-refresh-btn" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-lg shadow-primary-500/30">
                 ACTUALIZAR
@@ -132,32 +91,54 @@ const navItems = [
         </div>
     </div>
 
+    <!-- Theme Logic -->
+    <script is:inline>
+        const html = document.documentElement;
+
+        function initTheme() {
+            const storedTheme = localStorage.getItem('theme');
+            if (storedTheme) {
+                html.classList.toggle('dark', storedTheme === 'dark');
+            } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                html.classList.add('dark');
+            }
+        }
+        initTheme();
+
+        function toggleTheme() {
+             html.classList.toggle('dark');
+             const isDark = html.classList.contains('dark');
+             localStorage.setItem('theme', isDark ? 'dark' : 'light');
+             window.dispatchEvent(new CustomEvent('THEME_CHANGE', { detail: { theme: isDark ? 'dark' : 'light' } }));
+        }
+
+        document.addEventListener('astro:page-load', () => {
+             const btnMobile = document.getElementById('theme-toggle-mobile');
+             const btnDesktop = document.getElementById('theme-toggle-desktop'); // To be added in Dock
+
+             btnMobile?.addEventListener('click', toggleTheme);
+             btnDesktop?.addEventListener('click', toggleTheme);
+        });
+    </script>
+
     <script is:inline>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').then(registration => {
-            console.log('SW registered: ', registration);
-
-            // Check if there is already a waiting worker
             if (registration.waiting) {
                 const toast = document.getElementById('pwa-update-toast');
                 if (toast) toast.classList.remove('hidden');
             }
-
             registration.addEventListener('updatefound', () => {
               const newWorker = registration.installing;
-              console.log('New worker installing...');
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('New update available!');
                     const toast = document.getElementById('pwa-update-toast');
                     if (toast) toast.classList.remove('hidden');
                 }
               });
             });
-          }).catch(registrationError => {
-            console.log('SW registration failed: ', registrationError);
-          });
+          }).catch(console.error);
         });
 
         let refreshing = false;
@@ -179,65 +160,24 @@ const navItems = [
 
     <script is:inline>
       document.addEventListener('astro:page-load', () => {
-          // Clean up old listeners to prevent duplicates (though astro:page-load usually means fresh)
-          // Actually Astro view transitions might keep the listener if attached to window?
-          // Using a named function handler is better but for now we rely on the event.
-
           const handleBrandUpdate = (e) => {
               const phase = e.detail.phase;
               const containers = document.querySelectorAll('.brand-container');
-
               containers.forEach(container => {
-                  if (phase === 1) {
-                      // Cancún -> CancúnENMueve
-                      if (container.dataset.phase === '1') return;
-                      container.innerHTML = `Cancún<span class="text-[#006847] animate-pop-in inline-block mx-[1px]">EN</span><span class="text-primary-500">Mueve</span>`;
+                  // Simplified Phase Logic for Space
+                  if (phase === 1 && container.dataset.phase !== '1') {
+                      container.innerHTML = `Cancún<span class="text-[#006847] inline-block mx-[1px]">EN</span><span class="text-primary-500">Mueve</span>`;
                       container.dataset.phase = '1';
-                  } else if (phase === 2) {
-                      // -> CancúnENMueveTE
-                      if (container.dataset.phase === '2') return;
-                      // Ensure base state first if jumped
-                      container.innerHTML = `Cancún<span class="text-[#006847] mx-[1px]">EN</span><span class="text-primary-500">Mueve</span><span class="text-[#CE1126] animate-pop-in inline-block">TE</span>`;
-                      container.dataset.phase = '2';
-                  } else if (phase === 3) {
-                      // Tetris -> ¡MUEVETE EN CANCUN!
-                      if (container.dataset.phase === '3') return;
-
-                      container.innerHTML = `
-                        <div class="flex items-center gap-1.5 leading-none">
-                            <span class="text-[#006847] animate-tetris-1">¡MUEVETE</span>
-                            <span class="text-slate-900 bg-white border border-slate-900 px-1 rounded text-[0.8em] animate-tetris-2 self-center">EN</span>
-                            <span class="text-[#CE1126] animate-tetris-3">CANCUN!</span>
-                        </div>
-                      `;
-                      container.dataset.phase = '3';
                   }
+                  // Keep it simple for the pill
               });
           };
-
           window.addEventListener('BRAND_UPDATE', handleBrandUpdate);
       });
     </script>
 
     <style>
-      .filter-primary {
-        filter: invert(49%) sepia(83%) saturate(1900%) hue-rotate(349deg) brightness(98%) contrast(98%); /* Orange-ish filter approx */
-      }
-
-      @keyframes pop-in {
-        0% { transform: scale(0); opacity: 0; }
-        80% { transform: scale(1.2); opacity: 1; }
-        100% { transform: scale(1); }
-      }
-      .animate-pop-in { animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-      @keyframes fall-down {
-        0% { transform: translateY(-20px); opacity: 0; }
-        100% { transform: translateY(0); opacity: 1; }
-      }
-      .animate-tetris-1 { animation: fall-down 0.5s ease-out forwards; display: inline-block; }
-      .animate-tetris-2 { animation: fall-down 0.5s ease-out 0.2s forwards; opacity: 0; display: inline-block; }
-      .animate-tetris-3 { animation: fall-down 0.5s ease-out 0.4s forwards; opacity: 0; display: inline-block; }
+      .filter-primary { filter: invert(49%) sepia(83%) saturate(1900%) hue-rotate(349deg) brightness(98%) contrast(98%); }
     </style>
   </body>
 </html>
