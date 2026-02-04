@@ -3,6 +3,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 import RouteCalculator from '../components/RouteCalculator.astro';
 import InteractiveMap from '../components/InteractiveMap.astro';
 import RouteCatalog from '../components/RouteCatalog.astro';
+import BrandHero from '../components/BrandHero.astro';
 ---
 
 <MainLayout title="Inicio">
@@ -13,9 +14,20 @@ import RouteCatalog from '../components/RouteCatalog.astro';
     <div id="search-view" class="space-y-8 animate-fade-in transition-all duration-500">
       <!-- Hero / Greeting -->
       <section class="text-center pt-6 pb-2">
-        <h1 class="text-3xl font-display font-black text-deep-navy tracking-tight mb-2 flex justify-center">
-          <span class="brand-container" data-original="true">Cancún<span class="text-primary-500">Mueve</span></span>
-        </h1>
+        <div class="flex flex-col items-center justify-center gap-1 mb-4">
+           <!-- Dynamic City Rotator -->
+           <div class="flex flex-col items-center leading-none mb-4">
+              <span class="text-lg text-slate-400 font-bold tracking-tight">¿Que ruta me lleva?</span>
+              <span id="hero-city-rotator" class="text-4xl font-black text-[#006847] tracking-tight transition-opacity duration-500 mt-1">
+                  cancún
+              </span>
+           </div>
+
+           <!-- Brand Animation -->
+           <div style="font-size: 1.13em;">
+             <BrandHero />
+           </div>
+        </div>
         <p class="text-slate-500 font-medium">
           Encuentra la mejor ruta en transporte público.
         </p>
@@ -47,10 +59,24 @@ import RouteCatalog from '../components/RouteCatalog.astro';
           <!-- Load map on interaction or lazily -->
           <InteractiveMap />
        </div>
-       <!-- Floating Close Button for Map View -->
-       <button id="close-map-btn" class="absolute bottom-24 right-4 z-[1001] bg-white text-slate-800 p-3 rounded-full shadow-xl border border-slate-200 font-bold flex items-center gap-2 hover:bg-slate-50 active:scale-95 transition-transform">
-          <span>❌</span> Cerrar Mapa
-       </button>
+       <!-- Summary Bar (Replacing Close Map) -->
+       <div id="summary-bar" class="absolute top-4 left-4 right-4 z-[1001] bg-white rounded-xl shadow-lg border border-slate-200 p-3 flex items-center justify-between gap-3 animate-slide-down hidden">
+            <div class="flex items-center gap-2 text-sm overflow-hidden flex-1">
+                 <div class="flex flex-col gap-1 w-full">
+                    <span class="flex items-center gap-2 font-bold text-slate-700 truncate w-full">
+                        <img src="/icons/map-pin.svg" class="w-3 h-3 text-slate-400 shrink-0" alt="Origen" />
+                        <span id="summary-origin" class="truncate text-xs uppercase tracking-wide">Origen</span>
+                    </span>
+                     <span class="flex items-center gap-2 font-bold text-slate-700 truncate w-full">
+                        <img src="/icons/flag.svg" class="w-3 h-3 text-slate-400 shrink-0" alt="Destino" />
+                        <span id="summary-dest" class="truncate text-xs uppercase tracking-wide">Destino</span>
+                    </span>
+                 </div>
+            </div>
+            <button id="edit-search-btn" class="p-2 hover:bg-slate-50 rounded-lg text-primary-500 transition-colors shrink-0 border border-slate-100 shadow-sm bg-slate-50/50">
+                <span class="text-lg">✏️</span>
+            </button>
+       </div>
     </div>
 
     <!-- CATALOG STATE (Hidden) -->
@@ -111,8 +137,9 @@ import RouteCatalog from '../components/RouteCatalog.astro';
             window.handleViewChange(e.detail.state);
         });
 
-        document.getElementById('close-map-btn')?.addEventListener('click', () => {
+        document.getElementById('edit-search-btn')?.addEventListener('click', () => {
             window.handleViewChange('SEARCH');
+            document.getElementById('summary-bar')?.classList.add('hidden');
         });
 
         document.getElementById('btn-open-catalog')?.addEventListener('click', () => {
@@ -120,8 +147,29 @@ import RouteCatalog from '../components/RouteCatalog.astro';
         });
 
         // Intercept SHOW_ROUTE_ON_MAP to switch view automatically
-        window.addEventListener('SHOW_ROUTE_ON_MAP', () => {
+        window.addEventListener('SHOW_ROUTE_ON_MAP', (e) => {
              window.handleViewChange('MAP');
+
+             // Populate Summary
+             const journey = e.detail;
+             const origin = document.getElementById('summary-origin');
+             const dest = document.getElementById('summary-dest');
+             const bar = document.getElementById('summary-bar');
+
+             let originText = "Origen";
+             let destText = "Destino";
+
+             if (journey && journey.legs && journey.legs.length > 0) {
+                 const firstLeg = journey.legs[0];
+                 const lastLeg = journey.legs[journey.legs.length - 1];
+                 originText = firstLeg.origin_hub || firstLeg.stops[0];
+                 destText = lastLeg.dest_hub || lastLeg.stops[lastLeg.stops.length - 1];
+             }
+
+             if (origin) origin.textContent = originText;
+             if (dest) dest.textContent = destText;
+
+             if (bar) bar.classList.remove('hidden');
         });
 
         // Deep Linking / Initial State
@@ -132,6 +180,35 @@ import RouteCatalog from '../components/RouteCatalog.astro';
         } else if (viewParam === 'routes' || viewParam === 'catalog') {
             window.handleViewChange('CATALOG');
         }
+
+        // City Rotator (Hero)
+        const cityElement = document.getElementById('hero-city-rotator');
+        if (cityElement) {
+              const cities = [
+                  { name: "cancún", color: "text-[#006847]" },
+                  { name: "costa mujeres", color: "text-[#FF8200]" },
+                  { name: "riviera maya", color: "text-[#00B2A9]" },
+                  { name: "puerto morelos", color: "text-[#E03C31]" },
+                  { name: "puerto juárez", color: "text-[#0033A0]" },
+                  { name: "playa del carmen", color: "text-[#D0006F]" },
+                  { name: "isla mujeres", color: "text-[#FFCD00]" }
+              ];
+              let index = 0;
+
+              if (window.cityRotationInterval) clearInterval(window.cityRotationInterval);
+
+              window.cityRotationInterval = setInterval(() => {
+                  index = (index + 1) % cities.length;
+                  const city = cities[index];
+
+                  cityElement.style.opacity = '0';
+                  setTimeout(() => {
+                      cityElement.textContent = city.name;
+                      cityElement.className = `text-4xl font-black tracking-tight transition-opacity duration-500 mt-1 ${city.color}`;
+                      cityElement.style.opacity = '1';
+                  }, 500);
+              }, 3000);
+          }
     });
   </script>
 

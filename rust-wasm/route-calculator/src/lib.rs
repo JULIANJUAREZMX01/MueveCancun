@@ -317,6 +317,23 @@ pub fn get_all_routes() -> JsValue {
     serde_wasm_bindgen::to_value(routes).unwrap()
 }
 
+#[wasm_bindgen]
+pub fn find_nearest_stop(lat: f64, lng: f64, coords_val: JsValue) -> JsValue {
+    let coords: HashMap<String, [f64; 2]> = serde_wasm_bindgen::from_value(coords_val).unwrap_or_default();
+    let mut nearest_stop = "".to_string();
+    let mut min_dist = f64::MAX;
+
+    for (name, [stop_lat, stop_lng]) in coords {
+        let dist = haversine_distance(lat, lng, stop_lat, stop_lng);
+        if dist < min_dist {
+            min_dist = dist;
+            nearest_stop = name;
+        }
+    }
+
+    serde_wasm_bindgen::to_value(&nearest_stop).unwrap()
+}
+
 // --- LEGACY GRAPH LOGIC (Kept for compilation, bypassed for now) ---
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq)]
