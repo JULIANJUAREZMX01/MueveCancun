@@ -1,32 +1,40 @@
-import { openDB } from 'idb';
+import { openDB, type IDBPDatabase } from 'idb';
 
 const DB_NAME = 'cancunmueve-db';
 const DB_VERSION = 2;
 
+let dbPromise: Promise<IDBPDatabase<unknown>> | undefined;
+
 export const initDB = async () => {
-  const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion) {
-      if (oldVersion < 1) {
-        db.createObjectStore('routes');
-        db.createObjectStore('user-reports');
-      }
-      if (oldVersion < 2) {
-        db.createObjectStore('wallet-status');
-      }
-    },
-  });
+  if (!dbPromise) {
+    dbPromise = (async () => {
+      const db = await openDB(DB_NAME, DB_VERSION, {
+        upgrade(db, oldVersion) {
+          if (oldVersion < 1) {
+            db.createObjectStore('routes');
+            db.createObjectStore('user-reports');
+          }
+          if (oldVersion < 2) {
+            db.createObjectStore('wallet-status');
+          }
+        },
+      });
 
-  // Initialize test balance if empty
-  const tx = db.transaction('wallet-status', 'readwrite');
-  const store = tx.objectStore('wallet-status');
-  const balance = await store.get('current_balance');
+      // Initialize test balance if empty
+      // This logic now runs only once per session when the DB connection is established
+      const tx = db.transaction('wallet-status', 'readwrite');
+      const store = tx.objectStore('wallet-status');
+      const balance = await store.get('current_balance');
 
-  if (balance === undefined) {
-    await store.put({ id: 'current_balance', amount: 10.00, currency: 'USD' });
+      if (balance === undefined) {
+        await store.put({ id: 'current_balance', amount: 10.00, currency: 'USD' });
+      }
+
+      await tx.done;
+      return db;
+    })();
   }
-
-  await tx.done;
-  return db;
+  return dbPromise;
 };
 
 export const getWalletBalance = async () => {
