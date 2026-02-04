@@ -7,6 +7,29 @@ import VerticalHub from '../components/VerticalHub.astro';
 <MainLayout title="Inicio">
   <VerticalHub />
 
+  <!-- Compact Summary Bar -->
+  <div id="summary-bar" class="fixed left-4 right-4 z-50 transition-transform duration-500 flex justify-center pointer-events-none bottom-20 lg:bottom-auto lg:top-24">
+      <div class="bg-white/90 backdrop-blur-md shadow-lg shadow-slate-200/50 rounded-full px-4 py-2.5 flex items-center gap-4 border border-slate-200/60 pointer-events-auto max-w-md w-full justify-between">
+          <div class="flex items-center gap-2 overflow-hidden flex-1">
+             <div class="flex items-center gap-1.5 min-w-0 shrink">
+                <span class="text-xs text-slate-400 shrink-0">📍</span>
+                <span id="sb-origin" class="text-xs font-bold text-slate-700 truncate block max-w-[80px] sm:max-w-[100px]">Origen</span>
+             </div>
+             <span class="text-slate-300 text-[10px] shrink-0">➔</span>
+             <div class="flex items-center gap-1.5 min-w-0 shrink">
+                <span class="text-xs text-slate-400 shrink-0">🏁</span>
+                <span id="sb-dest" class="text-xs font-bold text-slate-700 truncate block max-w-[80px] sm:max-w-[100px]">Destino</span>
+             </div>
+          </div>
+
+          <button id="sb-edit-btn" class="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 hover:bg-primary-50 text-slate-400 hover:text-primary-500 border border-slate-100 transition-colors active:scale-95" title="Editar búsqueda">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+              </svg>
+          </button>
+      </div>
+  </div>
+
   <div id="home-content" class="space-y-8 animate-fade-in transition-opacity duration-500">
     <!-- Hero / Greeting -->
     <section id="hero-section" class="text-center pt-6 pb-2 transition-all duration-500">
@@ -39,20 +62,59 @@ import VerticalHub from '../components/VerticalHub.astro';
   </div>
 
   <script>
+    const homeContent = document.getElementById('home-content');
+    const summaryBar = document.getElementById('summary-bar');
+    const sbOrigin = document.getElementById('sb-origin');
+    const sbDest = document.getElementById('sb-dest');
+    const sbEditBtn = document.getElementById('sb-edit-btn');
+
     window.addEventListener('VIEW_STATE_CHANGE', (e) => {
-        if (e.detail.state === 'map') {
-            const content = document.getElementById('home-content');
+        const state = e.detail.state;
+
+        if (state === 'map') {
             // Fade out content to reveal map
-            content.classList.add('opacity-0', 'pointer-events-none');
-            // Or remove it? Opacity allows transition.
+            homeContent?.classList.add('opacity-0', 'pointer-events-none');
+            // Show summary bar
+            summaryBar?.classList.add('is-visible');
+        } else if (state === 'search') {
+            // Restore home content
+            homeContent?.classList.remove('opacity-0', 'pointer-events-none');
+            // Hide summary bar
+            summaryBar?.classList.remove('is-visible');
         }
+    });
+
+    window.addEventListener('SEARCH_COMPLETED', (e) => {
+        const { query } = e.detail;
+        if (query) {
+            if (sbOrigin) sbOrigin.textContent = query.from || 'Origen';
+            if (sbDest) sbDest.textContent = query.to || 'Destino';
+        }
+    });
+
+    sbEditBtn?.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: { state: 'search' } }));
     });
 
     // Listen for close from Hub to restore view?
     const closeBtn = document.getElementById('hub-close-btn');
     closeBtn?.addEventListener('click', () => {
-         const content = document.getElementById('home-content');
-         content.classList.remove('opacity-0', 'pointer-events-none');
+         // Also restore search view when closing hub (optional, but consistent)
+         window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: { state: 'search' } }));
     });
   </script>
+
+  <style>
+    #summary-bar {
+        transform: translateY(200%); /* Mobile: hidden (down) */
+    }
+    @media (min-width: 1024px) {
+        #summary-bar {
+            transform: translateY(-200%); /* Desktop: hidden (up) */
+        }
+    }
+    #summary-bar.is-visible {
+        transform: translateY(0) !important;
+    }
+  </style>
 </MainLayout>

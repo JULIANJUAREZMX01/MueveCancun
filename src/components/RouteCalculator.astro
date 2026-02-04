@@ -126,7 +126,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       </div>
 
       <Button id="search-btn" class="w-full text-lg shadow-xl shadow-primary-500/20">
-        <span id="btn-text">TRAZAR RUTA</span>
+        <span id="btn-text">¿Como llegar?</span>
         <img src="/icons/loader.svg" class="w-5 h-5 animate-spin hidden" id="btn-spinner" alt="Loading" />
       </Button>
 
@@ -169,7 +169,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     es: {
       title: 'Que ruta me lleva?',
       warning: 'Saldo insuficiente. Recarga tu cuenta ($180 MXN).',
-      calculate: 'TRAZAR RUTA',
+      calculate: '¿Como llegar?',
       calculating: 'CALCULANDO...',
       suggested: 'Mejor Opción',
       cashOnly: 'Solo Efectivo',
@@ -178,7 +178,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     en: {
       title: 'What route do I take?',
       warning: 'Insufficient balance. Top up required ($180 MXN).',
-      calculate: 'FIND ROUTE',
+      calculate: 'How to get there?',
       calculating: 'ROUTING...',
       suggested: 'Best Option',
       cashOnly: 'Cash Only',
@@ -453,13 +453,14 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     // Trigger Phase 3 (Tetris)
     window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 3 } }));
 
+    // Immediate View Transition
+    window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: { state: 'map' } }));
+
     if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculating;
     if (btnSpinner) btnSpinner.classList.remove('hidden');
     if (calculationLoader) calculationLoader.classList.remove('hidden');
     if (resultsContainer) resultsContainer.innerHTML = '';
     (btn as HTMLButtonElement).disabled = true;
-
-    await new Promise(r => setTimeout(r, 800));
 
     try {
       // Gap Analysis
@@ -480,7 +481,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       console.log('Route Result:', res, 'Gap:', gapRes);
 
       // Pass both journeys and gap info
-      renderResults({ journeys: res, gap: gapRes });
+      renderResults({ journeys: res, gap: gapRes, query: { from: fromVal, to: toVal } });
     } catch (error) {
       console.error(error);
       renderError("System Error: " + (error.message || error));
@@ -516,7 +517,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     const eventDetail = Array.isArray(data) ? { journeys: data, gap: null } : data;
 
     window.dispatchEvent(new CustomEvent('SEARCH_COMPLETED', { detail: eventDetail }));
-    window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: { state: 'map' } }));
+    // View State Change is now handled immediately on click
 
     if (window.showToast) {
         if (!journeys || journeys.length === 0) {
