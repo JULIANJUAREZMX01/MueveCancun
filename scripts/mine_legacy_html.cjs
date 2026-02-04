@@ -9,11 +9,12 @@ const OUTPUT_PATH = path.join(__dirname, '../src/data/routes_legacy_mined.json')
 
 function parseSaturmex() {
     console.log("Parsing Saturmex...");
+    if (!fs.existsSync(SATURMEX_PATH)) { console.log("Saturmex file not found"); return []; }
     const content = fs.readFileSync(SATURMEX_PATH, 'utf8');
     const dom = new JSDOM(content);
     const document = dom.window.document;
 
-    const routes = {}; // id -> { name, stops: [] }
+    const routes = {};
 
     const rows = document.querySelectorAll('table tbody tr');
     rows.forEach(row => {
@@ -29,7 +30,7 @@ function parseSaturmex() {
                 routes[id] = {
                     id: id,
                     nombre: routeName,
-                    tipo_transporte: "Bus_Urban", // Default
+                    tipo_transporte: "Bus_Urban",
                     paradas: [],
                     empresa: "Saturmex",
                     tarifa: 12.0
@@ -47,13 +48,14 @@ function parseSaturmex() {
 
 function parseTuricun() {
     console.log("Parsing Turicun...");
+    if (!fs.existsSync(TURICUN_PATH)) { console.log("Turicun file not found"); return []; }
     const content = fs.readFileSync(TURICUN_PATH, 'utf8');
     const dom = new JSDOM(content);
     const document = dom.window.document;
 
     const routes = {};
 
-    const rows = document.querySelectorAll('table tr'); // No tbody usually in simple tables
+    const rows = document.querySelectorAll('table tr');
     rows.forEach(row => {
         const cols = row.querySelectorAll('td');
         if (cols.length >= 2) {

@@ -1,215 +1,26 @@
----
----
-<div id="vertical-hub" class="fixed inset-x-0 bottom-0 top-[30%] md:top-0 md:bottom-0 md:left-auto md:right-0 md:w-[450px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-2xl z-40 transform translate-y-full md:translate-y-0 md:translate-x-full transition-transform duration-500 ease-out flex flex-col border-t md:border-t-0 md:border-l border-slate-200/50 rounded-t-3xl md:rounded-none">
+<template>
+  <div class="vertical-hub">
+    <JourneyCard v-for="journey in journeys" :key="journey.id" :journey="journey" />
+    <GapAnalysisAlert v-if="showAlert" />
+  </div>
+</template>
 
-    <!-- Drag Handle (Mobile) -->
-    <div class="md:hidden w-full flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing touch-none">
-        <div class="w-12 h-1.5 bg-slate-300 rounded-full"></div>
-    </div>
+<script setup>
+import { ref } from 'vue';
+import JourneyCard from './JourneyCard.vue';
+import GapAnalysisAlert from './GapAnalysisAlert.vue';
 
-    <!-- Hub Header -->
-    <div class="px-6 py-4 border-b border-slate-100/50 dark:border-slate-800/50 flex items-center justify-between shrink-0">
-        <div>
-            <h2 class="font-display font-black text-xl text-slate-800 dark:text-white tracking-tight">Rutas Sugeridas</h2>
-            <p id="hub-subtitle" class="text-xs font-medium text-slate-500">Resultados para tu búsqueda</p>
-        </div>
-        <button id="close-hub-btn" class="p-2 -mr-2 rounded-full hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors text-slate-400 hover:text-slate-600">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-    </div>
+const journeys = ref([]);
+const showAlert = ref(false);
 
-    <!-- Results Container -->
-    <div id="hub-results" class="flex-1 overflow-y-auto p-4 space-y-4 overscroll-contain pb-24 md:pb-4">
-        <!-- Initial Empty State -->
-        <div class="h-full flex flex-col items-center justify-center text-center opacity-40 p-8">
-            <img src="/icons/map-pin.svg" class="w-12 h-12 mb-4 grayscale" alt="Location" />
-            <p class="text-sm font-medium">Selecciona un destino para ver opciones</p>
-            <div class="mt-4 text-xs text-slate-400 bg-slate-100/50 p-2 rounded-lg">
-                <span class="font-bold block mb-1">Prueba con:</span>
-                "Plaza Las Américas"<br/>
-                "Zona Hotelera"<br/>
-                "Puerto Cancun"
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    const hub = document.getElementById('vertical-hub');
-    const resultsContainer = document.getElementById('hub-results');
-    const subtitle = document.getElementById('hub-subtitle');
-    const closeBtn = document.getElementById('close-hub-btn');
-
-    function openHub() {
-        hub?.classList.remove('translate-y-full', 'md:translate-x-full');
-    }
-
-    function closeHub() {
-        hub?.classList.add('translate-y-full', 'md:translate-x-full');
-        // Dispatch event to restore Hero?
-        window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'search' }));
-    }
-
-    closeBtn?.addEventListener('click', closeHub);
-
-    // Event Listener for Search Results
-    window.addEventListener('SEARCH_COMPLETED', (e) => {
-        const { journeys, gap, userLocation } = e.detail;
-
-        if (!resultsContainer) return;
-
-        // Clear previous
-        resultsContainer.innerHTML = '';
-
-        const hasJourneys = journeys && journeys.length > 0;
-
-        // Render Gap Analysis (Always check if no journeys OR if recommendation is specific)
-        // If we have journeys, we usually prioritize them, but if recommendation is Walk, maybe show it too?
-        // Let's show Gap Alert if NO journeys OR if recommendation is Private/Walk (as alternative)
-
-        let showGap = !hasJourneys;
-        if (gap && (gap.recommendation === 'Walk' || gap.recommendation === 'Private')) {
-            showGap = true;
-        }
-
-        if (showGap && gap) {
-            const isPrivate = gap.recommendation === 'Private';
-            const isWalk = gap.recommendation === 'Walk';
-            const isTransit = gap.recommendation === 'Transit'; // Should imply we found routes, but maybe none matched criteria?
-
-            // Determine style
-            let alertColor = 'bg-slate-50 border-slate-200 text-slate-800';
-            let icon = 'ℹ️';
-            let title = 'Información';
-            let msg = 'No se encontraron rutas exactas.';
-
-            if (isPrivate) {
-                alertColor = 'bg-orange-50/90 border-orange-200 text-orange-900';
-                icon = '🚕';
-                title = 'Zona Sin Cobertura Directa';
-                msg = 'Tu destino está lejos de las paradas conocidas. Te sugerimos Taxi o Uber desde el punto más cercano.';
-            } else if (isWalk) {
-                alertColor = 'bg-emerald-50/90 border-emerald-200 text-emerald-900';
-                icon = '🚶';
-                title = 'Puedes Caminar';
-                msg = 'Tu destino está cerca (menos de 1.5km). Es más rápido caminar.';
-            } else if (!hasJourneys) {
-                // Transit but no routes found (graph disconnect?)
-                alertColor = 'bg-red-50/90 border-red-200 text-red-900';
-                icon = '⚠️';
-                title = 'Sin Rutas Encontradas';
-                msg = 'No encontramos una combinación de transporte para esta ruta. Intenta acercarte a una avenida principal.';
-            }
-
-            const gapHtml = `
-                <div class="p-4 rounded-xl border ${alertColor} mb-4 animate-pop-in backdrop-blur-sm">
-                    <div class="flex gap-3">
-                        <span class="text-2xl">${icon}</span>
-                        <div>
-                            <h3 class="font-bold text-sm mb-1">${title}</h3>
-                            <p class="text-xs opacity-90 leading-relaxed">
-                                ${msg}
-                            </p>
-                            ${gap.origin_gap ? `<div class="mt-2 text-[10px] font-mono bg-white/40 p-1 rounded inline-block">Distancia a parada: ${(gap.origin_gap.distance_km).toFixed(2)}km</div>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // Only append if it's the primary content or a useful alternative
-            resultsContainer.innerHTML += gapHtml;
-        }
-
-        // Render Journeys
-        if (hasJourneys) {
-            journeys.forEach((journey, index) => {
-                const isBest = index === 0;
-
-                // Construct HTML for Card
-                const card = document.createElement('div');
-                card.className = `
-                    group relative bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700
-                    hover:shadow-md hover:border-primary-200 dark:hover:border-primary-900 transition-all cursor-pointer animate-slide-up
-                `;
-                card.style.animationDelay = `${index * 100}ms`;
-
-                // Header: Route IDs
-                const routeBadges = journey.routes.map(rId => {
-                    const color = rId.includes('R-44') ? 'bg-orange-500' : (rId.includes('ADO') ? 'bg-red-600' : 'bg-blue-500');
-                    // Shorten ID
-                    const shortId = rId.split('_')[0].replace('Ruta', 'R');
-                    return `<span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-bold text-white ${color} shadow-sm">${shortId}</span>`;
-                }).join('<span class="text-slate-300 mx-1">›</span>');
-
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center flex-wrap gap-y-1">
-                            ${routeBadges}
-                        </div>
-                        <div class="text-right">
-                            <span class="block text-lg font-black text-slate-900 dark:text-white">$${journey.estimated_cost_mxn}</span>
-                            <span class="text-[10px] text-slate-400 font-medium">MXN</span>
-                        </div>
-                    </div>
-
-                    <div class="space-y-3">
-                        ${journey.instructions.map((inst, i) => `
-                            <div class="flex gap-3 relative">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-2 h-2 rounded-full ${i === 0 ? 'bg-primary-500' : 'bg-slate-300'}"></div>
-                                    ${i < journey.instructions.length - 1 ? '<div class="w-0.5 flex-1 bg-slate-100 my-0.5"></div>' : ''}
-                                </div>
-                                <p class="text-xs text-slate-600 dark:text-slate-300 flex-1 py-0.5 leading-snug">
-                                    ${inst.es}
-                                </p>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    ${isBest ? '<div class="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm transform rotate-3">MEJOR OPCIÓN</div>' : ''}
-                `;
-
-                // Interaction
-                card.addEventListener('click', () => {
-                    // Highlight on Map
-                    window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', {
-                        detail: { journey, userLocation }
-                    }));
-
-                    // Mobile: maybe collapse sidebar slightly?
-                    if (window.innerWidth < 768) {
-                        hub.classList.add('translate-y-[80%]'); // Peek mode
-                    }
-                });
-
-                resultsContainer.appendChild(card);
-            });
-
-            if(subtitle) subtitle.textContent = `${journeys.length} opciones encontradas`;
-
-        } else if (!showGap) {
-             // Fallback if neither journeys nor gap info is present (shouldn't happen with new logic)
-             resultsContainer.innerHTML = `
-                <div class="text-center p-8 opacity-60">
-                    <p class="text-sm font-medium">No se encontraron rutas exactas.</p>
-                     <div class="mt-4 text-xs text-slate-400 bg-slate-100/50 p-2 rounded-lg">
-                        <span class="font-bold block mb-1">Sugerencia:</span>
-                        Intenta buscar puntos de referencia conocidos como "Crucero" o "Plaza Las Américas".
-                    </div>
-                </div>
-             `;
-        }
-
-        // Open Hub
-        openHub();
-    });
-
-    // Handle initial state or resets
-    document.addEventListener('astro:page-load', () => {
-        // Ensure hub starts closed
-        closeHub();
-    });
+// Fetch journeys and gap analysis data
+// Implement logic for gap analysis alert
 </script>
+
+<style scoped>
+.vertical-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+</style>

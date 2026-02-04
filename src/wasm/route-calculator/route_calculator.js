@@ -1,6 +1,18 @@
 /* @ts-self-types="./route_calculator.d.ts" */
 
 /**
+ * @param {number} user_lat
+ * @param {number} user_lng
+ * @param {number} dest_lat
+ * @param {number} dest_lng
+ * @returns {any}
+ */
+export function analyze_gap(user_lat, user_lng, dest_lat, dest_lng) {
+    const ret = wasm.analyze_gap(user_lat, user_lng, dest_lat, dest_lng);
+    return ret;
+}
+
+/**
  * @param {number} origin_lat
  * @param {number} origin_lng
  * @param {number} dest_lat
@@ -22,6 +34,54 @@ export function calculate_route(origin_lat, origin_lng, dest_lat, dest_lng, rout
 export function calculate_trip_cost(distance, seats, is_tourist) {
     const ret = wasm.calculate_trip_cost(distance, seats, is_tourist);
     return ret;
+}
+
+/**
+ * @param {number} lat
+ * @param {number} lng
+ * @returns {any}
+ */
+export function find_nearest_stop(lat, lng) {
+    const ret = wasm.find_nearest_stop(lat, lng);
+    return ret;
+}
+
+/**
+ * @param {string} origin
+ * @param {string} dest
+ * @returns {any}
+ */
+export function find_route(origin, dest) {
+    const ptr0 = passStringToWasm0(origin, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(dest, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.find_route(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * @returns {any}
+ */
+export function get_all_routes() {
+    const ret = wasm.get_all_routes();
+    return ret;
+}
+
+/**
+ * @param {any} val
+ */
+export function load_stops_data(val) {
+    wasm.load_stops_data(val);
+}
+
+/**
+ * @param {number} balance
+ * @returns {boolean}
+ */
+export function validate_operator_funds(balance) {
+    const ret = wasm.validate_operator_funds(balance);
+    return ret !== 0;
 }
 
 function __wbg_get_imports() {
