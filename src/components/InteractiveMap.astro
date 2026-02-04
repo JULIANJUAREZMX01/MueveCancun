@@ -125,13 +125,36 @@ const {
     }
   }
 
-  function drawRoute(data) {
+  function getRouteColor(route) {
+      const name = route.name || "";
+      const type = route.transport_type || "";
+      const lowerName = name.toLowerCase();
+
+      // Riviera Maya (Teal)
+      if (lowerName.includes("playa express") || lowerName.includes("ado") || type === "ADO" || type === "PlayaExpress" || type.includes("Van")) {
+          return '#00B2A9';
+      }
+
+      // Costa Mujeres (Orange)
+      if (lowerName.includes("puerto juárez") || lowerName.includes("rehoyada") || lowerName.includes("muelle")) {
+          return '#FF8200';
+      }
+
+      // Default Brand Orange
+      return '#F97316';
+  }
+
+  function drawRoute(journey, userLocation = null) {
     if (!map) return;
     if (layerGroup) {
         layerGroup.clearLayers();
         layerGroup.remove();
     }
 
+    // Handle Legacy Input (direct object without wrapper)
+    const data = journey;
+
+    // Normalize input to legs array
     let legs = [];
     if (data.legs && Array.isArray(data.legs)) {
         legs = data.legs;
@@ -144,6 +167,29 @@ const {
 
     const newLayers = [];
     const allBounds = [];
+
+    // Draw Gap (Walking Segment)
+    if (userLocation && data.start_coords) {
+         // Dashed Line from User to Start
+         const gapLine = window.L.polyline([userLocation, data.start_coords], {
+             color: '#64748b', // Slate-500
+             weight: 4,
+             dashArray: '10, 10',
+             opacity: 0.8
+         });
+         newLayers.push(gapLine);
+
+         // User Marker
+         newLayers.push(window.L.circleMarker(userLocation, {
+             radius: 8,
+             color: '#ffffff',
+             fillColor: '#3b82f6',
+             fillOpacity: 1,
+             weight: 2
+         }).bindPopup("<b>Tu Ubicación</b>"));
+
+         allBounds.push(userLocation);
+    }
 
     legs.forEach((leg, index) => {
         const stops = leg.stops || [];
@@ -166,9 +212,14 @@ const {
 
         if (routeCoords.length > 0) {
             const isFirst = index === 0;
-            const color = index === 0 ? '#F97316' : '#3B82F6';
-            const dashArray = isFirst ? null : '10, 10';
-            const weight = 6;
+            // Use specific color for Leg 1, Blue for Leg 2 (Transfer)
+            const color = index === 0 ? getRouteColor(leg) : '#3B82F6';
+
+            // Visual distinction: Leg 2 is dashed if it's a transfer?
+            // Usually transfers are solid too, but distinct color.
+            // Requirement: "Render the Bus Route as a Solid Polyline".
+            const dashArray = null;
+            const weight = 5;
 
             newLayers.push(window.L.polyline(routeCoords, {
                 color,
@@ -181,15 +232,32 @@ const {
 
             if (index === 0) {
                  const start = validStops[0];
-                 newLayers.push(window.L.circleMarker(start.latlng, { radius: 6, color: '#F97316', fillColor: '#fff', fillOpacity: 1, weight: 3 })
-                    .bindPopup(`<b>Inicio:</b> ${start.name}`));
+                 newLayers.push(window.L.marker(start.latlng)
+                    .bindPopup(`<b>Inicio Ruta:</b> ${start.name}`));
             }
 
             if (index === legs.length - 1) {
                  const end = validStops[validStops.length - 1];
-                 newLayers.push(window.L.marker(end.latlng) // Use default icon or custom later
-                    .bindPopup(`<b>Fin:</b> ${end.name}`));
+                 newLayers.push(window.L.marker(end.latlng)
+                    .bindPopup(`<b>Fin Ruta:</b> ${end.name}`));
             }
+
+            // Transfer Marker (if not last leg)
+            if (index < legs.length - 1) {
+                const end = validStops[validStops.length - 1];
+                 newLayers.push(window.L.marker(end.latlng).bindPopup(`<b>Transbordo:</b> ${end.name}`));
+            }
+
+            // Intermediate dots (optimized with Canvas via map preference)
+            validStops.slice(1, -1).forEach(stop => {
+                 newLayers.push(
+                    window.L.circleMarker(stop.latlng, { radius: 4, color: '#334155', fillOpacity: 1 })
+                    .bindPopup(stop.name)
+                 );
+            });
+
+        } else {
+            console.warn("No coordinates found for stops:", stops);
         }
     });
 
@@ -209,7 +277,17 @@ const {
   }
 
   window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
-    drawRoute(event.detail);
+    console.log("Event received:", event.detail);
+    let journey = event.detail;
+    let userLocation = null;
+
+    // Normalize input
+    if (event.detail.journey) {
+         journey = event.detail.journey;
+         userLocation = event.detail.userLocation;
+    }
+
+    drawRoute(journey, userLocation);
   });
 
   window.addEventListener('HIGHLIGHT_ROUTE', (event) => {

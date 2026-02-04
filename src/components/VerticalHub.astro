@@ -36,12 +36,14 @@
   });
 
   window.addEventListener('SEARCH_COMPLETED', (event) => {
-      const { journeys, gap } = event.detail;
+      const { journeys, gap, userLocation } = event.detail;
+      // If event.detail is array (legacy/fallback), handle it
       const data = Array.isArray(event.detail) ? event.detail : (journeys || []);
-      const gapData = event.detail.gap || null;
+      const gapData = event.detail.gap || gap || null;
+      const uLoc = userLocation || null;
 
-      renderResults(data, gapData);
-      clearBtn?.classList.remove('hidden');
+      renderResults(data, gapData, uLoc);
+      hub?.classList.remove('-translate-x-full');
   });
 
   const TRANSPORT_LABELS = {
@@ -56,20 +58,48 @@
     return TRANSPORT_LABELS[type] || type;
   }
 
-  function renderResults(journeys, gapData) {
+  function getTransportIcon(type) {
+      let icon = "bus.svg";
+      if (type.includes("Bus")) icon = "bus.svg";
+      else if (type.includes("Van") || type.includes("Playa")) icon = "bus.svg"; // Use bus for now or generic
+      else if (type.includes("ADO")) icon = "bus.svg";
+
+      return `<img src="/icons/${icon}" class="w-5 h-5 opacity-75" alt="${type}" />`;
+  }
+
+  function renderResults(journeys, gapData, userLocation) {
       if (!resultsContainer) return;
       resultsContainer.innerHTML = '';
 
-      if (!journeys || journeys.length === 0) {
-          let message = "No hay rutas públicas directas. Te sugerimos tomar un taxi.";
-          if (gapData && gapData.recommendation === 'NoPublicCoverage') {
-              message = "Zona fuera de cobertura pública.";
-          }
+      // 1. Saturated Zone Warning
+      if (gapData && gapData.recommendation === 'NoPublicCoverage') {
+           const nearestName = gapData.origin_gap ? gapData.origin_gap.name : "un punto seguro";
+           resultsContainer.innerHTML += `
+            <div class="p-4 mb-3 bg-red-50 rounded-xl border border-red-200 shadow-sm animate-slide-up">
+                <div class="flex items-start gap-3">
+                    <div class="bg-white p-2 rounded-full border border-red-100 shadow-sm">
+                         <img src="/icons/alert.svg" class="w-6 h-6 text-red-500" />
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-red-800 text-sm">Zona Saturada</h3>
+                        <p class="text-xs text-red-600 mt-1 leading-snug">
+                            Sugerencia: Usar Transporte Privado al Paradero <b>${nearestName}</b>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+           `;
 
-          resultsContainer.innerHTML = `
-            <div class="p-6 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 text-center flex flex-col items-center">
-                <div class="w-12 h-12 mb-3 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-400 opacity-50">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg>
+           if (!journeys || journeys.length === 0) return;
+      }
+
+      if (!journeys || journeys.length === 0) {
+          let message = "No hay rutas públicas directas. Te sugerimos tomar un taxi o app al paradero más cercano.";
+
+          resultsContainer.innerHTML += `
+            <div class="p-6 bg-white rounded-xl border border-slate-200 text-center shadow-sm">
+                <div class="text-4xl mb-3 flex justify-center">
+                    <img src="/icons/credit-card.svg" class="w-10 h-10 opacity-50" />
                 </div>
                 <h3 class="font-bold text-slate-800 dark:text-white mb-1">Transporte Privado</h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400">${message}</p>
@@ -98,13 +128,25 @@
 
           // Gap Info
           let gapInfo = "";
-          if (gapData && gapData.origin_gap) {
+          // Check journey-specific walking distance first
+          if (journey.walking_distance_km !== undefined && journey.walking_distance_km !== null) {
+               if (journey.walking_distance_km < 0.5) { // 500m threshold
+                   const time = Math.round(journey.walking_distance_km * 15);
+                   gapInfo = `
+                    <div class="flex items-center gap-1 text-slate-500 font-medium">
+                        <span class="text-xs">🚶</span>
+                        <span>Walk ${time} min</span>
+                    </div>
+                   `;
+               }
+          } else if (gapData && gapData.origin_gap) {
                const dist = gapData.origin_gap.distance_km;
                const time = Math.round(dist * 15);
-               if (dist > 0.1) {
+               if (dist < 0.5 && dist > 0.05) {
                    gapInfo = `
-                    <div class="flex items-center gap-1 text-slate-400 text-[10px] font-medium mt-1">
-                        <span>🚶 Caminata ${time} min</span>
+                    <div class="flex items-center gap-1 text-slate-500 font-medium">
+                        <span class="text-xs">🚶</span>
+                        <span>Walk ${time} min</span>
                     </div>
                    `;
                }
@@ -148,8 +190,7 @@
           });
 
           card.addEventListener('click', () => {
-              window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: journey }));
-              // On mobile, maybe collapse sheet slightly?
+              window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey, userLocation } }));
           });
 
           resultsContainer.appendChild(card);
