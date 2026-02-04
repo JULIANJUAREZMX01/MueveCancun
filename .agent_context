@@ -1,13 +1,25 @@
 # CancúnMueve - Agent Context Status
-Last Sync: 2026-01-28
+Last Sync: 2026-02-04 (Post-Sanitization Era)
 
 ## Situation Map
-- **Framework**: Astro 5.0 (Stable)
-- **Styling**: Tailwind CSS v4 (Sunny Mode active)
-- **Engine**: Rust WASM (route-calculator & spatial-index)
-- **Data**: master_routes.json v2.0.0
-- **PWA**: Service Worker v2.0.0
-- **Islands**: RouteCalculator, InteractiveMap (Hydration ready)
+- **Project State:** "Golden Master" Restored (Commit #47).
+- **Current Mission:** Operation "Metal-to-Pixel" (Architecture Migration).
+- **Active Branch:** main -> architecture/metal-to-pixel
+
+## The Stack (Strict Enforced)
+- **Framework:** Astro 5.0 (Islands Architecture).
+- **Engine:** Rust WASM (route-calculator).
+- **Data Source:** RAW HTML Extraction (cheerio) -> Embedded JSON (include_str!).
+- **Frontend:** Native Web Components (HTMLElement). **NO REACT.**
+- **Styling:** Scoped CSS + CSS Variables. **NO GLOBAL TAILWIND.**
+
+## Active Protocols
+1. **Separation of Concerns:**
+   - Jules = Rust/Node/Data (The Engine).
+   - Stitch = UI/UX/Components (The Skin).
+2. **Data Truth:**
+   - Legacy JSONs are BANNED.
+   - Source of Truth = `data/legacy/Saturmex.html` & `TURICUN.html`.
 
 ## Next Phase
-- Phase 2: Interconnection & Advanced Routing.
+- Execute Split Operation: Jules (Backend) + Stitch (Visuals).
