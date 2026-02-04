@@ -5,10 +5,9 @@ import VerticalHub from '../components/VerticalHub.astro';
 ---
 
 <MainLayout title="Inicio">
-  <VerticalHub />
 
   <!-- Compact Summary Bar -->
-  <div id="summary-bar" class="fixed left-4 right-4 z-50 transition-transform duration-500 flex justify-center pointer-events-none bottom-20 lg:bottom-auto lg:top-24">
+  <div id="summary-bar" class="fixed left-4 right-4 z-[60] transition-transform duration-500 flex justify-center pointer-events-none bottom-20 lg:bottom-auto lg:top-24">
       <div class="bg-white/90 backdrop-blur-md shadow-lg shadow-slate-200/50 rounded-full px-4 py-2.5 flex items-center gap-4 border border-slate-200/60 pointer-events-auto max-w-md w-full justify-between">
           <div class="flex items-center gap-2 overflow-hidden flex-1">
              <div class="flex items-center gap-1.5 min-w-0 shrink">
@@ -30,57 +29,75 @@ import VerticalHub from '../components/VerticalHub.astro';
       </div>
   </div>
 
-  <div id="home-content" class="space-y-8 animate-fade-in transition-opacity duration-500">
-    <!-- Hero / Greeting -->
-    <section id="hero-section" class="text-center pt-6 pb-2 transition-all duration-500">
-      <h1 class="text-3xl font-display font-black text-deep-navy tracking-tight mb-2">
-        ¿A dónde vamos hoy?
-      </h1>
-      <p class="text-slate-500 font-medium">
-        Encuentra la mejor ruta en transporte público.
-      </p>
-    </section>
+  <!-- DESKTOP VIEW: Floating Dock -->
+  <aside id="desktop-dock" class="hidden lg:flex flex-col fixed left-5 top-24 bottom-5 w-[420px] z-20 gap-4 pointer-events-none transition-opacity duration-300">
+     <!-- Search -->
+     <div class="pointer-events-auto shadow-2xl rounded-3xl">
+       <RouteCalculator />
+     </div>
 
-    <!-- Calculator Widget -->
-    <section id="calculator-section" class="transition-all duration-500">
-      <RouteCalculator />
-    </section>
+     <!-- Results Hub -->
+     <div class="flex-1 min-h-0 glass-panel rounded-3xl pointer-events-auto overflow-hidden flex flex-col backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-white/20">
+       <VerticalHub />
+     </div>
+  </aside>
 
-    <!-- Catalog Link -->
-    <section id="catalog-link-section" class="text-center pt-2 transition-all duration-500">
-      <a href="/rutas" class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-primary-600 transition-colors border-b border-transparent hover:border-primary-600 pb-0.5">
-        <span>🚌</span> Ver todas las rutas
-      </a>
-    </section>
+  <!-- MOBILE VIEW: Bottom Sheet Strategy -->
+  <div id="mobile-view-manager" class="lg:hidden pointer-events-none fixed inset-0 z-30 flex flex-col justify-end">
 
-    <!-- Promo / Info (Subtle) -->
-    <section class="text-center py-8 opacity-60">
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-        Powered by RouteEngine™ v2.2 WASM
-      </p>
-    </section>
+      <!-- Search Sheet (Always visible at bottom) -->
+      <div id="mobile-search-sheet" class="pointer-events-auto p-4 pb-6 transition-transform duration-500 transform translate-y-0 z-40">
+          <RouteCalculator />
+      </div>
+
+      <!-- Results Drawer -->
+      <div id="mobile-results-drawer" class="fixed inset-x-0 bottom-0 h-[70vh] bg-white dark:bg-slate-900 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.2)] transform translate-y-[110%] transition-transform duration-500 cubic-bezier(0.32, 0.72, 0, 1) z-50 flex flex-col pointer-events-auto">
+
+          <!-- Handle -->
+          <div class="w-full p-3 flex justify-center items-center border-b border-slate-100 dark:border-slate-800 cursor-pointer" id="drawer-handle">
+              <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 overflow-hidden relative">
+              <VerticalHub />
+          </div>
+      </div>
   </div>
 
   <script>
-    const homeContent = document.getElementById('home-content');
+    // Elements
     const summaryBar = document.getElementById('summary-bar');
     const sbOrigin = document.getElementById('sb-origin');
     const sbDest = document.getElementById('sb-dest');
     const sbEditBtn = document.getElementById('sb-edit-btn');
 
+    const desktopDock = document.getElementById('desktop-dock');
+    const mobileSearchSheet = document.getElementById('mobile-search-sheet');
+    const mobileResultsDrawer = document.getElementById('mobile-results-drawer');
+    const drawerHandle = document.getElementById('drawer-handle');
+
+    // State Management
     window.addEventListener('VIEW_STATE_CHANGE', (e) => {
         const state = e.detail.state;
 
         if (state === 'map') {
-            // Fade out content to reveal map
-            homeContent?.classList.add('opacity-0', 'pointer-events-none');
-            // Show summary bar
+            // Hide Search UI
+            desktopDock?.classList.add('opacity-0', 'pointer-events-none');
+            mobileSearchSheet?.classList.add('translate-y-[200%]'); // Move down offscreen
+
+            // Show Summary Bar
             summaryBar?.classList.add('is-visible');
         } else if (state === 'search') {
-            // Restore home content
-            homeContent?.classList.remove('opacity-0', 'pointer-events-none');
-            // Hide summary bar
+            // Show Search UI
+            desktopDock?.classList.remove('opacity-0', 'pointer-events-none');
+            mobileSearchSheet?.classList.remove('translate-y-[200%]');
+
+            // Hide Summary Bar
             summaryBar?.classList.remove('is-visible');
+
+            // Hide Results Drawer on Mobile (optional, but cleaner)
+            mobileResultsDrawer?.classList.add('translate-y-[110%]');
         }
     });
 
@@ -90,18 +107,38 @@ import VerticalHub from '../components/VerticalHub.astro';
             if (sbOrigin) sbOrigin.textContent = query.from || 'Origen';
             if (sbDest) sbDest.textContent = query.to || 'Destino';
         }
+
+        // Mobile: Slide up the drawer (Upstream Logic preserved)
+        if (window.innerWidth < 1024 && mobileResultsDrawer) {
+            mobileResultsDrawer.classList.remove('translate-y-[110%]');
+            mobileResultsDrawer.classList.add('translate-y-0');
+        }
     });
 
     sbEditBtn?.addEventListener('click', () => {
         window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: { state: 'search' } }));
     });
 
-    // Listen for close from Hub to restore view?
+    // Close/Collapse Drawer Logic
+    drawerHandle?.addEventListener('click', () => {
+        mobileResultsDrawer?.classList.add('translate-y-[110%]');
+        mobileResultsDrawer?.classList.remove('translate-y-0');
+    });
+
+    // Also listen to CLEAR_MAP to hide drawer and restore search
+    window.addEventListener('CLEAR_MAP', () => {
+        mobileResultsDrawer?.classList.add('translate-y-[110%]');
+        mobileResultsDrawer?.classList.remove('translate-y-0');
+        window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: { state: 'search' } }));
+    });
+
+    // Hub Close Button logic (from VerticalHub)
     const closeBtn = document.getElementById('hub-close-btn');
     closeBtn?.addEventListener('click', () => {
-         // Also restore search view when closing hub (optional, but consistent)
+         // Also restore search view when closing hub
          window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: { state: 'search' } }));
     });
+
   </script>
 
   <style>
