@@ -101,11 +101,13 @@ The project has recently undergone a cleanup. Redundant folders like `MOVICUN_3.
 
 ---
 
-### [2026-01-27] - Gemini MCP Status
+### [2026-01-29] - Gemini MCP Status
 **MCPs ACTIVATED:**
 - [x] sequential-thinking (Simulated via Chain of Thought)
 - [x] google-search
 - [x] filesystem
+- [x] render (Connected: Workspace 'Webs')
+- [!] stitch (Credentials OK, API Disabled on Project 1010136656293)
 - [ ] supabase (Not available - Documented as pending)
 
 **READY TO BEGIN:** Phase 1 migration planning
