@@ -1,7 +1,5 @@
 ---
-
-layout: MainLayout
-
+const { title = "Cancún Mueve" } = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -9,7 +7,7 @@ layout: MainLayout
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>City Rotator</title>
+    <title>{title}</title>
     <link rel="stylesheet" href="/styles/main.css">
 </head>
 <body>

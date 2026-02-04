@@ -340,6 +340,7 @@ pub fn analyze_gap(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64) -
     serde_wasm_bindgen::to_value(&res).unwrap()
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
