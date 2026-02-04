@@ -162,7 +162,26 @@ const {
     }
   }
 
-  function drawRoute(data) {
+  function getRouteColor(route) {
+      const name = route.name || "";
+      const type = route.transport_type || "";
+      const lowerName = name.toLowerCase();
+
+      // Riviera Maya (Teal)
+      if (lowerName.includes("playa express") || lowerName.includes("ado") || type === "ADO" || type === "PlayaExpress" || type.includes("Van")) {
+          return '#00B2A9';
+      }
+
+      // Costa Mujeres (Orange)
+      if (lowerName.includes("puerto juárez") || lowerName.includes("rehoyada") || lowerName.includes("muelle")) {
+          return '#FF8200';
+      }
+
+      // Default Brand Orange
+      return '#F97316';
+  }
+
+  function drawRoute(journey, userLocation = null) {
     if (!map) return;
 
     // Remove old layer group to avoid overhead during additions
@@ -170,6 +189,9 @@ const {
         layerGroup.clearLayers();
         layerGroup.remove();
     }
+
+    // Handle Legacy Input (direct object without wrapper)
+    const data = journey;
 
     // Normalize input to legs array
     let legs = [];
@@ -184,6 +206,29 @@ const {
 
     const newLayers = [];
     const allBounds = [];
+
+    // Draw Gap (Walking Segment)
+    if (userLocation && data.start_coords) {
+         // Dashed Line from User to Start
+         const gapLine = window.L.polyline([userLocation, data.start_coords], {
+             color: '#64748b', // Slate-500
+             weight: 4,
+             dashArray: '10, 10',
+             opacity: 0.8
+         });
+         newLayers.push(gapLine);
+
+         // User Marker
+         newLayers.push(window.L.circleMarker(userLocation, {
+             radius: 8,
+             color: '#ffffff',
+             fillColor: '#3b82f6',
+             fillOpacity: 1,
+             weight: 2
+         }).bindPopup("<b>Tu Ubicación</b>"));
+
+         allBounds.push(userLocation);
+    }
 
     legs.forEach((leg, index) => {
         const stops = leg.stops || [];
@@ -212,9 +257,13 @@ const {
         if (routeCoords.length > 0) {
             // Style based on index (Leg 1 vs Leg 2)
             const isFirst = index === 0;
-            const color = index === 0 ? '#F97316' : '#3B82F6'; // Second leg blue
-            // Visual distinction: Leg 2 is dashed
-            const dashArray = isFirst ? null : '10, 10';
+            // Use specific color for Leg 1, Blue for Leg 2 (Transfer)
+            const color = index === 0 ? getRouteColor(leg) : '#3B82F6';
+
+            // Visual distinction: Leg 2 is dashed if it's a transfer?
+            // Usually transfers are solid too, but distinct color.
+            // Requirement: "Render the Bus Route as a Solid Polyline".
+            const dashArray = null;
             const weight = 5;
 
             const polyline = window.L.polyline(routeCoords, {
@@ -229,23 +278,20 @@ const {
             if (index === 0) {
                  const start = validStops[0];
                  newLayers.push(window.L.marker(start.latlng)
-                    .bindPopup(`<b>Inicio:</b> ${start.name}`));
+                    .bindPopup(`<b>Inicio Ruta:</b> ${start.name}`));
             }
 
             // End Marker (only for last leg)
             if (index === legs.length - 1) {
                  const end = validStops[validStops.length - 1];
                  newLayers.push(window.L.marker(end.latlng)
-                    .bindPopup(`<b>Fin:</b> ${end.name}`));
+                    .bindPopup(`<b>Fin Ruta:</b> ${end.name}`));
             }
 
             // Transfer Marker (if not last leg)
             if (index < legs.length - 1) {
                 const end = validStops[validStops.length - 1];
-                 newLayers.push(window.L.marker(end.latlng, {
-                     // Custom icon for transfer? Or just a marker.
-                     // Using default marker but maybe distinct popup
-                 }).bindPopup(`<b>Transbordo:</b> ${end.name}`));
+                 newLayers.push(window.L.marker(end.latlng).bindPopup(`<b>Transbordo:</b> ${end.name}`));
             }
 
             // Intermediate dots (optimized with Canvas via map preference)
@@ -276,7 +322,16 @@ const {
   // Listen for global event
   window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
     console.log("Event received:", event.detail);
-    drawRoute(event.detail);
+    let journey = event.detail;
+    let userLocation = null;
+
+    // Normalize input
+    if (event.detail.journey) {
+         journey = event.detail.journey;
+         userLocation = event.detail.userLocation;
+    }
+
+    drawRoute(journey, userLocation);
   });
 
   window.addEventListener('HIGHLIGHT_ROUTE', (event) => {

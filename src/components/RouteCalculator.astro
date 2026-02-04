@@ -506,14 +506,41 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
   function renderResults(data) {
     // Data can be array (legacy) or object { journeys, gap }
-    const journeys = Array.isArray(data) ? data : (data.journeys || []);
+    const rawJourneys = Array.isArray(data) ? data : (data.journeys || []);
+    const gap = Array.isArray(data) ? null : (data.gap || null);
+
+    // Enrich journeys with GPS data if available
+    const journeys = rawJourneys.map(j => {
+        const leg0 = j.legs[0];
+        // Try to get precise start name
+        const startName = leg0.stops && leg0.stops.length > 0 ? leg0.stops[0] : leg0.origin_hub;
+
+        let start_coords = null;
+        let walking_distance_km = null;
+
+        if (startName) {
+            start_coords = resolveCoords(startName);
+        }
+
+        if (start_coords && realOriginCoords) {
+             walking_distance_km = getDistanceFromLatLonInKm(
+                 realOriginCoords[0], realOriginCoords[1],
+                 start_coords[0], start_coords[1]
+             );
+        }
+
+        return {
+            ...j,
+            start_coords,
+            walking_distance_km
+        };
+    });
 
     // Clear local container as we are moving to Hub
     if (resultsContainer) resultsContainer.innerHTML = '';
 
     // Dispatch events for Vertical Hub and Map
-    // We pass the full data object (or normalize if it was array)
-    const eventDetail = Array.isArray(data) ? { journeys: data, gap: null } : data;
+    const eventDetail = { journeys, gap, userLocation: realOriginCoords };
 
     window.dispatchEvent(new CustomEvent('SEARCH_COMPLETED', { detail: eventDetail }));
     window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: { state: 'map' } }));
