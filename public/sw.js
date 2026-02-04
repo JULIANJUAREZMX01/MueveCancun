@@ -71,8 +71,8 @@ self.addEventListener('fetch', (event) => {
     // Datos: Network-first
     event.respondWith(networkFirst(request));
   } else if (request.url.includes('/wasm/') || request.url.includes('/icons/') || request.url.includes('coordinates.json')) {
-    // Assets inmutables o estáticos: Cache-first
-    event.respondWith(cacheFirst(request));
+    // Assets inmutables o estáticos: Stale-While-Revalidate
+    event.respondWith(staleWhileRevalidate(event));
   } else if (OSM_TILES_PATTERN.test(request.url)) {
     // OSM Tiles (Zoom 12-16): Cache-first
     event.respondWith(cacheFirst(request));
@@ -112,4 +112,26 @@ async function networkFirst(request) {
   } catch (error) {
     return caches.match(request);
   }
+}
+
+async function staleWhileRevalidate(event) {
+  const request = event.request;
+  const cache = await caches.open(CACHE_NAME);
+  const cachedResponse = await cache.match(request);
+
+  const fetchPromise = fetch(request).then(async (networkResponse) => {
+    if (networkResponse && networkResponse.status === 200) {
+      await cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  }).catch((error) => {
+    console.log('Fetch failed in SWR', error);
+  });
+
+  if (cachedResponse) {
+    event.waitUntil(fetchPromise);
+    return cachedResponse;
+  }
+
+  return fetchPromise;
 }
