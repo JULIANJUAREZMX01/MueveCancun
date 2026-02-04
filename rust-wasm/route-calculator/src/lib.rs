@@ -391,7 +391,6 @@ pub fn calculate_route(
     dest_lng: f64,
     routes_val: JsValue
 ) -> JsValue {
-    println!("DEBUG: calculate_route called");
     let data: RootData = match serde_wasm_bindgen::from_value(routes_val) {
         Ok(d) => d,
         Err(_e) => {
