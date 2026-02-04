@@ -309,7 +309,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
       mapBtn?.addEventListener('click', () => {
           sessionStorage.setItem('temp_origin', originInput.value);
-          window.location.href = '/mapa?picker=destination';
+          window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'map' })); if (window.showToast) window.showToast('Selecciona un punto en el mapa (Próximamente)', 'info');
       });
 
       // Check URL params (only for one panel, or both?)
