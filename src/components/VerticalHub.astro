@@ -1,0 +1,172 @@
+---
+---
+
+<div id="vertical-hub" class="fixed left-0 top-0 bottom-0 w-80 bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col pointer-events-auto border-r border-slate-200 font-sans">
+  <!-- Header -->
+  <div class="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+    <h2 class="font-black text-lg text-slate-800 tracking-tight">Rutas Sugeridas</h2>
+    <button id="hub-close-btn" class="p-1.5 rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
+       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+       </svg>
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="px-4 py-3 border-b border-slate-100 flex gap-2 overflow-x-auto scrollbar-hide bg-white">
+     <button class="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-100">Más Eficiente</button>
+     <button class="px-3 py-1 bg-white border border-slate-200 text-slate-500 text-xs font-bold rounded-full hover:bg-slate-50">Menos Caminata</button>
+  </div>
+
+  <!-- Results List -->
+  <div id="hub-results" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
+     <!-- Empty State -->
+     <div class="text-center py-10 text-slate-400">
+        <p class="text-sm">Realiza una búsqueda para ver resultados.</p>
+     </div>
+  </div>
+</div>
+
+<script>
+  const hub = document.getElementById('vertical-hub');
+  const resultsContainer = document.getElementById('hub-results');
+  const closeBtn = document.getElementById('hub-close-btn');
+
+  closeBtn?.addEventListener('click', () => {
+      hub?.classList.add('-translate-x-full');
+  });
+
+  window.addEventListener('SEARCH_COMPLETED', (event) => {
+      const { journeys, gap } = event.detail; // Expecting structure { journeys, gap }
+      // If event.detail is array (legacy/fallback), handle it
+      const data = Array.isArray(event.detail) ? event.detail : (journeys || []);
+      const gapData = event.detail.gap || null;
+
+      renderResults(data, gapData);
+      hub?.classList.remove('-translate-x-full');
+  });
+
+  const TRANSPORT_LABELS = {
+    "Bus": "Autobús",
+    "Combi": "Combi",
+    "Van": "Van",
+    "ADO": "ADO",
+    "PlayaExpress": "Playa Express",
+  };
+
+  function getTransportLabel(type) {
+    return TRANSPORT_LABELS[type] || type;
+  }
+
+  function getTransportIcon(type) {
+      let icon = "bus.svg";
+      if (type.includes("Bus")) icon = "bus.svg";
+      else if (type.includes("Van") || type.includes("Playa")) icon = "bus.svg"; // Use bus for now or generic
+      else if (type.includes("ADO")) icon = "bus.svg";
+
+      return `<img src="/icons/${icon}" class="w-5 h-5 opacity-75" alt="${type}" />`;
+  }
+
+  function renderResults(journeys, gapData) {
+      if (!resultsContainer) return;
+      resultsContainer.innerHTML = '';
+
+      if (!journeys || journeys.length === 0) {
+          // Check Gap Data for specific message
+          let message = "No hay rutas públicas directas. Te sugerimos tomar un taxi o app al paradero más cercano.";
+          if (gapData && gapData.recommendation === 'NoPublicCoverage') {
+              message = "Zona fuera de cobertura pública. Se requiere transporte privado completo.";
+          }
+
+          resultsContainer.innerHTML = `
+            <div class="p-6 bg-white rounded-xl border border-slate-200 text-center shadow-sm">
+                <div class="text-4xl mb-3 flex justify-center">
+                    <img src="/icons/credit-card.svg" class="w-10 h-10 opacity-50" />
+                </div>
+                <h3 class="font-bold text-slate-800 mb-2">Transporte Privado</h3>
+                <p class="text-xs text-slate-500 mb-4">${message}</p>
+            </div>
+          `;
+          return;
+      }
+
+      journeys.forEach((journey, index) => {
+          const card = document.createElement('div');
+
+          let typeClass = "border-slate-200";
+          let badge = "";
+
+          if (index === 0) {
+              typeClass = "border-emerald-200 bg-emerald-50/30";
+              badge = `<span class="absolute top-2 right-2 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded uppercase tracking-wide">Óptima</span>`;
+          } else if (journey.type === 'Transfer') {
+               typeClass = "border-orange-200 bg-orange-50/30";
+               badge = `<span class="absolute top-2 right-2 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded uppercase tracking-wide">Compleja</span>`;
+          }
+
+          card.className = `relative p-3 bg-white rounded-lg shadow-sm border ${typeClass} cursor-pointer hover:shadow-md transition-all active:scale-98 group`;
+
+          const leg1 = journey.legs[0];
+          const totalCost = journey.total_price;
+
+          // Gap Info Display
+          let gapInfo = "";
+          if (gapData && gapData.origin_gap) {
+               const dist = gapData.origin_gap.distance_km;
+               const time = Math.round(dist * 15); // Approx 15 min per km walking
+               if (dist > 0.1) {
+                   gapInfo = `
+                    <div class="flex items-center gap-1 text-slate-500">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        <span>Caminata ${time} min</span>
+                    </div>
+                   `;
+               }
+          }
+
+          let content = `
+             ${badge}
+             <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-lg shadow-sm group-hover:bg-white transition-colors">
+                    ${getTransportIcon(leg1.transport_type)}
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 text-sm leading-tight">${leg1.name}</h4>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">${getTransportLabel(leg1.transport_type)}</span>
+                </div>
+             </div>
+
+             <div class="flex items-center gap-4 text-xs text-slate-600 pl-1">
+                <div class="flex items-center gap-1">
+                    <span class="font-bold text-slate-900">$${totalCost}</span>
+                </div>
+                ${gapInfo}
+             </div>
+          `;
+
+          if (journey.type === 'Transfer') {
+               content += `
+                 <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-500 flex items-center gap-1">
+                    <svg class="w-3 h-3 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <span class="font-bold text-orange-600">Transbordo</span>
+                    <span>en ${journey.transfer_point}</span>
+                 </div>
+               `;
+          }
+
+          card.innerHTML = content;
+
+          // Interactions
+          card.addEventListener('mouseenter', () => {
+              window.dispatchEvent(new CustomEvent('HIGHLIGHT_ROUTE', { detail: journey }));
+          });
+
+          card.addEventListener('click', () => {
+              window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: journey }));
+          });
+
+          resultsContainer.appendChild(card);
+      });
+  }
+
+</script>

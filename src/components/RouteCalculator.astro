@@ -190,7 +190,9 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   let balance = 0;
   let hasBalance = false;
   let wasmLoaded = false;
-  let find_route, validate_operator_funds;
+  let find_route, validate_operator_funds, analyze_gap_wasm;
+  let realOriginCoords = null;
+  let realDestCoords = null;
 
   const btn = document.getElementById('search-btn');
   const resultsContainer = document.getElementById('results-container');
@@ -269,6 +271,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       await module.default();
       find_route = module.find_route;
       validate_operator_funds = module.validate_operator_funds;
+      analyze_gap_wasm = module.analyze_gap;
 
       console.log("WASM initialized.");
       wasmLoaded = true;
@@ -319,6 +322,10 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       const originInput = document.getElementById('origin-input');
       const destInput = document.getElementById('destination-input');
 
+      // Reset real coords on manual input
+      originInput?.addEventListener('input', () => { realOriginCoords = null; });
+      destInput?.addEventListener('input', () => { realDestCoords = null; });
+
       // Brand Phase Triggers
       originInput?.addEventListener('blur', (e) => {
           if ((e.target as HTMLInputElement).value.length > 0) {
@@ -344,6 +351,8 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
           navigator.geolocation.getCurrentPosition((pos) => {
               const { latitude, longitude } = pos.coords;
+              realOriginCoords = [latitude, longitude]; // Store raw coords for Gap Analysis
+
               let minDist = Infinity;
               let nearest = '';
 
@@ -419,6 +428,13 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
      dest.value = temp;
   });
 
+  function resolveCoords(name) {
+      if (!name) return null;
+      if (coordinatesDB[name]) return coordinatesDB[name];
+      const key = Object.keys(coordinatesDB).find(k => name.includes(k) || k.includes(name));
+      return key ? coordinatesDB[key] : null;
+  }
+
   btn?.addEventListener('click', async () => {
     if (!wasmLoaded) {
          renderError("El sistema no está listo (WASM offline).");
@@ -446,9 +462,25 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     await new Promise(r => setTimeout(r, 800));
 
     try {
+      // Gap Analysis
+      const originCoords = realOriginCoords || resolveCoords(fromVal);
+      const destCoords = realDestCoords || resolveCoords(toVal);
+
+      let gapRes = null;
+      if (originCoords && destCoords && analyze_gap_wasm) {
+          try {
+              gapRes = analyze_gap_wasm(originCoords[0], originCoords[1], destCoords[0], destCoords[1]);
+          } catch(e) { console.warn("Gap Analysis failed", e); }
+      }
+
+      // Optimize search if Gap Analysis found a better nearby hub
+      // But for now we stick to what the user sees in the input to avoid confusion
       const res = find_route(fromVal, toVal);
-      console.log('Route Result:', res);
-      renderResults(res);
+
+      console.log('Route Result:', res, 'Gap:', gapRes);
+
+      // Pass both journeys and gap info
+      renderResults({ journeys: res, gap: gapRes });
     } catch (error) {
       console.error(error);
       renderError("System Error: " + (error.message || error));
@@ -472,52 +504,31 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     return TRANSPORT_LABELS[type] || type;
   }
 
-  function renderResults(journeys) {
-    if (!resultsContainer) return;
-    resultsContainer.innerHTML = '';
+  function renderResults(data) {
+    // Data can be array (legacy) or object { journeys, gap }
+    const journeys = Array.isArray(data) ? data : (data.journeys || []);
 
-    if (!journeys || journeys.length === 0) {
-        resultsContainer.innerHTML = `
-          <div class="p-6 bg-slate-50 rounded-xl border border-slate-200 text-center animate-slide-up">
-            <div class="text-4xl mb-3">🤷‍♂️</div>
-            <h3 class="font-bold text-slate-800 mb-2">No encontramos una ruta exacta</h3>
-            <p class="text-sm text-slate-600 mb-4">Intenta usar palabras clave como "Centro", "Zona Hotelera" o "Crucero".</p>
-            <a href="/rutas" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
-               📋 Ver todas las rutas
-            </a>
-          </div>
-        `;
-        if (window.showToast) window.showToast("No se encontraron rutas exactas", "info");
-        return;
-    }
+    // Clear local container as we are moving to Hub
+    if (resultsContainer) resultsContainer.innerHTML = '';
 
-    journeys.forEach(journey => {
-        if (journey.type === 'Direct') {
-             renderDirectCard(journey);
-        } else if (journey.type === 'Transfer') {
-             renderTransferCard(journey);
+    // Dispatch events for Vertical Hub and Map
+    // We pass the full data object (or normalize if it was array)
+    const eventDetail = Array.isArray(data) ? { journeys: data, gap: null } : data;
+
+    window.dispatchEvent(new CustomEvent('SEARCH_COMPLETED', { detail: eventDetail }));
+    window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: { state: 'map' } }));
+
+    if (window.showToast) {
+        if (!journeys || journeys.length === 0) {
+             window.showToast("No se encontraron rutas exactas", "info");
+        } else {
+             window.showToast(`${journeys.length} opciones encontradas`, 'success');
         }
-    });
-
-    document.querySelectorAll('.view-map-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const journey = JSON.parse((e.currentTarget).dataset.journey);
-
-            // Dispatch event
-            window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: journey }));
-
-            // Persist
-            localStorage.setItem('pending_route', JSON.stringify(journey));
-
-            // Navigate if needed (we are staying on page usually if map is below, but just in case)
-             window.location.href = '/mapa';
-        });
-    });
-
-    if (window.showToast) window.showToast(`${journeys.length} opciones encontradas`, 'success');
+    }
   }
 
+  // Legacy render functions kept if needed for fallback or deleted to save space
+  // For now we rely on VerticalHub.
   function renderDirectCard(journey) {
         const route = journey.legs[0];
         const badgesHtml = route.badges.map(b => `<span class="text-xs bg-slate-100 px-1 rounded">${b}</span>`).join('');

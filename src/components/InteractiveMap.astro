@@ -2,15 +2,17 @@
 interface Props {
   center?: [number, number];
   zoom?: number;
+  class?: string;
 }
 
 const {
   center = [21.1619, -86.8515], // Cancún
-  zoom = 12
+  zoom = 12,
+  class: className = "relative w-full h-[500px] overflow-hidden rounded-xl border border-gray-200 shadow-inner z-0"
 } = Astro.props;
 ---
 
-<div class="relative w-full h-[500px] overflow-hidden rounded-xl border border-gray-200 shadow-inner z-0">
+<div class={className}>
   <div id="map-container" class="w-full h-full z-0" data-center={JSON.stringify(center)} data-zoom={zoom}></div>
 
   <div id="map-loader" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-[1000]">
@@ -210,10 +212,10 @@ const {
         if (routeCoords.length > 0) {
             // Style based on index (Leg 1 vs Leg 2)
             const isFirst = index === 0;
-            const color = '#F97316';
+            const color = index === 0 ? '#F97316' : '#3B82F6'; // Second leg blue
             // Visual distinction: Leg 2 is dashed
             const dashArray = isFirst ? null : '10, 10';
-            const weight = 4;
+            const weight = 5;
 
             const polyline = window.L.polyline(routeCoords, {
                 color,
@@ -275,6 +277,24 @@ const {
   window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
     console.log("Event received:", event.detail);
     drawRoute(event.detail);
+  });
+
+  window.addEventListener('HIGHLIGHT_ROUTE', (event) => {
+    // Ideally highlight one route and dim others, but for now just draw it
+    // If we support multiple routes, we'd need to manage layers better.
+    // Assuming simple redraw for now as per "InteractiveMap" simplicity.
+    drawRoute(event.detail);
+  });
+
+  // Handle View State Change (Resize map)
+  window.addEventListener('VIEW_STATE_CHANGE', (event) => {
+      const state = event.detail.state; // 'search' or 'map'
+      const container = document.getElementById('map-container');
+
+      // We might need to invalidate size if container size changes via CSS
+      setTimeout(() => {
+          if (map) map.invalidateSize();
+      }, 300);
   });
 
   // Init on load

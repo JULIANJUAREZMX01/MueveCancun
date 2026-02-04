@@ -1,6 +1,18 @@
 /* @ts-self-types="./route_calculator.d.ts" */
 
 /**
+ * @param {number} user_lat
+ * @param {number} user_lng
+ * @param {number} dest_lat
+ * @param {number} dest_lng
+ * @returns {any}
+ */
+export function analyze_gap(user_lat, user_lng, dest_lat, dest_lng) {
+    const ret = wasm.analyze_gap(user_lat, user_lng, dest_lat, dest_lng);
+    return ret;
+}
+
+/**
  * @param {number} origin_lat
  * @param {number} origin_lng
  * @param {number} dest_lat
@@ -21,6 +33,16 @@ export function calculate_route(origin_lat, origin_lng, dest_lat, dest_lng, rout
  */
 export function calculate_trip_cost(distance, seats, is_tourist) {
     const ret = wasm.calculate_trip_cost(distance, seats, is_tourist);
+    return ret;
+}
+
+/**
+ * @param {number} lat
+ * @param {number} lng
+ * @returns {any}
+ */
+export function find_nearest_stop(lat, lng) {
+    const ret = wasm.find_nearest_stop(lat, lng);
     return ret;
 }
 
