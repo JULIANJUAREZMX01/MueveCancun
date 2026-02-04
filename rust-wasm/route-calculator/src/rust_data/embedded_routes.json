@@ -1,128 +1,11 @@
 {
   "routes": [
     {
-      "id": "TURICUN_Ruta_5",
-      "name": "Ruta 5",
-      "color": "#0ea5e9",
-      "fare": 15,
-      "transport_type": "BusUrban",
-      "stops": [
-        {
-          "id": "TURICUN_Ruta 5_1",
-          "name": "Mercado 23",
-          "lat": 21.1456211962889,
-          "lng": -86.86014867200211,
-          "order": 1
-        }
-      ]
-    },
-    {
-      "id": "TURICUN_Ruta_5",
-      "name": "Ruta 5",
-      "color": "#0ea5e9",
-      "fare": 15,
-      "transport_type": "BusUrban",
-      "stops": [
-        {
-          "id": "TURICUN_Ruta 5_1",
-          "name": "Puerto Cancun",
-          "lat": 21.171657874329153,
-          "lng": -86.83896898441569,
-          "order": 1
-        }
-      ]
-    },
-    {
-      "id": "TURICUN_Ruta_5",
-      "name": "Ruta 5",
-      "color": "#0ea5e9",
-      "fare": 15,
-      "transport_type": "BusUrban",
-      "stops": [
-        {
-          "id": "TURICUN_Ruta 5_1",
-          "name": "Zona Hotelera Km 12",
-          "lat": 21.160127407988142,
-          "lng": -86.86451020209557,
-          "order": 1
-        }
-      ]
-    },
-    {
-      "id": "SATURMEX_R-44",
-      "name": "R-44",
-      "color": "#F97316",
-      "fare": 15,
-      "transport_type": "BusHotelZone",
-      "stops": [
-        {
-          "id": "SATURMEX_R-44_1",
-          "name": "Plaza Outlet",
-          "lat": 21.138718317501834,
-          "lng": -86.85655443103946,
-          "order": 1
-        },
-        {
-          "id": "SATURMEX_R-44_2",
-          "name": "06:00",
-          "lat": 0,
-          "lng": 0,
-          "order": 2
-        }
-      ]
-    },
-    {
-      "id": "SATURMEX_R-44",
-      "name": "R-44",
-      "color": "#F97316",
-      "fare": 15,
-      "transport_type": "BusHotelZone",
-      "stops": [
-        {
-          "id": "SATURMEX_R-44_1",
-          "name": "Gran Plaza",
-          "lat": 21.182501580377522,
-          "lng": -86.87075455354119,
-          "order": 1
-        },
-        {
-          "id": "SATURMEX_R-44_2",
-          "name": "06:15",
-          "lat": 0,
-          "lng": 0,
-          "order": 2
-        }
-      ]
-    },
-    {
-      "id": "SATURMEX_R-44",
-      "name": "R-44",
-      "color": "#F97316",
-      "fare": 15,
-      "transport_type": "BusHotelZone",
-      "stops": [
-        {
-          "id": "SATURMEX_R-44_1",
-          "name": "Tecnológico",
-          "lat": 21.142717452967588,
-          "lng": -86.86973932290414,
-          "order": 1
-        },
-        {
-          "id": "SATURMEX_R-44_2",
-          "name": "06:30",
-          "lat": 0,
-          "lng": 0,
-          "order": 2
-        }
-      ]
-    },
-    {
       "id": "R1_ZONA_HOTELERA",
       "name": "Ruta 1",
       "color": "#F97316",
       "fare": 15,
-      "transport_type": "BusHotelZone",
+      "transport_type": "Bus_HotelZone",
       "stops": [
         {
           "id": "R1_ZONA_HOTELERA_0",
@@ -173,7 +56,7 @@
       "name": "Ruta 2",
       "color": "#F97316",
       "fare": 15,
-      "transport_type": "BusHotelZone",
+      "transport_type": "Bus_HotelZone",
       "stops": [
         {
           "id": "R2_VILLAS_OTOCH_0",
@@ -217,7 +100,7 @@
       "name": "Ruta 44",
       "color": "#0ea5e9",
       "fare": 12,
-      "transport_type": "BusUrban",
+      "transport_type": "Bus_Urban",
       "stops": [
         {
           "id": "R44_POLIGONO_0",
@@ -261,7 +144,7 @@
       "name": "ADO Aeropuerto",
       "color": "#CE1126",
       "fare": 130,
-      "transport_type": "AdoAirport",
+      "transport_type": "ADO_Airport",
       "stops": [
         {
           "id": "ADO_AEROPUERTO_0",
