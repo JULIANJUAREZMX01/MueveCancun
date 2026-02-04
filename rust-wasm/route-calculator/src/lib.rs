@@ -6,6 +6,47 @@ use petgraph::algo::dijkstra;
 use std::collections::HashMap;
 use once_cell::sync::Lazy;
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct StopInfo {
+    pub name: String,
+    pub lat: f64,
+    pub lng: f64,
+    pub distance_km: f64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct GapAnalysis {
+    pub origin_gap: Option<StopInfo>,
+    pub dest_gap: Option<StopInfo>,
+    pub recommendation: String, // "Walk", "Private", "NoPublicCoverage"
+}
+
+// Hardcoded Stop Database for Last Mile Logic
+static STOPS_DB: Lazy<HashMap<String, (f64, f64)>> = Lazy::new(|| {
+    let mut m = HashMap::new();
+    m.insert("OXXO Villas Otoch Paraíso".to_string(), (21.1685, -86.885));
+    m.insert("Chedraui Lakin".to_string(), (21.165, -86.879));
+    m.insert("Av. Kabah".to_string(), (21.16, -86.845));
+    m.insert("Plaza Las Américas".to_string(), (21.141, -86.843));
+    m.insert("Entrada Zona Hotelera".to_string(), (21.153, -86.815));
+    m.insert("Zona Hotelera".to_string(), (21.135, -86.768));
+    m.insert("La Rehoyada".to_string(), (21.1619, -86.8515));
+    m.insert("El Crucero".to_string(), (21.1576, -86.8269));
+    m.insert("Av. Tulum Norte".to_string(), (21.165, -86.823));
+    m.insert("Playa del Niño".to_string(), (21.195, -86.81));
+    m.insert("Muelle Ultramar".to_string(), (21.207, -86.802));
+    m.insert("Terminal ADO Centro".to_string(), (21.1586, -86.8259));
+    m.insert("Aeropuerto T2".to_string(), (21.0417, -86.8761));
+    m.insert("Aeropuerto T3".to_string(), (21.041, -86.8755));
+    m.insert("Aeropuerto T4".to_string(), (21.04, -86.875));
+    m.insert("Playa del Carmen Centro".to_string(), (20.6296, -87.0739));
+    m.insert("Villas Otoch Paraíso".to_string(), (21.1685, -86.885));
+    m.insert("Villas Otoch".to_string(), (21.1685, -86.885));
+    m.insert("Hospital General".to_string(), (21.15, -86.84));
+    m.insert("Mercado 28".to_string(), (21.162, -86.828));
+    m
+});
+
 // --- SYSTEM OVERRIDE: TRUTH OF THE STREET ---
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -315,6 +356,67 @@ pub fn find_route(origin: &str, dest: &str) -> JsValue {
 pub fn get_all_routes() -> JsValue {
     let routes = &*CATALOG;
     serde_wasm_bindgen::to_value(routes).unwrap()
+}
+
+pub fn find_nearest_stop_rs(lat: f64, lng: f64) -> Option<StopInfo> {
+    let mut best_stop: Option<StopInfo> = None;
+    let mut min_dist = f64::MAX;
+
+    for (name, (s_lat, s_lng)) in STOPS_DB.iter() {
+        let dist = haversine_distance(lat, lng, *s_lat, *s_lng);
+        if dist < min_dist {
+            min_dist = dist;
+            best_stop = Some(StopInfo {
+                name: name.clone(),
+                lat: *s_lat,
+                lng: *s_lng,
+                distance_km: dist,
+            });
+        }
+    }
+    best_stop
+}
+
+pub fn analyze_gap_rs(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64) -> GapAnalysis {
+    let origin_stop = find_nearest_stop_rs(user_lat, user_lng);
+    let dest_stop = find_nearest_stop_rs(dest_lat, dest_lng);
+
+    let mut rec = "Walk".to_string();
+
+    if let Some(ref os) = origin_stop {
+        if os.distance_km > 3.0 {
+            rec = "NoPublicCoverage".to_string();
+        } else if os.distance_km > 0.5 {
+            rec = "Private".to_string();
+        }
+    } else {
+        rec = "NoPublicCoverage".to_string();
+    }
+
+    // Secondary check for destination
+    if let Some(ref ds) = dest_stop {
+        if ds.distance_km > 3.0 && rec != "NoPublicCoverage" {
+             // Optional logic
+        }
+    }
+
+    GapAnalysis {
+        origin_gap: origin_stop,
+        dest_gap: dest_stop,
+        recommendation: rec,
+    }
+}
+
+#[wasm_bindgen]
+pub fn find_nearest_stop(lat: f64, lng: f64) -> JsValue {
+    let res = find_nearest_stop_rs(lat, lng);
+    serde_wasm_bindgen::to_value(&res).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn analyze_gap(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64) -> JsValue {
+    let res = analyze_gap_rs(user_lat, user_lng, dest_lat, dest_lng);
+    serde_wasm_bindgen::to_value(&res).unwrap()
 }
 
 // --- LEGACY GRAPH LOGIC (Kept for compilation, bypassed for now) ---
@@ -745,6 +847,41 @@ mod tests {
     fn test_garbage_input() {
         let res = find_route_rs("XyZ123Rubbish", "AbC987Junk");
         assert!(res.is_empty(), "Should return empty for garbage input, got {} routes", res.len());
+    }
+
+    #[test]
+    fn test_nearest_stop() {
+        // "Plaza Las Américas" [21.141, -86.843]
+        // Point slightly off
+        let res = find_nearest_stop_rs(21.1415, -86.8435);
+        assert!(res.is_some());
+        assert_eq!(res.unwrap().name, "Plaza Las Américas");
+    }
+
+    #[test]
+    fn test_gap_analysis_walk() {
+        // Close to Plaza Las Américas
+        let res = analyze_gap_rs(21.1411, -86.8431, 21.1685, -86.885); // dest: Villas Otoch
+        assert_eq!(res.recommendation, "Walk");
+    }
+
+    #[test]
+    fn test_gap_analysis_private() {
+        // Point in between Plaza Las Américas and Entrada Zona Hotelera, but > 500m from both
+        // Plaza: 21.141, -86.843
+        // Entrada ZH: 21.153, -86.815
+        // Test Point: 21.145, -86.83 (Approx middle of nowhere in downtown)
+
+        // Nearest might be Plaza Las Américas (approx 1.5km) or others.
+        // Let's verify distance > 0.5km
+        let res = analyze_gap_rs(21.145, -86.83, 21.1685, -86.885);
+
+        // Debug print if it fails
+        if res.recommendation != "Private" {
+             println!("DEBUG: Found Nearest: {:?} with dist {}", res.origin_gap.as_ref().map(|s| &s.name), res.origin_gap.as_ref().map(|s| s.distance_km).unwrap_or(0.0));
+        }
+
+        assert_eq!(res.recommendation, "Private");
     }
 
 }

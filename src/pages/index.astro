@@ -1,12 +1,15 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import RouteCalculator from '../components/RouteCalculator.astro';
+import VerticalHub from '../components/VerticalHub.astro';
 ---
 
 <MainLayout title="Inicio">
-  <div class="space-y-8 animate-fade-in">
+  <VerticalHub />
+
+  <div id="home-content" class="space-y-8 animate-fade-in transition-opacity duration-500">
     <!-- Hero / Greeting -->
-    <section class="text-center pt-6 pb-2">
+    <section id="hero-section" class="text-center pt-6 pb-2 transition-all duration-500">
       <h1 class="text-3xl font-display font-black text-deep-navy tracking-tight mb-2">
         ¿A dónde vamos hoy?
       </h1>
@@ -16,12 +19,12 @@ import RouteCalculator from '../components/RouteCalculator.astro';
     </section>
 
     <!-- Calculator Widget -->
-    <section>
+    <section id="calculator-section" class="transition-all duration-500">
       <RouteCalculator />
     </section>
 
     <!-- Catalog Link -->
-    <section class="text-center pt-2">
+    <section id="catalog-link-section" class="text-center pt-2 transition-all duration-500">
       <a href="/rutas" class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-primary-600 transition-colors border-b border-transparent hover:border-primary-600 pb-0.5">
         <span>🚌</span> Ver todas las rutas
       </a>
@@ -34,4 +37,22 @@ import RouteCalculator from '../components/RouteCalculator.astro';
       </p>
     </section>
   </div>
+
+  <script>
+    window.addEventListener('VIEW_STATE_CHANGE', (e) => {
+        if (e.detail.state === 'map') {
+            const content = document.getElementById('home-content');
+            // Fade out content to reveal map
+            content.classList.add('opacity-0', 'pointer-events-none');
+            // Or remove it? Opacity allows transition.
+        }
+    });
+
+    // Listen for close from Hub to restore view?
+    const closeBtn = document.getElementById('hub-close-btn');
+    closeBtn?.addEventListener('click', () => {
+         const content = document.getElementById('home-content');
+         content.classList.remove('opacity-0', 'pointer-events-none');
+    });
+  </script>
 </MainLayout>

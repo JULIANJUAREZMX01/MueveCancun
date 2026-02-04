@@ -1,4 +1,5 @@
 ---
+import InteractiveMap from '../components/InteractiveMap.astro';
 import { ClientRouter } from 'astro:transitions';
 import '../index.css';
 import Toast from '../components/ui/Toast.astro';
@@ -54,8 +55,10 @@ const navItems = [
   </head>
   <body class="bg-slate-50 min-h-screen text-slate-900 font-sans antialiased pb-20 selection:bg-primary-200 selection:text-primary-900">
 
+    <InteractiveMap class="fixed inset-0 z-0 h-screen w-screen" transition:persist />
+
     <!-- Top Bar (Mobile) -->
-    <header class="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/50 h-14 px-4 flex items-center justify-between shadow-sm lg:hidden">
+    <header class="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/50 h-14 px-4 flex items-center justify-between shadow-sm lg:hidden pointer-events-auto">
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 bg-gradient-to-tr from-primary-500 to-primary-400 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md">
           CM
@@ -71,7 +74,7 @@ const navItems = [
     </header>
 
     <!-- Desktop Header (Simple) -->
-    <header class="hidden lg:flex fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 h-16 px-8 items-center justify-between">
+    <header class="hidden lg:flex fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 h-16 px-8 items-center justify-between pointer-events-auto">
         <div class="flex items-center gap-2">
             <span class="brand-container font-display font-black text-2xl tracking-tight text-deep-navy" data-original="true">Cancún<span class="text-primary-500">Mueve</span></span>
         </div>
@@ -84,12 +87,12 @@ const navItems = [
         </nav>
     </header>
 
-    <main class="w-full max-w-md mx-auto lg:max-w-4xl pt-16 lg:pt-24 px-4 min-h-[calc(100vh-80px)]">
+    <main class="w-full max-w-md mx-auto lg:max-w-4xl pt-16 lg:pt-24 px-4 min-h-[calc(100vh-80px)] relative z-10 pointer-events-auto">
       <slot />
     </main>
 
     <!-- Sticky Bottom Nav (Mobile) -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] lg:hidden">
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] lg:hidden pointer-events-auto">
       <div class="grid grid-cols-4 h-16">
         {navItems.map((item) => {
           const isActive = item.activePattern.test(pathname);
