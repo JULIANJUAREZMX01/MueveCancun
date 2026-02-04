@@ -5,54 +5,81 @@ import VerticalHub from '../components/VerticalHub.astro';
 ---
 
 <MainLayout title="Inicio">
-  <VerticalHub />
 
-  <div id="home-content" class="space-y-8 animate-fade-in transition-opacity duration-500">
-    <!-- Hero / Greeting -->
-    <section id="hero-section" class="text-center pt-6 pb-2 transition-all duration-500">
-      <h1 class="text-3xl font-display font-black text-deep-navy tracking-tight mb-2">
-        ¿A dónde vamos hoy?
-      </h1>
-      <p class="text-slate-500 font-medium">
-        Encuentra la mejor ruta en transporte público.
-      </p>
-    </section>
+  <!-- DESKTOP VIEW: Floating Dock -->
+  <aside class="hidden lg:flex flex-col fixed left-5 top-24 bottom-5 w-[420px] z-20 gap-4 pointer-events-none">
+     <!-- Search -->
+     <div class="pointer-events-auto shadow-2xl rounded-3xl">
+       <RouteCalculator />
+     </div>
 
-    <!-- Calculator Widget -->
-    <section id="calculator-section" class="transition-all duration-500">
-      <RouteCalculator />
-    </section>
+     <!-- Results Hub -->
+     <div class="flex-1 min-h-0 glass-panel rounded-3xl pointer-events-auto overflow-hidden flex flex-col backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-white/20">
+       <VerticalHub />
+     </div>
+  </aside>
 
-    <!-- Catalog Link -->
-    <section id="catalog-link-section" class="text-center pt-2 transition-all duration-500">
-      <a href="/rutas" class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-primary-600 transition-colors border-b border-transparent hover:border-primary-600 pb-0.5">
-        <span>🚌</span> Ver todas las rutas
-      </a>
-    </section>
+  <!-- MOBILE VIEW: Bottom Sheet Strategy -->
+  <div id="mobile-view-manager" class="lg:hidden pointer-events-none fixed inset-0 z-30 flex flex-col justify-end">
 
-    <!-- Promo / Info (Subtle) -->
-    <section class="text-center py-8 opacity-60">
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-        Powered by RouteEngine™ v2.2 WASM
-      </p>
-    </section>
+      <!-- Search Sheet (Always visible at bottom) -->
+      <div id="mobile-search-sheet" class="pointer-events-auto p-4 pb-6 transition-transform duration-300 transform translate-y-0 z-40">
+          <RouteCalculator />
+      </div>
+
+      <!-- Results Drawer (Slides up over map, under search?) or Full Screen? -->
+      <!-- Let's make it slide up and COVER the search or sit below it? -->
+      <!-- Apple Maps: Search moves to top, results fill below. -->
+      <!-- Simpler: Results slide up as a modal sheet covering bottom half. -->
+      <div id="mobile-results-drawer" class="fixed inset-x-0 bottom-0 h-[70vh] bg-white dark:bg-slate-900 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.2)] transform translate-y-[110%] transition-transform duration-500 cubic-bezier(0.32, 0.72, 0, 1) z-50 flex flex-col pointer-events-auto">
+
+          <!-- Handle -->
+          <div class="w-full p-3 flex justify-center items-center border-b border-slate-100 dark:border-slate-800 cursor-pointer" id="drawer-handle">
+              <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 overflow-hidden relative">
+              <VerticalHub />
+          </div>
+      </div>
   </div>
 
   <script>
-    window.addEventListener('VIEW_STATE_CHANGE', (e) => {
-        if (e.detail.state === 'map') {
-            const content = document.getElementById('home-content');
-            // Fade out content to reveal map
-            content.classList.add('opacity-0', 'pointer-events-none');
-            // Or remove it? Opacity allows transition.
+    // View Logic
+    const mobileResultsDrawer = document.getElementById('mobile-results-drawer');
+    const drawerHandle = document.getElementById('drawer-handle');
+    const mobileSearchSheet = document.getElementById('mobile-search-sheet');
+
+    // Handle Search Completion
+    window.addEventListener('SEARCH_COMPLETED', (e) => {
+        // Desktop: VerticalHub automatically updates (it listens to same event).
+
+        // Mobile: Slide up the drawer
+        if (window.innerWidth < 1024 && mobileResultsDrawer) {
+            mobileResultsDrawer.classList.remove('translate-y-[110%]');
+            mobileResultsDrawer.classList.add('translate-y-0');
+
+            // Optional: Minimize search sheet?
+            // mobileSearchSheet.classList.add('translate-y-full');
+            // Better to keep it accessible or collapse it.
         }
     });
 
-    // Listen for close from Hub to restore view?
-    const closeBtn = document.getElementById('hub-close-btn');
-    closeBtn?.addEventListener('click', () => {
-         const content = document.getElementById('home-content');
-         content.classList.remove('opacity-0', 'pointer-events-none');
+    // Close/Collapse Drawer Logic
+    drawerHandle?.addEventListener('click', () => {
+        mobileResultsDrawer?.classList.add('translate-y-[110%]');
+        mobileResultsDrawer?.classList.remove('translate-y-0');
     });
+
+    // Also listen to CLEAR_MAP to hide drawer
+    window.addEventListener('CLEAR_MAP', () => {
+        mobileResultsDrawer?.classList.add('translate-y-[110%]');
+        mobileResultsDrawer?.classList.remove('translate-y-0');
+    });
+
+    // Mobile Search Sheet Expansion Logic (Optional Polish)
+    // We could make it compact and expand on focus, but standard full card is safer for now.
+
   </script>
 </MainLayout>

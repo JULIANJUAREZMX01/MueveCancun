@@ -5,6 +5,7 @@ use petgraph::graph::{NodeIndex, UnGraph};
 use petgraph::algo::dijkstra;
 use std::collections::HashMap;
 use once_cell::sync::Lazy;
+use std::sync::RwLock;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct StopInfo {
@@ -21,8 +22,8 @@ pub struct GapAnalysis {
     pub recommendation: String, // "Walk", "Private", "NoPublicCoverage"
 }
 
-// Hardcoded Stop Database for Last Mile Logic
-static STOPS_DB: Lazy<HashMap<String, (f64, f64)>> = Lazy::new(|| {
+// Dynamic Stop Database for Last Mile Logic
+static STOPS_DB: Lazy<RwLock<HashMap<String, (f64, f64)>>> = Lazy::new(|| {
     let mut m = HashMap::new();
     m.insert("OXXO Villas Otoch Paraíso".to_string(), (21.1685, -86.885));
     m.insert("Chedraui Lakin".to_string(), (21.165, -86.879));
@@ -44,8 +45,33 @@ static STOPS_DB: Lazy<HashMap<String, (f64, f64)>> = Lazy::new(|| {
     m.insert("Villas Otoch".to_string(), (21.1685, -86.885));
     m.insert("Hospital General".to_string(), (21.15, -86.84));
     m.insert("Mercado 28".to_string(), (21.162, -86.828));
-    m
+    RwLock::new(m)
 });
+
+#[wasm_bindgen]
+pub fn load_stops_data(val: JsValue) {
+    // Expecting a JSON object: { "Stop Name": [lat, lng], ... }
+    // Using simple array format for coords to match JS extraction output [lat, lng]
+    // HashMap<String, Vec<f64>> or HashMap<String, (f64, f64)>?
+    // serde_wasm_bindgen should handle [f64, f64] as (f64, f64) tuple or Vec<f64>.
+    // Let's use Vec<f64> for safety and convert.
+
+    let new_data: HashMap<String, Vec<f64>> = match serde_wasm_bindgen::from_value(val) {
+        Ok(d) => d,
+        Err(_) => {
+            // console::error not available, silently fail or use println
+            return;
+        }
+    };
+
+    if let Ok(mut db) = STOPS_DB.write() {
+        for (name, coords) in new_data {
+            if coords.len() >= 2 {
+                db.insert(name, (coords[0], coords[1]));
+            }
+        }
+    }
+}
 
 // --- SYSTEM OVERRIDE: TRUTH OF THE STREET ---
 
@@ -362,16 +388,18 @@ pub fn find_nearest_stop_rs(lat: f64, lng: f64) -> Option<StopInfo> {
     let mut best_stop: Option<StopInfo> = None;
     let mut min_dist = f64::MAX;
 
-    for (name, (s_lat, s_lng)) in STOPS_DB.iter() {
-        let dist = haversine_distance(lat, lng, *s_lat, *s_lng);
-        if dist < min_dist {
-            min_dist = dist;
-            best_stop = Some(StopInfo {
-                name: name.clone(),
-                lat: *s_lat,
-                lng: *s_lng,
-                distance_km: dist,
-            });
+    if let Ok(db) = STOPS_DB.read() {
+        for (name, (s_lat, s_lng)) in db.iter() {
+            let dist = haversine_distance(lat, lng, *s_lat, *s_lng);
+            if dist < min_dist {
+                min_dist = dist;
+                best_stop = Some(StopInfo {
+                    name: name.clone(),
+                    lat: *s_lat,
+                    lng: *s_lng,
+                    distance_km: dist,
+                });
+            }
         }
     }
     best_stop

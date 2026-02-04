@@ -13,6 +13,8 @@ export function find_route(origin: string, dest: string): any;
 
 export function get_all_routes(): any;
 
+export function load_stops_data(val: any): void;
+
 export function validate_operator_funds(balance: number): boolean;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -25,6 +27,7 @@ export interface InitOutput {
     readonly find_nearest_stop: (a: number, b: number) => any;
     readonly find_route: (a: number, b: number, c: number, d: number) => any;
     readonly get_all_routes: () => any;
+    readonly load_stops_data: (a: any) => void;
     readonly validate_operator_funds: (a: number) => number;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
