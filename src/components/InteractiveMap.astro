@@ -3,22 +3,24 @@ interface Props {
   center?: [number, number];
   zoom?: number;
   class?: string;
+  offset?: boolean; // Whether to offset center for Desktop Dock
 }
 
 const {
   center = [21.1619, -86.8515], // Cancún
   zoom = 12,
-  class: className = "relative w-full h-[500px] overflow-hidden rounded-xl border border-gray-200 shadow-inner z-0"
+  class: className = "relative w-full h-full z-0",
+  offset = false
 } = Astro.props;
 ---
 
 <div class={className}>
-  <div id="map-container" class="w-full h-full z-0" data-center={JSON.stringify(center)} data-zoom={zoom}></div>
+  <div id="map-container" class="w-full h-full z-0" data-center={JSON.stringify(center)} data-zoom={zoom} data-offset={offset}></div>
 
-  <div id="map-loader" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-[1000]">
+  <div id="map-loader" class="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-slate-900 z-[1000] transition-opacity duration-500">
     <div class="text-center">
       <div class="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-      <p class="text-gray-600 font-medium">Cargando mapa...</p>
+      <p class="text-gray-600 dark:text-gray-300 font-medium">Cargando mapa...</p>
     </div>
   </div>
 </div>
@@ -26,14 +28,26 @@ const {
 <script>
   let map;
   let layerGroup;
+  let tileLayer;
   let coordinatesDB = {};
+
+  const TILES = {
+      light: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+  };
+
+  const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
   async function initMap() {
     const container = document.getElementById('map-container');
     const loader = document.getElementById('map-loader');
 
     if (!container || window.L === undefined) {
-        console.warn("Leaflet not loaded or container missing");
+        // Retry logic if Leaflet not yet loaded
+        if (!window.L) {
+             setTimeout(initMap, 200);
+             return;
+        }
         return;
     }
 
@@ -41,8 +55,8 @@ const {
 
     const center = JSON.parse(container.dataset.center);
     const zoom = parseFloat(container.dataset.zoom);
+    const useOffset = container.dataset.offset === 'true';
 
-    // Initialize Leaflet
     // Cancún Bounds: [20.8, -87.3] to [21.6, -86.5]
     const maxBounds = [
         [20.8, -87.3], // South-West
@@ -53,112 +67,61 @@ const {
         preferCanvas: true,
         maxBounds: maxBounds,
         maxBoundsViscosity: 1.0,
-        minZoom: 10
+        minZoom: 10,
+        zoomControl: false // We will add it manually or hide it for UI cleanliness
     }).setView(center, zoom);
 
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    // Initial Tile Load
+    const isDark = document.documentElement.classList.contains('dark');
+    tileLayer = window.L.tileLayer(isDark ? TILES.dark : TILES.light, {
+        attribution: ATTRIBUTION,
         minZoom: 10,
-        maxZoom: 18
+        maxZoom: 19
     }).addTo(map);
 
     layerGroup = window.L.layerGroup().addTo(map);
+
+    // Apply Offset if Desktop
+    if (useOffset && window.innerWidth >= 1024) {
+        // Shift center right by approx 225px (half of 450px sidebar)
+        // If sidebar is on the left, we want the map center to move right so it isn't hidden.
+        // panBy([x, y]) translates the map pane.
+        map.panBy([225, 0], { animate: false });
+    }
 
     // Fetch Coordinates
     try {
         const res = await fetch('/coordinates.json');
         coordinatesDB = await res.json();
-        console.log("Coordinates loaded:", Object.keys(coordinatesDB).length);
     } catch (e) {
         console.error("Failed to load coordinates:", e);
     }
 
-    if (loader) loader.classList.add('hidden');
-
-    // Check for Picker Mode
-    const urlParams = new URLSearchParams(window.location.search);
-    const isPicker = urlParams.get('picker');
-
-    if (isPicker) {
-        if (window.showToast) window.showToast("Toque el mapa para seleccionar una parada cercana", "info");
-
-        // Add visual indicator
-        const indicator = document.createElement('div');
-        indicator.className = 'absolute top-4 left-1/2 -translate-x-1/2 bg-primary-600 text-white px-4 py-2 rounded-full shadow-lg z-[1000] font-bold text-sm animate-bounce';
-        indicator.textContent = "📍 Modo Selección";
-        container.parentElement.appendChild(indicator);
-
-        map.on('click', (e) => {
-            const { lat, lng } = e.latlng;
-            let minDist = Infinity;
-            let nearest = '';
-
-            // Leaflet map.distance returns meters
-            Object.entries(coordinatesDB).forEach(([name, coords]) => {
-                const d = map.distance(e.latlng, coords);
-                if (d < minDist) {
-                    minDist = d;
-                    nearest = name;
-                }
-            });
-
-            // Threshold: 1000 meters
-            if (minDist < 1000 && nearest) {
-                // Show confirmation popup at location
-                window.L.popup()
-                    .setLatLng(e.latlng)
-                    .setContent(`
-                        <div class="text-center">
-                            <p class="font-bold mb-2">¿Seleccionar "${nearest}"?</p>
-                            <button id="confirm-pick-btn" class="bg-primary-500 text-white px-3 py-1 rounded text-xs font-bold">
-                                ✅ Confirmar
-                            </button>
-                        </div>
-                    `)
-                    .openOn(map);
-
-                // Bind click to button (need delay for DOM)
-                setTimeout(() => {
-                    document.getElementById('confirm-pick-btn')?.addEventListener('click', () => {
-                         window.location.href = `/?selected_stop=${encodeURIComponent(nearest)}`;
-                    });
-                }, 100);
-
-            } else {
-                 if (window.showToast) window.showToast("No hay paradas registradas cerca", "warning");
-            }
-        });
-
-        // Return early to avoid drawing routes or default markers that might confuse
-        return;
+    if (loader) {
+        loader.classList.add('opacity-0');
+        setTimeout(() => loader.classList.add('hidden'), 500);
     }
 
-    // Check for pending route from other pages
+    // Theme Change Listener
+    window.addEventListener('THEME_CHANGE', (e) => {
+        const newTheme = e.detail.theme; // 'dark' or 'light'
+        if (tileLayer) {
+            tileLayer.setUrl(newTheme === 'dark' ? TILES.dark : TILES.light);
+        }
+    });
+
+    // Check for pending route
     const pendingRoute = localStorage.getItem('pending_route');
     if (pendingRoute) {
         try {
             const data = JSON.parse(pendingRoute);
-            // Normalize to object if it's just an array of strings (legacy)
             if (Array.isArray(data)) {
                 drawRoute({ stops: data });
             } else {
                 drawRoute(data);
             }
             localStorage.removeItem('pending_route');
-        } catch (e) {
-            console.error("Error parsing pending route", e);
-        }
-    }
-
-    // Default markers for key hubs if no route
-    if (!pendingRoute) {
-        const markers = [];
-        Object.entries(coordinatesDB).forEach(([name, coords]) => {
-            if (["El Crucero", "Zona Hotelera", "Aeropuerto T2", "Plaza Las Américas"].includes(name)) {
-                 markers.push(window.L.marker(coords).bindPopup(`<b>${name}</b>`));
-            }
-        });
-        markers.forEach(layer => layer.addTo(layerGroup));
+        } catch (e) { console.error(e); }
     }
   }
 
@@ -183,8 +146,6 @@ const {
 
   function drawRoute(journey, userLocation = null) {
     if (!map) return;
-
-    // Remove old layer group to avoid overhead during additions
     if (layerGroup) {
         layerGroup.clearLayers();
         layerGroup.remove();
@@ -236,10 +197,7 @@ const {
         const validStops = [];
 
         stops.forEach(stopName => {
-            // Fuzzy match or exact match
             let coords = coordinatesDB[stopName];
-
-            // Simple fuzzy fallback if exact missing (e.g. "Av. Kabah" vs "Hospital General (Av. Kabah)")
             if (!coords) {
                  const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
                  if (key) coords = coordinatesDB[key];
@@ -249,13 +207,10 @@ const {
                 routeCoords.push(coords);
                 validStops.push({ name: stopName, latlng: coords });
                 allBounds.push(coords);
-            } else {
-                console.warn(`[InteractiveMap] Skipping stop with missing coordinates: ${stopName}`);
             }
         });
 
         if (routeCoords.length > 0) {
-            // Style based on index (Leg 1 vs Leg 2)
             const isFirst = index === 0;
             // Use specific color for Leg 1, Blue for Leg 2 (Transfer)
             const color = index === 0 ? getRouteColor(leg) : '#3B82F6';
@@ -266,22 +221,21 @@ const {
             const dashArray = null;
             const weight = 5;
 
-            const polyline = window.L.polyline(routeCoords, {
+            newLayers.push(window.L.polyline(routeCoords, {
                 color,
                 weight,
-                opacity: 0.8,
-                dashArray
-            });
-            newLayers.push(polyline);
+                opacity: 0.9,
+                dashArray,
+                lineCap: 'round',
+                lineJoin: 'round'
+            }));
 
-            // Start Marker (only for first leg)
             if (index === 0) {
                  const start = validStops[0];
                  newLayers.push(window.L.marker(start.latlng)
                     .bindPopup(`<b>Inicio Ruta:</b> ${start.name}`));
             }
 
-            // End Marker (only for last leg)
             if (index === legs.length - 1) {
                  const end = validStops[validStops.length - 1];
                  newLayers.push(window.L.marker(end.latlng)
@@ -308,18 +262,20 @@ const {
     });
 
     if (newLayers.length > 0) {
-        // Batch add to map
         layerGroup = window.L.layerGroup(newLayers).addTo(map);
         if (allBounds.length > 0) {
-             map.fitBounds(allBounds, { padding: [50, 50] });
+             const container = document.getElementById('map-container');
+             const useOffset = container.dataset.offset === 'true';
+             const paddingLeft = (useOffset && window.innerWidth >= 1024) ? 450 : 50;
+
+             map.fitBounds(allBounds, {
+                 paddingTopLeft: [paddingLeft + 20, 50],
+                 paddingBottomRight: [50, 50]
+             });
         }
-    } else {
-         if (window.showToast) window.showToast("No se pudieron visualizar los puntos de esta ruta.", "error");
-         layerGroup = window.L.layerGroup().addTo(map);
     }
   }
 
-  // Listen for global event
   window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
     console.log("Event received:", event.detail);
     let journey = event.detail;
@@ -335,34 +291,15 @@ const {
   });
 
   window.addEventListener('HIGHLIGHT_ROUTE', (event) => {
-    // Ideally highlight one route and dim others, but for now just draw it
-    // If we support multiple routes, we'd need to manage layers better.
-    // Assuming simple redraw for now as per "InteractiveMap" simplicity.
     drawRoute(event.detail);
   });
 
-  // Handle View State Change (Resize map)
-  window.addEventListener('VIEW_STATE_CHANGE', (event) => {
-      const state = event.detail.state; // 'search' or 'map'
-      const container = document.getElementById('map-container');
-
-      // We might need to invalidate size if container size changes via CSS
-      setTimeout(() => {
-          if (map) map.invalidateSize();
-      }, 300);
-  });
-
-  // Init on load
-  if (document.readyState === 'complete') {
-      initMap();
-  } else {
-      window.addEventListener('load', initMap);
-  }
-
-  // Re-init on view transition
+  // Re-init logic
   document.addEventListener('astro:page-load', () => {
-      // Small delay to ensure container exists
       setTimeout(initMap, 100);
   });
+
+  if (document.readyState === 'complete') initMap();
+  else window.addEventListener('load', initMap);
 
 </script>
