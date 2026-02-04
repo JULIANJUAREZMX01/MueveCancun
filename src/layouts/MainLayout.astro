@@ -185,18 +185,8 @@ const navItems = [
               const containers = document.querySelectorAll('.brand-container');
 
               containers.forEach(container => {
-                  if (phase === 1) {
-                      // Cancún -> CancúnENMueve
-                      if (container.dataset.phase === '1') return;
-                      container.innerHTML = `Cancún<span class="text-[#006847] animate-pop-in inline-block mx-[1px]">EN</span><span class="text-primary-500">Mueve</span>`;
-                      container.dataset.phase = '1';
-                  } else if (phase === 2) {
-                      // -> CancúnENMueveTE
-                      if (container.dataset.phase === '2') return;
-                      // Ensure base state first if jumped
-                      container.innerHTML = `Cancún<span class="text-[#006847] mx-[1px]">EN</span><span class="text-primary-500">Mueve</span><span class="text-[#CE1126] animate-pop-in inline-block">TE</span>`;
-                      container.dataset.phase = '2';
-                  } else if (phase === 3) {
+                  // Phase 1 & 2 are now handled in the Hero section
+                  if (phase === 3) {
                       // Tetris -> ¡MUEVETE EN CANCUN!
                       if (container.dataset.phase === '3') return;
 

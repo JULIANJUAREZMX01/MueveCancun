@@ -8,17 +8,17 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
 <div class="space-y-6" id="route-calculator-wrapper">
 
-  <Card class="relative overflow-hidden border-0 !p-0 shadow-lg ring-1 ring-black/5">
-    <!-- Header / Status Bar -->
-    <div class="bg-slate-50 border-b border-slate-100 p-4 relative flex items-center justify-center min-h-[64px]">
+  <Card class="relative overflow-hidden border-0 !p-0 shadow-lg ring-1 ring-black/5 transition-all duration-500" id="search-card">
+
+    <!-- Collapsible Header -->
+    <div id="card-header" class="bg-slate-50 border-b border-slate-100 p-4 relative flex items-center justify-center min-h-[64px] transition-all duration-300">
       <div class="absolute left-4 flex items-center gap-2 lg:hidden">
-         <!-- Mobile spacer or branding if needed, currently empty to allow centering -->
       </div>
 
       <h2 class="font-black text-deep-navy tracking-tight text-center w-full"
           style="font-size: calc(1.125rem * 1.13);"
           id="title-text">
-        Que ruta me lleva?
+        ¿A dónde vamos hoy?
       </h2>
 
       <div class="absolute right-4 flex items-center gap-2">
@@ -29,7 +29,26 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       </div>
     </div>
 
-    <div class="p-5 space-y-5">
+    <!-- Summary Bar (Initially Hidden) -->
+    <div id="search-summary" class="hidden bg-white/95 backdrop-blur border-b border-slate-200 p-3 flex items-center justify-between shadow-sm animate-fade-in z-20 relative">
+        <div class="flex items-center gap-3 text-sm overflow-hidden">
+            <div class="flex flex-col min-w-0">
+               <div class="flex items-center gap-1 text-slate-800 font-bold truncate">
+                  <span class="text-green-600">●</span> <span id="summary-origin" class="truncate">Origen</span>
+               </div>
+               <div class="h-3 border-l border-slate-300 ml-1.5 border-dashed my-0.5"></div>
+               <div class="flex items-center gap-1 text-slate-800 font-bold truncate">
+                  <span class="text-red-500">●</span> <span id="summary-dest" class="truncate">Destino</span>
+               </div>
+            </div>
+        </div>
+        <button id="reset-search-btn" class="ml-2 shrink-0 text-[10px] font-bold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-200 hover:bg-primary-100 transition-colors">
+            EDITAR
+        </button>
+    </div>
+
+    <!-- Main Search Form -->
+    <div id="search-form-container" class="p-5 space-y-5 transition-all duration-500">
       <!-- Alerts -->
       <div id="balance-warning" class="hidden">
         <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded-r-md flex items-start gap-3">
@@ -167,22 +186,24 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
   const TRANSLATIONS = {
     es: {
-      title: 'Que ruta me lleva?',
+      title: '¿A dónde vamos hoy?',
       warning: 'Saldo insuficiente. Recarga tu cuenta ($180 MXN).',
       calculate: 'TRAZAR RUTA',
       calculating: 'CALCULANDO...',
       suggested: 'Mejor Opción',
       cashOnly: 'Solo Efectivo',
-      instructions: 'Pasos a seguir'
+      instructions: 'Pasos a seguir',
+      howToGet: '¿Como llegar?'
     },
     en: {
-      title: 'What route do I take?',
+      title: 'Where are we going today?',
       warning: 'Insufficient balance. Top up required ($180 MXN).',
       calculate: 'FIND ROUTE',
       calculating: 'ROUTING...',
       suggested: 'Best Option',
       cashOnly: 'Cash Only',
-      instructions: 'Steps'
+      instructions: 'Steps',
+      howToGet: 'How to get there?'
     }
   };
 
@@ -200,6 +221,9 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   const btnSpinner = document.getElementById('btn-spinner');
   const btnText = document.getElementById('btn-text');
   const calculationLoader = document.getElementById('calculation-loader');
+  const summaryView = document.getElementById('search-summary');
+  const searchForm = document.getElementById('search-form-container');
+  const cardHeader = document.getElementById('card-header');
 
   // Quick Actions
   document.querySelectorAll('.quick-action-btn').forEach(btn => {
@@ -256,7 +280,11 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     const titleText = document.getElementById('title-text');
     if (titleText) titleText.textContent = t.title;
 
-    if (btnText && !(btn as HTMLButtonElement).disabled) btnText.textContent = t.calculate;
+    if (btnText && !(btn as HTMLButtonElement).disabled) {
+        // If we are in "How to get" state, keep it? Or reset?
+        // Simple logic: just set default unless navigating
+        btnText.textContent = t.calculate;
+    }
 
     if (langToggle) langToggle.textContent = currentLang === 'es' ? 'EN' : 'ES';
   }
@@ -319,7 +347,11 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       const originInput = document.getElementById('origin-input');
       const destInput = document.getElementById('destination-input');
 
-      // Brand Phase Triggers
+      // Brand Phase Triggers (Legacy/Moved? Keeping for now but they shouldn't trigger Tetris here)
+      // Phase 1 and 2 logic was moved to Hero, but we can still emit events if index.astro listens?
+      // Actually index.astro manages Hero, so these inputs inside RouteCalculator might NOT be able to easily talk to Hero unless we emit global events.
+      // Yes, dispatchEvent works globally.
+
       originInput?.addEventListener('blur', (e) => {
           if ((e.target as HTMLInputElement).value.length > 0) {
               window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 1 } }));
@@ -357,7 +389,6 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
               if (nearest) {
                   (originInput as HTMLInputElement).value = nearest;
-                  // Trigger Phase 1
                   window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 1 } }));
                   if (window.showToast) window.showToast(`Ubicación: ${nearest}`, "success");
               } else {
@@ -419,6 +450,29 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
      dest.value = temp;
   });
 
+  // COLLAPSE LOGIC
+  function collapseUI(origin, dest) {
+      if (searchForm) searchForm.classList.add('hidden');
+      if (cardHeader) cardHeader.classList.add('hidden');
+      if (summaryView) {
+          summaryView.classList.remove('hidden');
+          document.getElementById('summary-origin').textContent = origin || 'Origen';
+          document.getElementById('summary-dest').textContent = dest || 'Destino';
+      }
+  }
+
+  function expandUI() {
+      if (searchForm) searchForm.classList.remove('hidden');
+      if (cardHeader) cardHeader.classList.remove('hidden');
+      if (summaryView) summaryView.classList.add('hidden');
+
+      // Also notify View Manager to revert?
+      // Currently the spec doesn't say we need to revert fully, but logic suggests so.
+      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'SEARCH_ACTIVE' }));
+  }
+
+  document.getElementById('reset-search-btn')?.addEventListener('click', expandUI);
+
   btn?.addEventListener('click', async () => {
     if (!wasmLoaded) {
          renderError("El sistema no está listo (WASM offline).");
@@ -434,26 +488,38 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
          return;
     }
 
-    // Trigger Phase 3 (Tetris)
-    window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 3 } }));
+    // Change Button Text
+    if (btnText) btnText.textContent = TRANSLATIONS[currentLang].howToGet;
 
-    if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculating;
+    // Show spinner
     if (btnSpinner) btnSpinner.classList.remove('hidden');
     if (calculationLoader) calculationLoader.classList.remove('hidden');
     if (resultsContainer) resultsContainer.innerHTML = '';
     (btn as HTMLButtonElement).disabled = true;
 
+    // Artificial delay for "Thinking"
     await new Promise(r => setTimeout(r, 800));
 
     try {
       const res = find_route(fromVal, toVal);
       console.log('Route Result:', res);
+
+      // Success!
+      // 1. Emit State Change
+      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_ACTIVE' }));
+
+      // 2. Collapse UI
+      collapseUI(fromVal, toVal);
+
+      // 3. Render Results
       renderResults(res);
+
     } catch (error) {
       console.error(error);
       renderError("System Error: " + (error.message || error));
+      // Revert button text on error
+       if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculate;
     } finally {
-      if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculate;
       if (btnSpinner) btnSpinner.classList.add('hidden');
       if (calculationLoader) calculationLoader.classList.add('hidden');
       (btn as HTMLButtonElement).disabled = false;
@@ -487,6 +553,8 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
             </a>
           </div>
         `;
+        // Re-expand on no results?
+        expandUI();
         if (window.showToast) window.showToast("No se encontraron rutas exactas", "info");
         return;
     }
@@ -504,14 +572,8 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
             e.stopPropagation();
             const journey = JSON.parse((e.currentTarget).dataset.journey);
 
-            // Dispatch event
+            // Dispatch event (redundant now if map is already active, but good for drawing specific route)
             window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: journey }));
-
-            // Persist
-            localStorage.setItem('pending_route', JSON.stringify(journey));
-
-            // Navigate if needed (we are staying on page usually if map is below, but just in case)
-             window.location.href = '/mapa';
         });
     });
 
