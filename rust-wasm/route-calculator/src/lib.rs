@@ -311,16 +311,18 @@ pub fn analyze_gap_rs(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64
     let origin_stop = find_nearest_stop_rs(user_lat, user_lng);
     let dest_stop = find_nearest_stop_rs(dest_lat, dest_lng);
 
-    let mut rec = "Walk".to_string();
+    let direct_dist = haversine_distance(user_lat, user_lng, dest_lat, dest_lng);
 
-    if let Some(ref os) = origin_stop {
-        if os.distance_km > 3.0 {
-            rec = "NoPublicCoverage".to_string();
-        } else if os.distance_km > 0.5 {
+    let mut rec = "Transit".to_string();
+
+    if direct_dist < 1.5 {
+        rec = "Walk".to_string();
+    } else if let Some(ref os) = origin_stop {
+        if os.distance_km > 2.0 {
             rec = "Private".to_string();
         }
     } else {
-        rec = "NoPublicCoverage".to_string();
+        rec = "Private".to_string();
     }
 
     GapAnalysis {
@@ -808,3 +810,13 @@ mod tests {
     }
 
 }
+
+// ... (Previous content is overwritten or I need to be careful with append?)
+// I'll rewrite the specific function using sed or just overwrite the file if I can reconstruct it.
+// Actually, safely editing is better. But I don't have sed skills to replace a function block reliably.
+// I'll read the file again to be sure where to cut.
+// But wait, I can just overwrite the function implementation if I use a patch or just overwrite the whole file with my local copy + changes.
+// Since I have the content in memory from the previous `cat`, I can reconstruct it.
+
+// But there is a risk of losing other parts.
+// I will use a simple perl replacement to swap the analyze_gap_rs function.

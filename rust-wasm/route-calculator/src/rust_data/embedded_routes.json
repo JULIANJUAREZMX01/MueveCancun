@@ -116,6 +116,182 @@
           "order": 2
         }
       ]
+    },
+    {
+      "id": "R1_ZONA_HOTELERA",
+      "name": "Ruta 1",
+      "color": "#F97316",
+      "fare": 15,
+      "transport_type": "BusHotelZone",
+      "stops": [
+        {
+          "id": "R1_ZONA_HOTELERA_0",
+          "name": "El Crucero Hub",
+          "lat": 21.1576,
+          "lng": -86.8269,
+          "order": 1
+        },
+        {
+          "id": "R1_ZONA_HOTELERA_1",
+          "name": "Plaza Las Américas",
+          "lat": 21.141,
+          "lng": -86.843,
+          "order": 2
+        },
+        {
+          "id": "R1_ZONA_HOTELERA_2",
+          "name": "Puerto Cancun",
+          "lat": 21.171657874329153,
+          "lng": -86.83896898441569,
+          "order": 3
+        },
+        {
+          "id": "R1_ZONA_HOTELERA_3",
+          "name": "Zona Hotelera Km 12",
+          "lat": 21.160127407988142,
+          "lng": -86.86451020209557,
+          "order": 4
+        },
+        {
+          "id": "R1_ZONA_HOTELERA_4",
+          "name": "Playa Delfines",
+          "lat": 21.1619,
+          "lng": -86.8515,
+          "order": 5
+        },
+        {
+          "id": "R1_ZONA_HOTELERA_5",
+          "name": "Entrada Zona Hotelera",
+          "lat": 21.153,
+          "lng": -86.815,
+          "order": 6
+        }
+      ]
+    },
+    {
+      "id": "R2_VILLAS_OTOCH",
+      "name": "Ruta 2",
+      "color": "#F97316",
+      "fare": 15,
+      "transport_type": "BusHotelZone",
+      "stops": [
+        {
+          "id": "R2_VILLAS_OTOCH_0",
+          "name": "OXXO Villas Otoch Paraíso",
+          "lat": 21.1685,
+          "lng": -86.885,
+          "order": 1
+        },
+        {
+          "id": "R2_VILLAS_OTOCH_1",
+          "name": "Chedraui Lakin",
+          "lat": 21.165,
+          "lng": -86.879,
+          "order": 2
+        },
+        {
+          "id": "R2_VILLAS_OTOCH_2",
+          "name": "Av. Kabah",
+          "lat": 21.16,
+          "lng": -86.845,
+          "order": 3
+        },
+        {
+          "id": "R2_VILLAS_OTOCH_3",
+          "name": "Plaza Las Américas",
+          "lat": 21.141,
+          "lng": -86.843,
+          "order": 4
+        },
+        {
+          "id": "R2_VILLAS_OTOCH_4",
+          "name": "Zona Hotelera Km 12",
+          "lat": 21.160127407988142,
+          "lng": -86.86451020209557,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "R44_POLIGONO",
+      "name": "Ruta 44",
+      "color": "#0ea5e9",
+      "fare": 12,
+      "transport_type": "BusUrban",
+      "stops": [
+        {
+          "id": "R44_POLIGONO_0",
+          "name": "Plaza Outlet",
+          "lat": 21.138718317501834,
+          "lng": -86.85655443103946,
+          "order": 1
+        },
+        {
+          "id": "R44_POLIGONO_1",
+          "name": "Gran Plaza",
+          "lat": 21.182501580377522,
+          "lng": -86.87075455354119,
+          "order": 2
+        },
+        {
+          "id": "R44_POLIGONO_2",
+          "name": "Tecnológico",
+          "lat": 21.142717452967588,
+          "lng": -86.86973932290414,
+          "order": 3
+        },
+        {
+          "id": "R44_POLIGONO_3",
+          "name": "Mercado 28",
+          "lat": 21.162,
+          "lng": -86.828,
+          "order": 4
+        },
+        {
+          "id": "R44_POLIGONO_4",
+          "name": "ADO Centro",
+          "lat": 21.1586,
+          "lng": -86.8259,
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "ADO_AEROPUERTO",
+      "name": "ADO Aeropuerto",
+      "color": "#CE1126",
+      "fare": 130,
+      "transport_type": "AdoAirport",
+      "stops": [
+        {
+          "id": "ADO_AEROPUERTO_0",
+          "name": "ADO Centro",
+          "lat": 21.1586,
+          "lng": -86.8259,
+          "order": 1
+        },
+        {
+          "id": "ADO_AEROPUERTO_1",
+          "name": "Airport T2",
+          "lat": 21.1619,
+          "lng": -86.8515,
+          "order": 2
+        },
+        {
+          "id": "ADO_AEROPUERTO_2",
+          "name": "Airport T3",
+          "lat": 21.1619,
+          "lng": -86.8515,
+          "order": 3
+        },
+        {
+          "id": "ADO_AEROPUERTO_3",
+          "name": "Airport T4",
+          "lat": 21.1619,
+          "lng": -86.8515,
+          "order": 4
+        }
+      ]
     }
   ]
 }
