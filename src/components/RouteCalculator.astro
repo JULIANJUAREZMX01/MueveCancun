@@ -164,7 +164,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   let balance = 0;
   let hasBalance = false;
   let wasmLoaded = false;
-  let find_route, validate_operator_funds, analyze_gap_wasm, load_stops_data;
+  let find_route, analyze_gap_wasm, load_stops_data;
   let coordinatesDB = {};
   let realOriginCoords = null;
 
@@ -181,7 +181,6 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       await module.default();
       window.wasmModule = module;
       find_route = module.find_route;
-      validate_operator_funds = module.validate_operator_funds;
       analyze_gap_wasm = module.analyze_gap;
       load_stops_data = module.load_stops_data;
       wasmLoaded = true;
@@ -224,7 +223,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
         balance = stored ? parseFloat(stored) : 180.0;
       } catch(e) { balance = 180.0; }
 
-      hasBalance = (wasmLoaded && validate_operator_funds) ? validate_operator_funds(balance) : balance >= 180.0;
+      hasBalance = balance >= 180.0;
 
       const badge = panel.querySelector('.balance-badge');
       const warning = panel.querySelector('.balance-warning');
