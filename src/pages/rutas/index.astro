@@ -124,7 +124,7 @@ import SkeletonLoader from '../../components/ui/SkeletonLoader.astro';
   async function init() {
     try {
       console.log("Initializing WASM for Catalog...");
-      const wasmPath = new URL('/wasm/route_calculator/route_calculator.js', window.location.href).href;
+      const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
       const module = await import(/* @vite-ignore */ wasmPath);
       await module.default();
       get_all_routes = module.get_all_routes;
