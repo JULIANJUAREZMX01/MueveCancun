@@ -18,7 +18,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       <h2 class="font-black text-deep-navy tracking-tight text-center w-full"
           style="font-size: calc(1.125rem * 1.13);"
           id="title-text">
-        Que ruta me lleva?
+        ¿A dónde vamos hoy?
       </h2>
 
       <div class="absolute right-4 flex items-center gap-2">
@@ -126,7 +126,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       </div>
 
       <Button id="search-btn" class="w-full text-lg shadow-xl shadow-primary-500/20">
-        <span id="btn-text">TRAZAR RUTA</span>
+        <span id="btn-text">¿Como llegar?</span>
         <img src="/icons/loader.svg" class="w-5 h-5 animate-spin hidden" id="btn-spinner" alt="Loading" />
       </Button>
 
@@ -167,18 +167,18 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
   const TRANSLATIONS = {
     es: {
-      title: 'Que ruta me lleva?',
+      title: '¿A dónde vamos hoy?',
       warning: 'Saldo insuficiente. Recarga tu cuenta ($180 MXN).',
-      calculate: 'TRAZAR RUTA',
+      calculate: '¿Como llegar?',
       calculating: 'CALCULANDO...',
       suggested: 'Mejor Opción',
       cashOnly: 'Solo Efectivo',
       instructions: 'Pasos a seguir'
     },
     en: {
-      title: 'What route do I take?',
+      title: 'Where are we going today?',
       warning: 'Insufficient balance. Top up required ($180 MXN).',
-      calculate: 'FIND ROUTE',
+      calculate: 'How to get there?',
       calculating: 'ROUTING...',
       suggested: 'Best Option',
       cashOnly: 'Cash Only',
@@ -190,7 +190,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   let balance = 0;
   let hasBalance = false;
   let wasmLoaded = false;
-  let find_route, validate_operator_funds;
+  let find_route, validate_operator_funds, find_nearest_stop;
 
   const btn = document.getElementById('search-btn');
   const resultsContainer = document.getElementById('results-container');
@@ -269,6 +269,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       await module.default();
       find_route = module.find_route;
       validate_operator_funds = module.validate_operator_funds;
+      find_nearest_stop = module.find_nearest_stop;
 
       console.log("WASM initialized.");
       wasmLoaded = true;
@@ -344,16 +345,21 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
           navigator.geolocation.getCurrentPosition((pos) => {
               const { latitude, longitude } = pos.coords;
-              let minDist = Infinity;
-              let nearest = '';
 
-              Object.entries(coordinatesDB).forEach(([name, coords]) => {
-                  const d = getDistanceFromLatLonInKm(latitude, longitude, coords[0], coords[1]);
-                  if (d < minDist) {
-                      minDist = d;
-                      nearest = name;
-                  }
-              });
+              let nearest = '';
+              if (find_nearest_stop && wasmLoaded) {
+                  nearest = find_nearest_stop(latitude, longitude, coordinatesDB);
+              } else {
+                  // Fallback
+                  let minDist = Infinity;
+                  Object.entries(coordinatesDB).forEach(([name, coords]) => {
+                    const d = getDistanceFromLatLonInKm(latitude, longitude, coords[0], coords[1]);
+                    if (d < minDist) {
+                        minDist = d;
+                        nearest = name;
+                    }
+                  });
+              }
 
               if (nearest) {
                   (originInput as HTMLInputElement).value = nearest;
@@ -449,6 +455,12 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       const res = find_route(fromVal, toVal);
       console.log('Route Result:', res);
       renderResults(res);
+
+      if (res && res.length > 0) {
+          // Auto-select best route and show map (SPA Collapse Logic)
+          const bestRoute = res[0];
+          window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: bestRoute }));
+      }
     } catch (error) {
       console.error(error);
       renderError("System Error: " + (error.message || error));
@@ -504,14 +516,17 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
             e.stopPropagation();
             const journey = JSON.parse((e.currentTarget).dataset.journey);
 
-            // Dispatch event
+            // Dispatch event (Dashboard will listen and switch view)
             window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: journey }));
 
-            // Persist
+            // Persist (Backup for hard reloads)
             localStorage.setItem('pending_route', JSON.stringify(journey));
 
-            // Navigate if needed (we are staying on page usually if map is below, but just in case)
-             window.location.href = '/mapa';
+            // If we are NOT on the dashboard (e.g. separate route page), navigate.
+            // But if on index, the event listener in index.astro will handle it.
+            if (window.location.pathname !== '/' && window.location.pathname !== '') {
+                window.location.href = '/mapa';
+            }
         });
     });
 

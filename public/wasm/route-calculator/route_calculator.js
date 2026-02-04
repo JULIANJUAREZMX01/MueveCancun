@@ -25,6 +25,17 @@ export function calculate_trip_cost(distance, seats, is_tourist) {
 }
 
 /**
+ * @param {number} lat
+ * @param {number} lng
+ * @param {any} coords_val
+ * @returns {any}
+ */
+export function find_nearest_stop(lat, lng, coords_val) {
+    const ret = wasm.find_nearest_stop(lat, lng, coords_val);
+    return ret;
+}
+
+/**
  * @param {string} origin
  * @param {string} dest
  * @returns {any}

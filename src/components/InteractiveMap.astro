@@ -25,10 +25,22 @@ const {
   let map;
   let layerGroup;
   let coordinatesDB = {};
+  let find_nearest_stop;
+
+  async function loadWasm() {
+      try {
+        const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
+        const module = await import(/* @vite-ignore */ wasmPath);
+        await module.default();
+        find_nearest_stop = module.find_nearest_stop;
+      } catch(e) { console.error("WASM load failed in map", e); }
+  }
 
   async function initMap() {
     const container = document.getElementById('map-container');
     const loader = document.getElementById('map-loader');
+
+    await loadWasm();
 
     if (!container || window.L === undefined) {
         console.warn("Leaflet not loaded or container missing");
@@ -53,6 +65,9 @@ const {
         maxBoundsViscosity: 1.0,
         minZoom: 10
     }).setView(center, zoom);
+
+    // Expose map instance globally for resizing
+    window.map = map;
 
     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -88,20 +103,32 @@ const {
 
         map.on('click', (e) => {
             const { lat, lng } = e.latlng;
-            let minDist = Infinity;
             let nearest = '';
+            let minDist = Infinity;
 
-            // Leaflet map.distance returns meters
-            Object.entries(coordinatesDB).forEach(([name, coords]) => {
-                const d = map.distance(e.latlng, coords);
-                if (d < minDist) {
-                    minDist = d;
-                    nearest = name;
+            if (find_nearest_stop) {
+                nearest = find_nearest_stop(lat, lng, coordinatesDB);
+                // We trust WASM to find nearest. But we might want to check distance too.
+                // The current WASM implementation just finds nearest regardless of distance (min_dist logic was comment).
+                // But in JS below we have 1000m threshold.
+                // Let's rely on Leaflet distance check for threshold to be safe, or just assume nearest is fine if we trust user clicked near something.
+                // Re-calculating distance to confirm it's close enough
+                if (nearest && coordinatesDB[nearest]) {
+                     minDist = map.distance(e.latlng, coordinatesDB[nearest]);
                 }
-            });
+            } else {
+                // Leaflet map.distance returns meters
+                Object.entries(coordinatesDB).forEach(([name, coords]) => {
+                    const d = map.distance(e.latlng, coords);
+                    if (d < minDist) {
+                        minDist = d;
+                        nearest = name;
+                    }
+                });
+            }
 
             // Threshold: 1000 meters
-            if (minDist < 1000 && nearest) {
+            if (nearest && minDist < 1000) {
                 // Show confirmation popup at location
                 window.L.popup()
                     .setLatLng(e.latlng)
@@ -277,17 +304,34 @@ const {
     drawRoute(event.detail);
   });
 
+  function setupLazyLoad() {
+      const container = document.getElementById('map-container');
+      if (!container || container._leaflet_id) return;
+
+      // Use IntersectionObserver to init map only when visible
+      const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                  console.log("Map container visible, initializing...");
+                  initMap();
+                  observer.disconnect();
+              }
+          });
+      });
+      observer.observe(container);
+  }
+
   // Init on load
   if (document.readyState === 'complete') {
-      initMap();
+      setupLazyLoad();
   } else {
-      window.addEventListener('load', initMap);
+      window.addEventListener('load', setupLazyLoad);
   }
 
   // Re-init on view transition
   document.addEventListener('astro:page-load', () => {
       // Small delay to ensure container exists
-      setTimeout(initMap, 100);
+      setTimeout(setupLazyLoad, 100);
   });
 
 </script>
