@@ -214,6 +214,23 @@ const navItems = [
 
           window.addEventListener('BRAND_UPDATE', handleBrandUpdate);
       });
+
+      // Intercept Navigation for Dashboard
+      document.addEventListener('click', (e) => {
+          const anchor = e.target.closest('a');
+          if (!anchor) return;
+
+          const href = anchor.getAttribute('href');
+          const isHome = window.location.pathname === '/' || window.location.pathname === '';
+
+          // Intercept /mapa only if on home page
+          if (href === '/mapa' && isHome) {
+              e.preventDefault();
+              window.dispatchEvent(new CustomEvent('CHANGE_VIEW', { detail: { state: 'MAP' } }));
+              // Optional: Update URL without reload if desired, but Dashboard implies single view
+              // history.pushState(null, '', '/mapa');
+          }
+      });
     </script>
 
     <style>

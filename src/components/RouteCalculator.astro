@@ -504,14 +504,17 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
             e.stopPropagation();
             const journey = JSON.parse((e.currentTarget).dataset.journey);
 
-            // Dispatch event
+            // Dispatch event (Dashboard will listen and switch view)
             window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: journey }));
 
-            // Persist
+            // Persist (Backup for hard reloads)
             localStorage.setItem('pending_route', JSON.stringify(journey));
 
-            // Navigate if needed (we are staying on page usually if map is below, but just in case)
-             window.location.href = '/mapa';
+            // If we are NOT on the dashboard (e.g. separate route page), navigate.
+            // But if on index, the event listener in index.astro will handle it.
+            if (window.location.pathname !== '/' && window.location.pathname !== '') {
+                window.location.href = '/mapa';
+            }
         });
     });
 
