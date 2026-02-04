@@ -54,6 +54,9 @@ const {
         minZoom: 10
     }).setView(center, zoom);
 
+    // Expose map instance globally for resizing
+    window.map = map;
+
     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         minZoom: 10,
