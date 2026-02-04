@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import MainLayout from '../../layouts/MainLayout.astro';
 import routesData from '../../data/routes.json';
 
@@ -81,6 +82,7 @@ const jsonLd = {
   "description": description
 };
 ---
+
 
 <MainLayout title={title} description={description}>
   <div class="space-y-6">
