@@ -391,7 +391,6 @@ pub fn calculate_route(
     dest_lng: f64,
     routes_val: JsValue
 ) -> JsValue {
-    println!("DEBUG: calculate_route called");
     let data: RootData = match serde_wasm_bindgen::from_value(routes_val) {
         Ok(d) => d,
         Err(_e) => {
@@ -539,7 +538,6 @@ pub fn find_route_internal(
     for (i, &idx) in path.iter().enumerate() {
         let node = graph.node_weight(idx).unwrap();
         // DEBUG
-        println!("DEBUG: Path Node: {} ({}) Type: {:?}", node.name, node.route_id, node.transport_type);
         res.path.push(node.stop_id.clone());
 
         if node.route_id != last_route {
