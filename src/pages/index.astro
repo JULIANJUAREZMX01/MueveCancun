@@ -32,12 +32,12 @@ import VerticalHub from '../components/VerticalHub.astro';
   <!-- DESKTOP VIEW: Floating Dock -->
   <aside id="desktop-dock" class="hidden lg:flex flex-col fixed left-5 top-24 bottom-5 w-[420px] z-20 gap-4 pointer-events-none transition-opacity duration-300">
      <!-- Search -->
-     <div class="pointer-events-auto shadow-2xl rounded-3xl">
+     <div id="desktop-search-card" class="pointer-events-auto shadow-2xl rounded-3xl transition-all duration-300">
        <RouteCalculator />
      </div>
 
      <!-- Results Hub -->
-     <div class="flex-1 min-h-0 glass-panel rounded-3xl pointer-events-auto overflow-hidden flex flex-col backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-white/20">
+     <div id="desktop-results-card" class="flex-1 min-h-0 glass-panel rounded-3xl pointer-events-auto overflow-hidden flex flex-col backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-white/20 transition-all duration-300">
        <VerticalHub />
      </div>
   </aside>
@@ -73,6 +73,8 @@ import VerticalHub from '../components/VerticalHub.astro';
     const sbEditBtn = document.getElementById('sb-edit-btn');
 
     const desktopDock = document.getElementById('desktop-dock');
+    const desktopSearchCard = document.getElementById('desktop-search-card');
+    const desktopResultsCard = document.getElementById('desktop-results-card');
     const mobileSearchSheet = document.getElementById('mobile-search-sheet');
     const mobileResultsDrawer = document.getElementById('mobile-results-drawer');
     const drawerHandle = document.getElementById('drawer-handle');
@@ -82,15 +84,16 @@ import VerticalHub from '../components/VerticalHub.astro';
         const state = e.detail.state;
 
         if (state === 'map') {
-            // Hide Search UI
-            desktopDock?.classList.add('opacity-0', 'pointer-events-none');
+            // Hide Search UI but keep Results Visible
+            desktopSearchCard?.classList.add('hidden');
             mobileSearchSheet?.classList.add('translate-y-[200%]'); // Move down offscreen
 
             // Show Summary Bar
             summaryBar?.classList.add('is-visible');
         } else if (state === 'search') {
             // Show Search UI
-            desktopDock?.classList.remove('opacity-0', 'pointer-events-none');
+            desktopSearchCard?.classList.remove('hidden');
+            desktopDock?.classList.remove('opacity-0', 'pointer-events-none'); // Ensure dock is visible
             mobileSearchSheet?.classList.remove('translate-y-[200%]');
 
             // Hide Summary Bar
