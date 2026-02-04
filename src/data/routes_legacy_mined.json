@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "source": "Legacy HTML Mining",
+    "date": "2026-02-04T10:57:08.805Z"
+  },
+  "rutas": [
+    {
+      "id": "R-44",
+      "nombre": "R-44",
+      "tipo_transporte": "Bus_Urban",
+      "paradas": [
+        {
+          "nombre": "Plaza Outlet",
+          "orden": 0,
+          "horario": "06:00"
+        },
+        {
+          "nombre": "Gran Plaza",
+          "orden": 1,
+          "horario": "06:15"
+        },
+        {
+          "nombre": "Tecnológico",
+          "orden": 2,
+          "horario": "06:30"
+        }
+      ],
+      "empresa": "Saturmex",
+      "tarifa": 12
+    },
+    {
+      "id": "RUTA_5",
+      "nombre": "Ruta 5",
+      "tipo_transporte": "Bus_Urban",
+      "paradas": [
+        {
+          "nombre": "Mercado 23",
+          "orden": 0
+        },
+        {
+          "nombre": "Puerto Cancun",
+          "orden": 1
+        },
+        {
+          "nombre": "Zona Hotelera Km 12",
+          "orden": 2
+        }
+      ],
+      "empresa": "Turicun",
+      "tarifa": 12
+    }
+  ]
+}
