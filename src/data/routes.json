@@ -108,7 +108,6 @@
   ],
   "rutas": [
     {
-
       "id": "R2_94_VILLAS_OTOCH_001",
       "nombre": "R-2-94 Villas Otoch (Eje Kabah - ZH)",
       "tarifa": 15,
@@ -233,20 +232,18 @@
           "orden": 5
         }
       ],
-
       "tipo_transporte": "Combi_Municipal"
     },
     {
       "id": "R1_ZONA_HOTELERA_001",
       "nombre": "R-1 Centro → Zona Hotelera",
       "color": "#FF6B6B",
-      "tarifa": 15.0,
-      "tipo_transporte": "Bus_HotelZone",
+      "tarifa": 15,
+      "tipo_transporte": "Bus_Urban",
       "empresas": [
         "Controladora SEA (rojas)",
         "Maya Caribe (blancas)"
       ],
-      "tarifa": 15,
       "moneda": "MXN",
       "hub_conexion": "El Crucero",
       "frecuencia_minutos": 10,
@@ -299,15 +296,14 @@
           "lng": -86.775,
           "orden": 6
         }
-      ],
-      "tipo_transporte": "Bus_Urban"
+      ]
     },
     {
       "id": "VAN_PLAYA_EXPRESS_001",
       "nombre": "Playa Express Cancún → Playa del Carmen",
       "color": "#10B981",
-      "tarifa": 55.0,
-      "tipo_transporte": "Playa_Express",
+      "tarifa": 55,
+      "tipo_transporte": "Van_Foranea",
       "moneda": "MXN",
       "hub_conexion": "Terminal ADO Centro",
       "frecuencia_minutos": 30,
@@ -337,7 +333,6 @@
           "lat": 21.175,
           "lng": -86.84,
           "orden": 3
-
         },
         {
           "id": "VAN_PLAYA_EXPRESS_001_004",
@@ -367,14 +362,13 @@
           "lng": -87.0739,
           "orden": 7
         }
-      ],
-      "tipo_transporte": "Van_Foranea"
+      ]
     },
     {
       "id": "R28_VILLAS_OTOCH_001",
       "nombre": "R-28 Villas Otoch → Av. Tulum",
       "color": "#10B981",
-      "tarifa": 13.0,
+      "tarifa": 13,
       "tipo_transporte": "Bus_Urban",
       "paradas": [
         {
@@ -405,15 +399,13 @@
           "lng": -86.8269,
           "orden": 4
         }
-
-      ],
-      "tipo_transporte": "Bus_Urban"
+      ]
     },
     {
       "id": "R19_VILLAS_OTOCH_002",
       "nombre": "R-19 Villas Otoch → López Portillo",
       "color": "#FF6B6B",
-      "tarifa": 13.0,
+      "tarifa": 13,
       "tipo_transporte": "Bus_Urban",
       "paradas": [
         {
@@ -444,8 +436,7 @@
           "lng": -86.828,
           "orden": 4
         }
-      ],
-      "tipo_transporte": "Bus_Urban"
+      ]
     },
     {
       "id": "R19_VILLAS_OTOCH_002",
@@ -488,8 +479,8 @@
       "id": "ADO_AEROPUERTO_001",
       "nombre": "ADO Aeropuerto → Centro Cancún",
       "color": "#E11D48",
-      "tarifa": 150.0,
-      "tipo_transporte": "ADO_Airport",
+      "tarifa": 150,
+      "tipo_transporte": "Bus_Foraneo",
       "paradas": [
         {
           "id": "ADO_AEROPUERTO_001_001",
@@ -520,33 +511,184 @@
           "tipo": "destino_final",
           "lng": -86.8259
         }
-      ],
-      "tipo_transporte": "Bus_Foraneo"
+      ]
     },
     {
       "id": "R10",
       "nombre": "Las Américas - Aeropuerto",
       "color": "#FFD93D",
-      "tarifa": 15.00,
+      "tarifa": 15,
       "horario": "04:00-23:00",
       "frecuencia_minutos": 20,
       "paradas": [
-        {"id": "R10_001", "nombre": "Plaza Las Américas", "lat": 21.1472, "lng": -86.8234, "orden": 1, "referencias": "Av. Sayil"},
-        {"id": "R10_002", "nombre": "Av. Nichupté", "lat": 21.1412, "lng": -86.8315, "orden": 2, "referencias": "Cerca de Pabellón Caribe"},
-        {"id": "R10_003", "nombre": "Av. Kabah", "lat": 21.1355, "lng": -86.8412, "orden": 3, "referencias": "Supermercado Soriana"},
-        {"id": "R10_004", "nombre": "Av. La Luna", "lat": 21.1285, "lng": -86.8485, "orden": 4, "referencias": "Plaza La Luna"},
-        {"id": "R10_005", "nombre": "Av. Las Torres", "lat": 21.1155, "lng": -86.8555, "orden": 5, "referencias": "Parque Kabah Sur"},
-        {"id": "R10_006", "nombre": "Av. Huayacán", "lat": 21.1025, "lng": -86.8612, "orden": 6, "referencias": "Zona Residencial"},
-        {"id": "R10_007", "nombre": "Carr. Federal 307", "lat": 21.0855, "lng": -86.8525, "orden": 7, "referencias": "Entrada Bonfil"},
-        {"id": "R10_008", "nombre": "UT Cancún", "lat": 21.0555, "lng": -86.8415, "orden": 8, "referencias": "Universidad"},
-        {"id": "R10_009", "nombre": "T3 Aeropuerto", "lat": 21.0412, "lng": -86.8725, "orden": 9, "referencias": "Vuelos Internacionales"},
-        {"id": "R10_010", "nombre": "T2 Aeropuerto", "lat": 21.0365, "lng": -86.8775, "orden": 10, "referencias": "Vuelos Nacionales"}
+        {
+          "id": "R10_001",
+          "nombre": "Plaza Las Américas",
+          "lat": 21.1472,
+          "lng": -86.8234,
+          "orden": 1,
+          "referencias": "Av. Sayil"
+        },
+        {
+          "id": "R10_002",
+          "nombre": "Av. Nichupté",
+          "lat": 21.1412,
+          "lng": -86.8315,
+          "orden": 2,
+          "referencias": "Cerca de Pabellón Caribe"
+        },
+        {
+          "id": "R10_003",
+          "nombre": "Av. Kabah",
+          "lat": 21.1355,
+          "lng": -86.8412,
+          "orden": 3,
+          "referencias": "Supermercado Soriana"
+        },
+        {
+          "id": "R10_004",
+          "nombre": "Av. La Luna",
+          "lat": 21.1285,
+          "lng": -86.8485,
+          "orden": 4,
+          "referencias": "Plaza La Luna"
+        },
+        {
+          "id": "R10_005",
+          "nombre": "Av. Las Torres",
+          "lat": 21.1155,
+          "lng": -86.8555,
+          "orden": 5,
+          "referencias": "Parque Kabah Sur"
+        },
+        {
+          "id": "R10_006",
+          "nombre": "Av. Huayacán",
+          "lat": 21.1025,
+          "lng": -86.8612,
+          "orden": 6,
+          "referencias": "Zona Residencial"
+        },
+        {
+          "id": "R10_007",
+          "nombre": "Carr. Federal 307",
+          "lat": 21.0855,
+          "lng": -86.8525,
+          "orden": 7,
+          "referencias": "Entrada Bonfil"
+        },
+        {
+          "id": "R10_008",
+          "nombre": "UT Cancún",
+          "lat": 21.0555,
+          "lng": -86.8415,
+          "orden": 8,
+          "referencias": "Universidad"
+        },
+        {
+          "id": "R10_009",
+          "nombre": "T3 Aeropuerto",
+          "lat": 21.0412,
+          "lng": -86.8725,
+          "orden": 9,
+          "referencias": "Vuelos Internacionales"
+        },
+        {
+          "id": "R10_010",
+          "nombre": "T2 Aeropuerto",
+          "lat": 21.0365,
+          "lng": -86.8775,
+          "orden": 10,
+          "referencias": "Vuelos Nacionales"
+        }
       ],
       "polyline": [
-        [-86.8234, 21.1472], [-86.8315, 21.1412], [-86.8412, 21.1355], [-86.8485, 21.1285],
-        [-86.8555, 21.1155], [-86.8612, 21.1025], [-86.8525, 21.0855], [-86.8415, 21.0555],
-        [-86.8725, 21.0412], [-86.8775, 21.0365]
+        [
+          -86.8234,
+          21.1472
+        ],
+        [
+          -86.8315,
+          21.1412
+        ],
+        [
+          -86.8412,
+          21.1355
+        ],
+        [
+          -86.8485,
+          21.1285
+        ],
+        [
+          -86.8555,
+          21.1155
+        ],
+        [
+          -86.8612,
+          21.1025
+        ],
+        [
+          -86.8525,
+          21.0855
+        ],
+        [
+          -86.8415,
+          21.0555
+        ],
+        [
+          -86.8725,
+          21.0412
+        ],
+        [
+          -86.8775,
+          21.0365
+        ]
       ]
+    },
+    {
+      "id": "R-44",
+      "nombre": "R-44",
+      "tipo_transporte": "Bus_Urban",
+      "paradas": [
+        {
+          "nombre": "Plaza Outlet",
+          "orden": 0,
+          "horario": "06:00"
+        },
+        {
+          "nombre": "Gran Plaza",
+          "orden": 1,
+          "horario": "06:15"
+        },
+        {
+          "nombre": "Tecnológico",
+          "orden": 2,
+          "horario": "06:30"
+        }
+      ],
+      "empresa": "Saturmex",
+      "tarifa": 12
+    },
+    {
+      "id": "RUTA_5",
+      "nombre": "Ruta 5",
+      "tipo_transporte": "Bus_Urban",
+      "paradas": [
+        {
+          "nombre": "Mercado 23",
+          "orden": 0
+        },
+        {
+          "nombre": "Puerto Cancun",
+          "orden": 1
+        },
+        {
+          "nombre": "Zona Hotelera Km 12",
+          "orden": 2
+        }
+      ],
+      "empresa": "Turicun",
+      "tarifa": 12
     }
   ],
   "restricciones_aeropuerto": {
@@ -602,8 +744,26 @@
     "Google Maps (limitado para rutas urbanas)"
   ],
   "destinos": [
-    {"nombre": "Coco Bongo", "categoria": "Entretenimiento", "lat": 21.1385, "lng": -86.7474, "parada_cercana": "R1_007"},
-    {"nombre": "Aeropuerto", "categoria": "Transporte", "lat": 21.0365, "lng": -86.8775, "parada_cercana": "R10_010"},
-    {"nombre": "Plaza Las Américas", "categoria": "Compras", "lat": 21.1472, "lng": -86.8234, "parada_cercana": "R1_003"}
+    {
+      "nombre": "Coco Bongo",
+      "categoria": "Entretenimiento",
+      "lat": 21.1385,
+      "lng": -86.7474,
+      "parada_cercana": "R1_007"
+    },
+    {
+      "nombre": "Aeropuerto",
+      "categoria": "Transporte",
+      "lat": 21.0365,
+      "lng": -86.8775,
+      "parada_cercana": "R10_010"
+    },
+    {
+      "nombre": "Plaza Las Américas",
+      "categoria": "Compras",
+      "lat": 21.1472,
+      "lng": -86.8234,
+      "parada_cercana": "R1_003"
+    }
   ]
 }

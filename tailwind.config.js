@@ -4,6 +4,11 @@ export default {
   content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
   theme: {
     extend: {
+      rotate: {
+        '135': '135deg',
+        '225': '225deg',
+        '315': '315deg',
+      },
       colors: {
         'deep-navy': '#003366',
         'caribbean-blue': '#00A3E0',
@@ -52,6 +57,8 @@ export default {
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
+        'twinkle': 'twinkle 3s ease-in-out infinite',
+        'meteor': 'meteor 5s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -61,6 +68,15 @@ export default {
         slideUp: {
           '0%': { transform: 'translateY(20px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        twinkle: {
+          '0%, 100%': { opacity: '0.4', transform: 'scale(0.8)' },
+          '50%': { opacity: '1', transform: 'scale(1.2)' },
+        },
+        meteor: {
+          '0%': { transform: 'rotate(215deg) translateX(0)', opacity: '1' },
+          '70%': { opacity: '1' },
+          '100%': { transform: 'rotate(215deg) translateX(-500px)', opacity: '0' },
         },
       },
     },

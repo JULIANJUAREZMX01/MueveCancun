@@ -183,6 +183,42 @@
       "operator": "",
       "schedule": "04:00-23:00",
       "frequency": "20 min"
+    },
+    {
+      "id": "R-44",
+      "name": "R-44",
+      "transport_type": "Bus",
+      "price": 12,
+      "duration": "Unknown",
+      "badges": [],
+      "origin_hub": "Plaza Outlet",
+      "dest_hub": "Tecnológico",
+      "stops": [
+        "Plaza Outlet",
+        "Gran Plaza",
+        "Tecnológico"
+      ],
+      "operator": "Saturmex",
+      "schedule": "",
+      "frequency": ""
+    },
+    {
+      "id": "RUTA_5",
+      "name": "Ruta 5",
+      "transport_type": "Bus",
+      "price": 12,
+      "duration": "Unknown",
+      "badges": [],
+      "origin_hub": "Mercado 23",
+      "dest_hub": "Zona Hotelera Km 12",
+      "stops": [
+        "Mercado 23",
+        "Puerto Cancun",
+        "Zona Hotelera Km 12"
+      ],
+      "operator": "Turicun",
+      "schedule": "",
+      "frequency": ""
     }
   ],
   "stops": {
