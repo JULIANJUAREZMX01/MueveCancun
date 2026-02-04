@@ -280,17 +280,34 @@ const {
     drawRoute(event.detail);
   });
 
+  function setupLazyLoad() {
+      const container = document.getElementById('map-container');
+      if (!container || container._leaflet_id) return;
+
+      // Use IntersectionObserver to init map only when visible
+      const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                  console.log("Map container visible, initializing...");
+                  initMap();
+                  observer.disconnect();
+              }
+          });
+      });
+      observer.observe(container);
+  }
+
   // Init on load
   if (document.readyState === 'complete') {
-      initMap();
+      setupLazyLoad();
   } else {
-      window.addEventListener('load', initMap);
+      window.addEventListener('load', setupLazyLoad);
   }
 
   // Re-init on view transition
   document.addEventListener('astro:page-load', () => {
       // Small delay to ensure container exists
-      setTimeout(initMap, 100);
+      setTimeout(setupLazyLoad, 100);
   });
 
 </script>
