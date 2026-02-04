@@ -21,9 +21,25 @@ pub struct GapAnalysis {
     pub recommendation: String, // "Walk", "Private", "NoPublicCoverage"
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct EmbeddedStop {
+    name: String,
+    lat: f64,
+    lng: f64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct EmbeddedRoute {
+    id: String,
+    name: String,
+    operator: String,
+    stops: Vec<EmbeddedStop>,
+}
+
 // Hardcoded Stop Database for Last Mile Logic
 static STOPS_DB: Lazy<HashMap<String, (f64, f64)>> = Lazy::new(|| {
     let mut m = HashMap::new();
+    // Keep legacy hardcoded stops for tests and fallback
     m.insert("OXXO Villas Otoch Paraíso".to_string(), (21.1685, -86.885));
     m.insert("Chedraui Lakin".to_string(), (21.165, -86.879));
     m.insert("Av. Kabah".to_string(), (21.16, -86.845));
@@ -44,6 +60,20 @@ static STOPS_DB: Lazy<HashMap<String, (f64, f64)>> = Lazy::new(|| {
     m.insert("Villas Otoch".to_string(), (21.1685, -86.885));
     m.insert("Hospital General".to_string(), (21.15, -86.84));
     m.insert("Mercado 28".to_string(), (21.162, -86.828));
+
+    // Load Embedded Data
+    let json_str = include_str!("rust_data/embedded_routes.json");
+    if let Ok(routes) = serde_json::from_str::<Vec<EmbeddedRoute>>(json_str) {
+        for route in routes {
+            for stop in route.stops {
+                // Overwrite or insert
+                m.insert(stop.name, (stop.lat, stop.lng));
+            }
+        }
+    } else {
+        // In a real scenario, we might log this, but for WASM without console attached, we just proceed.
+    }
+
     m
 });
 

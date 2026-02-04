@@ -1,0 +1,46 @@
+[
+  {
+    "id": "SAT001",
+    "name": "Ruta 1 Saturmex",
+    "operator": "Saturmex",
+    "stops": [
+      {
+        "name": "El Crucero",
+        "lat": 21.1619,
+        "lng": -86.8515
+      },
+      {
+        "name": "Plaza Las Américas",
+        "lat": 21.1472,
+        "lng": -86.8234
+      },
+      {
+        "name": "Saturmex Exclusive Stop",
+        "lat": 21,
+        "lng": -86
+      }
+    ]
+  },
+  {
+    "id": "TUR005",
+    "name": "Turicun Route 5",
+    "operator": "Turicun",
+    "stops": [
+      {
+        "name": "Mercado 28",
+        "lat": 21.162,
+        "lng": -86.828
+      },
+      {
+        "name": "Zona Hotelera",
+        "lat": 21.135,
+        "lng": -86.768
+      },
+      {
+        "name": "Turicun Exclusive Stop",
+        "lat": 21.0001,
+        "lng": -86.0001
+      }
+    ]
+  }
+]
