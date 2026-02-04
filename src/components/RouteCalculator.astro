@@ -114,7 +114,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       </div>
 
       <button class="search-btn w-full h-[50px] bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-black text-lg rounded-2xl shadow-lg shadow-primary-500/30 flex items-center justify-center gap-2 active:scale-98 transition-all">
-        <span class="btn-text">TRAZAR RUTA</span>
+        <span class="btn-text">¿Como llegar?</span>
         <img src="/icons/loader.svg" class="w-5 h-5 animate-spin hidden filter-white btn-spinner" alt="Loading" />
       </button>
 
@@ -149,13 +149,13 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     es: {
       title: '¿A dónde vamos?',
       warning: 'Saldo insuficiente ($180 MXN).',
-      calculate: 'TRAZAR RUTA',
+      calculate: '¿Como llegar?',
       calculating: 'CALCULANDO...',
     },
     en: {
       title: 'Where to?',
       warning: 'Insufficient balance ($180 MXN).',
-      calculate: 'FIND ROUTE',
+      calculate: 'How to get there?',
       calculating: 'ROUTING...',
     }
   };
@@ -322,12 +322,16 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
           const fromVal = originInput.value;
           const toVal = destInput.value;
 
+          // Trigger Phase 3 (Tetris)
+          window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 3 } }));
+
+          // Immediate View Transition
+          window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: { state: 'map' } }));
+
           if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculating;
           if (btnSpinner) btnSpinner.classList.remove('hidden');
           if (loader) loader.classList.remove('hidden');
           btn.disabled = true;
-
-          await new Promise(r => setTimeout(r, 800));
 
           try {
               const originCoords = resolveCoords(fromVal); // Simplified, ignoring GPS exact coords for now in scoped logic
@@ -339,7 +343,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
                   } catch(e) {}
               }
               const res = find_route(fromVal, toVal);
-              window.dispatchEvent(new CustomEvent('SEARCH_COMPLETED', { detail: { journeys: res, gap: gapRes } }));
+              window.dispatchEvent(new CustomEvent('SEARCH_COMPLETED', { detail: { journeys: res, gap: gapRes, query: { from: fromVal, to: toVal } } }));
           } catch (e) {
               console.error(e);
           } finally {
