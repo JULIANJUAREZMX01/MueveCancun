@@ -1,24 +1,230 @@
 ---
-const { title = "Cancún Mueve" } = Astro.props;
+import { ClientRouter } from 'astro:transitions';
+import '../index.css';
+import Toast from '../components/ui/Toast.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+}
+
+const {
+  title,
+  description = "La app oficial de transporte público para Cancún y Riviera Maya.",
+  image = "/og-image.png"
+} = Astro.props;
+
+const pathname = Astro.url.pathname;
+
+const navItems = [
+  { href: '/', icon: '/icons/compass.svg', label: 'Inicio', activePattern: /^\/$/ },
+  { href: '/rutas', icon: '/icons/bus.svg', label: 'Rutas', activePattern: /^\/rutas/ },
+  { href: '/mapa', icon: '/icons/map-pin.svg', label: 'Mapa', activePattern: /^\/mapa/ },
+  { href: '/driver', icon: '/icons/credit-card.svg', label: 'Mi Tarjeta', activePattern: /^\/driver/ },
+];
 ---
 
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
-    <link rel="stylesheet" href="/styles/main.css">
-</head>
-<body>
-    <header>
-        <h1>City Rotator Branding</h1>
+<html lang="es" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title} | CancúnMueve</title>
+    <meta name="description" content={description} />
+    <meta property="og:image" content={image} />
+
+    <!-- PWA -->
+    <meta name="theme-color" content="#F97316" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icons/pwa-192x192.png" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <ClientRouter />
+  </head>
+  <body class="bg-slate-50 min-h-screen text-slate-900 font-sans antialiased pb-20 selection:bg-primary-200 selection:text-primary-900">
+
+    <!-- Top Bar (Mobile) -->
+    <header class="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/50 h-14 px-4 flex items-center justify-between shadow-sm lg:hidden">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-gradient-to-tr from-primary-500 to-primary-400 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md">
+          CM
+        </div>
+        <span class="brand-container font-display font-black text-lg tracking-tight text-deep-navy" data-original="true">Cancún<span class="text-primary-500">Mueve</span></span>
+      </div>
+      <div class="flex items-center gap-3">
+         <!-- Placeholder for user profile or settings -->
+         <button class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <span class="text-xs">👤</span>
+         </button>
+      </div>
     </header>
-    <main>
-        <slot></slot>
+
+    <!-- Desktop Header (Simple) -->
+    <header class="hidden lg:flex fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 h-16 px-8 items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="brand-container font-display font-black text-2xl tracking-tight text-deep-navy" data-original="true">Cancún<span class="text-primary-500">Mueve</span></span>
+        </div>
+        <nav class="flex gap-6">
+            {navItems.map(item => (
+                <a href={item.href} class={`font-bold hover:text-primary-500 transition-colors ${item.activePattern.test(pathname) ? 'text-primary-500' : 'text-slate-500'}`}>
+                    {item.label}
+                </a>
+            ))}
+        </nav>
+    </header>
+
+    <main class="w-full max-w-md mx-auto lg:max-w-4xl pt-16 lg:pt-24 px-4 min-h-[calc(100vh-80px)]">
+      <slot />
     </main>
-    <footer>
-        <p>&copy; 2026 City Rotator</p>
-    </footer>
-</body>
+
+    <!-- Sticky Bottom Nav (Mobile) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] lg:hidden">
+      <div class="grid grid-cols-4 h-16">
+        {navItems.map((item) => {
+          const isActive = item.activePattern.test(pathname);
+          return (
+            <a
+              href={item.href}
+              class="flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
+            >
+              <div class={`p-1.5 rounded-xl transition-colors ${isActive ? 'bg-primary-50' : 'bg-transparent'}`}>
+                <img
+                  src={item.icon}
+                  class={`w-6 h-6 transition-all ${isActive ? 'filter-primary' : 'grayscale opacity-50'}`}
+                  alt={item.label}
+                />
+              </div>
+              <span class={`text-[10px] font-bold tracking-wide transition-colors ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
+                {item.label}
+              </span>
+            </a>
+          );
+        })}
+      </div>
+    </nav>
+
+    <Toast />
+
+    <!-- PWA Update Notification -->
+    <div id="pwa-update-toast" class="hidden fixed bottom-20 left-4 right-4 z-50 bg-slate-900/90 text-white p-4 rounded-xl shadow-2xl backdrop-blur-sm border border-slate-700 animate-slide-up">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <h4 class="font-bold text-sm">Nueva versión disponible</h4>
+                <p class="text-xs text-slate-300 mt-1">Recarga para ver los cambios.</p>
+            </div>
+            <button id="pwa-refresh-btn" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-lg shadow-primary-500/30">
+                ACTUALIZAR
+            </button>
+        </div>
+    </div>
+
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('SW registered: ', registration);
+
+            // Check if there is already a waiting worker
+            if (registration.waiting) {
+                const toast = document.getElementById('pwa-update-toast');
+                if (toast) toast.classList.remove('hidden');
+            }
+
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              console.log('New worker installing...');
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('New update available!');
+                    const toast = document.getElementById('pwa-update-toast');
+                    if (toast) toast.classList.remove('hidden');
+                }
+              });
+            });
+          }).catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+        });
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            window.location.reload();
+            refreshing = true;
+        });
+
+        document.getElementById('pwa-refresh-btn')?.addEventListener('click', () => {
+            navigator.serviceWorker.ready.then(registration => {
+                if (registration.waiting) {
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+            });
+        });
+      }
+    </script>
+
+    <script is:inline>
+      document.addEventListener('astro:page-load', () => {
+          // Clean up old listeners to prevent duplicates (though astro:page-load usually means fresh)
+          // Actually Astro view transitions might keep the listener if attached to window?
+          // Using a named function handler is better but for now we rely on the event.
+
+          const handleBrandUpdate = (e) => {
+              const phase = e.detail.phase;
+              const containers = document.querySelectorAll('.brand-container');
+
+              containers.forEach(container => {
+                  // Phase 1 & 2 are now handled in the Hero section
+                  if (phase === 3) {
+                      // Tetris -> ¡MUEVETE EN CANCUN!
+                      if (container.dataset.phase === '3') return;
+
+                      container.innerHTML = `
+                        <div class="flex items-center gap-1.5 leading-none">
+                            <span class="text-[#006847] animate-tetris-1">¡MUEVETE</span>
+                            <span class="text-slate-900 bg-white border border-slate-900 px-1 rounded text-[0.8em] animate-tetris-2 self-center">EN</span>
+                            <span class="text-[#CE1126] animate-tetris-3">CANCUN!</span>
+                        </div>
+                      `;
+                      container.dataset.phase = '3';
+                  }
+              });
+          };
+
+          window.addEventListener('BRAND_UPDATE', handleBrandUpdate);
+      });
+    </script>
+
+    <style>
+      .filter-primary {
+        filter: invert(49%) sepia(83%) saturate(1900%) hue-rotate(349deg) brightness(98%) contrast(98%); /* Orange-ish filter approx */
+      }
+
+      @keyframes pop-in {
+        0% { transform: scale(0); opacity: 0; }
+        80% { transform: scale(1.2); opacity: 1; }
+        100% { transform: scale(1); }
+      }
+      .animate-pop-in { animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+      @keyframes fall-down {
+        0% { transform: translateY(-20px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+      }
+      .animate-tetris-1 { animation: fall-down 0.5s ease-out forwards; display: inline-block; }
+      .animate-tetris-2 { animation: fall-down 0.5s ease-out 0.2s forwards; opacity: 0; display: inline-block; }
+      .animate-tetris-3 { animation: fall-down 0.5s ease-out 0.4s forwards; opacity: 0; display: inline-block; }
+    </style>
+  </body>
 </html>
