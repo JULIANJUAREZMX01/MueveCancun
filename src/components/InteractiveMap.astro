@@ -22,9 +22,12 @@ const {
 </div>
 
 <script>
+  import { SpatialHash } from '../utils/SpatialHash';
+
   let map;
   let layerGroup;
   let coordinatesDB = {};
+  let spatialIndex;
 
   async function initMap() {
     const container = document.getElementById('map-container');
@@ -67,6 +70,14 @@ const {
         const res = await fetch('/coordinates.json');
         coordinatesDB = await res.json();
         console.log("Coordinates loaded:", Object.keys(coordinatesDB).length);
+
+        // Build Spatial Index (Optimization: O(1) query)
+        spatialIndex = new SpatialHash(0.01);
+        Object.entries(coordinatesDB).forEach(([name, coords]) => {
+            if (Array.isArray(coords) && coords.length === 2) {
+                 spatialIndex.insert(coords[0], coords[1], name);
+            }
+        });
     } catch (e) {
         console.error("Failed to load coordinates:", e);
     }
@@ -91,14 +102,26 @@ const {
             let minDist = Infinity;
             let nearest = '';
 
-            // Leaflet map.distance returns meters
-            Object.entries(coordinatesDB).forEach(([name, coords]) => {
-                const d = map.distance(e.latlng, coords);
-                if (d < minDist) {
-                    minDist = d;
-                    nearest = name;
-                }
-            });
+            if (spatialIndex) {
+                 // Optimization: Spatial Hash Query O(1)
+                 const candidates = spatialIndex.query(lat, lng);
+                 candidates.forEach(c => {
+                      const d = map.distance(e.latlng, [c.lat, c.lng]);
+                      if (d < minDist) {
+                          minDist = d;
+                          nearest = c.data;
+                      }
+                 });
+            } else {
+                 // Fallback Linear Scan O(N)
+                Object.entries(coordinatesDB).forEach(([name, coords]) => {
+                    const d = map.distance(e.latlng, coords);
+                    if (d < minDist) {
+                        minDist = d;
+                        nearest = name;
+                    }
+                });
+            }
 
             // Threshold: 1000 meters
             if (minDist < 1000 && nearest) {
