@@ -4,6 +4,7 @@ import Button from './ui/Button.astro';
 import Input from './ui/Input.astro';
 import Badge from './ui/Badge.astro';
 import SkeletonLoader from './ui/SkeletonLoader.astro';
+import Switch from './ui/Switch.astro';
 ---
 
 <div class="space-y-6" id="route-calculator-wrapper">
@@ -139,10 +140,9 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
         </div>
         <div>
           <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Modo</span>
-          <label class="flex items-center h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 cursor-pointer hover:bg-slate-100 transition-colors">
-            <input type="checkbox" id="tourist-checkbox" class="w-5 h-5 rounded text-primary-500 border-gray-300 focus:ring-primary-500 mr-3" />
-            <span class="text-sm font-bold text-slate-700">Turista</span>
-          </label>
+          <div class="h-[44px] flex items-center">
+            <Switch id="tourist-checkbox" label="Turista" />
+          </div>
         </div>
       </div>
 
@@ -523,6 +523,16 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     return TRANSPORT_LABELS[type] || type;
   }
 
+  function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return unsafe;
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+  }
+
   function renderResults(journeys) {
     if (!resultsContainer) return;
     resultsContainer.innerHTML = '';
@@ -559,11 +569,11 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
   function renderDirectCard(journey) {
         const route = journey.legs[0];
-        const badgesHtml = route.badges.map(b => `<span class="text-xs bg-slate-100 px-1 rounded">${b}</span>`).join('');
+        const badgesHtml = route.badges.map(b => `<span class="text-xs bg-slate-100 px-1 rounded">${escapeHtml(b)}</span>`).join('');
 
-        let stopsPreview = `${route.origin_hub} ➔ ${route.dest_hub}`;
+        let stopsPreview = `${escapeHtml(route.origin_hub)} ➔ ${escapeHtml(route.dest_hub)}`;
         if (route.stops && route.stops.length > 0) {
-             stopsPreview = `${route.stops[0]} ➔ ${route.stops[route.stops.length - 1]}`;
+             stopsPreview = `${escapeHtml(route.stops[0])} ➔ ${escapeHtml(route.stops[route.stops.length - 1])}`;
         }
 
         const html = `
@@ -571,22 +581,22 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
             <div class="flex justify-between items-start">
               <div class="flex-1">
                 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mb-1">
-                  ${getTransportLabel(route.transport_type)}
+                  ${escapeHtml(getTransportLabel(route.transport_type))}
                 </span>
-                <h3 class="font-bold text-slate-800">${route.name}</h3>
+                <h3 class="font-bold text-slate-800">${escapeHtml(route.name)}</h3>
 
                 <div class="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-600">
                     ${route.operator ? `
                     <div class="flex items-center gap-1">
-                        <span>🚌</span> <span class="font-medium">${route.operator}</span>
+                        <span>🚌</span> <span class="font-medium">${escapeHtml(route.operator)}</span>
                     </div>` : ''}
                     ${route.frequency ? `
                      <div class="flex items-center gap-1">
-                        <span>⏱️</span> <span>${route.frequency}</span>
+                        <span>⏱️</span> <span>${escapeHtml(route.frequency)}</span>
                     </div>` : ''}
                     ${route.schedule ? `
                      <div class="flex items-center gap-1">
-                        <span>🕒</span> <span>${route.schedule}</span>
+                        <span>🕒</span> <span>${escapeHtml(route.schedule)}</span>
                     </div>` : ''}
                 </div>
 
@@ -598,9 +608,9 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
                 <span class="inline-flex items-center px-2 py-1 rounded bg-emerald-100 text-emerald-800 text-xs font-bold font-mono whitespace-nowrap">
                     💰 $${journey.total_price.toFixed(2)}
                 </span>
-                <p class="text-xs text-slate-500 mt-1">${route.duration}</p>
+                <p class="text-xs text-slate-500 mt-1">${escapeHtml(route.duration)}</p>
 
-                <button class="mt-2 text-[10px] font-bold text-primary-600 border border-primary-200 bg-primary-50 px-2 py-1 rounded hover:bg-primary-100 transition-colors view-map-btn" data-journey='${JSON.stringify(journey)}'>
+                <button class="mt-2 text-[10px] font-bold text-primary-600 border border-primary-200 bg-primary-50 px-2 py-1 rounded hover:bg-primary-100 transition-colors view-map-btn" data-journey='${JSON.stringify(journey).replace(/'/g, "&#39;")}'>
                     🗺️ Ver en Mapa
                 </button>
               </div>
@@ -632,9 +642,9 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
                     </div>
                     <div>
                          <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-800 mb-0.5">
-                            ${getTransportLabel(leg1.transport_type)}
+                            ${escapeHtml(getTransportLabel(leg1.transport_type))}
                          </span>
-                         <h4 class="font-bold text-slate-700 text-sm leading-tight">${leg1.name}</h4>
+                         <h4 class="font-bold text-slate-700 text-sm leading-tight">${escapeHtml(leg1.name)}</h4>
                     </div>
                 </div>
 
@@ -643,7 +653,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
                         <div class="w-2 h-2 rounded-full bg-blue-500 border-2 border-white shadow-sm ring-1 ring-blue-200"></div>
                     </div>
                     <div class="text-xs text-slate-500 font-medium bg-slate-50 px-2 py-1 rounded border border-slate-100">
-                        Bajada en <span class="font-bold text-slate-700">${transferPoint}</span>
+                        Bajada en <span class="font-bold text-slate-700">${escapeHtml(transferPoint)}</span>
                     </div>
                 </div>
 
@@ -654,9 +664,9 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
                     </div>
                     <div>
                          <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 mb-0.5">
-                            ${getTransportLabel(leg2.transport_type)}
+                            ${escapeHtml(getTransportLabel(leg2.transport_type))}
                          </span>
-                         <h4 class="font-bold text-slate-700 text-sm leading-tight">${leg2.name}</h4>
+                         <h4 class="font-bold text-slate-700 text-sm leading-tight">${escapeHtml(leg2.name)}</h4>
                     </div>
                 </div>
             </div>
@@ -667,7 +677,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
                 </span>
 
                 <button class="text-[10px] font-bold text-primary-600 border border-primary-200 bg-primary-50 px-2 py-1 rounded hover:bg-primary-100 transition-colors view-map-btn"
-                    data-journey='${JSON.stringify(journey)}'>
+                    data-journey='${JSON.stringify(journey).replace(/'/g, "&#39;")}'>
                     🗺️ Ver Ruta Completa
                 </button>
             </div>
@@ -694,7 +704,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     if (!resultsContainer) return;
     resultsContainer.innerHTML = `
         <div class="bg-red-50 p-4 rounded-xl border border-red-100 text-red-700 font-bold text-sm flex items-center gap-2 animate-slide-up">
-            <img src="/icons/alert.svg" class="w-5 h-5" alt="Error" /> ${msg}
+            <img src="/icons/alert.svg" class="w-5 h-5" alt="Error" /> ${escapeHtml(msg)}
         </div>
     `;
     if (window.showToast) window.showToast(msg, 'error');
