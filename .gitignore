@@ -57,5 +57,3 @@ node_modules/
 dist/
 .astro/
 Cargo.lock
-.git
-.github

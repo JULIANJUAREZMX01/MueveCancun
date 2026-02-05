@@ -35,6 +35,16 @@ struct EmbeddedRoute {
     name: String,
     operator: String,
     stops: Vec<EmbeddedStop>,
+    #[serde(default)]
+    transport_type: String,
+    #[serde(default)]
+    price: f64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct EmbeddedData {
+    routes: Vec<EmbeddedRoute>,
+    stops: HashMap<String, Vec<f64>>,
 }
 
 // Dynamic Stop Database for Last Mile Logic
@@ -64,15 +74,14 @@ static STOPS_DB: Lazy<RwLock<HashMap<String, (f64, f64)>>> = Lazy::new(|| {
 
     // Load Embedded Data
     let json_str = include_str!("rust_data/embedded_routes.json");
-    if let Ok(routes) = serde_json::from_str::<Vec<EmbeddedRoute>>(json_str) {
-        for route in routes {
-            for stop in route.stops {
-                // Overwrite or insert
-                m.insert(stop.name, (stop.lat, stop.lng));
+    if let Ok(data) = serde_json::from_str::<EmbeddedData>(json_str) {
+        for (name, coords) in data.stops {
+            if coords.len() >= 2 {
+                m.insert(name, (coords[0], coords[1]));
             }
         }
     } else {
-        // In a real scenario, we might log this, but for WASM without console attached, we just proceed.
+        // Fallback
     }
 
     RwLock::new(m)
