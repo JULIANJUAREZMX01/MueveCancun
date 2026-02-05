@@ -72,9 +72,10 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
             aria-controls="locations"
             aria-expanded="false"
           >
-            <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" title="Usar mi ubicación">
+            <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip">
               <img src="/icons/gps.svg" class="w-5 h-5" alt="GPS" />
             </button>
+            <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn">Usar mi ubicación</div>
           </Input>
         </div>
 
@@ -95,9 +96,10 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
             aria-controls="locations"
             aria-expanded="false"
           />
-            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" title="Seleccionar en mapa">
+            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip">
               <img src="/icons/map-plus.svg" class="w-5 h-5" alt="Map Picker" />
             </button>
+            <div slot="action" id="map-tooltip" class="graffiti-tooltip top" style="position-anchor: --map-btn">Seleccionar en mapa</div>
           </Input>
         </div>
       </div>
@@ -806,3 +808,47 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   }
 
 </script>
+
+<style>
+  /* GraffitiWarrior: CSS Anchor Positioning Tooltips */
+  .graffiti-tooltip {
+    position: absolute;
+    background: #1e293b; /* slate-800 */
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), translate 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 50;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+
+  /* Position Logic */
+  .graffiti-tooltip.bottom {
+    top: anchor(bottom);
+    right: anchor(right); /* Align right edges to prevent clipping */
+    translate: 0 10px;
+  }
+
+  .graffiti-tooltip.top {
+    bottom: anchor(top);
+    right: anchor(right); /* Align right edges to prevent clipping */
+    translate: 0 -10px;
+  }
+
+  /* Reveal Logic - Sibling Selector inside Slot */
+  button:hover + .graffiti-tooltip,
+  button:focus-visible + .graffiti-tooltip {
+    opacity: 1;
+    translate: 0 6px; /* Offset for bottom */
+  }
+
+  button:hover + .graffiti-tooltip.top,
+  button:focus-visible + .graffiti-tooltip.top {
+    translate: 0 -6px; /* Offset for top */
+  }
+</style>
