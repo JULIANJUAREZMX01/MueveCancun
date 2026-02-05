@@ -1,7 +1,6 @@
 import init, {
     calculate_route,
     analyze_gap,
-    load_stops_data,
     calculate_trip_cost,
     find_nearest_stop
 } from '../wasm/route-calculator/route_calculator.js';
