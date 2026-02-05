@@ -22,7 +22,7 @@ const {
 </div>
 
 <script>
-  import { SpatialHash } from '../utils/SpatialHash';
+  import { coordinatesStore } from '../lib/CoordinatesStore';
 
   // Optimized Coordinate Finder (Inverted Index + Cache)
   class CoordinateFinder {
@@ -83,7 +83,6 @@ const {
   let layerGroup;
   let coordinatesDB = {};
   let finder;       // Para búsqueda de nombres
-  let spatialIndex; // Para búsqueda de clics (Geo)
 
   async function initMap() {
     const container = document.getElementById('map-container');
@@ -121,22 +120,14 @@ const {
 
     layerGroup = window.L.layerGroup().addTo(map);
 
-    // Fetch Coordinates & Initialize Optimizers
+    // Initialize Shared Store
     try {
-        const res = await fetch('/coordinates.json');
-        coordinatesDB = await res.json();
-        console.log("Coordinates loaded:", Object.keys(coordinatesDB).length);
+        await coordinatesStore.init();
+        coordinatesDB = coordinatesStore.getDB() || {};
+        console.log("Coordinates loaded from store:", Object.keys(coordinatesDB).length);
 
         // 1. Init Text Finder (Fuzzy Search)
         finder = new CoordinateFinder(coordinatesDB);
-
-        // 2. Init Spatial Index (Geo Click Optimization)
-        spatialIndex = new SpatialHash(0.01);
-        Object.entries(coordinatesDB).forEach(([name, coords]) => {
-            if (Array.isArray(coords) && coords.length === 2) {
-                 spatialIndex.insert(coords[0], coords[1], name);
-            }
-        });
 
     } catch (e) {
         console.error("Failed to load coordinates:", e);
@@ -159,32 +150,21 @@ const {
 
         map.on('click', (e) => {
             const { lat, lng } = e.latlng;
-            let minDist = Infinity;
-            let nearest = '';
 
-            // Use Spatial Index if available (Fast O(1))
-            if (spatialIndex) {
-                 const candidates = spatialIndex.query(lat, lng);
-                 candidates.forEach(c => {
-                      const d = map.distance(e.latlng, [c.lat, c.lng]);
-                      if (d < minDist) {
-                          minDist = d;
-                          nearest = c.data;
-                      }
-                 });
-            } else {
-                 // Fallback Linear Scan O(N)
-                Object.entries(coordinatesDB).forEach(([name, coords]) => {
-                    const d = map.distance(e.latlng, coords);
-                    if (d < minDist) {
-                        minDist = d;
-                        nearest = name;
-                    }
-                });
+            // Use Store for Spatial Search
+            const nearest = coordinatesStore.findNearest(lat, lng);
+            let minDist = Infinity;
+
+            if (nearest && coordinatesDB[nearest]) {
+                 // Calculate distance to verify threshold (Store does it, but we need it for UI logic if we want strict < 1000m)
+                 // Store fallback is 1.5km. Map logic was 1000m.
+                 // We can trust the store or re-verify. Let's re-verify with Leaflet's distance to be consistent with previous logic.
+                 const coords = coordinatesDB[nearest];
+                 minDist = map.distance(e.latlng, coords);
             }
 
             // Threshold: 1000 meters
-            if (minDist < 1000 && nearest) {
+            if (nearest && minDist < 1000) {
                 // Show confirmation popup at location
                 window.L.popup()
                     .setLatLng(e.latlng)
