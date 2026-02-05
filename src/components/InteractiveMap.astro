@@ -5,7 +5,7 @@ interface Props {
 }
 
 const {
-  center = [21.1619, -86.8515], // Cancún
+  center = [21.1619, -86.8515], // Cancun Center
   zoom = 12
 } = Astro.props;
 ---
@@ -22,9 +22,12 @@ const {
 </div>
 
 <script>
+  import { CoordinateFinder } from '../utils/coordinateFinder';
+
   let map;
   let layerGroup;
   let coordinatesDB = {};
+  let finder;
 
   async function initMap() {
     const container = document.getElementById('map-container');
@@ -66,6 +69,7 @@ const {
     try {
         const res = await fetch('/coordinates.json');
         coordinatesDB = await res.json();
+        finder = new CoordinateFinder(coordinatesDB);
         console.log("Coordinates loaded:", Object.keys(coordinatesDB).length);
     } catch (e) {
         console.error("Failed to load coordinates:", e);
@@ -189,13 +193,17 @@ const {
         const validStops = [];
 
         stops.forEach(stopName => {
-            // Fuzzy match or exact match
-            let coords = coordinatesDB[stopName];
+            let coords;
 
-            // Simple fuzzy fallback if exact missing (e.g. "Av. Kabah" vs "Hospital General (Av. Kabah)")
-            if (!coords) {
-                 const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
-                 if (key) coords = coordinatesDB[key];
+            if (finder) {
+                coords = finder.find(stopName);
+            } else {
+                // Fallback if finder not ready (rare race condition)
+                coords = coordinatesDB[stopName];
+                if (!coords) {
+                     const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
+                     if (key) coords = coordinatesDB[key];
+                }
             }
 
             if (coords) {
