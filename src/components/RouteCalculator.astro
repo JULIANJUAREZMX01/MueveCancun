@@ -329,12 +329,95 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
     }
   }
 
+  // --- SPATIAL OPTIMIZATION START ---
+  class SpatialGrid {
+      constructor(cellSize = 0.01) { // ~1.1km
+          this.cellSize = cellSize;
+          this.grid = new Map();
+          this.allPoints = [];
+      }
+
+      getKey(lat, lon) {
+          const x = Math.floor(lat / this.cellSize);
+          const y = Math.floor(lon / this.cellSize);
+          return `${x},${y}`;
+      }
+
+      add(name, lat, lon) {
+          const key = this.getKey(lat, lon);
+          if (!this.grid.has(key)) {
+              this.grid.set(key, []);
+          }
+          this.grid.get(key).push({ name, lat, lon });
+          this.allPoints.push({ name, lat, lon });
+      }
+
+      findNearest(lat, lon) {
+          const centerKey = this.getKey(lat, lon);
+          const [cx, cy] = centerKey.split(',').map(Number);
+
+          let candidates = [];
+
+          // Check 3x3 grid around user
+          for (let x = cx - 1; x <= cx + 1; x++) {
+              for (let y = cy - 1; y <= cy + 1; y++) {
+                  const key = `${x},${y}`;
+                  if (this.grid.has(key)) {
+                      candidates.push(...this.grid.get(key));
+                  }
+              }
+          }
+
+          // Fallback 1: If no candidates in immediate vicinity, scan all
+          if (candidates.length === 0) {
+              candidates = this.allPoints;
+          }
+
+          let minDist = Infinity;
+          let nearest = '';
+
+          for (const p of candidates) {
+               const d = getDistanceFromLatLonInKm(lat, lon, p.lat, p.lon);
+               if (d < minDist) {
+                   minDist = d;
+                   nearest = p.name;
+               }
+          }
+
+          // Fallback 2: Boundary Safety Check
+          // If the nearest point is further than 1.5km (roughly diagonal of a 1km cell),
+          // we might have missed a closer point just outside the 3x3 grid.
+          // In that case, do a full scan to guarantee correctness.
+          if (minDist > 1.5 && candidates !== this.allPoints) {
+               for (const p of this.allPoints) {
+                   const d = getDistanceFromLatLonInKm(lat, lon, p.lat, p.lon);
+                   if (d < minDist) {
+                       minDist = d;
+                       nearest = p.name;
+                   }
+               }
+          }
+
+          return nearest;
+      }
+  }
+  // --- SPATIAL OPTIMIZATION END ---
+
+  let coordinatesGrid = new SpatialGrid();
   let coordinatesDB = {};
 
   async function loadCoordinates() {
       try {
           const res = await fetch('/coordinates.json');
-          coordinatesDB = await res.json();
+          const data = await res.json();
+          coordinatesDB = data; // Restore population for legacy compatibility
+
+          // Build Spatial Index
+          Object.entries(data).forEach(([name, coords]) => {
+              coordinatesGrid.add(name, coords[0], coords[1]);
+          });
+          console.log("Spatial Grid built with " + coordinatesGrid.allPoints.length + " points.");
+
       } catch (e) {
           console.error("Failed to load coordinates for GPS features", e);
       }
@@ -366,11 +449,6 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
       const originInput = document.getElementById('origin-input');
       const destInput = document.getElementById('destination-input');
 
-      // Brand Phase Triggers (Legacy/Moved? Keeping for now but they shouldn't trigger Tetris here)
-      // Phase 1 and 2 logic was moved to Hero, but we can still emit events if index.astro listens?
-      // Actually index.astro manages Hero, so these inputs inside RouteCalculator might NOT be able to easily talk to Hero unless we emit global events.
-      // Yes, dispatchEvent works globally.
-
       originInput?.addEventListener('blur', (e) => {
           if ((e.target as HTMLInputElement).value.length > 0) {
               window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 1 } }));
@@ -395,16 +473,9 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
 
           navigator.geolocation.getCurrentPosition((pos) => {
               const { latitude, longitude } = pos.coords;
-              let minDist = Infinity;
-              let nearest = '';
 
-              Object.entries(coordinatesDB).forEach(([name, coords]) => {
-                  const d = getDistanceFromLatLonInKm(latitude, longitude, coords[0], coords[1]);
-                  if (d < minDist) {
-                      minDist = d;
-                      nearest = name;
-                  }
-              });
+              // Optimized Search
+              const nearest = coordinatesGrid.findNearest(latitude, longitude);
 
               if (nearest) {
                   (originInput as HTMLInputElement).value = nearest;
