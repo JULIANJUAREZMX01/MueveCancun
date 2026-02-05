@@ -225,6 +225,25 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
   const searchForm = document.getElementById('search-form-container');
   const cardHeader = document.getElementById('card-header');
 
+  // Event Delegation for Results
+  if (resultsContainer) {
+    resultsContainer.addEventListener('click', (e) => {
+      const btn = e.target.closest('.view-map-btn');
+      if (!btn) return;
+
+      e.stopPropagation();
+      const journeyData = btn.dataset.journey;
+      if (journeyData) {
+         try {
+             const journey = JSON.parse(journeyData);
+             window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: journey }));
+         } catch (err) {
+             console.error("Invalid journey data", err);
+         }
+      }
+    });
+  }
+
   // Quick Actions
   document.querySelectorAll('.quick-action-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -567,15 +586,7 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
         }
     });
 
-    document.querySelectorAll('.view-map-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const journey = JSON.parse((e.currentTarget).dataset.journey);
 
-            // Dispatch event (redundant now if map is already active, but good for drawing specific route)
-            window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: journey }));
-        });
-    });
 
     if (window.showToast) window.showToast(`${journeys.length} opciones encontradas`, 'success');
   }
