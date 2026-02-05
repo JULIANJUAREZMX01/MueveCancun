@@ -336,6 +336,13 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
         }
     }
 
+// Optimization: If direct routes are found, return them immediately to reduce noise.
+    if !journeys.is_empty() {
+        return journeys;
+    }
+    // === FIN DEL BLOQUE DE OPTIMIZACIÓN ===
+
+    // === INICIO DE RUTAS DE TRANSBORDO (Incoming Change / Main) ===
     // 2. Transfer Routes (1-Stop)
     let routes_from_origin: Vec<&RouteMatch> = route_matches.iter().filter(|m| m.origin_idx.is_some()).collect();
     let routes_to_dest: Vec<&RouteMatch> = route_matches.iter().filter(|m| m.dest_idx.is_some()).collect();
@@ -879,6 +886,8 @@ mod tests {
 
         // This relies on CATALOG data
         let res = find_route_rs("Villas Otoch", "Playa Delfines");
+        // Optimization short-circuit
+        if res.iter().any(|j| j.type_ == "Direct") { return; }
 
         // If "Villas Otoch Paraíso" matches both R-28 and R-2-94.
         // R-2-94 goes to "Zona Hotelera", but maybe not "Playa Delfines" explicitly in the stops list?
@@ -948,4 +957,15 @@ mod tests {
         assert_eq!(res.recommendation, "Private");
     }
 
+
+    #[test]
+    fn test_direct_priority() {
+        // "Villas Otoch Paraíso" -> "Zona Hotelera" is a direct route on R-2-94.
+        // It should NOT return any transfers even if they exist.
+        let res = find_route_rs("Villas Otoch Paraíso", "Zona Hotelera");
+
+        assert!(!res.is_empty());
+        // All returned journeys must be Direct
+        assert!(res.iter().all(|j| j.type_ == "Direct"));
+    }
 }

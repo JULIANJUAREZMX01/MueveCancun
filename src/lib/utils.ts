@@ -30,7 +30,7 @@ export function truncateText(str: string, maxLength: number): string {
   if (trimmed.length <= maxLength) return trimmed;
 
   const cutoff = maxLength - ellipsis.length;
-  let sliced = str.slice(0, cutoff).trimEnd();
+  const sliced = str.slice(0, cutoff).trimEnd();
 
   return sliced + ellipsis;
 }

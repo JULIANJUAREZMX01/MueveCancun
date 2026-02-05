@@ -5,7 +5,7 @@ interface Props {
 }
 
 const {
-  center = [21.1619, -86.8515], // Cancún
+  center = [21.1619, -86.8515], // Cancun Center
   zoom = 12
 } = Astro.props;
 ---
@@ -22,9 +22,68 @@ const {
 </div>
 
 <script>
+  import { SpatialHash } from '../utils/SpatialHash';
+
+  // Optimized Coordinate Finder (Inverted Index + Cache)
+  class CoordinateFinder {
+      constructor(db) {
+          this.db = db;
+          this.cache = new Map();
+          this.tokenIndex = new Map();
+          this.keys = Object.keys(db);
+          this.buildIndex();
+      }
+
+      buildIndex() {
+          for (const key of this.keys) {
+              // Tokenize: split by non-alphanumeric (including Spanish accents)
+              const tokens = key.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
+              for (const token of tokens) {
+                  if (token.length < 3) continue;
+                  if (!this.tokenIndex.has(token)) {
+                      this.tokenIndex.set(token, []);
+                  }
+                  this.tokenIndex.get(token).push(key);
+              }
+          }
+      }
+
+      find(stopName) {
+          // 1. Exact match
+          if (this.db[stopName]) return this.db[stopName];
+
+          // 2. Cache check
+          if (this.cache.has(stopName)) return this.cache.get(stopName);
+
+          // 3. Fuzzy Search
+          const searchTokens = stopName.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
+          const candidates = new Set();
+
+          for (const token of searchTokens) {
+              if (token.length < 3) continue;
+              const matches = this.tokenIndex.get(token);
+              if (matches) {
+                  for (const m of matches) candidates.add(m);
+              }
+          }
+
+          let bestKey = null;
+          if (candidates.size > 0) {
+               // Prefer candidates that are substrings or contain the query
+               bestKey = Array.from(candidates).find(k => stopName.includes(k) || k.includes(stopName));
+          }
+
+          const result = bestKey ? this.db[bestKey] : null;
+          this.cache.set(stopName, result);
+          return result;
+      }
+  }
+
   let map;
   let layerGroup;
   let coordinatesDB = {};
+  let finder;       // Para búsqueda de nombres
+  let spatialIndex; // Para búsqueda de clics (Geo)
 
   async function initMap() {
     const container = document.getElementById('map-container');
@@ -62,11 +121,23 @@ const {
 
     layerGroup = window.L.layerGroup().addTo(map);
 
-    // Fetch Coordinates
+    // Fetch Coordinates & Initialize Optimizers
     try {
         const res = await fetch('/coordinates.json');
         coordinatesDB = await res.json();
         console.log("Coordinates loaded:", Object.keys(coordinatesDB).length);
+
+        // 1. Init Text Finder (Fuzzy Search)
+        finder = new CoordinateFinder(coordinatesDB);
+
+        // 2. Init Spatial Index (Geo Click Optimization)
+        spatialIndex = new SpatialHash(0.01);
+        Object.entries(coordinatesDB).forEach(([name, coords]) => {
+            if (Array.isArray(coords) && coords.length === 2) {
+                 spatialIndex.insert(coords[0], coords[1], name);
+            }
+        });
+
     } catch (e) {
         console.error("Failed to load coordinates:", e);
     }
@@ -91,14 +162,26 @@ const {
             let minDist = Infinity;
             let nearest = '';
 
-            // Leaflet map.distance returns meters
-            Object.entries(coordinatesDB).forEach(([name, coords]) => {
-                const d = map.distance(e.latlng, coords);
-                if (d < minDist) {
-                    minDist = d;
-                    nearest = name;
-                }
-            });
+            // Use Spatial Index if available (Fast O(1))
+            if (spatialIndex) {
+                 const candidates = spatialIndex.query(lat, lng);
+                 candidates.forEach(c => {
+                      const d = map.distance(e.latlng, [c.lat, c.lng]);
+                      if (d < minDist) {
+                          minDist = d;
+                          nearest = c.data;
+                      }
+                 });
+            } else {
+                 // Fallback Linear Scan O(N)
+                Object.entries(coordinatesDB).forEach(([name, coords]) => {
+                    const d = map.distance(e.latlng, coords);
+                    if (d < minDist) {
+                        minDist = d;
+                        nearest = name;
+                    }
+                });
+            }
 
             // Threshold: 1000 meters
             if (minDist < 1000 && nearest) {
@@ -148,15 +231,38 @@ const {
         }
     }
 
-    // Default markers for key hubs if no route
+    // Draw all points from DB as refined markers
     if (!pendingRoute) {
-        const markers = [];
+        const newLayers = [];
         Object.entries(coordinatesDB).forEach(([name, coords]) => {
-            if (["El Crucero", "Zona Hotelera", "Aeropuerto T2", "Plaza Las Américas"].includes(name)) {
-                 markers.push(window.L.marker(coords).bindPopup(`<b>${name}</b>`));
-            }
+            const isRoute = name.startsWith('RUTA') || name.startsWith('Ruta');
+            
+            // Premium Marker Styling
+            const marker = window.L.circleMarker(coords, {
+                radius: isRoute ? 8 : 5,
+                fillColor: isRoute ? '#F97316' : '#3B82F6',
+                color: '#FFFFFF',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.9
+            }).bindPopup(`
+                <div class="p-1">
+                    <p class="font-bold text-gray-900">${name}</p>
+                    <p class="text-xs text-gray-500">${isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés'}</p>
+                    <button onclick="window.location.href='/rutas?search=${encodeURIComponent(name)}'" class="mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
+                </div>
+            `);
+            newLayers.push(marker);
         });
-        markers.forEach(layer => layer.addTo(layerGroup));
+        
+        if (newLayers.length > 0) {
+            layerGroup = window.L.layerGroup(newLayers).addTo(map);
+            // Optionally fit bounds to all points if database is not empty
+            const allCoords = Object.values(coordinatesDB);
+            if (allCoords.length > 0) {
+                map.fitBounds(allCoords, { padding: [40, 40], maxZoom: 15 });
+            }
+        }
     }
   }
 
@@ -189,13 +295,18 @@ const {
         const validStops = [];
 
         stops.forEach(stopName => {
-            // Fuzzy match or exact match
-            let coords = coordinatesDB[stopName];
+            let coords;
 
-            // Simple fuzzy fallback if exact missing (e.g. "Av. Kabah" vs "Hospital General (Av. Kabah)")
-            if (!coords) {
-                 const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
-                 if (key) coords = coordinatesDB[key];
+            // Use Fuzzy Finder if available (Robust)
+            if (finder) {
+                coords = finder.find(stopName);
+            } else {
+                // Fallback
+                coords = coordinatesDB[stopName];
+                if (!coords) {
+                     const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
+                     if (key) coords = coordinatesDB[key];
+                }
             }
 
             if (coords) {
@@ -242,11 +353,10 @@ const {
                 const end = validStops[validStops.length - 1];
                  newLayers.push(window.L.marker(end.latlng, {
                      // Custom icon for transfer? Or just a marker.
-                     // Using default marker but maybe distinct popup
                  }).bindPopup(`<b>Transbordo:</b> ${end.name}`));
             }
 
-            // Intermediate dots (optimized with Canvas via map preference)
+            // Intermediate dots
             validStops.slice(1, -1).forEach(stop => {
                  newLayers.push(
                     window.L.circleMarker(stop.latlng, { radius: 4, color: '#334155', fillOpacity: 1 })
