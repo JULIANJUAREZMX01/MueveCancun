@@ -257,22 +257,23 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
     }).collect()
 });
 
-fn match_stop(query: &str, route: &Route) -> Option<usize> {
-    let query_norm = query.to_lowercase();
+fn match_stop<'a>(
+    query_norm: &str,
+    route: &'a Route,
+    cache: &mut HashMap<&'a str, f64>
+) -> Option<usize> {
     let mut best_match: Option<(usize, f64)> = None;
 
     for (i, stop_lower) in route.stops_normalized.iter().enumerate() {
-        let jaro_score = strsim::jaro_winkler(&query_norm, stop_lower);
-
-        // Boost score for containment
-        let score = if stop_lower.contains(&query_norm) || query_norm.contains(stop_lower) {
-            // If it contains, we treat it as a very high match, but maybe prefer exact Jaro match if better?
-            // Actually, if contains, it's usually the one we want unless it's a very short string in a long one.
-            // Let's take max of jaro and 0.95 (arbitrary high score).
-            f64::max(jaro_score, 0.95)
-        } else {
-            jaro_score
-        };
+        let score = *cache.entry(stop_lower.as_str()).or_insert_with(|| {
+            let jaro_score = strsim::jaro_winkler(query_norm, stop_lower);
+            // Boost score for containment
+            if stop_lower.contains(query_norm) || query_norm.contains(stop_lower) {
+                f64::max(jaro_score, 0.95)
+            } else {
+                jaro_score
+            }
+        });
 
         if score > 0.6 {
             match best_match {
@@ -295,70 +296,84 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
     let all_routes = &*CATALOG;
     let mut journeys = Vec::new();
 
-    // 1. Direct Routes
+    let origin_norm = origin.to_lowercase();
+    let dest_norm = dest.to_lowercase();
+    let mut origin_cache: HashMap<&str, f64> = HashMap::new();
+    let mut dest_cache: HashMap<&str, f64> = HashMap::new();
+
+    struct RouteMatch<'a> {
+        route: &'a Route,
+        origin_idx: Option<usize>,
+        dest_idx: Option<usize>,
+    }
+
+    let mut route_matches = Vec::with_capacity(all_routes.len());
+
     for route in all_routes {
-        if let Some(origin_idx) = match_stop(origin, route) {
-            if let Some(dest_idx) = match_stop(dest, route) {
+        let origin_idx = match_stop(&origin_norm, route, &mut origin_cache);
+        let dest_idx = match_stop(&dest_norm, route, &mut dest_cache);
+        route_matches.push(RouteMatch {
+            route,
+            origin_idx,
+            dest_idx,
+        });
+    }
+
+    // 1. Direct Routes
+    for m in &route_matches {
+        if let Some(origin_idx) = m.origin_idx {
+            if let Some(dest_idx) = m.dest_idx {
                 // Strict directionality: Origin must come before Destination
                 if origin_idx < dest_idx {
                     journeys.push(Journey {
                         type_: "Direct".to_string(),
-                        legs: vec![route.clone()],
+                        legs: vec![m.route.clone()],
                         transfer_point: None,
-                        total_price: route.price,
+                        total_price: m.route.price,
                     });
                 }
             }
         }
     }
 
-    // Optimization: If direct routes are found, return them immediately to reduce noise.
-    // This aligns with the requirement: "Search for Direct Routes first. If found, return them."
+// Optimization: If direct routes are found, return them immediately to reduce noise.
     if !journeys.is_empty() {
         return journeys;
     }
+    // === FIN DEL BLOQUE DE OPTIMIZACIÓN ===
 
+    // === INICIO DE RUTAS DE TRANSBORDO (Incoming Change / Main) ===
     // 2. Transfer Routes (1-Stop)
-    let mut routes_from_origin = Vec::new();
-    let mut routes_to_dest = Vec::new();
-
-    for route in all_routes {
-        if let Some(idx) = match_stop(origin, route) {
-            routes_from_origin.push((route, idx));
-        }
-        if let Some(idx) = match_stop(dest, route) {
-            routes_to_dest.push((route, idx));
-        }
-    }
+    let routes_from_origin: Vec<&RouteMatch> = route_matches.iter().filter(|m| m.origin_idx.is_some()).collect();
+    let routes_to_dest: Vec<&RouteMatch> = route_matches.iter().filter(|m| m.dest_idx.is_some()).collect();
 
     let preferred_hubs = ["El Crucero", "Plaza Las Américas", "ADO Centro", "Zona Hotelera", "Muelle Ultramar"];
 
-    for (route_a, origin_idx_a) in &routes_from_origin {
-        for (route_b, dest_idx_b) in &routes_to_dest {
+    for match_a in &routes_from_origin {
+        let route_a = match_a.route;
+        let origin_idx_a = match_a.origin_idx.unwrap();
+
+        for match_b in &routes_to_dest {
+            let route_b = match_b.route;
+            let dest_idx_b = match_b.dest_idx.unwrap();
+
             // Skip same route (already covered by direct check, but safety first)
             if route_a.id == route_b.id {
                 continue;
             }
 
             // Find intersection
-            // We need a common stop that is AFTER origin in A and BEFORE dest in B.
-            // Also, typically we want the intersection to be exact string match or very close.
-            // Since we control data, we can try exact match on normalized strings or name.
-
             for (idx_a, stop_a) in route_a.stops_normalized.iter().enumerate() {
                 // Must be after origin
-                if idx_a <= *origin_idx_a { continue; }
+                if idx_a <= origin_idx_a { continue; }
 
                 for (idx_b, stop_b) in route_b.stops_normalized.iter().enumerate() {
                     // Must be before dest
-                    if idx_b >= *dest_idx_b { continue; }
+                    if idx_b >= dest_idx_b { continue; }
 
                     if stop_a == stop_b {
                         // Found a transfer point!
                         let transfer_name = route_a.stops[idx_a].clone();
-
-                        // Check if it's a preferred hub (used for sorting later)
-                        let _is_hub = preferred_hubs.iter().any(|h| transfer_name.contains(h));
 
                         journeys.push(Journey {
                             type_: "Transfer".to_string(),
@@ -373,13 +388,6 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
     }
 
     // Deduplicate and Sort
-    // We might have multiple transfer points for the same route pair.
-    // Or multiple route pairs.
-    // Sort by:
-    // 1. Is Preferred Hub (Transfer point)
-    // 2. Total Price
-    // 3. Duration (if we had it parsed)
-
     journeys.sort_by(|a, b| {
         // Score: Direct=2, Hub Transfer=1, Other=0
         let get_score = |j: &Journey| {
