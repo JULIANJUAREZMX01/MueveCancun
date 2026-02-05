@@ -148,15 +148,38 @@ const {
         }
     }
 
-    // Default markers for key hubs if no route
+    // Draw all points from DB as refined markers
     if (!pendingRoute) {
-        const markers = [];
+        const newLayers = [];
         Object.entries(coordinatesDB).forEach(([name, coords]) => {
-            if (["El Crucero", "Zona Hotelera", "Aeropuerto T2", "Plaza Las Américas"].includes(name)) {
-                 markers.push(window.L.marker(coords).bindPopup(`<b>${name}</b>`));
-            }
+            const isRoute = name.startsWith('RUTA') || name.startsWith('Ruta');
+            
+            // Premium Marker Styling
+            const marker = window.L.circleMarker(coords, {
+                radius: isRoute ? 8 : 5,
+                fillColor: isRoute ? '#F97316' : '#3B82F6',
+                color: '#FFFFFF',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.9
+            }).bindPopup(`
+                <div class="p-1">
+                    <p class="font-bold text-gray-900">${name}</p>
+                    <p class="text-xs text-gray-500">${isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés'}</p>
+                    <button onclick="window.location.href='/rutas?search=${encodeURIComponent(name)}'" class="mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
+                </div>
+            `);
+            newLayers.push(marker);
         });
-        markers.forEach(layer => layer.addTo(layerGroup));
+        
+        if (newLayers.length > 0) {
+            layerGroup = window.L.layerGroup(newLayers).addTo(map);
+            // Optionally fit bounds to all points if database is not empty
+            const allCoords = Object.values(coordinatesDB);
+            if (allCoords.length > 0) {
+                map.fitBounds(allCoords, { padding: [40, 40], maxZoom: 15 });
+            }
+        }
     }
   }
 
