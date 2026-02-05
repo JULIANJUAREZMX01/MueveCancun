@@ -22,6 +22,8 @@ const {
 </div>
 
 <script>
+  import { SpatialHash } from '../utils/SpatialHash';
+
   // Optimized Coordinate Finder (Inverted Index + Cache)
   class CoordinateFinder {
       constructor(db) {
@@ -69,9 +71,6 @@ const {
           if (candidates.size > 0) {
                // Prefer candidates that are substrings or contain the query
                bestKey = Array.from(candidates).find(k => stopName.includes(k) || k.includes(stopName));
-          } else {
-               // Fallback for very short words or no-token matches - optional for perf
-               // For now, if no tokens match, we assume no coordinate found to avoid full scan
           }
 
           const result = bestKey ? this.db[bestKey] : null;
@@ -83,7 +82,8 @@ const {
   let map;
   let layerGroup;
   let coordinatesDB = {};
-  let finder;
+  let finder;       // Para búsqueda de nombres
+  let spatialIndex; // Para búsqueda de clics (Geo)
 
   async function initMap() {
     const container = document.getElementById('map-container');
@@ -121,12 +121,23 @@ const {
 
     layerGroup = window.L.layerGroup().addTo(map);
 
-    // Fetch Coordinates
+    // Fetch Coordinates & Initialize Optimizers
     try {
         const res = await fetch('/coordinates.json');
         coordinatesDB = await res.json();
-        finder = new CoordinateFinder(coordinatesDB);
         console.log("Coordinates loaded:", Object.keys(coordinatesDB).length);
+
+        // 1. Init Text Finder (Fuzzy Search)
+        finder = new CoordinateFinder(coordinatesDB);
+
+        // 2. Init Spatial Index (Geo Click Optimization)
+        spatialIndex = new SpatialHash(0.01);
+        Object.entries(coordinatesDB).forEach(([name, coords]) => {
+            if (Array.isArray(coords) && coords.length === 2) {
+                 spatialIndex.insert(coords[0], coords[1], name);
+            }
+        });
+
     } catch (e) {
         console.error("Failed to load coordinates:", e);
     }
@@ -151,14 +162,26 @@ const {
             let minDist = Infinity;
             let nearest = '';
 
-            // Leaflet map.distance returns meters
-            Object.entries(coordinatesDB).forEach(([name, coords]) => {
-                const d = map.distance(e.latlng, coords);
-                if (d < minDist) {
-                    minDist = d;
-                    nearest = name;
-                }
-            });
+            // Use Spatial Index if available (Fast O(1))
+            if (spatialIndex) {
+                 const candidates = spatialIndex.query(lat, lng);
+                 candidates.forEach(c => {
+                      const d = map.distance(e.latlng, [c.lat, c.lng]);
+                      if (d < minDist) {
+                          minDist = d;
+                          nearest = c.data;
+                      }
+                 });
+            } else {
+                 // Fallback Linear Scan O(N)
+                Object.entries(coordinatesDB).forEach(([name, coords]) => {
+                    const d = map.distance(e.latlng, coords);
+                    if (d < minDist) {
+                        minDist = d;
+                        nearest = name;
+                    }
+                });
+            }
 
             // Threshold: 1000 meters
             if (minDist < 1000 && nearest) {
@@ -251,10 +274,11 @@ const {
         stops.forEach(stopName => {
             let coords;
 
+            // Use Fuzzy Finder if available (Robust)
             if (finder) {
                 coords = finder.find(stopName);
             } else {
-                // Fallback if finder not ready (rare race condition)
+                // Fallback
                 coords = coordinatesDB[stopName];
                 if (!coords) {
                      const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
@@ -306,11 +330,10 @@ const {
                 const end = validStops[validStops.length - 1];
                  newLayers.push(window.L.marker(end.latlng, {
                      // Custom icon for transfer? Or just a marker.
-                     // Using default marker but maybe distinct popup
                  }).bindPopup(`<b>Transbordo:</b> ${end.name}`));
             }
 
-            // Intermediate dots (optimized with Canvas via map preference)
+            // Intermediate dots
             validStops.slice(1, -1).forEach(stop => {
                  newLayers.push(
                     window.L.circleMarker(stop.latlng, { radius: 4, color: '#334155', fillOpacity: 1 })
@@ -349,6 +372,12 @@ const {
   }
 
   // Re-init on view transition
+  document.addEventListener('astro:page-load', () => {
+      // Small delay to ensure container exists
+      setTimeout(initMap, 100);
+  });
+
+</script>
   document.addEventListener('astro:page-load', () => {
       // Small delay to ensure container exists
       setTimeout(initMap, 100);
