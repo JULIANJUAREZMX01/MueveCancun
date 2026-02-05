@@ -1,160 +1,261 @@
 ---
-import MainLayout from '../layouts/MainLayout.astro';
-import RouteCalculator from '../components/RouteCalculator.astro';
-import InteractiveMap from '../components/InteractiveMap.astro';
+import Layout from '../layouts/Layout.astro';
 ---
 
-<MainLayout title="Inicio">
-  <div class="space-y-6 animate-fade-in relative z-10">
-    <!-- Hero / Greeting -->
-    <section id="hero-section" class="text-center pt-8 pb-4 transition-all duration-700 ease-in-out">
-      <h1 class="text-4xl lg:text-5xl font-display font-black text-deep-navy tracking-tight mb-2 leading-tight">
-        ¿Que ruta me lleva? <br class="sm:hidden" />
-        <span id="city-swapper" class="text-primary-500 transition-colors duration-500 inline-block">cancún</span>
-      </h1>
-      <p class="text-slate-500 font-medium text-lg">
-        La guía oficial de transporte público.
-      </p>
-    </section>
+<Layout title="CancúnMueve">
+	<div class="splash-container">
+		<div class="grid-overlay">
+			<svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<pattern height="40" id="grid" patternUnits="userSpaceOnUse" width="40">
+						<path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"></path>
+					</pattern>
+				</defs>
+				<rect fill="url(#grid)" height="100%" width="100%"></rect>
+			</svg>
+		</div>
 
-    <!-- Calculator Widget -->
-    <section id="calculator-section" class="transition-all duration-700 relative z-20">
-      <RouteCalculator />
-    </section>
+		<div class="top-spacer"></div>
 
-    <!-- Map Island -->
-    <section id="map-section" class="relative mt-8 h-64 w-full rounded-2xl overflow-hidden shadow-sm border border-slate-100 transition-all duration-700 ease-in-out z-0">
-         <InteractiveMap />
-         <div id="map-overlay" class="absolute inset-0 bg-slate-50/10 z-10 cursor-pointer"></div>
-    </section>
+		<div class="brand-section animate-float">
+			<div class="brand-logo-container">
+				<div class="brand-icon">
+					<span class="material-symbols-rounded icon-bus">directions_bus</span>
+				</div>
+				<h1 class="brand-title">
+					Cancún<span class="brand-title-light">Mueve</span>
+				</h1>
+			</div>
+			<p class="brand-tagline">
+				La ciudad en tu mano
+			</p>
+		</div>
 
-    <!-- Catalog Link -->
-    <section id="catalog-link-section" class="text-center pt-2 transition-opacity duration-500">
-      <a href="/rutas" class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-primary-600 transition-colors border-b border-transparent hover:border-primary-600 pb-0.5">
-        <span>🚌</span> Ver todas las rutas
-      </a>
-    </section>
+		<div class="status-section">
+			<div class="connecting-status">
+				<span class="status-text animate-pulse">Connecting to Engine...</span>
+				<div class="location-pulse-container">
+					<div class="pulse-ring animate-ping"></div>
+					<div class="location-icon-circle animate-pulse-slow">
+						<span class="material-symbols-rounded icon-location">location_on</span>
+					</div>
+				</div>
+			</div>
+			<div class="version-tag">
+				<span class="version-text">v1.0.5</span>
+			</div>
+		</div>
 
-    <!-- Promo / Info (Subtle) -->
-    <section id="promo-section" class="text-center py-8 opacity-60 transition-opacity duration-500">
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-        Powered by RouteEngine™ v2.2 WASM
-      </p>
-    </section>
-  </div>
-</MainLayout>
+		<div class="bottom-bar"></div>
+	</div>
 
-<script>
-    // City Swapper Logic
-    const cities = [
-        { name: 'cancún', color: '#F97316' }, // Primary Orange
-        { name: 'playa del carmen', color: '#0ea5e9' }, // Sky Blue
-        { name: 'tulum', color: '#14b8a6' }, // Teal
-        { name: 'costa mujeres', color: '#FF8200' }, // Deep Orange
-        { name: 'puerto morelos', color: '#8b5cf6' } // Violet
-    ];
+	<!-- Redirect logic or enter button could go here, for now it's just the splash -->
+	<script>
+		import { navigate } from 'astro:transitions/client';
 
-    let currentIndex = 0;
-
-    function initCitySwapper() {
-        const swapper = document.getElementById('city-swapper');
-        if (!swapper) return;
-
-        // Clear any existing interval to avoid dupes
-        if (window.cityInterval) clearInterval(window.cityInterval);
-
-        window.cityInterval = setInterval(() => {
-            currentIndex = (currentIndex + 1) % cities.length;
-            const city = cities[currentIndex];
-
-            swapper.style.opacity = '0';
-            swapper.style.transform = 'translateY(10px)';
-
-            setTimeout(() => {
-                swapper.textContent = city.name;
-                swapper.style.color = city.color;
-                swapper.style.opacity = '1';
-                swapper.style.transform = 'translateY(0)';
-            }, 250); // Half of duration
-
-        }, 3000);
-    }
-
-    // View Manager Logic
-    function initViewManager() {
-        window.addEventListener('VIEW_STATE_CHANGE', (e) => {
-            const state = (e as CustomEvent).detail;
-
-            if (state === 'MAP_ACTIVE') {
-                // Collapse Hero
-                const hero = document.getElementById('hero-section');
-                if (hero) {
-                    hero.classList.add('opacity-0', '-translate-y-10', 'pointer-events-none', 'h-0', 'overflow-hidden', 'py-0');
-                    hero.classList.remove('pt-8', 'pb-4');
-                }
-
-                // Hide sections
-                const catalog = document.getElementById('catalog-link-section');
-                if (catalog) catalog.classList.add('opacity-0', 'pointer-events-none');
-                const promo = document.getElementById('promo-section');
-                if (promo) promo.classList.add('opacity-0', 'pointer-events-none');
-
-                // Expand Map
-                const mapSection = document.getElementById('map-section');
-                if (mapSection) {
-                    mapSection.classList.remove('relative', 'mt-8', 'h-64', 'rounded-2xl', 'shadow-sm', 'border');
-                    mapSection.classList.add('fixed', 'inset-0', 'h-screen', 'w-screen', 'z-0', 'rounded-none');
-                }
-                const mapOverlay = document.getElementById('map-overlay');
-                if (mapOverlay) mapOverlay.classList.add('hidden');
-
-                // Trigger Header Tetris
-                window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 3 } }));
-
-                // Invalidate Map Size
-                setTimeout(() => {
-                    if (window.map) window.map.invalidateSize();
-                }, 800);
-            }
-            else if (state === 'SEARCH_ACTIVE') {
-                // Revert logic (Expand Hero, Shrink Map)
-                 const hero = document.getElementById('hero-section');
-                if (hero) {
-                    hero.classList.remove('opacity-0', '-translate-y-10', 'pointer-events-none', 'h-0', 'overflow-hidden', 'py-0');
-                    hero.classList.add('pt-8', 'pb-4');
-                }
-                const mapSection = document.getElementById('map-section');
-                if (mapSection) {
-                    mapSection.classList.add('relative', 'mt-8', 'h-64', 'rounded-2xl', 'shadow-sm', 'border');
-                    mapSection.classList.remove('fixed', 'inset-0', 'h-screen', 'w-screen', 'z-0', 'rounded-none');
-                }
-                 const mapOverlay = document.getElementById('map-overlay');
-                if (mapOverlay) mapOverlay.classList.remove('hidden');
-
-                // Reset Catalog/Promo visibility
-                 const catalog = document.getElementById('catalog-link-section');
-                if (catalog) catalog.classList.remove('opacity-0', 'pointer-events-none');
-                 const promo = document.getElementById('promo-section');
-                if (promo) promo.classList.remove('opacity-0', 'pointer-events-none');
-            }
-        });
-
-        document.getElementById('map-overlay')?.addEventListener('click', () => {
-             if (window.showToast) window.showToast("Traza una ruta para interactuar con el mapa", "info");
-        });
-    }
-
-    document.addEventListener('astro:page-load', () => {
-        initCitySwapper();
-        initViewManager();
-    });
-</script>
+		// Simulate splash delay then redirect to home
+		setTimeout(() => {
+			navigate('/home');
+		}, 3000);
+	</script>
+</Layout>
 
 <style>
-    /* Add transition utility for transform */
-    #city-swapper {
-        transition-property: color, opacity, transform;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        transition-duration: 500ms;
-    }
+	.splash-container {
+		position: relative;
+		width: 100%;
+		height: 100vh; /* Full viewport height */
+		background: linear-gradient(175deg, #00A9E0 0%, #3ABEF9 45%, #FF9E50 75%, #FF6A00 100%);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: space-between;
+		padding: 4rem 2rem;
+		overflow: hidden;
+		color: white;
+	}
+
+	.grid-overlay {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		opacity: 0.1;
+		mix-blend-mode: overlay;
+		overflow: hidden;
+	}
+
+	.h-full { height: 100%; }
+	.w-full { width: 100%; }
+
+	.top-spacer {
+		height: 2.5rem;
+		width: 100%;
+	}
+
+	/* Brand Section */
+	.brand-section {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+
+	.brand-logo-container {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.brand-icon {
+		background-color: white;
+		border-radius: 1.5rem; /* rounded-3xl approx */
+		padding: 1rem;
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.icon-bus {
+		color: var(--color-primary);
+		font-size: 3.75rem; /* 6xl */
+	}
+
+	.brand-title {
+		color: white;
+		font-size: 3.75rem; /* 6xl */
+		font-weight: 800; /* extrabold */
+		letter-spacing: -0.025em; /* tracking-tight */
+		margin: 0;
+		line-height: 1;
+	}
+
+	.brand-title-light {
+		font-weight: 300; /* light */
+	}
+
+	.brand-tagline {
+		color: white;
+		font-size: 1.25rem; /* xl */
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.25em; /* premium spacing */
+		opacity: 0.9;
+		margin-top: 1rem;
+	}
+
+	/* Status Section */
+	.status-section {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		position: relative;
+	}
+
+	.connecting-status {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 3rem;
+		position: relative;
+		z-index: 10;
+	}
+
+	.status-text {
+		color: rgba(255, 255, 255, 0.9);
+		font-size: 0.875rem; /* sm */
+		font-weight: 500;
+		letter-spacing: 0.05em; /* wider */
+	}
+
+	.location-pulse-container {
+		position: relative;
+	}
+
+	.pulse-ring {
+		position: absolute;
+		inset: 0;
+		background-color: rgba(255, 255, 255, 0.3);
+		border-radius: 9999px;
+		transform: scale(1.5);
+	}
+
+	.location-icon-circle {
+		position: relative;
+		background-color: rgba(255, 255, 255, 0.2);
+		backdrop-filter: blur(4px);
+		padding: 1rem;
+		border-radius: 9999px;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+	}
+
+	.icon-location {
+		color: white;
+		font-size: 1.875rem; /* 3xl */
+	}
+
+	.version-tag {
+		position: absolute;
+		bottom: 0;
+		right: 0;
+	}
+
+	.version-text {
+		color: rgba(255, 255, 255, 0.6);
+		font-size: 10px;
+		font-family: monospace;
+		letter-spacing: 0.1em; /* widest */
+		text-transform: uppercase;
+	}
+
+	.bottom-bar {
+		position: absolute;
+		bottom: 0.5rem;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 8rem;
+		height: 0.375rem;
+		background-color: rgba(255, 255, 255, 0.2);
+		border-radius: 9999px;
+	}
+
+	/* Animations */
+	@keyframes float {
+		0%, 100% { transform: translateY(0); }
+		50% { transform: translateY(-10px); }
+	}
+
+	.animate-float {
+		animation: float 3s ease-in-out infinite;
+	}
+
+	@keyframes ping {
+		75%, 100% {
+			transform: scale(2);
+			opacity: 0;
+		}
+	}
+
+	.animate-ping {
+		animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+	}
+
+	@keyframes pulse {
+		50% { opacity: .5; }
+	}
+
+	.animate-pulse {
+		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
+
+	@keyframes pulse-slow {
+		50% { opacity: .5; }
+	}
+
+	.animate-pulse-slow {
+		animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
 </style>

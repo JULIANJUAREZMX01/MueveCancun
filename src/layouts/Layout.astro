@@ -1,0 +1,88 @@
+---
+import { ClientRouter } from 'astro:transitions';
+
+interface Props {
+	title?: string;
+}
+
+const { title = 'CancúnMueve' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Material+Icons+Round&family=Material+Icons+Outlined&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+		<ClientRouter />
+	</head>
+	<body>
+		<div id="persistent-map-bg" transition:persist></div>
+		<div id="app-content">
+			<slot />
+		</div>
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--color-primary: #00A9E0; /* Brand Turquoise */
+		--color-secondary: #FF6A00; /* Deep Orange */
+		--color-bg-light: #F8FAFC;
+		--color-bg-dark: #0F172A;
+		--color-text-main: #111827;
+		--color-text-muted: #64748B;
+		--color-white: #FFFFFF;
+		--font-family: 'Inter', sans-serif;
+		--shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+	}
+
+	html, body {
+		margin: 0;
+		padding: 0;
+		font-family: var(--font-family);
+		width: 100%;
+		height: 100%;
+		overflow: hidden; /* Prevent scrolling on body, handle in content */
+		background-color: var(--color-bg-light);
+		color: var(--color-text-main);
+	}
+
+	body {
+		position: relative;
+	}
+
+	/* Reset box sizing */
+	*, *::before, *::after {
+		box-sizing: border-box;
+	}
+</style>
+
+<style>
+	#persistent-map-bg {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 0;
+		background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD6AifooGfdH3BREg7rcZnEtQg_TfqwgXNtQDkBMh24gFrHLM3dsFpodDIZ4GKU-0RCKhd9oxPPMis3diMo_ZIiZmU3ZPWdgUDCgNA9PtAeFxC0VB4sz65hdW0wR1TYbWKKvUBe8hVu4hIfb8F0PcRv1T2MLfrg5hWvl9ZOE7xmz_lZV_qiCAhgnequnZrPSVYyVEi4Hy1IN-asKImSixRKo17v6HgktN7LN9WaVIdP-SHCodqMDPdmDLQ7VgFUTw4X0gy1QwLY0XDf');
+		background-size: cover;
+		background-position: center;
+		opacity: 0.9; /* Adjust based on design needs */
+		filter: grayscale(20%);
+	}
+
+	#app-content {
+		position: relative;
+		z-index: 10;
+		width: 100%;
+		height: 100%;
+		overflow-y: auto; /* Allow scrolling within the page content */
+	}
+</style>

@@ -1,0 +1,586 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Dashboard - CancúnMueve">
+	<!-- Status Bar Placeholder (Simulated) -->
+	<div class="status-bar">
+		<span class="time">9:30</span>
+		<div class="status-icons">
+			<span class="material-icons-round text-sm">signal_cellular_alt</span>
+			<span class="material-icons-round text-sm">wifi</span>
+			<span class="material-icons-round text-sm">battery_full</span>
+		</div>
+	</div>
+
+	<div class="dashboard-container">
+		<!-- Search Card -->
+		<div class="glass-panel search-card animate-fade-in-up">
+			<div class="card-header">
+				<div class="brand-row">
+					<h1 class="brand-name">CancúnMueve</h1>
+					<div class="live-badge">
+						<div class="live-dot animate-pulse"></div>
+						<span class="live-text">REAL-TIME</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="input-group">
+				<div class="input-row">
+					<div class="input-icon-circle">
+						<span class="material-icons-round">location_on</span>
+					</div>
+					<div class="input-field">
+						<label>Origen</label>
+						<input type="text" value="La Rehoyada" />
+					</div>
+				</div>
+
+				<button class="swap-btn">
+					<span class="material-icons-round">swap_vert</span>
+				</button>
+
+				<div class="input-row">
+					<div class="input-icon-circle">
+						<span class="material-icons-outlined">flag</span>
+					</div>
+					<div class="input-field">
+						<label>Destino</label>
+						<input type="text" value="Playa Delfines (El Mirador)" />
+					</div>
+				</div>
+			</div>
+
+			<div class="quick-actions">
+				<button class="action-chip">
+					<span class="material-icons-round icon">home</span>
+					<span class="label">Casa</span>
+				</button>
+				<button class="action-chip">
+					<span class="material-icons-round icon">work</span>
+					<span class="label">Trabajo</span>
+				</button>
+				<button class="action-chip">
+					<span class="material-icons-round icon rotate-45">flight</span>
+					<span class="label">Aeropuerto</span>
+				</button>
+			</div>
+
+			<div class="options-row">
+				<div class="passengers-selector">
+					<label>PASAJEROS</label>
+					<div class="selector-value">
+						<span>3 Pasajeros</span>
+						<span class="material-icons-round arrow">expand_more</span>
+					</div>
+				</div>
+				<label class="tourist-toggle">
+					<input type="checkbox" checked />
+					<span>Turista</span>
+				</label>
+			</div>
+
+			<button class="cta-btn group">
+				<span>TRAZAR RUTA</span>
+				<span class="material-icons-round arrow group-hover-translate">arrow_forward</span>
+			</button>
+		</div>
+
+		<!-- Floating Map Markers (Visual Only) -->
+		<div class="map-overlay-elements">
+			<div class="marker-container" style="top: 60%; left: 20%;">
+				<div class="marker-pin blue">
+					<span class="material-icons-round text-sm">directions_bus</span>
+				</div>
+				<div class="marker-label">Ruta 12</div>
+			</div>
+			<div class="marker-container" style="top: 65%; right: 25%;">
+				<div class="marker-pin blue">
+					<span class="material-icons-round text-sm">flag</span>
+				</div>
+				<div class="marker-label">Playa<br/>Delfines</div>
+			</div>
+			<div class="marker-container" style="top: 55%; left: 60%;">
+				<div class="marker-label-only">Cancún</div>
+			</div>
+		</div>
+
+		<!-- Bottom Navigation -->
+		<div class="bottom-nav">
+			<a href="/home" class="nav-item active">
+				<div class="nav-icon-circle">
+					<span class="material-icons-round text-2xl">explore</span>
+				</div>
+				<span class="nav-label">Inicio</span>
+			</a>
+			<a href="/tracking" class="nav-item">
+				<span class="material-icons-round text-2xl">directions_bus</span>
+				<span class="nav-label">Rutas</span>
+			</a>
+			<a href="/tracking" class="nav-item">
+				<span class="material-icons-round text-2xl">map</span>
+				<span class="nav-label">Mapa</span>
+			</a>
+			<a href="/wallet" class="nav-item">
+				<span class="material-icons-round text-2xl">credit_card</span>
+				<span class="nav-label">Mi Tarjeta</span>
+			</a>
+            <a href="/community" class="nav-item">
+				<span class="material-icons-round text-2xl">groups</span>
+				<span class="nav-label">Comunidad</span>
+			</a>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	/* Status Bar */
+	.status-bar {
+		position: absolute;
+		top: 0;
+		width: 100%;
+		height: 3rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0 1.5rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--color-text-main);
+		z-index: 20;
+        pointer-events: none; /* Let clicks pass through */
+	}
+
+	.status-icons {
+		display: flex;
+		gap: 0.25rem;
+	}
+
+	.dashboard-container {
+		position: relative;
+		height: 100vh;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		padding-top: 4rem;
+	}
+
+	/* Glass Panel Utility */
+	.glass-panel {
+		background: rgba(255, 255, 255, 0.85);
+		backdrop-filter: blur(12px);
+		border: 1px solid rgba(255, 255, 255, 0.6);
+		box-shadow: var(--shadow-glass);
+	}
+
+	/* Search Card */
+	.search-card {
+		margin: 0 1rem;
+		border-radius: 1.5rem;
+		padding: 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.card-header {
+		display: flex;
+		justify-content: center;
+		margin-bottom: 0.5rem;
+	}
+
+	.brand-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.brand-name {
+		font-size: 1.875rem; /* 3xl */
+		font-weight: 700;
+		color: var(--color-secondary); /* Primary in prompt was orange */
+		letter-spacing: -0.025em;
+		margin: 0;
+	}
+
+	.live-badge {
+		display: flex;
+		align-items: center;
+		background-color: #DCFCE7; /* green-100 */
+		border: 1px solid #BBF7D0;
+		border-radius: 9999px;
+		padding: 0.125rem 0.5rem;
+		margin-top: 0.25rem;
+	}
+
+	.live-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		background-color: #22C55E; /* green-500 */
+		border-radius: 9999px;
+		margin-right: 0.375rem;
+	}
+
+	.live-text {
+		font-size: 10px;
+		font-weight: 700;
+		color: #15803D; /* green-700 */
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	/* Input Group */
+	.input-group {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.input-row {
+		background-color: rgba(255, 255, 255, 0.6);
+		border: 1px solid #E5E7EB;
+		border-radius: 1rem;
+		padding: 0.75rem;
+		display: flex;
+		align-items: center;
+		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+	}
+
+	.input-icon-circle {
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 9999px;
+		background-color: #F3F4F6;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #6B7280;
+		margin-right: 0.75rem;
+		flex-shrink: 0;
+	}
+
+	.input-field {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.input-field label {
+		font-size: 0.75rem;
+		color: #6B7280;
+		font-weight: 500;
+	}
+
+	.input-field input {
+		width: 100%;
+		background: transparent;
+		border: none;
+		padding: 0;
+		font-size: 1rem;
+		font-weight: 600;
+		color: var(--color-text-main);
+		outline: none;
+	}
+
+	.swap-btn {
+		position: absolute;
+		right: 2rem;
+		top: 38%;
+		z-index: 10;
+		width: 2.5rem;
+		height: 2.5rem;
+		background-color: white;
+		border-radius: 9999px;
+		border: 1px solid #E5E7EB;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #6B7280;
+		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+		cursor: pointer;
+		transition: transform 0.2s;
+	}
+
+	.swap-btn:active {
+		transform: rotate(180deg);
+	}
+
+	/* Quick Actions */
+	.quick-actions {
+		display: flex;
+		gap: 0.5rem;
+		overflow-x: auto;
+		padding-bottom: 0.25rem;
+	}
+
+	.quick-actions::-webkit-scrollbar {
+		display: none;
+	}
+
+	.action-chip {
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+		padding: 0.5rem 0.75rem;
+		background-color: rgba(255, 255, 255, 0.5);
+		border: 1px solid #E5E7EB;
+		border-radius: 0.75rem;
+		cursor: pointer;
+		transition: transform 0.1s;
+	}
+
+	.action-chip:active {
+		transform: scale(0.95);
+	}
+
+	.action-chip .icon {
+		color: #6B7280;
+		font-size: 1.125rem;
+	}
+
+	.action-chip .label {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: #374151;
+	}
+
+	.rotate-45 {
+		transform: rotate(45deg);
+	}
+
+	/* Options Row */
+	.options-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.passengers-selector {
+		flex: 1;
+		background-color: rgba(255, 255, 255, 0.5);
+		border: 1px solid #E5E7EB;
+		border-radius: 0.75rem;
+		padding: 0.5rem 0.75rem;
+		cursor: pointer;
+	}
+
+	.passengers-selector label {
+		font-size: 10px;
+		color: #6B7280;
+		text-transform: uppercase;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		display: block;
+	}
+
+	.selector-value {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.selector-value span {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: #111827;
+	}
+
+	.selector-value .arrow {
+		color: #9CA3AF;
+		font-size: 1rem;
+	}
+
+	.tourist-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background-color: rgba(255, 255, 255, 0.5);
+		border: 1px solid #E5E7EB;
+		border-radius: 0.75rem;
+		padding: 0.75rem;
+		height: 100%;
+		cursor: pointer;
+	}
+
+	.tourist-toggle input {
+		width: 1.25rem;
+		height: 1.25rem;
+		color: var(--color-secondary);
+		border-radius: 0.25rem;
+	}
+
+	.tourist-toggle span {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: #1F2937;
+	}
+
+	/* CTA Button */
+	.cta-btn {
+		width: 100%;
+		background-color: var(--color-secondary);
+		color: white;
+		font-weight: 700;
+		font-size: 1.125rem;
+		padding: 1rem;
+		border-radius: 0.75rem;
+		border: none;
+		box-shadow: 0 4px 20px rgba(255, 107, 0, 0.4);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.cta-btn:hover {
+		background-color: #e56000;
+	}
+
+	.cta-btn:active {
+		transform: scale(0.98);
+	}
+
+	.cta-btn .arrow {
+		color: rgba(255, 255, 255, 0.8);
+		transition: transform 0.2s;
+	}
+
+	.group:hover .group-hover-translate {
+		transform: translateX(4px);
+	}
+
+	/* Map Overlay Elements */
+	.map-overlay-elements {
+		position: absolute; /* Relative to dashboard-container which is 100vh */
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		z-index: 1; /* Below the bottom nav and card */
+	}
+
+	.marker-container {
+		position: absolute;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.marker-pin {
+		color: white;
+		padding: 0.375rem;
+		border-radius: 9999px;
+		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.marker-pin.blue {
+		background-color: #2563EB;
+	}
+
+	.marker-label {
+		background-color: white;
+		color: #111827;
+		font-size: 10px;
+		font-weight: 700;
+		padding: 0.125rem 0.375rem;
+		border-radius: 0.25rem;
+		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+		margin-top: 0.25rem;
+		text-align: center;
+		line-height: 1.1;
+	}
+
+	.marker-label-only {
+		color: #111827;
+		font-weight: 700;
+		font-size: 1.25rem;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Bottom Nav */
+	.bottom-nav {
+		background-color: white;
+		border-top: 1px solid #E5E7EB;
+		padding: 0.5rem 1.5rem 2rem 1.5rem; /* pb-8 */
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border-top-left-radius: 1.5rem;
+		border-top-right-radius: 1.5rem;
+		box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+		z-index: 20;
+	}
+
+	.nav-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		color: #9CA3AF; /* gray-400 */
+		text-decoration: none;
+		transition: color 0.2s;
+	}
+
+	.nav-item:hover {
+		color: #4B5563;
+	}
+
+	.nav-item.active {
+		color: var(--color-secondary);
+	}
+
+	.nav-icon-circle {
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 9999px;
+		background-color: #FFF7ED; /* orange-50 */
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.nav-item.active .nav-icon-circle {
+		background-color: #FFEDD5; /* orange-100 */
+	}
+
+	.nav-label {
+		font-size: 10px;
+		font-weight: 500;
+	}
+
+	.nav-item.active .nav-label {
+		font-weight: 700;
+	}
+
+	@keyframes pulse {
+		50% { opacity: .5; }
+	}
+
+	.animate-pulse {
+		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
+
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .animate-fade-in-up {
+        animation: fade-in-up 0.5s ease-out forwards;
+    }
+</style>

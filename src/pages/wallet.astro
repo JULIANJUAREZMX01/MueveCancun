@@ -1,0 +1,745 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Wallet - CancúnMueve">
+	<div class="wallet-page">
+		<header class="wallet-header">
+			<div class="brand-container">
+				<div class="brand-text">
+					<span class="brand-cm">CM</span>
+					<span class="brand-cancun">Cancún</span><span class="brand-mueve">Mueve</span>
+				</div>
+			</div>
+			<button class="profile-btn">
+				<span class="material-icons-round text-4xl">account_circle</span>
+			</button>
+		</header>
+
+		<main class="wallet-content">
+			<!-- Balance Card -->
+			<section class="balance-card glass-panel group">
+				<div class="metallic-sheen"></div>
+				<div class="glow-blue"></div>
+				<div class="glow-purple"></div>
+
+				<div class="card-inner">
+					<div class="card-top">
+						<div>
+							<p class="label-balance">Saldo Disponible</p>
+							<h2 class="amount">$180</h2>
+							<p class="currency">MXN Peso Mexicano</p>
+						</div>
+						<div class="status-badge">
+							Activo
+						</div>
+					</div>
+
+					<div class="card-actions">
+						<button class="btn-recharge">
+							Recargar
+						</button>
+						<button class="btn-history">
+							Historial
+						</button>
+					</div>
+				</div>
+			</section>
+
+			<!-- Transactions -->
+			<section>
+				<h3 class="section-title">Últimos Movimientos</h3>
+				<div class="transactions-list">
+					<div class="transaction-item">
+						<div class="transaction-left">
+							<span class="date-label">Hoy</span>
+							<div class="transaction-info">
+								<span class="transaction-name">Recarga Saldo</span>
+							</div>
+						</div>
+						<span class="amount-positive">+$100.00</span>
+					</div>
+					<div class="transaction-item">
+						<div class="transaction-left">
+							<span class="date-label">Ayer</span>
+							<div class="transaction-info">
+								<span class="transaction-name">Ruta R1 - Zona Hotelera</span>
+							</div>
+						</div>
+						<span class="amount-negative">-$15.00</span>
+					</div>
+					<div class="transaction-item">
+						<div class="transaction-left">
+							<span class="date-label">Ayer</span>
+							<div class="transaction-info">
+								<span class="transaction-name">Ruta R2 - Mercado 28</span>
+							</div>
+						</div>
+						<span class="amount-negative">-$12.00</span>
+					</div>
+				</div>
+			</section>
+
+			<!-- Stats -->
+			<section>
+				<div class="stats-header">
+					<h3 class="section-title no-margin">Estadísticas Mensuales</h3>
+					<div class="total-spent">
+						Total Gastado: $27.00
+					</div>
+				</div>
+				<div class="stats-grid">
+					<div class="stat-card">
+						<span class="stat-value">12</span>
+						<span class="stat-label">Viajes</span>
+					</div>
+					<div class="stat-card">
+						<span class="stat-value">4.8</span>
+						<span class="stat-label">Rating</span>
+					</div>
+				</div>
+			</section>
+
+			<!-- Instructions -->
+			<section class="instructions-card">
+				<div class="instructions-header">
+					<span class="material-icons-round info-icon">info</span>
+					<h3 class="instructions-title">Instrucciones</h3>
+				</div>
+				<ul class="instructions-list">
+					<li>
+						<span class="material-icons-round check-icon">check_circle</span>
+						<span class="instruction-text">Mantener el GPS activo.</span>
+					</li>
+					<li>
+						<span class="material-icons-round check-icon">check_circle</span>
+						<span class="instruction-text">Reportar cambios de tarifa.</span>
+					</li>
+					<li>
+						<span class="material-icons-round check-icon">check_circle</span>
+						<span class="instruction-text">Pagos solo en efectivo.</span>
+					</li>
+				</ul>
+			</section>
+		</main>
+
+		<!-- Recargar Modal -->
+		<dialog id="recharge-modal" class="modal">
+			<div class="modal-content glass-panel">
+				<h3 class="modal-title">Recargar Saldo</h3>
+				<p class="modal-subtitle">Selecciona un monto</p>
+
+				<div class="amount-grid">
+					<button class="amount-btn">$20</button>
+					<button class="amount-btn active">$50</button>
+					<button class="amount-btn">$100</button>
+				</div>
+
+				<div class="modal-actions">
+					<button class="btn-cancel" onclick="document.getElementById('recharge-modal').close()">Cancelar</button>
+					<button class="btn-confirm">Confirmar</button>
+				</div>
+			</div>
+		</dialog>
+
+		<script>
+			const btnRecharge = document.querySelector('.btn-recharge');
+			const modal = document.getElementById('recharge-modal');
+
+			if (btnRecharge && modal) {
+				btnRecharge.addEventListener('click', () => {
+					(modal as HTMLDialogElement).showModal();
+				});
+			}
+
+			// Close on click outside
+			modal?.addEventListener('click', (e) => {
+				const dialogDimensions = modal.getBoundingClientRect();
+				if (
+					e.clientX < dialogDimensions.left ||
+					e.clientX > dialogDimensions.right ||
+					e.clientY < dialogDimensions.top ||
+					e.clientY > dialogDimensions.bottom
+				) {
+					(modal as HTMLDialogElement).close();
+				}
+			});
+		</script>
+
+		<!-- Bottom Nav -->
+		<nav class="bottom-nav">
+			<div class="nav-container">
+				<a href="/home" class="nav-btn group">
+					<span class="material-icons-round nav-icon">home</span>
+					<span class="nav-label">Inicio</span>
+				</a>
+				<a href="/tracking" class="nav-btn group">
+					<span class="material-icons-round nav-icon">alt_route</span>
+					<span class="nav-label">Rutas</span>
+				</a>
+				<a href="/tracking" class="nav-btn group">
+					<span class="material-icons-round nav-icon">map</span>
+					<span class="nav-label">Mapa</span>
+				</a>
+				<a href="/wallet" class="nav-btn group active">
+					<span class="material-icons-round nav-icon">credit_card</span>
+					<span class="nav-label">Mi Tarjeta</span>
+				</a>
+			</div>
+		</nav>
+	</div>
+</Layout>
+
+<style>
+	.wallet-page {
+		min-height: 100vh;
+		background-color: var(--color-bg-light);
+		padding-bottom: 6rem; /* Space for bottom nav */
+		color: #1E293B; /* slate-800 */
+	}
+
+	/* Header */
+	.wallet-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 2rem 1.5rem 1rem 1.5rem;
+		background-color: var(--color-bg-light);
+		position: sticky;
+		top: 0;
+		z-index: 10;
+	}
+
+	.brand-text {
+		display: flex;
+		align-items: baseline;
+		font-weight: 700;
+		font-size: 1.25rem;
+		letter-spacing: -0.025em;
+	}
+
+	.brand-cm {
+		color: var(--color-secondary);
+		font-size: 1.5rem;
+		margin-right: 0.25rem;
+	}
+
+	.brand-cancun {
+		color: #1E293B;
+	}
+
+	.brand-mueve {
+		color: var(--color-secondary);
+	}
+
+	.profile-btn {
+		color: #1E293B;
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		transition: color 0.2s;
+	}
+
+	.profile-btn:hover {
+		color: var(--color-secondary);
+	}
+
+	.text-4xl { font-size: 2.25rem; }
+
+	/* Main Content */
+	.wallet-content {
+		padding: 0 1.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	/* Balance Card */
+	.balance-card {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 4/3;
+		border-radius: 1.5rem;
+		overflow: hidden;
+		box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+		transition: transform 0.3s;
+	}
+
+	.balance-card:hover {
+		transform: scale(1.01);
+	}
+
+	.glass-panel {
+		background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.metallic-sheen {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			105deg,
+			transparent 20%,
+			rgba(255, 255, 255, 0.15) 25%,
+			rgba(255, 255, 255, 0.05) 30%,
+			transparent 35%
+		);
+		background-size: 200% 100%;
+		animation: shine 4s infinite linear;
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	@keyframes shine {
+		0% { background-position: 150% 0; }
+		100% { background-position: -50% 0; }
+	}
+
+	.glow-blue {
+		position: absolute;
+		top: -2.5rem;
+		right: -2.5rem;
+		width: 10rem;
+		height: 10rem;
+		background-color: rgba(59, 130, 246, 0.2);
+		border-radius: 9999px;
+		filter: blur(48px);
+	}
+
+	.glow-purple {
+		position: absolute;
+		bottom: -2.5rem;
+		left: -2.5rem;
+		width: 10rem;
+		height: 10rem;
+		background-color: rgba(168, 85, 247, 0.1);
+		border-radius: 9999px;
+		filter: blur(48px);
+	}
+
+	.card-inner {
+		position: relative;
+		z-index: 10;
+		padding: 1.5rem;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+
+	.card-top {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+	}
+
+	.label-balance {
+		color: #CBD5E1; /* slate-300 */
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		margin-bottom: 0.25rem;
+	}
+
+	.amount {
+		color: white;
+		font-size: 3rem;
+		font-weight: 700;
+		letter-spacing: -0.025em;
+		margin: 0;
+		text-shadow: 0 4px 6px rgba(0,0,0,0.1);
+	}
+
+	.currency {
+		color: #94A3B8; /* slate-400 */
+		font-size: 0.875rem;
+		margin-top: 0.25rem;
+	}
+
+	.status-badge {
+		background-color: var(--color-secondary);
+		color: white;
+		font-size: 0.75rem;
+		font-weight: 700;
+		padding: 0.25rem 0.75rem;
+		border-radius: 9999px;
+		box-shadow: 0 0 15px rgba(255, 107, 0, 0.5);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.card-actions {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.btn-recharge {
+		width: 100%;
+		background-color: var(--color-secondary);
+		color: white;
+		font-weight: 600;
+		padding: 0.875rem;
+		border-radius: 0.75rem;
+		border: none;
+		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+		transition: all 0.2s;
+		cursor: pointer;
+	}
+
+	.btn-recharge:hover {
+		background-color: #e56000;
+	}
+
+	.btn-recharge:active {
+		transform: scale(0.98);
+	}
+
+	.btn-history {
+		width: 100%;
+		background: transparent;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		color: white;
+		font-weight: 500;
+		padding: 0.75rem;
+		border-radius: 0.75rem;
+		transition: all 0.2s;
+		cursor: pointer;
+	}
+
+	.btn-history:hover {
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.btn-history:active {
+		transform: scale(0.98);
+	}
+
+	/* Section Titles */
+	.section-title {
+		color: #475569; /* slate-600 */
+		font-size: 0.875rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		margin-bottom: 0.75rem;
+		padding-left: 0.25rem;
+	}
+
+	.section-title.no-margin {
+		margin-bottom: 0;
+	}
+
+	/* Transactions List */
+	.transactions-list {
+		background-color: white;
+		border-radius: 1rem;
+		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+		overflow: hidden;
+	}
+
+	.transaction-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 1rem;
+		border-bottom: 1px solid #F1F5F9;
+	}
+
+	.transaction-item:last-child {
+		border-bottom: none;
+	}
+
+	.transaction-left {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.date-label {
+		color: #94A3B8; /* slate-400 */
+		font-size: 0.75rem;
+		font-weight: 700;
+		width: 2.5rem;
+		text-transform: uppercase;
+	}
+
+	.transaction-info {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.transaction-name {
+		color: #1E293B; /* slate-800 */
+		font-weight: 500;
+		font-size: 0.875rem;
+	}
+
+	.amount-positive {
+		color: #059669; /* emerald-600 */
+		font-weight: 700;
+		font-size: 0.875rem;
+	}
+
+	.amount-negative {
+		color: #1E293B;
+		font-weight: 700;
+		font-size: 0.875rem;
+	}
+
+	/* Stats */
+	.stats-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		margin-bottom: 0.75rem;
+		padding-left: 0.25rem;
+	}
+
+	.total-spent {
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--color-secondary);
+		background-color: #FFEDD5; /* orange-100 */
+		padding: 0.125rem 0.5rem;
+		border-radius: 0.375rem;
+	}
+
+	.stats-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1rem;
+	}
+
+	.stat-card {
+		background-color: white;
+		border-radius: 1rem;
+		padding: 1.25rem;
+		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.stat-value {
+		font-size: 1.875rem; /* 3xl */
+		font-weight: 700;
+		color: var(--color-secondary);
+		margin-bottom: 0.25rem;
+		line-height: 1;
+	}
+
+	.stat-label {
+		font-size: 0.75rem;
+		color: #64748B; /* slate-500 */
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	/* Instructions */
+	.instructions-card {
+		background-color: white;
+		border-radius: 1rem;
+		padding: 1.25rem;
+		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+	}
+
+	.instructions-header {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.info-icon {
+		color: #3B82F6; /* blue-500 */
+	}
+
+	.instructions-title {
+		font-size: 1.125rem; /* lg */
+		font-weight: 700;
+		color: #1E293B;
+		margin: 0;
+	}
+
+	.instructions-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.instructions-list li {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.75rem;
+	}
+
+	.check-icon {
+		color: #10B981; /* emerald-500 */
+		font-size: 1.25rem;
+		margin-top: 0.125rem;
+	}
+
+	.instruction-text {
+		color: #475569; /* slate-600 */
+		font-size: 0.875rem;
+	}
+
+	/* Bottom Nav */
+	.bottom-nav {
+		position: fixed;
+		bottom: 0;
+		width: 100%;
+		background-color: white;
+		border-top: 1px solid #E2E8F0;
+		padding-bottom: env(safe-area-inset-bottom);
+		padding-top: 0.5rem;
+		z-index: 50;
+	}
+
+	.nav-container {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		padding: 0 1.5rem 1rem 1.5rem;
+	}
+
+	.nav-btn {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		width: 4rem;
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: #94A3B8; /* slate-400 */
+		transition: color 0.2s;
+	}
+
+	.nav-btn:hover {
+		color: var(--color-secondary);
+	}
+
+	.nav-btn.active {
+		color: var(--color-secondary);
+	}
+
+	.nav-btn.active .nav-label {
+		font-weight: 700;
+	}
+
+	.nav-icon {
+		font-size: 1.5rem;
+	}
+
+	.nav-label {
+		font-size: 10px;
+		font-weight: 500;
+	}
+
+	/* Modal */
+	.modal {
+		background: transparent;
+		border: none;
+		padding: 0;
+		width: 90%;
+		max-width: 20rem;
+	}
+
+	.modal::backdrop {
+		background: rgba(0, 0, 0, 0.5);
+		backdrop-filter: blur(4px);
+	}
+
+	.modal-content {
+		padding: 1.5rem;
+		border-radius: 1.5rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		color: white; /* assuming glass panel dark */
+	}
+
+	.modal-title {
+		font-size: 1.25rem;
+		font-weight: 700;
+		margin: 0;
+		margin-bottom: 0.25rem;
+	}
+
+	.modal-subtitle {
+		font-size: 0.875rem;
+		opacity: 0.7;
+		margin: 0;
+		margin-bottom: 1.5rem;
+	}
+
+	.amount-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		gap: 0.75rem;
+		width: 100%;
+		margin-bottom: 1.5rem;
+	}
+
+	.amount-btn {
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: white;
+		padding: 0.75rem;
+		border-radius: 0.75rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.amount-btn.active {
+		background: var(--color-secondary);
+		border-color: var(--color-secondary);
+		color: white;
+	}
+
+	.amount-btn:hover {
+		background: rgba(255, 255, 255, 0.2);
+	}
+
+	.modal-actions {
+		display: flex;
+		gap: 0.75rem;
+		width: 100%;
+	}
+
+	.btn-cancel {
+		flex: 1;
+		background: transparent;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		color: white;
+		padding: 0.75rem;
+		border-radius: 0.75rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.btn-confirm {
+		flex: 1;
+		background: var(--color-secondary);
+		border: none;
+		color: white;
+		padding: 0.75rem;
+		border-radius: 0.75rem;
+		font-weight: 600;
+		cursor: pointer;
+		box-shadow: 0 4px 10px rgba(255, 107, 0, 0.3);
+	}
+</style>
