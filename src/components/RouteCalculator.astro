@@ -4,6 +4,7 @@ import Button from './ui/Button.astro';
 import Input from './ui/Input.astro';
 import Badge from './ui/Badge.astro';
 import SkeletonLoader from './ui/SkeletonLoader.astro';
+import Switch from './ui/Switch.astro';
 ---
 
 <div class="space-y-6" id="route-calculator-wrapper">
@@ -139,10 +140,9 @@ import SkeletonLoader from './ui/SkeletonLoader.astro';
         </div>
         <div>
           <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Modo</span>
-          <label class="flex items-center h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 cursor-pointer hover:bg-slate-100 transition-colors">
-            <input type="checkbox" id="tourist-checkbox" class="w-5 h-5 rounded text-primary-500 border-gray-300 focus:ring-primary-500 mr-3" />
-            <span class="text-sm font-bold text-slate-700">Turista</span>
-          </label>
+          <div class="h-[44px] flex items-center">
+            <Switch id="tourist-checkbox" label="Turista" />
+          </div>
         </div>
       </div>
 

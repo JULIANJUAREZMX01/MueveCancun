@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Switch from '../components/ui/Switch.astro';
 ---
 
 <Layout title="Dashboard - CancúnMueve">
@@ -75,10 +76,9 @@ import Layout from '../layouts/Layout.astro';
 						<span class="material-icons-round arrow">expand_more</span>
 					</div>
 				</div>
-				<label class="tourist-toggle">
-					<input type="checkbox" checked />
-					<span>Turista</span>
-				</label>
+				<div class="tourist-toggle-wrapper h-full flex items-center">
+					<Switch id="tourist-mode-home" label="Turista" checked={true} />
+				</div>
 			</div>
 
 			<button class="cta-btn group">
@@ -394,29 +394,13 @@ import Layout from '../layouts/Layout.astro';
 		font-size: 1rem;
 	}
 
-	.tourist-toggle {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
+	.tourist-toggle-wrapper {
 		background-color: rgba(255, 255, 255, 0.5);
 		border: 1px solid #E5E7EB;
 		border-radius: 0.75rem;
-		padding: 0.75rem;
-		height: 100%;
-		cursor: pointer;
-	}
-
-	.tourist-toggle input {
-		width: 1.25rem;
-		height: 1.25rem;
-		color: var(--color-secondary);
-		border-radius: 0.25rem;
-	}
-
-	.tourist-toggle span {
-		font-size: 0.875rem;
-		font-weight: 600;
-		color: #1F2937;
+		padding: 0 0.75rem;
+		min-width: 140px; /* Ensure visual balance */
+		justify-content: center;
 	}
 
 	/* CTA Button */
