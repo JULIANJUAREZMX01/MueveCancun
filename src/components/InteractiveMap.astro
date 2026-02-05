@@ -5,7 +5,7 @@ interface Props {
 }
 
 const {
-  center = [21.1619, -86.8515], // Cancún
+  center = [21.1619, -86.8515], // Cancun Center
   zoom = 12
 } = Astro.props;
 ---
@@ -22,9 +22,68 @@ const {
 </div>
 
 <script>
+  // Optimized Coordinate Finder (Inverted Index + Cache)
+  class CoordinateFinder {
+      constructor(db) {
+          this.db = db;
+          this.cache = new Map();
+          this.tokenIndex = new Map();
+          this.keys = Object.keys(db);
+          this.buildIndex();
+      }
+
+      buildIndex() {
+          for (const key of this.keys) {
+              // Tokenize: split by non-alphanumeric (including Spanish accents)
+              const tokens = key.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
+              for (const token of tokens) {
+                  if (token.length < 3) continue;
+                  if (!this.tokenIndex.has(token)) {
+                      this.tokenIndex.set(token, []);
+                  }
+                  this.tokenIndex.get(token).push(key);
+              }
+          }
+      }
+
+      find(stopName) {
+          // 1. Exact match
+          if (this.db[stopName]) return this.db[stopName];
+
+          // 2. Cache check
+          if (this.cache.has(stopName)) return this.cache.get(stopName);
+
+          // 3. Fuzzy Search
+          const searchTokens = stopName.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
+          const candidates = new Set();
+
+          for (const token of searchTokens) {
+              if (token.length < 3) continue;
+              const matches = this.tokenIndex.get(token);
+              if (matches) {
+                  for (const m of matches) candidates.add(m);
+              }
+          }
+
+          let bestKey = null;
+          if (candidates.size > 0) {
+               // Prefer candidates that are substrings or contain the query
+               bestKey = Array.from(candidates).find(k => stopName.includes(k) || k.includes(stopName));
+          } else {
+               // Fallback for very short words or no-token matches - optional for perf
+               // For now, if no tokens match, we assume no coordinate found to avoid full scan
+          }
+
+          const result = bestKey ? this.db[bestKey] : null;
+          this.cache.set(stopName, result);
+          return result;
+      }
+  }
+
   let map;
   let layerGroup;
   let coordinatesDB = {};
+  let finder;
 
   async function initMap() {
     const container = document.getElementById('map-container');
@@ -66,6 +125,7 @@ const {
     try {
         const res = await fetch('/coordinates.json');
         coordinatesDB = await res.json();
+        finder = new CoordinateFinder(coordinatesDB);
         console.log("Coordinates loaded:", Object.keys(coordinatesDB).length);
     } catch (e) {
         console.error("Failed to load coordinates:", e);
@@ -189,13 +249,17 @@ const {
         const validStops = [];
 
         stops.forEach(stopName => {
-            // Fuzzy match or exact match
-            let coords = coordinatesDB[stopName];
+            let coords;
 
-            // Simple fuzzy fallback if exact missing (e.g. "Av. Kabah" vs "Hospital General (Av. Kabah)")
-            if (!coords) {
-                 const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
-                 if (key) coords = coordinatesDB[key];
+            if (finder) {
+                coords = finder.find(stopName);
+            } else {
+                // Fallback if finder not ready (rare race condition)
+                coords = coordinatesDB[stopName];
+                if (!coords) {
+                     const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
+                     if (key) coords = coordinatesDB[key];
+                }
             }
 
             if (coords) {
