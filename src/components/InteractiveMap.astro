@@ -35,10 +35,23 @@ const {
         return;
     }
 
+    // Safer access to container properties
+    // @ts-ignore
     if (container._leaflet_id) return; // Prevent double init
 
-    const center = JSON.parse(container.dataset.center);
-    const zoom = parseFloat(container.dataset.zoom);
+    const centerRaw = container.getAttribute('data-center');
+    if (!centerRaw) return;
+
+    let center;
+    try {
+        center = JSON.parse(centerRaw);
+    } catch (e) {
+        console.error("Failed to parse map center", e);
+        center = [21.1619, -86.8515];
+    }
+
+    const zoomRaw = container.getAttribute('data-zoom');
+    const zoom = zoomRaw ? parseFloat(zoomRaw) : 12;
 
     // Initialize Leaflet
     // Cancún Bounds: [20.8, -87.3] to [21.6, -86.5]
