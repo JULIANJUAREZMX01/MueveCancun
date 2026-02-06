@@ -6,6 +6,34 @@ use petgraph::algo::dijkstra;
 use std::collections::HashMap;
 use once_cell::sync::Lazy;
 use std::sync::RwLock;
+use rstar::{RTree, PointDistance, RTreeObject, AABB};
+
+// Longitude scaling factor for Cancun (~21.1° N)
+const LNG_SCALE: f64 = 0.932;
+
+#[derive(Clone)]
+struct StopPoint {
+    name: String,
+    lat: f64,
+    lng: f64,
+}
+
+impl RTreeObject for StopPoint {
+    type Envelope = AABB<[f64; 2]>;
+    fn envelope(&self) -> Self::Envelope {
+        AABB::from_point([self.lat, self.lng * LNG_SCALE])
+    }
+}
+
+impl PointDistance for StopPoint {
+    fn distance_2(&self, point: &[f64; 2]) -> f64 {
+        let d_lat = self.lat - point[0];
+        let d_lng = (self.lng * LNG_SCALE) - point[1];
+        d_lat * d_lat + d_lng * d_lng
+    }
+}
+
+static SPATIAL_INDEX: Lazy<RwLock<Option<RTree<StopPoint>>>> = Lazy::new(|| RwLock::new(None));
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct StopInfo {
@@ -108,6 +136,19 @@ pub fn load_stops_data(val: JsValue) {
             if coords.len() >= 2 {
                 db.insert(name, (coords[0], coords[1]));
             }
+        }
+        
+        // Rebuild Spatial Index
+        let mut points = Vec::new();
+        for (name, (lat, lng)) in db.iter() {
+            points.push(StopPoint {
+                name: name.clone(),
+                lat: *lat,
+                lng: *lng,
+            });
+        }
+        if let Ok(mut index) = SPATIAL_INDEX.write() {
+            *index = Some(RTree::bulk_load(points));
         }
     }
 }
@@ -450,6 +491,22 @@ pub fn get_all_routes() -> JsValue {
 }
 
 pub fn find_nearest_stop_rs(lat: f64, lng: f64) -> Option<StopInfo> {
+    // 1. Try Spatial Index (O(log N))
+    if let Ok(index_guard) = SPATIAL_INDEX.read() {
+        if let Some(rtree) = &*index_guard {
+            if let Some(nearest) = rtree.nearest_neighbor(&[lat, lng * LNG_SCALE]) {
+                let dist = haversine_distance(lat, lng, nearest.lat, nearest.lng);
+                return Some(StopInfo {
+                    name: nearest.name.clone(),
+                    lat: nearest.lat,
+                    lng: nearest.lng,
+                    distance_km: dist,
+                });
+            }
+        }
+    }
+
+    // 2. Fallback to Linear Search if Index not built (first run)
     let mut best_stop: Option<StopInfo> = None;
     let mut min_dist = f64::MAX;
 
@@ -467,6 +524,21 @@ pub fn find_nearest_stop_rs(lat: f64, lng: f64) -> Option<StopInfo> {
             }
         }
     }
+    
+    // Proactively build index for next time if we just performed a linear search
+    if best_stop.is_some() {
+        if let Ok(db) = STOPS_DB.read() {
+            let points: Vec<StopPoint> = db.iter().map(|(name, (lat, lng))| StopPoint {
+                name: name.clone(),
+                lat: *lat,
+                lng: *lng,
+            }).collect();
+            if let Ok(mut index) = SPATIAL_INDEX.write() {
+                *index = Some(RTree::bulk_load(points));
+            }
+        }
+    }
+
     best_stop
 }
 
