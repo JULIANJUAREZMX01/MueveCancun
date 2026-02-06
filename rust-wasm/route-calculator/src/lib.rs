@@ -126,6 +126,7 @@ pub struct Route {
     pub dest_hub: String,
     // New Fields
     pub stops: Vec<String>,
+    pub stops_info: Option<Vec<StopInfo>>,
     #[serde(skip)]
     pub stops_normalized: Vec<String>,
     pub operator: String,
@@ -249,6 +250,7 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
             origin_hub: origin,
             dest_hub: dest,
             stops: stops_vec,
+            stops_info: None,
             stops_normalized,
             operator: operator.to_string(),
             schedule: schedule.to_string(),
@@ -292,6 +294,26 @@ fn match_stop<'a>(
     best_match.map(|(i, _)| i)
 }
 
+fn enrich_route(mut route: Route) -> Route {
+    if let Ok(db) = STOPS_DB.read() {
+        let mut infos = Vec::new();
+        for stop_name in &route.stops {
+             if let Some((lat, lng)) = db.get(stop_name) {
+                 infos.push(StopInfo {
+                     name: stop_name.clone(),
+                     lat: *lat,
+                     lng: *lng,
+                     distance_km: 0.0,
+                 });
+             }
+        }
+        if !infos.is_empty() {
+            route.stops_info = Some(infos);
+        }
+    }
+    route
+}
+
 pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
     let all_routes = &*CATALOG;
     let mut journeys = Vec::new();
@@ -327,7 +349,7 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
                 if origin_idx < dest_idx {
                     journeys.push(Journey {
                         type_: "Direct".to_string(),
-                        legs: vec![m.route.clone()],
+                        legs: vec![enrich_route(m.route.clone())],
                         transfer_point: None,
                         total_price: m.route.price,
                     });
@@ -377,7 +399,7 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
 
                         journeys.push(Journey {
                             type_: "Transfer".to_string(),
-                            legs: vec![(*route_a).clone(), (*route_b).clone()],
+                            legs: vec![enrich_route((*route_a).clone()), enrich_route((*route_b).clone())],
                             transfer_point: Some(transfer_name),
                             total_price: route_a.price + route_b.price,
                         });

@@ -1,0 +1,74 @@
+---
+interface Props {
+  id: string;
+  label?: string;
+  checked?: boolean;
+}
+
+const { id, label, checked = false } = Astro.props;
+---
+
+<label class="switch-container">
+  <input type="checkbox" id={id} checked={checked} role="switch" class="sr-only peer" />
+  <span class="switch-track">
+    <span class="switch-thumb"></span>
+  </span>
+  {label && <span class="switch-label">{label}</span>}
+</label>
+
+<style>
+  .switch-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+    --switch-bg-off: #cbd5e1; /* slate-300 */
+    --switch-bg-on: #F97316; /* primary-500 */
+    --switch-thumb-size: 1.25rem;
+    --switch-width: 2.75rem;
+    --switch-height: 1.5rem;
+  }
+
+  /* Focus Visible for A11y */
+  .switch-container:has(:focus-visible) .switch-track {
+    outline: 2px solid var(--switch-bg-on);
+    outline-offset: 2px;
+  }
+
+  .switch-track {
+    position: relative;
+    width: var(--switch-width);
+    height: var(--switch-height);
+    background-color: var(--switch-bg-off);
+    border-radius: 9999px;
+    transition: background-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .switch-thumb {
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: var(--switch-thumb-size);
+    height: var(--switch-thumb-size);
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .switch-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #334155; /* slate-700 */
+  }
+
+  /* Checked State using :checked pseudoclass on sibling input */
+  input:checked + .switch-track {
+    background-color: var(--switch-bg-on);
+  }
+
+  input:checked + .switch-track .switch-thumb {
+    transform: translateX(1.25rem); /* width - thumb_size - padding*2 */
+  }
+</style>

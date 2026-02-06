@@ -270,33 +270,44 @@ const {
     const allBounds = [];
 
     legs.forEach((leg, index) => {
-        const stops = leg.stops || [];
         const routeCoords = [];
         const validStops = [];
 
-        stops.forEach(stopName => {
-            let coords;
+        // ⚡ SPEEDY: Use pre-computed coordinates from WASM if available (stops_info)
+        // This avoids the O(N) fuzzy search loop in JS
+        if (leg.stops_info && leg.stops_info.length > 0) {
+             leg.stops_info.forEach(stop => {
+                 const coords = [stop.lat, stop.lng];
+                 routeCoords.push(coords);
+                 validStops.push({ name: stop.name, latlng: coords });
+                 allBounds.push(coords);
+             });
+        } else {
+            const stops = leg.stops || [];
+            stops.forEach(stopName => {
+                let coords;
 
-            // Use Fuzzy Finder if available (Robust)
-            if (finder) {
-                coords = finder.find(stopName);
-            } else {
-                // Fallback
-                coords = coordinatesDB[stopName];
-                if (!coords) {
-                     const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
-                     if (key) coords = coordinatesDB[key];
+                // Use Fuzzy Finder if available (Robust)
+                if (finder) {
+                    coords = finder.find(stopName);
+                } else {
+                    // Fallback
+                    coords = coordinatesDB[stopName];
+                    if (!coords) {
+                         const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
+                         if (key) coords = coordinatesDB[key];
+                    }
                 }
-            }
 
-            if (coords) {
-                routeCoords.push(coords);
-                validStops.push({ name: stopName, latlng: coords });
-                allBounds.push(coords);
-            } else {
-                console.warn(`[InteractiveMap] Skipping stop with missing coordinates: ${stopName}`);
-            }
-        });
+                if (coords) {
+                    routeCoords.push(coords);
+                    validStops.push({ name: stopName, latlng: coords });
+                    allBounds.push(coords);
+                } else {
+                    console.warn(`[InteractiveMap] Skipping stop with missing coordinates: ${stopName}`);
+                }
+            });
+        }
 
         if (routeCoords.length > 0) {
             // Style based on index (Leg 1 vs Leg 2)
