@@ -24,6 +24,48 @@ const {
 <script>
   import { coordinatesStore } from '../lib/CoordinatesStore';
 
+  // 🛡️ SECURITY: Prevent DOM-based XSS by using strict DOM creation instead of innerHTML
+  function createSafePopup(title, subtitle, actionUrl) {
+      const div = document.createElement('div');
+      div.className = 'p-1';
+
+      const pTitle = document.createElement('p');
+      pTitle.className = 'font-bold text-gray-900';
+      pTitle.textContent = title;
+      div.appendChild(pTitle);
+
+      if (subtitle) {
+          const pSub = document.createElement('p');
+          pSub.className = 'text-xs text-gray-500';
+          pSub.textContent = subtitle;
+          div.appendChild(pSub);
+      }
+
+      if (actionUrl) {
+          const btn = document.createElement('button');
+          btn.className = 'mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold';
+          btn.textContent = 'Ver Detalles';
+          btn.onclick = () => window.location.href = actionUrl;
+          div.appendChild(btn);
+      }
+      return div;
+  }
+
+  function createLabelPopup(label, text) {
+      const div = document.createElement('div');
+      const b = document.createElement('b');
+      b.textContent = label + ': ';
+      div.appendChild(b);
+      div.appendChild(document.createTextNode(text));
+      return div;
+  }
+
+  function createSimplePopup(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div;
+  }
+
   // Optimized Coordinate Finder (Inverted Index + Cache)
   class CoordinateFinder {
       constructor(db) {
@@ -225,13 +267,11 @@ const {
                 weight: 2,
                 opacity: 1,
                 fillOpacity: 0.9
-            }).bindPopup(`
-                <div class="p-1">
-                    <p class="font-bold text-gray-900">${name}</p>
-                    <p class="text-xs text-gray-500">${isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés'}</p>
-                    <button onclick="window.location.href='/rutas?search=${encodeURIComponent(name)}'" class="mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
-                </div>
-            `);
+            }).bindPopup(createSafePopup(
+                name,
+                isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés',
+                '/rutas?search=' + encodeURIComponent(name)
+            ));
             newLayers.push(marker);
         });
         
@@ -329,14 +369,14 @@ const {
             if (index === 0) {
                  const start = validStops[0];
                  newLayers.push(window.L.marker(start.latlng)
-                    .bindPopup(`<b>Inicio:</b> ${start.name}`));
+                    .bindPopup(createLabelPopup('Inicio', start.name)));
             }
 
             // End Marker (only for last leg)
             if (index === legs.length - 1) {
                  const end = validStops[validStops.length - 1];
                  newLayers.push(window.L.marker(end.latlng)
-                    .bindPopup(`<b>Fin:</b> ${end.name}`));
+                    .bindPopup(createLabelPopup('Fin', end.name)));
             }
 
             // Transfer Marker (if not last leg)
@@ -344,14 +384,14 @@ const {
                 const end = validStops[validStops.length - 1];
                  newLayers.push(window.L.marker(end.latlng, {
                      // Custom icon for transfer? Or just a marker.
-                 }).bindPopup(`<b>Transbordo:</b> ${end.name}`));
+                 }).bindPopup(createLabelPopup('Transbordo', end.name)));
             }
 
             // Intermediate dots
             validStops.slice(1, -1).forEach(stop => {
                  newLayers.push(
                     window.L.circleMarker(stop.latlng, { radius: 4, color: '#334155', fillOpacity: 1 })
-                    .bindPopup(stop.name)
+                    .bindPopup(createSimplePopup(stop.name))
                  );
             });
 
