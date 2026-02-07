@@ -9,7 +9,47 @@ const rootDir = path.resolve(__dirname, '..');
 
 const modules = ['route-calculator', 'spatial-index'];
 
-console.log('🏗️  Starting WASM build...');
+console.log('🏗️  Starting WASM build process...');
+
+// Check for required tools
+const hasWasmPack = (() => {
+    try {
+        execSync('wasm-pack --version', { stdio: 'ignore' });
+        return true;
+    } catch (e) {
+        return false;
+    }
+})();
+
+const hasCargo = (() => {
+    try {
+        execSync('cargo --version', { stdio: 'ignore' });
+        return true;
+    } catch (e) {
+        return false;
+    }
+})();
+
+// Check for existing artifacts
+const artifactsExist = modules.every(mod => {
+    const wasmPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}_bg.wasm`);
+    const jsPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}.js`);
+    return fs.existsSync(wasmPath) && fs.existsSync(jsPath);
+});
+
+if (!hasWasmPack || !hasCargo) {
+    if (artifactsExist) {
+        console.warn('⚠️  WASM build tools (wasm-pack/cargo) missing or failed.');
+        console.warn('✅ Pre-built WASM artifacts found. Skipping build and using existing files.');
+        process.exit(0);
+    } else {
+        console.error('❌ WASM build tools missing AND artifacts missing.');
+        console.error('   Please install Rust and wasm-pack to build the project.');
+        process.exit(1);
+    }
+}
+
+console.log('✅ Build tools found. Proceeding with compilation...');
 
 modules.forEach(mod => {
     console.log(`📦 Building ${mod}...`);
@@ -24,8 +64,6 @@ modules.forEach(mod => {
             stdio: 'inherit'
         });
         // Run again to generate types if needed, but usually one pass is enough.
-        // Note: --no-typescript prevents .d.ts generation? The original script didn't have it.
-        // Let's stick to default which generates .d.ts which is good.
         // Re-running without --no-typescript to match original behavior (it didn't have flags other than target and out-dir).
 
         execSync(`wasm-pack build --target web --out-dir ${publicOutDir}`, {
