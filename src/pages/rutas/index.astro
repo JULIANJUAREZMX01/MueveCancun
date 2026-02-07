@@ -1,6 +1,87 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import SkeletonLoader from '../../components/ui/SkeletonLoader.astro';
+import routesData from '../../data/routes.json';
+
+// Types
+interface Route {
+  id: string;
+  name: string;
+  price: number;
+  transport_type: string;
+  operator?: string;
+  frequency?: string;
+  schedule?: string;
+  duration?: string;
+  badges: string[];
+  stops: string[];
+  origin_hub?: string;
+  dest_hub?: string;
+}
+
+const TRANSPORT_LABELS: Record<string, string> = {
+  "Bus": "Autobús",
+  "Combi": "Combi",
+  "Van": "Van / Colectivo",
+  "ADO": "ADO",
+  "PlayaExpress": "Playa Express",
+  // Legacy support
+  "Bus_Urban": "Autobús Urbano",
+  "Bus_HotelZone": "Autobús Zona Hotelera",
+  "Combi_Municipal": "Combi Municipal",
+  "ADO_Airport": "ADO Aeropuerto",
+  "Playa_Express": "Playa Express"
+};
+
+const getTransportLabel = (type: string) => TRANSPORT_LABELS[type] || type;
+
+const transformRoute = (raw: any): Route => {
+  // Derive transport type from ID
+  let transport_type = "Bus";
+  if (raw.id.startsWith("CR")) transport_type = "Combi";
+  else if (raw.id.startsWith("VAN") || raw.id.includes("PLAYA_EXPRESS")) transport_type = "Van";
+  else if (raw.id.startsWith("ADO")) transport_type = "ADO";
+
+  // Format Schedule
+  let schedule = "";
+  if (raw.horario) {
+     if (typeof raw.horario === 'string') {
+        schedule = raw.horario;
+     } else {
+        // Handle inconsistent keys (inicio_oficial vs inicio)
+        const start = raw.horario.inicio_oficial || raw.horario.inicio || "undefined";
+        const end = raw.horario.fin_oficial || raw.horario.fin || "undefined";
+
+        if (start !== "undefined" && end !== "undefined") {
+            schedule = `${start} - ${end}`;
+            if (raw.horario.guardia_nocturna) {
+                schedule += ` (${raw.horario.guardia_nocturna})`;
+            }
+        }
+     }
+  }
+
+  // Stops (Handle inconsistent keys: 'parada' vs 'nombre')
+  const stops = raw.paradas ? raw.paradas.map((p: any) => p.parada || p.nombre) : [];
+
+  return {
+    id: raw.id,
+    name: raw.nombre,
+    price: raw.tarifa,
+    transport_type,
+    operator: "", // Not explicitly in JSON usually, maybe inferred?
+    frequency: raw.frecuencia_minutos ? `${raw.frecuencia_minutos} min` : undefined,
+    schedule,
+    duration: "Estimado", // Default text
+    badges: raw.advertencias_usuario || [],
+    stops,
+    origin_hub: stops[0] || "Origen",
+    dest_hub: stops[stops.length - 1] || "Destino"
+  };
+};
+
+// Filter and Transform
+// Access 'rutas' array from the JSON structure
+const routes: Route[] = (routesData.rutas || []).map(transformRoute);
 ---
 
 <MainLayout title="Catálogo de Rutas">
@@ -18,136 +99,61 @@ import SkeletonLoader from '../../components/ui/SkeletonLoader.astro';
       </p>
     </div>
 
-    <!-- Loading State -->
-    <div id="catalog-loader" class="space-y-4">
-        <SkeletonLoader height="h-32" />
-        <SkeletonLoader height="h-32" />
-        <SkeletonLoader height="h-32" />
-    </div>
+    <!-- List Container (Server Rendered) -->
+    <div class="space-y-4">
+       {routes.map(route => {
+          let stopsPreview = `${route.origin_hub} ➔ ${route.dest_hub}`;
 
-    <!-- List Container -->
-    <div id="routes-container" class="space-y-4 hidden">
-       <!-- Routes injected here -->
-    </div>
-
-  </div>
-</MainLayout>
-
-<script>
-  let get_all_routes;
-  const loader = document.getElementById('catalog-loader');
-  const container = document.getElementById('routes-container');
-
-  const TRANSPORT_LABELS = {
-    "Bus": "Autobús",
-    "Combi": "Combi",
-    "Van": "Van / Colectivo",
-    "ADO": "ADO",
-    "PlayaExpress": "Playa Express",
-    // Legacy support
-    "Bus_Urban": "Autobús Urbano",
-    "Bus_HotelZone": "Autobús Zona Hotelera",
-    "Combi_Municipal": "Combi Municipal",
-    "ADO_Airport": "ADO Aeropuerto",
-    "Playa_Express": "Playa Express"
-  };
-
-  function getTransportLabel(type) {
-    return TRANSPORT_LABELS[type] || type;
-  }
-
-  function escapeHtml(unsafe) {
-    if (typeof unsafe !== 'string') return unsafe;
-    return unsafe
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
-  }
-
-  function renderRoutes(routes) {
-    if (!container) return;
-    container.innerHTML = '';
-
-    routes.forEach(route => {
-        // Handle badge serialization if needed
-        const badgesHtml = route.badges.map(b => `<span class="text-xs bg-slate-100 px-1 rounded">${escapeHtml(b)}</span>`).join('');
-
-        // Stops Logic
-        let stopsPreview = `${escapeHtml(route.origin_hub)} ➔ ${escapeHtml(route.dest_hub)}`;
-        if (route.stops && route.stops.length > 0) {
-             stopsPreview = `${escapeHtml(route.stops[0])} ➔ ${escapeHtml(route.stops[route.stops.length - 1])}`;
-        }
-
-        const html = `
+          return (
           <div class="p-4 bg-white rounded-lg shadow-sm border border-slate-100 active:scale-98 transition-transform mb-3 animate-slide-up">
             <div class="flex justify-between items-start">
               <div class="flex-1">
                 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mb-1">
-                  ${escapeHtml(getTransportLabel(route.transport_type))}
+                  {getTransportLabel(route.transport_type)}
                 </span>
-                <h3 class="font-bold text-slate-800">${escapeHtml(route.name)}</h3>
+                <h3 class="font-bold text-slate-800">{route.name}</h3>
 
                 <!-- Meta Info Row -->
                 <div class="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-600">
-                    ${route.operator ? `
+                    {route.operator && (
                     <div class="flex items-center gap-1">
-                        <span>🚌</span> <span class="font-medium">${escapeHtml(route.operator)}</span>
-                    </div>` : ''}
-                    ${route.frequency ? `
+                        <span>🚌</span> <span class="font-medium">{route.operator}</span>
+                    </div>
+                    )}
+                    {route.frequency && (
                      <div class="flex items-center gap-1">
-                        <span>⏱️</span> <span>${escapeHtml(route.frequency)}</span>
-                    </div>` : ''}
-                    ${route.schedule ? `
+                        <span>⏱️</span> <span>{route.frequency}</span>
+                    </div>
+                    )}
+                    {route.schedule && (
                      <div class="flex items-center gap-1">
-                        <span>🕒</span> <span>${escapeHtml(route.schedule)}</span>
-                    </div>` : ''}
+                        <span>🕒</span> <span>{route.schedule}</span>
+                    </div>
+                    )}
                 </div>
 
                 <div class="flex gap-2 mt-2 flex-wrap">
-                   ${badgesHtml}
+                   {route.badges.map(badge => (
+                     <span class="text-xs bg-slate-100 px-1 rounded">{badge}</span>
+                   ))}
                 </div>
               </div>
               <div class="text-right ml-2 shrink-0">
                 <span class="inline-flex items-center px-2 py-1 rounded bg-emerald-100 text-emerald-800 text-xs font-bold font-mono whitespace-nowrap">
-                    💰 $${route.price.toFixed(2)}
+                    💰 ${route.price.toFixed(2)}
                 </span>
-                <p class="text-xs text-slate-500 mt-1">${escapeHtml(route.duration)}</p>
+                <p class="text-xs text-slate-500 mt-1">{route.duration}</p>
               </div>
             </div>
 
             <!-- Stops Preview -->
             <div class="mt-3 pt-3 border-t border-slate-50 text-xs text-slate-500 flex items-center gap-1">
-                <span>📍</span> <span class="truncate">${stopsPreview}</span>
+                <span>📍</span> <span class="truncate">{stopsPreview}</span>
             </div>
           </div>
-        `;
-        container.innerHTML += html;
-    });
+          );
+       })}
+    </div>
 
-    // Toggle Visibility
-    if (loader) loader.classList.add('hidden');
-    if (container) container.classList.remove('hidden');
-  }
-
-  async function init() {
-    try {
-      console.log("Initializing WASM for Catalog...");
-      const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
-      const module = await import(/* @vite-ignore */ wasmPath);
-      await module.default();
-      get_all_routes = module.get_all_routes;
-
-      const allRoutes = get_all_routes();
-      console.log("Loaded Routes:", allRoutes);
-      renderRoutes(allRoutes);
-
-    } catch (e) {
-      console.error("WASM Catalog Load Error:", e);
-      if (container) container.innerHTML = `<div class="text-red-500 font-bold">Error loading catalog.</div>`;
-    }
-  }
-
-  document.addEventListener('astro:page-load', init);
-</script>
+  </div>
+</MainLayout>
