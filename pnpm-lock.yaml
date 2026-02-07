@@ -47,6 +47,9 @@ importers:
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.19(yaml@2.8.2)
+      wasm-pack:
+        specifier: ^0.14.0
+        version: 0.14.0
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.1
@@ -93,9 +96,6 @@ importers:
       vitest:
         specifier: ^4.0.1
         version: 4.0.18(@types/node@24.10.9)(jiti@1.21.7)(jsdom@27.4.0)(yaml@2.8.2)
-      wasm-pack:
-        specifier: ^0.14.0
-        version: 0.14.0
 
 packages:
 
