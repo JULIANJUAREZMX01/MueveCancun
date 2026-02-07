@@ -7,6 +7,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
+// FIX: Ensure cargo is found (needed for fresh installs)
+const cargoBin = path.join(process.env.USERPROFILE, '.cargo', 'bin');
+process.env.PATH = `${cargoBin}${path.delimiter}${process.env.PATH}`;
+
 const modules = ['route-calculator', 'spatial-index'];
 
 console.log('🏗️  Starting WASM build...');

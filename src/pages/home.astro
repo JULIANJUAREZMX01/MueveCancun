@@ -1,9 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Switch from '../components/ui/Switch.astro';
+import InteractiveMap from '../components/InteractiveMap.astro';
 ---
 
 <Layout title="Dashboard - CancúnMueve">
+    <!-- Real Interactive Map (Background Layer) -->
+    <div class="fixed inset-0 z-0">
+        <InteractiveMap />
+    </div>
+
 	<!-- Status Bar Placeholder (Simulated) -->
 	<div class="status-bar">
 		<span class="time">9:30</span>
@@ -14,9 +20,9 @@ import Switch from '../components/ui/Switch.astro';
 		</div>
 	</div>
 
-	<div class="dashboard-container">
+	<div class="dashboard-container pointer-events-none">
 		<!-- Search Card -->
-		<div class="glass-panel search-card animate-fade-in-up">
+		<div class="glass-panel search-card animate-fade-in-up pointer-events-auto">
 			<div class="card-header">
 				<div class="brand-row">
 					<h1 class="brand-name">CancúnMueve</h1>
@@ -34,11 +40,11 @@ import Switch from '../components/ui/Switch.astro';
 					</div>
 					<div class="input-field">
 						<label>Origen</label>
-						<input type="text" value="La Rehoyada" />
+						<input type="text" id="input-origin" value="La Rehoyada" placeholder="¿Dónde estás?" />
 					</div>
 				</div>
 
-				<button class="swap-btn">
+				<button class="swap-btn" id="btn-swap">
 					<span class="material-icons-round">swap_vert</span>
 				</button>
 
@@ -48,21 +54,21 @@ import Switch from '../components/ui/Switch.astro';
 					</div>
 					<div class="input-field">
 						<label>Destino</label>
-						<input type="text" value="Playa Delfines (El Mirador)" />
+						<input type="text" id="input-dest" value="Playa Delfines" placeholder="¿A dónde vas?" />
 					</div>
 				</div>
 			</div>
 
 			<div class="quick-actions">
-				<button class="action-chip">
+				<button class="action-chip" onclick="setInput('input-dest', 'Villas Otoch')">
 					<span class="material-icons-round icon">home</span>
 					<span class="label">Casa</span>
 				</button>
-				<button class="action-chip">
+				<button class="action-chip" onclick="setInput('input-dest', 'Zona Hotelera')">
 					<span class="material-icons-round icon">work</span>
 					<span class="label">Trabajo</span>
 				</button>
-				<button class="action-chip">
+				<button class="action-chip" onclick="setInput('input-dest', 'Aeropuerto T2')">
 					<span class="material-icons-round icon rotate-45">flight</span>
 					<span class="label">Aeropuerto</span>
 				</button>
@@ -72,7 +78,7 @@ import Switch from '../components/ui/Switch.astro';
 				<div class="passengers-selector">
 					<label>PASAJEROS</label>
 					<div class="selector-value">
-						<span>3 Pasajeros</span>
+						<span>1 Pasajero</span>
 						<span class="material-icons-round arrow">expand_more</span>
 					</div>
 				</div>
@@ -81,33 +87,16 @@ import Switch from '../components/ui/Switch.astro';
 				</div>
 			</div>
 
-			<button class="cta-btn group">
-				<span>TRAZAR RUTA</span>
+			<button id="btn-search" class="cta-btn group">
+				<span id="btn-text">TRAZAR RUTA</span>
+				<div id="btn-loader" class="hidden animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
 				<span class="material-icons-round arrow group-hover-translate">arrow_forward</span>
 			</button>
-		</div>
-
-		<!-- Floating Map Markers (Visual Only) -->
-		<div class="map-overlay-elements">
-			<div class="marker-container" style="top: 60%; left: 20%;">
-				<div class="marker-pin blue">
-					<span class="material-icons-round text-sm">directions_bus</span>
-				</div>
-				<div class="marker-label">Ruta 12</div>
-			</div>
-			<div class="marker-container" style="top: 65%; right: 25%;">
-				<div class="marker-pin blue">
-					<span class="material-icons-round text-sm">flag</span>
-				</div>
-				<div class="marker-label">Playa<br/>Delfines</div>
-			</div>
-			<div class="marker-container" style="top: 55%; left: 60%;">
-				<div class="marker-label-only">Cancún</div>
-			</div>
+            <p id="error-msg" class="text-red-500 text-xs font-bold text-center mt-2 hidden"></p>
 		</div>
 
 		<!-- Bottom Navigation -->
-		<div class="bottom-nav">
+		<div class="bottom-nav pointer-events-auto">
 			<a href="/home" class="nav-item active">
 				<div class="nav-icon-circle">
 					<span class="material-icons-round text-2xl">explore</span>
@@ -118,7 +107,7 @@ import Switch from '../components/ui/Switch.astro';
 				<span class="material-icons-round text-2xl">directions_bus</span>
 				<span class="nav-label">Rutas</span>
 			</a>
-			<a href="/tracking" class="nav-item">
+			<a href="/mapa" class="nav-item">
 				<span class="material-icons-round text-2xl">map</span>
 				<span class="nav-label">Mapa</span>
 			</a>
@@ -133,6 +122,100 @@ import Switch from '../components/ui/Switch.astro';
 		</div>
 	</div>
 </Layout>
+
+<script>
+    import { RouteCalculatorBridge } from '../lib/wasm_bridge';
+    import { coordinatesStore } from '../lib/CoordinatesStore';
+
+    // Helper for quick actions
+    window.setInput = (id, val) => {
+        document.getElementById(id).value = val;
+    }
+
+    const bridge = RouteCalculatorBridge.getInstance();
+    
+    document.getElementById('btn-search')?.addEventListener('click', async () => {
+        const originName = document.getElementById('input-origin').value;
+        const destName = document.getElementById('input-dest').value;
+        const btnText = document.getElementById('btn-text');
+        const loader = document.getElementById('btn-loader');
+        const errorMsg = document.getElementById('error-msg');
+
+        if(!originName || !destName) return;
+
+        // UI Loading State
+        btnText.classList.add('hidden');
+        loader.classList.remove('hidden');
+        errorMsg.classList.add('hidden');
+
+        try {
+            await coordinatesStore.init();
+            
+            // 1. Resolve Coordinates (using Store's fuzzy logic or exact match)
+            // Implementation note: The Store `findNearest` is for lat/lng -> name.
+            // We need Name -> Lat/Lng. 
+            // We can access the raw DB from store.
+            const db = coordinatesStore.getDB();
+            
+            const findCoord = (name) => {
+                // Exact
+                if(db[name]) return db[name];
+                // Simple fuzzy
+                const key = Object.keys(db).find(k => k.toLowerCase().includes(name.toLowerCase()));
+                return key ? db[key] : null;
+            };
+
+            const originCoords = findCoord(originName);
+            const destCoords = findCoord(destName);
+
+            if (!originCoords) throw new Error(`Origen no encontrado: ${originName}`);
+            if (!destCoords) throw new Error(`Destino no encontrado: ${destName}`);
+
+            console.log("📍 Calculating Route:", { originCoords, destCoords });
+
+            // 2. Call WASM
+            const result = await bridge.calculateRoute(
+                originCoords[0], originCoords[1],
+                destCoords[0], destCoords[1]
+            );
+
+            console.log("🚀 Route Result:", result);
+
+            if (result && result.success) {
+                // 3. Dispatch to Map
+                const event = new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: result });
+                window.dispatchEvent(event);
+                
+                // Optional: Minimize card or show feedback
+                // For now, let's just toast
+                 if(window.showToast) window.showToast("¡Ruta encontrada!", "success");
+
+            } else {
+                 if(window.showToast) window.showToast("No se encontró una ruta válida.", "error");
+                 errorMsg.innerText = "No se encontró ruta. Intenta otros puntos.";
+                 errorMsg.classList.remove('hidden');
+            }
+
+        } catch (e) {
+            console.error(e);
+            errorMsg.innerText = e.message || "Error al calcular ruta";
+            errorMsg.classList.remove('hidden');
+        } finally {
+            btnText.classList.remove('hidden');
+            loader.classList.add('hidden');
+        }
+    });
+
+    // Swap Button
+    document.getElementById('btn-swap')?.addEventListener('click', () => {
+        const originInput = document.getElementById('input-origin');
+        const destInput = document.getElementById('input-dest');
+        const temp = originInput.value;
+        originInput.value = destInput.value;
+        destInput.value = temp;
+    });
+
+</script>
 
 <style>
 	/* Status Bar */
@@ -164,7 +247,16 @@ import Switch from '../components/ui/Switch.astro';
 		flex-direction: column;
 		justify-content: space-between;
 		padding-top: 4rem;
+        /* pointer-events-none added via class, ensures map interaction */
 	}
+    
+    /* Re-enable pointer events for interactive children */
+    .pointer-events-auto {
+        pointer-events: auto;
+    }
+    .pointer-events-none {
+        pointer-events: none;
+    }
 
 	/* Glass Panel Utility */
 	.glass-panel {
@@ -437,58 +529,6 @@ import Switch from '../components/ui/Switch.astro';
 
 	.group:hover .group-hover-translate {
 		transform: translateX(4px);
-	}
-
-	/* Map Overlay Elements */
-	.map-overlay-elements {
-		position: absolute; /* Relative to dashboard-container which is 100vh */
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		pointer-events: none;
-		z-index: 1; /* Below the bottom nav and card */
-	}
-
-	.marker-container {
-		position: absolute;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.marker-pin {
-		color: white;
-		padding: 0.375rem;
-		border-radius: 9999px;
-		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.marker-pin.blue {
-		background-color: #2563EB;
-	}
-
-	.marker-label {
-		background-color: white;
-		color: #111827;
-		font-size: 10px;
-		font-weight: 700;
-		padding: 0.125rem 0.375rem;
-		border-radius: 0.25rem;
-		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-		margin-top: 0.25rem;
-		text-align: center;
-		line-height: 1.1;
-	}
-
-	.marker-label-only {
-		color: #111827;
-		font-weight: 700;
-		font-size: 1.25rem;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
 	/* Bottom Nav */

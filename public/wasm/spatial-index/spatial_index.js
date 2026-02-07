@@ -1,5 +1,9 @@
 /* @ts-self-types="./spatial_index.d.ts" */
 
+export function clear_spatial_index() {
+    wasm.clear_spatial_index();
+}
+
 /**
  * @param {number} user_lat
  * @param {number} user_lng
