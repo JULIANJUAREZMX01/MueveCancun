@@ -12,9 +12,11 @@ const modules = ['route-calculator', 'spatial-index'];
 console.log('🏗️  Starting WASM build...');
 
 try {
+    // Check for both wasm-pack and cargo (Rust toolchain)
     execSync('wasm-pack --version', { stdio: 'ignore' });
+    execSync('cargo --version', { stdio: 'ignore' });
 } catch (e) {
-    console.warn("⚠️  wasm-pack not found or failed to execute. Skipping WASM build and using pre-built binaries.");
+    console.warn("⚠️  wasm-pack or cargo (Rust) not found. Skipping WASM build and using pre-built binaries.");
     process.exit(0);
 }
 
