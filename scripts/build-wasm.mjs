@@ -11,6 +11,13 @@ const modules = ['route-calculator', 'spatial-index'];
 
 console.log('🏗️  Starting WASM build...');
 
+try {
+    execSync('wasm-pack --version', { stdio: 'ignore' });
+} catch (e) {
+    console.warn("⚠️  wasm-pack not found or failed to execute. Skipping WASM build and using pre-built binaries.");
+    process.exit(0);
+}
+
 modules.forEach(mod => {
     console.log(`📦 Building ${mod}...`);
     const sourceDir = path.join(rootDir, 'rust-wasm', mod);
@@ -35,6 +42,8 @@ modules.forEach(mod => {
 
     } catch (e) {
         console.error(`❌ Failed to build ${mod}`);
+        // If build fails but wasm-pack exists, fail hard? Or warn?
+        // Let's fail hard if we *tried* to build and failed.
         process.exit(1);
     }
 
