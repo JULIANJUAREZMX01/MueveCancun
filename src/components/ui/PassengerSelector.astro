@@ -1,0 +1,137 @@
+---
+interface Props {
+  id?: string;
+  name?: string;
+  value?: string;
+  class?: string;
+}
+
+const { id = 'passenger-selector', name = 'passengers', value = '1', class: className } = Astro.props;
+
+const options = [
+  { value: '1', label: '1 Pasajero', icon: '👤' },
+  { value: '2', label: '2 Pasajeros', icon: '👥' },
+  { value: '3', label: '3 Pasajeros', icon: '👪' },
+  { value: '4', label: '4 Pasajeros', icon: '🚌' },
+];
+
+const selectedOption = options.find(o => o.value === value) || options[0];
+---
+
+<div class={`passenger-selector relative w-full ${className || ''}`} id={`${id}-container`}>
+  <!-- Hidden input for form submission if needed -->
+  <input type="hidden" id={id} name={name} value={value} />
+
+  <!-- Trigger Button -->
+  <button
+    id={`${id}-trigger`}
+    class="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 flex items-center justify-between font-bold text-slate-700 hover:bg-slate-100 transition-colors focus-visible:ring-2 focus-visible:ring-primary-100 focus-visible:border-primary-500 active:scale-[0.98]"
+    popovertarget={`${id}-popover`}
+    style={`anchor-name: --${id}-anchor`}
+    type="button"
+    aria-haspopup="listbox"
+    aria-expanded="false"
+  >
+    <span class="flex items-center gap-2 pointer-events-none" id={`${id}-label`}>
+      <span class="text-lg leading-none">{selectedOption.icon}</span>
+      <span class="text-sm font-bold tracking-tight">{selectedOption.label}</span>
+    </span>
+    <span class="text-slate-400 text-xs pointer-events-none transition-transform duration-200" id={`${id}-chevron`}>▼</span>
+  </button>
+
+  <!-- Popover Menu -->
+  <div
+    id={`${id}-popover`}
+    popover
+    class="passenger-popover bg-white border border-slate-200 rounded-xl shadow-xl p-1 flex flex-col gap-1 min-w-[200px] z-50 overflow-hidden"
+    style={`position-anchor: --${id}-anchor`}
+    role="listbox"
+  >
+    {options.map((option) => (
+      <button
+        class={`passenger-option w-full text-left px-3 py-2.5 rounded-lg hover:bg-slate-50 flex items-center gap-3 transition-colors active:bg-primary-50 active:text-primary-700 font-medium text-slate-700 text-sm group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${option.value === value ? 'bg-primary-50 text-primary-700' : ''}`}
+        data-value={option.value}
+        data-label={option.label}
+        data-icon={option.icon}
+        type="button"
+        role="option"
+        aria-selected={option.value === value ? "true" : "false"}
+        onclick={`
+          const container = document.getElementById('${id}-container');
+          const input = document.getElementById('${id}');
+          const label = document.getElementById('${id}-label');
+          const popover = document.getElementById('${id}-popover');
+
+          if(input) input.value = '${option.value}';
+          if(label) label.innerHTML = '<span class="text-lg leading-none">${option.icon}</span><span class="text-sm font-bold tracking-tight">${option.label}</span>';
+
+          // Update selected state visually
+          popover.querySelectorAll('.passenger-option').forEach(btn => {
+             btn.classList.remove('bg-primary-50', 'text-primary-700');
+             btn.setAttribute('aria-selected', 'false');
+             const check = btn.querySelector('.check-icon');
+             if(check) check.remove();
+          });
+
+          this.classList.add('bg-primary-50', 'text-primary-700');
+          this.setAttribute('aria-selected', 'true');
+
+          // Close
+          if(popover && popover.hidePopover) popover.hidePopover();
+        `}
+      >
+        <span class="text-lg opacity-75 group-hover:opacity-100 transition-opacity leading-none">{option.icon}</span>
+        <span class="font-bold">{option.label}</span>
+      </button>
+    ))}
+  </div>
+</div>
+
+<style>
+  /* Native CSS Popover Styling */
+  .passenger-popover {
+    /* Basic positioning fallback */
+    position: absolute;
+    margin: 0;
+    inset: auto; /* Reset */
+
+    /* Anchor Positioning (Chrome 125+) */
+    top: anchor(bottom);
+    left: anchor(left);
+    width: anchor-size(width);
+    margin-top: 8px; /* Offset */
+
+    /* Animation Entry */
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                display 0.2s allow-discrete,
+                overlay 0.2s allow-discrete;
+  }
+
+  /* Open State */
+  .passenger-popover:popover-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  /* Starting Style for Entry Animation */
+  @starting-style {
+    .passenger-popover:popover-open {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.96);
+    }
+  }
+
+  /* Chevron Rotation via :has() checking open popover state logic isn't trivial across shadow DOM boundaries or separate elements without JS toggle classes.
+     But we can use :focus-within on the container if the popover is logically inside?
+     Actually, popovers are moved to the top layer, so generic sibling selectors fail.
+
+     We'll stick to a simple transition on active.
+  */
+
+  .passenger-popover::backdrop {
+    background: transparent;
+  }
+</style>

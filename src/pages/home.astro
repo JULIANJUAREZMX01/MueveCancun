@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Switch from '../components/ui/Switch.astro';
+import PassengerSelector from '../components/ui/PassengerSelector.astro';
 ---
 
 <Layout title="Dashboard - CancúnMueve">
@@ -69,13 +70,7 @@ import Switch from '../components/ui/Switch.astro';
 			</div>
 
 			<div class="options-row">
-				<div class="passengers-selector">
-					<label>PASAJEROS</label>
-					<div class="selector-value">
-						<span>3 Pasajeros</span>
-						<span class="material-icons-round arrow">expand_more</span>
-					</div>
-				</div>
+				<PassengerSelector id="home-passengers" value="3" class="flex-1" />
 				<div class="tourist-toggle-wrapper h-full flex items-center">
 					<Switch id="tourist-mode-home" label="Turista" checked={true} />
 				</div>
