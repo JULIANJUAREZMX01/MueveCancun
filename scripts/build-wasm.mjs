@@ -7,6 +7,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
+// Check if cargo is available
+try {
+    execSync('cargo --version', { stdio: 'ignore' });
+} catch (e) {
+    console.log('⚠️ Cargo not found. Skipping WASM build and using pre-built binaries.');
+    process.exit(0);
+}
+
 const modules = ['route-calculator', 'spatial-index'];
 
 console.log('🏗️  Starting WASM build...');
@@ -23,10 +31,6 @@ modules.forEach(mod => {
             cwd: sourceDir,
             stdio: 'inherit'
         });
-        // Run again to generate types if needed, but usually one pass is enough.
-        // Note: --no-typescript prevents .d.ts generation? The original script didn't have it.
-        // Let's stick to default which generates .d.ts which is good.
-        // Re-running without --no-typescript to match original behavior (it didn't have flags other than target and out-dir).
 
         execSync(`wasm-pack build --target web --out-dir ${publicOutDir}`, {
             cwd: sourceDir,
