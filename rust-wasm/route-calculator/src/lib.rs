@@ -6,6 +6,7 @@ use petgraph::algo::dijkstra;
 use std::collections::HashMap;
 use once_cell::sync::Lazy;
 use std::sync::RwLock;
+use std::cmp::Ordering; // Sentinel: Added for safe comparison
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct StopInfo {
@@ -425,8 +426,9 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
         let score_a = get_score(a);
         let score_b = get_score(b);
 
+        // Sentinel Fix: Use unwrap_or(Ordering::Equal) to prevent panic on NaN
         score_b.cmp(&score_a) // Higher score first
-            .then_with(|| a.total_price.partial_cmp(&b.total_price).unwrap()) // Lower price first
+            .then_with(|| a.total_price.partial_cmp(&b.total_price).unwrap_or(Ordering::Equal)) // Lower price first
     });
 
     // Limit results to avoid overwhelming user
@@ -437,16 +439,17 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
     journeys
 }
 
+// Sentinel Fix: Return Result<JsValue, JsValue> to propagate errors safely
 #[wasm_bindgen]
-pub fn find_route(origin: &str, dest: &str) -> JsValue {
+pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
     let routes = find_route_rs(origin, dest);
-    serde_wasm_bindgen::to_value(&routes).unwrap()
+    serde_wasm_bindgen::to_value(&routes).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 #[wasm_bindgen]
-pub fn get_all_routes() -> JsValue {
+pub fn get_all_routes() -> Result<JsValue, JsValue> {
     let routes = &*CATALOG;
-    serde_wasm_bindgen::to_value(routes).unwrap()
+    serde_wasm_bindgen::to_value(routes).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 pub fn find_nearest_stop_rs(lat: f64, lng: f64) -> Option<StopInfo> {
@@ -501,15 +504,15 @@ pub fn analyze_gap_rs(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64
 }
 
 #[wasm_bindgen]
-pub fn find_nearest_stop(lat: f64, lng: f64) -> JsValue {
+pub fn find_nearest_stop(lat: f64, lng: f64) -> Result<JsValue, JsValue> {
     let res = find_nearest_stop_rs(lat, lng);
-    serde_wasm_bindgen::to_value(&res).unwrap()
+    serde_wasm_bindgen::to_value(&res).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 #[wasm_bindgen]
-pub fn analyze_gap(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64) -> JsValue {
+pub fn analyze_gap(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64) -> Result<JsValue, JsValue> {
     let res = analyze_gap_rs(user_lat, user_lng, dest_lat, dest_lng);
-    serde_wasm_bindgen::to_value(&res).unwrap()
+    serde_wasm_bindgen::to_value(&res).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 // --- LEGACY GRAPH LOGIC (Kept for compilation, bypassed for now) ---
@@ -560,17 +563,18 @@ pub fn calculate_route(
     dest_lat: f64,
     dest_lng: f64,
     routes_val: JsValue
-) -> JsValue {
+) -> Result<JsValue, JsValue> {
     println!("DEBUG: calculate_route called");
     let data: RootData = match serde_wasm_bindgen::from_value(routes_val) {
         Ok(d) => d,
         Err(_e) => {
-            return serde_wasm_bindgen::to_value(&error_response("invalid_data")).unwrap();
+            return serde_wasm_bindgen::to_value(&error_response("invalid_data"))
+                .map_err(|e| JsValue::from_str(&e.to_string()));
         }
     };
 
     let res = find_route_internal(origin_lat, origin_lng, dest_lat, dest_lng, &data);
-    serde_wasm_bindgen::to_value(&res).unwrap()
+    serde_wasm_bindgen::to_value(&res).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 pub fn find_route_internal(
@@ -768,7 +772,7 @@ pub fn find_route_internal(
 }
 
 #[wasm_bindgen]
-pub fn calculate_trip_cost(distance: f64, seats: u32, is_tourist: bool) -> JsValue {
+pub fn calculate_trip_cost(distance: f64, seats: u32, is_tourist: bool) -> Result<JsValue, JsValue> {
     let base_price = if is_tourist {
         29.0
     } else if distance > 15.0 {
@@ -789,7 +793,7 @@ pub fn calculate_trip_cost(distance: f64, seats: u32, is_tourist: bool) -> JsVal
             "es": "Paga en efectivo directamente al conductor."
         },
         "seats": seats
-    })).unwrap()
+    })).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 fn error_response(error_key: &str) -> RouteResponse {
@@ -911,26 +915,8 @@ mod tests {
         // Optimization short-circuit
         if res.iter().any(|j| j.type_ == "Direct") { return; }
 
-        // If "Villas Otoch Paraíso" matches both R-28 and R-2-94.
-        // R-2-94 goes to "Zona Hotelera", but maybe not "Playa Delfines" explicitly in the stops list?
-        // Let's check R-2-94 stops: ["OXXO Villas Otoch Paraíso", ..., "Zona Hotelera"]
-        // R-1 stops: [..., "Zona Hotelera", "Playa Delfines"]
-
-        // So R-2-94 is NOT a direct route to Playa Delfines (if strictly matching stops).
-        // It might be a transfer.
-
-        // R-28 goes: Villas Otoch -> El Crucero
-        // R-1 goes: El Crucero -> Playa Delfines
-
-        // So we expect a transfer at El Crucero.
-
         // Filter for transfer
         let transfer_routes: Vec<_> = res.iter().filter(|j| j.type_ == "Transfer").collect();
-
-        if transfer_routes.is_empty() {
-             // Maybe direct route found?
-             // But let's see if we can find the specific transfer we want
-        }
 
         assert!(res.iter().any(|j|
             j.type_ == "Transfer" &&
@@ -967,18 +953,10 @@ mod tests {
         // Entrada ZH: 21.153, -86.815
         // Test Point: 21.145, -86.83 (Approx middle of nowhere in downtown)
 
-        // Nearest might be Plaza Las Américas (approx 1.5km) or others.
-        // Let's verify distance > 0.5km
         let res = analyze_gap_rs(21.145, -86.83, 21.1685, -86.885);
-
-        // Debug print if it fails
-        if res.recommendation != "Private" {
-             println!("DEBUG: Found Nearest: {:?} with dist {}", res.origin_gap.as_ref().map(|s| &s.name), res.origin_gap.as_ref().map(|s| s.distance_km).unwrap_or(0.0));
-        }
 
         assert_eq!(res.recommendation, "Private");
     }
-
 
     #[test]
     fn test_direct_priority() {
