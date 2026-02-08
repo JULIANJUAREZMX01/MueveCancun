@@ -79,6 +79,20 @@ const {
       }
   }
 
+  function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return unsafe;
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+  }
+
+  function safeUrl(name) {
+      return encodeURIComponent(name).replace(/'/g, '%27');
+  }
+
   let map;
   let layerGroup;
   let coordinatesDB = {};
@@ -170,7 +184,7 @@ const {
                     .setLatLng(e.latlng)
                     .setContent(`
                         <div class="text-center">
-                            <p class="font-bold mb-2">¿Seleccionar "${nearest}"?</p>
+                            <p class="font-bold mb-2">¿Seleccionar "${escapeHtml(nearest)}"?</p>
                             <button id="confirm-pick-btn" class="bg-primary-500 text-white px-3 py-1 rounded text-xs font-bold">
                                 ✅ Confirmar
                             </button>
@@ -227,9 +241,9 @@ const {
                 fillOpacity: 0.9
             }).bindPopup(`
                 <div class="p-1">
-                    <p class="font-bold text-gray-900">${name}</p>
+                    <p class="font-bold text-gray-900">${escapeHtml(name)}</p>
                     <p class="text-xs text-gray-500">${isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés'}</p>
-                    <button onclick="window.location.href='/rutas?search=${encodeURIComponent(name)}'" class="mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
+                    <button onclick="window.location.href='/rutas?search=${safeUrl(name)}'" class="mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
                 </div>
             `);
             newLayers.push(marker);
@@ -329,14 +343,14 @@ const {
             if (index === 0) {
                  const start = validStops[0];
                  newLayers.push(window.L.marker(start.latlng)
-                    .bindPopup(`<b>Inicio:</b> ${start.name}`));
+                    .bindPopup(`<b>Inicio:</b> ${escapeHtml(start.name)}`));
             }
 
             // End Marker (only for last leg)
             if (index === legs.length - 1) {
                  const end = validStops[validStops.length - 1];
                  newLayers.push(window.L.marker(end.latlng)
-                    .bindPopup(`<b>Fin:</b> ${end.name}`));
+                    .bindPopup(`<b>Fin:</b> ${escapeHtml(end.name)}`));
             }
 
             // Transfer Marker (if not last leg)
@@ -344,14 +358,14 @@ const {
                 const end = validStops[validStops.length - 1];
                  newLayers.push(window.L.marker(end.latlng, {
                      // Custom icon for transfer? Or just a marker.
-                 }).bindPopup(`<b>Transbordo:</b> ${end.name}`));
+                 }).bindPopup(`<b>Transbordo:</b> ${escapeHtml(end.name)}`));
             }
 
             // Intermediate dots
             validStops.slice(1, -1).forEach(stop => {
                  newLayers.push(
                     window.L.circleMarker(stop.latlng, { radius: 4, color: '#334155', fillOpacity: 1 })
-                    .bindPopup(stop.name)
+                    .bindPopup(escapeHtml(stop.name))
                  );
             });
 

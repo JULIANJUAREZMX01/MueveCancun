@@ -9,7 +9,10 @@
  */
 export function analyze_gap(user_lat, user_lng, dest_lat, dest_lng) {
     const ret = wasm.analyze_gap(user_lat, user_lng, dest_lat, dest_lng);
-    return ret;
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 /**
@@ -22,7 +25,10 @@ export function analyze_gap(user_lat, user_lng, dest_lat, dest_lng) {
  */
 export function calculate_route(origin_lat, origin_lng, dest_lat, dest_lng, routes_val) {
     const ret = wasm.calculate_route(origin_lat, origin_lng, dest_lat, dest_lng, routes_val);
-    return ret;
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 /**
@@ -33,7 +39,10 @@ export function calculate_route(origin_lat, origin_lng, dest_lat, dest_lng, rout
  */
 export function calculate_trip_cost(distance, seats, is_tourist) {
     const ret = wasm.calculate_trip_cost(distance, seats, is_tourist);
-    return ret;
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 /**
@@ -43,7 +52,10 @@ export function calculate_trip_cost(distance, seats, is_tourist) {
  */
 export function find_nearest_stop(lat, lng) {
     const ret = wasm.find_nearest_stop(lat, lng);
-    return ret;
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 /**
@@ -57,7 +69,10 @@ export function find_route(origin, dest) {
     const ptr1 = passStringToWasm0(dest, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
     const ret = wasm.find_route(ptr0, len0, ptr1, len1);
-    return ret;
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 /**
@@ -65,7 +80,10 @@ export function find_route(origin, dest) {
  */
 export function get_all_routes() {
     const ret = wasm.get_all_routes();
-    return ret;
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 /**
@@ -435,6 +453,12 @@ function passStringToWasm0(arg, malloc, realloc) {
 
     WASM_VECTOR_LEN = offset;
     return ptr;
+}
+
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_externrefs.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
 }
 
 let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
