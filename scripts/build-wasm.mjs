@@ -34,8 +34,17 @@ modules.forEach(mod => {
         });
 
     } catch (e) {
-        console.error(`❌ Failed to build ${mod}`);
-        process.exit(1);
+        console.warn(`⚠️ Warning: Failed to build ${mod} using wasm-pack. Attempting to use existing artifacts...`);
+
+        const expectedWasm = mod.replace(/-/g, '_') + '_bg.wasm';
+        const wasmPath = path.join(publicOutDir, expectedWasm);
+
+        if (fs.existsSync(wasmPath)) {
+            console.log(`✅ Found existing artifacts for ${mod}. Proceeding.`);
+        } else {
+            console.error(`❌ Critical Error: Build failed and no artifacts found for ${mod} at ${wasmPath}.`);
+            process.exit(1);
+        }
     }
 
     // 2. Clean up .gitignore

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "dev:network": "astro dev --host",
-    "build": "pnpm run build:wasm && pnpm run check-wasm && astro build",
+    "build": "node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
     "build:wasm": "node scripts/build-wasm.mjs",
     "astro": "astro",
     "lint": "eslint .",
