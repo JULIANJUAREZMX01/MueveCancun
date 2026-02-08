@@ -26,9 +26,15 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.10
         version: 0.5.19(tailwindcss@3.4.19(yaml@2.8.2))
+      '@types/node':
+        specifier: ^24.10.1
+        version: 24.10.9
       astro:
         specifier: ^5.16.15
         version: 5.17.1(@types/node@24.10.9)(jiti@1.21.7)(rollup@4.57.1)(typescript@5.9.3)(yaml@2.8.2)
+      autoprefixer:
+        specifier: ^10.4.23
+        version: 10.4.24(postcss@8.5.6)
       clsx:
         specifier: ^2.1.0
         version: 2.1.1
@@ -38,6 +44,9 @@ importers:
       idb:
         specifier: ^8.0.3
         version: 8.0.3
+      postcss:
+        specifier: ^8.5.6
+        version: 8.5.6
       sharp:
         specifier: ^0.33.2
         version: 0.33.5
@@ -47,16 +56,16 @@ importers:
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.19(yaml@2.8.2)
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+      vite:
+        specifier: ^6.3.1
+        version: 6.4.1(@types/node@24.10.9)(jiti@1.21.7)(yaml@2.8.2)
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.1
         version: 9.39.2
-      '@types/node':
-        specifier: ^24.10.1
-        version: 24.10.9
-      autoprefixer:
-        specifier: ^10.4.23
-        version: 10.4.24(postcss@8.5.6)
       cheerio:
         specifier: ^1.2.0
         version: 1.2.0
@@ -78,18 +87,9 @@ importers:
       playwright:
         specifier: ^1.58.1
         version: 1.58.1
-      postcss:
-        specifier: ^8.5.6
-        version: 8.5.6
-      typescript:
-        specifier: ^5.9.2
-        version: 5.9.3
       typescript-eslint:
         specifier: ^8.51.0
         version: 8.54.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3)
-      vite:
-        specifier: ^6.3.1
-        version: 6.4.1(@types/node@24.10.9)(jiti@1.21.7)(yaml@2.8.2)
       vitest:
         specifier: ^4.0.1
         version: 4.0.18(@types/node@24.10.9)(jiti@1.21.7)(jsdom@27.4.0)(yaml@2.8.2)
