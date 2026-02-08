@@ -1,184 +1,216 @@
 ---
 interface Props {
   id?: string;
-  class?: string;
-  initialValue?: number;
+  initialCount?: number;
 }
 
-const { id = 'passenger-selector', class: className, initialValue = 3 } = Astro.props;
+const { id = 'passenger-selector', initialCount = 3 } = Astro.props;
 ---
 
-<div class:list={["passenger-selector-wrapper", className]}>
-  <label class="label-text" for={id}>PASAJEROS</label>
+<div class="passenger-wrapper">
+    <button class="passengers-selector" popovertarget={`${id}-popover`} style={`anchor-name: --${id}-anchor`}>
+        <label>PASAJEROS</label>
+        <div class="selector-value">
+            <span id={`${id}-display`}>{initialCount} Pasajeros</span>
+            <span class="material-icons-round arrow">expand_more</span>
+        </div>
+    </button>
 
-  <button
-    id={id}
-    class="selector-trigger"
-    popovertarget={`${id}-menu`}
-    style={`anchor-name: --${id}-anchor`}
-    type="button"
-  >
-    <span id={`${id}-display`}>{initialValue} Pasajero{initialValue > 1 ? 's' : ''}</span>
-    <span class="material-icons-round arrow">expand_more</span>
-  </button>
-
-  <div
-    id={`${id}-menu`}
-    popover
-    class="selector-menu"
-    style={`position-anchor: --${id}-anchor`}
-  >
-    <form class="options-list">
-      {[1, 2, 3, 4, 5, 6].map((num) => (
-        <label class="option-item">
-          <input
-            type="radio"
-            name="passengers"
-            value={num.toString()}
-            checked={num === initialValue}
-            onclick={`
-              document.getElementById('${id}-display').textContent = '${num} Pasajero${num > 1 ? 's' : ''}';
-              this.closest('[popover]').hidePopover();
-            `}
-          />
-          <span class="check-icon material-icons-round">check</span>
-          <span class="option-text">{num} Pasajero{num > 1 ? 's' : ''}</span>
-        </label>
-      ))}
-    </form>
-  </div>
+    <div id={`${id}-popover`} popover class="passenger-popover" style={`position-anchor: --${id}-anchor`}>
+        <div class="counter-control">
+            <button type="button" class="circle-btn decrement" aria-label="Menos pasajeros">
+                <span class="material-icons-round">remove</span>
+            </button>
+            <span class="count-display" data-value={initialCount}>{initialCount}</span>
+            <button type="button" class="circle-btn increment" aria-label="Más pasajeros">
+                <span class="material-icons-round">add</span>
+            </button>
+        </div>
+        <p class="help-text">Máximo 10 pasajeros</p>
+    </div>
 </div>
 
 <style>
-  .passenger-selector-wrapper {
-    display: flex;
-    flex-direction: column;
-    /* Styles copied/adapted from home.astro .passengers-selector */
-    background-color: rgba(255, 255, 255, 0.5);
-    border: 1px solid #E5E7EB;
-    border-radius: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .passenger-selector-wrapper:hover {
-    background-color: rgba(255, 255, 255, 0.7);
-  }
-
-  .label-text {
-    font-size: 10px;
-    color: #6B7280;
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    display: block;
-    pointer-events: none;
-    margin-bottom: 2px;
-  }
-
-  .selector-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    background: transparent;
-    border: none;
-    padding: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #111827;
-    cursor: pointer;
-    font-family: inherit;
-    outline: none;
-  }
-
-  .arrow {
-    color: #9CA3AF;
-    font-size: 1rem;
-    transition: transform 0.2s;
-  }
-
-  /* Open state style hook using :has */
-  .selector-trigger:has(+ [popover]:popover-open) .arrow {
-    transform: rotate(180deg);
-  }
-
-  /* Popover Menu */
-  .selector-menu {
-    margin: 0;
-    padding: 0.5rem;
-    border: 1px solid #E5E7EB;
-    border-radius: 0.75rem;
-    background: white;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-
-    /* Anchor Positioning Logic */
-    width: anchor-size(width); /* Match trigger width */
-    top: anchor(bottom);
-    left: anchor(left);
-
-    /* Animation */
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: opacity 0.2s, transform 0.2s, display 0.2s allow-discrete;
-  }
-
-  .selector-menu:popover-open {
-    opacity: 1;
-    transform: translateY(4px); /* small gap */
-    @starting-style {
-      opacity: 0;
-      transform: translateY(-10px);
+    .passenger-wrapper {
+        flex: 1;
+        display: contents;
     }
-  }
 
-  /* Options */
-  .options-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
+    /* Reuse existing styles for the trigger */
+    .passengers-selector {
+        flex: 1;
+        background-color: rgba(255, 255, 255, 0.5);
+        border: 1px solid #E5E7EB;
+        border-radius: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        text-align: left;
+        width: 100%;
+        transition: background-color 0.2s;
+        /* Anchor name defined inline */
+    }
 
-  .option-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.1s;
-    user-select: none;
-  }
+    .passengers-selector:hover {
+        background-color: rgba(255, 255, 255, 0.8);
+    }
 
-  .option-item:hover {
-    background-color: #F3F4F6;
-  }
+    .passengers-selector label {
+        font-size: 10px;
+        color: #6B7280;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        display: block;
+        pointer-events: none;
+    }
 
-  .option-item:has(input:checked) {
-    background-color: #EFF6FF; /* blue-50 */
-    color: #1D4ED8; /* blue-700 */
-  }
+    .selector-value {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        pointer-events: none;
+    }
 
-  .option-item input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
+    .selector-value span {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #111827;
+    }
 
-  .check-icon {
-    font-size: 1rem;
-    color: transparent;
-    width: 1rem;
-  }
+    .selector-value .arrow {
+        color: #9CA3AF;
+        font-size: 1rem;
+    }
 
-  .option-item:has(input:checked) .check-icon {
-    color: #2563EB; /* blue-600 */
-  }
+    /* Popover Styles */
+    .passenger-popover {
+        border: none;
+        background: transparent;
+        padding: 0;
+        margin: 0; /* Reset default popover margin */
+        inset: auto; /* Reset default popover inset */
+        overflow: visible;
 
-  .option-text {
-    font-size: 0.875rem;
-    font-weight: 500;
-  }
+        /* Anchor Positioning */
+        position: absolute; /* Ensure it can be positioned */
+        position-area: bottom span-right; /* New standard */
+        inset-area: bottom span-right; /* Fallback/Old standard */
+        position-try-options: flip-block;
+        margin-top: 0.5rem;
+
+        /* Animation Base */
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.2s, transform 0.2s, display 0.2s allow-discrete;
+    }
+
+    .passenger-popover:popover-open {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @starting-style {
+        .passenger-popover:popover-open {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+    }
+
+    .passenger-popover::backdrop {
+        background-color: transparent;
+    }
+
+    /* Content Styling */
+    .counter-control {
+        background: white;
+        border: 1px solid #E5E7EB;
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        min-width: 180px;
+        justify-content: space-between;
+    }
+
+    .circle-btn {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        border: 1px solid #E5E7EB;
+        background: #F9FAFB;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #4B5563;
+        transition: all 0.1s;
+    }
+
+    .circle-btn:hover {
+        background: #F3F4F6;
+        border-color: #D1D5DB;
+        color: #111827;
+    }
+
+    .circle-btn:active {
+        transform: scale(0.95);
+        background: #E5E7EB;
+    }
+
+    .count-display {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        width: 1.5rem;
+        text-align: center;
+    }
+
+    .help-text {
+        font-size: 0.75rem;
+        color: #6B7280;
+        text-align: center;
+        margin-top: 0.5rem;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+        border: 1px solid #E5E7EB;
+    }
 </style>
+
+<script define:vars={{ id }}>
+    {
+        const popover = document.getElementById(`${id}-popover`);
+
+        // Safety check in case component is not rendered (though it should be)
+        if (popover) {
+            const displayEl = document.getElementById(`${id}-display`);
+            const countEl = popover.querySelector('.count-display');
+            const incBtn = popover.querySelector('.increment');
+            const decBtn = popover.querySelector('.decrement');
+
+            let count = parseInt(countEl.dataset.value);
+
+            const updateDisplay = () => {
+                countEl.textContent = count;
+                countEl.dataset.value = count;
+                displayEl.textContent = `${count} ${count === 1 ? 'Pasajero' : 'Pasajeros'}`;
+            };
+
+            incBtn.addEventListener('click', () => {
+                if (count < 10) {
+                    count++;
+                    updateDisplay();
+                }
+            });
+
+            decBtn.addEventListener('click', () => {
+                if (count > 1) {
+                    count--;
+                    updateDisplay();
+                }
+            });
+        }
+    }
+</script>
