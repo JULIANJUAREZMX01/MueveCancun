@@ -47,6 +47,12 @@ importers:
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.19(yaml@2.8.2)
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+      vite:
+        specifier: ^6.3.1
+        version: 6.4.1(@types/node@24.10.9)(jiti@1.21.7)(yaml@2.8.2)
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.1
@@ -81,15 +87,9 @@ importers:
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
-      typescript:
-        specifier: ^5.9.2
-        version: 5.9.3
       typescript-eslint:
         specifier: ^8.51.0
         version: 8.54.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3)
-      vite:
-        specifier: ^6.3.1
-        version: 6.4.1(@types/node@24.10.9)(jiti@1.21.7)(yaml@2.8.2)
       vitest:
         specifier: ^4.0.1
         version: 4.0.18(@types/node@24.10.9)(jiti@1.21.7)(jsdom@27.4.0)(yaml@2.8.2)
