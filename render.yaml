@@ -3,7 +3,7 @@ services:
     name: cancunmueve-pwa
     runtime: static
     buildCommand: pnpm run build
-    staticPublishPath: dist
+    staticPublishPath: ./dist
     envVars:
       - key: NODE_VERSION
         value: 20.10.0
