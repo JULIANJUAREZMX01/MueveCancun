@@ -4,6 +4,7 @@ services:
     runtime: node
     buildCommand: pnpm run build
     startCommand: node ./dist/server/entry.mjs
+    staticPublishPath: ./dist/client
     envVars:
       - key: NODE_VERSION
         value: 20.10.0
