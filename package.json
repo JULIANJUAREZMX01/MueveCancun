@@ -2,6 +2,10 @@
   "name": "cancunmueve-pwa",
   "version": "1.0.0",
   "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "astro dev",
     "dev:network": "astro dev --host",
