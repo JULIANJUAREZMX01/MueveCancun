@@ -4,13 +4,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 export async function getStaticPaths() {
-  const routesPath = path.resolve('./public/data/master_routes.json');
+  const routesPath = path.resolve('./src/data/routes.json');
 
-  // Reading from public/data/master_routes.json as single source of truth
+  // Reading from src/data/routes.json (Single Source of Truth)
   const fileContent = await fs.readFile(routesPath, 'utf-8');
   const routesData = JSON.parse(fileContent);
 
-  return routesData.rutas.map((route: any) => ({
+  return routesData.rutas.map((route) => ({
     params: { id: route.id },
     props: { route },
   }));
@@ -22,7 +22,7 @@ if (!route) {
   return Astro.redirect('/404');
 }
 
-const title = `Ruta ${route.id}: ${route.nombre}`;
+const title = `Ruta ${route.nombre}`;
 const description = `Información completa de la ${route.nombre}. Paradas, horarios, tarifas y más.`;
 ---
 
@@ -78,11 +78,11 @@ const description = `Información completa de la ${route.nombre}. Paradas, horar
     <div class="flex items-center space-x-4">
       <div>
         <span class="text-sm text-gray-500">Primer camión:</span>
-        <span class="font-bold text-gray-900 ml-2">{route.schedule?.start || '06:00'}</span>
+        <span class="font-bold text-gray-900 ml-2">{route.horario?.inicio || route.horario?.inicio_oficial || '06:00'}</span>
       </div>
       <div>
         <span class="text-sm text-gray-500">Último camión:</span>
-        <span class="font-bold text-gray-900 ml-2">{route.schedule?.end || '23:30'}</span>
+        <span class="font-bold text-gray-900 ml-2">{route.horario?.fin || route.horario?.fin_oficial || '23:30'}</span>
       </div>
     </div>
   </div>
@@ -91,16 +91,16 @@ const description = `Información completa de la ${route.nombre}. Paradas, horar
   <div class="bg-white rounded-lg shadow-md p-6">
     <h2 class="text-2xl font-bold text-gray-900 mb-6">📍 Paradas</h2>
     <div class="space-y-4">
-      {route.paradas && route.paradas.map((stop: any, index: number) => (
+      {route.paradas && route.paradas.map((stop, index) => (
         <div class="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
           <div class="flex-shrink-0">
             <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
-                 style={`background-color: ${route.color}`}>
+                 style={`background-color: ${route.color || '#3B82F6'}`}>
               {stop.orden || index + 1}
             </div>
           </div>
           <div class="flex-1">
-            <h3 class="font-bold text-gray-900">{stop.nombre}</h3>
+            <h3 class="font-bold text-gray-900">{stop.nombre || stop.parada}</h3>
             {stop.landmarks && (
               <p class="text-sm text-gray-500 mt-1">{stop.landmarks}</p>
             )}
