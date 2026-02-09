@@ -1,6 +1,7 @@
 services:
-  - type: static
+  - type: web
     name: cancunmueve-pwa
+    runtime: static
     buildCommand: pnpm run build
     staticPublishPath: ./dist
     envVars:
