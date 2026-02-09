@@ -3,13 +3,9 @@ services:
     name: cancunmueve-pwa
     runtime: node
     buildCommand: pnpm run build
-    startCommand: node ./dist/server/entry.mjs
-    # Ensure Render doesn't look for a static publish path if not needed,
-    # or if it is needed for static assets, point it to dist/client
-    # However, setting it might force Render to check for it.
-    # The error "Publish directory  does not exist" (double space) implies it might be looking for an empty string or undefined?
-    # Let's explicitly set the staticPublishPath to dist/client which definitely exists.
-    staticPublishPath: ./dist/client
+    # Using npx serve as fallback for Web Service mode with static output
+    startCommand: npx serve -s dist
+    staticPublishPath: ./dist
     envVars:
       - key: NODE_VERSION
         value: 20.10.0
