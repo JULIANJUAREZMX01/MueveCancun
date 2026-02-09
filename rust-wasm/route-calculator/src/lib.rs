@@ -426,7 +426,7 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
         let score_b = get_score(b);
 
         score_b.cmp(&score_a) // Higher score first
-            .then_with(|| a.total_price.partial_cmp(&b.total_price).unwrap()) // Lower price first
+            .then_with(|| a.total_price.partial_cmp(&b.total_price).unwrap_or(std::cmp::Ordering::Equal)) // Lower price first
     });
 
     // Limit results to avoid overwhelming user
@@ -438,15 +438,15 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
 }
 
 #[wasm_bindgen]
-pub fn find_route(origin: &str, dest: &str) -> JsValue {
+pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
     let routes = find_route_rs(origin, dest);
-    serde_wasm_bindgen::to_value(&routes).unwrap()
+    serde_wasm_bindgen::to_value(&routes).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 #[wasm_bindgen]
-pub fn get_all_routes() -> JsValue {
+pub fn get_all_routes() -> Result<JsValue, JsValue> {
     let routes = &*CATALOG;
-    serde_wasm_bindgen::to_value(routes).unwrap()
+    serde_wasm_bindgen::to_value(routes).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 pub fn find_nearest_stop_rs(lat: f64, lng: f64) -> Option<StopInfo> {
@@ -501,15 +501,15 @@ pub fn analyze_gap_rs(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64
 }
 
 #[wasm_bindgen]
-pub fn find_nearest_stop(lat: f64, lng: f64) -> JsValue {
+pub fn find_nearest_stop(lat: f64, lng: f64) -> Result<JsValue, JsValue> {
     let res = find_nearest_stop_rs(lat, lng);
-    serde_wasm_bindgen::to_value(&res).unwrap()
+    serde_wasm_bindgen::to_value(&res).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 #[wasm_bindgen]
-pub fn analyze_gap(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64) -> JsValue {
+pub fn analyze_gap(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64) -> Result<JsValue, JsValue> {
     let res = analyze_gap_rs(user_lat, user_lng, dest_lat, dest_lng);
-    serde_wasm_bindgen::to_value(&res).unwrap()
+    serde_wasm_bindgen::to_value(&res).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 // --- LEGACY GRAPH LOGIC (Kept for compilation, bypassed for now) ---
@@ -560,17 +560,18 @@ pub fn calculate_route(
     dest_lat: f64,
     dest_lng: f64,
     routes_val: JsValue
-) -> JsValue {
+) -> Result<JsValue, JsValue> {
     println!("DEBUG: calculate_route called");
     let data: RootData = match serde_wasm_bindgen::from_value(routes_val) {
         Ok(d) => d,
         Err(_e) => {
-            return serde_wasm_bindgen::to_value(&error_response("invalid_data")).unwrap();
+            return serde_wasm_bindgen::to_value(&error_response("invalid_data"))
+                .map_err(|e| JsValue::from_str(&e.to_string()));
         }
     };
 
     let res = find_route_internal(origin_lat, origin_lng, dest_lat, dest_lng, &data);
-    serde_wasm_bindgen::to_value(&res).unwrap()
+    serde_wasm_bindgen::to_value(&res).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 pub fn find_route_internal(
@@ -768,7 +769,7 @@ pub fn find_route_internal(
 }
 
 #[wasm_bindgen]
-pub fn calculate_trip_cost(distance: f64, seats: u32, is_tourist: bool) -> JsValue {
+pub fn calculate_trip_cost(distance: f64, seats: u32, is_tourist: bool) -> Result<JsValue, JsValue> {
     let base_price = if is_tourist {
         29.0
     } else if distance > 15.0 {
@@ -789,7 +790,7 @@ pub fn calculate_trip_cost(distance: f64, seats: u32, is_tourist: bool) -> JsVal
             "es": "Paga en efectivo directamente al conductor."
         },
         "seats": seats
-    })).unwrap()
+    })).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 fn error_response(error_key: &str) -> RouteResponse {
