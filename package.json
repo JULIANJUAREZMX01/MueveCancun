@@ -2,6 +2,10 @@
   "name": "cancunmueve-pwa",
   "version": "1.0.0",
   "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "astro dev",
     "dev:network": "astro dev --host",
@@ -26,7 +30,9 @@
     "idb": "^8.0.3",
     "sharp": "^0.33.2",
     "tailwind-merge": "^2.2.1",
-    "tailwindcss": "^3.4.0"
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.9.2",
+    "vite": "^6.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -40,9 +46,7 @@
     "jsdom": "^27.4.0",
     "playwright": "^1.58.1",
     "postcss": "^8.5.6",
-    "typescript": "^5.9.2",
     "typescript-eslint": "^8.51.0",
-    "vite": "^6.3.1",
     "vitest": "^4.0.1",
     "wasm-pack": "^0.14.0"
   }

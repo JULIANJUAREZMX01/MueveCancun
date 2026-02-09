@@ -21,8 +21,13 @@ modules.forEach(mod => {
     const publicOutDir = path.join(rootDir, 'public', 'wasm', mod);
     const srcOutDir = path.join(rootDir, 'src', 'wasm', mod);
 
+    let buildSuccess = false;
+
     // 1. Build with wasm-pack
     try {
+        // Check if cargo is available to avoid ugly error messages
+        execSync('cargo --version', { stdio: 'ignore' });
+
         execSync(`wasm-pack build --target web --out-dir ${publicOutDir} --no-typescript`, {
             cwd: sourceDir,
             stdio: 'inherit'
@@ -36,19 +41,33 @@ modules.forEach(mod => {
             cwd: sourceDir,
             stdio: 'inherit'
         });
+        buildSuccess = true;
 
     } catch (e) {
-        console.error(`❌ Failed to build ${mod}`);
+        console.warn(`⚠️  Failed to build ${mod} (wasm-pack or cargo missing/failed). Using fallback artifacts from public/wasm.`);
+    }
+
+    // 2. Validate Artifacts
+    if (!fs.existsSync(publicOutDir)) {
+         console.error(`❌ Missing artifacts directory for ${mod} at ${publicOutDir}`);
+         process.exit(1);
+    }
+
+    // Check for critical files (wasm binary)
+    // Rust package name uses hyphens but generated files use underscores
+    const wasmFile = `${mod.replace(/-/g, '_')}_bg.wasm`;
+    if (!fs.existsSync(path.join(publicOutDir, wasmFile))) {
+        console.error(`❌ Missing critical artifact: ${wasmFile}`);
         process.exit(1);
     }
 
-    // 2. Clean up .gitignore
+    // 3. Clean up .gitignore
     const gitignorePath = path.join(publicOutDir, '.gitignore');
     if (fs.existsSync(gitignorePath)) {
         fs.unlinkSync(gitignorePath);
     }
 
-    // 3. Copy to src/wasm
+    // 4. Copy to src/wasm
     if (!fs.existsSync(srcOutDir)) {
         fs.mkdirSync(srcOutDir, { recursive: true });
     }
@@ -59,7 +78,7 @@ modules.forEach(mod => {
         fs.copyFileSync(path.join(publicOutDir, file), path.join(srcOutDir, file));
     });
 
-    console.log(`✅ ${mod} built and synced to public/ and src/.`);
+    console.log(`✅ ${mod} built/synced to public/ and src/.`);
 });
 
-console.log('🎉 All WASM modules built successfully.');
+console.log('🎉 All WASM modules processed successfully.');
