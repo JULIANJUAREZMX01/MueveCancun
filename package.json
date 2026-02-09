@@ -11,11 +11,11 @@
     "lint": "eslint .",
     "preview": "astro preview",
     "test": "vitest",
+    "check": "astro check",
     "check-wasm": "node scripts/check-wasm.cjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
-    "@astrojs/node": "^9.5.2",
     "@astrojs/rss": "^4.0.5",
     "@astrojs/sitemap": "^3.2.1",
     "@astrojs/tailwind": "^5.1.0",
@@ -29,6 +29,7 @@
     "tailwindcss": "^3.4.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.6",
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
     "autoprefixer": "^10.4.23",

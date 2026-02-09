@@ -1,9 +1,8 @@
 services:
-  - type: web
+  - type: static
     name: cancunmueve-pwa
-    runtime: node
     buildCommand: pnpm run build
-    startCommand: node ./dist/server/entry.mjs
+    staticPublishPath: ./dist
     envVars:
       - key: NODE_VERSION
         value: 20.10.0
