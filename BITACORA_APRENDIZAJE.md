@@ -293,3 +293,7 @@ Auditoría de Datos: Verificar y unificar nombres de paraderos clave para maximi
 Manual de Usuario: Crear una pequeña guía dentro de la app para explicar al usuario que puede usarla sin internet.
 
 ¡Listo! Solo selecciona el texto de arriba, cópialo y pégalo en un Doc de tu Drive."
+
+## 2026-02-06 - Popover API & Anchor Positioning
+**Learning:** The HTML Popover API combined with CSS Anchor Positioning allows for complex, interactive UI components (like dropdowns) with minimal to no JavaScript and no external libraries.
+**Action:** Use this pattern for all future tooltips, dropdowns, and context menus to reduce bundle size and improve accessibility.
