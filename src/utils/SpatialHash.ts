@@ -43,7 +43,7 @@ export class SpatialHash<T> {
   query(lat: number, lng: number): Array<{ lat: number; lng: number; data: T }> {
     const x = Math.floor(lng / this.cellSize);
     const y = Math.floor(lat / this.cellSize);
-    let results: Array<{ lat: number; lng: number; data: T }> = [];
+    const results: Array<{ lat: number; lng: number; data: T }> = [];
 
     // Check 3x3 neighbors to ensure edge cases are handled
     for (let dx = -1; dx <= 1; dx++) {
