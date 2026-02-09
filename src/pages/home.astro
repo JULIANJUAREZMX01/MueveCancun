@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Switch from '../components/ui/Switch.astro';
 import InteractiveMap from '../components/InteractiveMap.astro';
+import PassengerSelector from '../components/ui/PassengerSelector.astro';
 ---
 
 <Layout title="Dashboard - CancúnMueve">
@@ -75,13 +76,7 @@ import InteractiveMap from '../components/InteractiveMap.astro';
 			</div>
 
 			<div class="options-row">
-				<div class="passengers-selector">
-					<label>PASAJEROS</label>
-					<div class="selector-value">
-						<span>1 Pasajero</span>
-						<span class="material-icons-round arrow">expand_more</span>
-					</div>
-				</div>
+				<PassengerSelector class="flex-1-custom" />
 				<div class="tourist-toggle-wrapper h-full flex items-center">
 					<Switch id="tourist-mode-home" label="Turista" checked={true} />
 				</div>
@@ -451,39 +446,8 @@ import InteractiveMap from '../components/InteractiveMap.astro';
 		margin-bottom: 0.5rem;
 	}
 
-	.passengers-selector {
+	.flex-1-custom {
 		flex: 1;
-		background-color: rgba(255, 255, 255, 0.5);
-		border: 1px solid #E5E7EB;
-		border-radius: 0.75rem;
-		padding: 0.5rem 0.75rem;
-		cursor: pointer;
-	}
-
-	.passengers-selector label {
-		font-size: 10px;
-		color: #6B7280;
-		text-transform: uppercase;
-		font-weight: 700;
-		letter-spacing: 0.05em;
-		display: block;
-	}
-
-	.selector-value {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-
-	.selector-value span {
-		font-size: 0.875rem;
-		font-weight: 600;
-		color: #111827;
-	}
-
-	.selector-value .arrow {
-		color: #9CA3AF;
-		font-size: 1rem;
 	}
 
 	.tourist-toggle-wrapper {
