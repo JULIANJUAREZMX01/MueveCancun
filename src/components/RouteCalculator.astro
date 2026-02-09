@@ -162,10 +162,23 @@ import Switch from './ui/Switch.astro';
 
   </Card>
 
-  <!-- Results Area -->
-  <div id="results-container" class="space-y-4 empty:hidden">
-      <!-- Results injected here -->
-  </div>
+    <!-- Results Area -->
+    <div id="results-info" class="mb-4 hidden animate-fade-in group">
+        <div class="flex items-center justify-between bg-white/60 backdrop-blur-xl rounded-2xl px-5 py-3 border border-white/80 shadow-glass-premium">
+            <div class="flex flex-col">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5" id="results-count-label">0 OPCIONES</span>
+                <Badge variant="success" class="font-mono text-[9px] w-fit" id="results-time-badge">MÁS RÁPIDA: 12min</Badge>
+            </div>
+            
+            <button id="toggle-list-btn" class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors text-slate-600">
+                <span class="text-xs font-bold" id="toggle-list-text">Ocultar Lista</span>
+                <span class="material-icons-round text-sm" id="toggle-list-icon">expand_more</span>
+            </button>
+        </div>
+    </div>
+    <div id="results-container" class="space-y-4 empty:hidden transition-all duration-500 origin-top">
+        <!-- Results injected here -->
+    </div>
 
   <datalist id="locations">
     <option value="El Crucero Hub"></option>
@@ -186,6 +199,7 @@ import Switch from './ui/Switch.astro';
 <script>
   import { openDB } from 'idb';
   import { coordinatesStore } from '../lib/CoordinatesStore';
+  import { CoordinateFinder } from '../lib/CoordinateFinder';
 
   const TRANSLATIONS = {
     es: {
@@ -214,7 +228,8 @@ import Switch from './ui/Switch.astro';
   let balance = 0;
   let hasBalance = false;
   let wasmLoaded = false;
-  let find_route, validate_operator_funds;
+  let find_route, validate_operator_funds, load_stops_data;
+  let finder; // Global Coordinate Finder instance
 
   const btn = document.getElementById('search-btn');
   const resultsContainer = document.getElementById('results-container');
@@ -319,6 +334,7 @@ import Switch from './ui/Switch.astro';
       await module.default();
       find_route = module.find_route;
       validate_operator_funds = module.validate_operator_funds;
+      load_stops_data = module.load_stops_data; // Capture load_stops_data
 
       console.log("WASM initialized.");
       wasmLoaded = true;
@@ -328,14 +344,91 @@ import Switch from './ui/Switch.astro';
     } finally {
       await updateBalance();
       updateUI();
-      // Initialize shared coordinates store
+      // Initialize shared coordinates store and Finder
       try {
         await coordinatesStore.init();
+        const db = coordinatesStore.getDB();
+        
+        // SYNC WITH WASM
+        if (wasmLoaded && typeof load_stops_data === 'function') {
+             load_stops_data(db);
+             console.log("✅ Coordinates synced to WASM");
+        }
+
+        finder = new CoordinateFinder(db);
+        console.log("Coordinate Finder Ready");
+        
+        // Setup Autocomplete
+        setupAutocomplete('origin-input');
+        setupAutocomplete('destination-input');
+
       } catch (e) {
-        console.warn("GPS features might be unavailable", e);
+        console.warn("GPS/Finder features might be unavailable", e);
       }
       initGPSLogic();
     }
+  }
+
+  function setupAutocomplete(inputId) {
+      const input = document.getElementById(inputId);
+      const container = input?.parentElement; // Input wrapper
+      if (!input || !container) return;
+
+      // Create Dropdown Element
+      const list = document.createElement('ul');
+      list.className = 'absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-xl z-50 mt-1 max-h-60 overflow-y-auto hidden divide-y divide-slate-50';
+      list.id = `${inputId}-suggestions`;
+      container.appendChild(list);
+
+      // Input Handler
+      input.addEventListener('input', (e) => {
+          const val = (e.target as HTMLInputElement).value;
+          if (!finder || val.length < 2) {
+              list.classList.add('hidden');
+              return;
+          }
+
+          const results = finder.search(val, 6); // Limit to 6 suggestions
+          
+          if (results.length > 0) {
+              list.innerHTML = '';
+              results.forEach(res => {
+                  const li = document.createElement('li');
+                  li.className = 'px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors flex items-center gap-3 group';
+                  li.innerHTML = `
+                      <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-500 transition-colors">
+                          <span class="material-icons-round text-base">location_on</span>
+                      </div>
+                      <div class="flex-1">
+                          <p class="text-sm font-bold text-slate-700 group-hover:text-primary-700">${res.name}</p>
+                          <p class="text-[10px] text-slate-500 font-mono">COORD: ${res.coords[0].toFixed(4)}, ${res.coords[1].toFixed(4)}</p>
+                      </div>
+                  `;
+                  li.addEventListener('click', () => {
+                      (input as HTMLInputElement).value = res.name;
+                      list.classList.add('hidden');
+                      // Trigger any blur/update logic
+                      input.dispatchEvent(new Event('blur'));
+                  });
+                  list.appendChild(li);
+              });
+              list.classList.remove('hidden');
+          } else {
+              list.classList.add('hidden');
+          }
+      });
+
+      // Hide on blur (delayed to allow click)
+      input.addEventListener('blur', () => {
+          setTimeout(() => list.classList.add('hidden'), 200);
+      });
+      
+      // Show on focus if value exists
+      input.addEventListener('focus', (e) => {
+           if ((e.target as HTMLInputElement).value.length >= 2) {
+               input.dispatchEvent(new Event('input'));
+           }
+      });
   }
 
   function initGPSLogic() {
@@ -486,15 +579,31 @@ import Switch from './ui/Switch.astro';
     await new Promise(r => setTimeout(r, 800));
 
     try {
-      const res = find_route(fromVal, toVal);
+      // 1. Resolve Coordinates with Robust Finder (Global Instance)
+      // await coordinatesStore.init(); // Already init
+      // const db = coordinatesStore.getDB();
+      // const finder = new CoordinateFinder(db); // Use global
+      
+      if (!finder) throw new Error("Sistema de búsqueda no inicializado.");
+
+      const originMatch = finder.findBestMatch(fromVal);
+      const destMatch = finder.findBestMatch(toVal);
+
+      if (!originMatch) throw new Error(`Origen no encontrado: "${fromVal}"`);
+      if (!destMatch) throw new Error(`Destino no encontrado: "${toVal}"`);
+
+      console.log('📍 Points found (Fuzzy):', { originMatch, destMatch });
+
+      // 2. Call WASM
+      const res = find_route(originMatch.name, destMatch.name);
       console.log('Route Result:', res);
 
       // Success!
       // 1. Emit State Change
       window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_ACTIVE' }));
 
-      // 2. Collapse UI
-      collapseUI(fromVal, toVal);
+      // 2. Collapse UI and Update Summary with Matched Names
+      collapseUI(originMatch.name, destMatch.name);
 
       // 3. Render Results
       renderResults(res);
@@ -538,6 +647,7 @@ import Switch from './ui/Switch.astro';
     resultsContainer.innerHTML = '';
 
     if (!journeys || journeys.length === 0) {
+        document.getElementById('results-info')?.classList.add('hidden');
         resultsContainer.innerHTML = `
           <div class="p-6 bg-slate-50 rounded-xl border border-slate-200 text-center animate-slide-up">
             <div class="text-4xl mb-3">🤷‍♂️</div>
@@ -552,6 +662,38 @@ import Switch from './ui/Switch.astro';
         expandUI();
         if (window.showToast) window.showToast("No se encontraron rutas exactas", "info");
         return;
+    }
+
+    // Update Counter
+    const infoPanel = document.getElementById('results-info');
+    const countLabel = document.getElementById('results-count-label');
+    if (infoPanel && countLabel) {
+        infoPanel.classList.remove('hidden');
+        countLabel.textContent = `${journeys.length} OPCION${journeys.length > 1 ? 'ES' : ''} ENCONTRADA${journeys.length > 1 ? 'S' : ''}`;
+    }
+
+    // Toggle List Handler
+    const toggleBtn = document.getElementById('toggle-list-btn');
+    if (toggleBtn) {
+        let isCollapsed = false;
+        toggleBtn.addEventListener('click', () => {
+            isCollapsed = !isCollapsed;
+            const container = document.getElementById('results-container');
+            const text = document.getElementById('toggle-list-text');
+            const icon = document.getElementById('toggle-list-icon');
+            
+            if (container && text && icon) {
+                if (isCollapsed) {
+                    container.classList.add('hidden');
+                    text.textContent = 'Ver Lista';
+                    icon.textContent = 'expand_less';
+                } else {
+                    container.classList.remove('hidden');
+                    text.textContent = 'Ocultar Lista';
+                    icon.textContent = 'expand_more';
+                }
+            }
+        });
     }
 
     journeys.forEach(journey => {

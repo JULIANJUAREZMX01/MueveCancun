@@ -4,8 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import init, { get_all_routes } from '../../../public/wasm/route-calculator/route_calculator.js';
 
+// Load Coordinates for Statistics
+import coordinates from '../../../public/coordinates.json';
+
 let allRoutes = [];
 let error = null;
+let totalStops = 0;
 
 try {
   // Load WASM on the server
@@ -15,9 +19,12 @@ try {
 
   await init(wasmBuffer);
   allRoutes = get_all_routes();
-
+  
   // Sort routes by name for consistency
   allRoutes.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Calculate stats
+  totalStops = Object.keys(coordinates).length;
 
 } catch (e) {
   console.error("Server-side WASM load failed:", e);
@@ -56,6 +63,18 @@ function getTransportLabel(type) {
       <p class="text-slate-500 font-medium text-sm">
         Todas las opciones de transporte en Cancún
       </p>
+
+      <!-- Stats Badge -->
+      <div class="flex gap-3 mt-4">
+        <div class="px-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rutas</span>
+            <span class="text-sm font-black text-slate-800">{allRoutes.length}</span>
+        </div>
+        <div class="px-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Paraderos</span>
+            <span class="text-sm font-black text-slate-800">{totalStops}</span>
+        </div>
+      </div>
     </div>
 
     <!-- Routes List -->

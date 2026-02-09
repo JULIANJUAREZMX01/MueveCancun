@@ -1,17 +1,19 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Switch from '../components/ui/Switch.astro';
-import InteractiveMap from '../components/InteractiveMap.astro';
-import PassengerSelector from '../components/ui/PassengerSelector.astro';
+import RouteCalculator from '../components/RouteCalculator.astro';
 ---
 
 <Layout title="Dashboard - CancúnMueve">
+    <!-- Required for Leaflet and Toast functionality -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <!-- Real Interactive Map (Background Layer) -->
-    <div class="fixed inset-0 z-0">
-        <InteractiveMap />
+    <div class="fixed inset-0 z-0 h-full w-full">
+        <div id="map-container" class="h-full w-full"></div>
     </div>
 
-	<!-- Status Bar Placeholder (Simulated) -->
+	<!-- Status Bar Placeholder -->
 	<div class="status-bar">
 		<span class="time">9:30</span>
 		<div class="status-icons">
@@ -22,72 +24,10 @@ import PassengerSelector from '../components/ui/PassengerSelector.astro';
 	</div>
 
 	<div class="dashboard-container pointer-events-none">
-		<!-- Search Card -->
-		<div class="glass-panel search-card animate-fade-in-up pointer-events-auto">
-			<div class="card-header">
-				<div class="brand-row">
-					<h1 class="brand-name">CancúnMueve</h1>
-					<div class="live-badge">
-						<div class="live-dot animate-pulse"></div>
-						<span class="live-text">REAL-TIME</span>
-					</div>
-				</div>
-			</div>
-
-			<div class="input-group">
-				<div class="input-row">
-					<div class="input-icon-circle">
-						<span class="material-icons-round">location_on</span>
-					</div>
-					<div class="input-field">
-						<label>Origen</label>
-						<input type="text" id="input-origin" value="La Rehoyada" placeholder="¿Dónde estás?" />
-					</div>
-				</div>
-
-				<button class="swap-btn" id="btn-swap">
-					<span class="material-icons-round">swap_vert</span>
-				</button>
-
-				<div class="input-row">
-					<div class="input-icon-circle">
-						<span class="material-icons-outlined">flag</span>
-					</div>
-					<div class="input-field">
-						<label>Destino</label>
-						<input type="text" id="input-dest" value="Playa Delfines" placeholder="¿A dónde vas?" />
-					</div>
-				</div>
-			</div>
-
-			<div class="quick-actions">
-				<button class="action-chip" onclick="setInput('input-dest', 'Villas Otoch')">
-					<span class="material-icons-round icon">home</span>
-					<span class="label">Casa</span>
-				</button>
-				<button class="action-chip" onclick="setInput('input-dest', 'Zona Hotelera')">
-					<span class="material-icons-round icon">work</span>
-					<span class="label">Trabajo</span>
-				</button>
-				<button class="action-chip" onclick="setInput('input-dest', 'Aeropuerto T2')">
-					<span class="material-icons-round icon rotate-45">flight</span>
-					<span class="label">Aeropuerto</span>
-				</button>
-			</div>
-
-			<div class="options-row">
-				<PassengerSelector class="flex-1-custom" />
-				<div class="tourist-toggle-wrapper h-full flex items-center">
-					<Switch id="tourist-mode-home" label="Turista" checked={true} />
-				</div>
-			</div>
-
-			<button id="btn-search" class="cta-btn group">
-				<span id="btn-text">TRAZAR RUTA</span>
-				<div id="btn-loader" class="hidden animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-				<span class="material-icons-round arrow group-hover-translate">arrow_forward</span>
-			</button>
-            <p id="error-msg" class="text-red-500 text-xs font-bold text-center mt-2 hidden"></p>
+		<!-- Search Card Section -->
+		<div class="glass-panel-wrapper animate-fade-in-up pointer-events-auto">
+            <!-- Reuse original RouteCalculator for full features (History, Balance, etc.) -->
+			<RouteCalculator />
 		</div>
 
 		<!-- Bottom Navigation -->
@@ -98,7 +38,7 @@ import PassengerSelector from '../components/ui/PassengerSelector.astro';
 				</div>
 				<span class="nav-label">Inicio</span>
 			</a>
-			<a href="/tracking" class="nav-item">
+			<a href="/rutas" class="nav-item">
 				<span class="material-icons-round text-2xl">directions_bus</span>
 				<span class="nav-label">Rutas</span>
 			</a>
@@ -119,97 +59,102 @@ import PassengerSelector from '../components/ui/PassengerSelector.astro';
 </Layout>
 
 <script>
-    import { RouteCalculatorBridge } from '../lib/wasm_bridge';
     import { coordinatesStore } from '../lib/CoordinatesStore';
 
-    // Helper for quick actions
-    window.setInput = (id, val) => {
-        document.getElementById(id).value = val;
+    let map;
+    let layerGroup;
+
+    async function initLeaflet() {
+        if(typeof window.L === 'undefined') return;
+        const container = document.getElementById('map-container');
+        if(!container || container._leaflet_id) return;
+
+        map = window.L.map('map-container', {
+            zoomControl: false,
+            attributionControl: false
+        }).setView([21.1619, -86.8515], 13);
+
+        window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+
+        layerGroup = window.L.layerGroup().addTo(map);
+        
+        // Initial dots
+        await coordinatesStore.init();
+        const db = coordinatesStore.getDB() || {};
+        Object.entries(db).forEach(([name, coords]) => {
+            if(["El Crucero", "Plaza Las Américas", "La Rehoyada", "Zona Hotelera"].includes(name)) {
+                window.L.circleMarker(coords, {
+                    radius: 6,
+                    fillColor: '#F97316',
+                    color: '#FFF',
+                    weight: 2,
+                    fillOpacity: 1
+                }).addTo(layerGroup).bindPopup(name);
+            }
+        });
     }
 
-    const bridge = RouteCalculatorBridge.getInstance();
-    
-    document.getElementById('btn-search')?.addEventListener('click', async () => {
-        const originName = document.getElementById('input-origin').value;
-        const destName = document.getElementById('input-dest').value;
-        const btnText = document.getElementById('btn-text');
-        const loader = document.getElementById('btn-loader');
-        const errorMsg = document.getElementById('error-msg');
+    // Handle View Switching
+    window.addEventListener('VIEW_STATE_CHANGE', (e) => {
+        const state = (e as CustomEvent).detail;
+        const container = document.querySelector('.dashboard-container');
+        if (state === 'MAP_ACTIVE') {
+            container?.classList.add('map-mode');
+        } else {
+            container?.classList.remove('map-mode');
+        }
+        
+        setTimeout(() => map?.invalidateSize(), 400);
+    });
 
-        if(!originName || !destName) return;
+    // Listen for Route Updates
+    window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
+        const data = (event as CustomEvent).detail;
+        if (!map || !layerGroup) return;
 
-        // UI Loading State
-        btnText.classList.add('hidden');
-        loader.classList.remove('hidden');
-        errorMsg.classList.add('hidden');
+        layerGroup.clearLayers();
+        const allCoords = [];
 
-        try {
-            await coordinatesStore.init();
+        data.legs?.forEach(leg => {
+            const legCoords = [];
+            leg.stops_info?.forEach(s => {
+                const c = [s.lat, s.lng];
+                legCoords.push(c);
+                allCoords.push(c);
+            });
             
-            // 1. Resolve Coordinates (using Store's fuzzy logic or exact match)
-            // Implementation note: The Store `findNearest` is for lat/lng -> name.
-            // We need Name -> Lat/Lng. 
-            // We can access the raw DB from store.
-            const db = coordinatesStore.getDB();
-            
-            const findCoord = (name) => {
-                // Exact
-                if(db[name]) return db[name];
-                // Simple fuzzy
-                const key = Object.keys(db).find(k => k.toLowerCase().includes(name.toLowerCase()));
-                return key ? db[key] : null;
-            };
-
-            const originCoords = findCoord(originName);
-            const destCoords = findCoord(destName);
-
-            if (!originCoords) throw new Error(`Origen no encontrado: ${originName}`);
-            if (!destCoords) throw new Error(`Destino no encontrado: ${destName}`);
-
-            console.log("📍 Calculating Route:", { originCoords, destCoords });
-
-            // 2. Call WASM
-            const result = await bridge.calculateRoute(
-                originCoords[0], originCoords[1],
-                destCoords[0], destCoords[1]
-            );
-
-            console.log("🚀 Route Result:", result);
-
-            if (result && result.success) {
-                // 3. Dispatch to Map
-                const event = new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: result });
-                window.dispatchEvent(event);
+            if(legCoords.length > 0) {
+                // PREMIUM POLYLINE: Higher contrast and thickness
+                window.L.polyline(legCoords, {
+                    color: '#FF4D00', // Vibrant Orange-Red
+                    weight: 8,
+                    opacity: 0.9,
+                    lineJoin: 'round',
+                    pane: 'overlayPane' // Force to top pane
+                }).addTo(layerGroup);
                 
-                // Optional: Minimize card or show feedback
-                // For now, let's just toast
-                 if(window.showToast) window.showToast("¡Ruta encontrada!", "success");
-
-            } else {
-                 if(window.showToast) window.showToast("No se encontró una ruta válida.", "error");
-                 errorMsg.innerText = "No se encontró ruta. Intenta otros puntos.";
-                 errorMsg.classList.remove('hidden');
+                // Add glow effect
+                window.L.polyline(legCoords, {
+                    color: '#FF4D00',
+                    weight: 12,
+                    opacity: 0.2,
+                    pane: 'overlayPane'
+                }).addTo(layerGroup);
             }
+        });
 
-        } catch (e) {
-            console.error(e);
-            errorMsg.innerText = e.message || "Error al calcular ruta";
-            errorMsg.classList.remove('hidden');
-        } finally {
-            btnText.classList.remove('hidden');
-            loader.classList.add('hidden');
+        if(allCoords.length > 0) {
+            map.fitBounds(allCoords, { padding: [100, 100], maxZoom: 16 });
         }
     });
 
-    // Swap Button
-    document.getElementById('btn-swap')?.addEventListener('click', () => {
-        const originInput = document.getElementById('input-origin');
-        const destInput = document.getElementById('input-dest');
-        const temp = originInput.value;
-        originInput.value = destInput.value;
-        destInput.value = temp;
+    // Lifecycle
+    document.addEventListener('astro:page-load', () => {
+        setTimeout(initLeaflet, 200);
     });
-
 </script>
 
 <style>
@@ -242,257 +187,49 @@ import PassengerSelector from '../components/ui/PassengerSelector.astro';
 		flex-direction: column;
 		justify-content: space-between;
 		padding-top: 4rem;
-        /* pointer-events-none added via class, ensures map interaction */
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 	}
+
+    .dashboard-container.map-mode {
+        background: transparent;
+        justify-content: flex-end; /* Push UI to bottom in map mode */
+    }
     
-    /* Re-enable pointer events for interactive children */
-    .pointer-events-auto {
-        pointer-events: auto;
+    .dashboard-container.map-mode .glass-panel-wrapper {
+        transform: translateY(-80px); /* Lift slightly above nav */
+        max-height: 40vh; /* Don't cover too much of the map */
+        overflow-y: auto;
     }
-    .pointer-events-none {
+
+    /* Target specific parts of the RouteCalculator when on map */
+    .dashboard-container.map-mode :global(#search-card) {
+        max-height: 0;
+        opacity: 0;
+        margin-bottom: 0;
         pointer-events: none;
+        overflow: hidden;
+        transition: all 0.5s ease;
     }
 
-	/* Glass Panel Utility */
-	.glass-panel {
-		background: rgba(255, 255, 255, 0.85);
-		backdrop-filter: blur(12px);
-		border: 1px solid rgba(255, 255, 255, 0.6);
-		box-shadow: var(--shadow-glass);
-	}
+    /* Ensure results info is visible and styled as a handle */
+    .dashboard-container.map-mode :global(#results-info) {
+        position: sticky;
+        top: 0;
+        z-index: 60;
+        margin-bottom: 0.5rem;
+    }
 
-	/* Search Card */
-	.search-card {
+    /* Hide persistent bg from layout if we have a real map */
+    :global(#persistent-map-bg) {
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+	/* Glass Panel Wrapper */
+	.glass-panel-wrapper {
 		margin: 0 1rem;
-		border-radius: 1.5rem;
-		padding: 1.25rem;
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	.card-header {
-		display: flex;
-		justify-content: center;
-		margin-bottom: 0.5rem;
-	}
-
-	.brand-row {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.brand-name {
-		font-size: 1.875rem; /* 3xl */
-		font-weight: 700;
-		color: var(--color-secondary); /* Primary in prompt was orange */
-		letter-spacing: -0.025em;
-		margin: 0;
-	}
-
-	.live-badge {
-		display: flex;
-		align-items: center;
-		background-color: #DCFCE7; /* green-100 */
-		border: 1px solid #BBF7D0;
-		border-radius: 9999px;
-		padding: 0.125rem 0.5rem;
-		margin-top: 0.25rem;
-	}
-
-	.live-dot {
-		width: 0.5rem;
-		height: 0.5rem;
-		background-color: #22C55E; /* green-500 */
-		border-radius: 9999px;
-		margin-right: 0.375rem;
-	}
-
-	.live-text {
-		font-size: 10px;
-		font-weight: 700;
-		color: #15803D; /* green-700 */
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	/* Input Group */
-	.input-group {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.input-row {
-		background-color: rgba(255, 255, 255, 0.6);
-		border: 1px solid #E5E7EB;
-		border-radius: 1rem;
-		padding: 0.75rem;
-		display: flex;
-		align-items: center;
-		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-	}
-
-	.input-icon-circle {
-		width: 2.5rem;
-		height: 2.5rem;
-		border-radius: 9999px;
-		background-color: #F3F4F6;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: #6B7280;
-		margin-right: 0.75rem;
-		flex-shrink: 0;
-	}
-
-	.input-field {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.input-field label {
-		font-size: 0.75rem;
-		color: #6B7280;
-		font-weight: 500;
-	}
-
-	.input-field input {
-		width: 100%;
-		background: transparent;
-		border: none;
-		padding: 0;
-		font-size: 1rem;
-		font-weight: 600;
-		color: var(--color-text-main);
-		outline: none;
-	}
-
-	.swap-btn {
-		position: absolute;
-		right: 2rem;
-		top: 38%;
-		z-index: 10;
-		width: 2.5rem;
-		height: 2.5rem;
-		background-color: white;
-		border-radius: 9999px;
-		border: 1px solid #E5E7EB;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: #6B7280;
-		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-		cursor: pointer;
-		transition: transform 0.2s;
-	}
-
-	.swap-btn:active {
-		transform: rotate(180deg);
-	}
-
-	/* Quick Actions */
-	.quick-actions {
-		display: flex;
-		gap: 0.5rem;
-		overflow-x: auto;
-		padding-bottom: 0.25rem;
-	}
-
-	.quick-actions::-webkit-scrollbar {
-		display: none;
-	}
-
-	.action-chip {
-		display: flex;
-		align-items: center;
-		gap: 0.375rem;
-		padding: 0.5rem 0.75rem;
-		background-color: rgba(255, 255, 255, 0.5);
-		border: 1px solid #E5E7EB;
-		border-radius: 0.75rem;
-		cursor: pointer;
-		transition: transform 0.1s;
-	}
-
-	.action-chip:active {
-		transform: scale(0.95);
-	}
-
-	.action-chip .icon {
-		color: #6B7280;
-		font-size: 1.125rem;
-	}
-
-	.action-chip .label {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: #374151;
-	}
-
-	.rotate-45 {
-		transform: rotate(45deg);
-	}
-
-	/* Options Row */
-	.options-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.75rem;
-		margin-bottom: 0.5rem;
-	}
-
-	.flex-1-custom {
-		flex: 1;
-	}
-
-	.tourist-toggle-wrapper {
-		background-color: rgba(255, 255, 255, 0.5);
-		border: 1px solid #E5E7EB;
-		border-radius: 0.75rem;
-		padding: 0 0.75rem;
-		min-width: 140px; /* Ensure visual balance */
-		justify-content: center;
-	}
-
-	/* CTA Button */
-	.cta-btn {
-		width: 100%;
-		background-color: var(--color-secondary);
-		color: white;
-		font-weight: 700;
-		font-size: 1.125rem;
-		padding: 1rem;
-		border-radius: 0.75rem;
-		border: none;
-		box-shadow: 0 4px 20px rgba(255, 107, 0, 0.4);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.5rem;
-		cursor: pointer;
-		transition: all 0.2s;
-	}
-
-	.cta-btn:hover {
-		background-color: #e56000;
-	}
-
-	.cta-btn:active {
-		transform: scale(0.98);
-	}
-
-	.cta-btn .arrow {
-		color: rgba(255, 255, 255, 0.8);
-		transition: transform 0.2s;
-	}
-
-	.group:hover .group-hover-translate {
-		transform: translateX(4px);
+        z-index: 50;
+        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 
 	/* Bottom Nav */
@@ -524,7 +261,7 @@ import PassengerSelector from '../components/ui/PassengerSelector.astro';
 	}
 
 	.nav-item.active {
-		color: var(--color-secondary);
+		color: #FF6A00; /* var(--color-secondary) from layout */
 	}
 
 	.nav-icon-circle {
