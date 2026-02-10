@@ -25,14 +25,16 @@
   "categories": ["navigation", "travel", "utilities"],
   "shortcuts": [
     {
-      "name": "Buscar Ruta",
-      "url": "/?action=search",
-      "icons": [
-        {
-          "src": "/icons/pwa-192x192.png",
-          "sizes": "192x192"
-        }
-      ]
+      "name": "Ver Rutas",
+      "short_name": "Rutas",
+      "url": "/rutas",
+      "icons": [{ "src": "/icons/bus.svg", "sizes": "512x512" }]
+    },
+    {
+      "name": "Mi Tarjeta",
+      "short_name": "Wallet",
+      "url": "/wallet",
+      "icons": [{ "src": "/icons/credit-card.svg", "sizes": "512x512" }]
     }
   ]
 }

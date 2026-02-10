@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import BottomNav from '../components/BottomNav.astro';
 ---
 
 <Layout title="Comunidad - CancúnMueve">
@@ -118,30 +119,7 @@ import Layout from '../layouts/Layout.astro';
 		</button>
 
 		<!-- Bottom Nav -->
-		<nav class="bottom-nav">
-			<div class="nav-container">
-				<a href="/home" class="nav-btn group">
-					<span class="material-icons-round nav-icon">home</span>
-					<span class="nav-label">Inicio</span>
-				</a>
-				<a href="/tracking" class="nav-btn group">
-					<span class="material-icons-round nav-icon">alt_route</span>
-					<span class="nav-label">Rutas</span>
-				</a>
-                <a href="/community" class="nav-btn group active">
-					<span class="material-icons-round nav-icon">groups</span>
-					<span class="nav-label">Comunidad</span>
-				</a>
-				<a href="/tracking" class="nav-btn group">
-					<span class="material-icons-round nav-icon">map</span>
-					<span class="nav-label">Mapa</span>
-				</a>
-				<a href="/wallet" class="nav-btn group">
-					<span class="material-icons-round nav-icon">credit_card</span>
-					<span class="nav-label">Mi Tarjeta</span>
-				</a>
-			</div>
-		</nav>
+		<BottomNav />
 	</div>
 </Layout>
 

@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import RouteCalculator from '../components/RouteCalculator.astro';
+import BottomNav from '../components/BottomNav.astro';
 ---
 
 <Layout title="Dashboard - CancúnMueve">
@@ -31,30 +32,7 @@ import RouteCalculator from '../components/RouteCalculator.astro';
 		</div>
 
 		<!-- Bottom Navigation -->
-		<div class="bottom-nav pointer-events-auto">
-			<a href="/home" class="nav-item active">
-				<div class="nav-icon-circle">
-					<span class="material-icons-round text-2xl">explore</span>
-				</div>
-				<span class="nav-label">Inicio</span>
-			</a>
-			<a href="/rutas" class="nav-item">
-				<span class="material-icons-round text-2xl">directions_bus</span>
-				<span class="nav-label">Rutas</span>
-			</a>
-			<a href="/mapa" class="nav-item">
-				<span class="material-icons-round text-2xl">map</span>
-				<span class="nav-label">Mapa</span>
-			</a>
-			<a href="/wallet" class="nav-item">
-				<span class="material-icons-round text-2xl">credit_card</span>
-				<span class="nav-label">Mi Tarjeta</span>
-			</a>
-            <a href="/community" class="nav-item">
-				<span class="material-icons-round text-2xl">groups</span>
-				<span class="nav-label">Comunidad</span>
-			</a>
-		</div>
+			<BottomNav />
 	</div>
 </Layout>
 
@@ -110,15 +88,16 @@ import RouteCalculator from '../components/RouteCalculator.astro';
         setTimeout(() => map?.invalidateSize(), 400);
     });
 
-    // Listen for Route Updates
+    // Listen for Route Updates with A/B Markers
     window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
         const data = (event as CustomEvent).detail;
         if (!map || !layerGroup) return;
 
         layerGroup.clearLayers();
         const allCoords = [];
+        const allLegs = data.legs || [];
 
-        data.legs?.forEach(leg => {
+        allLegs.forEach((leg, legIndex) => {
             const legCoords = [];
             leg.stops_info?.forEach(s => {
                 const c = [s.lat, s.lng];
@@ -127,22 +106,79 @@ import RouteCalculator from '../components/RouteCalculator.astro';
             });
             
             if(legCoords.length > 0) {
-                // PREMIUM POLYLINE: Higher contrast and thickness
+                // Background polyline (solid)
                 window.L.polyline(legCoords, {
-                    color: '#FF4D00', // Vibrant Orange-Red
-                    weight: 8,
-                    opacity: 0.9,
+                    color: '#0f172a',
+                    weight: 10,
+                    opacity: 0.6,
                     lineJoin: 'round',
-                    pane: 'overlayPane' // Force to top pane
+                    lineCap: 'round'
                 }).addTo(layerGroup);
-                
-                // Add glow effect
+
+                // Foreground polyline (animated dashed)
+                const isFirst = legIndex === 0;
                 window.L.polyline(legCoords, {
-                    color: '#FF4D00',
-                    weight: 12,
-                    opacity: 0.2,
-                    pane: 'overlayPane'
+                    color: isFirst ? '#10B981' : '#3B82F6',
+                    weight: 5,
+                    opacity: 1,
+                    dashArray: '15, 20',
+                    lineJoin: 'round',
+                    lineCap: 'round',
+                    className: 'route-line-animated'
                 }).addTo(layerGroup);
+
+                // Add marker A (Start) - First leg only
+                if (legIndex === 0 && legCoords.length > 0) {
+                    const startIcon = window.L.divIcon({
+                        className: 'custom-marker',
+                        html: `
+                            <div style="position: relative; width: 40px; height: 40px; margin-left: -20px; margin-top: -40px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 1000;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background-color: #10B981; border: 3px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; position: relative; z-index: 10;">A</div>
+                                <div style="width: 4px; height: 12px; background-color: #059669; border-radius: 0 0 2px 2px;"></div>
+                                <div style="position: absolute; bottom: 0; width: 32px; height: 8px; background-color: rgba(0,0,0,0.2); filter: blur(4px); border-radius: 50%; transform: translateY(4px);"></div>
+                            </div>
+                        `,
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 40]
+                    });
+                    window.L.marker(legCoords[0], { icon: startIcon, zIndexOffset: 1000 }).addTo(layerGroup);
+                }
+
+                // Add marker B (End) - Last leg only
+                if (legIndex === allLegs.length - 1 && legCoords.length > 0) {
+                    const endIcon = window.L.divIcon({
+                        className: 'custom-marker',
+                        html: `
+                            <div style="position: relative; width: 40px; height: 40px; margin-left: -20px; margin-top: -40px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 1000;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background-color: #EF4444; border: 3px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; position: relative; z-index: 10;">B</div>
+                                <div style="width: 4px; height: 12px; background-color: #DC2626; border-radius: 0 0 2px 2px;"></div>
+                                <div style="position: absolute; bottom: 0; width: 32px; height: 8px; background-color: rgba(0,0,0,0.2); filter: blur(4px); border-radius: 50%; transform: translateY(4px);"></div>
+                            </div>
+                        `,
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 40]
+                    });
+                    window.L.marker(legCoords[legCoords.length - 1], { icon: endIcon, zIndexOffset: 1000 }).addTo(layerGroup);
+                }
+
+                // Add transfer marker (if not last leg)
+                if (legIndex < allLegs.length - 1 && legCoords.length > 0) {
+                    const transferIcon = window.L.divIcon({
+                        className: 'custom-marker transfer-marker',
+                        html: `
+                            <div style="position: relative; width: 32px; height: 32px; margin-left: -16px; margin-top: -16px; display: flex; align-items: center; justify-content: center; z-index: 900;">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; background-color: #FBBF24; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: #1F2937; z-index: 10; animation: pulse 2s infinite;">
+                                    <svg style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </div>
+                            </div>
+                        `,
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16]
+                    });
+                    window.L.marker(legCoords[legCoords.length - 1], { icon: transferIcon, zIndexOffset: 900 }).addTo(layerGroup);
+                }
             }
         });
 
@@ -307,5 +343,29 @@ import RouteCalculator from '../components/RouteCalculator.astro';
     }
     .animate-fade-in-up {
         animation: fade-in-up 0.5s ease-out forwards;
+    }
+
+    /* Route line animation */
+    @keyframes dash {
+        from {
+            stroke-dashoffset: 0;
+        }
+        to {
+            stroke-dashoffset: -35;
+        }
+    }
+
+    :global(.route-line-animated) {
+        animation: dash 1s linear infinite;
+    }
+
+    /* Custom marker styles */
+    :global(.custom-marker) {
+        background: transparent !important;
+        border: none !important;
+    }
+
+    :global(.transfer-marker) {
+        animation: pulse 2s infinite;
     }
 </style>

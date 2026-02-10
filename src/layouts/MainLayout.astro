@@ -2,6 +2,7 @@
 import { ClientRouter } from 'astro:transitions';
 import '../index.css';
 import Toast from '../components/ui/Toast.astro';
+import BottomNav from '../components/BottomNav.astro';
 
 interface Props {
   title: string;
@@ -18,10 +19,11 @@ const {
 const pathname = Astro.url.pathname;
 
 const navItems = [
-  { href: '/', icon: '/icons/compass.svg', label: 'Inicio', activePattern: /^\/$/ },
+  { href: '/home', icon: '/icons/compass.svg', label: 'Inicio', activePattern: /^\/home/ },
   { href: '/rutas', icon: '/icons/bus.svg', label: 'Rutas', activePattern: /^\/rutas/ },
   { href: '/mapa', icon: '/icons/map-pin.svg', label: 'Mapa', activePattern: /^\/mapa/ },
-  { href: '/driver', icon: '/icons/credit-card.svg', label: 'Mi Tarjeta', activePattern: /^\/driver/ },
+  { href: '/wallet', icon: '/icons/credit-card.svg', label: 'Mi Tarjeta', activePattern: /^\/wallet/ },
+  { href: '/community', icon: '/icons/users.svg', label: 'Comunidad', activePattern: /^\/community/ },
 ];
 ---
 
@@ -89,30 +91,7 @@ const navItems = [
     </main>
 
     <!-- Sticky Bottom Nav (Mobile) -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] lg:hidden">
-      <div class="grid grid-cols-4 h-16">
-        {navItems.map((item) => {
-          const isActive = item.activePattern.test(pathname);
-          return (
-            <a
-              href={item.href}
-              class="flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
-            >
-              <div class={`p-1.5 rounded-xl transition-colors ${isActive ? 'bg-primary-50' : 'bg-transparent'}`}>
-                <img
-                  src={item.icon}
-                  class={`w-6 h-6 transition-all ${isActive ? 'filter-primary' : 'grayscale opacity-50'}`}
-                  alt={item.label}
-                />
-              </div>
-              <span class={`text-[10px] font-bold tracking-wide transition-colors ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
-                {item.label}
-              </span>
-            </a>
-          );
-        })}
-      </div>
-    </nav>
+    <BottomNav />
 
     <Toast />
 

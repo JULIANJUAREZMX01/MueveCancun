@@ -27,24 +27,24 @@ const {
   // 🛡️ SECURITY: Prevent DOM-based XSS by using strict DOM creation instead of innerHTML
   function createSafePopup(title, subtitle, actionUrl) {
       const div = document.createElement('div');
-      div.className = 'p-1';
+      div.className = 'p-3 min-w-[200px]';
 
-      const pTitle = document.createElement('p');
-      pTitle.className = 'font-bold text-gray-900';
+      const pTitle = document.createElement('h3');
+      pTitle.className = 'font-bold text-slate-900 text-sm mb-0.5 leading-tight';
       pTitle.textContent = title;
       div.appendChild(pTitle);
 
       if (subtitle) {
           const pSub = document.createElement('p');
-          pSub.className = 'text-xs text-gray-500';
+          pSub.className = 'text-xs text-slate-500 font-medium mb-2';
           pSub.textContent = subtitle;
           div.appendChild(pSub);
       }
 
       if (actionUrl) {
           const btn = document.createElement('button');
-          btn.className = 'mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold';
-          btn.textContent = 'Ver Detalles';
+          btn.className = 'w-full text-xs bg-slate-900 text-white rounded-lg py-1.5 font-bold hover:bg-primary-600 transition-colors shadow-md';
+          btn.textContent = 'Ver Rutas Cercanas';
           btn.onclick = () => window.location.href = actionUrl;
           div.appendChild(btn);
       }
@@ -53,20 +53,74 @@ const {
 
   function createLabelPopup(label, text) {
       const div = document.createElement('div');
-      const b = document.createElement('b');
-      b.textContent = label + ': ';
+      div.className = "text-center px-1";
+      const b = document.createElement('div');
+      b.className = "text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5";
+      b.textContent = label;
       div.appendChild(b);
-      div.appendChild(document.createTextNode(text));
+      const span = document.createElement('div');
+      span.className = "font-bold text-slate-800 text-sm leading-tight";
+      span.textContent = text;
+      div.appendChild(span);
       return div;
   }
 
   function createSimplePopup(text) {
       const div = document.createElement('div');
+      div.className = "font-medium text-slate-700 text-xs";
       div.textContent = text;
       return div;
   }
 
-  // Optimized Coordinate Finder (Inverted Index + Cache)
+  // --- CUSTOM ICONS ---
+  const createIcon = (type) => {
+      const isStart = type === 'start';
+      const isEnd = type === 'end';
+      const isTransfer = type === 'transfer';
+      const isLocation = type === 'location';
+
+      let html = '';
+      
+      if (isStart) {
+          html = `
+            <div class="relative w-10 h-10 -ml-5 -mt-10 flex flex-col items-center justify-end group cursor-pointer z-50">
+                <div class="w-8 h-8 rounded-full bg-emerald-500 border-[3px] border-white shadow-xl flex items-center justify-center text-white relative z-10 font-bold transform transition-transform group-hover:scale-110">
+                    <span class="text-xs font-mono">A</span>
+                </div>
+                <div class="w-1 h-3 bg-emerald-600 rounded-b-sm"></div>
+                <div class="absolute bottom-0 w-8 h-2 bg-black/20 blur-sm rounded-full translate-y-1"></div>
+            </div>`;
+      } else if (isEnd) {
+          html = `
+             <div class="relative w-10 h-10 -ml-5 -mt-10 flex flex-col items-center justify-end group cursor-pointer z-50">
+                <div class="w-8 h-8 rounded-full bg-rose-500 border-[3px] border-white shadow-xl flex items-center justify-center text-white relative z-10 font-bold transform transition-transform group-hover:scale-110">
+                    <span class="text-xs font-mono">B</span>
+                </div>
+                <div class="w-1 h-3 bg-rose-600 rounded-b-sm"></div>
+                <div class="absolute bottom-0 w-8 h-2 bg-black/20 blur-sm rounded-full translate-y-1"></div>
+            </div>`;
+      } else if (isTransfer) {
+           html = `
+            <div class="relative w-8 h-8 -ml-4 -mt-4 flex items-center justify-center group cursor-pointer">
+                <div class="w-6 h-6 rounded-full bg-amber-400 border-2 border-white shadow-lg flex items-center justify-center text-slate-900 z-10 animate-pulse">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                </div>
+            </div>`;
+      } else if (isLocation) {
+          html = `
+             <div class="w-3 h-3 bg-primary-500 rounded-full border border-white shadow-sm hover:scale-150 transition-transform cursor-pointer"></div>
+          `;
+      }
+
+      return window.L.divIcon({
+          className: '!bg-transparent !border-0', 
+          html: html,
+          iconSize: [40, 40],
+          iconAnchor: [20, 40],
+          popupAnchor: [0, -40]
+      });
+  };
+
   class CoordinateFinder {
       constructor(db) {
           this.db = db;
@@ -78,7 +132,6 @@ const {
 
       buildIndex() {
           for (const key of this.keys) {
-              // Tokenize: split by non-alphanumeric (including Spanish accents)
               const tokens = key.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
               for (const token of tokens) {
                   if (token.length < 3) continue;
@@ -91,13 +144,9 @@ const {
       }
 
       find(stopName) {
-          // 1. Exact match
           if (this.db[stopName]) return this.db[stopName];
-
-          // 2. Cache check
           if (this.cache.has(stopName)) return this.cache.get(stopName);
 
-          // 3. Fuzzy Search
           const searchTokens = stopName.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
           const candidates = new Set();
 
@@ -111,7 +160,6 @@ const {
 
           let bestKey = null;
           if (candidates.size > 0) {
-               // Prefer candidates that are substrings or contain the query
                bestKey = Array.from(candidates).find(k => stopName.includes(k) || k.includes(stopName));
           }
 
@@ -124,7 +172,7 @@ const {
   let map;
   let layerGroup;
   let coordinatesDB = {};
-  let finder;       // Para búsqueda de nombres
+  let finder;
 
   async function initMap() {
     const container = document.getElementById('map-container');
@@ -135,153 +183,127 @@ const {
         return;
     }
 
-    if (container._leaflet_id) return; // Prevent double init
+    if (container._leaflet_id) return;
 
     const center = JSON.parse(container.dataset.center);
     const zoom = parseFloat(container.dataset.zoom);
 
-    // Initialize Leaflet
-    // Cancún Bounds: [20.8, -87.3] to [21.6, -86.5]
+    // Bounds for Cancun
     const maxBounds = [
-        [20.8, -87.3], // South-West
-        [21.6, -86.5]  // North-East
+        [20.8, -87.3],
+        [21.6, -86.5]
     ];
 
     map = window.L.map('map-container', {
         preferCanvas: true,
         maxBounds: maxBounds,
-        maxBoundsViscosity: 1.0,
-        minZoom: 10
+        maxBoundsViscosity: 0.8,
+        minZoom: 11,
+        zoomControl: false // Custom position if needed, or default
     }).setView(center, zoom);
+    
+    // Add zoom control to bottom right for better UX on mobile
+    window.L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        minZoom: 10,
-        maxZoom: 18
+        attribution: '&copy; OpenStreetMap',
+        minZoom: 11,
+        maxZoom: 18,
+        opacity: 0.8 // Slightly faded for better overlay visibility
     }).addTo(map);
 
     layerGroup = window.L.layerGroup().addTo(map);
 
-    // Initialize Shared Store
+    // Initialize Store
     try {
         await coordinatesStore.init();
         coordinatesDB = coordinatesStore.getDB() || {};
-        console.log("Coordinates loaded from store:", Object.keys(coordinatesDB).length);
-
-        // 1. Init Text Finder (Fuzzy Search)
         finder = new CoordinateFinder(coordinatesDB);
-
     } catch (e) {
         console.error("Failed to load coordinates:", e);
     }
 
     if (loader) loader.classList.add('hidden');
 
-    // Check for Picker Mode
+    // Picker Mode Logic
     const urlParams = new URLSearchParams(window.location.search);
     const isPicker = urlParams.get('picker');
 
     if (isPicker) {
-        if (window.showToast) window.showToast("Toque el mapa para seleccionar una parada cercana", "info");
-
-        // Add visual indicator
-        const indicator = document.createElement('div');
-        indicator.className = 'absolute top-4 left-1/2 -translate-x-1/2 bg-primary-600 text-white px-4 py-2 rounded-full shadow-lg z-[1000] font-bold text-sm animate-bounce';
-        indicator.textContent = "📍 Modo Selección";
-        container.parentElement.appendChild(indicator);
+        if (window.showToast) window.showToast("Toque el mapa para seleccionar punto", "info");
+        
+        const badge = document.createElement('div');
+        badge.className = 'absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 py-2 rounded-full shadow-lg z-[1000] font-bold text-xs flex items-center gap-2 animate-bounce-in';
+        badge.innerHTML = '<span>📍</span> MODO SELECCIÓN';
+        container.parentElement.appendChild(badge);
 
         map.on('click', (e) => {
-            const { lat, lng } = e.latlng;
-
-            // Use Store for Spatial Search
-            const nearest = coordinatesStore.findNearest(lat, lng);
-            let minDist = Infinity;
-
+            const nearest = coordinatesStore.findNearest(e.latlng.lat, e.latlng.lng);
+            let minDist = 10000;
+            
             if (nearest && coordinatesDB[nearest]) {
-                 // Calculate distance to verify threshold (Store does it, but we need it for UI logic if we want strict < 1000m)
-                 // Store fallback is 1.5km. Map logic was 1000m.
-                 // We can trust the store or re-verify. Let's re-verify with Leaflet's distance to be consistent with previous logic.
-                 const coords = coordinatesDB[nearest];
-                 minDist = map.distance(e.latlng, coords);
+                 minDist = map.distance(e.latlng, coordinatesDB[nearest]);
             }
 
-            // Threshold: 1000 meters
-            if (nearest && minDist < 1000) {
-                // Show confirmation popup at location
-                window.L.popup()
-                    .setLatLng(e.latlng)
-                    .setContent(`
-                        <div class="text-center">
-                            <p class="font-bold mb-2">¿Seleccionar "${nearest}"?</p>
-                            <button id="confirm-pick-btn" class="bg-primary-500 text-white px-3 py-1 rounded text-xs font-bold">
-                                ✅ Confirmar
-                            </button>
-                        </div>
-                    `)
-                    .openOn(map);
-
-                // Bind click to button (need delay for DOM)
-                setTimeout(() => {
-                    document.getElementById('confirm-pick-btn')?.addEventListener('click', () => {
-                         window.location.href = `/?selected_stop=${encodeURIComponent(nearest)}`;
-                    });
-                }, 100);
-
+            if (nearest && minDist < 1500) { // 1.5km tolerance
+                window.L.popup({
+                    className: 'picker-popup'
+                })
+                .setLatLng(coordinatesDB[nearest]) // Snap to stop
+                .setContent(createSafePopup(
+                    "¿Confirmar ubicación?",
+                    nearest,
+                    null
+                ).outerHTML + `
+                    <button class="w-full mt-2 bg-primary-500 text-white rounded-lg py-2 font-bold text-xs shadow-md"
+                        onclick="window.location.href='/?selected_stop=${encodeURIComponent(nearest)}'">
+                        ✅ USAR ESTA PARADA
+                    </button>
+                `)
+                .openOn(map);
             } else {
-                 if (window.showToast) window.showToast("No hay paradas registradas cerca", "warning");
+                 if (window.showToast) window.showToast("No hay paradas oficiales cerca de este punto", "warning");
             }
         });
-
-        // Return early to avoid drawing routes or default markers that might confuse
         return;
     }
 
-    // Check for pending route from other pages
+    // Pending Route Logic
     const pendingRoute = localStorage.getItem('pending_route');
     if (pendingRoute) {
         try {
             const data = JSON.parse(pendingRoute);
-            // Normalize to object if it's just an array of strings (legacy)
-            if (Array.isArray(data)) {
-                drawRoute({ stops: data });
-            } else {
-                drawRoute(data);
-            }
+            drawRoute(Array.isArray(data) ? { stops: data } : data);
             localStorage.removeItem('pending_route');
         } catch (e) {
             console.error("Error parsing pending route", e);
         }
     }
 
-    // Draw all points from DB as refined markers
+    // Draw All Points (Ambient Mode)
     if (!pendingRoute) {
-        const newLayers = [];
+        const points = [];
         Object.entries(coordinatesDB).forEach(([name, coords]) => {
-            const isRoute = name.startsWith('RUTA') || name.startsWith('Ruta');
+            // Filter only main hubs/routes to avoid clutter? No, show all as small dots.
+            // Using CircleMarker is faster for 100+ points than DivIcon
+            const isHub = name.includes("Plaza") || name.includes("ADO") || name.includes("Crucero");
             
-            // Premium Marker Styling
             const marker = window.L.circleMarker(coords, {
-                radius: isRoute ? 8 : 5,
-                fillColor: isRoute ? '#F97316' : '#3B82F6',
+                radius: isHub ? 6 : 4,
+                fillColor: isHub ? '#3B82F6' : '#94A3B8',
                 color: '#FFFFFF',
-                weight: 2,
-                opacity: 1,
+                weight: 1,
+                opacity: 0.8,
                 fillOpacity: 0.9
-            }).bindPopup(createSafePopup(
-                name,
-                isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés',
-                '/rutas?search=' + encodeURIComponent(name)
-            ));
-            newLayers.push(marker);
+            }).bindPopup(createSafePopup(name, isHub ? 'Punto de Interés' : 'Parada', '/rutas?search=' + encodeURIComponent(name)));
+            
+            points.push(marker);
         });
         
-        if (newLayers.length > 0) {
-            layerGroup = window.L.layerGroup(newLayers).addTo(map);
-            // Optionally fit bounds to all points if database is not empty
-            const allCoords = Object.values(coordinatesDB);
-            if (allCoords.length > 0) {
-                map.fitBounds(allCoords, { padding: [40, 40], maxZoom: 15 });
-            }
+        if (points.length > 0) {
+            const group = window.L.featureGroup(points).addTo(map);
+            // Don't fit bounds unless specific need, just set view to center
+            // map.fitBounds(group.getBounds(), { padding: [50, 50] });
         }
     }
   }
@@ -289,146 +311,140 @@ const {
   function drawRoute(data) {
     if (!map) return;
 
-    // Remove old layer group to avoid overhead during additions
     if (layerGroup) {
         layerGroup.clearLayers();
         layerGroup.remove();
     }
+    
+    layerGroup = window.L.layerGroup().addTo(map);
 
-    // Normalize input to legs array
+    // Normalizing legs logic
     let legs = [];
-    if (data.legs && Array.isArray(data.legs)) {
-        legs = data.legs;
-    } else if (data.stops && Array.isArray(data.stops)) {
-        legs = [{ stops: data.stops }];
-    } else {
-         layerGroup = window.L.layerGroup().addTo(map);
-         return;
-    }
+    if (data.legs && Array.isArray(data.legs)) legs = data.legs;
+    else if (data.stops && Array.isArray(data.stops)) legs = [{ stops: data.stops }];
+    else return;
 
     const newLayers = [];
     const allBounds = [];
 
     legs.forEach((leg, index) => {
-        const routeCoords = [];
-        const validStops = [];
+        try {
+            const routeCoords = [];
+            const validStops = [];
 
-        // ⚡ SPEEDY: Use pre-computed coordinates from WASM if available (stops_info)
-        // This avoids the O(N) fuzzy search loop in JS
-        if (leg.stops_info && leg.stops_info.length > 0) {
-             leg.stops_info.forEach(stop => {
-                 const coords = [stop.lat, stop.lng];
-                 routeCoords.push(coords);
-                 validStops.push({ name: stop.name, latlng: coords });
-                 allBounds.push(coords);
-             });
-        } else {
-            const stops = leg.stops || [];
-            stops.forEach(stopName => {
-                let coords;
+            // Determine source of coords
+            const stopSource = leg.stops_info && leg.stops_info.length > 0 
+                ? leg.stops_info.map(s => ({ name: s.name, latlng: [s.lat, s.lng] }))
+                : (leg.stops || []).map(name => {
+                    const c = finder ? finder.find(name) : coordinatesDB[name];
+                    return c ? { name, latlng: c } : null;
+                }).filter(Boolean);
 
-                // Use Fuzzy Finder if available (Robust)
-                if (finder) {
-                    coords = finder.find(stopName);
-                } else {
-                    // Fallback
-                    coords = coordinatesDB[stopName];
-                    if (!coords) {
-                         const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
-                         if (key) coords = coordinatesDB[key];
-                    }
+            stopSource.forEach(s => {
+                routeCoords.push(s.latlng);
+                validStops.push(s);
+                allBounds.push(s.latlng);
+            });
+
+            if (routeCoords.length > 0) {
+                // 1. Background (Solid Dark)
+                newLayers.push(window.L.polyline(routeCoords, {
+                    color: '#0f172a', 
+                    weight: 10,
+                    opacity: 0.6,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                }));
+
+                // 2. Foreground (Animated Dash)
+                const isFirst = index === 0;
+                newLayers.push(window.L.polyline(routeCoords, {
+                    color: isFirst ? '#10B981' : '#3B82F6', // Emerald vs Blue
+                    weight: 5,
+                    opacity: 1,
+                    dashArray: '15, 20',
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                    className: 'animate-dash drop-shadow-lg'
+                }));
+
+                // Start Maker (Leg 1)
+                if (index === 0) {
+                    const s = validStops[0];
+                    console.log("Adding Start Marker:", s.name);
+                    newLayers.push(window.L.marker(s.latlng, { icon: createIcon('start') })
+                        .bindPopup(createLabelPopup('Inicio', s.name)));
                 }
 
-                if (coords) {
-                    routeCoords.push(coords);
-                    validStops.push({ name: stopName, latlng: coords });
-                    allBounds.push(coords);
-                } else {
-                    console.warn(`[InteractiveMap] Skipping stop with missing coordinates: ${stopName}`);
+                // End Marker (Last Leg)
+                if (index === legs.length - 1) {
+                    const e = validStops[validStops.length - 1];
+                    console.log("Adding End Marker:", e.name);
+                    newLayers.push(window.L.marker(e.latlng, { icon: createIcon('end') })
+                        .bindPopup(createLabelPopup('Fin', e.name)));
                 }
-            });
-        }
 
-        if (routeCoords.length > 0) {
-            // Style based on index (Leg 1 vs Leg 2)
-            const isFirst = index === 0;
-            const color = '#F97316';
-            // Visual distinction: Leg 2 is dashed
-            const dashArray = isFirst ? null : '10, 10';
-            const weight = 4;
+                // Transfer Marker
+                if (index < legs.length - 1) {
+                    const e = validStops[validStops.length - 1];
+                    newLayers.push(window.L.marker(e.latlng, { icon: createIcon('transfer') })
+                        .bindPopup(createLabelPopup('Transbordo', e.name)));
+                }
 
-            const polyline = window.L.polyline(routeCoords, {
-                color,
-                weight,
-                opacity: 0.8,
-                dashArray
-            });
-            newLayers.push(polyline);
-
-            // Start Marker (only for first leg)
-            if (index === 0) {
-                 const start = validStops[0];
-                 newLayers.push(window.L.marker(start.latlng)
-                    .bindPopup(createLabelPopup('Inicio', start.name)));
+                // Intermediate Stops (Dots)
+                validStops.slice(1, -1).forEach(stop => {
+                    newLayers.push(
+                        window.L.circleMarker(stop.latlng, {
+                            radius: 3,
+                            fillColor: '#FFFFFF',
+                            color: isFirst ? '#10B981' : '#3B82F6',
+                            weight: 2,
+                            fillOpacity: 1
+                        }).bindPopup(createSimplePopup(stop.name))
+                    );
+                });
             }
-
-            // End Marker (only for last leg)
-            if (index === legs.length - 1) {
-                 const end = validStops[validStops.length - 1];
-                 newLayers.push(window.L.marker(end.latlng)
-                    .bindPopup(createLabelPopup('Fin', end.name)));
-            }
-
-            // Transfer Marker (if not last leg)
-            if (index < legs.length - 1) {
-                const end = validStops[validStops.length - 1];
-                 newLayers.push(window.L.marker(end.latlng, {
-                     // Custom icon for transfer? Or just a marker.
-                 }).bindPopup(createLabelPopup('Transbordo', end.name)));
-            }
-
-            // Intermediate dots
-            validStops.slice(1, -1).forEach(stop => {
-                 newLayers.push(
-                    window.L.circleMarker(stop.latlng, { radius: 4, color: '#334155', fillOpacity: 1 })
-                    .bindPopup(createSimplePopup(stop.name))
-                 );
-            });
-
-        } else {
-            console.warn("No coordinates found for stops:", stops);
+        } catch (e) {
+            console.error("Error drawing leg:", index, e);
         }
     });
 
     if (newLayers.length > 0) {
-        // Batch add to map
-        layerGroup = window.L.layerGroup(newLayers).addTo(map);
+        layerGroup = window.L.featureGroup(newLayers).addTo(map);
         if (allBounds.length > 0) {
-             map.fitBounds(allBounds, { padding: [50, 50] });
+             map.fitBounds(allBounds, { padding: [80, 80], maxZoom: 15, animate: true });
         }
     } else {
-         if (window.showToast) window.showToast("No se pudieron visualizar los puntos de esta ruta.", "error");
+         if (window.showToast) window.showToast("No se encontraron coordenadas para esta ruta.", "warning");
          layerGroup = window.L.layerGroup().addTo(map);
     }
   }
 
-  // Listen for global event
   window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
-    console.log("Event received:", event.detail);
     drawRoute(event.detail);
+     // Scroll to map
+    const mapEl = document.getElementById('map-container');
+    if(mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
-  // Init on load
-  if (document.readyState === 'complete') {
-      initMap();
-  } else {
-      window.addEventListener('load', initMap);
-  }
+  if (document.readyState === 'complete') initMap();
+  else window.addEventListener('load', initMap);
 
-  // Re-init on view transition
-  document.addEventListener('astro:page-load', () => {
-      // Small delay to ensure container exists
-      setTimeout(initMap, 100);
-  });
+  document.addEventListener('astro:page-load', () => setTimeout(initMap, 100));
 
 </script>
+
+<style is:global>
+  @keyframes dash {
+    from {
+      stroke-dashoffset: 0;
+    }
+    to {
+      stroke-dashoffset: -35;
+    }
+  }
+  
+  .animate-dash {
+    animation: dash 1s linear infinite;
+  }
+</style>

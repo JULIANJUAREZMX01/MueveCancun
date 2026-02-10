@@ -1,0 +1,43 @@
+---
+const pathname = Astro.url.pathname;
+
+const navItems = [
+  { href: '/home', icon: '/icons/compass.svg', label: 'Inicio', activePattern: /^\/home/ },
+  { href: '/rutas', icon: '/icons/bus.svg', label: 'Rutas', activePattern: /^\/rutas/ },
+  { href: '/mapa', icon: '/icons/map-pin.svg', label: 'Mapa', activePattern: /^\/mapa/ },
+  { href: '/wallet', icon: '/icons/credit-card.svg', label: 'Mi Tarjeta', activePattern: /^\/wallet/ },
+  { href: '/community', icon: '/icons/users.svg', label: 'Comunidad', activePattern: /^\/community/ },
+];
+---
+
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-slate-200 pb-[env(safe-area-inset-bottom)] pointer-events-auto">
+  <div class="grid grid-cols-5 h-16">
+    {navItems.map((item) => {
+      const isActive = item.activePattern.test(pathname);
+      return (
+        <a
+          href={item.href}
+          class="flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform group no-underline"
+        >
+          <div class={`p-1.5 rounded-xl transition-colors ${isActive ? 'bg-primary-50' : 'bg-transparent'}`}>
+            <img
+              src={item.icon}
+              class={`w-6 h-6 transition-all ${isActive ? 'filter-primary' : 'grayscale opacity-50 group-hover:opacity-75'}`}
+              alt={item.label}
+            />
+          </div>
+          <span class={`text-[10px] font-bold tracking-wide transition-colors ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
+            {item.label}
+          </span>
+        </a>
+      );
+    })}
+  </div>
+</nav>
+
+<style>
+  .filter-primary {
+    filter: invert(53%) sepia(92%) saturate(1553%) hue-rotate(345deg) brightness(101%) contrast(101%); /* Approx #FF6A00 depending on base black */
+    /* Note: Ideally SVGs should be colored via mask or inline SVG, but filter works for img tags */
+  }
+</style>
