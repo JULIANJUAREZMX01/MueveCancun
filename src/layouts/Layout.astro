@@ -1,5 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import { Image } from 'astro:assets';
+import backgroundImg from '../assets/background.jpg';
 
 interface Props {
 	title?: string;
@@ -22,7 +24,7 @@ const { title = 'CancúnMueve' } = Astro.props;
 		<ClientRouter />
 	</head>
 	<body>
-		<div id="persistent-map-bg" transition:persist></div>
+		<Image id="persistent-map-bg" src={backgroundImg} alt="" fetchpriority="high" loading="eager" transition:persist />
 		<div id="app-content">
 			<slot />
 		</div>
@@ -71,9 +73,7 @@ const { title = 'CancúnMueve' } = Astro.props;
 		width: 100%;
 		height: 100%;
 		z-index: 0;
-		background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD6AifooGfdH3BREg7rcZnEtQg_TfqwgXNtQDkBMh24gFrHLM3dsFpodDIZ4GKU-0RCKhd9oxPPMis3diMo_ZIiZmU3ZPWdgUDCgNA9PtAeFxC0VB4sz65hdW0wR1TYbWKKvUBe8hVu4hIfb8F0PcRv1T2MLfrg5hWvl9ZOE7xmz_lZV_qiCAhgnequnZrPSVYyVEi4Hy1IN-asKImSixRKo17v6HgktN7LN9WaVIdP-SHCodqMDPdmDLQ7VgFUTw4X0gy1QwLY0XDf');
-		background-size: cover;
-		background-position: center;
+		object-fit: cover;
 		opacity: 0.9; /* Adjust based on design needs */
 		filter: grayscale(20%);
 	}
