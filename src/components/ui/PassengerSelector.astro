@@ -9,9 +9,9 @@ const { id = 'passenger-selector', initialCount = 3 } = Astro.props;
 
 <div class="passenger-wrapper">
     <button class="passengers-selector" popovertarget={`${id}-popover`} style={`anchor-name: --${id}-anchor`}>
-        <label>PASAJEROS</label>
+        <label data-i18n="calc.passengers">PASSENGERS</label>
         <div class="selector-value">
-            <span id={`${id}-display`}>{initialCount} Pasajeros</span>
+            <span id={`${id}-display`}>{initialCount} Passengers</span>
             <span class="material-icons-round arrow">expand_more</span>
         </div>
     </button>
@@ -195,8 +195,16 @@ const { id = 'passenger-selector', initialCount = 3 } = Astro.props;
             const updateDisplay = () => {
                 countEl.textContent = count;
                 countEl.dataset.value = count;
-                displayEl.textContent = `${count} ${count === 1 ? 'Pasajero' : 'Pasajeros'}`;
+                const lang = window.currentLang || 'en';
+                const noun = lang === 'en'
+                    ? (count === 1 ? 'Passenger' : 'Passengers')
+                    : (count === 1 ? 'Pasajero' : 'Pasajeros');
+                displayEl.textContent = `${count} ${noun}`;
             };
+
+            window.addEventListener('LANGUAGE_CHANGE', (e) => {
+                 updateDisplay();
+            });
 
             incBtn.addEventListener('click', () => {
                 if (count < 10) {

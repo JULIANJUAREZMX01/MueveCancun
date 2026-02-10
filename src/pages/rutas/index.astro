@@ -1,379 +1,159 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import fs from 'node:fs';
-import path from 'node:path';
-import init, { get_all_routes } from '../../../public/wasm/route-calculator/route_calculator.js';
-import coordinates from '../../../public/coordinates.json';
+import routesData from '../../data/routes.json';
 
-let allRoutes = [];
-let error = null;
-let totalStops = 0;
-
-try {
-  const wasmPath = path.join(process.cwd(), 'public/wasm/route-calculator/route_calculator_bg.wasm');
-  const wasmBuffer = fs.readFileSync(wasmPath);
-  await init(wasmBuffer);
-  allRoutes = get_all_routes();
-  allRoutes.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-  totalStops = Object.keys(coordinates).length;
-} catch (e) {
-  console.error("Server-side WASM load failed:", e);
-  error = "No se pudo cargar el catálogo de rutas.";
+// Types
+interface Route {
+  id: string;
+  name: string;
+  price: number;
+  transport_type: string;
+  operator?: string;
+  frequency?: string;
+  schedule?: string;
+  duration?: string;
+  badges: string[];
+  stops: string[];
+  origin_hub?: string;
+  dest_hub?: string;
 }
 
-const TRANSPORT_LABELS = {
+const TRANSPORT_LABELS: Record<string, string> = {
   "Bus": "Autobús",
   "Combi": "Combi",
-  "Van": "Van",
+  "Van": "Van / Colectivo",
   "ADO": "ADO",
   "PlayaExpress": "Playa Express",
+  // Legacy support
+  "Bus_Urban": "Autobús Urbano",
+  "Bus_HotelZone": "Autobús Zona Hotelera",
+  "Combi_Municipal": "Combi Municipal",
+  "ADO_Airport": "ADO Aeropuerto",
+  "Playa_Express": "Playa Express"
 };
 
-function getTransportLabel(type) {
-  return TRANSPORT_LABELS[type] || type;
-}
+const getTransportLabel = (type: string) => TRANSPORT_LABELS[type] || type;
 
-function getTransportIcon(type) {
-  const icons = {
-    "Bus": "directions_bus",
-    "Combi": "airport_shuttle",
-    "Van": "commute",
-    "ADO": "directions_transit",
-    "PlayaExpress": "train",
+const transformRoute = (raw: any): Route => {
+  // Derive transport type from ID
+  let transport_type = "Bus";
+  if (raw.id.startsWith("CR")) transport_type = "Combi";
+  else if (raw.id.startsWith("VAN") || raw.id.includes("PLAYA_EXPRESS")) transport_type = "Van";
+  else if (raw.id.startsWith("ADO")) transport_type = "ADO";
+
+  // Format Schedule
+  let schedule = "";
+  if (raw.horario) {
+     if (typeof raw.horario === 'string') {
+        schedule = raw.horario;
+     } else {
+        // Handle inconsistent keys (inicio_oficial vs inicio)
+        const start = raw.horario.inicio_oficial || raw.horario.inicio || "undefined";
+        const end = raw.horario.fin_oficial || raw.horario.fin || "undefined";
+
+        if (start !== "undefined" && end !== "undefined") {
+            schedule = `${start} - ${end}`;
+            if (raw.horario.guardia_nocturna) {
+                schedule += ` (${raw.horario.guardia_nocturna})`;
+            }
+        }
+     }
+  }
+
+  // Stops (Handle inconsistent keys: 'parada' vs 'nombre')
+  const stops = raw.paradas ? raw.paradas.map((p: any) => p.parada || p.nombre) : [];
+
+  return {
+    id: raw.id,
+    name: raw.nombre,
+    price: raw.tarifa,
+    transport_type,
+    operator: "", // Not explicitly in JSON usually, maybe inferred?
+    frequency: raw.frecuencia_minutos ? `${raw.frecuencia_minutos} min` : undefined,
+    schedule,
+    duration: "Estimado", // Default text
+    badges: raw.advertencias_usuario || [],
+    stops,
+    origin_hub: stops[0] || "Origen",
+    dest_hub: stops[stops.length - 1] || "Destino"
   };
-  return icons[type] || "directions_bus";
-}
+};
+
+// Filter and Transform
+// Access 'rutas' array from the JSON structure
+const routes: Route[] = (routesData.rutas || []).map(transformRoute);
 ---
 
 <MainLayout title="Catálogo de Rutas">
-  <div class="px-4 py-6 space-y-6 animate-fade-in">
-
-    <!-- ═══ Page Header ═══ -->
-    <div>
-      <a href="/home" class="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider mb-4 transition-colors no-underline"
-         style="color: var(--text-tertiary);">
-        <span class="material-symbols-rounded text-base">arrow_back</span>
-        Inicio
+  <div class="space-y-6 animate-fade-in pb-10">
+    <!-- Header -->
+    <div class="pt-6 pb-2">
+      <a href="/" class="inline-flex items-center text-sm font-bold text-slate-500 hover:text-primary-600 mb-4 transition-colors">
+        ← Volver al Inicio
       </a>
-      <h1 class="text-2xl font-display font-black tracking-tight text-slate-900 dark:text-white">
+      <h1 class="text-2xl font-display font-black text-deep-navy tracking-tight mb-1">
         Catálogo de Rutas
       </h1>
-      <p class="text-sm mt-1" style="color: var(--text-secondary);">
+      <p class="text-slate-500 font-medium text-sm">
         Todas las opciones de transporte en Cancún
       </p>
-
-      <!-- Stats chips -->
-      <div class="flex gap-2 mt-4">
-        <div class="chip">
-          <span class="material-symbols-rounded text-sm text-primary-500" style="font-variation-settings: 'FILL' 1;">route</span>
-          <span class="font-black text-slate-800 dark:text-white">{allRoutes.length}</span> rutas
-        </div>
-        <div class="chip">
-          <span class="material-symbols-rounded text-sm text-accent-500" style="font-variation-settings: 'FILL' 1;">location_on</span>
-          <span class="font-black text-slate-800 dark:text-white">{totalStops}</span> paradas
-        </div>
-      </div>
     </div>
 
-    <!-- ═══ Search Bar ═══ -->
-    <div class="relative">
-      <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-lg" style="color: var(--text-tertiary);">search</span>
-      <input type="text"
-             id="route-search-input"
-             placeholder="Buscar ruta, parada o zona..."
-             class="input pl-10"
-             autocomplete="off" />
-    </div>
+    <!-- List Container (Server Rendered) -->
+    <div class="space-y-4">
+       {routes.map(route => {
+          let stopsPreview = `${route.origin_hub} ➔ ${route.dest_hub}`;
 
-    <!-- ═══ Error State ═══ -->
-    {error && (
-      <div class="glass-card p-4 text-center border-danger-400/30">
-        <span class="material-symbols-rounded text-danger-500 text-2xl mb-2 block">error</span>
-        <p class="text-sm font-bold text-danger-600 dark:text-danger-400">{error}</p>
-      </div>
-    )}
-
-    <!-- ═══ Route Cards ═══ -->
-    <div id="routes-container" class="space-y-3">
-      {allRoutes.map((route) => {
-        const hasStops = route.stops && route.stops.length > 0;
-        const stopsPreview = hasStops
-          ? `${route.stops[0]} → ${route.stops[route.stops.length - 1]}`
-          : `${route.origin_hub} → ${route.dest_hub}`;
-
-        return (
-          <div class="route-card glass-card overflow-hidden group" data-route-name={route.name}>
-
-            {/* ── Card Header (Clickable) ── */}
-            <button
-              class="toggle-route-details w-full text-left p-4 outline-none transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-800/30 relative"
-              aria-expanded="false"
-              data-route-id={route.id}
-            >
-              <div class="flex justify-between items-start gap-3">
-                {/* Left: Route info */}
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1.5">
-                    <span class="badge-primary flex items-center gap-1">
-                      <span class="material-symbols-rounded text-xs" style="font-variation-settings: 'FILL' 1;">{getTransportIcon(route.transport_type)}</span>
-                      {getTransportLabel(route.transport_type)}
-                    </span>
-                    {route.frequency && (
-                      <span class="text-xxs font-bold" style="color: var(--text-tertiary);">
-                        ⏱ {route.frequency}
-                      </span>
-                    )}
-                  </div>
-
-                  <h3 class="font-bold text-sm text-slate-800 dark:text-white leading-tight tracking-tight group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate pr-10">
-                    {route.name}
-                  </h3>
-
-                  <div class="mt-2 flex items-center gap-1.5 truncate">
-                    <span class="material-symbols-rounded text-xs" style="color: var(--text-tertiary); font-variation-settings: 'FILL' 1;">location_on</span>
-                    <span class="text-xxs font-semibold truncate" style="color: var(--text-tertiary);">
-                      {stopsPreview}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Right: Price + Duration */}
-                <div class="text-right shrink-0 flex flex-col items-end gap-1.5">
-                  <span class="price-tag">${route.price.toFixed(2)}</span>
-                  <span class="text-xxs font-bold" style="color: var(--text-tertiary);">{route.duration}</span>
-                </div>
-              </div>
-
-              {/* Expand prompt */}
-              <div class="mt-3 pt-3 flex items-center justify-between" style="border-top: 1px solid var(--border-subtle);">
-                <span class="expand-label text-xxs font-bold uppercase tracking-widest text-primary-500 group-hover:translate-x-0.5 transition-transform">
-                  Ver itinerario
+          return (
+          <div class="p-4 bg-white rounded-lg shadow-sm border border-slate-100 active:scale-98 transition-transform mb-3 animate-slide-up">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mb-1">
+                  {getTransportLabel(route.transport_type)}
                 </span>
-                <span class="material-symbols-rounded text-base chevron-icon transition-transform duration-300 group-aria-expanded:rotate-180" style="color: var(--text-tertiary);">
-                  expand_more
-                </span>
-              </div>
-            </button>
+                <h3 class="font-bold text-slate-800">{route.name}</h3>
 
-            {/* ── Expandable Details ── */}
-            <div class="route-details grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out"
-                 style="border-top: 1px solid var(--border-subtle);">
-              <div class="overflow-hidden">
-                <div class="p-4 space-y-4" style="background: var(--border-subtle);">
-
-                  {/* Stops timeline */}
-                  <div>
-                    <div class="section-label mb-3">Recorrido</div>
-                    <div class="relative pl-5 space-y-0">
-                      {/* Vertical line */}
-                      <div class="absolute left-[9px] top-2 bottom-2 w-px bg-slate-200 dark:bg-slate-700"></div>
-
-                      {route.stops && route.stops.map((stop, sIdx) => (
-                        <div class="relative flex items-center gap-3 py-1.5 group/stop">
-                          <div class:list={[
-                            'absolute -left-[11px] w-2.5 h-2.5 rounded-full border-2 z-10 transition-transform group-hover/stop:scale-125',
-                            sIdx === 0
-                              ? 'bg-success-500 border-success-100 dark:border-slate-900'
-                              : sIdx === route.stops.length - 1
-                                ? 'bg-primary-500 border-primary-100 dark:border-slate-900'
-                                : 'bg-slate-300 dark:bg-slate-600 border-white dark:border-slate-900'
-                          ]}></div>
-                          <span class="text-xs font-medium text-slate-600 dark:text-slate-400 group-hover/stop:text-slate-900 dark:group-hover/stop:text-white transition-colors">
-                            {stop}
-                          </span>
-                        </div>
-                      ))}
+                <!-- Meta Info Row -->
+                <div class="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-600">
+                    {route.operator && (
+                    <div class="flex items-center gap-1">
+                        <span>🚌</span> <span class="font-medium">{route.operator}</span>
                     </div>
-                  </div>
-
-                  {/* Action buttons */}
-                  <div class="flex gap-2 pt-1">
-                    <button
-                      class="btn-primary btn-sm flex-1"
-                      onclick={`window.location.href='/home?selected_stop=${encodeURIComponent(hasStops ? route.stops[0] : route.origin_hub)}'`}
-                    >
-                      <span class="material-symbols-rounded text-sm">near_me</span>
-                      Usar ruta
-                    </button>
-                    <button
-                      class="btn-secondary btn-sm flex-1"
-                      onclick="window.showToast && window.showToast('Horarios disponibles pronto', 'info')"
-                    >
-                      <span class="material-symbols-rounded text-sm">schedule</span>
-                      Horarios
-                    </button>
-                  </div>
+                    )}
+                    {route.frequency && (
+                     <div class="flex items-center gap-1">
+                        <span>⏱️</span> <span>{route.frequency}</span>
+                    </div>
+                    )}
+                    {route.schedule && (
+                     <div class="flex items-center gap-1">
+                        <span>🕒</span> <span>{route.schedule}</span>
+                    </div>
+                    )}
                 </div>
+
+                <div class="flex gap-2 mt-2 flex-wrap">
+                   {route.badges.map(badge => (
+                     <span class="text-xs bg-slate-100 px-1 rounded">{badge}</span>
+                   ))}
+                </div>
+              </div>
+              <div class="text-right ml-2 shrink-0">
+                <span class="inline-flex items-center px-2 py-1 rounded bg-emerald-100 text-emerald-800 text-xs font-bold font-mono whitespace-nowrap">
+                    💰 ${route.price.toFixed(2)}
+                </span>
+                <p class="text-xs text-slate-500 mt-1">{route.duration}</p>
               </div>
             </div>
 
-            {/* ── Favorite Button ── */}
-            <button
-              class="fav-btn absolute top-3 right-3 z-10 w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90"
-              style="background: var(--surface-card); backdrop-filter: blur(8px); border: 1px solid var(--border-light);"
-              data-route-id={route.id}
-              data-route-name={route.name}
-              onclick="event.stopPropagation()"
-            >
-              <span class="material-symbols-rounded text-lg fav-icon text-slate-300 transition-colors" style="font-variation-settings: 'FILL' 0;">favorite</span>
-            </button>
+            <!-- Stops Preview -->
+            <div class="mt-3 pt-3 border-t border-slate-50 text-xs text-slate-500 flex items-center gap-1">
+                <span>📍</span> <span class="truncate">{stopsPreview}</span>
+            </div>
           </div>
-        );
-      })}
+          );
+       })}
     </div>
 
-    {/* Empty state for search */}
-    <div id="no-results" class="hidden text-center py-12">
-      <span class="material-symbols-rounded text-4xl mb-3 block" style="color: var(--text-tertiary);">search_off</span>
-      <p class="text-sm font-bold" style="color: var(--text-secondary);">Sin resultados</p>
-      <p class="text-xs mt-1" style="color: var(--text-tertiary);">Intenta con otro nombre o zona</p>
-    </div>
   </div>
-
-  <script>
-    function setupExpandableCards() {
-      document.querySelectorAll('.toggle-route-details').forEach(toggle => {
-        toggle.addEventListener('click', () => {
-          const card = toggle.closest('.route-card');
-          if (!card) return;
-          const details = card.querySelector('.route-details');
-          const label = toggle.querySelector('.expand-label');
-          const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-
-          if (!details) return;
-
-          toggle.setAttribute('aria-expanded', (!isExpanded).toString());
-
-          if (!isExpanded) {
-            details.classList.remove('grid-rows-[0fr]');
-            details.classList.add('grid-rows-[1fr]');
-          } else {
-            details.classList.remove('grid-rows-[1fr]');
-            details.classList.add('grid-rows-[0fr]');
-          }
-
-          details.classList.remove('hidden');
-
-          if (!isExpanded) {
-            setTimeout(() => {
-              card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 150);
-          }
-
-          if (label) label.textContent = isExpanded ? 'Ver itinerario' : 'Ocultar';
-        });
-      });
-    }
-
-    function setupFavorites() {
-      const favButtons = document.querySelectorAll('.fav-btn');
-      let favorites = JSON.parse(localStorage.getItem('muevecancun_favorites') || '[]');
-
-      function updateIcons() {
-        favButtons.forEach(btn => {
-          const id = btn.getAttribute('data-route-id');
-          const isFav = favorites.includes(id);
-          const icon = btn.querySelector('.fav-icon');
-          if (!icon) return;
-
-          if (isFav) {
-            icon.style.fontVariationSettings = "'FILL' 1";
-            icon.classList.add('text-rose-500');
-            icon.classList.remove('text-slate-300');
-          } else {
-            icon.style.fontVariationSettings = "'FILL' 0";
-            icon.classList.remove('text-rose-500');
-            icon.classList.add('text-slate-300');
-          }
-        });
-      }
-
-      favButtons.forEach(btn => {
-        btn.onclick = (e) => {
-          e.stopPropagation();
-          const id = btn.getAttribute('data-route-id');
-          const name = btn.getAttribute('data-route-name');
-          const index = favorites.indexOf(id);
-
-          if (index > -1) {
-            favorites.splice(index, 1);
-            if (window.showToast) window.showToast(`Eliminado: ${name}`, "info");
-          } else {
-            favorites.push(id);
-            if (window.showToast) window.showToast(`Favorito: ${name}`, "success");
-          }
-
-          localStorage.setItem('muevecancun_favorites', JSON.stringify(favorites));
-          updateIcons();
-        };
-      });
-
-      updateIcons();
-    }
-
-    function setupSearch() {
-      const searchInput = document.getElementById('route-search-input') as HTMLInputElement;
-      const container = document.getElementById('routes-container');
-      const noResults = document.getElementById('no-results');
-      if (!searchInput || !container) return;
-
-      searchInput.addEventListener('input', () => {
-        const query = searchInput.value.toLowerCase().trim();
-        const cards = container.querySelectorAll('.route-card');
-        let visibleCount = 0;
-
-        cards.forEach((card: HTMLElement) => {
-          const name = (card.dataset.routeName || '').toLowerCase();
-          const text = card.textContent?.toLowerCase() || '';
-          const match = !query || name.includes(query) || text.includes(query);
-          card.style.display = match ? '' : 'none';
-          if (match) visibleCount++;
-        });
-
-        if (noResults) {
-          noResults.classList.toggle('hidden', visibleCount > 0 || !query);
-        }
-      });
-
-      // Auto-expand from search param
-      const params = new URLSearchParams(window.location.search);
-      const searchTerm = params.get('search');
-      if (searchTerm) {
-        searchInput.value = searchTerm;
-        searchInput.dispatchEvent(new Event('input'));
-
-        setTimeout(() => {
-          const cards = container.querySelectorAll('.route-card');
-          for (const card of cards) {
-            if ((card as HTMLElement).style.display !== 'none') {
-              const toggle = card.querySelector('.toggle-route-details') as HTMLElement;
-              if (toggle && toggle.getAttribute('aria-expanded') !== 'true') {
-                toggle.click();
-              }
-              card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              break;
-            }
-          }
-        }, 300);
-      }
-    }
-
-    document.addEventListener('astro:page-load', () => {
-      setupExpandableCards();
-      setupFavorites();
-      setupSearch();
-    });
-
-    if (document.readyState === 'complete') {
-      setupExpandableCards();
-      setupFavorites();
-      setupSearch();
-    } else {
-      window.addEventListener('load', () => {
-        setupExpandableCards();
-        setupFavorites();
-        setupSearch();
-      });
-    }
-  </script>
 </MainLayout>

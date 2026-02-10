@@ -12,8 +12,8 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     <div id="card-header" class="p-4 relative flex items-center justify-center min-h-[56px] transition-all duration-300" style="border-bottom: 1px solid var(--border-light);">
 
       <h2 class="font-display font-black text-lg tracking-tight text-center w-full text-slate-900 dark:text-white"
-          id="title-text">
-        ¿A dónde vamos hoy?
+          id="title-text" data-i18n="calc.title">
+        Where are we going?
       </h2>
 
       <div class="absolute right-4 flex items-center gap-2">
@@ -30,17 +30,17 @@ import PassengerSelector from './ui/PassengerSelector.astro';
             <div class="flex flex-col min-w-0">
                <div class="flex items-center gap-1.5 font-bold truncate text-slate-800 dark:text-white">
                   <span class="w-2 h-2 rounded-full bg-success-500 shrink-0"></span>
-                  <span id="summary-origin" class="truncate text-xs">Origen</span>
+                  <span id="summary-origin" class="truncate text-xs" data-i18n="calc.origin">Origin</span>
                </div>
                <div class="h-3 border-l ml-1 my-0.5" style="border-color: var(--border-light);"></div>
                <div class="flex items-center gap-1.5 font-bold truncate text-slate-800 dark:text-white">
                   <span class="w-2 h-2 rounded-full bg-danger-500 shrink-0"></span>
-                  <span id="summary-dest" class="truncate text-xs">Destino</span>
+                  <span id="summary-dest" class="truncate text-xs" data-i18n="calc.dest">Destination</span>
                </div>
             </div>
         </div>
-        <button id="reset-search-btn" class="btn-sm ml-2 shrink-0 text-xxs font-black uppercase tracking-wider text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400 px-3 py-1.5 rounded-xl transition-colors hover:bg-primary-100">
-            EDITAR
+        <button id="reset-search-btn" class="btn-sm ml-2 shrink-0 text-xxs font-black uppercase tracking-wider text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400 px-3 py-1.5 rounded-xl transition-colors hover:bg-primary-100" data-i18n="calc.reset">
+            EDIT
         </button>
     </div>
 
@@ -51,8 +51,8 @@ import PassengerSelector from './ui/PassengerSelector.astro';
         <div class="bg-danger-50 dark:bg-danger-500/10 border-l-4 border-danger-500 p-3 rounded-r-xl flex items-start gap-3">
           <span class="material-symbols-rounded text-danger-500 text-lg mt-0.5" style="font-variation-settings: 'FILL' 1;">warning</span>
           <div>
-            <p class="text-xxs font-black text-danger-600 dark:text-danger-400 uppercase tracking-wider">Saldo Insuficiente</p>
-            <p class="text-xs font-medium mt-1" style="color: var(--text-secondary);" id="warning-text">Requiere $180 MXN para operar.</p>
+            <p class="text-xxs font-black text-danger-600 dark:text-danger-400 uppercase tracking-wider" data-i18n="calc.balance.warning">Insufficient Balance</p>
+            <p class="text-xs font-medium mt-1" style="color: var(--text-secondary);" id="warning-text" data-i18n="calc.balance.msg">Requires $180 MXN to operate.</p>
           </div>
         </div>
       </div>
@@ -62,17 +62,19 @@ import PassengerSelector from './ui/PassengerSelector.astro';
         <div class="relative z-10">
           <Input
             id="origin-input"
-            label="Origen"
+            label="Origin"
             icon="/icons/map-pin.svg"
-            placeholder="¿Dónde estás?"
+            placeholder="Where are you?"
             list="locations"
             aria-controls="locations"
             aria-expanded="false"
+            data-i18n-label="calc.origin"
+            data-i18n-placeholder="calc.placeholder.origin"
           >
             <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip">
               <img src="/icons/gps.svg" class="w-5 h-5" alt="GPS" />
             </button>
-            <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn">Usar mi ubicación</div>
+            <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn" data-i18n="calc.gps">Use my location</div>
           </Input>
         </div>
 
@@ -86,36 +88,38 @@ import PassengerSelector from './ui/PassengerSelector.astro';
         <div class="relative z-0">
           <Input
             id="destination-input"
-            label="Destino"
+            label="Destination"
             icon="/icons/flag.svg"
-            placeholder="¿A dónde vas?"
+            placeholder="Where to?"
             list="locations"
             aria-controls="locations"
             aria-expanded="false"
+            data-i18n-label="calc.dest"
+            data-i18n-placeholder="calc.placeholder.dest"
           />
             <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip">
               <img src="/icons/map-plus.svg" class="w-5 h-5" alt="Map Picker" />
             </button>
-            <div slot="action" id="map-tooltip" class="graffiti-tooltip top" style="position-anchor: --map-btn">Seleccionar en mapa</div>
+            <div slot="action" id="map-tooltip" class="graffiti-tooltip top" style="position-anchor: --map-btn" data-i18n="calc.map">Select on map</div>
           </Input>
         </div>
       </div>
 
       <!-- Quick Actions -->
       <div>
-        <div class="section-label mb-2">Accesos Rápidos</div>
+        <div class="section-label mb-2" data-i18n="calc.quick">Quick Actions</div>
         <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar snap-x">
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Walmart">
-            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">home</span> Casa
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Walmart" data-i18n-html="calc.home">
+            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">home</span> Home
           </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Plaza Las Américas">
-            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">work</span> Trabajo
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Plaza Las Américas" data-i18n-html="calc.work">
+            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">work</span> Work
           </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Aeropuerto Terminal 2">
-            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">flight</span> Aeropuerto
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Aeropuerto Terminal 2" data-i18n-html="calc.airport">
+            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">flight</span> Airport
           </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Playa Delfines (El Mirador)">
-            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">beach_access</span> Playa
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Playa Delfines (El Mirador)" data-i18n-html="calc.beach">
+            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">beach_access</span> Beach
           </button>
         </div>
       </div>
@@ -123,19 +127,19 @@ import PassengerSelector from './ui/PassengerSelector.astro';
       <!-- Options -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <div class="section-label mb-1.5" style="font-size: 0.6rem;">Pasajeros</div>
+          <div class="section-label mb-1.5" style="font-size: 0.6rem;" data-i18n="calc.passengers">Passengers</div>
           <PassengerSelector id="seats-input" />
         </div>
         <div>
-          <div class="section-label mb-1.5" style="font-size: 0.6rem;">Modo</div>
+          <div class="section-label mb-1.5" style="font-size: 0.6rem;" data-i18n="calc.mode">Mode</div>
           <div class="h-[44px] flex items-center">
-            <Switch id="tourist-checkbox" label="Turista" />
+            <Switch id="tourist-checkbox" label="Tourist" data-i18n-label="calc.tourist" />
           </div>
         </div>
       </div>
 
       <button id="search-btn" class="btn-primary btn-lg w-full">
-        <span id="btn-text" class="uppercase tracking-wider">TRAZAR RUTA</span>
+        <span id="btn-text" class="uppercase tracking-wider" data-i18n="calc.btn">CALCULATE ROUTE</span>
         <span class="material-symbols-rounded text-lg animate-spin hidden" id="btn-spinner">progress_activity</span>
       </button>
 
@@ -188,10 +192,13 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
 </div>
 
-<script>
+<script define:vars={{ ui }}>
   import { openDB } from 'idb';
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
+
+  window.APP_TRANSLATIONS = ui;
+  let currentLang = localStorage.getItem('lang') || 'en';
 
   function escapeHtml(unsafe) {
     if (typeof unsafe !== 'string') return unsafe;
@@ -203,30 +210,53 @@ import PassengerSelector from './ui/PassengerSelector.astro';
          .replace(/'/g, "&#039;");
   }
 
-  const TRANSLATIONS = {
-    es: {
-      title: '¿A dónde vamos hoy?',
-      warning: 'Saldo insuficiente. Recarga tu cuenta ($180 MXN).',
-      calculate: 'TRAZAR RUTA',
-      calculating: 'CALCULANDO...',
-      suggested: 'Mejor Opción',
-      cashOnly: 'Solo Efectivo',
-      instructions: 'Pasos a seguir',
-      howToGet: '¿Como llegar?'
-    },
-    en: {
-      title: 'Where are we going today?',
-      warning: 'Insufficient balance. Top up required ($180 MXN).',
-      calculate: 'FIND ROUTE',
-      calculating: 'ROUTING...',
-      suggested: 'Best Option',
-      cashOnly: 'Cash Only',
-      instructions: 'Steps',
-      howToGet: 'How to get there?'
-    }
-  };
+  function updateLanguage(lang) {
+      document.documentElement.lang = lang;
+      localStorage.setItem('lang', lang);
+      currentLang = lang;
+      window.currentLang = lang;
+      
+      const t = ui[lang];
+      if (!t) return;
+      
+      // Update static text
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.dataset.i18n;
+          if (t[key]) el.textContent = t[key];
+      });
+      
+      // Update Inputs
+      document.querySelectorAll('[data-i18n-label]').forEach(input => {
+         const wrapper = input.closest('.input-field') || input.parentElement;
+         const label = wrapper?.querySelector('label');
+         if (label && t[input.dataset.i18nLabel]) label.textContent = t[input.dataset.i18nLabel];
+      });
+       document.querySelectorAll('[data-i18n-placeholder]').forEach(input => {
+         if (t[input.dataset.i18nPlaceholder]) input.placeholder = t[input.dataset.i18nPlaceholder];
+      });
 
-  let currentLang = 'es';
+      // Update HTML (chips)
+       document.querySelectorAll('[data-i18n-html]').forEach(el => {
+          const key = el.dataset.i18nHtml;
+          if (t[key]) {
+              const icon = el.querySelector('.material-symbols-rounded')?.outerHTML || '';
+              el.innerHTML = icon + ' ' + t[key];
+          }
+      });
+      
+      // Dispatch event
+      window.dispatchEvent(new CustomEvent('LANGUAGE_CHANGE', { detail: { lang, t } }));
+      
+      // Update dynamic elements if existing
+      const btnText = document.getElementById('btn-text');
+      if (btnText && t['calc.btn']) btnText.textContent = t['calc.btn'];
+
+      // Rerender results if present? 
+      // Ideally we would re-render, but for now we rely on next search or static updates.
+      // Or we can manually update visible results text if we added data-i18n to them?
+      // Since results are dynamic HTML strings, easiest is to clear them or let user re-search.
+      // But we can update the "No routes" message if visible.
+  }
   let balance = 0;
   let hasBalance = false;
   let wasmLoaded = false;
@@ -315,17 +345,9 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   }
 
   function updateUI() {
-    const t = TRANSLATIONS[currentLang];
-    const titleText = document.getElementById('title-text');
-    if (titleText) titleText.textContent = t.title;
-
-    if (btnText && !(btn as HTMLButtonElement).disabled) {
-        // If we are in "How to get" state, keep it? Or reset?
-        // Simple logic: just set default unless navigating
-        btnText.textContent = t.calculate;
-    }
-
-    if (langToggle) langToggle.textContent = currentLang === 'es' ? 'EN' : 'ES';
+    // Rely on updateLanguage for text
+    // Just update visual states
+    if (langToggle) langToggle.textContent = currentLang === 'es' ? 'ES' : 'EN';
   }
 
   async function start() {
@@ -521,8 +543,13 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   document.addEventListener('astro:page-load', start);
 
+  // Init Language
+  const saved = localStorage.getItem('lang') || 'en';
+  updateLanguage(saved);
+
   langToggle?.addEventListener('click', () => {
-    currentLang = currentLang === 'es' ? 'en' : 'es';
+    const newLang = currentLang === 'en' ? 'es' : 'en';
+    updateLanguage(newLang);
     updateUI();
   });
 
@@ -574,7 +601,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     }
 
     // Change Button Text
-    if (btnText) btnText.textContent = TRANSLATIONS[currentLang].howToGet;
+    if (btnText) btnText.textContent = ui[currentLang]['calc.howToGet'];
 
     // Show spinner
     if (btnSpinner) btnSpinner.classList.remove('hidden');
@@ -615,7 +642,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
       console.error(error);
       renderError("System Error: " + (error.message || error));
       // Revert button text on error
-       if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculate;
+       if (btnText) btnText.textContent = ui[currentLang]['calc.btn'];
     } finally {
       if (btnSpinner) btnSpinner.classList.add('hidden');
       if (calculationLoader) calculationLoader.classList.add('hidden');
@@ -623,16 +650,8 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     }
   });
 
-  const TRANSPORT_LABELS = {
-    "Bus": "Autobús",
-    "Combi": "Combi",
-    "Van": "Van / Colectivo",
-    "ADO": "ADO",
-    "PlayaExpress": "Playa Express",
-  };
-
   function getTransportLabel(type) {
-    return TRANSPORT_LABELS[type] || type;
+    return ui[currentLang][`transport.${type}`] || type;
   }
 
   function renderResults(journeys) {
@@ -646,15 +665,15 @@ import PassengerSelector from './ui/PassengerSelector.astro';
         resultsContainer.innerHTML = `
           <div class="glass-card text-center animate-slide-up">
             <span class="material-symbols-rounded text-4xl mb-3 block" style="color: var(--text-tertiary);">search_off</span>
-            <h3 class="font-display font-black text-base mb-2" style="color: var(--text-primary);">No encontramos una ruta exacta</h3>
-            <p class="text-sm mb-4" style="color: var(--text-secondary);">Intenta usar palabras clave como "Centro", "Zona Hotelera" o "Crucero".</p>
+            <h3 class="font-display font-black text-base mb-2" style="color: var(--text-primary);">${ui[currentLang]['calc.no_route']}</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">${ui[currentLang]['calc.no_route_msg']}</p>
             <a href="/rutas" class="btn-secondary btn-sm inline-flex items-center gap-2">
-               <span class="material-symbols-rounded text-sm">list_alt</span> Ver todas las rutas
+               <span class="material-symbols-rounded text-sm">list_alt</span> ${ui[currentLang]['calc.view_all']}
             </a>
           </div>
         `;
         expandUI();
-        if (window.showToast) window.showToast("No se encontraron rutas exactas", "info");
+        if (window.showToast) window.showToast(ui[currentLang]['calc.no_route'], "info");
         return;
     }
 
@@ -663,7 +682,8 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     const countLabel = document.getElementById('results-count-label');
     if (infoPanel && countLabel) {
         infoPanel.classList.remove('hidden');
-        countLabel.textContent = `${journeys.length} OPCION${journeys.length > 1 ? 'ES' : ''} ENCONTRADA${journeys.length > 1 ? 'S' : ''}`;
+        const countText = journeys.length === 1 ? ui[currentLang]['calc.num_options'] : ui[currentLang]['calc.num_options_plural'];
+        countLabel.textContent = `${journeys.length} ${countText}`;
     }
 
     journeys.forEach((journey, index) => {
@@ -708,7 +728,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
         return `
           <div class="glass-card active:scale-[0.98] transition-all duration-300 mb-4 animate-slide-up relative overflow-hidden group hover:-translate-y-0.5 ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
-            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">Mejor Ruta</div>` : ''}
+            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${ui[currentLang]['calc.best']}</div>` : ''}
             <div class="flex justify-between items-start">
               <div class="flex-1 min-w-0 pr-2">
                 <span class="badge-primary mb-2">
@@ -732,7 +752,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
                 <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration)}</p>
 
                 <button class="btn-primary btn-sm mt-3 whitespace-nowrap view-map-btn" data-journey='${JSON.stringify(journey).replace(/'/g, "&#39;")}'>
-                    <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> Ver Mapa
+                    <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> ${ui[currentLang]['calc.view_map']}
                 </button>
               </div>
             </div>
@@ -751,9 +771,9 @@ import PassengerSelector from './ui/PassengerSelector.astro';
       return `
           <div class="glass-card active:scale-[0.98] transition-all mb-3 animate-slide-up relative overflow-hidden group ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
             <div class="absolute top-0 right-0 bg-accent-500 text-white px-3 py-1 rounded-bl-xl text-xxs font-black uppercase tracking-widest ${isBest ? 'mr-24' : ''}">
-               Transbordo
+               ${ui[currentLang]['calc.transfer']}
             </div>
-            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">Mejor Ruta</div>` : ''}
+            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${ui[currentLang]['calc.best']}</div>` : ''}
 
             <div class="flex flex-col gap-3 mt-5">
                 <!-- Leg 1 -->
@@ -803,7 +823,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
                 <button class="btn-primary btn-sm view-map-btn"
                     data-journey='${JSON.stringify(journey).replace(/'/g, "&#39;")}'>
-                    <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> Ver Ruta
+                    <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> ${ui[currentLang]['calc.view_route']}
                 </button>
             </div>
           </div>
@@ -815,10 +835,10 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     resultsContainer.innerHTML = `
         <div class="glass-card text-center animate-slide-up">
             <span class="material-symbols-rounded text-4xl mb-3 block" style="color: var(--text-tertiary); font-variation-settings: 'FILL' 1;">cloud_off</span>
-            <h3 class="font-display font-black text-base mb-2" style="color: var(--text-primary);">Modo Offline</h3>
-            <p class="text-sm mb-4" style="color: var(--text-secondary);">No se pudo cargar el motor de búsqueda. Verifica tu conexión para descargar rutas actualizadas.</p>
+            <h3 class="font-display font-black text-base mb-2" style="color: var(--text-primary);">${ui[currentLang]['calc.offline']}</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">${ui[currentLang]['calc.offline_msg']}</p>
             <a href="/rutas" class="btn-secondary btn-sm inline-flex items-center gap-2">
-               <span class="material-symbols-rounded text-sm">list_alt</span> Ver Rutas
+               <span class="material-symbols-rounded text-sm">list_alt</span> ${ui[currentLang]['calc.view_all']}
             </a>
         </div>
     `;

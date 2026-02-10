@@ -40,19 +40,16 @@ import PassengerSelector from '../components/ui/PassengerSelector.astro';
         const L = (window as any).L;
         const isDark = document.documentElement.classList.contains('dark');
 
-<<<<<<< HEAD
         map = L.map('map-container', {
             zoomControl: false,
             attributionControl: false
         }).setView([21.1619, -86.8515], 13);
-=======
 			<div class="options-row">
 				<PassengerSelector id="home-passengers" initialCount={3} />
 				<div class="tourist-toggle-wrapper h-full flex items-center">
 					<Switch id="tourist-mode-home" label="Turista" checked={true} />
 				</div>
 			</div>
->>>>>>> 62d6ca7 (Feat: Add PassengerSelector component with Popover API and CSS Anchor Positioning)
 
         L.tileLayer(
             isDark
