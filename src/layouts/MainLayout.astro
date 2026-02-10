@@ -21,14 +21,12 @@ const {
 const pathname = Astro.url.pathname;
 
 const navItems = [
-  { href: '/home', icon: '/icons/compass.svg', label: 'Inicio', activePattern: /^\/home/ },
-  { href: '/rutas', icon: '/icons/bus.svg', label: 'Rutas', activePattern: /^\/rutas/ },
-  { href: '/mapa', icon: '/icons/map-pin.svg', label: 'Mapa', activePattern: /^\/mapa/ },
-  { href: '/wallet', icon: '/icons/credit-card.svg', label: 'Mi Tarjeta', activePattern: /^\/wallet/ },
-  { href: '/community', icon: '/icons/users.svg', label: 'Comunidad', activePattern: /^\/community/ },
+  { href: '/home', label: 'Inicio', icon: 'explore', activePattern: /^\/home/ },
+  { href: '/rutas', label: 'Rutas', icon: 'route', activePattern: /^\/rutas/ },
+  { href: '/mapa', label: 'Mapa', icon: 'map', activePattern: /^\/mapa/ },
+  { href: '/wallet', label: 'Tarjeta', icon: 'account_balance_wallet', activePattern: /^\/wallet/ },
 ];
 ---
- ---
 
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
@@ -49,7 +47,10 @@ const navItems = [
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- Material Symbols (for icons) -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
 
     <!-- Leaflet (Lazy Load) -->
     {useMap && (
@@ -74,70 +75,78 @@ const navItems = [
     </script>
     <ClientRouter />
   </head>
-  <body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased pb-20 selection:bg-primary-200 selection:text-primary-900 transition-colors duration-300">
+  <body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
-    <header class="fixed top-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-300 dark:border-slate-800 h-16 px-4 md:px-8 flex items-center justify-between shadow-sm transition-all duration-300">
-      <div class="flex items-center gap-4">
-        <a href="/home" class="flex items-center gap-2 no-underline group outline-none">
-          <div class="w-9 h-9 bg-primary-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform">
-            <span class="material-symbols-rounded text-white text-xl">directions_bus</span>
-          </div>
-          <div class="flex flex-col leading-none">
-             <span class="font-display font-black text-lg tracking-tight text-deep-navy dark:text-white">
-              Cancún<span class="text-primary-500">Mueve</span>
-             </span>
-             <span id="rotating-keyword-mobile" class="text-[9px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">
-                Tu guía de transporte
-             </span>
-          </div>
-        </a>
-      </div>
+    <!-- ═══ Unified Header ═══ -->
+    <header class="fixed top-0 left-0 right-0 z-40 h-14 px-4 md:px-6 flex items-center justify-between transition-all duration-300"
+            style="background: var(--surface-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-light);">
 
-      <nav class="hidden md:flex items-center gap-6">
-          {navItems.map(item => (
-              <a href={item.href} class={`text-xs font-bold uppercase tracking-wider hover:text-primary-500 transition-colors no-underline py-2 border-b-2 ${item.activePattern.test(pathname) ? 'text-primary-500 border-primary-500' : 'text-slate-500 dark:text-slate-400 border-transparent hover:border-slate-200'}`}>
-                  {item.label}
-              </a>
-          ))}
+      <!-- Left: Brand -->
+      <a href="/home" class="flex items-center gap-2.5 no-underline group outline-none">
+        <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform">
+          <span class="material-symbols-rounded text-white text-lg" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
+        </div>
+        <span class="font-display font-black text-base tracking-tight text-slate-900 dark:text-white leading-none">
+          Cancún<span class="text-primary-500">Mueve</span>
+        </span>
+      </a>
+
+      <!-- Center: Desktop Nav -->
+      <nav class="hidden md:flex items-center gap-1">
+        {navItems.map(item => (
+          <a href={item.href}
+             class:list={[
+               'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all no-underline',
+               item.activePattern.test(pathname)
+                 ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+             ]}>
+            <span class="material-symbols-rounded text-base" style="font-variation-settings: 'FILL' 1;">{item.icon}</span>
+            {item.label}
+          </a>
+        ))}
       </nav>
 
-      <div class="flex items-center gap-3">
-         <button class="theme-toggle w-9 h-9 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 transition-all active:scale-95 hover:bg-slate-100 dark:hover:bg-slate-700">
-            <span class="sun hidden dark:block material-symbols-rounded text-sm">light_mode</span>
-            <span class="moon block dark:hidden material-symbols-rounded text-sm">dark_mode</span>
+      <!-- Right: Actions -->
+      <div class="flex items-center gap-2">
+         <button class="theme-toggle w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 hover:bg-slate-100 dark:hover:bg-slate-800"
+                 style="color: var(--text-secondary);">
+            <span class="material-symbols-rounded text-xl sun hidden dark:block" style="font-variation-settings: 'FILL' 1;">light_mode</span>
+            <span class="material-symbols-rounded text-xl moon block dark:hidden" style="font-variation-settings: 'FILL' 1;">dark_mode</span>
          </button>
       </div>
     </header>
 
-    <main class="w-full max-w-md mx-auto lg:max-w-4xl pt-16 lg:pt-24 px-4 min-h-[calc(100vh-80px)]">
+    <!-- ═══ Main Content ═══ -->
+    <main class="w-full max-w-lg mx-auto lg:max-w-5xl pt-14 min-h-screen" style="padding-bottom: calc(var(--bottom-nav-h) + 1rem);">
       <slot />
     </main>
 
-    <!-- Sticky Bottom Nav (Mobile) -->
+    <!-- ═══ Bottom Nav (Mobile) ═══ -->
     <BottomNav />
 
+    <!-- ═══ Toast Notifications ═══ -->
     <Toast />
 
-    <!-- PWA Update Notification -->
-    <div id="pwa-update-toast" class="hidden fixed bottom-20 left-4 right-4 z-50 bg-slate-900/90 text-white p-4 rounded-xl shadow-2xl backdrop-blur-sm border border-slate-700 animate-slide-up">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <h4 class="font-bold text-sm">Nueva versión disponible</h4>
-                <p class="text-xs text-slate-300 mt-1">Recarga para ver los cambios.</p>
-            </div>
-            <button id="pwa-refresh-btn" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-lg shadow-primary-500/30">
-                ACTUALIZAR
-            </button>
+    <!-- ═══ PWA Update Banner ═══ -->
+    <div id="pwa-update-toast" class="hidden fixed z-50 animate-slide-up"
+         style="bottom: calc(var(--bottom-nav-h) + 0.5rem); left: 1rem; right: 1rem;">
+      <div class="glass-card p-4 flex items-center justify-between gap-4" style="background: var(--surface-card);">
+        <div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Nueva versión disponible</h4>
+          <p class="text-xs mt-0.5" style="color: var(--text-secondary);">Recarga para ver los cambios.</p>
         </div>
+        <button id="pwa-refresh-btn" class="btn-primary btn-sm whitespace-nowrap">
+            ACTUALIZAR
+        </button>
+      </div>
     </div>
 
+    <!-- ═══ Scripts ═══ -->
     <script is:inline>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').then(registration => {
-            console.log('SW registered: ', registration);
-
-            // Check if there is already a waiting worker
             if (registration.waiting) {
                 const toast = document.getElementById('pwa-update-toast');
                 if (toast) toast.classList.remove('hidden');
@@ -145,17 +154,15 @@ const navItems = [
 
             registration.addEventListener('updatefound', () => {
               const newWorker = registration.installing;
-              console.log('New worker installing...');
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('New update available!');
                     const toast = document.getElementById('pwa-update-toast');
                     if (toast) toast.classList.remove('hidden');
                 }
               });
             });
-          }).catch(registrationError => {
-            console.log('SW registration failed: ', registrationError);
+          }).catch(err => {
+            console.log('SW registration failed: ', err);
           });
         });
 
@@ -175,80 +182,45 @@ const navItems = [
         });
       }
     </script>
+
     <script is:inline>
-      let rotatingInterval;
-      function setupRotatingKeywords() {
-          if (rotatingInterval) clearInterval(rotatingInterval);
-          
-          const keywords = ["CANCÚN?", "ZONA HOTELERA?", "COSTA MUJERES?", "PUERTO MORELOS?", "MERCADO 28?", "EL CRUCERO?"];
-          let i = 0;
-          
-          const update = () => {
-              const mobile = document.getElementById('rotating-keyword-mobile');
-              const word = keywords[i % keywords.length];
-              
-              if (mobile) mobile.textContent = word;
-              i++;
-          };
-          
-          update(); // Run once immediately
-          rotatingInterval = setInterval(update, 3000);
-      }
-      
-      document.addEventListener('astro:page-load', () => {
-          setupThemeToggle();
-          setupRotatingKeywords();
-      });
-
-      if (document.readyState === 'complete') {
-          setupThemeToggle();
-          setupRotatingKeywords();
-      } else {
-          window.addEventListener('load', () => {
-              setupThemeToggle();
-              setupRotatingKeywords();
-          });
-      }
-
-      // Dark Mode Toggle Logic
+      /* ── Theme Toggle ── */
       function setupThemeToggle() {
-        const themeToggles = document.querySelectorAll('.theme-toggle');
-        
-        themeToggles.forEach(toggle => {
+        document.querySelectorAll('.theme-toggle').forEach(toggle => {
           toggle.addEventListener('click', () => {
-            const element = document.documentElement;
-            element.classList.toggle("dark");
-            
-            const isDark = element.classList.contains("dark");
+            const el = document.documentElement;
+            el.classList.toggle("dark");
+            const isDark = el.classList.contains("dark");
             localStorage.setItem("theme", isDark ? "dark" : "light");
-            
             if (window.showToast) {
-              window.showToast(isDark ? "Modo Oscuro activado" : "Modo Claro activado", "info");
+              window.showToast(isDark ? "Modo oscuro activado" : "Modo claro activado", "info");
             }
           });
         });
       }
+
+      /* ── Init ── */
+      function initLayout() {
+        setupThemeToggle();
+      }
+
+      document.addEventListener('astro:page-load', initLayout);
+
+      if (document.readyState === 'complete') {
+        initLayout();
+      } else {
+        window.addEventListener('load', initLayout);
+      }
     </script>
 
     <style>
-      .filter-primary {
-        filter: invert(49%) sepia(83%) saturate(1900%) hue-rotate(349deg) brightness(98%) contrast(98%); /* Orange-ish filter approx */
-      }
-
+      /* Pop-in animation for interactive elements */
       @keyframes pop-in {
         0% { transform: scale(0); opacity: 0; }
-        80% { transform: scale(1.2); opacity: 1; }
+        80% { transform: scale(1.05); opacity: 1; }
         100% { transform: scale(1); }
       }
-      .animate-pop-in { animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-      @keyframes fall-down {
-        0% { transform: translateY(-20px); opacity: 0; }
-        100% { transform: translateY(0); opacity: 1; }
-      }
-      .animate-tetris-1 { animation: fall-down 0.5s ease-out forwards; display: inline-block; }
-      .animate-tetris-2 { animation: fall-down 0.5s ease-out 0.2s forwards; opacity: 0; display: inline-block; }
-      .animate-tetris-3 { animation: fall-down 0.5s ease-out 0.4s forwards; opacity: 0; display: inline-block; }
+      .animate-pop-in { animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     </style>
   </body>
 </html>

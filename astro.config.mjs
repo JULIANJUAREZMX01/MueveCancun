@@ -14,7 +14,7 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap(),
-    tailwind()
+    tailwind({ applyBaseStyles: false })
   ],
   vite: {
     build: {

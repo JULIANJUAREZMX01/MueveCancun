@@ -3,50 +3,48 @@ import MainLayout from '../layouts/MainLayout.astro';
 ---
 
 <MainLayout title="Página no encontrada">
-  <div class="min-h-[80vh] flex flex-col items-center justify-center p-4">
-    <div class="relative w-full max-w-sm mb-8 animate-pulse">
-       <div class="absolute inset-0 bg-primary-500/20 blur-3xl rounded-full"></div>
-       <img src="/icons/bus-stop.svg" class="w-24 h-24 mx-auto relative z-10 opacity-80" alt="404" />
+  <div class="min-h-[70vh] flex flex-col items-center justify-center px-4 py-12 text-center">
+
+    <!-- Icon -->
+    <div class="w-20 h-20 rounded-3xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-6 animate-scale-in">
+      <span class="material-symbols-rounded text-4xl text-primary-500" style="font-variation-settings: 'FILL' 1;">wrong_location</span>
     </div>
 
-    <h1 class="text-4xl font-display font-black text-slate-800 dark:text-white mb-2 text-center">
-      Ruta extraviada
+    <h1 class="text-2xl font-display font-black text-slate-900 dark:text-white mb-2">
+      Ruta no encontrada
     </h1>
-    <p class="text-slate-500 dark:text-slate-400 text-center mb-8 font-medium">
-      Parece que esta parada no existe en nuestro mapa.
+    <p class="text-sm max-w-xs mx-auto mb-8" style="color: var(--text-secondary);">
+      Esta parada no existe en nuestro mapa. Te ayudamos a llegar.
     </p>
 
     <div class="w-full max-w-xs space-y-3">
-        <a href="/" class="block w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-4 rounded-xl text-center shadow-lg shadow-primary-500/30 transition-all active:scale-95">
-           🗺️ Volver al Mapa
-        </a>
-        <a href="/rutas" class="block w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-3 px-4 rounded-xl text-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-           📋 Ver todas las rutas
-        </a>
+      <a href="/home" class="btn-primary btn-lg w-full no-underline">
+        <span class="material-symbols-rounded text-lg">explore</span>
+        Ir al Inicio
+      </a>
+      <a href="/rutas" class="btn-secondary btn-lg w-full no-underline">
+        <span class="material-symbols-rounded text-lg">route</span>
+        Ver todas las rutas
+      </a>
     </div>
 
-    <div id="redirect-message" class="hidden mt-8 text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">
-        Redirigiendo a resultados similares...
+    <div id="redirect-message" class="hidden mt-8 text-xxs font-bold uppercase tracking-widest animate-pulse-soft" style="color: var(--text-tertiary);">
+      Buscando rutas similares…
     </div>
   </div>
 
   <script>
-    // Intelligent Redirect Logic
-    const path = window.location.pathname;
-    const parts = path.split('/').filter(p => p);
-    
-    // Check if it looks like a route slug (e.g., /ruta/R-1)
+    const urlPath = window.location.pathname;
+    const parts = urlPath.split('/').filter(p => p);
+
     if (parts.length >= 2 && parts[0] === 'ruta') {
-        const potentialId = parts[1];
-        // Clean ID (remove suffixes like _001 if needed, or keep raw)
-        // Redirect to catalog search
-        const redirectMsg = document.getElementById('redirect-message');
-        if (redirectMsg) redirectMsg.classList.remove('hidden');
-        
-        // Immediate redirect
-        setTimeout(() => {
-            window.location.replace(`/rutas?search=${encodeURIComponent(potentialId)}`);
-        }, 100);
+      const potentialId = parts[1];
+      const msg = document.getElementById('redirect-message');
+      if (msg) msg.classList.remove('hidden');
+
+      setTimeout(() => {
+        window.location.replace(`/rutas?search=${encodeURIComponent(potentialId)}`);
+      }, 100);
     }
   </script>
 </MainLayout>

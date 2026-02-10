@@ -2,67 +2,321 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #F5F5F1;
-  --foreground: #003366;
-  --primary: #00A3E0;
-  --secondary: #FFD700;
+/* ══════════════════════════════════════
+   MueveCancun Design Tokens
+   ══════════════════════════════════════ */
 
-  --color-caribbean-blue: #00A3E0;
-  --color-sand: #F5F5F1;
-  --color-sun-yellow: #FFD700;
-  --color-jungle-green: #2ECC71;
-  --color-coral: #FF5A5F;
-  --color-deep-navy: #003366;
+:root {
+  /* Brand Colors (mirrored from Tailwind for CSS access) */
+  --color-primary: #F97316;
+  --color-primary-light: #FFEDD5;
+  --color-accent: #0EA5E9;
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+  --color-deep-navy: #0F172A;
+
+  /* Surfaces */
+  --surface-bg: #F8FAFC;
+  --surface-card: rgba(255, 255, 255, 0.92);
+  --surface-elevated: #FFFFFF;
+
+  /* Text */
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-tertiary: #94A3B8;
+  --text-inverse: #FFFFFF;
+
+  /* Borders */
+  --border-light: #E2E8F0;
+  --border-subtle: #F1F5F9;
+
+  /* Spacing Scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* Radii */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-full: 9999px;
+
+  /* Header height */
+  --header-h: 3.5rem;
+  --bottom-nav-h: 4rem;
 }
+
+/* Dark mode tokens */
+.dark {
+  --surface-bg: #030712;
+  --surface-card: rgba(15, 23, 42, 0.92);
+  --surface-elevated: #1E293B;
+
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-tertiary: #475569;
+  --text-inverse: #0F172A;
+
+  --border-light: #1E293B;
+  --border-subtle: #0F172A;
+}
+
+/* ══════════════════════════════════════
+   Base Layer
+   ══════════════════════════════════════ */
 
 @layer base {
   html {
-    font-family: 'Outfit', Inter, system-ui, sans-serif;
-    background-color: var(--background);
-    color: var(--foreground);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--surface-bg);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply m-0 flex flex-col min-h-screen antialiased;
-    background: radial-gradient(circle at top right, #E0F2FE 0%, #F5F5F1 100%);
+    @apply m-0 min-h-screen;
+    background: var(--surface-bg);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Focus ring for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: rgba(249, 115, 22, 0.2);
+    color: var(--text-primary);
   }
 }
 
-@layer components {
-  .sunny-card {
-    @apply bg-white/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl transition-all duration-300;
-    box-shadow: 0 8px 32px 0 rgba(0, 51, 102, 0.08);
+/* ══════════════════════════════════════
+   Component Classes
+   ══════════════════════════════════════ */
+
+/* Component classes are defined below WITHOUT @layer components
+   to prevent Tailwind from purging them. */
+
+  /* ── Glass Card ── */
+  .glass-card {
+    padding: var(--space-md);
+    background: var(--surface-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.06),
+                0 2px 8px -2px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
   }
 
-  .premium-button {
-    @apply px-6 py-3 rounded-2xl font-bold transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2;
-    background: linear-gradient(135deg, #00A3E0 0%, #0076BE 100%);
+  .glass-card:hover {
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1),
+                0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 font-bold text-white transition-all;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    background: linear-gradient(135deg, #FB923C 0%, #F97316 50%, #EA580C 100%);
+    box-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.35);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 6px 20px -2px rgba(249, 115, 22, 0.45);
+    filter: brightness(1.05);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.96);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 font-bold transition-all;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    background: var(--surface-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .btn-secondary:hover {
+    background: var(--border-subtle);
+  }
+
+  .btn-secondary:active {
+    transform: scale(0.96);
+  }
+
+  .btn-sm {
+    @apply text-xs px-3 py-2;
+  }
+
+  .btn-md {
+    @apply text-sm px-5 py-3;
+  }
+
+  .btn-lg {
+    @apply text-base px-6 py-3.5;
+  }
+
+  /* ── Badge / Tag ── */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-xxs font-bold uppercase tracking-widest;
+  }
+
+  .badge-primary {
+    @apply badge bg-primary-100 text-primary-700;
+  }
+
+  .dark .badge-primary {
+    @apply bg-primary-900/30 text-primary-400;
+  }
+
+  .badge-accent {
+    @apply badge bg-accent-100 text-accent-700;
+  }
+
+  .badge-success {
+    @apply badge bg-success-50 text-success-600;
+  }
+
+  /* ── Price Tag ── */
+  .price-tag {
+    @apply inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black font-mono;
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
     color: white;
+    box-shadow: 0 2px 8px -2px rgba(34, 197, 94, 0.3);
   }
 
-  .high-contrast-text {
-    @apply font-black tracking-tight text-deep-navy;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  /* ── Input ── */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl text-sm font-medium transition-all;
+    background: var(--surface-bg);
+    border: 1.5px solid var(--border-light);
+    color: var(--text-primary);
   }
 
-  /* Map Markers */
+  .input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+    outline: none;
+  }
+
+  /* ── Section Label ── */
+  .section-label {
+    @apply text-xxs font-black uppercase tracking-[0.2em] flex items-center gap-2;
+    color: var(--text-tertiary);
+  }
+
+  .section-label::after {
+    content: '';
+    @apply h-px flex-1;
+    background: var(--border-light);
+  }
+
+  /* ── Chip / Filter ── */
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+  }
+
+  .chip:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .chip.active {
+    @apply bg-primary-500 text-white border-primary-500;
+  }
+
+  /* ── Map Markers ── */
   .bus-stop-marker {
-    @apply w-10 h-10 flex items-center justify-center rounded-full border-2 border-white shadow-lg cursor-pointer transform transition-transform hover:scale-125;
-    background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
+    @apply w-10 h-10 flex items-center justify-center rounded-full border-2 border-white cursor-pointer transition-transform;
+    background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+  }
+
+  .bus-stop-marker:hover {
+    transform: scale(1.2);
   }
 
   .user-location-marker {
-    @apply w-6 h-6 bg-caribbean-blue rounded-full border-4 border-white shadow-2xl relative;
+    @apply w-5 h-5 rounded-full border-white relative;
+    border-width: 3px;
+    border-style: solid;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2), 0 2px 8px rgba(14, 165, 233, 0.4);
   }
 
   .user-location-marker::after {
     content: '';
-    @apply absolute -inset-2 bg-caribbean-blue/20 rounded-full animate-ping;
+    @apply absolute -inset-2 rounded-full animate-ping;
+    background: rgba(14, 165, 233, 0.15);
   }
-}
 
-/* PWA specific safe areas */
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
+  /* ── SVG icon color filter (for img-based icons) ── */
+  .filter-primary {
+    filter: invert(53%) sepia(92%) saturate(1553%) hue-rotate(345deg) brightness(101%) contrast(101%);
+  }
+
+/* ══════════════════════════════════════
+   Utility Extensions
+   ══════════════════════════════════════ */
+
+@layer utilities {
+  /* Text gradient */
+  .text-gradient-primary {
+    background: linear-gradient(135deg, #FB923C, #F97316, #EA580C);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Shimmer loading skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, var(--border-subtle) 25%, var(--border-light) 50%, var(--border-subtle) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Safe area padding (PWA) */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* No scrollbar utility */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

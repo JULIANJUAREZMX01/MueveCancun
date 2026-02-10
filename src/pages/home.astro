@@ -2,7 +2,7 @@
 import MainLayout from '../layouts/MainLayout.astro';
 import RouteCalculator from '../components/RouteCalculator.astro';
 
-const title = "Dashboard - CancúnMueve";
+const title = "Dashboard";
 ---
 
 <MainLayout title={title} useMap={true}>
@@ -11,10 +11,9 @@ const title = "Dashboard - CancúnMueve";
         <div id="map-container" class="h-full w-full"></div>
     </div>
 
+    <!-- Dashboard Overlay -->
 	<div class="dashboard-container pointer-events-none">
-		<!-- Search Card Section -->
 		<div class="glass-panel-wrapper animate-fade-in-up pointer-events-auto">
-            <!-- Reuse original RouteCalculator for full features (History, Balance, etc.) -->
 			<RouteCalculator />
 		</div>
     </div>
@@ -24,43 +23,50 @@ const title = "Dashboard - CancúnMueve";
 <script>
     import { coordinatesStore } from '../lib/CoordinatesStore';
 
-    let map;
-    let layerGroup;
+    let map: any;
+    let layerGroup: any;
 
     async function initLeaflet() {
-        if(typeof window.L === 'undefined') return;
+        if(typeof (window as any).L === 'undefined') return;
         const container = document.getElementById('map-container');
-        if(!container || container._leaflet_id) return;
+        if(!container || (container as any)._leaflet_id) return;
 
-        map = window.L.map('map-container', {
+        const L = (window as any).L;
+        const isDark = document.documentElement.classList.contains('dark');
+
+        map = L.map('map-container', {
             zoomControl: false,
             attributionControl: false
         }).setView([21.1619, -86.8515], 13);
 
-        window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            subdomains: 'abcd',
-            maxZoom: 20
-        }).addTo(map);
+        L.tileLayer(
+            isDark
+                ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+            { subdomains: 'abcd', maxZoom: 20 }
+        ).addTo(map);
 
-        layerGroup = window.L.layerGroup().addTo(map);
+        layerGroup = L.layerGroup().addTo(map);
         
-        // Initial dots
+        // Key location markers
         await coordinatesStore.init();
         const db = coordinatesStore.getDB() || {};
         Object.entries(db).forEach(([name, coords]) => {
             if(["El Crucero", "Plaza Las Américas", "La Rehoyada", "Zona Hotelera"].includes(name)) {
-                window.L.circleMarker(coords, {
-                    radius: 6,
+                L.circleMarker(coords, {
+                    radius: 5,
                     fillColor: '#F97316',
                     color: '#FFF',
                     weight: 2,
                     fillOpacity: 1
-                }).addTo(layerGroup).bindPopup(name);
+                }).addTo(layerGroup).bindPopup(
+                    `<div style="font-family: Inter, sans-serif; font-weight: 700; font-size: 13px;">${name}</div>`
+                );
             }
         });
     }
 
-  // Handle View Switching
+    // Handle View Switching
     window.addEventListener('VIEW_STATE_CHANGE', (e) => {
         const state = (e as CustomEvent).detail;
         const container = document.querySelector('.dashboard-container');
@@ -69,160 +75,106 @@ const title = "Dashboard - CancúnMueve";
         } else {
             container?.classList.remove('map-mode');
         }
-        
         setTimeout(() => map?.invalidateSize(), 400);
     });
 
-    // Listen for Route Updates with A/B Markers
+    // Route rendering on map
     window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
         const data = (event as CustomEvent).detail;
         if (!map || !layerGroup) return;
+        const L = (window as any).L;
 
         layerGroup.clearLayers();
-        const allCoords = [];
+        const allCoords: any[] = [];
         const allLegs = data.legs || [];
 
-        allLegs.forEach((leg, legIndex) => {
-            const legCoords = [];
-            leg.stops_info?.forEach(s => {
+        allLegs.forEach((leg: any, legIndex: number) => {
+            const legCoords: any[] = [];
+            leg.stops_info?.forEach((s: any) => {
                 const c = [s.lat, s.lng];
                 legCoords.push(c);
                 allCoords.push(c);
             });
             
             if(legCoords.length > 0) {
-                // Background polyline (solid)
-                window.L.polyline(legCoords, {
-                    color: '#0f172a',
-                    weight: 10,
-                    opacity: 0.6,
-                    lineJoin: 'round',
-                    lineCap: 'round'
+                // Shadow line
+                L.polyline(legCoords, {
+                    color: '#0f172a', weight: 10, opacity: 0.15,
+                    lineJoin: 'round', lineCap: 'round'
                 }).addTo(layerGroup);
 
-                // Foreground polyline (animated dashed)
+                // Main line
                 const isFirst = legIndex === 0;
-                window.L.polyline(legCoords, {
-                    color: isFirst ? '#10B981' : '#3B82F6',
-                    weight: 5,
-                    opacity: 1,
-                    dashArray: '15, 20',
-                    lineJoin: 'round',
-                    lineCap: 'round',
+                L.polyline(legCoords, {
+                    color: isFirst ? '#22C55E' : '#0EA5E9',
+                    weight: 5, opacity: 1,
+                    dashArray: '12, 16',
+                    lineJoin: 'round', lineCap: 'round',
                     className: 'route-line-animated'
                 }).addTo(layerGroup);
 
-                // Add marker A (Start) - First leg only
-                if (legIndex === 0 && legCoords.length > 0) {
-                    const startIcon = window.L.divIcon({
+                // Marker A (Start)
+                if (legIndex === 0) {
+                    const startIcon = L.divIcon({
                         className: 'custom-marker',
-                        html: `
-                            <div style="position: relative; width: 40px; height: 40px; margin-left: -20px; margin-top: -40px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 1000;">
-                                <div style="width: 32px; height: 32px; border-radius: 50%; background-color: #10B981; border: 3px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; position: relative; z-index: 10;">A</div>
-                                <div style="width: 4px; height: 12px; background-color: #059669; border-radius: 0 0 2px 2px;"></div>
-                                <div style="position: absolute; bottom: 0; width: 32px; height: 8px; background-color: rgba(0,0,0,0.2); filter: blur(4px); border-radius: 50%; transform: translateY(4px);"></div>
-                            </div>
-                        `,
-                        iconSize: [40, 40],
-                        iconAnchor: [20, 40]
+                        html: `<div class="map-pin map-pin-start">A</div>`,
+                        iconSize: [36, 44], iconAnchor: [18, 44]
                     });
-                    window.L.marker(legCoords[0], { icon: startIcon, zIndexOffset: 1000 }).addTo(layerGroup);
+                    L.marker(legCoords[0], { icon: startIcon, zIndexOffset: 1000 }).addTo(layerGroup);
                 }
 
-                // Add marker B (End) - Last leg only
-                if (legIndex === allLegs.length - 1 && legCoords.length > 0) {
-                    const endIcon = window.L.divIcon({
+                // Marker B (End)
+                if (legIndex === allLegs.length - 1) {
+                    const endIcon = L.divIcon({
                         className: 'custom-marker',
-                        html: `
-                            <div style="position: relative; width: 40px; height: 40px; margin-left: -20px; margin-top: -40px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 1000;">
-                                <div style="width: 32px; height: 32px; border-radius: 50%; background-color: #EF4444; border: 3px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; position: relative; z-index: 10;">B</div>
-                                <div style="width: 4px; height: 12px; background-color: #DC2626; border-radius: 0 0 2px 2px;"></div>
-                                <div style="position: absolute; bottom: 0; width: 32px; height: 8px; background-color: rgba(0,0,0,0.2); filter: blur(4px); border-radius: 50%; transform: translateY(4px);"></div>
-                            </div>
-                        `,
-                        iconSize: [40, 40],
-                        iconAnchor: [20, 40]
+                        html: `<div class="map-pin map-pin-end">B</div>`,
+                        iconSize: [36, 44], iconAnchor: [18, 44]
                     });
-                    window.L.marker(legCoords[legCoords.length - 1], { icon: endIcon, zIndexOffset: 1000 }).addTo(layerGroup);
+                    L.marker(legCoords[legCoords.length - 1], { icon: endIcon, zIndexOffset: 1000 }).addTo(layerGroup);
                 }
 
-                // Add transfer marker (if not last leg)
+                // Transfer marker
                 if (legIndex < allLegs.length - 1 && legCoords.length > 0) {
-                    const transferIcon = window.L.divIcon({
-                        className: 'custom-marker transfer-marker',
-                        html: `
-                            <div style="position: relative; width: 32px; height: 32px; margin-left: -16px; margin-top: -16px; display: flex; align-items: center; justify-content: center; z-index: 900;">
-                                <div style="width: 24px; height: 24px; border-radius: 50%; background-color: #FBBF24; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: #1F2937; z-index: 10; animation: pulse 2s infinite;">
-                                    <svg style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg>
-                                </div>
-                            </div>
-                        `,
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 16]
+                    const transferIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div class="map-pin map-pin-transfer"><span class="material-symbols-rounded text-sm">sync_alt</span></div>`,
+                        iconSize: [28, 28], iconAnchor: [14, 14]
                     });
-                    window.L.marker(legCoords[legCoords.length - 1], { icon: transferIcon, zIndexOffset: 900 }).addTo(layerGroup);
+                    L.marker(legCoords[legCoords.length - 1], { icon: transferIcon, zIndexOffset: 900 }).addTo(layerGroup);
                 }
             }
         });
 
         if(allCoords.length > 0) {
-            map.fitBounds(allCoords, { padding: [100, 100], maxZoom: 16 });
+            map.fitBounds(allCoords, { padding: [80, 80], maxZoom: 16 });
         }
     });
 
     // Lifecycle
-    document.addEventListener('astro:page-load', () => {
-        setTimeout(initLeaflet, 200);
-    });
+    document.addEventListener('astro:page-load', () => setTimeout(initLeaflet, 200));
 </script>
 
 <style>
-	/* Status Bar */
-	.status-bar {
-		position: absolute;
-		top: 0;
-		width: 100%;
-		height: 3rem;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 0 1.5rem;
-		font-size: 0.75rem;
-		font-weight: 600;
-		color: var(--color-text-main);
-		z-index: 20;
-        pointer-events: none; /* Let clicks pass through */
-	}
-
-	.status-icons {
-		display: flex;
-		gap: 0.25rem;
-	}
-
 	.dashboard-container {
 		position: relative;
-		height: 100vh;
+		min-height: calc(100vh - var(--header-h));
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
-		padding-top: 4rem;
+        padding-top: 1rem;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
     .dashboard-container.map-mode {
-        background: transparent;
-        justify-content: flex-end; /* Push UI to bottom in map mode */
+        justify-content: flex-end;
     }
     
     .dashboard-container.map-mode .glass-panel-wrapper {
-        transform: translateY(-80px); /* Lift slightly above nav */
-        max-height: 40vh; /* Don't cover too much of the map */
+        transform: translateY(-80px);
+        max-height: 40vh;
         overflow-y: auto;
     }
 
-    /* Target specific parts of the RouteCalculator when on map */
     .dashboard-container.map-mode :global(#search-card) {
         max-height: 0;
         opacity: 0;
@@ -232,125 +184,73 @@ const title = "Dashboard - CancúnMueve";
         transition: all 0.5s ease;
     }
 
-    /* Ensure results info is visible and styled as a handle */
     .dashboard-container.map-mode :global(#results-info) {
         position: sticky;
         top: 0;
         z-index: 60;
-        margin-bottom: 0.5rem;
     }
 
-    /* Hide persistent bg from layout if we have a real map */
     :global(#persistent-map-bg) {
         opacity: 0 !important;
         pointer-events: none !important;
     }
 
-	/* Glass Panel Wrapper */
 	.glass-panel-wrapper {
-		margin: 0 1rem;
+		margin: 0 0.75rem;
         z-index: 50;
         transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 
-	/* Bottom Nav */
-	.bottom-nav {
-		background-color: white;
-		border-top: 1px solid #E5E7EB;
-		padding: 0.5rem 1.5rem 2rem 1.5rem; /* pb-8 */
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		border-top-left-radius: 1.5rem;
-		border-top-right-radius: 1.5rem;
-		box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-		z-index: 20;
-	}
-
-	.nav-item {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.25rem;
-		color: #9CA3AF; /* gray-400 */
-		text-decoration: none;
-		transition: color 0.2s;
-	}
-
-	.nav-item:hover {
-		color: #4B5563;
-	}
-
-	.nav-item.active {
-		color: #FF6A00; /* var(--color-secondary) from layout */
-	}
-
-	.nav-icon-circle {
-		width: 2.5rem;
-		height: 2.5rem;
-		border-radius: 9999px;
-		background-color: #FFF7ED; /* orange-50 */
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.nav-item.active .nav-icon-circle {
-		background-color: #FFEDD5; /* orange-100 */
-	}
-
-	.nav-label {
-		font-size: 10px;
-		font-weight: 500;
-	}
-
-	.nav-item.active .nav-label {
-		font-weight: 700;
-	}
-
-	@keyframes pulse {
-		50% { opacity: .5; }
-	}
-
-	.animate-pulse {
-		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-	}
-
-    @keyframes fade-in-up {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    .animate-fade-in-up {
-        animation: fade-in-up 0.5s ease-out forwards;
+    /* Map marker pins */
+    :global(.custom-marker) {
+        background: transparent !important;
+        border: none !important;
     }
 
-    /* Route line animation */
+    :global(.map-pin) {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 14px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    :global(.map-pin-start) { background: #22C55E; }
+    :global(.map-pin-end) { background: #EF4444; }
+    :global(.map-pin-transfer) {
+        background: #F59E0B;
+        color: #1F2937;
+        width: 26px;
+        height: 26px;
+        animation: pulse-marker 2s infinite;
+    }
+
     @keyframes dash {
-        from {
-            stroke-dashoffset: 0;
-        }
-        to {
-            stroke-dashoffset: -35;
-        }
+        from { stroke-dashoffset: 0; }
+        to { stroke-dashoffset: -28; }
     }
 
     :global(.route-line-animated) {
         animation: dash 1s linear infinite;
     }
 
-    /* Custom marker styles */
-    :global(.custom-marker) {
-        background: transparent !important;
-        border: none !important;
+    @keyframes pulse-marker {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
     }
 
-    :global(.transfer-marker) {
-        animation: pulse 2s infinite;
+    @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up {
+        animation: fade-in-up 0.5s ease-out forwards;
     }
 </style>

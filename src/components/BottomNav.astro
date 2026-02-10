@@ -2,31 +2,44 @@
 const pathname = Astro.url.pathname;
 
 const navItems = [
-  { href: '/home', icon: '/icons/compass.svg', label: 'Inicio', activePattern: /^\/home/ },
-  { href: '/rutas', icon: '/icons/bus.svg', label: 'Rutas', activePattern: /^\/rutas/ },
-  { href: '/mapa', icon: '/icons/map-pin.svg', label: 'Mapa', activePattern: /^\/mapa/ },
-  { href: '/wallet', icon: '/icons/credit-card.svg', label: 'Mi Tarjeta', activePattern: /^\/wallet/ },
-  { href: '/community', icon: '/icons/users.svg', label: 'Comunidad', activePattern: /^\/community/ },
+  { href: '/home', icon: 'explore', label: 'Inicio', activePattern: /^\/home/ },
+  { href: '/rutas', icon: 'route', label: 'Rutas', activePattern: /^\/rutas/ },
+  { href: '/mapa', icon: 'map', label: 'Mapa', activePattern: /^\/mapa/ },
+  { href: '/wallet', icon: 'account_balance_wallet', label: 'Tarjeta', activePattern: /^\/wallet/ },
 ];
 ---
 
-<nav transition:persist class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 pb-[env(safe-area-inset-bottom)] pointer-events-auto">
-  <div class="grid grid-cols-5 h-16">
+<nav transition:persist
+     class="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-area-bottom"
+     style="background: var(--surface-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--border-light);">
+  <div class="grid grid-cols-4 h-16 max-w-lg mx-auto">
     {navItems.map((item) => {
       const isActive = item.activePattern.test(pathname);
       return (
         <a
           href={item.href}
-          class="flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform group no-underline"
+          class:list={[
+            'flex flex-col items-center justify-center gap-0.5 transition-all no-underline relative group',
+            isActive ? 'text-primary-500' : 'text-slate-400 dark:text-slate-500'
+          ]}
         >
-          <div class={`p-1.5 rounded-xl transition-colors ${isActive ? 'bg-primary-50 dark:bg-primary-900/20' : 'bg-transparent'}`}>
-            <img
-              src={item.icon}
-              class={`w-6 h-6 transition-all ${isActive ? 'filter-primary' : 'grayscale opacity-50 group-hover:opacity-75'}`}
-              alt={item.label}
-            />
-          </div>
-          <span class={`text-[10px] font-bold tracking-wide transition-colors ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
+          {/* Active indicator dot */}
+          {isActive && (
+            <div class="absolute -top-px left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-primary-500 animate-scale-in"></div>
+          )}
+
+          <span
+            class:list={[
+              'material-symbols-rounded text-2xl transition-all',
+              isActive ? 'scale-105' : 'group-hover:scale-105 group-active:scale-95'
+            ]}
+            style={isActive ? "font-variation-settings: 'FILL' 1;" : "font-variation-settings: 'FILL' 0;"}
+          >{item.icon}</span>
+
+          <span class:list={[
+            'text-xxs font-bold tracking-wide transition-colors',
+            isActive ? 'text-primary-600 dark:text-primary-400' : ''
+          ]}>
             {item.label}
           </span>
         </a>
@@ -34,10 +47,3 @@ const navItems = [
     })}
   </div>
 </nav>
-
-<style>
-  .filter-primary {
-    filter: invert(53%) sepia(92%) saturate(1553%) hue-rotate(345deg) brightness(101%) contrast(101%); /* Approx #FF6A00 depending on base black */
-    /* Note: Ideally SVGs should be colored via mask or inline SVG, but filter works for img tags */
-  }
-</style>
