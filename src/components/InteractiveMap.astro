@@ -316,20 +316,25 @@ const {
             }
 
             if (nearest && minDist < 1500) {
+                const container = document.createElement('div');
+                const popupContent = createSafePopup(
+                    "¿Confirmar ubicación?",
+                    nearest,
+                    null
+                );
+                container.appendChild(popupContent);
+
+                const btn = document.createElement('button');
+                btn.className = "w-full mt-2 bg-primary-500 text-white rounded-lg py-2 font-bold text-xs shadow-md";
+                btn.textContent = "✅ USAR ESTA PARADA";
+                btn.onclick = () => window.location.href = '/?selected_stop=' + encodeURIComponent(nearest);
+                container.appendChild(btn);
+
                 window.L.popup({
                     className: 'picker-popup'
                 })
                 .setLatLng(coordinatesDB[nearest])
-                .setContent(createSafePopup(
-                    "¿Confirmar ubicación?",
-                    nearest,
-                    null
-                ).outerHTML + `
-                    <button class="w-full mt-2 bg-primary-500 text-white rounded-lg py-2 font-bold text-xs shadow-md"
-                        onclick="window.location.href='/?selected_stop=${encodeURIComponent(nearest)}'">
-                        ✅ USAR ESTA PARADA
-                    </button>
-                `)
+                .setContent(container)
                 .openOn(map);
             } else {
                  if (window.showToast) window.showToast("No hay paradas oficiales cerca de este punto", "warning");
