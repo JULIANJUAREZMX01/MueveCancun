@@ -1,14 +1,8 @@
 ---
-<<<<<<< HEAD
 import MainLayout from '../layouts/MainLayout.astro';
 import RouteCalculator from '../components/RouteCalculator.astro';
 
 const title = "Dashboard";
-=======
-import Layout from '../layouts/Layout.astro';
-import Switch from '../components/ui/Switch.astro';
-import PassengerSelector from '../components/ui/PassengerSelector.astro';
->>>>>>> 62d6ca7 (Feat: Add PassengerSelector component with Popover API and CSS Anchor Positioning)
 ---
 
 <MainLayout title={title} useMap={true}>
@@ -44,12 +38,6 @@ import PassengerSelector from '../components/ui/PassengerSelector.astro';
             zoomControl: false,
             attributionControl: false
         }).setView([21.1619, -86.8515], 13);
-			<div class="options-row">
-				<PassengerSelector id="home-passengers" initialCount={3} />
-				<div class="tourist-toggle-wrapper h-full flex items-center">
-					<Switch id="tourist-mode-home" label="Turista" checked={true} />
-				</div>
-			</div>
 
         L.tileLayer(
             isDark
@@ -98,481 +86,131 @@ import PassengerSelector from '../components/ui/PassengerSelector.astro';
 
         layerGroup.clearLayers();
         const allCoords: any[] = [];
-        const allLegs = data.legs || [];
-
-        allLegs.forEach((leg: any, legIndex: number) => {
-            const legCoords: any[] = [];
-            leg.stops_info?.forEach((s: any) => {
-                const c = [s.lat, s.lng];
-                legCoords.push(c);
-                allCoords.push(c);
+        
+        if (data.legs) {
+            data.legs.forEach((leg: any) => {
+                if (leg.stops_info) {
+                    const legCoords = leg.stops_info.map((s: any) => [s.lat, s.lng]);
+                    L.polyline(legCoords, {
+                        color: '#F97316',
+                        weight: 4,
+                        opacity: 0.8
+                    }).addTo(layerGroup);
+                    allCoords.push(...legCoords);
+                }
             });
-            
-            if(legCoords.length > 0) {
-                // Shadow line
-                L.polyline(legCoords, {
-                    color: '#0f172a', weight: 10, opacity: 0.15,
-                    lineJoin: 'round', lineCap: 'round'
-                }).addTo(layerGroup);
+        }
 
-                // Main line
-                const isFirst = legIndex === 0;
-                L.polyline(legCoords, {
-                    color: isFirst ? '#22C55E' : '#0EA5E9',
-                    weight: 5, opacity: 1,
-                    dashArray: '12, 16',
-                    lineJoin: 'round', lineCap: 'round',
-                    className: 'route-line-animated'
-                }).addTo(layerGroup);
-
-                // Marker A (Start)
-                if (legIndex === 0) {
-                    const startIcon = L.divIcon({
-                        className: 'custom-marker',
-                        html: `<div class="map-pin map-pin-start">A</div>`,
-                        iconSize: [36, 44], iconAnchor: [18, 44]
-                    });
-                    L.marker(legCoords[0], { icon: startIcon, zIndexOffset: 1000 }).addTo(layerGroup);
-                }
-
-                // Marker B (End)
-                if (legIndex === allLegs.length - 1) {
-                    const endIcon = L.divIcon({
-                        className: 'custom-marker',
-                        html: `<div class="map-pin map-pin-end">B</div>`,
-                        iconSize: [36, 44], iconAnchor: [18, 44]
-                    });
-                    L.marker(legCoords[legCoords.length - 1], { icon: endIcon, zIndexOffset: 1000 }).addTo(layerGroup);
-                }
-
-                // Transfer marker
-                if (legIndex < allLegs.length - 1 && legCoords.length > 0) {
-                    const transferIcon = L.divIcon({
-                        className: 'custom-marker',
-                        html: `<div class="map-pin map-pin-transfer"><span class="material-symbols-rounded text-sm">sync_alt</span></div>`,
-                        iconSize: [28, 28], iconAnchor: [14, 14]
-                    });
-                    L.marker(legCoords[legCoords.length - 1], { icon: transferIcon, zIndexOffset: 900 }).addTo(layerGroup);
-                }
-            }
-        });
-
-        if(allCoords.length > 0) {
-            map.fitBounds(allCoords, { padding: [80, 80], maxZoom: 16 });
+        if (allCoords.length > 0) {
+            map.fitBounds(allCoords, { padding: [50, 50] });
         }
     });
 
-    // Lifecycle
-    document.addEventListener('astro:page-load', () => setTimeout(initLeaflet, 200));
+    // GPS location updates
+    window.addEventListener('USER_LOCATION_UPDATE', (event) => {
+        const { lat, lng, focus } = (event as CustomEvent).detail;
+        if (!map) return;
+        const L = (window as any).L;
+
+        L.marker([lat, lng], {
+            icon: L.divIcon({
+                className: 'user-location-marker',
+                html: '<div class="pulse"></div>',
+                iconSize: [20, 20]
+            })
+        }).addTo(map);
+
+        if (focus) {
+            map.setView([lat, lng], 15);
+        }
+    });
+
+    // Init on load
+    if (document.readyState === 'complete') {
+        initLeaflet();
+    } else {
+        window.addEventListener('load', initLeaflet);
+    }
+    
+    // Re-init on view transition
+    document.addEventListener('astro:page-load', initLeaflet);
 </script>
 
 <style>
-	.dashboard-container {
-		position: relative;
-		min-height: calc(100vh - var(--header-h));
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-        padding-top: 1rem;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-	}
+/* Dashboard Shell */
+.dashboard-container {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1rem;
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
 
-    .dashboard-container.map-mode {
-        justify-content: flex-end;
+.glass-panel-wrapper {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Map Mode Adjustments */
+.dashboard-container.map-mode .glass-panel-wrapper {
+    transform: translateY(10%) scale(0.95);
+    opacity: 0.9;
+}
+
+@media (min-width: 1024px) {
+    .dashboard-container {
+        justify-content: center;
+        align-items: flex-start;
+        padding-left: 2rem;
+        padding-top: 2rem;
     }
     
-    .dashboard-container.map-mode .glass-panel-wrapper {
-        transform: translateY(-80px);
-        max-height: 40vh;
-        overflow-y: auto;
+    .glass-panel-wrapper {
+        margin: 0;
     }
+}
 
-    .dashboard-container.map-mode :global(#search-card) {
-        max-height: 0;
-        opacity: 0;
-        margin-bottom: 0;
-        pointer-events: none;
-        overflow: hidden;
-        transition: all 0.5s ease;
-    }
+/* Animations */
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-    .dashboard-container.map-mode :global(#results-info) {
-        position: sticky;
-        top: 0;
-        z-index: 60;
-    }
+.animate-fade-in-up {
+    animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
-    :global(#persistent-map-bg) {
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }
+/* User Location Marker */
+:global(.user-location-marker) {
+    background: none;
+    border: none;
+}
 
-	.glass-panel-wrapper {
-		margin: 0 auto;
-        width: 100%;
-        max-width: 28rem;
-        z-index: 50;
-        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-	}
+:global(.user-location-marker .pulse) {
+    width: 14px;
+    height: 14px;
+    background: #3B82F6;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
 
-    /* Map marker pins */
-    :global(.custom-marker) {
-        background: transparent !important;
-        border: none !important;
-    }
+:global(.user-location-marker .pulse::after) {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    background: rgba(59, 130, 246, 0.4);
+    border-radius: 50%;
+    animation: marker-pulse 2s infinite;
+}
 
-    :global(.map-pin) {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        border: 3px solid white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 800;
-        font-size: 14px;
-        font-family: 'Inter', sans-serif;
-    }
-
-    :global(.map-pin-start) { background: #22C55E; }
-    :global(.map-pin-end) { background: #EF4444; }
-    :global(.map-pin-transfer) {
-        background: #F59E0B;
-        color: #1F2937;
-        width: 26px;
-        height: 26px;
-        animation: pulse-marker 2s infinite;
-    }
-
-    @keyframes dash {
-        from { stroke-dashoffset: 0; }
-        to { stroke-dashoffset: -28; }
-    }
-
-    :global(.route-line-animated) {
-        animation: dash 1s linear infinite;
-    }
-
-<<<<<<< HEAD
-    @keyframes pulse-marker {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.15); }
-    }
-=======
-	.live-dot {
-		width: 0.5rem;
-		height: 0.5rem;
-		background-color: #22C55E; /* green-500 */
-		border-radius: 9999px;
-		margin-right: 0.375rem;
-	}
-
-	.live-text {
-		font-size: 10px;
-		font-weight: 700;
-		color: #15803D; /* green-700 */
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	/* Input Group */
-	.input-group {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.input-row {
-		background-color: rgba(255, 255, 255, 0.6);
-		border: 1px solid #E5E7EB;
-		border-radius: 1rem;
-		padding: 0.75rem;
-		display: flex;
-		align-items: center;
-		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-	}
-
-	.input-icon-circle {
-		width: 2.5rem;
-		height: 2.5rem;
-		border-radius: 9999px;
-		background-color: #F3F4F6;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: #6B7280;
-		margin-right: 0.75rem;
-		flex-shrink: 0;
-	}
-
-	.input-field {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.input-field label {
-		font-size: 0.75rem;
-		color: #6B7280;
-		font-weight: 500;
-	}
-
-	.input-field input {
-		width: 100%;
-		background: transparent;
-		border: none;
-		padding: 0;
-		font-size: 1rem;
-		font-weight: 600;
-		color: var(--color-text-main);
-		outline: none;
-	}
-
-	.swap-btn {
-		position: absolute;
-		right: 2rem;
-		top: 38%;
-		z-index: 10;
-		width: 2.5rem;
-		height: 2.5rem;
-		background-color: white;
-		border-radius: 9999px;
-		border: 1px solid #E5E7EB;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: #6B7280;
-		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-		cursor: pointer;
-		transition: transform 0.2s;
-	}
-
-	.swap-btn:active {
-		transform: rotate(180deg);
-	}
-
-	/* Quick Actions */
-	.quick-actions {
-		display: flex;
-		gap: 0.5rem;
-		overflow-x: auto;
-		padding-bottom: 0.25rem;
-	}
-
-	.quick-actions::-webkit-scrollbar {
-		display: none;
-	}
-
-	.action-chip {
-		display: flex;
-		align-items: center;
-		gap: 0.375rem;
-		padding: 0.5rem 0.75rem;
-		background-color: rgba(255, 255, 255, 0.5);
-		border: 1px solid #E5E7EB;
-		border-radius: 0.75rem;
-		cursor: pointer;
-		transition: transform 0.1s;
-	}
-
-	.action-chip:active {
-		transform: scale(0.95);
-	}
-
-	.action-chip .icon {
-		color: #6B7280;
-		font-size: 1.125rem;
-	}
-
-	.action-chip .label {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: #374151;
-	}
-
-	.rotate-45 {
-		transform: rotate(45deg);
-	}
-
-	/* Options Row */
-	.options-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.75rem;
-		margin-bottom: 0.5rem;
-	}
-
-
-	.tourist-toggle-wrapper {
-		background-color: rgba(255, 255, 255, 0.5);
-		border: 1px solid #E5E7EB;
-		border-radius: 0.75rem;
-		padding: 0 0.75rem;
-		min-width: 140px; /* Ensure visual balance */
-		justify-content: center;
-	}
-
-	/* CTA Button */
-	.cta-btn {
-		width: 100%;
-		background-color: var(--color-secondary);
-		color: white;
-		font-weight: 700;
-		font-size: 1.125rem;
-		padding: 1rem;
-		border-radius: 0.75rem;
-		border: none;
-		box-shadow: 0 4px 20px rgba(255, 107, 0, 0.4);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.5rem;
-		cursor: pointer;
-		transition: all 0.2s;
-	}
-
-	.cta-btn:hover {
-		background-color: #e56000;
-	}
-
-	.cta-btn:active {
-		transform: scale(0.98);
-	}
-
-	.cta-btn .arrow {
-		color: rgba(255, 255, 255, 0.8);
-		transition: transform 0.2s;
-	}
-
-	.group:hover .group-hover-translate {
-		transform: translateX(4px);
-	}
-
-	/* Map Overlay Elements */
-	.map-overlay-elements {
-		position: absolute; /* Relative to dashboard-container which is 100vh */
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		pointer-events: none;
-		z-index: 1; /* Below the bottom nav and card */
-	}
-
-	.marker-container {
-		position: absolute;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.marker-pin {
-		color: white;
-		padding: 0.375rem;
-		border-radius: 9999px;
-		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.marker-pin.blue {
-		background-color: #2563EB;
-	}
-
-	.marker-label {
-		background-color: white;
-		color: #111827;
-		font-size: 10px;
-		font-weight: 700;
-		padding: 0.125rem 0.375rem;
-		border-radius: 0.25rem;
-		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-		margin-top: 0.25rem;
-		text-align: center;
-		line-height: 1.1;
-	}
-
-	.marker-label-only {
-		color: #111827;
-		font-weight: 700;
-		font-size: 1.25rem;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	/* Bottom Nav */
-	.bottom-nav {
-		background-color: white;
-		border-top: 1px solid #E5E7EB;
-		padding: 0.5rem 1.5rem 2rem 1.5rem; /* pb-8 */
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		border-top-left-radius: 1.5rem;
-		border-top-right-radius: 1.5rem;
-		box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-		z-index: 20;
-	}
-
-	.nav-item {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.25rem;
-		color: #9CA3AF; /* gray-400 */
-		text-decoration: none;
-		transition: color 0.2s;
-	}
-
-	.nav-item:hover {
-		color: #4B5563;
-	}
-
-	.nav-item.active {
-		color: var(--color-secondary);
-	}
-
-	.nav-icon-circle {
-		width: 2.5rem;
-		height: 2.5rem;
-		border-radius: 9999px;
-		background-color: #FFF7ED; /* orange-50 */
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.nav-item.active .nav-icon-circle {
-		background-color: #FFEDD5; /* orange-100 */
-	}
-
-	.nav-label {
-		font-size: 10px;
-		font-weight: 500;
-	}
-
-	.nav-item.active .nav-label {
-		font-weight: 700;
-	}
-
-	@keyframes pulse {
-		50% { opacity: .5; }
-	}
-
-	.animate-pulse {
-		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-	}
->>>>>>> 62d6ca7 (Feat: Add PassengerSelector component with Popover API and CSS Anchor Positioning)
-
-    @keyframes fade-in-up {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fade-in-up {
-        animation: fade-in-up 0.5s ease-out forwards;
-    }
+@keyframes marker-pulse {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+}
 </style>

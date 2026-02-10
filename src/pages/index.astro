@@ -1,8 +1,7 @@
----
-import Layout from '../layouts/Layout.astro';
+import MainLayout from '../layouts/MainLayout.astro';
 ---
 
-<Layout title="CancúnMueve">
+<MainLayout title="CancúnMueve">
 	<div class="splash-container">
 		<div class="grid-overlay">
 			<svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg">
@@ -61,7 +60,7 @@ import Layout from '../layouts/Layout.astro';
 			navigate(targetUrl.toString());
 		}, 3000);
 	</script>
-</Layout>
+</MainLayout>
 
 <style>
 	.splash-container {
