@@ -460,6 +460,36 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
             ],
             "Autocar",
         ),
+        (
+            "ruta_1753802299281",
+            "RUTA 81",
+            TransportType::Bus,
+            12.0,
+            "",
+            "",
+            vec![
+                "Parada RUTA 81 #1",
+                "Parada RUTA 81 #2",
+                "Parada RUTA 81 #3",
+                "Parada RUTA 81 #4",
+                "Parada RUTA 81 #5",
+                "Parada RUTA 81 #6",
+                "Parada RUTA 81 #7",
+                "Parada RUTA 81 #8",
+                "Parada RUTA 81 #9",
+                "Parada RUTA 81 #10",
+                "Parada RUTA 81 #11",
+                "Parada RUTA 81 #12",
+                "Parada RUTA 81 #13",
+                "Parada RUTA 81 #14",
+                "Parada RUTA 81 #15",
+                "Parada RUTA 81 #16",
+                "Parada RUTA 81 #17",
+                "Parada RUTA 81 #18",
+                "Parada RUTA 81 #19"
+            ],
+            "Transporte Público",
+        ),
     ];
 
     raw_data

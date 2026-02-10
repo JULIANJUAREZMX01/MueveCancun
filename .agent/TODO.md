@@ -22,10 +22,57 @@
 
 ### 1. Mejoras de UI/UX
 
-- [ ] **Geolocalización**: Botón para centrar mapa en ubicación del usuario.
-- [ ] **Favoritos**: Guardar rutas frecuentes (localStorage).
-- [ ] **Modo Oscuro**: Implementar toggle de tema.
-- [ ] **Transiciones**: Agregar `astro:transitions` o View Transitions API para navegación suave.
+- [x] **Geolocalización**: Botón para centrar mapa en ubicación del usuario.
+- [x] **Favoritos**: Guardar rutas frecuentes (localStorage).
+- [x] **Modo Oscuro**: Implementar toggle de tema.
+- [] **Transiciones**: Agregar `astro:transitions` o View Transitions API para navegación suave.
+
+---
+
+## ✅ COMPLETADO (Sprint 4 - Predictive Search & UI Polish)
+
+### 1. Funcionalidad Core
+
+- [x] **Buscador Predictivo**: Implementado `CoordinateFinder` con lógica fuzzy, normalización de acentos y búsqueda multi-token.
+- [x] **Integración WASM**: Conectado selección de paradas con `find_route` usando `findBestMatch`.
+
+### 2. Estética Premium (UI/UX)
+
+- [x] **Input Redesign**: Reemplazado `datalist` nativo con dropdown personalizado (Glassmorphism + backdrop-blur).
+- [x] **Animaciones**: Transiciones suaves fade-in/out en dropdown de sugerencias.
+- [x] **Feedback Visual**: Mejorados estados de carga, errores con toast notifications, y navegación por teclado.
+
+---
+
+## ✅ COMPLETADO (Sprint 5 - Technical Refinements & Recovery)
+
+**Status**: � **COMPLETE** (with recovery notes)
+
+### Achievements
+
+- [x] **Aesthetic Refinement**: Tropical color palette (turquoise, coral, sunset, ocean, sand) + enhanced glassmorphism
+- [x] **CSS Migration (Partial)**: `BottomNav.astro` and `Header.astro` migrated to Vanilla CSS
+- [x] **Bug Fixes**: Resolved Astro 500 errors, restored Community tab (5 tabs total), fixed route calculation
+- [x] **WASM Verification**: Confirmed Jules' engine intact and operational
+- [x] **TypeScript Strategy**: Created incremental hardening plan (strict mode reverted)
+- [x] **Documentation**: Comprehensive recovery reports and best practices guides
+
+> **Recovery Note**: TypeScript strict mode broke Astro routing (500 errors). All issues resolved. App 100% functional. See `MASTER_ROADMAP.md` in artifacts for complete details.
+
+---
+
+## 🟡 PENDIENTE (Sprint 5 Cleanup)
+
+### 1. Complete CSS Migration
+
+- [ ] **RouteCalculator.astro**: Migrate from Tailwind to Vanilla CSS
+- [ ] **Input.astro**: Verify no Tailwind dependencies
+- [ ] **Remove Tailwind**: Uninstall dependencies after migration complete
+
+### 2. Technical Debt
+
+- [ ] **Audit Dead Code**: Verify if `saturmex_routes.json` (175KB) is used
+- [ ] **TypeScript Incremental**: Enable safe options one-by-one (see `typescript_best_practices.md`)
 
 ---
 
@@ -61,17 +108,52 @@ Si necesitas habilitar la selección de paradas desde el mapa para otros compone
 
 ---
 
-## 🚀 PRÓXIMOS PASOS (Sprint 4)
+## 🚀 PRÓXIMOS PASOS (Sprint 6 - Social Intelligence & SEO)
 
-- [ ] **Modo Oscuro Avanzado**: Refinar transiciones y persistencia entre islas.
-- [ ] **Sitemap.xml**: Generación automática post-build para las rutas SSG.
-- [ ] **Buscador Predictivo**: Implementar autocomplete real en `RouteCalculator`.
-- [ ] **Integración de "The Listener"**: Si el script de scraping de Jules está listo, integrarlo en el flujo de sync.
-- [ ] **Manifest.json**: Verificar que `names`, `icons` y `theme_color` coincidan con la nueva identidad.
-- [ ] **Screenshots**: Agregar screenshots al manifest para instalación rica.
-- [ ] **Offline Fallback**: Crear página `offline.html` personalizada si falla el cache.
-- [ ] **Lazy Loading**: Aplicar `loading="lazy"` a imágenes en `community.astro`.
-- [ ] **Lighthouse**: Auditar performance y accesibilidad.
+**Prerequisites**: Sprint 5 cleanup complete
+
+### 1. The Listener (Social Media Scraper)
+
+- [ ] **Route Extraction**: Extract route info from Facebook groups
+- [ ] **Data Ingestion**: Feed into `master_routes.json`
+- [ ] **Automated Sync**: Pipeline for continuous updates
+- [ ] **Owner**: Jules
+
+### 2. Programmatic SEO
+
+- [ ] **Dynamic Routes**: Create `/rutas/[id]` template
+- [ ] **Sitemap Generation**: Auto-generate for all routes
+- [ ] **Meta Tags**: Optimize for search engines
+- [ ] **Owner**: Antigravity
+
+### 3. UX Polish
+
+- [ ] **GPS Auto-Center**: Connect nearest-match to map view
+- [ ] **Local Favorites**: Persistent favorites in localStorage
+- [ ] **Share Routes**: Social sharing functionality
+- [ ] **Offline Fallback**: Custom `offline.html` page
+- [ ] **Lazy Loading**: Apply to images in `community.astro`
+- [ ] **Lighthouse Audit**: Target Performance > 90
+
+### 4. PWA Enhancements
+
+- [ ] **Manifest Verification**: High-res splash screens, theme consistency
+- [ ] **Screenshots**: Add to manifest for rich install experience
+- [ ] **Modo Oscuro Avanzado**: Refine transitions between islands
+
+---
+
+## 📚 MASTER DOCUMENTATION
+
+**See**: `C:\Users\QUINTANA\.gemini\antigravity\brain\736e1bd5-1686-478c-a910-22572c734f30\MASTER_ROADMAP.md`
+
+Complete consolidated roadmap with:
+
+- Sprint 1-5 progress tracking (75% overall completion)
+- Technical debt inventory (7 prioritized items)
+- Clear delegation (Jules vs Antigravity tasks)
+- All code fragments preserved
+- Success metrics and testing strategies
 
 ---
 

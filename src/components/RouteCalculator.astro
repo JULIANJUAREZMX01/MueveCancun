@@ -400,20 +400,27 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   function setupAutocomplete(inputId) {
       const input = document.getElementById(inputId);
-      const container = input?.parentElement; // Input wrapper
+      const container = input?.closest('.relative'); // Updated to find the wrapper
       if (!input || !container) return;
 
-      // Create Dropdown Element
-      const list = document.createElement('ul');
-      list.className = 'absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-xl z-50 mt-1 max-h-60 overflow-y-auto hidden divide-y divide-slate-50';
-      list.id = `${inputId}-suggestions`;
-      container.appendChild(list);
+      // Create Dropdown Element if not exists
+      let list = container.querySelector('ul.suggestions-list');
+      if (!list) {
+          list = document.createElement('ul');
+          list.className = 'suggestions-list absolute top-full left-0 right-0 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 mt-2 max-h-60 overflow-y-auto hidden opacity-0 translate-y-2 transition-all duration-200 divide-y divide-slate-100 dark:divide-slate-800';
+          list.id = `${inputId}-suggestions`;
+          container.appendChild(list);
+      }
+
+      let activeIndex = -1;
 
       // Input Handler
       input.addEventListener('input', (e) => {
           const val = (e.target as HTMLInputElement).value;
+          activeIndex = -1;
+          
           if (!finder || val.length < 2) {
-              list.classList.add('hidden');
+              hideList(list);
               return;
           }
 
@@ -421,35 +428,56 @@ import PassengerSelector from './ui/PassengerSelector.astro';
           
           if (results.length > 0) {
               list.innerHTML = '';
-              results.forEach(res => {
+              results.forEach((res, idx) => {
                   const li = document.createElement('li');
-                  li.className = 'px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors flex items-center gap-3 group';
+                  li.dataset.index = idx.toString();
+                  li.className = 'px-4 py-3 hover:bg-primary-50 dark:hover:bg-start-800 cursor-pointer transition-colors flex items-center gap-3 group';
                   li.innerHTML = `
-                      <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-500 transition-colors">
-                          <span class="material-icons-round text-base">location_on</span>
+                      <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-primary-100 dark:group-hover:bg-primary-900 group-hover:text-primary-600 transition-colors">
+                          <span class="material-symbols-rounded text-base" style="font-variation-settings: 'FILL' 1;">location_on</span>
                       </div>
-                      <div class="flex-1">
-                          <p class="text-sm font-bold text-slate-700 group-hover:text-primary-700">${escapeHtml(res.name)}</p>
+                      <div class="flex-1 min-w-0">
+                          <p class="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary-700 dark:group-hover:text-primary-400 truncate">${escapeHtml(res.name)}</p>
                           <p class="text-[10px] text-slate-500 font-mono">COORD: ${res.coords[0].toFixed(4)}, ${res.coords[1].toFixed(4)}</p>
                       </div>
                   `;
                   li.addEventListener('click', () => {
-                      (input as HTMLInputElement).value = res.name;
-                      list.classList.add('hidden');
-                      // Trigger any blur/update logic
-                      input.dispatchEvent(new Event('blur'));
+                      selectResult(input, list, res.name);
                   });
                   list.appendChild(li);
               });
-              list.classList.remove('hidden');
+              showList(list);
           } else {
-              list.classList.add('hidden');
+              hideList(list);
+          }
+      });
+
+      // Keyboard Navigation
+      input.addEventListener('keydown', (e) => {
+          const items = list.querySelectorAll('li');
+          if (items.length === 0 || list.classList.contains('hidden')) return;
+
+          if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              activeIndex = (activeIndex + 1) % items.length;
+              updateActiveItem(items, activeIndex);
+          } else if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              activeIndex = (activeIndex - 1 + items.length) % items.length;
+              updateActiveItem(items, activeIndex);
+          } else if (e.key === 'Enter') {
+              if (activeIndex >= 0) {
+                  e.preventDefault();
+                  items[activeIndex].click();
+              }
+          } else if (e.key === 'Escape') {
+              hideList(list);
           }
       });
 
       // Hide on blur (delayed to allow click)
       input.addEventListener('blur', () => {
-          setTimeout(() => list.classList.add('hidden'), 200);
+          setTimeout(() => hideList(list), 200);
       });
       
       // Show on focus if value exists
@@ -458,6 +486,39 @@ import PassengerSelector from './ui/PassengerSelector.astro';
                input.dispatchEvent(new Event('input'));
            }
       });
+  }
+
+  function showList(list) {
+      list.classList.remove('hidden');
+      // Trigger reflow for transition
+      void list.offsetWidth;
+      list.classList.remove('opacity-0', 'translate-y-2');
+  }
+
+  function hideList(list) {
+      list.classList.add('opacity-0', 'translate-y-2');
+      setTimeout(() => list.classList.add('hidden'), 200);
+  }
+
+  function updateActiveItem(items, index) {
+      items.forEach((item, i) => {
+          if (i === index) {
+              item.classList.add('bg-primary-50', 'dark:bg-slate-800');
+              item.scrollIntoView({ block: 'nearest' });
+          } else {
+              item.classList.remove('bg-primary-50', 'dark:bg-slate-800');
+          }
+      });
+  }
+
+  function selectResult(input, list, value) {
+      input.value = value;
+      hideList(list);
+      input.dispatchEvent(new Event('blur'));
+      // Optional: Auto-focus next input if it's origin
+      if (input.id === 'origin-input') {
+          setTimeout(() => document.getElementById('destination-input')?.focus(), 100);
+      }
   }
 
   function initGPSLogic() {
@@ -485,8 +546,12 @@ import PassengerSelector from './ui/PassengerSelector.astro';
           }
 
           const originInput = document.getElementById('origin-input') as HTMLInputElement;
-          const parent = originInput.parentElement;
-          parent.classList.add('opacity-50', 'pointer-events-none');
+          const parent = originInput.closest('.relative');
+          parent?.classList.add('opacity-50', 'pointer-events-none');
+
+          const gpsIcon = gpsBtn.querySelector('img');
+          const originalIcon = gpsIcon.src;
+          gpsIcon.src = '/icons/spinner.svg'; // Assuming you have a spinner or use CSS
 
           navigator.geolocation.getCurrentPosition((pos) => {
               const { latitude, longitude } = pos.coords;
@@ -495,13 +560,14 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
               if (nearest) {
                   originInput.value = nearest;
-                  if (window.showToast) window.showToast(`Ubicación: ${nearest}`, "success");
+                  if (window.showToast) window.showToast(`📍 Ubicación: ${nearest}`, "success");
               } else {
                   if (window.showToast) window.showToast("No se encontraron paradas cercanas", "warning");
               }
               
               window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 1 } }));
-              parent.classList.remove('opacity-50', 'pointer-events-none');
+              parent?.classList.remove('opacity-50', 'pointer-events-none');
+              gpsIcon.src = originalIcon;
               
               // Emit user location to map
               window.dispatchEvent(new CustomEvent('USER_LOCATION_UPDATE', { 
@@ -509,15 +575,15 @@ import PassengerSelector from './ui/PassengerSelector.astro';
               }));
           }, (err) => {
               console.error(err);
-              parent.classList.remove('opacity-50', 'pointer-events-none');
+              parent?.classList.remove('opacity-50', 'pointer-events-none');
+              gpsIcon.src = originalIcon;
               if (window.showToast) window.showToast("Error al obtener ubicación", "error");
-          });
+          }, { timeout: 10000, enableHighAccuracy: true });
       });
 
       mapPickerBtn?.addEventListener('click', () => {
           const originInput = document.getElementById('origin-input');
-          const destInput = document.getElementById('destination-input');
-
+          
           sessionStorage.setItem('temp_origin', (originInput as HTMLInputElement).value);
           // We don't save dest as we are about to pick it
 
@@ -560,8 +626,13 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   const swapBtn = document.getElementById('swap-btn');
   swapBtn?.addEventListener('click', () => {
-     const origin = document.getElementById('origin-input');
-     const dest = document.getElementById('destination-input');
+     const origin = document.getElementById('origin-input') as HTMLInputElement;
+     const dest = document.getElementById('destination-input') as HTMLInputElement;
+     
+     // Add swap animation
+     swapBtn.classList.add('rotate-180');
+     setTimeout(() => swapBtn.classList.remove('rotate-180'), 300);
+
      const temp = origin.value;
      origin.value = dest.value;
      dest.value = temp;
@@ -569,22 +640,36 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   // COLLAPSE LOGIC
   function collapseUI(origin, dest) {
-      if (searchForm) searchForm.classList.add('hidden');
+      if (searchForm) {
+          searchForm.style.opacity = '0';
+          searchForm.style.transform = 'translateY(-10px)';
+          setTimeout(() => searchForm.classList.add('hidden'), 300);
+      }
       if (cardHeader) cardHeader.classList.add('hidden');
       if (summaryView) {
           summaryView.classList.remove('hidden');
+          // Small delay for fade in
+          requestAnimationFrame(() => {
+              summaryView.classList.remove('opacity-0', 'translate-y-[-10px]');
+          });
           document.getElementById('summary-origin').textContent = origin || 'Origen';
           document.getElementById('summary-dest').textContent = dest || 'Destino';
       }
   }
 
   function expandUI() {
-      if (searchForm) searchForm.classList.remove('hidden');
+      if (searchForm) {
+          searchForm.classList.remove('hidden');
+          requestAnimationFrame(() => {
+              searchForm.style.opacity = '1';
+              searchForm.style.transform = 'translateY(0)';
+          });
+      }
       if (cardHeader) cardHeader.classList.remove('hidden');
-      if (summaryView) summaryView.classList.add('hidden');
+      if (summaryView) {
+          summaryView.classList.add('hidden', 'opacity-0', 'translate-y-[-10px]');
+      }
 
-      // Also notify View Manager to revert?
-      // Currently the spec doesn't say we need to revert fully, but logic suggests so.
       window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'SEARCH_ACTIVE' }));
   }
 
@@ -592,18 +677,29 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   btn?.addEventListener('click', async () => {
     if (!wasmLoaded) {
-         renderError("El sistema no está listo (WASM offline).");
+         if (window.showToast) window.showToast("El motor no está listo. Espera un momento...", "error");
          return;
     }
-    if (!hasBalance) return;
+    if (!hasBalance) {
+        if (window.showToast) window.showToast("Saldo insuficiente. Recarga en un OXXO.", "error");
+        // Shake animation on balance warning
+        balanceWarning?.classList.add('animate-shake');
+        setTimeout(() => balanceWarning?.classList.remove('animate-shake'), 500);
+        return;
+    }
 
     const fromVal = (document.getElementById('origin-input') as HTMLInputElement).value;
     const toVal = (document.getElementById('destination-input') as HTMLInputElement).value;
 
+    if (!fromVal || !toVal) {
+        if (window.showToast) window.showToast("Por favor ingresa origen y destino", "warning");
+        return;
+    }
+
     analytics.track('search_route', { from: fromVal, to: toVal });
 
     if (toVal.toLowerCase().includes("aeropuerto") && fromVal.toLowerCase().includes("walmart")) {
-         renderError("Ruta restringida hacia el Aeropuerto desde Walmart (Solo Taxis/ADO).");
+         if (window.showToast) window.showToast("Ruta restringida hacia el Aeropuerto", "error");
          return;
     }
 
@@ -622,12 +718,12 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     try {
       if (!finder) throw new Error("Sistema de búsqueda no inicializado.");
 
-      let fromSearch = fromVal;
-      const originMatch = finder.findBestMatch(fromSearch);
+      // Enhanced Fuzzy Logic for Start/End
+      const originMatch = finder.findBestMatch(fromVal);
       const destMatch = finder.findBestMatch(toVal);
 
-      if (!originMatch) throw new Error(`Origen no encontrado: "${fromSearch}"`);
-      if (!destMatch) throw new Error(`Destino no encontrado: "${toVal}"`);
+      if (!originMatch) throw new Error(`No encontramos una parada cercana a: "${fromVal}"`);
+      if (!destMatch) throw new Error(`No encontramos una parada cercana a: "${toVal}"`);
 
       console.log('📍 Points found (Fuzzy):', { originMatch, destMatch });
 
@@ -647,15 +743,18 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
     } catch (error) {
       console.error(error);
-      renderError("System Error: " + (error.message || error));
+      if (window.showToast) window.showToast(error.message || "Error desconocido", "error");
+      
       // Revert button text on error
        if (btnText) btnText.textContent = ui[currentLang]['calc.btn'];
+       expandUI(); // Re-open if failed
     } finally {
       if (btnSpinner) btnSpinner.classList.add('hidden');
       if (calculationLoader) calculationLoader.classList.add('hidden');
       (btn as HTMLButtonElement).disabled = false;
     }
   });
+
 
   function getTransportLabel(type) {
     return ui[currentLang][`transport.${type}`] || type;

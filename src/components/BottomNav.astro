@@ -6,13 +6,14 @@ const navItems = [
   { href: '/rutas', icon: 'route', label: 'Rutas', activePattern: /^\/rutas/ },
   { href: '/mapa', icon: 'map', label: 'Mapa', activePattern: /^\/mapa/ },
   { href: '/wallet', icon: 'account_balance_wallet', label: 'Tarjeta', activePattern: /^\/wallet/ },
+  { href: '/community', icon: 'groups', label: 'Comunidad', activePattern: /^\/community/ },
 ];
 ---
 
 <nav transition:persist
      class="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom"
      style="background: var(--surface-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--border-light);">
-  <div class="grid grid-cols-4 h-16 max-w-lg mx-auto">
+  <div class="grid grid-cols-5 h-16 max-w-lg mx-auto">
     {navItems.map((item) => {
       const isActive = item.activePattern.test(pathname);
       return (

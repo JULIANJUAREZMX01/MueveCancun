@@ -1,33 +1,30 @@
-export interface StopMatch {
-  name: string;
-  coords: [number, number];
-}
 
-// Helper function for accent normalization
-const normalizeText = (text: string): string => {
+import fs from 'node:fs';
+import path from 'node:path';
+
+// --- COORDINATE FINDER CLASS (Copied Logic) ---
+const normalizeText = (text) => {
     return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 };
 
-export class CoordinateFinder {
-    private db: Record<string, [number, number]>;
-    private cache: Map<string, [number, number]> = new Map();
-    private keys: string[];
-    private normalizedKeys: Map<string, string> = new Map(); // normalized -> original
-
-    constructor(db: Record<string, [number, number]>) {
+class CoordinateFinder {
+    constructor(db) {
         this.db = db;
+        this.db = db;
+        this.cache = new Map();
         this.keys = Object.keys(db);
+        this.normalizedKeys = new Map(); // normalized -> original
         this.buildIndex();
     }
 
-    private buildIndex() {
+    buildIndex() {
         for (const key of this.keys) {
             const normalized = normalizeText(key);
             this.normalizedKeys.set(normalized, key);
         }
     }
 
-    public find(stopName: string): [number, number] | null {
+    find(stopName) {
         if (!stopName) return null;
         const q = normalizeText(stopName);
 
@@ -36,17 +33,17 @@ export class CoordinateFinder {
 
         // 2. Normalized Exact Match
         if (this.normalizedKeys.has(q)) {
-            const originalKey = this.normalizedKeys.get(q)!;
+            const originalKey = this.normalizedKeys.get(q);
             return this.db[originalKey];
         }
 
         // 3. Cache check
-        if (this.cache.has(q)) return this.cache.get(q)!;
+        if (this.cache.has(q)) return this.cache.get(q);
 
         return null;
     }
 
-    public findBestMatch(query: string): StopMatch | null {
+    findBestMatch(query) {
         // Fast exact find
         const coords = this.find(query);
         if (coords) {
@@ -59,11 +56,10 @@ export class CoordinateFinder {
         return results.length > 0 ? results[0] : null;
     }
 
-    public search(query: string, limit: number = 5): StopMatch[] {
+    search(query, limit = 5) {
         if (!query || query.length < 2) return [];
         const q = normalizeText(query);
-        const candidates = new Set<string>();
-
+        const candidates = new Set();
         const qTokens = q.split(/\s+/).filter(t => t.length > 0);
 
         // 1. Starts With (High ranking) and Contains (Medium ranking) Combined
@@ -124,3 +120,52 @@ export class CoordinateFinder {
             }));
     }
 }
+
+// --- MAIN TEST Logic ---
+async function runTests() {
+  const dbPath = path.join(process.cwd(), 'public', 'coordinates.json');
+  console.log(`Loading DB from: ${dbPath}`);
+  
+  const rawData = fs.readFileSync(dbPath, 'utf-8');
+  const db = JSON.parse(rawData);
+  const finder = new CoordinateFinder(db);
+  
+  console.log(` loaded ${Object.keys(db).length} stops.`);
+
+  const testCases = [
+    { query: 'cancun', expectedPart: 'Cancún' }, // Accent check
+    { query: 'otoch', expectedPart: 'Otoch' },   // Substring check
+    { query: 'plaza las americas', expectedPart: 'Plaza Las Américas' }, // Exact-ish check
+    { query: 'aeropuerto t2', expectedPart: 'Aeropuerto' } // Token Match check
+  ];
+
+  let passed = 0;
+
+  for (const t of testCases) {
+    console.log(`\n🔍 Searching for: "${t.query}"`);
+    const results = finder.search(t.query, 3);
+    
+    if (results.length > 0) {
+      const top = results[0];
+      console.log(`   ✅ Top Result: "${top.name}"`);
+      if (top.name.toLowerCase().includes(t.expectedPart.toLowerCase())) {
+        passed++;
+      } else {
+        console.error(`   ❌ FAIL: Expected "${t.expectedPart}" but got "${top.name}"`);
+      }
+    } else {
+        console.error(`   ❌ FAIL: No results found.`);
+    }
+  }
+
+  console.log(`\nTests Passed: ${passed}/${testCases.length}`);
+  if (passed === testCases.length) {
+      console.log("🎉 ALL TESTS PASSED. Logic is sound.");
+      process.exit(0);
+  } else {
+      console.error("⚠️ SOME TESTS FAILED.");
+      process.exit(1);
+  }
+}
+
+runTests();
