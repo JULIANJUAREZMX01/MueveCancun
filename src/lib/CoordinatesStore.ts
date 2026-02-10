@@ -71,7 +71,7 @@ class CoordinatesStore {
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         };
 
-        let searchSet: any[] = candidates;
+        let searchSet: ({ lat: number; lng: number; data: string } | Coordinate)[] = candidates;
         let usedAll = false;
 
         // Fallback 1: Empty Grid
@@ -86,7 +86,7 @@ class CoordinatesStore {
         for (const p of searchSet) {
              // SpatialHash stores data as string (name) in .data
              // allPoints stores name as property .name
-             const pName = p.data || p.name;
+             const pName = 'data' in p ? p.data : p.name;
              const pLat = p.lat;
              const pLng = p.lng;
 

@@ -1,0 +1,217 @@
+---
+interface Props {
+  name: string;
+  label: string;
+  options: { value: string; label: string; icon?: string }[];
+  placeholder?: string;
+}
+
+const { name, label, options, placeholder = "Selecciona una opción..." } = Astro.props;
+const anchorName = `--anchor-${name}`;
+---
+
+<div class="graffiti-select" data-name={name}>
+  <label class="select-label">{label}</label>
+
+  <!-- Trigger Button -->
+  <button
+    type="button"
+    class="select-trigger"
+    popovertarget={`popover-${name}`}
+    style={`anchor-name: ${anchorName}`}
+  >
+    <span class="selected-text">{placeholder}</span>
+    <span class="chevron" aria-hidden="true">▼</span>
+  </button>
+
+  <!-- Hidden Input for Form Submission -->
+  <input type="hidden" name={name} id={`input-${name}`} required />
+
+  <!-- Popover Dropdown -->
+  <div
+    id={`popover-${name}`}
+    popover
+    class="select-popover"
+    style={`position-anchor: ${anchorName}`}
+  >
+    {options.map((opt) => (
+      <button
+        type="button"
+        class="option-btn"
+        data-value={opt.value}
+        data-label={opt.label}
+      >
+        {opt.icon && <span class="option-icon">{opt.icon}</span>}
+        {opt.label}
+      </button>
+    ))}
+  </div>
+</div>
+
+<script>
+  // GraffitiWarrior: Modern Event Delegation
+  // We use vanilla JS to handle selection logic safely.
+
+  function initSelectors() {
+    const selectors = document.querySelectorAll('.graffiti-select');
+
+    selectors.forEach(select => {
+      // Check if already initialized to prevent duplicate listeners
+      if (select.hasAttribute('data-initialized')) return;
+
+      const name = select.getAttribute('data-name');
+      if (!name) return;
+
+      const input = select.querySelector(`input[name="${name}"]`);
+      const triggerText = select.querySelector('.selected-text');
+      const popover = document.getElementById(`popover-${name}`);
+
+      if (!input || !triggerText || !popover) return;
+
+      // Mark as initialized
+      select.setAttribute('data-initialized', 'true');
+
+      // Handle option clicks via delegation on the popover
+      popover.addEventListener('click', (e) => {
+        // @ts-ignore
+        const target = e.target.closest('.option-btn');
+        if (!target) return;
+
+        const value = target.getAttribute('data-value');
+        const label = target.getAttribute('data-label');
+
+        if (value) {
+          // @ts-ignore
+          input.value = value;
+          if (label) triggerText.textContent = label;
+          // @ts-ignore
+          popover.hidePopover();
+        }
+      });
+    });
+  }
+
+  // Support both standard load and Astro View Transitions
+  document.addEventListener('DOMContentLoaded', initSelectors);
+  document.addEventListener('astro:page-load', initSelectors);
+</script>
+
+<style>
+  /*
+   * GRAFFITI WARRIOR STYLE: CSS5
+   * No Tailwind here. Just pure, unadulterated CSS logic.
+   */
+
+  .graffiti-select {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+    font-family: 'Atkinson', sans-serif; /* Project font */
+
+    .select-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #334155; /* slate-700 */
+    }
+
+    .select-trigger {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: white;
+      border: 1px solid #cbd5e1; /* slate-300 */
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      color: #64748b; /* slate-500 */
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+
+      &:hover {
+        border-color: #94a3b8; /* slate-400 */
+      }
+
+      &:focus-visible {
+        outline: 2px solid #f97316; /* primary-500 */
+        outline-offset: 2px;
+      }
+
+      .chevron {
+        font-size: 0.75rem;
+        opacity: 0.5;
+        transition: transform 0.2s;
+      }
+    }
+
+    /* When popover is open, rotate chevron */
+    &:has([popover]:popover-open) .chevron {
+      transform: rotate(180deg);
+    }
+  }
+
+  .select-popover {
+    /* Popover API Defaults Reset */
+    padding: 0;
+    margin: 0;
+    border: none;
+
+    /* CSS Anchor Positioning */
+    position-area: bottom span-right;
+    /* Fallback for older anchor implementations */
+    top: anchor(bottom);
+    left: anchor(left);
+    right: anchor(right);
+    width: anchor-size(width);
+    margin-top: 0.5rem;
+
+    /* Visuals */
+    background: white;
+    border: 1px solid #e2e8f0; /* slate-200 */
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+
+    /* Animation */
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s allow-discrete, transform 0.2s allow-discrete, display 0.2s allow-discrete;
+
+    &:popover-open {
+      opacity: 1;
+      transform: translateY(0);
+
+      @starting-style {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    }
+
+    .option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: #1e293b; /* slate-800 */
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background-color 0.15s;
+
+      &:hover {
+        background-color: #f1f5f9; /* slate-100 */
+      }
+
+      &:focus-visible {
+        background-color: #f8fafc; /* slate-50 */
+        outline: 2px solid #f97316; /* primary-500 */
+        z-index: 1;
+      }
+    }
+  }
+</style>

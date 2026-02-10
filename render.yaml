@@ -3,7 +3,7 @@ services:
     name: cancunmueve-pwa
     runtime: node
     buildCommand: pnpm run build
-    startCommand: node ./dist/server/entry.mjs
+    startCommand: npx serve -s dist
     envVars:
       - key: NODE_VERSION
         value: 20.10.0

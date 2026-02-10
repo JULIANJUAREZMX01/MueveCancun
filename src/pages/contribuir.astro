@@ -1,5 +1,13 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import ReportTypeSelector from '../components/ui/ReportTypeSelector.astro';
+
+const reportOptions = [
+  { value: 'new_route', label: 'Ruta Nueva', icon: '🗺️' },
+  { value: 'price_change', label: 'Cambio de Tarifa', icon: '💰' },
+  { value: 'safety_issue', label: 'Problema de Seguridad', icon: '⚠️' },
+  { value: 'other', label: 'Otro', icon: '📝' },
+];
 ---
 
 <MainLayout title="Ayúdanos a Mejorar">
@@ -15,14 +23,20 @@ import MainLayout from '../layouts/MainLayout.astro';
 
     <div class="sunny-card p-8">
       <form class="space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
-          <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500" placeholder="Tu nombre..." />
+        <div class="graffiti-input-group">
+          <input type="text" id="name" name="name" class="graffiti-input" placeholder=" " required />
+          <label for="name" class="graffiti-label">Nombre Completo</label>
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Detalles del Reporte</label>
-          <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 h-32" placeholder="Describe el cambio o sugerencia..."></textarea>
+        <ReportTypeSelector
+          name="reportType"
+          label="Tipo de Reporte"
+          options={reportOptions}
+        />
+
+        <div class="graffiti-input-group">
+          <textarea id="details" name="details" class="graffiti-input textarea" placeholder=" " required></textarea>
+          <label for="details" class="graffiti-label">Detalles del Reporte</label>
         </div>
 
         <button type="submit" class="w-full premium-button">
@@ -32,3 +46,64 @@ import MainLayout from '../layouts/MainLayout.astro';
     </div>
   </div>
 </MainLayout>
+
+<style>
+  /* GRAFFITI WARRIOR: CSS5 Floating Labels & Validation */
+  .graffiti-input-group {
+    position: relative;
+    /* Space for the floating label when it moves up */
+    margin-top: 0.5rem;
+
+    .graffiti-label {
+      position: absolute;
+      left: 1rem;
+      top: 0.8rem;
+      color: #64748b;
+      font-size: 1rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      transform-origin: left top;
+      background: transparent;
+      padding: 0 0.25rem;
+    }
+
+    .graffiti-input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      background: white;
+      transition: all 0.2s ease;
+
+      &:focus {
+        border-color: #f97316;
+        outline: 2px solid transparent;
+        box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+      }
+
+      /* Float the label when focused or has value (placeholder-shown is false) */
+      &:focus + .graffiti-label,
+      &:not(:placeholder-shown) + .graffiti-label {
+        transform: translateY(-1.5rem) scale(0.85);
+        color: #f97316;
+        background: white;
+        font-weight: 600;
+      }
+
+      /* Invalid State (User Interaction) */
+      &:user-invalid {
+        border-color: #ef4444;
+
+        & + .graffiti-label {
+          color: #ef4444;
+        }
+      }
+
+      &.textarea {
+        min-height: 8rem;
+        resize: vertical;
+      }
+    }
+  }
+</style>
