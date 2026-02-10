@@ -1,0 +1,145 @@
+{
+  "id": "ruta_1761458818964",
+  "nombre": "RUTA 71",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1761458818964_s_1",
+      "nombre": "Parada RUTA 71 #1",
+      "lat": 21.184401758572065,
+      "lng": -86.91009521484376,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_2",
+      "nombre": "Parada RUTA 71 #2",
+      "lat": 21.180195098687168,
+      "lng": -86.91298127174377,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_3",
+      "nombre": "Parada RUTA 71 #3",
+      "lat": 21.165823525606793,
+      "lng": -86.91466569900514,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_4",
+      "nombre": "Parada RUTA 71 #4",
+      "lat": 21.165353286959075,
+      "lng": -86.92500829696657,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_5",
+      "nombre": "Parada RUTA 71 #5",
+      "lat": 21.160991001898925,
+      "lng": -86.91945075988771,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_6",
+      "nombre": "Parada RUTA 71 #6",
+      "lat": 21.156928758464822,
+      "lng": -86.91642522811891,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_7",
+      "nombre": "Parada RUTA 71 #7",
+      "lat": 21.1528764095017,
+      "lng": -86.91030979156496,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_8",
+      "nombre": "Parada RUTA 71 #8",
+      "lat": 21.14950437039841,
+      "lng": -86.90629720687868,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_9",
+      "nombre": "Parada RUTA 71 #9",
+      "lat": 21.175688187591827,
+      "lng": -86.8523955345154,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_10",
+      "nombre": "Parada RUTA 71 #10",
+      "lat": 21.16444282064915,
+      "lng": -86.84611916542055,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_11",
+      "nombre": "Parada RUTA 71 #11",
+      "lat": 21.173932405917803,
+      "lng": -86.82702183723451,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_12",
+      "nombre": "Parada RUTA 71 #12",
+      "lat": 21.16887003553695,
+      "lng": -86.82626008987428,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_13",
+      "nombre": "Parada RUTA 71 #13",
+      "lat": 21.164332763902532,
+      "lng": -86.82597041130067,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_14",
+      "nombre": "Parada RUTA 71 #14",
+      "lat": 21.157504082968302,
+      "lng": -86.82548761367799,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_15",
+      "nombre": "Parada RUTA 71 #15",
+      "lat": 21.15079516001556,
+      "lng": -86.82506918907166,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_16",
+      "nombre": "Parada RUTA 71 #16",
+      "lat": 21.144451171044086,
+      "lng": -86.82465076446533,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761458818964_s_17",
+      "nombre": "Parada RUTA 71 #17",
+      "lat": 21.146407430056296,
+      "lng": -86.82424843311311,
+      "orden": 17,
+      "landmarks": ""
+    }
+  ]
+}

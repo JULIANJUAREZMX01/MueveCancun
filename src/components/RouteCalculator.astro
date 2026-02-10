@@ -315,7 +315,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
             balance = parseFloat(stored);
         } else {
             balance = 180.0;
-            localStorage.setItem('user_balance', balance.toString());
+            localStorage.setItem('user_balance', balance.toString()); console.log("Balance initialized to 180.0");
         }
     } catch (e) {
         console.warn("Storage Error, using default balance:", e);
@@ -380,7 +380,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
         
         // SYNC WITH WASM
         if (wasmLoaded && typeof load_stops_data === 'function') {
-             load_stops_data(db);
+             console.log(`Sending ${Object.keys(db).length} stops to WASM`); load_stops_data(db);
              console.log("✅ Coordinates synced to WASM");
         }
 

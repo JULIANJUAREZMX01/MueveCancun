@@ -1,0 +1,161 @@
+{
+  "id": "ruta_1760327653692",
+  "nombre": "RUTA 28",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1760327653692_s_1",
+      "nombre": "Parada RUTA 28 #1",
+      "lat": 21.204433020655948,
+      "lng": -86.88464105129243,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_2",
+      "nombre": "Parada RUTA 28 #2",
+      "lat": 21.196510868594736,
+      "lng": -86.88008666038515,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_3",
+      "nombre": "Parada RUTA 28 #3",
+      "lat": 21.19876652459794,
+      "lng": -86.87559127807619,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_4",
+      "nombre": "Parada RUTA 28 #4",
+      "lat": 21.195165460923665,
+      "lng": -86.8726032972336,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_5",
+      "nombre": "Parada RUTA 28 #5",
+      "lat": 21.190338897660638,
+      "lng": -86.87470614910127,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_6",
+      "nombre": "Parada RUTA 28 #6",
+      "lat": 21.198096353619587,
+      "lng": -86.85508847236633,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_7",
+      "nombre": "Parada RUTA 28 #7",
+      "lat": 21.195935582871517,
+      "lng": -86.85964822769165,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_8",
+      "nombre": "Parada RUTA 28 #8",
+      "lat": 21.17964987479236,
+      "lng": -86.85039460659027,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_9",
+      "nombre": "Parada RUTA 28 #9",
+      "lat": 21.18186077024347,
+      "lng": -86.84553980827333,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_10",
+      "nombre": "Parada RUTA 28 #10",
+      "lat": 21.18464184969925,
+      "lng": -86.84015393257143,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_11",
+      "nombre": "Parada RUTA 28 #11",
+      "lat": 21.187522912810724,
+      "lng": -86.83439254760744,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_12",
+      "nombre": "Parada RUTA 28 #12",
+      "lat": 21.177028770392997,
+      "lng": -86.8285346031189,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_13",
+      "nombre": "Parada RUTA 28 #13",
+      "lat": 21.175607898265053,
+      "lng": -86.82394266128541,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_14",
+      "nombre": "Parada RUTA 28 #14",
+      "lat": 21.171246169689827,
+      "lng": -86.82654976844789,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_15",
+      "nombre": "Parada RUTA 28 #15",
+      "lat": 21.164242717412606,
+      "lng": -86.82597041130067,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_16",
+      "nombre": "Parada RUTA 28 #16",
+      "lat": 21.15758913074871,
+      "lng": -86.82549297809602,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_17",
+      "nombre": "Parada RUTA 28 #17",
+      "lat": 21.15065507486489,
+      "lng": -86.8250584602356,
+      "orden": 17,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_18",
+      "nombre": "Parada RUTA 28 #18",
+      "lat": 21.144461177549786,
+      "lng": -86.82459712028505,
+      "orden": 18,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760327653692_s_19",
+      "nombre": "Parada RUTA 28 #19",
+      "lat": 21.14733801990465,
+      "lng": -86.82430207729341,
+      "orden": 19,
+      "landmarks": ""
+    }
+  ]
+}

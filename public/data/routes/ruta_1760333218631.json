@@ -1,0 +1,345 @@
+{
+  "id": "ruta_1760333218631",
+  "nombre": "RUTA 2 LA JOYA",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1760333218631_s_1",
+      "nombre": "Parada RUTA 2 LA JOYA #1",
+      "lat": 21.181005427733993,
+      "lng": -86.9133085012436,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_2",
+      "nombre": "Parada RUTA 2 LA JOYA #2",
+      "lat": 21.17103106859015,
+      "lng": -86.91448867321016,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_3",
+      "nombre": "Parada RUTA 2 LA JOYA #3",
+      "lat": 21.17530802010832,
+      "lng": -86.90911352634431,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_4",
+      "nombre": "Parada RUTA 2 LA JOYA #4",
+      "lat": 21.173357145280892,
+      "lng": -86.9037276506424,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_5",
+      "nombre": "Parada RUTA 2 LA JOYA #5",
+      "lat": 21.185712251230203,
+      "lng": -86.87965750694276,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_6",
+      "nombre": "Parada RUTA 2 LA JOYA #6",
+      "lat": 21.187833023895468,
+      "lng": -86.87511920928956,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_7",
+      "nombre": "Parada RUTA 2 LA JOYA #7",
+      "lat": 21.190533963895874,
+      "lng": -86.86991572380067,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_8",
+      "nombre": "Parada RUTA 2 LA JOYA #8",
+      "lat": 21.186152414096863,
+      "lng": -86.86734080314636,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_9",
+      "nombre": "Parada RUTA 2 LA JOYA #9",
+      "lat": 21.1658935610222,
+      "lng": -86.85553908348085,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_10",
+      "nombre": "Parada RUTA 2 LA JOYA #10",
+      "lat": 21.15321160800611,
+      "lng": -86.84280931949617,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_11",
+      "nombre": "Parada RUTA 2 LA JOYA #11",
+      "lat": 21.15462743809368,
+      "lng": -86.83510065078737,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_12",
+      "nombre": "Parada RUTA 2 LA JOYA #12",
+      "lat": 21.155973214566554,
+      "lng": -86.8303370475769,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_13",
+      "nombre": "Parada RUTA 2 LA JOYA #13",
+      "lat": 21.156488508639114,
+      "lng": -86.82543933391572,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_14",
+      "nombre": "Parada RUTA 2 LA JOYA #14",
+      "lat": 21.155943197380843,
+      "lng": -86.81849241256715,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_15",
+      "nombre": "Parada RUTA 2 LA JOYA #15",
+      "lat": 21.15879980561845,
+      "lng": -86.80723786354065,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_16",
+      "nombre": "Parada RUTA 2 LA JOYA #16",
+      "lat": 21.157384015430466,
+      "lng": -86.80137991905212,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_17",
+      "nombre": "Parada RUTA 2 LA JOYA #17",
+      "lat": 21.153046510330118,
+      "lng": -86.79800033569337,
+      "orden": 17,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_18",
+      "nombre": "Parada RUTA 2 LA JOYA #18",
+      "lat": 21.14475636916366,
+      "lng": -86.79006099700929,
+      "orden": 18,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_19",
+      "nombre": "Parada RUTA 2 LA JOYA #19",
+      "lat": 21.142675005576226,
+      "lng": -86.78493797779085,
+      "orden": 19,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_20",
+      "nombre": "Parada RUTA 2 LA JOYA #20",
+      "lat": 21.14342049733759,
+      "lng": -86.77943944931032,
+      "orden": 20,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_21",
+      "nombre": "Parada RUTA 2 LA JOYA #21",
+      "lat": 21.138937483625977,
+      "lng": -86.77042722702028,
+      "orden": 21,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_22",
+      "nombre": "Parada RUTA 2 LA JOYA #22",
+      "lat": 21.13644574995287,
+      "lng": -86.76589965820314,
+      "orden": 22,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_23",
+      "nombre": "Parada RUTA 2 LA JOYA #23",
+      "lat": 21.13479457805478,
+      "lng": -86.76108241081239,
+      "orden": 23,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_24",
+      "nombre": "Parada RUTA 2 LA JOYA #24",
+      "lat": 21.13466448494167,
+      "lng": -86.75572872161867,
+      "orden": 24,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_25",
+      "nombre": "Parada RUTA 2 LA JOYA #25",
+      "lat": 21.13657584150247,
+      "lng": -86.75121188163759,
+      "orden": 25,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_26",
+      "nombre": "Parada RUTA 2 LA JOYA #26",
+      "lat": 21.13254295036798,
+      "lng": -86.74854040145875,
+      "orden": 26,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_27",
+      "nombre": "Parada RUTA 2 LA JOYA #27",
+      "lat": 21.127329050083844,
+      "lng": -86.75275683403017,
+      "orden": 27,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_28",
+      "nombre": "Parada RUTA 2 LA JOYA #28",
+      "lat": 21.12223005856929,
+      "lng": -86.75526201725008,
+      "orden": 28,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_29",
+      "nombre": "Parada RUTA 2 LA JOYA #29",
+      "lat": 21.117376096126097,
+      "lng": -86.75736486911775,
+      "orden": 29,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_30",
+      "nombre": "Parada RUTA 2 LA JOYA #30",
+      "lat": 21.113372708620254,
+      "lng": -86.7606908082962,
+      "orden": 30,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_31",
+      "nombre": "Parada RUTA 2 LA JOYA #31",
+      "lat": 21.109294146526697,
+      "lng": -86.76332473754883,
+      "orden": 31,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_32",
+      "nombre": "Parada RUTA 2 LA JOYA #32",
+      "lat": 21.10021581578446,
+      "lng": -86.76725149154665,
+      "orden": 32,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_33",
+      "nombre": "Parada RUTA 2 LA JOYA #33",
+      "lat": 21.090346129725607,
+      "lng": -86.7719078063965,
+      "orden": 33,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_34",
+      "nombre": "Parada RUTA 2 LA JOYA #34",
+      "lat": 21.08141680212701,
+      "lng": -86.77574872970582,
+      "orden": 34,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_35",
+      "nombre": "Parada RUTA 2 LA JOYA #35",
+      "lat": 21.07545027078886,
+      "lng": -86.77752971649171,
+      "orden": 35,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_36",
+      "nombre": "Parada RUTA 2 LA JOYA #36",
+      "lat": 21.07002412332077,
+      "lng": -86.78092002868654,
+      "orden": 36,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_37",
+      "nombre": "Parada RUTA 2 LA JOYA #37",
+      "lat": 21.06473794426043,
+      "lng": -86.7797613143921,
+      "orden": 37,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_38",
+      "nombre": "Parada RUTA 2 LA JOYA #38",
+      "lat": 21.060162444434255,
+      "lng": -86.7805337905884,
+      "orden": 38,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_39",
+      "nombre": "Parada RUTA 2 LA JOYA #39",
+      "lat": 21.05580707866271,
+      "lng": -86.78266882896425,
+      "orden": 39,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_40",
+      "nombre": "Parada RUTA 2 LA JOYA #40",
+      "lat": 21.049278797481843,
+      "lng": -86.78322672843933,
+      "orden": 40,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_41",
+      "nombre": "Parada RUTA 2 LA JOYA #41",
+      "lat": 21.04225456789002,
+      "lng": -86.78306043148041,
+      "orden": 41,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760333218631_s_42",
+      "nombre": "Parada RUTA 2 LA JOYA #42",
+      "lat": 21.040987868276197,
+      "lng": -86.78317844867708,
+      "orden": 42,
+      "landmarks": ""
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "id": "ruta_1759866137331",
+  "nombre": "RUTA 18-A",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1759866137331_s_1",
+      "nombre": "Parada RUTA 18-A #1",
+      "lat": 21.17725886466589,
+      "lng": -86.90566420555115,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_2",
+      "nombre": "Parada RUTA 18-A #2",
+      "lat": 21.172771791164514,
+      "lng": -86.90487027168275,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_3",
+      "nombre": "Parada RUTA 18-A #3",
+      "lat": 21.17715881275589,
+      "lng": -86.90260112285615,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_4",
+      "nombre": "Parada RUTA 18-A #4",
+      "lat": 21.185772174015504,
+      "lng": -86.87960386276247,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_5",
+      "nombre": "Parada RUTA 18-A #5",
+      "lat": 21.1811404238192,
+      "lng": -86.87632083892822,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_6",
+      "nombre": "Parada RUTA 18-A #6",
+      "lat": 21.183231304793544,
+      "lng": -86.86768949031831,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_7",
+      "nombre": "Parada RUTA 18-A #7",
+      "lat": 21.17994999895828,
+      "lng": -86.86344623565674,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_8",
+      "nombre": "Parada RUTA 18-A #8",
+      "lat": 21.165483359841478,
+      "lng": -86.85535669326782,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_9",
+      "nombre": "Parada RUTA 18-A #9",
+      "lat": 21.161681372761745,
+      "lng": -86.85164451599123,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_10",
+      "nombre": "Parada RUTA 18-A #10",
+      "lat": 21.174147617771684,
+      "lng": -86.82671070098878,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_11",
+      "nombre": "Parada RUTA 18-A #11",
+      "lat": 21.16956536792974,
+      "lng": -86.82650148868562,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_12",
+      "nombre": "Parada RUTA 18-A #12",
+      "lat": 21.164347770132636,
+      "lng": -86.82599186897279,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_13",
+      "nombre": "Parada RUTA 18-A #13",
+      "lat": 21.157604138587082,
+      "lng": -86.82548224925996,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_14",
+      "nombre": "Parada RUTA 18-A #14",
+      "lat": 21.150675086701163,
+      "lng": -86.82507991790771,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866137331_s_15",
+      "nombre": "Parada RUTA 18-A #15",
+      "lat": 21.147433076466484,
+      "lng": -86.82297706604004,
+      "orden": 15,
+      "landmarks": ""
+    }
+  ]
+}

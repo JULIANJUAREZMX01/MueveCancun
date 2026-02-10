@@ -1,14 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export function analyze_gap(user_lat: number, user_lng: number, dest_lat: number, dest_lng: number): any;
-
-export function calculate_route(origin_lat: number, origin_lng: number, dest_lat: number, dest_lng: number, routes_val: any): any;
-
-export function calculate_trip_cost(distance: number, seats: number, is_tourist: boolean): any;
-
-export function find_nearest_stop(lat: number, lng: number): any;
-
 export function find_route(origin: string, dest: string): any;
 
 export function get_all_routes(): any;
@@ -21,12 +13,8 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
-    readonly analyze_gap: (a: number, b: number, c: number, d: number) => any;
-    readonly calculate_route: (a: number, b: number, c: number, d: number, e: any) => any;
-    readonly calculate_trip_cost: (a: number, b: number, c: number) => any;
-    readonly find_nearest_stop: (a: number, b: number) => any;
-    readonly find_route: (a: number, b: number, c: number, d: number) => any;
-    readonly get_all_routes: () => any;
+    readonly find_route: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly get_all_routes: () => [number, number, number];
     readonly load_stops_data: (a: any) => void;
     readonly validate_operator_funds: (a: number) => number;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
@@ -34,6 +22,7 @@ export interface InitOutput {
     readonly __wbindgen_exn_store: (a: number) => void;
     readonly __externref_table_alloc: () => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;
+    readonly __externref_table_dealloc: (a: number) => void;
     readonly __wbindgen_start: () => void;
 }
 
