@@ -198,6 +198,16 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
 
+  function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return unsafe;
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+  }
+
   const TRANSLATIONS = {
     es: {
       title: '¿A dónde vamos hoy?',
@@ -397,7 +407,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
                           <span class="material-icons-round text-base">location_on</span>
                       </div>
                       <div class="flex-1">
-                          <p class="text-sm font-bold text-slate-700 group-hover:text-primary-700">${res.name}</p>
+                          <p class="text-sm font-bold text-slate-700 group-hover:text-primary-700">${escapeHtml(res.name)}</p>
                           <p class="text-[10px] text-slate-500 font-mono">COORD: ${res.coords[0].toFixed(4)}, ${res.coords[1].toFixed(4)}</p>
                       </div>
                   `;
@@ -628,16 +638,6 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   function getTransportLabel(type) {
     return TRANSPORT_LABELS[type] || type;
-  }
-
-  function escapeHtml(unsafe) {
-    if (typeof unsafe !== 'string') return unsafe;
-    return unsafe
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
   }
 
   function renderResults(journeys) {
