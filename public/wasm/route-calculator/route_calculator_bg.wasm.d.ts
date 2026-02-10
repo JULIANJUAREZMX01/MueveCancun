@@ -1,10 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
-export const analyze_gap: (a: number, b: number, c: number, d: number) => [number, number, number];
-export const calculate_route: (a: number, b: number, c: number, d: number, e: any) => [number, number, number];
-export const calculate_trip_cost: (a: number, b: number, c: number) => [number, number, number];
-export const find_nearest_stop: (a: number, b: number) => [number, number, number];
 export const find_route: (a: number, b: number, c: number, d: number) => [number, number, number];
 export const get_all_routes: () => [number, number, number];
 export const load_stops_data: (a: any) => void;
