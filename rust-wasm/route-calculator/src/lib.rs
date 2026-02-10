@@ -692,11 +692,17 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
 
     for match_a in &routes_from_origin {
         let route_a = match_a.route;
-        let origin_idx_a = match_a.origin_idx.unwrap();
+        let origin_idx_a = match match_a.origin_idx {
+            Some(idx) => idx,
+            None => continue,
+        };
 
         for match_b in &routes_to_dest {
             let route_b = match_b.route;
-            let dest_idx_b = match_b.dest_idx.unwrap();
+            let dest_idx_b = match match_b.dest_idx {
+                Some(idx) => idx,
+                None => continue,
+            };
 
             // Skip same route (already covered by direct check, but safety first)
             if route_a.id == route_b.id {
@@ -968,10 +974,19 @@ pub fn find_route_internal(
             let dist_origin = haversine_distance(origin_lat, origin_lng, stop.lat, stop.lng);
             let dist_dest = haversine_distance(dest_lat, dest_lng, stop.lat, stop.lng);
 
-            if start_node_info.is_none() || dist_origin < start_node_info.as_ref().unwrap().2 {
+            let update_start = match &start_node_info {
+                None => true,
+                Some((_, _, min_dist)) => dist_origin < *min_dist,
+            };
+            if update_start {
                 start_node_info = Some((stop.id.clone(), route.id.clone(), dist_origin));
             }
-            if end_node_info.is_none() || dist_dest < end_node_info.as_ref().unwrap().2 {
+
+            let update_end = match &end_node_info {
+                None => true,
+                Some((_, _, min_dist)) => dist_dest < *min_dist,
+            };
+            if update_end {
                 end_node_info = Some((stop.id.clone(), route.id.clone(), dist_dest));
             }
         }
@@ -1009,9 +1024,10 @@ pub fn find_route_internal(
             nodes.insert((stop.id.clone(), route.id.clone()), node_idx);
 
             if let Some(prev_idx) = prev_node_idx {
-                let prev_node = graph.node_weight(prev_idx).unwrap();
-                let dist = haversine_distance(prev_node.lat, prev_node.lng, stop.lat, stop.lng);
-                graph.add_edge(prev_idx, node_idx, dist);
+                if let Some(prev_node) = graph.node_weight(prev_idx) {
+                    let dist = haversine_distance(prev_node.lat, prev_node.lng, stop.lat, stop.lng);
+                    graph.add_edge(prev_idx, node_idx, dist);
+                }
             }
             prev_node_idx = Some(node_idx);
         }
@@ -1020,8 +1036,14 @@ pub fn find_route_internal(
     let all_nodes: Vec<NodeIndex> = graph.node_indices().collect();
     for i in 0..all_nodes.len() {
         for j in i + 1..all_nodes.len() {
-            let node_a = graph.node_weight(all_nodes[i]).unwrap();
-            let node_b = graph.node_weight(all_nodes[j]).unwrap();
+            let node_a = match graph.node_weight(all_nodes[i]) {
+                Some(n) => n,
+                None => continue,
+            };
+            let node_b = match graph.node_weight(all_nodes[j]) {
+                Some(n) => n,
+                None => continue,
+            };
 
             if node_a.route_id != node_b.route_id {
                 let dist = haversine_distance(node_a.lat, node_a.lng, node_b.lat, node_b.lng);
