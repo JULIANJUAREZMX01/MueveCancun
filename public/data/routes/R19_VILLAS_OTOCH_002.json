@@ -1,0 +1,31 @@
+{
+  "id": "R19_VILLAS_OTOCH_002",
+  "nombre": "R-19 Villas Otoch - Crucero",
+  "tarifa": 13,
+  "tipo": "Bus_Urban",
+  "frecuencia_minutos": 25,
+  "horario": {
+    "inicio": "06:00",
+    "fin": "22:30"
+  },
+  "paradas": [
+    {
+      "nombre": "Villas Otoch",
+      "lat": 21.138,
+      "lng": -86.865,
+      "orden": 1
+    },
+    {
+      "nombre": "Hospital General (Av. Kabah)",
+      "lat": 21.15,
+      "lng": -86.84,
+      "orden": 2
+    },
+    {
+      "nombre": "El Crucero",
+      "lat": 21.1576,
+      "lng": -86.8269,
+      "orden": 3
+    }
+  ]
+}

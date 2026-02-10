@@ -19,10 +19,18 @@ const {
       <p class="text-gray-600 font-medium">Cargando mapa...</p>
     </div>
   </div>
+
+  <!-- Map Controls -->
+  <div class="absolute top-4 right-4 z-[500] flex flex-col gap-2">
+    <button id="gps-center-btn" class="w-10 h-10 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-xl shadow-lg border border-white/20 flex items-center justify-center text-slate-700 dark:text-slate-200 active:scale-90 transition-all hover:bg-white dark:hover:bg-slate-700">
+        <span class="material-symbols-rounded" style="font-variation-settings: 'FILL' 0;">my_location</span>
+    </button>
+  </div>
 </div>
 
 <script>
   import { coordinatesStore } from '../lib/CoordinatesStore';
+  import { analytics } from '../lib/Analytics';
 
   // Optimized Coordinate Finder (Inverted Index + Cache)
   class CoordinateFinder {
@@ -391,17 +399,106 @@ const {
     drawRoute(event.detail);
   });
 
+  // GPS Centering Logic
+  function setupGPS() {
+    const gpsBtn = document.getElementById('gps-center-btn');
+    if (!gpsBtn) return;
+
+    let userMarker;
+
+    gpsBtn.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            if (window.showToast) window.showToast("Geolocalización no disponible", "error");
+            return;
+        }
+
+        gpsBtn.classList.add('animate-pulse', 'text-primary-500');
+        analytics.track('gps_center');
+
+        navigator.geolocation.getCurrentPosition((pos) => {
+            const { latitude, longitude } = pos.coords;
+            
+            if (map) {
+                map.setView([latitude, longitude], 15);
+                
+                if (userMarker) userMarker.remove();
+                
+                const L = window.L;
+                userMarker = L.marker([latitude, longitude], {
+                    icon: L.divIcon({
+                        className: 'user-location-marker',
+                        html: '<div class="pulse-ring"></div><div class="dot"></div>',
+                        iconSize: [24, 24]
+                    })
+                }).addTo(map);
+            }
+            
+            gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
+            if (window.showToast) window.showToast("Ubicación centrada", "info");
+        }, (err) => {
+            console.error(err);
+            gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
+            if (window.showToast) window.showToast("No se pudo obtener la ubicación", "error");
+        });
+    });
+
+    // Also listen for external location updates (from Search bar, etc)
+    window.addEventListener('USER_LOCATION_UPDATE', (e) => {
+        const { lat, lng, focus } = e.detail;
+        if (map && focus) {
+            map.setView([lat, lng], 15);
+        }
+    });
+  }
+
   // Init on load
   if (document.readyState === 'complete') {
       initMap();
+      setupGPS();
   } else {
-      window.addEventListener('load', initMap);
+      window.addEventListener('load', () => {
+          initMap();
+          setupGPS();
+      });
   }
 
   // Re-init on view transition
   document.addEventListener('astro:page-load', () => {
       // Small delay to ensure container exists
-      setTimeout(initMap, 100);
+      setTimeout(() => {
+          initMap();
+          setupGPS();
+      }, 100);
   });
 
 </script>
+
+<style is:global>
+  .user-location-marker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  .user-location-marker .dot {
+      width: 12px;
+      height: 12px;
+      background: #3B82F6;
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
+      z-index: 2;
+  }
+  .user-location-marker .pulse-ring {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: rgba(59, 130, 246, 0.4);
+      border-radius: 50%;
+      z-index: 1;
+      animation: map-marker-pulse 2s infinite;
+  }
+  @keyframes map-marker-pulse {
+      0% { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(2.5); opacity: 0; }
+  }
+</style>

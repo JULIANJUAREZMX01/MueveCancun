@@ -1,0 +1,51 @@
+{
+  "id": "R2_94_VILLAS_OTOCH_001",
+  "nombre": "R-2-94 Villas Otoch (Eje Kabah - ZH)",
+  "tarifa": 15,
+  "tipo": "Bus_Urbano_Isla",
+  "frecuencia_minutos": 10,
+  "horario": {
+    "inicio_oficial": "05:00",
+    "fin_oficial": "22:30",
+    "guardia_nocturna": "03:00 - 05:00 (Sistema de llenado en OXXO)"
+  },
+  "paradas": [
+    {
+      "nombre": "OXXO Villas Otoch Paraíso (El Arco)",
+      "lat": 21.1685,
+      "lng": -86.885,
+      "orden": 1,
+      "landmarks": "Punto de agrupación 'La Guardia'"
+    },
+    {
+      "nombre": "Chedraui Lakin / Av. Talleres",
+      "lat": 21.165,
+      "lng": -86.879,
+      "orden": 2
+    },
+    {
+      "nombre": "Av. Kabah (Ruta 4)",
+      "lat": 21.16,
+      "lng": -86.845,
+      "orden": 3
+    },
+    {
+      "nombre": "Plaza Las Américas (Kabah)",
+      "lat": 21.141,
+      "lng": -86.843,
+      "orden": 4
+    },
+    {
+      "nombre": "Entrada Zona Hotelera (Km 0)",
+      "lat": 21.153,
+      "lng": -86.815,
+      "orden": 5
+    },
+    {
+      "nombre": "Zona Hotelera (Hasta retornar)",
+      "lat": 21.135,
+      "lng": -86.768,
+      "orden": 6
+    }
+  ]
+}

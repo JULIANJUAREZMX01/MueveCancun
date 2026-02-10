@@ -1,14 +1,15 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import InteractiveMap from '../components/InteractiveMap.astro';
 import RouteCalculator from '../components/RouteCalculator.astro';
 
 const title = "Dashboard";
 ---
 
 <MainLayout title={title} useMap={true}>
-    <!-- Real Interactive Map (Background Layer) -->
+    <!-- Full-screen Background Map -->
     <div class="fixed inset-0 z-0 h-full w-full">
-        <div id="map-container" class="h-full w-full"></div>
+        <InteractiveMap center={[21.1619, -86.8515]} zoom={13} />
     </div>
 
     <!-- Dashboard Overlay -->
@@ -21,52 +22,7 @@ const title = "Dashboard";
 </MainLayout>
 
 <script>
-    import { coordinatesStore } from '../lib/CoordinatesStore';
-
-    let map: any;
-    let layerGroup: any;
-
-    async function initLeaflet() {
-        if(typeof (window as any).L === 'undefined') return;
-        const container = document.getElementById('map-container');
-        if(!container || (container as any)._leaflet_id) return;
-
-        const L = (window as any).L;
-        const isDark = document.documentElement.classList.contains('dark');
-
-        map = L.map('map-container', {
-            zoomControl: false,
-            attributionControl: false
-        }).setView([21.1619, -86.8515], 13);
-
-        L.tileLayer(
-            isDark
-                ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-            { subdomains: 'abcd', maxZoom: 20 }
-        ).addTo(map);
-
-        layerGroup = L.layerGroup().addTo(map);
-        
-        // Key location markers
-        await coordinatesStore.init();
-        const db = coordinatesStore.getDB() || {};
-        Object.entries(db).forEach(([name, coords]) => {
-            if(["El Crucero", "Plaza Las Américas", "La Rehoyada", "Zona Hotelera"].includes(name)) {
-                L.circleMarker(coords, {
-                    radius: 5,
-                    fillColor: '#F97316',
-                    color: '#FFF',
-                    weight: 2,
-                    fillOpacity: 1
-                }).addTo(layerGroup).bindPopup(
-                    `<div style="font-family: Inter, sans-serif; font-weight: 700; font-size: 13px;">${name}</div>`
-                );
-            }
-        });
-    }
-
-    // Handle View Switching
+    // Handle View Switching (Minimize/Maximize UI)
     window.addEventListener('VIEW_STATE_CHANGE', (e) => {
         const state = (e as CustomEvent).detail;
         const container = document.querySelector('.dashboard-container');
@@ -75,65 +31,7 @@ const title = "Dashboard";
         } else {
             container?.classList.remove('map-mode');
         }
-        setTimeout(() => map?.invalidateSize(), 400);
     });
-
-    // Route rendering on map
-    window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
-        const data = (event as CustomEvent).detail;
-        if (!map || !layerGroup) return;
-        const L = (window as any).L;
-
-        layerGroup.clearLayers();
-        const allCoords: any[] = [];
-        
-        if (data.legs) {
-            data.legs.forEach((leg: any) => {
-                if (leg.stops_info) {
-                    const legCoords = leg.stops_info.map((s: any) => [s.lat, s.lng]);
-                    L.polyline(legCoords, {
-                        color: '#F97316',
-                        weight: 4,
-                        opacity: 0.8
-                    }).addTo(layerGroup);
-                    allCoords.push(...legCoords);
-                }
-            });
-        }
-
-        if (allCoords.length > 0) {
-            map.fitBounds(allCoords, { padding: [50, 50] });
-        }
-    });
-
-    // GPS location updates
-    window.addEventListener('USER_LOCATION_UPDATE', (event) => {
-        const { lat, lng, focus } = (event as CustomEvent).detail;
-        if (!map) return;
-        const L = (window as any).L;
-
-        L.marker([lat, lng], {
-            icon: L.divIcon({
-                className: 'user-location-marker',
-                html: '<div class="pulse"></div>',
-                iconSize: [20, 20]
-            })
-        }).addTo(map);
-
-        if (focus) {
-            map.setView([lat, lng], 15);
-        }
-    });
-
-    // Init on load
-    if (document.readyState === 'complete') {
-        initLeaflet();
-    } else {
-        window.addEventListener('load', initLeaflet);
-    }
-    
-    // Re-init on view transition
-    document.addEventListener('astro:page-load', initLeaflet);
 </script>
 
 <style>
@@ -183,34 +81,5 @@ const title = "Dashboard";
 
 .animate-fade-in-up {
     animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* User Location Marker */
-:global(.user-location-marker) {
-    background: none;
-    border: none;
-}
-
-:global(.user-location-marker .pulse) {
-    width: 14px;
-    height: 14px;
-    background: #3B82F6;
-    border: 3px solid white;
-    border-radius: 50%;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-}
-
-:global(.user-location-marker .pulse::after) {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    background: rgba(59, 130, 246, 0.4);
-    border-radius: 50%;
-    animation: marker-pulse 2s infinite;
-}
-
-@keyframes marker-pulse {
-    0% { transform: scale(1); opacity: 1; }
-    100% { transform: scale(2.5); opacity: 0; }
 }
 </style>

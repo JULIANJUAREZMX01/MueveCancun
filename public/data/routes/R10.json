@@ -1,26 +1,89 @@
 {
-  "rutas": [
+  "id": "R10",
+  "nombre": "Las Américas - Aeropuerto",
+  "tarifa": 15,
+  "frecuencia_minutos": 20,
+  "horario": "04:00-23:00",
+  "paradas": [
     {
-      "id": "R10",
-      "nombre": "Las Américas - Aeropuerto",
-      "color": "#FFD93D",
-      "tarifa": 15.0,
-      "paradas": [
-        {
-          "id": "R10_001",
-          "nombre": "Plaza Las Américas",
-          "lat": 21.1472,
-          "lng": -86.8234,
-          "orden": 1
-        },
-        {
-          "id": "R10_009",
-          "nombre": "Aeropuerto T3",
-          "lat": 21.0412,
-          "lng": -86.8725,
-          "orden": 9
-        }
-      ]
+      "id": "R10_001",
+      "nombre": "Plaza Las Américas",
+      "lat": 21.1472,
+      "lng": -86.8234,
+      "orden": 1,
+      "landmarks": "Av. Sayil"
+    },
+    {
+      "id": "R10_002",
+      "nombre": "Av. Nichupté",
+      "lat": 21.1412,
+      "lng": -86.8315,
+      "orden": 2,
+      "landmarks": "Cerca de Pabellón Caribe"
+    },
+    {
+      "id": "R10_003",
+      "nombre": "Av. Kabah",
+      "lat": 21.1355,
+      "lng": -86.8412,
+      "orden": 3,
+      "landmarks": "Supermercado Soriana"
+    },
+    {
+      "id": "R10_004",
+      "nombre": "Av. La Luna",
+      "lat": 21.1285,
+      "lng": -86.8485,
+      "orden": 4,
+      "landmarks": "Plaza La Luna"
+    },
+    {
+      "id": "R10_005",
+      "nombre": "Av. Las Torres",
+      "lat": 21.1155,
+      "lng": -86.8555,
+      "orden": 5,
+      "landmarks": "Parque Kabah Sur"
+    },
+    {
+      "id": "R10_006",
+      "nombre": "Av. Huayacán",
+      "lat": 21.1025,
+      "lng": -86.8612,
+      "orden": 6,
+      "landmarks": "Zona Residencial"
+    },
+    {
+      "id": "R10_007",
+      "nombre": "Carr. Federal 307",
+      "lat": 21.0855,
+      "lng": -86.8525,
+      "orden": 7,
+      "landmarks": "Entrada Bonfil"
+    },
+    {
+      "id": "R10_008",
+      "nombre": "UT Cancún",
+      "lat": 21.0555,
+      "lng": -86.8415,
+      "orden": 8,
+      "landmarks": "Universidad"
+    },
+    {
+      "id": "R10_009",
+      "nombre": "T3 Aeropuerto",
+      "lat": 21.0412,
+      "lng": -86.8725,
+      "orden": 9,
+      "landmarks": "Vuelos Internacionales"
+    },
+    {
+      "id": "R10_010",
+      "nombre": "T2 Aeropuerto",
+      "lat": 21.0365,
+      "lng": -86.8775,
+      "orden": 10,
+      "landmarks": "Vuelos Nacionales"
     }
   ]
 }

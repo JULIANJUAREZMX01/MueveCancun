@@ -198,6 +198,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   import { openDB } from 'idb';
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
+  import { analytics } from '../lib/Analytics';
 
   const dataUi = document.getElementById('i18n-data');
   const ui = dataUi ? JSON.parse(dataUi.dataset.ui || '{}') : {};
@@ -598,6 +599,8 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
     const fromVal = (document.getElementById('origin-input') as HTMLInputElement).value;
     const toVal = (document.getElementById('destination-input') as HTMLInputElement).value;
+
+    analytics.track('search_route', { from: fromVal, to: toVal });
 
     if (toVal.toLowerCase().includes("aeropuerto") && fromVal.toLowerCase().includes("walmart")) {
          renderError("Ruta restringida hacia el Aeropuerto desde Walmart (Solo Taxis/ADO).");

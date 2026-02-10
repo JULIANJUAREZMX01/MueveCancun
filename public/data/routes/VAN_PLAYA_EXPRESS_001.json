@@ -1,0 +1,62 @@
+{
+  "id": "VAN_PLAYA_EXPRESS_001",
+  "nombre": "Playa Express Cancún → Playa del Carmen",
+  "tarifa": 55,
+  "tipo": "Van_Foranea",
+  "frecuencia_minutos": 30,
+  "horario": {
+    "inicio": "05:00",
+    "fin": "00:00"
+  },
+  "paradas": [
+    {
+      "id": "VAN_PLAYA_EXPRESS_001_001",
+      "nombre": "Terminal ADO Cancún Centro",
+      "lat": 21.1586,
+      "lng": -86.8259,
+      "orden": 1
+    },
+    {
+      "id": "VAN_PLAYA_EXPRESS_001_002",
+      "nombre": "Entrada Aeropuerto (Carr. Fed. 307)",
+      "lat": 21.0417,
+      "lng": -86.8761,
+      "orden": 2
+    },
+    {
+      "id": "VAN_PLAYA_EXPRESS_001_003",
+      "nombre": "Gasolinera López Portillo",
+      "lat": 21.175,
+      "lng": -86.84,
+      "orden": 3
+    },
+    {
+      "id": "VAN_PLAYA_EXPRESS_001_004",
+      "nombre": "Puerto Morelos (Carr. 307)",
+      "lat": 20.8495,
+      "lng": -86.872,
+      "orden": 4
+    },
+    {
+      "id": "VAN_PLAYA_EXPRESS_001_005",
+      "nombre": "Playa Maroma",
+      "lat": 20.785,
+      "lng": -86.895,
+      "orden": 5
+    },
+    {
+      "id": "VAN_PLAYA_EXPRESS_001_006",
+      "nombre": "Punta Bete",
+      "lat": 20.715,
+      "lng": -87.005,
+      "orden": 6
+    },
+    {
+      "id": "VAN_PLAYA_EXPRESS_001_007",
+      "nombre": "Playa del Carmen Centro (Calle 2 x 5ta Av.)",
+      "lat": 20.6296,
+      "lng": -87.0739,
+      "orden": 7
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "id": "CR_PTO_JUAREZ_001",
+  "nombre": "Combi Roja Puerto Juárez → Ultramar",
+  "tarifa": 13,
+  "tipo": "Combi_Municipal",
+  "empresa": "Autocar (Controladora SEA)",
+  "frecuencia_minutos": 15,
+  "horario": {
+    "inicio": "05:30",
+    "fin": "00:30"
+  },
+  "paradas": [
+    {
+      "id": "CR_PTO_JUAREZ_001_001",
+      "nombre": "La Rehoyada (Base Operativa)",
+      "lat": 21.1619,
+      "lng": -86.8515,
+      "orden": 1
+    },
+    {
+      "id": "CR_PTO_JUAREZ_001_002",
+      "nombre": "El Crucero",
+      "lat": 21.1576,
+      "lng": -86.8269,
+      "orden": 2
+    },
+    {
+      "id": "CR_PTO_JUAREZ_001_003",
+      "nombre": "Av. Tulum Norte (Tramo)",
+      "lat": 21.165,
+      "lng": -86.823,
+      "orden": 3
+    },
+    {
+      "id": "CR_PTO_JUAREZ_001_004",
+      "nombre": "Playa del Niño",
+      "lat": 21.195,
+      "lng": -86.81,
+      "orden": 4
+    },
+    {
+      "id": "CR_PTO_JUAREZ_001_005",
+      "nombre": "Muelle Ultramar (Puerto Juárez)",
+      "lat": 21.207,
+      "lng": -86.802,
+      "orden": 5
+    }
+  ]
+}

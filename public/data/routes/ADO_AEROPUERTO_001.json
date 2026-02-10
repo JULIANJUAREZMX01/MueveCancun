@@ -1,0 +1,36 @@
+{
+  "id": "ADO_AEROPUERTO_001",
+  "nombre": "ADO Aeropuerto → Centro Cancún",
+  "tarifa": 150,
+  "tipo": "Bus_Foraneo",
+  "paradas": [
+    {
+      "id": "ADO_AEROPUERTO_001_001",
+      "nombre": "Terminal 2 Aeropuerto",
+      "lat": 21.0417,
+      "lng": -86.8761,
+      "orden": 1
+    },
+    {
+      "id": "ADO_AEROPUERTO_001_002",
+      "nombre": "Terminal 3 Aeropuerto",
+      "lat": 21.041,
+      "lng": -86.8755,
+      "orden": 2
+    },
+    {
+      "id": "ADO_AEROPUERTO_001_003",
+      "nombre": "Terminal 4 Aeropuerto",
+      "lat": 21.04,
+      "lng": -86.875,
+      "orden": 3
+    },
+    {
+      "id": "ADO_AEROPUERTO_001_004",
+      "nombre": "Terminal ADO Centro Cancún",
+      "lat": 21.1586,
+      "lng": -86.8259,
+      "orden": 4
+    }
+  ]
+}

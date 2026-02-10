@@ -1,0 +1,36 @@
+{
+  "id": "R28_VILLAS_OTOCH_001",
+  "nombre": "R-28 Villas Otoch → Av. Tulum",
+  "tarifa": 13,
+  "tipo": "Bus_Urban",
+  "paradas": [
+    {
+      "id": "R28_VILLAS_OTOCH_001_001",
+      "nombre": "Villas Otoch Paraíso",
+      "lat": 21.138,
+      "lng": -86.865,
+      "orden": 1
+    },
+    {
+      "id": "R28_VILLAS_OTOCH_001_002",
+      "nombre": "Paseos Kabah",
+      "lat": 21.142,
+      "lng": -86.855,
+      "orden": 2
+    },
+    {
+      "id": "R28_VILLAS_OTOCH_001_003",
+      "nombre": "Av. Kabah (Hospital General)",
+      "lat": 21.15,
+      "lng": -86.84,
+      "orden": 3
+    },
+    {
+      "id": "R28_VILLAS_OTOCH_001_004",
+      "nombre": "El Crucero",
+      "lat": 21.1576,
+      "lng": -86.8269,
+      "orden": 4
+    }
+  ]
+}

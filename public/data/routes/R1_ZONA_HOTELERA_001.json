@@ -1,0 +1,56 @@
+{
+  "id": "R1_ZONA_HOTELERA_001",
+  "nombre": "R-1 Centro → Zona Hotelera",
+  "tarifa": 15,
+  "tipo": "Bus_Urban",
+  "empresa": "Controladora SEA (rojas)",
+  "frecuencia_minutos": 10,
+  "horario": {
+    "inicio": "06:00",
+    "fin": "22:30"
+  },
+  "paradas": [
+    {
+      "id": "R1_ZONA_HOTELERA_001_001",
+      "nombre": "La Rehoyada / Villas Otoch (Origenes)",
+      "lat": 21.1619,
+      "lng": -86.8515,
+      "orden": 1
+    },
+    {
+      "id": "R1_ZONA_HOTELERA_001_002",
+      "nombre": "El Crucero",
+      "lat": 21.1576,
+      "lng": -86.8269,
+      "orden": 2
+    },
+    {
+      "id": "R1_ZONA_HOTELERA_001_003",
+      "nombre": "Av. Tulum Sur",
+      "lat": 21.155,
+      "lng": -86.825,
+      "orden": 3
+    },
+    {
+      "id": "R1_ZONA_HOTELERA_001_004",
+      "nombre": "El Cebiche (Entrada Zona Hotelera)",
+      "lat": 21.153,
+      "lng": -86.815,
+      "orden": 4
+    },
+    {
+      "id": "R1_ZONA_HOTELERA_001_005",
+      "nombre": "Boulevard Kukulcán (Zona Hotelera)",
+      "lat": 21.135,
+      "lng": -86.768,
+      "orden": 5
+    },
+    {
+      "id": "R1_ZONA_HOTELERA_001_006",
+      "nombre": "Playa Delfines (El Mirador)",
+      "lat": 21.085,
+      "lng": -86.775,
+      "orden": 6
+    }
+  ]
+}

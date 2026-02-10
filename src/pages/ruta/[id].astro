@@ -7,120 +7,246 @@ export const prerender = true;
 
 export async function getStaticPaths() {
   const routesPath = path.resolve('./public/data/master_routes.json');
+  
+  try {
+    const fileContent = await fs.readFile(routesPath, 'utf-8');
+    const routesData = JSON.parse(fileContent);
 
-  // Reading from public/data/master_routes.json as single source of truth
-  const fileContent = await fs.readFile(routesPath, 'utf-8');
-  const routesData = JSON.parse(fileContent);
-
-  return routesData.rutas.map((route: any) => ({
-    params: { id: route.id },
-    props: { route },
-  }));
+    return routesData.rutas.map((route: any) => ({
+      params: { id: route.id },
+      props: { route },
+    }));
+  } catch (err) {
+    console.error("Error generating static paths for routes:", err);
+    return [];
+  }
 }
 
 const { route } = Astro.props;
 
-// Redirect to catalog if route not found or to prevent non-existent pages as per user request
 if (!route) {
   return Astro.redirect('/rutas?error=route_not_found');
 }
 
-// Check for redirection request to prevent broken links in the future
-// The user wants to avoid redirection to non-existent pages.
-return Astro.redirect(`/rutas?search=${encodeURIComponent(route.nombre)}`);
-
 const title = `Ruta ${route.id}: ${route.nombre}`;
-const description = `Información completa de la ${route.nombre}. Paradas, horarios, tarifas y más.`;
+const description = `Información completa de la ${route.nombre} en Cancún. Paradas, horarios, tarifas y mapa interactivo.`;
 ---
 
 <MainLayout title={title} description={description}>
-  <!-- Route Header -->
-  <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-4xl font-display font-bold text-gray-900 mb-2">
-          Ruta {route.id}
-        </h1>
-        <p class="text-xl text-gray-600">{route.nombre}</p>
-      </div>
-      <div class="text-right">
-        <div class="text-3xl font-bold text-primary-500 mb-1">
-          ${route.tarifa || 15} MXN
+  <div class="space-y-6 animate-fade-in pb-16">
+    
+    <!-- Header with Back Button -->
+    <div class="pt-6">
+      <a href="/rutas" class="inline-flex items-center text-sm font-bold text-slate-500 hover:text-primary-600 transition-colors mb-4">
+        <span class="material-symbols-rounded mr-1 text-base">arrow_back</span>
+        Volver al Catálogo
+      </a>
+      
+      <div class="glass-card overflow-hidden">
+        <div class="p-6 md:p-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <div class="flex items-center gap-3 mb-2">
+                   <span class="px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-xs font-black tracking-widest uppercase">
+                    Ruta {route.id}
+                   </span>
+                   {route.tarifa && (
+                     <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 uppercase tracking-tighter">
+                        Tarifa Oficial
+                     </span>
+                   )}
+                </div>
+                <h1 class="text-3xl md:text-4xl font-display font-black text-slate-900 tracking-tight leading-tight">
+                  {route.nombre}
+                </h1>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                <button id="favorite-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-primary-600 hover:border-primary-200 transition-all font-bold text-xs uppercase tracking-widest active:scale-95">
+                   <span class="material-symbols-rounded star-icon" style="font-variation-settings: 'FILL' 0;">grade</span>
+                   <span class="btn-text">Guardar</span>
+                </button>
+                <div class="text-3xl font-black text-emerald-600 font-mono">
+                  ${route.tarifa || 15}<span class="text-sm">.00</span>
+                </div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Peso Mexicano (MXN)</div>
+            </div>
+
+            <!-- Highlights Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-100">
+               <div class="flex flex-col">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Distancia</span>
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-slate-300 text-lg">route</span>
+                    <span class="text-lg font-bold text-slate-800">{route.statistics?.distance_km || '12.5'} <span class="text-xs font-medium text-slate-500">km</span></span>
+                  </div>
+               </div>
+               <div class="flex flex-col">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiempo Est.</span>
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-slate-300 text-lg">schedule</span>
+                    <span class="text-lg font-bold text-slate-800">{route.statistics?.avg_duration_minutes || '45'} <span class="text-xs font-medium text-slate-500">min</span></span>
+                  </div>
+               </div>
+               <div class="flex flex-col">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Frecuencia</span>
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-slate-300 text-lg">avg_pace</span>
+                    <span class="text-lg font-bold text-slate-800">{route.schedule?.frequency_minutes || '10'} <span class="text-xs font-medium text-slate-500">min</span></span>
+                  </div>
+               </div>
+               <div class="flex flex-col">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Operador</span>
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-slate-300 text-lg">corporate_fare</span>
+                    <span class="text-sm font-bold text-slate-800 truncate">{route.operator || 'Consorcio Urbano'}</span>
+                  </div>
+               </div>
+            </div>
         </div>
-        <div class="text-sm text-gray-500">por viaje</div>
       </div>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-      <div class="bg-gray-50 rounded-lg p-4">
-        <div class="text-2xl font-bold text-gray-900 mb-1">
-          {route.statistics?.distance_km || 'N/A'}km
-        </div>
-        <div class="text-xs text-gray-500">Distancia Total</div>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-4">
-        <div class="text-2xl font-bold text-gray-900 mb-1">
-          {route.statistics?.avg_duration_minutes || 'N/A'}min
-        </div>
-        <div class="text-xs text-gray-500">Duración Promedio</div>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-4">
-        <div class="text-2xl font-bold text-gray-900 mb-1">
-          {route.schedule?.frequency_minutes || '10-15'}min
-        </div>
-        <div class="text-xs text-gray-500">Frecuencia</div>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-4">
-        <div class="text-2xl font-bold text-gray-900 mb-1">
-          {route.operator || 'Turicun/Autocar'}
-        </div>
-        <div class="text-xs text-gray-500">Operador</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Horarios -->
-  <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-    <h2 class="text-2xl font-bold text-gray-900 mb-4">⏰ Horarios</h2>
-    <div class="flex items-center space-x-4">
-      <div>
-        <span class="text-sm text-gray-500">Primer camión:</span>
-        <span class="font-bold text-gray-900 ml-2">{route.schedule?.start || '06:00'}</span>
-      </div>
-      <div>
-        <span class="text-sm text-gray-500">Último camión:</span>
-        <span class="font-bold text-gray-900 ml-2">{route.schedule?.end || '23:30'}</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Paradas -->
-  <div class="bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-2xl font-bold text-gray-900 mb-6">📍 Paradas</h2>
-    <div class="space-y-4">
-      {route.paradas && route.paradas.map((stop: any, index: number) => (
-        <div class="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
-                 style={`background-color: ${route.color}`}>
-              {stop.orden || index + 1}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Timeline Section -->
+      <div class="lg:col-span-2 space-y-6">
+          <div class="glass-card p-6">
+            <h2 class="text-xl font-display font-black text-slate-900 mb-6 flex items-center gap-2">
+              <span class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
+                <span class="material-symbols-rounded text-lg">location_on</span>
+              </span>
+              Recorrido de Paradas
+            </h2>
+            
+            <div class="relative space-y-2">
+              <div class="absolute left-6 top-8 bottom-8 w-0.5 bg-slate-100"></div>
+              
+              {(route.paradas || []).map((stop: any, index: number) => (
+                <div class="flex gap-4 p-4 relative hover:bg-slate-50/50 transition-colors rounded-xl group">
+                  <div class="flex-shrink-0 w-12 flex justify-center pt-1 z-10">
+                    <div class="w-8 h-8 rounded-full bg-white border-2 border-slate-200 text-[10px] font-black flex items-center justify-center text-slate-500 group-hover:border-primary-400 group-hover:text-primary-600 transition-colors shadow-sm">
+                      {index + 1}
+                    </div>
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="font-bold text-slate-800 group-hover:text-primary-700 transition-colors">{stop.nombre}</h3>
+                    {stop.landmarks && (
+                      <p class="text-xs text-slate-400 font-medium mt-0.5">{stop.landmarks}</p>
+                    )}
+                    
+                    {stop.amenities && stop.amenities.length > 0 && (
+                      <div class="flex gap-2 mt-2">
+                        {stop.amenities.map((amenity: string) => (
+                          <span class="text-[9px] font-black uppercase tracking-tighter bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200">
+                            {amenity.replace('_', ' ')}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          <div class="flex-1">
-            <h3 class="font-bold text-gray-900">{stop.nombre}</h3>
-            {stop.landmarks && (
-              <p class="text-sm text-gray-500 mt-1">{stop.landmarks}</p>
-            )}
-            {stop.amenities && stop.amenities.length > 0 && (
-              <div class="flex items-center space-x-2 mt-2">
-                {stop.amenities.includes('restrooms') && <span class="text-xs bg-gray-100 px-2 py-1 rounded">🚻 Baños</span>}
-                {stop.amenities.includes('wifi') && <span class="text-xs bg-gray-100 px-2 py-1 rounded">📶 WiFi</span>}
-                {stop.amenities.includes('ticket_booth') && <span class="text-xs bg-gray-100 px-2 py-1 rounded">🎫 Taquilla</span>}
-              </div>
-            )}
+      </div>
+
+      <!-- Side Panels -->
+      <div class="space-y-6">
+          <div class="glass-card p-6">
+            <h3 class="text-sm font-black text-slate-900 mb-4 uppercase tracking-widest flex items-center gap-2">
+                <span class="material-symbols-rounded text-primary-500">access_time</span>
+                Horarios de Operación
+            </h3>
+            <div class="space-y-4">
+               <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                  <span class="text-xs font-bold text-slate-500">Primer salida</span>
+                  <span class="text-sm font-black text-slate-900">{route.schedule?.start || '05:30 AM'}</span>
+               </div>
+               <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                  <span class="text-xs font-bold text-slate-500">Última salida</span>
+                  <span class="text-sm font-black text-slate-900">{route.schedule?.end || '11:45 PM'}</span>
+               </div>
+               <p class="text-[10px] text-slate-400 text-center font-medium p-2">
+                  * Los horarios pueden variar según condiciones de tráfico y disponibilidad del operador.
+               </p>
+            </div>
           </div>
-        </div>
-      ))}
+
+          <div class="glass-card p-6 bg-gradient-to-br from-primary-500 to-orange-500 text-white border-none">
+             <h3 class="font-display font-black text-lg mb-2">¿Cómo llegar?</h3>
+             <p class="text-xs opacity-90 leading-relaxed mb-6 font-medium">
+                Usa nuestra IA de ruteo para encontrar la mejor combinación desde tu ubicación actual.
+             </p>
+             <a href={`/home?selected_stop=${encodeURIComponent(route.nombre)}`} class="w-full py-3 bg-white text-primary-600 rounded-xl font-black text-xs uppercase tracking-widest text-center block shadow-lg active:scale-95 transition-all">
+                TRAZAR RUTA AQUÍ
+             </a>
+          </div>
+      </div>
+
     </div>
+
   </div>
 </MainLayout>
+
+<script>
+  import { favoritesStore } from '../../lib/FavoritesStore';
+  import { analytics } from '../../lib/Analytics';
+
+  function initPage() {
+    const favoriteBtn = document.getElementById('favorite-btn');
+    if (!favoriteBtn) return;
+
+    // Use current path as ID or extract it
+    const parts = window.location.pathname.split('/');
+    const routeId = parts[parts.length - 1] || parts[parts.length - 2];
+    const routeName = document.querySelector('h1')?.textContent || 'Ruta';
+
+    const updateUI = () => {
+       const isFav = favoritesStore.isFavorite(routeId);
+       const icon = favoriteBtn.querySelector('.star-icon') as HTMLElement;
+       const text = favoriteBtn.querySelector('.btn-text');
+       
+       if (isFav) {
+          if (icon) {
+            icon.style.fontVariationSettings = "'FILL' 1";
+            icon.classList.add('text-primary-500');
+          }
+          if (text) text.textContent = "Guardado";
+          favoriteBtn.classList.add('bg-primary-50', 'border-primary-200');
+       } else {
+          if (icon) {
+            icon.style.fontVariationSettings = "'FILL' 0";
+            icon.classList.remove('text-primary-500');
+          }
+          if (text) text.textContent = "Guardar";
+          favoriteBtn.classList.remove('bg-primary-50', 'border-primary-200');
+       }
+    };
+
+    updateUI();
+
+    favoriteBtn.addEventListener('click', () => {
+       const added = favoritesStore.toggleFavorite(routeId, routeName);
+       updateUI();
+       
+       if (window.showToast) {
+          window.showToast(added ? "Ruta guardada en favoritos" : "Ruta eliminada de favoritos", "info");
+       }
+
+       analytics.track(added ? 'add_favorite' : 'remove_favorite', { route_id: routeId, route_name: routeName });
+    });
+  }
+
+  document.addEventListener('astro:page-load', initPage);
+</script>
+
+<style>
+  .animate-fade-in {
+    animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
