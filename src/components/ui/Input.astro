@@ -1,4 +1,5 @@
 ---
+// ✅ TypeScript in Astro Frontmatter
 interface Props {
   type?: 'text' | 'email' | 'password' | 'number' | 'search';
   id?: string;
@@ -16,14 +17,14 @@ interface Props {
 const { type = 'text', id, name, placeholder, value, list, class: className, label, icon, 'aria-controls': ariaControls, 'aria-expanded': ariaExpanded } = Astro.props;
 ---
 
-<div class={`w-full ${className || ''}`}>
+<div class={`graffiti-input-wrapper ${className || ''}`}>
   {label && (
-    <label for={id} class="block text-sm font-medium text-slate-500 mb-1 flex items-center gap-1">
-      {icon && <img src={icon} class="w-4 h-4" alt="" />}
+    <label for={id} class="graffiti-label">
+      {icon && <img src={icon} class="icon" alt="" />}
       {label}
     </label>
   )}
-  <div class="relative">
+  <div class="input-container">
     <input
       type={type}
       id={id}
@@ -33,9 +34,96 @@ const { type = 'text', id, name, placeholder, value, list, class: className, lab
       list={list}
       aria-controls={ariaControls}
       aria-expanded={ariaExpanded}
-      class="w-full min-h-[44px] px-4 py-3 bg-white border-2 border-slate-200 rounded-xl text-lg font-bold text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all placeholder:text-gray-300 pr-12"
+      class="graffiti-input"
     />
     <slot name="action" />
   </div>
   <slot name="datalist" />
 </div>
+
+<style>
+  /*
+   * GRAFFITI WARRIOR: CSS5 Logic
+   * No Tailwind here. Just pure CSS with Nesting and Variables.
+   */
+  .graffiti-input-wrapper {
+    width: 100%;
+    position: relative;
+
+    /* Theme Variables (scoped) */
+    --primary-500: #F97316;
+    --primary-100: #FFEDD5;
+    --slate-200: #E2E8F0;
+    --slate-300: #cbd5e1;
+    --slate-500: #64748b;
+    --slate-900: #0f172a;
+    --danger-500: #EF4444;
+
+    /* Label Styling */
+    .graffiti-label {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-bottom: 0.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--slate-500);
+      transition: color 0.2s ease;
+
+      .icon {
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+
+    /* Input Container (relative for action slot positioning) */
+    .input-container {
+      position: relative;
+    }
+
+    /* Input Styling */
+    .graffiti-input {
+      width: 100%;
+      min-height: 44px;
+      padding: 0.75rem 1rem; /* py-3 px-4 */
+      padding-right: 3rem; /* pr-12 for action slot space */
+
+      background-color: white;
+      border: 2px solid var(--slate-200);
+      border-radius: 0.75rem; /* rounded-xl */
+
+      font-size: 1.125rem; /* text-lg */
+      font-weight: 700;
+      color: var(--slate-900);
+
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &::placeholder {
+        color: var(--slate-300);
+        font-weight: 400;
+      }
+
+      &:focus-visible {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 4px var(--primary-100); /* ring-2 ring-primary-100 equivalent but cooler */
+      }
+
+      /* Native Validation Feedback */
+      &:user-invalid {
+        border-color: var(--danger-500);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger-500) 20%, transparent);
+      }
+    }
+
+    /* Focus Within State using :has() to style Label */
+    &:has(.graffiti-input:focus-visible) .graffiti-label {
+      color: var(--primary-500);
+    }
+
+    /* Invalid State Label */
+    &:has(.graffiti-input:user-invalid) .graffiti-label {
+      color: var(--danger-500);
+    }
+  }
+</style>
