@@ -364,9 +364,38 @@ import PassengerSelector from './ui/PassengerSelector.astro';
       find_route = module.find_route;
       validate_operator_funds = module.validate_operator_funds;
       load_stops_data = module.load_stops_data; // Capture load_stops_data
+      
+      // 🔥 PHASE 1: WASM DATA DECOUPLING - Load Catalog
+      const load_catalog = module.load_catalog;
 
       console.log("WASM initialized.");
       wasmLoaded = true;
+
+      // Load master_routes.json into WASM
+      if (typeof load_catalog === 'function') {
+        try {
+          console.log("📦 Loading route catalog...");
+          const response = await fetch('/data/master_routes.json');
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const catalogData = await response.json();
+          const catalogString = JSON.stringify(catalogData);
+          
+          await load_catalog(catalogString);
+          console.log("✅ Catalog loaded into WASM:", catalogData.rutas?.length || 0, "routes");
+        } catch (catalogError) {
+          console.error("❌ Failed to load catalog:", catalogError);
+          if (window.showToast) {
+            window.showToast("Error al cargar el catálogo de rutas", "error");
+          }
+        }
+      } else {
+        console.warn("⚠️ WASM load_catalog() not available");
+      }
+
     } catch (e) {
       console.error("WASM Load Critical Error:", e);
       renderWasmError();
