@@ -61,6 +61,37 @@
 
 ---
 
+## 🔴 EN PROGRESO (Phase 1: WASM Data Decoupling - Frontend Prep)
+
+**Priority**: P0 CRITICAL  
+**Goal**: Prepare data layer for Jules' WASM refactor
+
+### 1. Data Layer Genesis ✅
+
+- [x] **Verify master_routes.json**: File exists at `public/data/master_routes.json`
+  - Size: 152KB, 5414 lines
+  - Comprehensive route data (R-1, Playa Express, Saturmex, etc.)
+  - Schema: `id`, `nombre`, `tarifa`, `tipo`, `paradas[]`
+
+### 2. Frontend Logic Preparation 🔄
+
+- [ ] **RouteCalculator.astro Refactor**:
+  - [ ] Add `fetchData()` function (runs on client mount)
+  - [ ] Implement loading state UI
+  - [ ] Pass JSON string to WASM `load_catalog()` (once Jules updates binary)
+  - [ ] Error handling (fetch failure, parse error)
+
+### 3. Integration Testing
+
+- [ ] Verify JSON loads successfully
+- [ ] Confirm WASM receives catalog
+- [ ] Test route calculation with dynamic data
+- [ ] No regressions in existing features
+
+**Blocker**: Waiting for Jules' WASM binary update with `load_catalog()` function
+
+---
+
 ## 🟡 PENDIENTE (Sprint 5 Cleanup)
 
 ### 1. Complete CSS Migration
