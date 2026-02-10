@@ -1,0 +1,57 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Modo Sin Conexión">
+  <div class="max-w-md mx-auto flex flex-col items-center justify-center min-h-[60vh] text-center px-6 animate-fade-in">
+    <div class="relative mb-8">
+      <div class="w-24 h-24 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center animate-pulse">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-primary-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+          <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+          <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+          <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+          <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+          <line x1="12" y1="20" x2="12.01" y2="20"></line>
+        </svg>
+      </div>
+      <div class="absolute -top-2 -right-2 bg-orange-500 text-white p-2 rounded-full shadow-lg">
+        <span class="text-xs font-bold">OFFLINE</span>
+      </div>
+    </div>
+
+    <h1 class="text-3xl font-display font-black text-deep-navy dark:text-white mb-4">
+      Sin conexión a Internet
+    </h1>
+    
+    <p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+      Parece que estás fuera del área de servicio digital. No te preocupes, puedes seguir consultando tus <span class="text-primary-600 font-bold">Rutas</span> y el <span class="text-primary-600 font-bold">Mapa</span> si ya los has visitado recientemente.
+    </p>
+
+    <div class="grid grid-cols-2 gap-4 w-full mb-8">
+      <a href="/rutas" class="flex flex-col items-center p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-primary-300 transition-all">
+        <span class="text-2xl mb-2">🚌</span>
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase">Rutas</span>
+      </a>
+      <a href="/mapa" class="flex flex-col items-center p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-primary-300 transition-all">
+        <span class="text-2xl mb-2">🗺️</span>
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase">Mapa</span>
+      </a>
+    </div>
+
+    <button onclick="window.location.reload()" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-4 rounded-2xl shadow-xl active:scale-95 transition-all">
+      REINTENTAR CONEXIÓN
+    </button>
+  </div>
+</MainLayout>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out forwards;
+  }
+</style>

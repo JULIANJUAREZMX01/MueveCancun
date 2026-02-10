@@ -13,12 +13,24 @@ const {
 <div class="relative w-full h-full min-h-[300px] overflow-hidden rounded-xl border border-gray-200 shadow-inner z-0">
   <div id="map-container" class="w-full h-full z-0" data-center={JSON.stringify(center)} data-zoom={zoom}></div>
 
-  <div id="map-loader" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-[1000]">
+  <div id="map-loader" class="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-slate-900 z-[1000]">
     <div class="text-center">
       <div class="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-      <p class="text-gray-600 font-medium">Cargando mapa...</p>
+      <p class="text-gray-600 dark:text-slate-400 font-medium">Cargando mapa...</p>
     </div>
   </div>
+
+  <!-- Botón de Geolocalización -->
+  <button 
+    id="locate-btn" 
+    class="absolute bottom-24 right-4 z-[1000] bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 p-3 rounded-full shadow-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all group"
+    title="Mi ubicación"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 group-hover:text-primary-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+      <circle cx="12" cy="10" r="3"></circle>
+    </svg>
+  </button>
 </div>
 
 <script>
@@ -78,6 +90,7 @@ const {
       const isEnd = type === 'end';
       const isTransfer = type === 'transfer';
       const isLocation = type === 'location';
+      const isUser = type === 'user';
 
       let html = '';
       
@@ -110,14 +123,21 @@ const {
           html = `
              <div class="w-3 h-3 bg-primary-500 rounded-full border border-white shadow-sm hover:scale-150 transition-transform cursor-pointer"></div>
           `;
+      } else if (isUser) {
+          html = `
+            <div class="relative w-10 h-10 flex items-center justify-center">
+                <div class="absolute w-full h-full bg-blue-500/40 rounded-full animate-ping"></div>
+                <div class="absolute w-8 h-8 bg-blue-500/20 rounded-full animate-pulse"></div>
+                <div class="w-4 h-4 bg-blue-600 rounded-full border-[3px] border-white shadow-[0_0_15px_rgba(37,99,235,1)] relative z-[2005]"></div>
+            </div>`;
       }
 
       return window.L.divIcon({
           className: '!bg-transparent !border-0', 
           html: html,
           iconSize: [40, 40],
-          iconAnchor: [20, 40],
-          popupAnchor: [0, -40]
+          iconAnchor: [20, 20],
+          popupAnchor: [0, -10]
       });
   };
 
@@ -171,8 +191,48 @@ const {
 
   let map;
   let layerGroup;
+  let userMarker;
   let coordinatesDB = {};
   let finder;
+
+  function locateUser() {
+    if (!navigator.geolocation) {
+        if (window.showToast) window.showToast("Tu navegador no soporta geolocalización", "error");
+        return;
+    }
+
+    const btn = document.getElementById('locate-btn');
+    if(btn) btn.classList.add('animate-pulse', 'text-primary-600');
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
+            const latlng = [latitude, longitude];
+
+            if (userMarker) {
+                userMarker.setLatLng(latlng);
+            } else {
+                userMarker = window.L.marker(latlng, { 
+                    icon: createIcon('user'),
+                    zIndexOffset: 2000 
+                }).addTo(map);
+            }
+
+            map.flyTo(latlng, 16, { animate: true, duration: 1.5 });
+            
+            if(btn) btn.classList.remove('animate-pulse', 'text-primary-600');
+            if (window.showToast) window.showToast("Ubicación encontrada", "success");
+        },
+        (error) => {
+            console.error("Geolocation error:", error);
+            if(btn) btn.classList.remove('animate-pulse', 'text-primary-600');
+            let msg = "No se pudo obtener tu ubicación";
+            if (error.code === 1) msg = "Por favor, permite el acceso a tu ubicación";
+            if (window.showToast) window.showToast(msg, "warning");
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+  }
 
   async function initMap() {
     const container = document.getElementById('map-container');
@@ -188,33 +248,27 @@ const {
     const center = JSON.parse(container.dataset.center);
     const zoom = parseFloat(container.dataset.zoom);
 
-    // Bounds for Cancun
-    const maxBounds = [
-        [20.8, -87.3],
-        [21.6, -86.5]
-    ];
+    const maxBounds = [[20.8, -87.3], [21.6, -86.5]];
 
     map = window.L.map('map-container', {
         preferCanvas: true,
         maxBounds: maxBounds,
         maxBoundsViscosity: 0.8,
         minZoom: 11,
-        zoomControl: false // Custom position if needed, or default
+        zoomControl: false
     }).setView(center, zoom);
     
-    // Add zoom control to bottom right for better UX on mobile
     window.L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap',
         minZoom: 11,
         maxZoom: 18,
-        opacity: 0.8 // Slightly faded for better overlay visibility
+        opacity: 0.8
     }).addTo(map);
 
     layerGroup = window.L.layerGroup().addTo(map);
 
-    // Initialize Store
     try {
         await coordinatesStore.init();
         coordinatesDB = coordinatesStore.getDB() || {};
@@ -225,7 +279,23 @@ const {
 
     if (loader) loader.classList.add('hidden');
 
-    // Picker Mode Logic
+    const locateBtn = document.getElementById('locate-btn');
+    if (locateBtn) {
+        locateBtn.onclick = (e) => {
+            e.preventDefault();
+            locateUser();
+        };
+    }
+
+    // Proactive location on start if permission might be there
+    if (navigator.permissions) {
+        navigator.permissions.query({ name: 'geolocation' }).then(res => {
+            if (res.state === 'granted') {
+                locateUser();
+            }
+        });
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const isPicker = urlParams.get('picker');
 
@@ -245,11 +315,11 @@ const {
                  minDist = map.distance(e.latlng, coordinatesDB[nearest]);
             }
 
-            if (nearest && minDist < 1500) { // 1.5km tolerance
+            if (nearest && minDist < 1500) {
                 window.L.popup({
                     className: 'picker-popup'
                 })
-                .setLatLng(coordinatesDB[nearest]) // Snap to stop
+                .setLatLng(coordinatesDB[nearest])
                 .setContent(createSafePopup(
                     "¿Confirmar ubicación?",
                     nearest,
@@ -268,7 +338,6 @@ const {
         return;
     }
 
-    // Pending Route Logic
     const pendingRoute = localStorage.getItem('pending_route');
     if (pendingRoute) {
         try {
@@ -280,14 +349,10 @@ const {
         }
     }
 
-    // Draw All Points (Ambient Mode)
     if (!pendingRoute) {
         const points = [];
         Object.entries(coordinatesDB).forEach(([name, coords]) => {
-            // Filter only main hubs/routes to avoid clutter? No, show all as small dots.
-            // Using CircleMarker is faster for 100+ points than DivIcon
             const isHub = name.includes("Plaza") || name.includes("ADO") || name.includes("Crucero");
-            
             const marker = window.L.circleMarker(coords, {
                 radius: isHub ? 6 : 4,
                 fillColor: isHub ? '#3B82F6' : '#94A3B8',
@@ -296,29 +361,23 @@ const {
                 opacity: 0.8,
                 fillOpacity: 0.9
             }).bindPopup(createSafePopup(name, isHub ? 'Punto de Interés' : 'Parada', '/rutas?search=' + encodeURIComponent(name)));
-            
             points.push(marker);
         });
         
         if (points.length > 0) {
-            const group = window.L.featureGroup(points).addTo(map);
-            // Don't fit bounds unless specific need, just set view to center
-            // map.fitBounds(group.getBounds(), { padding: [50, 50] });
+            window.L.featureGroup(points).addTo(map);
         }
     }
   }
 
   function drawRoute(data) {
     if (!map) return;
-
     if (layerGroup) {
         layerGroup.clearLayers();
         layerGroup.remove();
     }
-    
     layerGroup = window.L.layerGroup().addTo(map);
 
-    // Normalizing legs logic
     let legs = [];
     if (data.legs && Array.isArray(data.legs)) legs = data.legs;
     else if (data.stops && Array.isArray(data.stops)) legs = [{ stops: data.stops }];
@@ -331,8 +390,6 @@ const {
         try {
             const routeCoords = [];
             const validStops = [];
-
-            // Determine source of coords
             const stopSource = leg.stops_info && leg.stops_info.length > 0 
                 ? leg.stops_info.map(s => ({ name: s.name, latlng: [s.lat, s.lng] }))
                 : (leg.stops || []).map(name => {
@@ -347,62 +404,25 @@ const {
             });
 
             if (routeCoords.length > 0) {
-                // 1. Background (Solid Dark)
                 newLayers.push(window.L.polyline(routeCoords, {
-                    color: '#0f172a', 
-                    weight: 10,
-                    opacity: 0.6,
-                    lineCap: 'round',
-                    lineJoin: 'round'
+                    color: '#0f172a', weight: 10, opacity: 0.6, lineCap: 'round', lineJoin: 'round'
                 }));
 
-                // 2. Foreground (Animated Dash)
                 const isFirst = index === 0;
                 newLayers.push(window.L.polyline(routeCoords, {
-                    color: isFirst ? '#10B981' : '#3B82F6', // Emerald vs Blue
-                    weight: 5,
-                    opacity: 1,
-                    dashArray: '15, 20',
-                    lineCap: 'round',
-                    lineJoin: 'round',
-                    className: 'animate-dash drop-shadow-lg'
+                    color: isFirst ? '#10B981' : '#3B82F6',
+                    weight: 5, opacity: 1, dashArray: '15, 20', className: 'animate-dash drop-shadow-lg'
                 }));
 
-                // Start Maker (Leg 1)
                 if (index === 0) {
-                    const s = validStops[0];
-                    console.log("Adding Start Marker:", s.name);
-                    newLayers.push(window.L.marker(s.latlng, { icon: createIcon('start') })
-                        .bindPopup(createLabelPopup('Inicio', s.name)));
+                    newLayers.push(window.L.marker(validStops[0].latlng, { icon: createIcon('start') })
+                        .bindPopup(createLabelPopup('Inicio', validStops[0].name)));
                 }
 
-                // End Marker (Last Leg)
                 if (index === legs.length - 1) {
-                    const e = validStops[validStops.length - 1];
-                    console.log("Adding End Marker:", e.name);
-                    newLayers.push(window.L.marker(e.latlng, { icon: createIcon('end') })
-                        .bindPopup(createLabelPopup('Fin', e.name)));
+                    newLayers.push(window.L.marker(validStops[validStops.length - 1].latlng, { icon: createIcon('end') })
+                        .bindPopup(createLabelPopup('Fin', validStops[validStops.length - 1].name)));
                 }
-
-                // Transfer Marker
-                if (index < legs.length - 1) {
-                    const e = validStops[validStops.length - 1];
-                    newLayers.push(window.L.marker(e.latlng, { icon: createIcon('transfer') })
-                        .bindPopup(createLabelPopup('Transbordo', e.name)));
-                }
-
-                // Intermediate Stops (Dots)
-                validStops.slice(1, -1).forEach(stop => {
-                    newLayers.push(
-                        window.L.circleMarker(stop.latlng, {
-                            radius: 3,
-                            fillColor: '#FFFFFF',
-                            color: isFirst ? '#10B981' : '#3B82F6',
-                            weight: 2,
-                            fillOpacity: 1
-                        }).bindPopup(createSimplePopup(stop.name))
-                    );
-                });
             }
         } catch (e) {
             console.error("Error drawing leg:", index, e);
@@ -414,36 +434,49 @@ const {
         if (allBounds.length > 0) {
              map.fitBounds(allBounds, { padding: [80, 80], maxZoom: 15, animate: true });
         }
-    } else {
-         if (window.showToast) window.showToast("No se encontraron coordenadas para esta ruta.", "warning");
-         layerGroup = window.L.layerGroup().addTo(map);
     }
   }
 
   window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
     drawRoute(event.detail);
-     // Scroll to map
     const mapEl = document.getElementById('map-container');
     if(mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  window.addEventListener('USER_LOCATION_UPDATE', (event: any) => {
+    const { lat, lng, focus } = event.detail;
+    const latlng: [number, number] = [lat, lng];
+    
+    if (userMarker) {
+        userMarker.setLatLng(latlng);
+    } else {
+        userMarker = window.L.marker(latlng, { 
+            icon: createIcon('user'),
+            zIndexOffset: 3000,
+            riseOnHover: true
+        }).addTo(map);
+    }
+    
+    if (focus && map) {
+        map.flyTo(latlng, 16, { animate: true, duration: 1.5 });
+    }
+  });
+
+  window.addEventListener('VIEW_STATE_CHANGE', () => {
+    setTimeout(() => map?.invalidateSize(), 400);
   });
 
   if (document.readyState === 'complete') initMap();
   else window.addEventListener('load', initMap);
 
   document.addEventListener('astro:page-load', () => setTimeout(initMap, 100));
-
 </script>
 
 <style is:global>
   @keyframes dash {
-    from {
-      stroke-dashoffset: 0;
-    }
-    to {
-      stroke-dashoffset: -35;
-    }
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: -35; }
   }
-  
   .animate-dash {
     animation: dash 1s linear infinite;
   }

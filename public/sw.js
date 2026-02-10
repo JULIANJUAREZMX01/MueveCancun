@@ -32,7 +32,8 @@ const CRITICAL_ASSETS = [
   '/icons/briefcase.svg',
   '/icons/plane.svg',
   '/icons/palm-tree.svg',
-  '/icons/loader.svg'
+  '/icons/loader.svg',
+  '/offline'
 ];
 
 // Regex for OSM tiles (Zoom 11-18)
@@ -149,6 +150,11 @@ async function cacheFirst(request) {
       return cached;
     }
     // Return offline page or placeholder
+    if (request.mode === 'navigate') {
+      const offlineCache = await caches.open(CACHE_NAME);
+      return await offlineCache.match('/offline');
+    }
+
     return new Response('Offline', { 
       status: 503, 
       statusText: 'Service Unavailable',
@@ -172,6 +178,11 @@ async function networkFirst(request) {
       return cached;
     }
     // Return offline fallback
+    if (request.mode === 'navigate') {
+        const offlineCache = await caches.open(CACHE_NAME);
+        return await offlineCache.match('/offline');
+    }
+
     return new Response('Offline', { 
       status: 503, 
       statusText: 'Service Unavailable',

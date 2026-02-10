@@ -22,7 +22,7 @@ const reportOptions = [
     </header>
 
     <div class="sunny-card p-8">
-      <form class="space-y-6">
+      <form id="contribution-form" class="space-y-6">
         <div class="graffiti-input-group">
           <input type="text" id="name" name="name" class="graffiti-input" placeholder=" " required />
           <label for="name" class="graffiti-label">Nombre Completo</label>
@@ -39,13 +39,74 @@ const reportOptions = [
           <label for="details" class="graffiti-label">Detalles del Reporte</label>
         </div>
 
-        <button type="submit" class="w-full premium-button">
-          Enviar Reporte
+        <button type="submit" id="submit-btn" class="w-full premium-button group flex items-center justify-center gap-2">
+          <span id="submit-text">Enviar Reporte</span>
+          <svg id="submit-spinner" class="w-5 h-5 animate-spin hidden" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
         </button>
       </form>
     </div>
   </div>
+
+  <script>
+    function setupForm() {
+      const form = document.getElementById('contribution-form');
+      const btn = document.getElementById('submit-btn');
+      const text = document.getElementById('submit-text');
+      const spinner = document.getElementById('submit-spinner');
+
+      if (!form || !btn) return;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // 1. Loading State
+        btn.disabled = true;
+        text.textContent = 'Enviando...';
+        spinner.classList.remove('hidden');
+
+        // 2. Data Gathering
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+        console.log('Sending report:', data);
+
+        // 3. Simulate Backend Request
+        try {
+          // Simulation: Wait 1.5s
+          await new Promise(resolve => setTimeout(resolve, 1500));
+
+          // Success Logic
+          if (window.showToast) {
+            window.showToast("¡Gracias! Tu reporte ha sido enviado con éxito.", "success");
+          }
+          
+          form.reset();
+          // Reset custom selector too (clean the text)
+          const selectorText = form.querySelector('.selected-text');
+          if (selectorText) selectorText.textContent = 'Selecciona una opción...';
+
+        } catch (error) {
+          console.error('Submission failed:', error);
+          if (window.showToast) {
+            window.showToast("Hubo un error al enviar el reporte. Revisa tu conexión.", "error");
+          }
+        } finally {
+          // 4. Reset State
+          btn.disabled = false;
+          text.textContent = 'Enviar Reporte';
+          spinner.classList.add('hidden');
+        }
+      });
+    }
+
+    document.addEventListener('astro:page-load', setupForm);
+    if (document.readyState === 'complete') setupForm();
+    else window.addEventListener('load', setupForm);
+  </script>
 </MainLayout>
+
 
 <style>
   /* GRAFFITI WARRIOR: CSS5 Floating Labels & Validation */

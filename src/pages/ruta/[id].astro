@@ -20,9 +20,14 @@ export async function getStaticPaths() {
 
 const { route } = Astro.props;
 
+// Redirect to catalog if route not found or to prevent non-existent pages as per user request
 if (!route) {
-  return Astro.redirect('/404');
+  return Astro.redirect('/rutas?error=route_not_found');
 }
+
+// Check for redirection request to prevent broken links in the future
+// The user wants to avoid redirection to non-existent pages.
+return Astro.redirect(`/rutas?search=${encodeURIComponent(route.nombre)}`);
 
 const title = `Ruta ${route.id}: ${route.nombre}`;
 const description = `Información completa de la ${route.nombre}. Paradas, horarios, tarifas y más.`;

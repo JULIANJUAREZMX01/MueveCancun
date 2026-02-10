@@ -12,18 +12,13 @@ let error = null;
 let totalStops = 0;
 
 try {
-  // Load WASM on the server
-  // process.cwd() is the project root in Node
   const wasmPath = path.join(process.cwd(), 'public/wasm/route-calculator/route_calculator_bg.wasm');
   const wasmBuffer = fs.readFileSync(wasmPath);
 
   await init(wasmBuffer);
   allRoutes = get_all_routes();
   
-  // Sort routes by name for consistency
-  allRoutes.sort((a, b) => a.name.localeCompare(b.name));
-
-  // Calculate stats
+  allRoutes.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   totalStops = Object.keys(coordinates).length;
 
 } catch (e) {
@@ -37,12 +32,6 @@ const TRANSPORT_LABELS = {
   "Van": "Van / Colectivo",
   "ADO": "ADO",
   "PlayaExpress": "Playa Express",
-  // Legacy support
-  "Bus_Urban": "Autobús Urbano",
-  "Bus_HotelZone": "Autobús Zona Hotelera",
-  "Combi_Municipal": "Combi Municipal",
-  "ADO_Airport": "ADO Aeropuerto",
-  "Playa_Express": "Playa Express"
 };
 
 function getTransportLabel(type) {
@@ -57,22 +46,21 @@ function getTransportLabel(type) {
       <a href="/" class="inline-flex items-center text-sm font-bold text-slate-500 hover:text-primary-600 mb-4 transition-colors">
         ← Volver al Inicio
       </a>
-      <h1 class="text-2xl font-display font-black text-deep-navy tracking-tight mb-1">
+      <h1 class="text-2xl font-display font-black text-deep-navy dark:text-white tracking-tight mb-1">
         Catálogo de Rutas
       </h1>
       <p class="text-slate-500 font-medium text-sm">
         Todas las opciones de transporte en Cancún
       </p>
 
-      <!-- Stats Badge -->
       <div class="flex gap-3 mt-4">
-        <div class="px-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm flex items-center gap-2">
+        <div class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm flex items-center gap-2">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rutas</span>
-            <span class="text-sm font-black text-slate-800">{allRoutes.length}</span>
+            <span class="text-sm font-black text-slate-800 dark:text-slate-200">{allRoutes.length}</span>
         </div>
-        <div class="px-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm flex items-center gap-2">
+        <div class="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm flex items-center gap-2">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Paraderos</span>
-            <span class="text-sm font-black text-slate-800">{totalStops}</span>
+            <span class="text-sm font-black text-slate-800 dark:text-slate-200">{totalStops}</span>
         </div>
       </div>
     </div>
@@ -80,70 +68,249 @@ function getTransportLabel(type) {
     <!-- Routes List -->
     <div id="routes-container" class="space-y-4">
       {error && (
-        <div class="text-red-500 font-bold p-4 bg-red-50 rounded-lg border border-red-100">
+        <div class="text-red-500 font-bold p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-100 dark:border-red-900/30 text-center">
           {error}
         </div>
       )}
 
-      {allRoutes.map(route => {
+      {allRoutes.map((route, index) => {
         let stopsPreview = `${route.origin_hub} ➔ ${route.dest_hub}`;
-        if (route.stops && route.stops.length > 0) {
+        const hasStops = route.stops && route.stops.length > 0;
+        if (hasStops) {
            stopsPreview = `${route.stops[0]} ➔ ${route.stops[route.stops.length - 1]}`;
         }
 
         return (
-          <a href={`/ruta/${route.id}`} class="block p-4 bg-white rounded-lg shadow-sm border border-slate-100 active:scale-98 transition-transform mb-3 hover:shadow-md cursor-pointer group">
-            <div class="flex justify-between items-start">
-              <div class="flex-1">
-                <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mb-1 group-hover:bg-blue-200 transition-colors">
-                  {getTransportLabel(route.transport_type)}
-                </span>
-                <h3 class="font-bold text-slate-800 group-hover:text-primary-600 transition-colors">{route.name}</h3>
+            <!-- Summary Header (Clickable to Toggle) -->
+            <button 
+              class="w-full text-left p-4 outline-none focus:bg-slate-50 dark:focus:bg-slate-800/50 transition-colors toggle-route-details group relative z-0"
+              aria-expanded="false"
+              data-route-id={route.id}
+            >
+              <div class="flex justify-between items-start gap-3">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1.5 h-6">
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                          {getTransportLabel(route.transport_type)}
+                        </span>
+                        {route.frequency && (
+                             <span class="inline-flex items-center text-[9px] font-bold text-slate-400">
+                                ⏱️ {route.frequency}
+                             </span>
+                        )}
+                    </div>
+                    
+                    <h3 class="font-black text-slate-800 dark:text-white text-base leading-tight tracking-tight group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate pr-8">
+                        {route.name}
+                    </h3>
 
-                <!-- Meta Info Row -->
-                <div class="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-600">
-                    {route.operator && (
-                    <div class="flex items-center gap-1">
-                        <span>🚌</span> <span class="font-medium">{route.operator}</span>
+                    <div class="mt-2 text-[10px] font-bold text-slate-400 flex items-center gap-1.5 uppercase tracking-widest truncate">
+                        <span class="shrink-0">📍</span> 
+                        <span class="truncate">{stopsPreview}</span>
                     </div>
-                    )}
-                    {route.frequency && (
-                     <div class="flex items-center gap-1">
-                        <span>⏱️</span> <span>{route.frequency}</span>
-                    </div>
-                    )}
-                    {route.schedule && (
-                     <div class="flex items-center gap-1">
-                        <span>🕒</span> <span>{route.schedule}</span>
-                    </div>
-                    )}
-                </div>
+                  </div>
 
-                <div class="flex gap-2 mt-2 flex-wrap">
-                   {route.badges.map(badge => (
-                     <span class="text-xs bg-slate-100 px-1 rounded">{badge}</span>
-                   ))}
-                </div>
+                  <div class="text-right shrink-0 flex flex-col items-end gap-1">
+                    <span class="inline-flex items-center px-2 py-1 rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 text-xs font-black font-mono shadow-sm">
+                        ${route.price.toFixed(2)}
+                    </span>
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{route.duration}</span>
+                  </div>
               </div>
-              <div class="text-right ml-2 shrink-0">
-                <span class="inline-flex items-center px-2 py-1 rounded bg-emerald-100 text-emerald-800 text-xs font-bold font-mono whitespace-nowrap">
-                    💰 ${route.price.toFixed(2)}
-                </span>
-                <p class="text-xs text-slate-500 mt-1">{route.duration}</p>
-                <div class="mt-2 text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity text-xs font-bold">
-                    Ver Detalle →
-                </div>
-              </div>
-            </div>
 
-            <!-- Stops Preview -->
-            <div class="mt-3 pt-3 border-t border-slate-50 text-xs text-slate-500 flex items-center gap-1">
-                <span>📍</span> <span class="truncate">{stopsPreview}</span>
+              <div class="mt-3 flex items-center justify-between pt-3 border-t border-slate-50 dark:border-slate-800/60">
+                 <div class="flex items-center gap-1 text-[9px] font-black text-primary-600 dark:text-primary-400 uppercase tracking-widest group-hover:translate-x-1 transition-transform">
+                    <span class="expand-label">Ver itinerario</span>
+                 </div>
+                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400 transition-transform duration-300 chevron-icon group-aria-expanded:rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                   <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                 </svg>
+              </div>
+            </button>
+
+            <!-- Expanded Details (Smooth Transition) -->
+            <div class="route-details grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30">
+               <div class="overflow-hidden">
+                   <div class="p-5 space-y-5">
+                      <div>
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                            <span>Recorrido Principal</span>
+                            <div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
+                        </h4>
+                        <div class="relative pl-4 space-y-0 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800/50">
+                            {route.stops && route.stops.map((stop, sIdx) => (
+                               <div class="relative flex items-center gap-4 py-2 group/stop">
+                                  <div class={`absolute -left-[23px] w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 z-10 transition-transform group-hover/stop:scale-125 ${sIdx === 0 ? 'bg-emerald-500 shadow-emerald-500/50' : sIdx === route.stops.length - 1 ? 'bg-primary-500 shadow-primary-500/50' : 'bg-slate-300 dark:bg-slate-700'}`}></div>
+                                  <span class="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover/stop:text-slate-900 dark:group-hover/stop:text-white transition-colors">{stop}</span>
+                               </div>
+                            ))}
+                        </div>
+                      </div>
+    
+                      <div class="pt-2 flex gap-3">
+                         <button 
+                            class="flex-1 bg-slate-900 hover:bg-primary-600 text-white text-[10px] font-black py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-slate-900/10 uppercase tracking-widest flex items-center justify-center gap-2"
+                            onclick={`window.location.href='/?selected_stop=${encodeURIComponent(hasStops ? route.stops[0] : route.origin_hub)}'`}
+                         >
+                            <span>📍</span> Usar ruta
+                         </button>
+                         <button 
+                            class="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-[10px] font-black py-3 px-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all uppercase tracking-widest shadow-sm"
+                            onclick="window.showToast('Horarios detallados pronto', 'info')"
+                         >
+                            🕒 Ver Horarios
+                         </button>
+                      </div>
+                   </div>
+               </div>
             </div>
-          </a>
+            
+            <!-- Favorite Toggle Button (Absolute, High Z) -->
+            <button 
+              class="fav-btn absolute top-3 right-3 z-10 p-2 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur border border-slate-100 dark:border-slate-700 hover:bg-rose-50 hover:border-rose-100 transition-all active:scale-90 shadow-sm group/fav"
+              data-route-id={route.id}
+              data-route-name={route.name}
+              onclick="event.stopPropagation()"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-300 transition-colors pointer-events-none fav-icon group-hover/fav:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </button>
+          </div>
         );
       })}
     </div>
-
   </div>
+
+  <script>
+    function setupExpandableCards() {
+      const toggles = document.querySelectorAll('.toggle-route-details');
+      
+      toggles.forEach(toggle => {
+        toggle.addEventListener('click', () => {
+          const card = toggle.closest('.route-card-group');
+          if (!card) return;
+          const details = card.querySelector('.route-details');
+          const chevron = toggle.querySelector('.chevron-icon');
+          const label = toggle.querySelector('.expand-label');
+          const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+          
+          if (!details) return;
+
+          // Toggle current (Grid Animation)
+          toggle.setAttribute('aria-expanded', (!isExpanded).toString());
+          
+          if (!isExpanded) {
+              details.classList.remove('grid-rows-[0fr]');
+              details.classList.add('grid-rows-[1fr]');
+          } else {
+              details.classList.remove('grid-rows-[1fr]');
+              details.classList.add('grid-rows-[0fr]');
+          }
+           
+          // Remove hidden class if used previously for fallback
+          details.classList.remove('hidden');
+
+          /* Scroll into view if expanding */
+          if (!isExpanded) {
+              setTimeout(() => {
+                 card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 150);
+          }
+          
+          if (label) label.textContent = isExpanded ? 'Ver itinerario' : 'Ocultar itinerario';
+        });
+      });
+    }
+
+    function setupFavorites() {
+      const favButtons = document.querySelectorAll('.fav-btn');
+      let favorites = JSON.parse(localStorage.getItem('muevecancun_favorites') || '[]');
+
+      function updateIcons() {
+        favButtons.forEach(btn => {
+          const id = btn.getAttribute('data-route-id');
+          const isFav = favorites.includes(id);
+          const icon = btn.querySelector('.fav-icon');
+          if (isFav) {
+            icon.setAttribute('fill', 'currentColor');
+            icon.classList.add('text-rose-500');
+            icon.classList.remove('text-slate-300');
+            btn.classList.add('bg-rose-50', 'border-rose-100', 'dark:bg-rose-900/40');
+          } else {
+            icon.setAttribute('fill', 'none');
+            icon.classList.remove('text-rose-500');
+            icon.classList.add('text-slate-300');
+            btn.classList.remove('bg-rose-50', 'border-rose-100', 'dark:bg-rose-900/40');
+          }
+        });
+      }
+
+      favButtons.forEach(btn => {
+        btn.onclick = (e) => {
+          const id = btn.getAttribute('data-route-id');
+          const name = btn.getAttribute('data-route-name');
+          const index = favorites.indexOf(id);
+
+          if (index > -1) {
+            favorites.splice(index, 1);
+            if (window.showToast) window.showToast(`Eliminado de favoritos: ${name}`, "info");
+          } else {
+            favorites.push(id);
+            if (window.showToast) window.showToast(`¡Añadido a favoritos! ${name}`, "success");
+          }
+
+          localStorage.setItem('muevecancun_favorites', JSON.stringify(favorites));
+          updateIcons();
+        };
+      });
+
+      updateIcons();
+    }
+
+    function setupSearchParam() {
+      const params = new URLSearchParams(window.location.search);
+      const searchTerm = params.get('search');
+      if (searchTerm) {
+        // Delay slightly to ensure map-load triggers are done
+        setTimeout(() => {
+          const cards = document.querySelectorAll('.route-card-group');
+          for (const card of cards) {
+            const nameEl = card.querySelector('h3');
+            if (nameEl && nameEl.textContent.toLowerCase().includes(searchTerm.toLowerCase())) {
+              const toggle = card.querySelector('.toggle-route-details');
+              if (toggle) {
+                  // If not already expanded, click it
+                  if (toggle.getAttribute('aria-expanded') !== 'true') {
+                    (toggle as HTMLElement).click();
+                  }
+                  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+              break;
+            }
+          }
+        }, 300);
+      }
+    }
+
+    // Run on load and on Astro navigation
+    document.addEventListener('astro:page-load', () => {
+      setupExpandableCards();
+      setupFavorites();
+      setupSearchParam();
+    });
+    
+    // Initial run
+    if (document.readyState === 'complete') {
+        setupExpandableCards();
+        setupFavorites();
+        setupSearchParam();
+    } else {
+        window.addEventListener('load', () => {
+            setupExpandableCards();
+            setupFavorites();
+            setupSearchParam();
+        });
+    }
+  </script>
 </MainLayout>

@@ -1,10 +1,11 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import MainLayout from '../layouts/MainLayout.astro';
 import RouteCalculator from '../components/RouteCalculator.astro';
-import BottomNav from '../components/BottomNav.astro';
+
+const title = "Dashboard - CancúnMueve";
 ---
 
-<Layout title="Dashboard - CancúnMueve">
+<MainLayout title={title}>
     <!-- Required for Leaflet and Toast functionality -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -14,27 +15,15 @@ import BottomNav from '../components/BottomNav.astro';
         <div id="map-container" class="h-full w-full"></div>
     </div>
 
-	<!-- Status Bar Placeholder -->
-	<div class="status-bar">
-		<span class="time">9:30</span>
-		<div class="status-icons">
-			<span class="material-icons-round text-sm">signal_cellular_alt</span>
-			<span class="material-icons-round text-sm">wifi</span>
-			<span class="material-icons-round text-sm">battery_full</span>
-		</div>
-	</div>
-
 	<div class="dashboard-container pointer-events-none">
 		<!-- Search Card Section -->
 		<div class="glass-panel-wrapper animate-fade-in-up pointer-events-auto">
             <!-- Reuse original RouteCalculator for full features (History, Balance, etc.) -->
 			<RouteCalculator />
 		</div>
+    </div>
 
-		<!-- Bottom Navigation -->
-			<BottomNav />
-	</div>
-</Layout>
+</MainLayout>
 
 <script>
     import { coordinatesStore } from '../lib/CoordinatesStore';
@@ -75,7 +64,7 @@ import BottomNav from '../components/BottomNav.astro';
         });
     }
 
-    // Handle View Switching
+  // Handle View Switching
     window.addEventListener('VIEW_STATE_CHANGE', (e) => {
         const state = (e as CustomEvent).detail;
         const container = document.querySelector('.dashboard-container');

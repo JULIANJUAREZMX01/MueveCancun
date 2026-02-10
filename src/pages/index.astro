@@ -53,9 +53,12 @@ import Layout from '../layouts/Layout.astro';
 	<script>
 		import { navigate } from 'astro:transitions/client';
 
-		// Simulate splash delay then redirect to home
+		// Simulate splash delay then redirect to home, preserving query params
 		setTimeout(() => {
-			navigate('/home');
+			const currentUrl = new URL(window.location.href);
+			const targetUrl = new URL('/home', window.location.origin);
+			targetUrl.search = currentUrl.search;
+			navigate(targetUrl.toString());
 		}, 3000);
 	</script>
 </Layout>

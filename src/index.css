@@ -31,8 +31,8 @@
 
 @layer components {
   .sunny-card {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl transition-all duration-300;
-    box-shadow: 0 8px 32px 0 rgba(0, 51, 102, 0.1);
+    @apply bg-white/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl transition-all duration-300;
+    box-shadow: 0 8px 32px 0 rgba(0, 51, 102, 0.08);
   }
 
   .premium-button {
