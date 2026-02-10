@@ -8,8 +8,11 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
 // FIX: Ensure cargo is found (needed for fresh installs)
-const cargoBin = path.join(process.env.USERPROFILE, '.cargo', 'bin');
-process.env.PATH = `${cargoBin}${path.delimiter}${process.env.PATH}`;
+const homeDir = process.env.HOME || process.env.USERPROFILE;
+if (homeDir) {
+    const cargoBin = path.join(homeDir, '.cargo', 'bin');
+    process.env.PATH = `${cargoBin}${path.delimiter}${process.env.PATH}`;
+}
 
 const modules = ['route-calculator', 'spatial-index'];
 
