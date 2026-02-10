@@ -8,22 +8,80 @@ const { id = 'toast-notification' } = Astro.props;
 
 <div
   id={id}
-  class="fixed top-4 left-4 right-4 z-50 transform -translate-y-[150%] transition-transform duration-300 ease-out flex items-center justify-center pointer-events-none"
+  popover="manual"
+  class="toast-popover"
 >
-  <div class="bg-gray-900/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 pointer-events-auto min-h-[44px]">
+  <div class="toast-content">
     <span id={`${id}-icon`} class="text-xl">ℹ️</span>
     <p id={`${id}-message`} class="text-sm font-bold tracking-tight">Notification</p>
   </div>
 </div>
 
 <style>
-  .toast-visible {
-    transform: translateY(0) !important;
+  /*
+   * GRAFFITI WARRIOR: CSS5 Popover API
+   * Native browser power. No z-index hacks. No manual display toggling.
+   */
+  .toast-popover {
+    /* Position at the bottom, centered (Mobile Friendly - Above Nav) */
+    position: fixed;
+    bottom: 5.5rem; /* h-16 (4rem) + 1.5rem gap */
+    top: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    width: fit-content;
+    max-width: 90vw;
+    z-index: 2147483647; /* Ensure visibility if fallback is used */
+
+    border: none;
+    padding: 0;
+    background: transparent;
+    overflow: visible;
+
+    /* Animation State: Open (Final) */
+    opacity: 1;
+    /* We include translateX(-50%) to maintain centering during transform transition */
+    transform: translateX(-50%) translateY(0);
+    transition:
+      opacity 0.3s ease-out,
+      transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+      display 0.4s allow-discrete,
+      overlay 0.4s allow-discrete;
+
+    /* Animation State: Closed (Starting Style for Entry) */
+    @starting-style {
+      opacity: 0;
+      transform: translateX(-50%) translateY(2rem);
+    }
+
+    /* Animation State: Closed (Exit) */
+    &:not(:popover-open) {
+      opacity: 0;
+      transform: translateX(-50%) translateY(2rem);
+      display: none;
+    }
+  }
+
+  .toast-content {
+    background-color: rgba(15, 23, 42, 0.95); /* slate-900/95 */
+    backdrop-filter: blur(8px);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05),
+      0 0 0 1px rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 44px;
+    font-family: system-ui, -apple-system, sans-serif;
   }
 </style>
 
 <script define:vars={{ id }}>
-  // Simple global toast controller pattern
+  // GraffitiWarrior: Native Popover Controller
   window.showToast = (message, type = 'info', duration = 3000) => {
     const toast = document.getElementById(id);
     const msgEl = document.getElementById(`${id}-message`);
@@ -31,6 +89,7 @@ const { id = 'toast-notification' } = Astro.props;
 
     if (!toast || !msgEl || !iconEl) return;
 
+    // Reset content
     msgEl.textContent = message;
 
     const icons = {
@@ -41,12 +100,31 @@ const { id = 'toast-notification' } = Astro.props;
     };
     iconEl.textContent = icons[type] || icons.info;
 
-    toast.classList.add('toast-visible');
+    // Hide if already open to restart animation (creates a "pop" effect)
+    if (toast.matches(':popover-open')) {
+      toast.hidePopover();
+      // Force reflow to ensure animation restarts
+      void toast.offsetWidth;
+    }
 
+    // Show native popover
+    try {
+      toast.showPopover();
+    } catch (e) {
+      // Fallback for ancient browsers (should not happen in 2026 context)
+      console.warn("Popover API not supported", e);
+      toast.style.display = 'block';
+    }
+
+    // Auto-hide logic
     if (window.toastTimeout) clearTimeout(window.toastTimeout);
 
     window.toastTimeout = setTimeout(() => {
-      toast.classList.remove('toast-visible');
+      try {
+        toast.hidePopover();
+      } catch (e) {
+         toast.style.display = 'none';
+      }
     }, duration);
   };
 </script>
