@@ -617,6 +617,11 @@ fn enrich_route(mut route: Route) -> Route {
 }
 
 pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
+    // 🛡️ SECURITY: Prevent DoS via excessive string processing
+    if origin.len() > 100 || dest.len() > 100 {
+        return Vec::new();
+    }
+
     let all_routes = &*CATALOG;
     let mut journeys = Vec::new();
 
@@ -769,6 +774,11 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
 
 #[wasm_bindgen]
 pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
+    // 🛡️ SECURITY: Prevent DoS via excessive string processing
+    if origin.len() > 100 || dest.len() > 100 {
+        return serde_wasm_bindgen::to_value(&Vec::<Journey>::new()).map_err(|e| JsValue::from_str(&e.to_string()));
+    }
+
     let routes = find_route_rs(origin, dest);
     serde_wasm_bindgen::to_value(&routes).map_err(|e| JsValue::from_str(&e.to_string()))
 }
@@ -1029,8 +1039,15 @@ pub fn find_route_internal(
         }
     }
 
-    let start_idx = nodes.get(&(start_stop_id, start_route_id)).unwrap();
-    let end_idx = nodes.get(&(end_stop_id, end_route_id)).unwrap();
+    // 🛡️ SECURITY: Handle missing nodes gracefully instead of panicking
+    let start_idx = match nodes.get(&(start_stop_id, start_route_id)) {
+        Some(idx) => idx,
+        None => return error_response("internal_error"),
+    };
+    let end_idx = match nodes.get(&(end_stop_id, end_route_id)) {
+        Some(idx) => idx,
+        None => return error_response("internal_error"),
+    };
 
     let node_weights = dijkstra(&graph, *start_idx, Some(*end_idx), |e| *e.weight());
 
@@ -1049,11 +1066,14 @@ pub fn find_route_internal(
 
         for neighbor in neighbors {
             if let Some(&neighbor_dist) = node_weights.get(&neighbor) {
-                let edge = graph.find_edge(current, neighbor).unwrap();
-                let weight = graph.edge_weight(edge).unwrap();
-                if (current_dist - weight - neighbor_dist).abs() < 0.0001 {
-                    next_node = Some(neighbor);
-                    break;
+                // 🛡️ SECURITY: Handle missing edges/weights gracefully
+                if let Some(edge) = graph.find_edge(current, neighbor) {
+                    if let Some(weight) = graph.edge_weight(edge) {
+                        if (current_dist - weight - neighbor_dist).abs() < 0.0001 {
+                            next_node = Some(neighbor);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -1077,7 +1097,10 @@ pub fn find_route_internal(
     let mut last_route = "".to_string();
 
     for (i, &idx) in path.iter().enumerate() {
-        let node = graph.node_weight(idx).unwrap();
+        let node = match graph.node_weight(idx) {
+            Some(n) => n,
+            None => return error_response("internal_error"),
+        };
         // DEBUG
         println!(
             "DEBUG: Path Node: {} ({}) Type: {:?}",
@@ -1432,5 +1455,12 @@ mod tests {
         assert!(!res.is_empty());
         // All returned journeys must be Direct
         assert!(res.iter().all(|j| j.type_ == "Direct"));
+    }
+
+    #[test]
+    fn test_huge_input_dos_prevention() {
+        let huge_string = "a".repeat(200);
+        let res = find_route_rs(&huge_string, "Zona Hotelera");
+        assert!(res.is_empty()); // Should be rejected immediately
     }
 }
