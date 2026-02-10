@@ -9,13 +9,15 @@ interface Props {
   description?: string;
   image?: string;
   useMap?: boolean;
+  hideNav?: boolean;
 }
 
 const {
   title,
   description = "La app oficial de transporte público para Cancún y Riviera Maya.",
   image = "/og-image.png",
-  useMap = false
+  useMap = false,
+  hideNav = false
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
@@ -78,6 +80,7 @@ const navItems = [
   <body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
     <!-- ═══ Unified Header ═══ -->
+    { !hideNav && (
     <header class="fixed top-0 left-0 right-0 z-40 h-14 px-4 md:px-6 flex items-center justify-between transition-all duration-300"
             style="background: var(--surface-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-light);">
 
@@ -92,7 +95,7 @@ const navItems = [
       </a>
 
       <!-- Center: Desktop Nav -->
-      <!-- <nav class="hidden md:flex items-center gap-1"> -->
+      <nav class="hidden md:flex items-center gap-1">
         {navItems.map(item => (
           <a href={item.href}
              class:list={[
@@ -116,14 +119,18 @@ const navItems = [
          </button>
       </div>
     </header>
+    )}
 
     <!-- ═══ Main Content ═══ -->
-    <main class="w-full max-w-lg mx-auto lg:max-w-5xl pt-14 min-h-screen" style="padding-bottom: calc(var(--bottom-nav-h) + 1rem);">
+    <main class:list={[
+      'w-full max-w-lg mx-auto lg:max-w-5xl min-h-screen',
+      !hideNav && 'pt-14'
+    ]} style={!hideNav ? "padding-bottom: calc(var(--bottom-nav-h) + 1rem);" : ""}>
       <slot />
     </main>
 
     <!-- ═══ Bottom Nav (Mobile) ═══ -->
-    <BottomNav />
+    {!hideNav && <BottomNav />}
 
     <!-- ═══ Toast Notifications ═══ -->
     <Toast />
