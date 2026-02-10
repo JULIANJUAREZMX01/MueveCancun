@@ -1,39 +1,11 @@
-use once_cell::sync::Lazy;
-use petgraph::algo::dijkstra;
-use petgraph::graph::{NodeIndex, UnGraph};
-use rstar::{PointDistance, RTree, RTreeObject, AABB};
-use serde::{Deserialize, Serialize};
-use shared_types::{haversine_distance, RootData, TransportType};
-use std::collections::HashMap;
-use std::sync::RwLock;
 use wasm_bindgen::prelude::*;
-
-// Longitude scaling factor for Cancun (~21.1° N)
-const LNG_SCALE: f64 = 0.932;
-
-#[derive(Clone)]
-struct StopPoint {
-    name: String,
-    lat: f64,
-    lng: f64,
-}
-
-impl RTreeObject for StopPoint {
-    type Envelope = AABB<[f64; 2]>;
-    fn envelope(&self) -> Self::Envelope {
-        AABB::from_point([self.lat, self.lng * LNG_SCALE])
-    }
-}
-
-impl PointDistance for StopPoint {
-    fn distance_2(&self, point: &[f64; 2]) -> f64 {
-        let d_lat = self.lat - point[0];
-        let d_lng = (self.lng * LNG_SCALE) - point[1];
-        d_lat * d_lat + d_lng * d_lng
-    }
-}
-
-static SPATIAL_INDEX: Lazy<RwLock<Option<RTree<StopPoint>>>> = Lazy::new(|| RwLock::new(None));
+use serde::{Deserialize, Serialize};
+use shared_types::{RootData, haversine_distance, TransportType};
+use petgraph::graph::{NodeIndex, UnGraph};
+use petgraph::algo::dijkstra;
+use std::collections::HashMap;
+use once_cell::sync::Lazy;
+use std::sync::RwLock;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct StopInfo {
@@ -137,19 +109,6 @@ pub fn load_stops_data(val: JsValue) {
                 db.insert(name, (coords[0], coords[1]));
             }
         }
-
-        // Rebuild Spatial Index
-        let mut points = Vec::new();
-        for (name, (lat, lng)) in db.iter() {
-            points.push(StopPoint {
-                name: name.clone(),
-                lat: *lat,
-                lng: *lng,
-            });
-        }
-        if let Ok(mut index) = SPATIAL_INDEX.write() {
-            *index = Some(RTree::bulk_load(points));
-        }
     }
 }
 
@@ -193,14 +152,7 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
             15.0,
             "05:00 - 22:30 (Guardia 03:00-05:00)",
             "10 min",
-            vec![
-                "OXXO Villas Otoch Paraíso",
-                "Chedraui Lakin",
-                "Av. Kabah",
-                "Plaza Las Américas",
-                "Entrada Zona Hotelera",
-                "Zona Hotelera",
-            ],
+            vec!["OXXO Villas Otoch Paraíso", "Chedraui Lakin", "Av. Kabah", "Plaza Las Américas", "Entrada Zona Hotelera", "Zona Hotelera"],
             "",
         ),
         (
@@ -210,13 +162,7 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
             13.0,
             "05:30 - 00:30",
             "15 min",
-            vec![
-                "La Rehoyada",
-                "El Crucero",
-                "Av. Tulum Norte",
-                "Playa del Niño",
-                "Muelle Ultramar",
-            ],
+            vec!["La Rehoyada", "El Crucero", "Av. Tulum Norte", "Playa del Niño", "Muelle Ultramar"],
             "Autocar",
         ),
         (
@@ -226,14 +172,7 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
             15.0,
             "06:00 - 22:30",
             "10 min",
-            vec![
-                "La Rehoyada",
-                "El Crucero",
-                "Av. Tulum Sur",
-                "El Cebiche",
-                "Zona Hotelera",
-                "Playa Delfines",
-            ],
+            vec!["La Rehoyada", "El Crucero", "Av. Tulum Sur", "El Cebiche", "Zona Hotelera", "Playa Delfines"],
             "SEA / Maya Caribe",
         ),
         (
@@ -243,14 +182,7 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
             55.0,
             "05:00 - 00:00",
             "30 min",
-            vec![
-                "Terminal ADO Centro",
-                "Entrada Aeropuerto",
-                "Gasolinera López Portillo",
-                "Puerto Morelos",
-                "Playa Maroma",
-                "Playa del Carmen Centro",
-            ],
+            vec!["Terminal ADO Centro", "Entrada Aeropuerto", "Gasolinera López Portillo", "Puerto Morelos", "Playa Maroma", "Playa del Carmen Centro"],
             "",
         ),
         (
@@ -260,12 +192,7 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
             13.0,
             "", // No schedule in JSON
             "", // No frequency in JSON
-            vec![
-                "Villas Otoch Paraíso",
-                "Paseos Kabah",
-                "Hospital General",
-                "El Crucero",
-            ],
+            vec!["Villas Otoch Paraíso", "Paseos Kabah", "Hospital General", "El Crucero"],
             "",
         ),
         (
@@ -275,13 +202,7 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
             13.0,
             "",
             "",
-            vec![
-                "Villas Otoch",
-                "Hospital General",
-                "Zona Industrial",
-                "Mercado 28",
-                "El Crucero",
-            ],
+            vec!["Villas Otoch", "Hospital General", "Zona Industrial", "Mercado 28", "El Crucero"],
             "",
         ),
         (
@@ -291,12 +212,7 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
             150.0,
             "",
             "",
-            vec![
-                "Aeropuerto T2",
-                "Aeropuerto T3",
-                "Aeropuerto T4",
-                "Terminal ADO Centro",
-            ],
+            vec!["Aeropuerto T2", "Aeropuerto T3", "Aeropuerto T4", "Terminal ADO Centro"],
             "",
         ),
         (
@@ -306,265 +222,47 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
             15.0,
             "04:00-23:00",
             "",
-            vec![
-                "Plaza Las Américas",
-                "Av. Nichupté",
-                "Av. Kabah",
-                "Av. La Luna",
-                "Av. Las Torres",
-                "Av. Huayacán",
-                "Carr. Federal 307",
-                "UT Cancún",
-                "Aeropuerto T3",
-                "Aeropuerto T2",
-            ],
+            vec!["Plaza Las Américas", "Av. Nichupté", "Av. Kabah", "Av. La Luna", "Av. Las Torres", "Av. Huayacán", "Carr. Federal 307", "UT Cancún", "Aeropuerto T3", "Aeropuerto T2"],
             "",
-        ),
-        // --- NEWLY EXTRACTED ROUTES (FACEBOOK GROUP) ---
-        (
-            "R6_WALMART_001",
-            "R-6 Santa Fe - Walmart A.Q. Roo",
-            TransportType::Bus,
-            12.0,
-            "06:00 - 22:30",
-            "10 min",
-            vec![
-                "Santa Fe",
-                "Av. Kabah",
-                "Multiplaza Kabah",
-                "Walmart Andrés Quintana Roo",
-                "El Crucero",
-            ],
-            "Turicun",
-        ),
-        (
-            "R29_OUTLET_001",
-            "R-29 ADO - Plaza Outlet",
-            TransportType::Bus,
-            12.0,
-            "06:30 - 23:00",
-            "12 min",
-            vec![
-                "Terminal ADO Centro",
-                "Parque Las Palapas",
-                "Mercado 28",
-                "Plaza Outlet",
-                "Av. Andrés Quintana Roo",
-                "Comalcalco",
-            ],
-            "Autocar",
-        ),
-        (
-            "R17_LAKIN_001",
-            "R-17 Tierra Maya - Lak'in",
-            TransportType::Bus,
-            12.0,
-            "05:00 - 23:30",
-            "8 min",
-            vec![
-                "Tierra Maya",
-                "Aurrera Lakin",
-                "Chedraui Lakin",
-                "Av. Miguel Hidalgo",
-                "El Crucero",
-            ],
-            "Autocar",
-        ),
-        (
-            "R21_AMERICAS_001",
-            "R-21 Las Américas - Kabah",
-            TransportType::Bus,
-            12.0,
-            "06:00 - 22:00",
-            "15 min",
-            vec![
-                "Plaza Las Américas",
-                "Av. Tulum Sur",
-                "Chedraui Ceviche",
-                "Av. Kabah",
-                "Villas del Mar",
-            ],
-            "Maya Caribe",
-        ),
-        (
-            "R44_CENTRO_001",
-            "R-44 Centro - Plaza Las Américas",
-            TransportType::Bus,
-            13.0,
-            "05:45 - 23:00",
-            "10 min",
-            vec![
-                "El Crucero",
-                "Av. Tulum Norte",
-                "Plaza Las Américas",
-                "Av. Bonampak",
-                "Puerto Cancun",
-                "Km 0",
-            ],
-            "Turicun",
-        ),
-        (
-            "R5_HEROES_001",
-            "R-5 Los Héroes - Crucero",
-            TransportType::Bus,
-            12.0,
-            "06:00 - 22:00",
-            "12 min",
-            vec![
-                "Héroes",
-                "Av. Chac Mool",
-                "Tierra Maya",
-                "Av. Kabah",
-                "El Crucero",
-            ],
-            "Autocar",
-        ),
-        (
-            "R27_TIERRA_MAYA_001",
-            "R-27 Tierra Maya - Zona Hotelera",
-            TransportType::Bus,
-            15.0,
-            "05:30 - 23:00",
-            "10 min",
-            vec![
-                "Tierra Maya",
-                "Av. Kabah",
-                "Plaza Las Américas",
-                "Entrada Zona Hotelera",
-                "Zona Hotelera",
-                "Playa Delfines",
-            ],
-            "Turicun",
-        ),
-        (
-            "R237_RANCHO_001",
-            "R-237 Rancho Viejo - Crucero",
-            TransportType::Bus,
-            12.0,
-            "06:00 - 22:00",
-            "15 min",
-            vec![
-                "Rancho Viejo",
-                "Arco Norte",
-                "Prado Norte",
-                "Av. Tulum Norte",
-                "El Crucero",
-            ],
-            "Maya Caribe",
-        ),
-        (
-            "R71_RESIDENCIAL_001",
-            "R-71 Polígono Sur - Centro",
-            TransportType::Bus,
-            13.0,
-            "06:00 - 22:00",
-            "20 min",
-            vec![
-                "Polígono Sur",
-                "Jardines del Sur",
-                "Av. Las Torres",
-                "Plaza Las Américas",
-                "Terminal ADO Centro",
-            ],
-            "Turicun",
-        ),
-        (
-            "R31_UNIVERSIDAD_001",
-            "R-31 Universidad del Caribe - Centro",
-            TransportType::Bus,
-            12.0,
-            "07:00 - 21:00",
-            "30 min",
-            vec![
-                "Universidad del Caribe",
-                "Av. Bonampak",
-                "Puerto Cancun",
-                "El Crucero",
-                "Mercado 28",
-            ],
-            "Autocar",
-        ),
-        (
-            "R30_REG103_001",
-            "R-30 Región 103 - Zona Hotelera",
-            TransportType::Bus,
-            15.0,
-            "05:00 - 23:00",
-            "10 min",
-            vec![
-                "Región 103",
-                "Av. Talleres",
-                "Av. Tulum Norte",
-                "El Crucero",
-                "Zona Hotelera",
-            ],
-            "Turicun",
-        ),
-        (
-            "R33_REG102_001",
-            "R-33 Región 102 - Plaza Las Américas",
-            TransportType::Bus,
-            12.0,
-            "06:00 - 22:00",
-            "15 min",
-            vec![
-                "Región 102",
-                "Av. Talleres",
-                "Av. Kabah",
-                "Plaza Las Américas",
-            ],
-            "Autocar",
         ),
     ];
 
-    raw_data
-        .into_iter()
-        .map(
-            |(id, name, t_type, price, schedule, frequency, stops, operator)| {
-                let stops_vec: Vec<String> = stops.into_iter().map(|s| s.to_string()).collect();
-                let stops_normalized: Vec<String> =
-                    stops_vec.iter().map(|s| s.to_lowercase()).collect();
-                let origin = stops_vec
-                    .first()
-                    .cloned()
-                    .unwrap_or_else(|| "Unknown".to_string());
-                let dest = stops_vec
-                    .last()
-                    .cloned()
-                    .unwrap_or_else(|| "Unknown".to_string());
+    raw_data.into_iter().map(|(id, name, t_type, price, schedule, frequency, stops, operator)| {
+        let stops_vec: Vec<String> = stops.into_iter().map(|s| s.to_string()).collect();
+        let stops_normalized: Vec<String> = stops_vec.iter().map(|s| s.to_lowercase()).collect();
+        let origin = stops_vec.first().cloned().unwrap_or_else(|| "Unknown".to_string());
+        let dest = stops_vec.last().cloned().unwrap_or_else(|| "Unknown".to_string());
 
-                // Infer duration or default
-                let duration = if !frequency.is_empty() {
-                    format!("Freq: {}", frequency)
-                } else {
-                    "Unknown".to_string()
-                };
+        // Infer duration or default
+        let duration = if !frequency.is_empty() {
+             format!("Freq: {}", frequency)
+        } else {
+             "Unknown".to_string()
+        };
 
-                Route {
-                    id: id.to_string(),
-                    name: name.to_string(),
-                    transport_type: t_type,
-                    price,
-                    duration,
-                    badges: vec![],
-                    origin_hub: origin,
-                    dest_hub: dest,
-                    stops: stops_vec,
-                    stops_info: None,
-                    stops_normalized,
-                    operator: operator.to_string(),
-                    schedule: schedule.to_string(),
-                    frequency: frequency.to_string(),
-                }
-            },
-        )
-        .collect()
+        Route {
+            id: id.to_string(),
+            name: name.to_string(),
+            transport_type: t_type,
+            price,
+            duration,
+            badges: vec![],
+            origin_hub: origin,
+            dest_hub: dest,
+            stops: stops_vec,
+            stops_info: None,
+            stops_normalized,
+            operator: operator.to_string(),
+            schedule: schedule.to_string(),
+            frequency: frequency.to_string(),
+        }
+    }).collect()
 });
 
 fn match_stop<'a>(
     query_norm: &str,
     route: &'a Route,
-    cache: &mut HashMap<&'a str, f64>,
+    cache: &mut HashMap<&'a str, f64>
 ) -> Option<usize> {
     let mut best_match: Option<(usize, f64)> = None;
 
@@ -600,14 +298,14 @@ fn enrich_route(mut route: Route) -> Route {
     if let Ok(db) = STOPS_DB.read() {
         let mut infos = Vec::new();
         for stop_name in &route.stops {
-            if let Some((lat, lng)) = db.get(stop_name) {
-                infos.push(StopInfo {
-                    name: stop_name.clone(),
-                    lat: *lat,
-                    lng: *lng,
-                    distance_km: 0.0,
-                });
-            }
+             if let Some((lat, lng)) = db.get(stop_name) {
+                 infos.push(StopInfo {
+                     name: stop_name.clone(),
+                     lat: *lat,
+                     lng: *lng,
+                     distance_km: 0.0,
+                 });
+             }
         }
         if !infos.is_empty() {
             route.stops_info = Some(infos);
@@ -660,7 +358,7 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
         }
     }
 
-    // Optimization: If direct routes are found, return them immediately to reduce noise.
+// Optimization: If direct routes are found, return them immediately to reduce noise.
     if !journeys.is_empty() {
         return journeys;
     }
@@ -668,22 +366,10 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
 
     // === INICIO DE RUTAS DE TRANSBORDO (Incoming Change / Main) ===
     // 2. Transfer Routes (1-Stop)
-    let routes_from_origin: Vec<&RouteMatch> = route_matches
-        .iter()
-        .filter(|m| m.origin_idx.is_some())
-        .collect();
-    let routes_to_dest: Vec<&RouteMatch> = route_matches
-        .iter()
-        .filter(|m| m.dest_idx.is_some())
-        .collect();
+    let routes_from_origin: Vec<&RouteMatch> = route_matches.iter().filter(|m| m.origin_idx.is_some()).collect();
+    let routes_to_dest: Vec<&RouteMatch> = route_matches.iter().filter(|m| m.dest_idx.is_some()).collect();
 
-    let preferred_hubs = [
-        "El Crucero",
-        "Plaza Las Américas",
-        "ADO Centro",
-        "Zona Hotelera",
-        "Muelle Ultramar",
-    ];
+    let preferred_hubs = ["El Crucero", "Plaza Las Américas", "ADO Centro", "Zona Hotelera", "Muelle Ultramar"];
 
     for match_a in &routes_from_origin {
         let route_a = match_a.route;
@@ -701,15 +387,11 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
             // Find intersection
             for (idx_a, stop_a) in route_a.stops_normalized.iter().enumerate() {
                 // Must be after origin
-                if idx_a <= origin_idx_a {
-                    continue;
-                }
+                if idx_a <= origin_idx_a { continue; }
 
                 for (idx_b, stop_b) in route_b.stops_normalized.iter().enumerate() {
                     // Must be before dest
-                    if idx_b >= dest_idx_b {
-                        continue;
-                    }
+                    if idx_b >= dest_idx_b { continue; }
 
                     if stop_a == stop_b {
                         // Found a transfer point!
@@ -717,10 +399,7 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
 
                         journeys.push(Journey {
                             type_: "Transfer".to_string(),
-                            legs: vec![
-                                enrich_route((*route_a).clone()),
-                                enrich_route((*route_b).clone()),
-                            ],
+                            legs: vec![enrich_route((*route_a).clone()), enrich_route((*route_b).clone())],
                             transfer_point: Some(transfer_name),
                             total_price: route_a.price + route_b.price,
                         });
@@ -737,11 +416,7 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
             if j.type_ == "Direct" {
                 2
             } else if let Some(tp) = &j.transfer_point {
-                if preferred_hubs.iter().any(|h| tp.contains(h)) {
-                    1
-                } else {
-                    0
-                }
+                if preferred_hubs.iter().any(|h| tp.contains(h)) { 1 } else { 0 }
             } else {
                 0
             }
@@ -750,13 +425,8 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
         let score_a = get_score(a);
         let score_b = get_score(b);
 
-        score_b
-            .cmp(&score_a) // Higher score first
-            .then_with(|| {
-                a.total_price
-                    .partial_cmp(&b.total_price)
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            }) // Lower price first
+        score_b.cmp(&score_a) // Higher score first
+            .then_with(|| a.total_price.partial_cmp(&b.total_price).unwrap_or(std::cmp::Ordering::Equal)) // Lower price first
     });
 
     // Limit results to avoid overwhelming user
@@ -780,22 +450,6 @@ pub fn get_all_routes() -> Result<JsValue, JsValue> {
 }
 
 pub fn find_nearest_stop_rs(lat: f64, lng: f64) -> Option<StopInfo> {
-    // 1. Try Spatial Index (O(log N))
-    if let Ok(index_guard) = SPATIAL_INDEX.read() {
-        if let Some(rtree) = &*index_guard {
-            if let Some(nearest) = rtree.nearest_neighbor(&[lat, lng * LNG_SCALE]) {
-                let dist = haversine_distance(lat, lng, nearest.lat, nearest.lng);
-                return Some(StopInfo {
-                    name: nearest.name.clone(),
-                    lat: nearest.lat,
-                    lng: nearest.lng,
-                    distance_km: dist,
-                });
-            }
-        }
-    }
-
-    // 2. Fallback to Linear Search if Index not built (first run)
     let mut best_stop: Option<StopInfo> = None;
     let mut min_dist = f64::MAX;
 
@@ -813,24 +467,6 @@ pub fn find_nearest_stop_rs(lat: f64, lng: f64) -> Option<StopInfo> {
             }
         }
     }
-
-    // Proactively build index for next time if we just performed a linear search
-    if best_stop.is_some() {
-        if let Ok(db) = STOPS_DB.read() {
-            let points: Vec<StopPoint> = db
-                .iter()
-                .map(|(name, (lat, lng))| StopPoint {
-                    name: name.clone(),
-                    lat: *lat,
-                    lng: *lng,
-                })
-                .collect();
-            if let Ok(mut index) = SPATIAL_INDEX.write() {
-                *index = Some(RTree::bulk_load(points));
-            }
-        }
-    }
-
     best_stop
 }
 
@@ -853,7 +489,7 @@ pub fn analyze_gap_rs(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64
     // Secondary check for destination
     if let Some(ref ds) = dest_stop {
         if ds.distance_km > 3.0 && rec != "NoPublicCoverage" {
-            // Optional logic
+             // Optional logic
         }
     }
 
@@ -871,12 +507,7 @@ pub fn find_nearest_stop(lat: f64, lng: f64) -> Result<JsValue, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn analyze_gap(
-    user_lat: f64,
-    user_lng: f64,
-    dest_lat: f64,
-    dest_lng: f64,
-) -> Result<JsValue, JsValue> {
+pub fn analyze_gap(user_lat: f64, user_lng: f64, dest_lat: f64, dest_lng: f64) -> Result<JsValue, JsValue> {
     let res = analyze_gap_rs(user_lat, user_lng, dest_lat, dest_lng);
     serde_wasm_bindgen::to_value(&res).map_err(|e| JsValue::from_str(&e.to_string()))
 }
@@ -928,7 +559,7 @@ pub fn calculate_route(
     origin_lng: f64,
     dest_lat: f64,
     dest_lng: f64,
-    routes_val: JsValue,
+    routes_val: JsValue
 ) -> Result<JsValue, JsValue> {
     println!("DEBUG: calculate_route called");
     let data: RootData = match serde_wasm_bindgen::from_value(routes_val) {
@@ -948,7 +579,7 @@ pub fn find_route_internal(
     origin_lng: f64,
     dest_lat: f64,
     dest_lng: f64,
-    data: &RootData,
+    data: &RootData
 ) -> RouteResponse {
     let mut start_node_info: Option<(String, String, f64)> = None;
     let mut end_node_info: Option<(String, String, f64)> = None;
@@ -1079,10 +710,7 @@ pub fn find_route_internal(
     for (i, &idx) in path.iter().enumerate() {
         let node = graph.node_weight(idx).unwrap();
         // DEBUG
-        println!(
-            "DEBUG: Path Node: {} ({}) Type: {:?}",
-            node.name, node.route_id, node.transport_type
-        );
+        println!("DEBUG: Path Node: {} ({}) Type: {:?}", node.name, node.route_id, node.transport_type);
         res.path.push(node.stop_id.clone());
 
         if node.route_id != last_route {
@@ -1110,14 +738,8 @@ pub fn find_route_internal(
             };
 
             res.instructions.push(BilingualString {
-                en: format!(
-                    "Board {} ({}) at {}",
-                    node.route_id, vehicle_type.0, node.name
-                ),
-                es: format!(
-                    "Aborda {} ({}) en {}",
-                    node.route_id, vehicle_type.1, node.name
-                ),
+                en: format!("Board {} ({}) at {}", node.route_id, vehicle_type.0, node.name),
+                es: format!("Aborda {} ({}) en {}", node.route_id, vehicle_type.1, node.name),
             });
 
             last_route = node.route_id.clone();
@@ -1129,9 +751,7 @@ pub fn find_route_internal(
                 es: format!("Baja en {}", node.name),
             });
 
-            if node.name.to_lowercase().contains("aeropuerto")
-                || node.name.to_lowercase().contains("airport")
-            {
+            if node.name.to_lowercase().contains("aeropuerto") || node.name.to_lowercase().contains("airport") {
                 if node.transport_type != TransportType::AdoAirport {
                     res.airport_warning = Some(BilingualString {
                         en: "Access restricted to ADO/Private. Nearest drop-off: Airport Entrance (Highway).".to_string(),
@@ -1149,11 +769,7 @@ pub fn find_route_internal(
 }
 
 #[wasm_bindgen]
-pub fn calculate_trip_cost(
-    distance: f64,
-    seats: u32,
-    is_tourist: bool,
-) -> Result<JsValue, JsValue> {
+pub fn calculate_trip_cost(distance: f64, seats: u32, is_tourist: bool) -> Result<JsValue, JsValue> {
     let base_price = if is_tourist {
         29.0
     } else if distance > 15.0 {
@@ -1174,8 +790,7 @@ pub fn calculate_trip_cost(
             "es": "Paga en efectivo directamente al conductor."
         },
         "seats": seats
-    }))
-    .map_err(|e| JsValue::from_str(&e.to_string()))
+    })).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 fn error_response(error_key: &str) -> RouteResponse {
@@ -1195,7 +810,7 @@ fn error_response(error_key: &str) -> RouteResponse {
         _ => BilingualString {
             en: "Unknown error".to_string(),
             es: "Error desconocido".to_string(),
-        },
+        }
     };
 
     RouteResponse {
@@ -1208,7 +823,7 @@ fn error_response(error_key: &str) -> RouteResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use shared_types::{RootData, Route, Stop, TransportType};
+    use shared_types::{Route, Stop, RootData, TransportType};
 
     fn mock_data() -> RootData {
         RootData {
@@ -1220,20 +835,8 @@ mod tests {
                     fare: 15.0,
                     transport_type: TransportType::BusHotelZone,
                     stops: vec![
-                        Stop {
-                            id: "R1_001".to_string(),
-                            name: "El Crucero Hub".to_string(),
-                            lat: 21.1619,
-                            lng: -86.8515,
-                            order: 1,
-                        },
-                        Stop {
-                            id: "R1_003".to_string(),
-                            name: "Plaza Las Américas".to_string(),
-                            lat: 21.1472,
-                            lng: -86.8234,
-                            order: 3,
-                        },
+                        Stop { id: "R1_001".to_string(), name: "El Crucero Hub".to_string(), lat: 21.1619, lng: -86.8515, order: 1 },
+                        Stop { id: "R1_003".to_string(), name: "Plaza Las Américas".to_string(), lat: 21.1472, lng: -86.8234, order: 3 },
                     ],
                 },
                 Route {
@@ -1243,20 +846,8 @@ mod tests {
                     fare: 110.0,
                     transport_type: TransportType::AdoAirport,
                     stops: vec![
-                        Stop {
-                            id: "ADO_001".to_string(),
-                            name: "ADO Centro".to_string(),
-                            lat: 21.1605,
-                            lng: -86.8260,
-                            order: 1,
-                        },
-                        Stop {
-                            id: "ADO_002".to_string(),
-                            name: "Airport T2".to_string(),
-                            lat: 21.0412,
-                            lng: -86.8725,
-                            order: 2,
-                        },
+                        Stop { id: "ADO_001".to_string(), name: "ADO Centro".to_string(), lat: 21.1605, lng: -86.8260, order: 1 },
+                        Stop { id: "ADO_002".to_string(), name: "Airport T2".to_string(), lat: 21.0412, lng: -86.8725, order: 2 },
                     ],
                 },
                 Route {
@@ -1266,20 +857,8 @@ mod tests {
                     fare: 15.0,
                     transport_type: TransportType::BusUrban,
                     stops: vec![
-                        Stop {
-                            id: "R10_001".to_string(),
-                            name: "Plaza Las Américas".to_string(),
-                            lat: 21.1472,
-                            lng: -86.8234,
-                            order: 1,
-                        },
-                        Stop {
-                            id: "R10_009".to_string(),
-                            name: "Airport Entrance".to_string(),
-                            lat: 21.0450,
-                            lng: -86.8700,
-                            order: 9,
-                        },
+                        Stop { id: "R10_001".to_string(), name: "Plaza Las Américas".to_string(), lat: 21.1472, lng: -86.8234, order: 1 },
+                        Stop { id: "R10_009".to_string(), name: "Airport Entrance".to_string(), lat: 21.0450, lng: -86.8700, order: 9 },
                     ],
                 },
             ],
@@ -1292,11 +871,7 @@ mod tests {
         let res = find_route_internal(21.1472, -86.8234, 21.0450, -86.8700, &data);
         assert!(res.success);
         assert!(res.airport_warning.is_some());
-        assert!(res
-            .airport_warning
-            .unwrap()
-            .en
-            .contains("restricted to ADO"));
+        assert!(res.airport_warning.unwrap().en.contains("restricted to ADO"));
     }
 
     #[test]
@@ -1313,9 +888,7 @@ mod tests {
         let res = find_route_rs("Villas Otoch Paraíso", "Zona Hotelera");
 
         assert!(!res.is_empty());
-        assert!(res
-            .iter()
-            .any(|j| j.type_ == "Direct" && j.legs[0].id == "R2_94_VILLAS_OTOCH_001"));
+        assert!(res.iter().any(|j| j.type_ == "Direct" && j.legs[0].id == "R2_94_VILLAS_OTOCH_001"));
     }
 
     #[test]
@@ -1325,9 +898,7 @@ mod tests {
         let res = find_route_rs("El Crocero", "Ultramar");
 
         assert!(!res.is_empty());
-        assert!(res
-            .iter()
-            .any(|j| j.type_ == "Direct" && j.legs[0].id == "CR_PTO_JUAREZ_001"));
+        assert!(res.iter().any(|j| j.type_ == "Direct" && j.legs[0].id == "CR_PTO_JUAREZ_001"));
     }
 
     #[test]
@@ -1339,9 +910,7 @@ mod tests {
         // This relies on CATALOG data
         let res = find_route_rs("Villas Otoch", "Playa Delfines");
         // Optimization short-circuit
-        if res.iter().any(|j| j.type_ == "Direct") {
-            return;
-        }
+        if res.iter().any(|j| j.type_ == "Direct") { return; }
 
         // If "Villas Otoch Paraíso" matches both R-28 and R-2-94.
         // R-2-94 goes to "Zona Hotelera", but maybe not "Playa Delfines" explicitly in the stops list?
@@ -1360,25 +929,20 @@ mod tests {
         let transfer_routes: Vec<_> = res.iter().filter(|j| j.type_ == "Transfer").collect();
 
         if transfer_routes.is_empty() {
-            // Maybe direct route found?
-            // But let's see if we can find the specific transfer we want
+             // Maybe direct route found?
+             // But let's see if we can find the specific transfer we want
         }
 
-        assert!(res.iter().any(|j| j.type_ == "Transfer"
-            && j.transfer_point
-                .as_ref()
-                .map(|s| s.contains("Crucero"))
-                .unwrap_or(false)));
+        assert!(res.iter().any(|j|
+            j.type_ == "Transfer" &&
+            j.transfer_point.as_ref().map(|s| s.contains("Crucero")).unwrap_or(false)
+        ));
     }
 
     #[test]
     fn test_garbage_input() {
         let res = find_route_rs("XyZ123Rubbish", "AbC987Junk");
-        assert!(
-            res.is_empty(),
-            "Should return empty for garbage input, got {} routes",
-            res.len()
-        );
+        assert!(res.is_empty(), "Should return empty for garbage input, got {} routes", res.len());
     }
 
     #[test]
@@ -1410,18 +974,12 @@ mod tests {
 
         // Debug print if it fails
         if res.recommendation != "Private" {
-            println!(
-                "DEBUG: Found Nearest: {:?} with dist {}",
-                res.origin_gap.as_ref().map(|s| &s.name),
-                res.origin_gap
-                    .as_ref()
-                    .map(|s| s.distance_km)
-                    .unwrap_or(0.0)
-            );
+             println!("DEBUG: Found Nearest: {:?} with dist {}", res.origin_gap.as_ref().map(|s| &s.name), res.origin_gap.as_ref().map(|s| s.distance_km).unwrap_or(0.0));
         }
 
         assert_eq!(res.recommendation, "Private");
     }
+
 
     #[test]
     fn test_direct_priority() {
