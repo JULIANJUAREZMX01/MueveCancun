@@ -54,7 +54,8 @@ export const ui = {
         'transport.Combi': 'Combi',
         'transport.Van': 'Van',
         'transport.ADO': 'ADO',
-        'transport.PlayaExpress': 'Playa Express'
+        'transport.PlayaExpress': 'Playa Express',
+        'calc.max_passengers': 'Maximum 10 passengers'
     },
     es: {
         'nav.home': 'Inicio',
@@ -104,7 +105,8 @@ export const ui = {
         'transport.Combi': 'Combi',
         'transport.Van': 'Van / Colectivo',
         'transport.ADO': 'ADO',
-        'transport.PlayaExpress': 'Playa Express'
+        'transport.PlayaExpress': 'Playa Express',
+        'calc.max_passengers': 'Máximo 10 pasajeros'
     }
 };
 

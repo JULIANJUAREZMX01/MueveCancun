@@ -1,4 +1,5 @@
 ---
+import { ui } from '../lib/i18n';
 import Input from './ui/Input.astro';
 import Switch from './ui/Switch.astro';
 import PassengerSelector from './ui/PassengerSelector.astro';
@@ -11,10 +12,10 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     <!-- Collapsible Header -->
     <div id="card-header" class="p-4 relative flex items-center justify-center min-h-[56px] transition-all duration-300" style="border-bottom: 1px solid var(--border-light);">
 
-      <h2 class="font-display font-black text-lg tracking-tight text-center w-full text-slate-900 dark:text-white"
+      <!-- <h2 class="font-display font-black text-lg tracking-tight text-center w-full text-slate-900 dark:text-white"
           id="title-text" data-i18n="calc.title">
         Where are we going?
-      </h2>
+      </h2> -->
 
       <div class="absolute right-4 flex items-center gap-2">
         <div id="balance-badge-container" class="hidden sm:block">
@@ -163,7 +164,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
             </div>
             
             <button id="toggle-list-btn" class="chip">
-                <span class="text-xs font-bold" id="toggle-list-text">Ocultar</span>
+                <span class="text-xs font-bold" id="toggle-list-text" data-i18n="calc.toggle.hide">Hide</span>
                 <span class="material-symbols-rounded text-sm" id="toggle-list-icon">expand_more</span>
             </button>
         </div>
@@ -192,11 +193,14 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
 </div>
 
-<script define:vars={{ ui }}>
+<div id="i18n-data" data-ui={JSON.stringify(ui)} class="hidden"></div>
+<script>
   import { openDB } from 'idb';
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
 
+  const dataUi = document.getElementById('i18n-data');
+  const ui = dataUi ? JSON.parse(dataUi.dataset.ui || '{}') : {};
   window.APP_TRANSLATIONS = ui;
   let currentLang = localStorage.getItem('lang') || 'en';
 
