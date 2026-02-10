@@ -27,15 +27,49 @@
 - [ ] **Modo Oscuro**: Implementar toggle de tema.
 - [ ] **Transiciones**: Agregar `astro:transitions` o View Transitions API para navegación suave.
 
-### 2. PWA Refinement
+---
 
+## 🛠️ INDICACIONES Y MANTENIMIENTO (Para Usuarios/Agentes)
+
+### 1. Sincronización de Datos
+
+Cada vez que se modifique `src/data/routes.json`, se **DEBE** ejecutar:
+
+```bash
+node scripts/sync-routes.mjs
+```
+
+Esto asegura que el catálogo y las páginas individuales reflejen los cambios.
+
+### 2. Despliegue (Build)
+
+Para una compilación limpia de producción:
+
+```bash
+pnpm run build
+```
+
+Esto incluye la compilación de WASM, la verificación de binarios y la generación estática de Astro.
+
+### 3. Telemetría y Analíticas
+
+Los eventos se guardan en el `localStorage` del navegador bajo la clave `muevecancun_telemetry_queue`. Se sincronizan automáticamente al detectar conexión a internet (`navigator.onLine`).
+
+### 4. Modo Selección (Picker)
+
+Si necesitas habilitar la selección de paradas desde el mapa para otros componentes, usa el parámetro de URL `?picker=destination`. El mapa emitirá la selección y redirigirá con `selected_stop` a la raíz.
+
+---
+
+## 🚀 PRÓXIMOS PASOS (Sprint 4)
+
+- [ ] **Modo Oscuro Avanzado**: Refinar transiciones y persistencia entre islas.
+- [ ] **Sitemap.xml**: Generación automática post-build para las rutas SSG.
+- [ ] **Buscador Predictivo**: Implementar autocomplete real en `RouteCalculator`.
+- [ ] **Integración de "The Listener"**: Si el script de scraping de Jules está listo, integrarlo en el flujo de sync.
 - [ ] **Manifest.json**: Verificar que `names`, `icons` y `theme_color` coincidan con la nueva identidad.
 - [ ] **Screenshots**: Agregar screenshots al manifest para instalación rica.
 - [ ] **Offline Fallback**: Crear página `offline.html` personalizada si falla el cache.
-
-### 3. Código y Optimización
-
-- [ ] **InteractiveMap a React**: Convertir el mapa a componente React (`.tsx`) para mejor manejo de estado y lazy loading real (`client:visible`).
 - [ ] **Lazy Loading**: Aplicar `loading="lazy"` a imágenes en `community.astro`.
 - [ ] **Lighthouse**: Auditar performance y accesibilidad.
 
