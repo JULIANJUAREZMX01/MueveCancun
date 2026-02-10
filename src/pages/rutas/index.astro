@@ -1,6 +1,17 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import routesData from '../../data/master_routes.json';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+const routesPath = path.resolve('./public/data/master_routes.json');
+let routesData: any = { rutas: [] };
+
+try {
+  const fileContent = await fs.readFile(routesPath, 'utf-8');
+  routesData = JSON.parse(fileContent);
+} catch (err) {
+  console.error("Error loading routes for catalog:", err);
+}
 
 // Types
 interface Route {
