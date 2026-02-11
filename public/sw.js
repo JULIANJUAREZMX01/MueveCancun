@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3.0.1-ssg';
+const CACHE_VERSION = 'v3.0.2-ssg';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 
 // Critical assets for offline-first PWA

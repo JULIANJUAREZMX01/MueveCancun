@@ -10,7 +10,3 @@ services:
         value: 20
       - key: ENABLE_PNPM
         value: 1
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
