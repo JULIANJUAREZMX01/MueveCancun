@@ -118,7 +118,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   import { favoritesStore } from '../lib/FavoritesStore';
   // Use relative import for WASM functions (bundled by Vite/Rollup)
   // Ensure strict imports from public/wasm generated files
-  import { find_route, load_catalog } from '../wasm/route-calculator/route_calculator.js';
+  import init, { find_route, load_catalog } from '../wasm/route-calculator/route_calculator.js';
 
   // State
   let currentLang = 'es';
@@ -164,8 +164,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   async function initWasm() {
     try {
-      // WASM is already instantiated by main.js or Layout via import
-      // We just need to load data
+      await init();
       console.log("WASM initialized.");
       wasmLoaded = true;
 
