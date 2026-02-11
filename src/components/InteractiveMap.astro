@@ -4,218 +4,74 @@ interface Props {
   zoom?: number;
 }
 
-const {
-  center = [21.1619, -86.8515], // Cancun Center
-  zoom = 12
-} = Astro.props;
+const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 ---
 
-<div class="relative w-full h-full min-h-[300px] overflow-hidden rounded-xl border border-gray-200 shadow-inner z-0">
-  <div id="map-container" class="w-full h-full z-0" data-center={JSON.stringify(center)} data-zoom={zoom}></div>
+<div id="map-container" class="w-full h-full relative" data-center={JSON.stringify(center)} data-zoom={zoom}>
+    <!-- Map Element -->
+    <div id="leaflet-map" class="w-full h-full z-0"></div>
 
-  <div id="map-loader" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-[1000]">
-    <div class="text-center">
-      <div class="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-      <p class="text-gray-600 font-medium">Cargando mapa...</p>
+    <!-- Map Controls (Custom) -->
+    <div class="absolute bottom-24 right-4 z-[400] flex flex-col gap-2">
+        <button id="gps-center-btn" class="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center text-slate-600 hover:text-primary-500 transition-colors active:scale-95" aria-label="Centrar en mi ubicación">
+            <span class="material-symbols-rounded text-xl">my_location</span>
+        </button>
     </div>
-  </div>
-
-  <!-- Map Controls -->
-  <div class="absolute top-4 right-4 z-[500] flex flex-col gap-2">
-    <button id="gps-center-btn" class="w-10 h-10 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-xl shadow-lg border border-white/20 flex items-center justify-center text-slate-700 dark:text-slate-200 active:scale-90 transition-all hover:bg-white dark:hover:bg-slate-700">
-        <span class="material-symbols-rounded" style="font-variation-settings: 'FILL' 0;">my_location</span>
-    </button>
-  </div>
 </div>
 
 <script>
-  import { coordinatesStore } from '../lib/CoordinatesStore';
-  import { analytics } from '../lib/Analytics';
-
-  // Optimized Coordinate Finder (Inverted Index + Cache)
-  class CoordinateFinder {
-      constructor(db) {
-          this.db = db;
-          this.cache = new Map();
-          this.tokenIndex = new Map();
-          this.keys = Object.keys(db);
-          this.buildIndex();
-      }
-
-      buildIndex() {
-          for (const key of this.keys) {
-              // Tokenize: split by non-alphanumeric (including Spanish accents)
-              const tokens = key.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
-              for (const token of tokens) {
-                  if (token.length < 3) continue;
-                  if (!this.tokenIndex.has(token)) {
-                      this.tokenIndex.set(token, []);
-                  }
-                  this.tokenIndex.get(token).push(key);
-              }
-          }
-      }
-
-      find(stopName) {
-          // 1. Exact match
-          if (this.db[stopName]) return this.db[stopName];
-
-          // 2. Cache check
-          if (this.cache.has(stopName)) return this.cache.get(stopName);
-
-          // 3. Fuzzy Search
-          const searchTokens = stopName.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
-          const candidates = new Set();
-
-          for (const token of searchTokens) {
-              if (token.length < 3) continue;
-              const matches = this.tokenIndex.get(token);
-              if (matches) {
-                  for (const m of matches) candidates.add(m);
-              }
-          }
-
-          let bestKey = null;
-          if (candidates.size > 0) {
-               // Prefer candidates that are substrings or contain the query
-               bestKey = Array.from(candidates).find(k => stopName.includes(k) || k.includes(stopName));
-          }
-
-          const result = bestKey ? this.db[bestKey] : null;
-          this.cache.set(stopName, result);
-          return result;
-      }
-  }
-
-  function escapeHtml(unsafe) {
-    if (typeof unsafe !== 'string') return unsafe;
-    return unsafe
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
-  }
-
-  function safeUrl(name) {
-      return encodeURIComponent(name).replace(/'/g, '%27');
-  }
+  // Ensure we have access to Leaflet
+  // It is loaded in MainLayout via CDN for performance
 
   let map;
   let layerGroup;
   let coordinatesDB = {};
-  let finder;       // Para búsqueda de nombres
+  let finder; // Fuzzy finder instance
 
   async function initMap() {
     const container = document.getElementById('map-container');
-    const loader = document.getElementById('map-loader');
+    if (!container) return;
 
-    if (!container || window.L === undefined) {
-        console.warn("Leaflet not loaded or container missing");
+    // Prevent double init
+    if (map) {
+        // Just invalidate size if resizing happened
+        map.invalidateSize();
         return;
     }
-
-    if (container._leaflet_id) return; // Prevent double init
 
     const center = JSON.parse(container.dataset.center);
-    const zoom = parseFloat(container.dataset.zoom);
+    const zoom = parseInt(container.dataset.zoom);
 
-    // Initialize Leaflet
-    // Cancún Bounds: [20.8, -87.3] to [21.6, -86.5]
-    const maxBounds = [
-        [20.8, -87.3], // South-West
-        [21.6, -86.5]  // North-East
-    ];
-
-    map = window.L.map('map-container', {
-        preferCanvas: true,
-        maxBounds: maxBounds,
-        maxBoundsViscosity: 1.0,
-        minZoom: 10
-    }).setView(center, zoom);
-
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        minZoom: 10,
-        maxZoom: 18
-    }).addTo(map);
-
-    layerGroup = window.L.layerGroup().addTo(map);
-
-    // Initialize Shared Store
-    try {
-        await coordinatesStore.init();
-        coordinatesDB = coordinatesStore.getDB() || {};
-        console.log("Coordinates loaded from store:", Object.keys(coordinatesDB).length);
-
-        // 1. Init Text Finder (Fuzzy Search)
-        finder = new CoordinateFinder(coordinatesDB);
-
-    } catch (e) {
-        console.error("Failed to load coordinates:", e);
-    }
-
-    if (loader) loader.classList.add('hidden');
-
-    // Check for Picker Mode
-    const urlParams = new URLSearchParams(window.location.search);
-    const isPicker = urlParams.get('picker');
-
-    if (isPicker) {
-        if (window.showToast) window.showToast("Toque el mapa para seleccionar una parada cercana", "info");
-
-        // Add visual indicator
-        const indicator = document.createElement('div');
-        indicator.className = 'absolute top-4 left-1/2 -translate-x-1/2 bg-primary-600 text-white px-4 py-2 rounded-full shadow-lg z-[1000] font-bold text-sm animate-bounce';
-        indicator.textContent = "📍 Modo Selección";
-        container.parentElement.appendChild(indicator);
-
-        map.on('click', (e) => {
-            const { lat, lng } = e.latlng;
-
-            // Use Store for Spatial Search
-            const nearest = coordinatesStore.findNearest(lat, lng);
-            let minDist = Infinity;
-
-            if (nearest && coordinatesDB[nearest]) {
-                 // Calculate distance to verify threshold (Store does it, but we need it for UI logic if we want strict < 1000m)
-                 // Store fallback is 1.5km. Map logic was 1000m.
-                 // We can trust the store or re-verify. Let's re-verify with Leaflet's distance to be consistent with previous logic.
-                 const coords = coordinatesDB[nearest];
-                 minDist = map.distance(e.latlng, coords);
-            }
-
-            if (nearest && minDist < 1500) {
-                const popupHtml = `
-                    <div class="p-2 text-center" style="min-width: 140px;">
-                        <p class="font-bold text-sm mb-1">¿Confirmar parada?</p>
-                        <p class="text-xs text-gray-500 mb-3">${escapeHtml(nearest)}</p>
-                        <button id="confirm-pick-btn" class="w-full bg-primary-500 text-white rounded-lg py-2 font-bold text-xs shadow-md active:scale-95 transition-transform">
-                            ✅ USAR ESTA PARADA
-                        </button>
-                    </div>
-                `;
-
-                window.L.popup({ className: 'picker-popup' })
-                    .setLatLng(coordinatesDB[nearest])
-                    .setContent(popupHtml)
-                    .openOn(map);
-
-                setTimeout(() => {
-                    document.getElementById('confirm-pick-btn')?.addEventListener('click', () => {
-                         window.location.href = `/?selected_stop=${encodeURIComponent(nearest)}`;
-                    });
-                }, 100);
-            } else {
-                 if (window.showToast) window.showToast("No hay paradas registradas cerca", "warning");
-            }
-        });
-
-        // Return early to avoid drawing routes or default markers that might confuse
+    // Wait for Leaflet to load
+    if (!window.L) {
+        console.warn("Leaflet not loaded yet, retrying...");
+        setTimeout(initMap, 100);
         return;
     }
 
-    // Check for pending route from other pages
+    map = window.L.map('leaflet-map', {
+        zoomControl: false, // We'll add custom controls if needed
+        attributionControl: false
+    }).setView(center, zoom);
+
+    // Add Tile Layer (CartoDB Positron for clean look)
+    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19
+    }).addTo(map);
+
+    // Load coordinates DB for markers
+    try {
+        const res = await fetch('/coordinates.json');
+        if (res.ok) {
+            coordinatesDB = await res.json();
+            // Initialize Fuse.js for fuzzy finding if needed
+            // (Optional, if we want to search stops on map click)
+        }
+    } catch (e) {
+        console.error("Failed to load coordinates DB", e);
+    }
+
+    // Check for pending route to draw (from SSR redirection or state)
     const pendingRoute = localStorage.getItem('pending_route');
     if (pendingRoute) {
         try {
@@ -229,40 +85,6 @@ const {
             localStorage.removeItem('pending_route');
         } catch (e) {
             console.error("Error parsing pending route", e);
-        }
-    }
-
-    // Draw all points from DB as refined markers
-    if (!pendingRoute) {
-        const newLayers = [];
-        Object.entries(coordinatesDB).forEach(([name, coords]) => {
-            const isRoute = name.startsWith('RUTA') || name.startsWith('Ruta');
-            
-            // Premium Marker Styling
-            const marker = window.L.circleMarker(coords, {
-                radius: isRoute ? 8 : 5,
-                fillColor: isRoute ? '#F97316' : '#3B82F6',
-                color: '#FFFFFF',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.9
-            }).bindPopup(`
-                <div class="p-1">
-                    <p class="font-bold text-gray-900">${escapeHtml(name)}</p>
-                    <p class="text-xs text-gray-500">${isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés'}</p>
-                    <button onclick="window.location.href='/rutas?search=${safeUrl(name)}'" class="mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
-                </div>
-            `);
-            newLayers.push(marker);
-        });
-        
-        if (newLayers.length > 0) {
-            layerGroup = window.L.layerGroup(newLayers).addTo(map);
-            // Optionally fit bounds to all points if database is not empty
-            const allCoords = Object.values(coordinatesDB);
-            if (allCoords.length > 0) {
-                map.fitBounds(allCoords, { padding: [40, 40], maxZoom: 15 });
-            }
         }
     }
   }
@@ -310,26 +132,17 @@ const {
         } else {
             const stops = leg.stops || [];
             stops.forEach(stopName => {
-                let coords;
-
-                // Use Fuzzy Finder if available (Robust)
-                if (finder) {
-                    coords = finder.find(stopName);
-                } else {
-                    // Fallback
-                    coords = coordinatesDB[stopName];
-                    if (!coords) {
-                         const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
-                         if (key) coords = coordinatesDB[key];
-                    }
+                let coords = coordinatesDB[stopName];
+                // Simple fallback if exact match fails
+                if (!coords) {
+                     const key = Object.keys(coordinatesDB).find(k => stopName.includes(k) || k.includes(stopName));
+                     if (key) coords = coordinatesDB[key];
                 }
 
                 if (coords) {
                     routeCoords.push(coords);
                     validStops.push({ name: stopName, latlng: coords });
                     allBounds.push(coords);
-                } else {
-                    console.warn(`[InteractiveMap] Skipping stop with missing coordinates: ${stopName}`);
                 }
             });
         }
@@ -354,34 +167,32 @@ const {
             if (index === 0) {
                  const start = validStops[0];
                  newLayers.push(window.L.marker(start.latlng)
-                    .bindPopup(`<b>Inicio:</b> ${escapeHtml(start.name)}`));
+                    .bindPopup(`<b>Inicio:</b> ${start.name}`));
             }
 
             // End Marker (only for last leg)
             if (index === legs.length - 1) {
                  const end = validStops[validStops.length - 1];
                  newLayers.push(window.L.marker(end.latlng)
-                    .bindPopup(`<b>Fin:</b> ${escapeHtml(end.name)}`));
+                    .bindPopup(`<b>Fin:</b> ${end.name}`));
             }
 
             // Transfer Marker (if not last leg)
             if (index < legs.length - 1) {
                 const end = validStops[validStops.length - 1];
-                 newLayers.push(window.L.marker(end.latlng, {
-                     // Custom icon for transfer? Or just a marker.
-                 }).bindPopup(`<b>Transbordo:</b> ${escapeHtml(end.name)}`));
+                 newLayers.push(window.L.circleMarker(end.latlng, {
+                     radius: 6, color: '#0EA5E9', fillOpacity: 1
+                 }).bindPopup(`<b>Transbordo:</b> ${end.name}`));
             }
 
             // Intermediate dots
             validStops.slice(1, -1).forEach(stop => {
                  newLayers.push(
-                    window.L.circleMarker(stop.latlng, { radius: 4, color: '#334155', fillOpacity: 1 })
-                    .bindPopup(escapeHtml(stop.name))
+                    window.L.circleMarker(stop.latlng, { radius: 3, color: '#334155', fillOpacity: 1, weight: 0 })
+                    // .bindPopup(stop.name) // Too noisy
                  );
             });
 
-        } else {
-            console.warn("No coordinates found for stops:", stops);
         }
     });
 
@@ -400,28 +211,36 @@ const {
   // Listen for global event
   window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
     console.log("Event received:", event.detail);
-    drawRoute(event.detail);
+    const { journey, userLocation } = event.detail;
+    drawRoute(journey);
+
+    // If user location is provided, show it too
+    if (userLocation && map) {
+        // Draw user marker logic here if needed
+    }
   });
 
-  // GPS Centering Logic
+  // GPS Centering Logic (Smart GPS)
   function setupGPS() {
     const gpsBtn = document.getElementById('gps-center-btn');
     if (!gpsBtn) return;
 
     let userMarker;
 
-    gpsBtn.addEventListener('click', () => {
+    const locateUser = (silent = false) => {
         if (!navigator.geolocation) {
-            if (window.showToast) window.showToast("Geolocalización no disponible", "error");
+            if (!silent && window.showToast) window.showToast("Geolocalización no disponible", "error");
             return;
         }
 
-        gpsBtn.classList.add('animate-pulse', 'text-primary-500');
-        analytics.track('gps_center');
+        if (!silent) gpsBtn.classList.add('animate-pulse', 'text-primary-500');
 
         navigator.geolocation.getCurrentPosition((pos) => {
             const { latitude, longitude } = pos.coords;
             
+            // Save permission granted
+            localStorage.setItem('gps_permission', 'true');
+
             if (map) {
                 map.setView([latitude, longitude], 15);
                 
@@ -437,14 +256,26 @@ const {
                 }).addTo(map);
             }
             
-            gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
-            if (window.showToast) window.showToast("Ubicación centrada", "info");
+            if (!silent) {
+                gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
+                if (window.showToast) window.showToast("Ubicación centrada", "info");
+            }
         }, (err) => {
             console.error(err);
-            gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
-            if (window.showToast) window.showToast("No se pudo obtener la ubicación", "error");
+            if (!silent) {
+                gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
+                if (window.showToast) window.showToast("No se pudo obtener la ubicación", "error");
+            }
         });
-    });
+    };
+
+    gpsBtn.addEventListener('click', () => locateUser(false));
+
+    // Smart Auto-Center: Check if permission was previously granted
+    if (localStorage.getItem('gps_permission') === 'true') {
+        // Wait a bit for map to init
+        setTimeout(() => locateUser(true), 1000);
+    }
 
     // Also listen for external location updates (from Search bar, etc)
     window.addEventListener('USER_LOCATION_UPDATE', (e) => {

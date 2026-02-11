@@ -24,34 +24,59 @@ export async function getStaticPaths() {
 
 const { route } = Astro.props;
 
-if (!route) {
-  return Astro.redirect('/rutas?error=route_not_found');
-}
+// --- SEO Logic ---
+const pageTitle = `Ruta ${route.nombre} | CancúnMueve`;
+const pageDescription = `Horarios, paradas y mapa de la ruta ${route.nombre} (${route.tipo}). Viaja desde ${route.paradas?.[0]?.nombre || 'Inicio'} hasta ${route.paradas?.[route.paradas?.length - 1]?.nombre || 'Fin'}. Tarifa: $${route.tarifa || 15}.`;
 
-const title = `Ruta ${route.id}: ${route.nombre}`;
-const description = `Información completa de la ${route.nombre} en Cancún. Paradas, horarios, tarifas y mapa interactivo.`;
+// Schema.org JSON-LD for TransitRoute
+const schemaData = {
+  "@context": "https://schema.org",
+  "@type": "BusTrip",
+  "name": route.nombre,
+  "description": pageDescription,
+  "provider": {
+    "@type": "Organization",
+    "name": route.empresa || "Concesionaria Local"
+  },
+  "departureTime": route.horario?.inicio_oficial || "05:00",
+  "arrivalTime": route.horario?.fin_oficial || "23:00",
+  "offers": {
+    "@type": "Offer",
+    "price": route.tarifa || 15,
+    "priceCurrency": "MXN"
+  },
+  "itinerary": {
+    "@type": "ItemList",
+    "itemListElement": (route.paradas || []).slice(0, 5).map((stop: any, index: number) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "name": stop.nombre
+    }))
+  }
+};
 ---
 
-<MainLayout title={title} description={description}>
-  <div class="space-y-6 animate-fade-in pb-16">
+<MainLayout title={pageTitle} description={pageDescription}>
+  <!-- Inject JSON-LD -->
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemaData)} />
+
+  <div class="animate-fade-in pb-20">
     
-    <!-- Header with Back Button -->
-    <div class="pt-6">
-      <a href="/rutas" class="inline-flex items-center text-sm font-bold text-slate-500 hover:text-primary-600 transition-colors mb-4">
-        <span class="material-symbols-rounded mr-1 text-base">arrow_back</span>
-        Volver al Catálogo
-      </a>
-      
-      <div class="glass-card overflow-hidden">
-        <div class="p-6 md:p-8">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <div class="flex items-center gap-3 mb-2">
-                   <span class="px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-xs font-black tracking-widest uppercase">
-                    Ruta {route.id}
+    <!-- Header Card -->
+    <div class="glass-card p-6 md:p-10 mb-6 relative overflow-hidden group">
+      <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+        <span class="material-symbols-rounded text-9xl text-slate-900">directions_bus</span>
+      </div>
+
+      <div class="relative z-10">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+           <div class="space-y-1">
+                <div class="flex items-center gap-2 mb-2">
+                   <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-bold border border-orange-200 uppercase tracking-tighter">
+                      {route.tipo.replace('_', ' ')}
                    </span>
                    {route.tarifa && (
-                     <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 uppercase tracking-tighter">
+                    <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 uppercase tracking-tighter">
                         Tarifa Oficial
                      </span>
                    )}
@@ -72,7 +97,7 @@ const description = `Información completa de la ${route.nombre} en Cancún. Par
             </div>
 
             <!-- Highlights Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-100">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-100 w-full">
                <div class="flex flex-col">
                   <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Distancia</span>
                   <div class="flex items-center gap-2">
@@ -91,18 +116,17 @@ const description = `Información completa de la ${route.nombre} en Cancún. Par
                   <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Frecuencia</span>
                   <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-slate-300 text-lg">avg_pace</span>
-                    <span class="text-lg font-bold text-slate-800">{route.schedule?.frequency_minutes || '10'} <span class="text-xs font-medium text-slate-500">min</span></span>
+                    <span class="text-lg font-bold text-slate-800">{route.horario?.frecuencia_minutos || '10'} <span class="text-xs font-medium text-slate-500">min</span></span>
                   </div>
                </div>
                <div class="flex flex-col">
                   <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Operador</span>
                   <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-slate-300 text-lg">corporate_fare</span>
-                    <span class="text-sm font-bold text-slate-800 truncate">{route.operator || 'Consorcio Urbano'}</span>
+                    <span class="text-sm font-bold text-slate-800 truncate">{route.empresa || 'Consorcio Urbano'}</span>
                   </div>
                </div>
             </div>
-        </div>
       </div>
     </div>
 
@@ -160,11 +184,11 @@ const description = `Información completa de la ${route.nombre} en Cancún. Par
             <div class="space-y-4">
                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
                   <span class="text-xs font-bold text-slate-500">Primer salida</span>
-                  <span class="text-sm font-black text-slate-900">{route.schedule?.start || '05:30 AM'}</span>
+                  <span class="text-sm font-black text-slate-900">{route.horario?.inicio_oficial || '05:30 AM'}</span>
                </div>
                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
                   <span class="text-xs font-bold text-slate-500">Última salida</span>
-                  <span class="text-sm font-black text-slate-900">{route.schedule?.end || '11:45 PM'}</span>
+                  <span class="text-sm font-black text-slate-900">{route.horario?.fin_oficial || '11:45 PM'}</span>
                </div>
                <p class="text-[10px] text-slate-400 text-center font-medium p-2">
                   * Los horarios pueden variar según condiciones de tráfico y disponibilidad del operador.
@@ -198,24 +222,24 @@ const description = `Información completa de la ${route.nombre} en Cancún. Par
 
     // Use current path as ID or extract it
     const parts = window.location.pathname.split('/');
-    const routeId = parts[parts.length - 1] || parts[parts.length - 2];
-    const routeName = document.querySelector('h1')?.textContent || 'Ruta';
+    const routeId = parts[parts.length - 1] || parts[parts.length - 2]; // Handle trailing slash
+    const routeName = document.querySelector('h1')?.textContent?.trim() || 'Ruta';
 
     const updateUI = () => {
        const isFav = favoritesStore.isFavorite(routeId);
-       const icon = favoriteBtn.querySelector('.star-icon') as HTMLElement;
+       const icon = favoriteBtn.querySelector('.star-icon');
        const text = favoriteBtn.querySelector('.btn-text');
        
        if (isFav) {
           if (icon) {
-            icon.style.fontVariationSettings = "'FILL' 1";
+            icon.setAttribute('style', "font-variation-settings: 'FILL' 1;");
             icon.classList.add('text-primary-500');
           }
           if (text) text.textContent = "Guardado";
           favoriteBtn.classList.add('bg-primary-50', 'border-primary-200');
        } else {
           if (icon) {
-            icon.style.fontVariationSettings = "'FILL' 0";
+            icon.setAttribute('style', "font-variation-settings: 'FILL' 0;");
             icon.classList.remove('text-primary-500');
           }
           if (text) text.textContent = "Guardar";
@@ -233,11 +257,16 @@ const description = `Información completa de la ${route.nombre} en Cancún. Par
           window.showToast(added ? "Ruta guardada en favoritos" : "Ruta eliminada de favoritos", "info");
        }
 
-       analytics.track(added ? 'add_favorite' : 'remove_favorite', { route_id: routeId, route_name: routeName });
+       if (analytics) {
+         analytics.track(added ? 'add_favorite' : 'remove_favorite', { route_id: routeId, route_name: routeName });
+       }
     });
   }
 
   document.addEventListener('astro:page-load', initPage);
+  // Also run on initial load if view transitions aren't triggering immediately or if disabled
+  if (document.readyState === 'complete') initPage();
+  else window.addEventListener('load', initPage);
 </script>
 
 <style>

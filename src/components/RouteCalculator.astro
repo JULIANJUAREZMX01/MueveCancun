@@ -96,6 +96,15 @@ import PassengerSelector from './ui/PassengerSelector.astro';
         <span class="material-symbols-rounded icon">search</span>
         <span data-i18n="calc.btn">Buscar Rutas</span>
       </button>
+
+      <!-- Favorites Section (Hidden by default) -->
+      <div id="favorites-section" class="hidden">
+        <h4 class="section-label">Tus Rutas Favoritas</h4>
+        <div id="favorites-list" class="favorites-grid">
+           <!-- Items injected via JS -->
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -106,6 +115,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
 <script>
   import { ui } from '../lib/i18n';
+  import { favoritesStore } from '../lib/FavoritesStore';
   // Use relative import for WASM functions (bundled by Vite/Rollup)
   // Ensure strict imports from public/wasm generated files
   import { find_route, load_catalog } from '../wasm/route-calculator/route_calculator.js';
@@ -136,6 +146,8 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   const resetSearchBtn = document.getElementById('reset-search-btn');
   const summaryOrigin = document.getElementById('summary-origin');
   const summaryDest = document.getElementById('summary-dest');
+  const favoritesSection = document.getElementById('favorites-section');
+  const favoritesList = document.getElementById('favorites-list');
 
   // Helper: Escape HTML
   function escapeHtml(unsafe) {
@@ -190,8 +202,30 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   // Start init
   initWasm();
+  renderFavorites();
+
+  // Listen for favorites updates
+  window.addEventListener('FAVORITES_UPDATED', () => renderFavorites());
 
   // --- UI Logic ---
+
+  function renderFavorites() {
+    if (!favoritesList || !favoritesSection) return;
+
+    const favorites = favoritesStore.getFavorites();
+    if (favorites.length === 0) {
+      favoritesSection.classList.add('hidden');
+      return;
+    }
+
+    favoritesSection.classList.remove('hidden');
+    favoritesList.innerHTML = favorites.map(fav => `
+      <a href="/ruta/${fav.id}" class="favorite-item">
+        <span class="material-symbols-rounded icon-sm text-primary">directions_bus</span>
+        <span class="fav-name">${escapeHtml(fav.nombre)}</span>
+      </a>
+    `).join('');
+  }
 
   // Language Toggle
   if (langToggle) {
@@ -741,6 +775,41 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     font-size: 1rem;
     padding: 0.875rem;
   }
+
+  /* ── Favorites ── */
+  .favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .favorite-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .favorite-item:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+  }
+
+  .fav-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .text-primary { color: var(--color-primary); }
 
   /* ── Result Cards ── */
   .results-container {
