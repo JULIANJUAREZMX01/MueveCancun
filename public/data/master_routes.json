@@ -7,6 +7,7 @@
       "tarifa": 15,
       "tipo": "Bus_Urbano_Isla",
       "frecuencia_minutos": 10,
+      "social_alerts": ["⚠️ Demora de 15min por tráfico en Kabah", "📢 AC reportado como funcional"],
       "horario": {
         "inicio_oficial": "05:00",
         "fin_oficial": "22:30",
@@ -28,426 +29,81 @@
         },
         {
           "nombre": "Av. Kabah (Ruta 4)",
-          "lat": 21.16,
-          "lng": -86.845,
+          "lat": 21.161,
+          "lng": -86.875,
           "orden": 3
         },
         {
-          "nombre": "Plaza Las Américas (Kabah)",
-          "lat": 21.141,
-          "lng": -86.843,
-          "orden": 4
-        },
-        {
-          "nombre": "Entrada Zona Hotelera (Km 0)",
-          "lat": 21.153,
-          "lng": -86.815,
-          "orden": 5
-        },
-        {
-          "nombre": "Zona Hotelera (Hasta retornar)",
-          "lat": 21.135,
-          "lng": -86.768,
-          "orden": 6
-        }
-      ]
-    },
-    {
-      "id": "CR_PTO_JUAREZ_001",
-      "nombre": "Combi Roja Puerto Juárez → Ultramar",
-      "tarifa": 13,
-      "tipo": "Combi_Municipal",
-      "empresa": "Autocar (Controladora SEA)",
-      "frecuencia_minutos": 15,
-      "horario": {
-        "inicio": "05:30",
-        "fin": "00:30"
-      },
-      "paradas": [
-        {
-          "id": "CR_PTO_JUAREZ_001_001",
-          "nombre": "La Rehoyada (Base Operativa)",
-          "lat": 21.1619,
-          "lng": -86.8515,
-          "orden": 1
-        },
-        {
-          "id": "CR_PTO_JUAREZ_001_002",
-          "nombre": "El Crucero",
-          "lat": 21.1576,
-          "lng": -86.8269,
-          "orden": 2
-        },
-        {
-          "id": "CR_PTO_JUAREZ_001_003",
-          "nombre": "Av. Tulum Norte (Tramo)",
-          "lat": 21.165,
-          "lng": -86.823,
-          "orden": 3
-        },
-        {
-          "id": "CR_PTO_JUAREZ_001_004",
-          "nombre": "Playa del Niño",
-          "lat": 21.195,
-          "lng": -86.81,
-          "orden": 4
-        },
-        {
-          "id": "CR_PTO_JUAREZ_001_005",
-          "nombre": "Muelle Ultramar (Puerto Juárez)",
-          "lat": 21.207,
-          "lng": -86.802,
-          "orden": 5
-        }
-      ]
-    },
-    {
-      "id": "R1_ZONA_HOTELERA_001",
-      "nombre": "R-1 Centro → Zona Hotelera",
-      "tarifa": 15,
-      "tipo": "Bus_Urban",
-      "empresa": "Controladora SEA (rojas)",
-      "frecuencia_minutos": 10,
-      "horario": {
-        "inicio": "06:00",
-        "fin": "22:30"
-      },
-      "paradas": [
-        {
-          "id": "R1_ZONA_HOTELERA_001_001",
-          "nombre": "La Rehoyada / Villas Otoch (Origenes)",
-          "lat": 21.1619,
-          "lng": -86.8515,
-          "orden": 1
-        },
-        {
-          "id": "R1_ZONA_HOTELERA_001_002",
-          "nombre": "El Crucero",
-          "lat": 21.1576,
-          "lng": -86.8269,
-          "orden": 2
-        },
-        {
-          "id": "R1_ZONA_HOTELERA_001_003",
-          "nombre": "Av. Tulum Sur",
+          "nombre": "Av. Kabah (Estadio Andrés Q. Roo)",
           "lat": 21.155,
-          "lng": -86.825,
-          "orden": 3
-        },
-        {
-          "id": "R1_ZONA_HOTELERA_001_004",
-          "nombre": "El Cebiche (Entrada Zona Hotelera)",
-          "lat": 21.153,
-          "lng": -86.815,
+          "lng": -86.852,
           "orden": 4
         },
         {
-          "id": "R1_ZONA_HOTELERA_001_005",
-          "nombre": "Boulevard Kukulcán (Zona Hotelera)",
+          "nombre": "Plaza Las Américas (Paradero Principal)",
+          "lat": 21.146,
+          "lng": -86.823,
+          "orden": 5,
+          "amenities": ["bancas", "techado", "iluminacion"],
+          "landmarks": "Frente a Liverpool"
+        },
+        {
+          "nombre": "Kilómetro Cero (Entrada ZH)",
+          "lat": 21.158,
+          "lng": -86.815,
+          "orden": 6
+        },
+        {
+          "nombre": "Zona Hotelera (Playa Tortugas)",
           "lat": 21.135,
           "lng": -86.768,
-          "orden": 5
-        },
-        {
-          "id": "R1_ZONA_HOTELERA_001_006",
-          "nombre": "Playa Delfines (El Mirador)",
-          "lat": 21.085,
-          "lng": -86.775,
-          "orden": 6
-        }
-      ]
-    },
-    {
-      "id": "VAN_PLAYA_EXPRESS_001",
-      "nombre": "Playa Express Cancún → Playa del Carmen",
-      "tarifa": 55,
-      "tipo": "Van_Foranea",
-      "frecuencia_minutos": 30,
-      "horario": {
-        "inicio": "05:00",
-        "fin": "00:00"
-      },
-      "paradas": [
-        {
-          "id": "VAN_PLAYA_EXPRESS_001_001",
-          "nombre": "Terminal ADO Cancún Centro",
-          "lat": 21.1586,
-          "lng": -86.8259,
-          "orden": 1
-        },
-        {
-          "id": "VAN_PLAYA_EXPRESS_001_002",
-          "nombre": "Entrada Aeropuerto (Carr. Fed. 307)",
-          "lat": 21.0417,
-          "lng": -86.8761,
-          "orden": 2
-        },
-        {
-          "id": "VAN_PLAYA_EXPRESS_001_003",
-          "nombre": "Gasolinera López Portillo",
-          "lat": 21.175,
-          "lng": -86.84,
-          "orden": 3
-        },
-        {
-          "id": "VAN_PLAYA_EXPRESS_001_004",
-          "nombre": "Puerto Morelos (Carr. 307)",
-          "lat": 20.8495,
-          "lng": -86.872,
-          "orden": 4
-        },
-        {
-          "id": "VAN_PLAYA_EXPRESS_001_005",
-          "nombre": "Playa Maroma",
-          "lat": 20.785,
-          "lng": -86.895,
-          "orden": 5
-        },
-        {
-          "id": "VAN_PLAYA_EXPRESS_001_006",
-          "nombre": "Punta Bete",
-          "lat": 20.715,
-          "lng": -87.005,
-          "orden": 6
-        },
-        {
-          "id": "VAN_PLAYA_EXPRESS_001_007",
-          "nombre": "Playa del Carmen Centro (Calle 2 x 5ta Av.)",
-          "lat": 20.6296,
-          "lng": -87.0739,
           "orden": 7
         }
       ]
     },
     {
-      "id": "R28_VILLAS_OTOCH_001",
-      "nombre": "R-28 Villas Otoch → Av. Tulum",
-      "tarifa": 13,
-      "tipo": "Bus_Urban",
-      "paradas": [
-        {
-          "id": "R28_VILLAS_OTOCH_001_001",
-          "nombre": "Villas Otoch Paraíso",
-          "lat": 21.138,
-          "lng": -86.865,
-          "orden": 1
-        },
-        {
-          "id": "R28_VILLAS_OTOCH_001_002",
-          "nombre": "Paseos Kabah",
-          "lat": 21.142,
-          "lng": -86.855,
-          "orden": 2
-        },
-        {
-          "id": "R28_VILLAS_OTOCH_001_003",
-          "nombre": "Av. Kabah (Hospital General)",
-          "lat": 21.15,
-          "lng": -86.84,
-          "orden": 3
-        },
-        {
-          "id": "R28_VILLAS_OTOCH_001_004",
-          "nombre": "El Crucero",
-          "lat": 21.1576,
-          "lng": -86.8269,
-          "orden": 4
-        }
-      ]
-    },
-    {
-      "id": "R19_VILLAS_OTOCH_002",
-      "nombre": "R-19 Villas Otoch → López Portillo",
-      "tarifa": 13,
-      "tipo": "Bus_Urban",
-      "paradas": [
-        {
-          "id": "R19_VILLAS_OTOCH_002_001",
-          "nombre": "Villas Otoch",
-          "lat": 21.138,
-          "lng": -86.865,
-          "orden": 1
-        },
-        {
-          "id": "R19_VILLAS_OTOCH_002_002",
-          "nombre": "Hospital General (Av. Kabah)",
-          "lat": 21.15,
-          "lng": -86.84,
-          "orden": 2
-        },
-        {
-          "id": "R19_VILLAS_OTOCH_002_003",
-          "nombre": "Zona Industrial",
-          "lat": 21.16,
-          "lng": -86.83,
-          "orden": 3
-        },
-        {
-          "id": "R19_VILLAS_OTOCH_002_004",
-          "nombre": "Mercado 28",
-          "lat": 21.162,
-          "lng": -86.828,
-          "orden": 4
-        }
-      ]
-    },
-    {
-      "id": "R19_VILLAS_OTOCH_002",
-      "nombre": "R-19 Villas Otoch - Crucero",
-      "tarifa": 13,
-      "tipo": "Bus_Urban",
-      "frecuencia_minutos": 25,
-      "horario": {
-        "inicio": "06:00",
-        "fin": "22:30"
-      },
-      "paradas": [
-        {
-          "nombre": "Villas Otoch",
-          "lat": 21.138,
-          "lng": -86.865,
-          "orden": 1
-        },
-        {
-          "nombre": "Hospital General (Av. Kabah)",
-          "lat": 21.15,
-          "lng": -86.84,
-          "orden": 2
-        },
-        {
-          "nombre": "El Crucero",
-          "lat": 21.1576,
-          "lng": -86.8269,
-          "orden": 3
-        }
-      ]
-    },
-    {
-      "id": "ADO_AEROPUERTO_001",
-      "nombre": "ADO Aeropuerto → Centro Cancún",
-      "tarifa": 150,
-      "tipo": "Bus_Foraneo",
-      "paradas": [
-        {
-          "id": "ADO_AEROPUERTO_001_001",
-          "nombre": "Terminal 2 Aeropuerto",
-          "lat": 21.0417,
-          "lng": -86.8761,
-          "orden": 1
-        },
-        {
-          "id": "ADO_AEROPUERTO_001_002",
-          "nombre": "Terminal 3 Aeropuerto",
-          "lat": 21.041,
-          "lng": -86.8755,
-          "orden": 2
-        },
-        {
-          "id": "ADO_AEROPUERTO_001_003",
-          "nombre": "Terminal 4 Aeropuerto",
-          "lat": 21.04,
-          "lng": -86.875,
-          "orden": 3
-        },
-        {
-          "id": "ADO_AEROPUERTO_001_004",
-          "nombre": "Terminal ADO Centro Cancún",
-          "lat": 21.1586,
-          "lng": -86.8259,
-          "orden": 4
-        }
-      ]
-    },
-    {
-      "id": "R10",
-      "nombre": "Las Américas - Aeropuerto",
+      "id": "R1_ZONA_HOTELERA_001",
+      "nombre": "R-1 Zona Hotelera (Av. Tulum)",
       "tarifa": 15,
-      "frecuencia_minutos": 20,
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano_Isla",
+      "frecuencia_minutos": 5,
+      "social_alerts": ["✅ Frecuencia alta confirmada hoy"],
       "horario": {
-        "inicio": "04:00",
-        "fin": "23:00"
+        "inicio_oficial": "04:30",
+        "fin_oficial": "00:00",
+        "guardia_nocturna": "Servicio continuo cada 30min"
       },
       "paradas": [
         {
-          "id": "R10_001",
-          "nombre": "Plaza Las Américas",
-          "lat": 21.1472,
-          "lng": -86.8234,
-          "orden": 1,
-          "landmarks": "Av. Sayil"
+          "nombre": "La Rehoyada",
+          "lat": 21.1619,
+          "lng": -86.8515,
+          "orden": 1
         },
         {
-          "id": "R10_002",
-          "nombre": "Av. Nichupté",
-          "lat": 21.1412,
-          "lng": -86.8315,
+          "nombre": "El Crucero (Av. Tulum)",
+          "lat": 21.1576,
+          "lng": -86.8269,
           "orden": 2,
-          "landmarks": "Cerca de Pabellón Caribe"
+          "landmarks": "Cerca del ADO"
         },
         {
-          "id": "R10_003",
-          "nombre": "Av. Kabah",
-          "lat": 21.1355,
-          "lng": -86.8412,
-          "orden": 3,
-          "landmarks": "Supermercado Soriana"
+          "nombre": "Palacio Municipal (Av. Tulum)",
+          "lat": 21.155,
+          "lng": -86.825,
+          "orden": 3
         },
         {
-          "id": "R10_004",
-          "nombre": "Av. La Luna",
-          "lat": 21.1285,
-          "lng": -86.8485,
-          "orden": 4,
-          "landmarks": "Plaza La Luna"
+          "nombre": "Plaza Las Américas",
+          "lat": 21.146,
+          "lng": -86.823,
+          "orden": 4
         },
         {
-          "id": "R10_005",
-          "nombre": "Av. Las Torres",
-          "lat": 21.1155,
-          "lng": -86.8555,
-          "orden": 5,
-          "landmarks": "Parque Kabah Sur"
-        },
-        {
-          "id": "R10_006",
-          "nombre": "Av. Huayacán",
-          "lat": 21.1025,
-          "lng": -86.8612,
-          "orden": 6,
-          "landmarks": "Zona Residencial"
-        },
-        {
-          "id": "R10_007",
-          "nombre": "Carr. Federal 307",
-          "lat": 21.0855,
-          "lng": -86.8525,
-          "orden": 7,
-          "landmarks": "Entrada Bonfil"
-        },
-        {
-          "id": "R10_008",
-          "nombre": "UT Cancún",
-          "lat": 21.0555,
-          "lng": -86.8415,
-          "orden": 8,
-          "landmarks": "Universidad"
-        },
-        {
-          "id": "R10_009",
-          "nombre": "T3 Aeropuerto",
-          "lat": 21.0412,
-          "lng": -86.8725,
-          "orden": 9,
-          "landmarks": "Vuelos Internacionales"
-        },
-        {
-          "id": "R10_010",
-          "nombre": "T2 Aeropuerto",
-          "lat": 21.0365,
-          "lng": -86.8775,
-          "orden": 10,
-          "landmarks": "Vuelos Nacionales"
+          "nombre": "Zona Hotelera (Coco Bongo)",
+          "lat": 21.132,
+          "lng": -86.748,
+          "orden": 5
         }
       ]
     }
