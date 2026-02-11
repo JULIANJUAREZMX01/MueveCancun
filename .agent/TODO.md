@@ -45,7 +45,7 @@
 
 **Responsable**: Jules (Lead Full Stack)  
 **Estado**: 🟢 App Estable y Operativa.  
-**Próximo Hito**: Refactor de WASM para carga dinámica de catálogo.  
-**Guía Maestra**: Ver `.agent/ULTIMATE_HANDOVER_PROMPT.md` para instrucción total.
+**Plan de Ejecución**: Ver `.agent/execution_plan/00_MASTER_PLAN.md`.  
+**Segmento Actual**: [01_WASM_DECOUPLING.md](.agent/execution_plan/01_WASM_DECOUPLING.md)
 
-_Última actualización: 2026-02-10 20:30_
+_Última actualización: 2026-02-11 15:30_
