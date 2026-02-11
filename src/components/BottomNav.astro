@@ -5,8 +5,8 @@ const navItems = [
   { href: '/home', icon: 'explore', label: 'Inicio', activePattern: /^\/home/ },
   { href: '/rutas', icon: 'route', label: 'Rutas', activePattern: /^\/rutas/ },
   { href: '/mapa', icon: 'map', label: 'Mapa', activePattern: /^\/mapa/ },
+  { href: '/community', icon: 'forum', label: 'Foro', activePattern: /^\/community/ },
   { href: '/wallet', icon: 'account_balance_wallet', label: 'Tarjeta', activePattern: /^\/wallet/ },
-  { href: '/community', icon: 'groups', label: 'Comunidad', activePattern: /^\/community/ },
 ];
 ---
 
@@ -38,7 +38,7 @@ const navItems = [
           >{item.icon}</span>
 
           <span class:list={[
-            'text-xxs font-bold tracking-wide transition-colors',
+            'text-[10px] font-bold tracking-wide transition-colors truncate w-full text-center',
             isActive ? 'text-primary-600 dark:text-primary-400' : ''
           ]}>
             {item.label}

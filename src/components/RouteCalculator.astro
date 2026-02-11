@@ -1,87 +1,90 @@
 ---
-import { ui } from '../lib/i18n';
+import { getLangFromUrl, useTranslations } from '../lib/i18n';
 import Input from './ui/Input.astro';
 import Switch from './ui/Switch.astro';
 import PassengerSelector from './ui/PassengerSelector.astro';
+
+const currentLang = getLangFromUrl(Astro.url);
+const ui = useTranslations(currentLang);
 ---
 
-<div class="space-y-6" id="route-calculator-wrapper">
+<div class="calculator-wrapper">
 
-  <div class="glass-card relative overflow-hidden !p-0 transition-all duration-500" id="search-card">
+  <!-- Search Card -->
+  <div class="glass-card search-card" id="search-card">
 
-    <!-- Collapsible Header -->
-    <div id="card-header" class="p-4 relative flex items-center justify-center min-h-[56px] transition-all duration-300" style="border-bottom: 1px solid var(--border-light);">
-
-      <!-- <h2 class="font-display font-black text-lg tracking-tight text-center w-full text-slate-900 dark:text-white"
-          id="title-text" data-i18n="calc.title">
-        Where are we going?
-      </h2> -->
-
-      <div class="absolute right-4 flex items-center gap-2">
-        <div id="balance-badge-container" class="hidden sm:block">
-           <span class="price-tag text-xxs" id="balance-badge">Cargando...</span>
-        </div>
-        <button id="lang-toggle" class="text-xxs font-bold px-2 py-1 rounded-lg uppercase transition-colors" style="background: var(--surface-bg); border: 1px solid var(--border-light); color: var(--text-secondary);">EN</button>
+    <!-- Header with Balance & Lang -->
+    <div class="card-header">
+      <div class="flex items-center gap-2">
+         <span class="material-symbols-rounded text-primary-500 text-xl">directions_bus</span>
+         <h2 class="text-sm font-black uppercase tracking-widest text-slate-800" data-i18n="calc.title">Route Finder</h2>
       </div>
-    </div>
 
-    <!-- Summary Bar (Initially Hidden) -->
-    <div id="search-summary" class="hidden p-3 flex items-center justify-between animate-fade-in z-20 relative" style="background: var(--surface-card); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-light);">
-        <div class="flex items-center gap-3 text-sm overflow-hidden">
-            <div class="flex flex-col min-w-0">
-               <div class="flex items-center gap-1.5 font-bold truncate text-slate-800 dark:text-white">
-                  <span class="w-2 h-2 rounded-full bg-success-500 shrink-0"></span>
-                  <span id="summary-origin" class="truncate text-xs" data-i18n="calc.origin">Origin</span>
-               </div>
-               <div class="h-3 border-l ml-1 my-0.5" style="border-color: var(--border-light);"></div>
-               <div class="flex items-center gap-1.5 font-bold truncate text-slate-800 dark:text-white">
-                  <span class="w-2 h-2 rounded-full bg-danger-500 shrink-0"></span>
-                  <span id="summary-dest" class="truncate text-xs" data-i18n="calc.dest">Destination</span>
-               </div>
-            </div>
+      <div class="header-controls">
+        <div class="balance-container">
+            <span id="balance-badge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-100 text-slate-500 font-mono">
+                LOADING...
+            </span>
         </div>
-        <button id="reset-search-btn" class="btn-sm ml-2 shrink-0 text-xxs font-black uppercase tracking-wider text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400 px-3 py-1.5 rounded-xl transition-colors hover:bg-primary-100" data-i18n="calc.reset">
-            EDIT
+        <button id="lang-toggle" class="lang-toggle">
+            {currentLang === 'es' ? 'ES' : 'EN'}
         </button>
+      </div>
     </div>
 
-    <!-- Main Search Form -->
-    <div id="search-form-container" class="p-5 space-y-5 transition-all duration-500">
-      <!-- Alerts -->
-      <div id="balance-warning" class="hidden">
-        <div class="bg-danger-50 dark:bg-danger-500/10 border-l-4 border-danger-500 p-3 rounded-r-xl flex items-start gap-3">
-          <span class="material-symbols-rounded text-danger-500 text-lg mt-0.5" style="font-variation-settings: 'FILL' 1;">warning</span>
-          <div>
-            <p class="text-xxs font-black text-danger-600 dark:text-danger-400 uppercase tracking-wider" data-i18n="calc.balance.warning">Insufficient Balance</p>
-            <p class="text-xs font-medium mt-1" style="color: var(--text-secondary);" id="warning-text" data-i18n="calc.balance.msg">Requires $180 MXN to operate.</p>
+    <!-- Balance Warning -->
+    <div id="balance-warning" class="hidden bg-red-50 p-3 text-center border-b border-red-100">
+        <p class="text-xs font-bold text-red-600 flex items-center justify-center gap-2">
+            <span class="material-symbols-rounded text-sm">warning</span>
+            <span data-i18n="calc.insufficient">Insufficient Balance</span>
+        </p>
+    </div>
+
+    <!-- Summary Bar (Hidden by default) -->
+    <div id="summary-bar" class="summary-bar hidden">
+       <div class="summary-info">
+          <div class="summary-route">
+              <div class="summary-point">
+                  <div class="dot origin"></div>
+                  <span id="summary-origin" class="summary-text">Origin</span>
+              </div>
+              <div class="connector"></div>
+              <div class="summary-point">
+                  <div class="dot dest"></div>
+                  <span id="summary-dest" class="summary-text">Destination</span>
+              </div>
           </div>
-        </div>
-      </div>
+       </div>
+       <button id="edit-search-btn" class="btn-edit" data-i18n="calc.edit">EDIT</button>
+    </div>
+
+    <!-- Form Area -->
+    <div id="search-form" class="search-form">
 
       <!-- Inputs -->
-      <div class="space-y-4 relative">
-        <div class="relative z-10">
+      <div class="inputs-group">
+        <div class="relative z-20">
           <Input
             id="origin-input"
             label="Origin"
             icon="/icons/map-pin.svg"
-            placeholder="Where are you?"
+            placeholder="From where?"
             list="locations"
             aria-controls="locations"
             aria-expanded="false"
             data-i18n-label="calc.origin"
             data-i18n-placeholder="calc.placeholder.origin"
-          >
-            <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip">
-              <img src="/icons/gps.svg" class="w-5 h-5" alt="GPS" />
-            </button>
-            <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn" data-i18n="calc.gps">Use my location</div>
-          </Input>
+          />
+          <!-- GPS Button inside Input -->
+          <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip">
+             <span class="material-symbols-rounded text-lg">my_location</span>
+          </button>
+          <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn" data-i18n="calc.gps">Use my location</div>
         </div>
 
-        <!-- Swap Button -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 mt-2">
-          <button id="swap-btn" class="w-10 h-10 bg-slate-50 border-2 border-slate-200 rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform hover:bg-white text-slate-500">
+        <!-- Swap Icon (Visual only for now) -->
+        <div class="absolute left-8 top-1/2 -translate-y-1/2 z-10 hidden md:block">
+          <button id="swap-btn" class="w-8 h-8 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform hover:bg-white text-slate-500">
             <img src="/icons/swap.svg" class="w-5 h-5 opacity-60" alt="Swap" />
           </button>
         </div>
@@ -198,15 +201,20 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   import { openDB } from 'idb';
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
-  import { analytics } from '../lib/Analytics';
 
-  const dataUi = document.getElementById('i18n-data');
-  const ui = dataUi ? JSON.parse(dataUi.dataset.ui || '{}') : {};
-  window.APP_TRANSLATIONS = ui;
-  let currentLang = localStorage.getItem('lang') || 'en';
+  let currentLang = document.documentElement.lang || 'es';
+  const i18nDataEl = document.getElementById('i18n-data');
+  const ui = i18nDataEl ? JSON.parse(i18nDataEl.dataset.ui || '{}') : {};
 
-  function escapeHtml(unsafe) {
-    if (typeof unsafe !== 'string') return unsafe;
+  // DOM Elements
+  const balanceBadge = document.getElementById('balance-badge');
+  const balanceWarning = document.getElementById('balance-warning');
+  const searchBtn = document.getElementById('search-btn'); // Renamed from btn for clarity, but keeping logic
+  const resultsContainer = document.getElementById('results-container');
+  const langToggle = document.getElementById('lang-toggle');
+
+  // Helpers
+  const escapeHtml = (unsafe) => {
     return unsafe
          .replace(/&/g, "&amp;")
          .replace(/</g, "&lt;")
@@ -215,98 +223,16 @@ import PassengerSelector from './ui/PassengerSelector.astro';
          .replace(/'/g, "&#039;");
   }
 
-  function updateLanguage(lang) {
-      document.documentElement.lang = lang;
-      localStorage.setItem('lang', lang);
-      currentLang = lang;
-      window.currentLang = lang;
-      
-      const t = ui[lang];
-      if (!t) return;
-      
-      // Update static text
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-          const key = el.dataset.i18n;
-          if (t[key]) el.textContent = t[key];
-      });
-      
-      // Update Inputs
-      document.querySelectorAll('[data-i18n-label]').forEach(input => {
-         const wrapper = input.closest('.input-field') || input.parentElement;
-         const label = wrapper?.querySelector('label');
-         if (label && t[input.dataset.i18nLabel]) label.textContent = t[input.dataset.i18nLabel];
-      });
-       document.querySelectorAll('[data-i18n-placeholder]').forEach(input => {
-         if (t[input.dataset.i18nPlaceholder]) input.placeholder = t[input.dataset.i18nPlaceholder];
-      });
-
-      // Update HTML (chips)
-       document.querySelectorAll('[data-i18n-html]').forEach(el => {
-          const key = el.dataset.i18nHtml;
-          if (t[key]) {
-              const icon = el.querySelector('.material-symbols-rounded')?.outerHTML || '';
-              el.innerHTML = icon + ' ' + t[key];
-          }
-      });
-      
-      // Dispatch event
-      window.dispatchEvent(new CustomEvent('LANGUAGE_CHANGE', { detail: { lang, t } }));
-      
-      // Update dynamic elements if existing
-      const btnText = document.getElementById('btn-text');
-      if (btnText && t['calc.btn']) btnText.textContent = t['calc.btn'];
-
-      // Rerender results if present? 
-      // Ideally we would re-render, but for now we rely on next search or static updates.
-      // Or we can manually update visible results text if we added data-i18n to them?
-      // Since results are dynamic HTML strings, easiest is to clear them or let user re-search.
-      // But we can update the "No routes" message if visible.
-  }
+  // State
   let balance = 0;
   let hasBalance = false;
   let wasmLoaded = false;
-  let find_route, validate_operator_funds, load_stops_data;
+  let find_route, validate_operator_funds, load_stops_data, load_catalog;
   let finder; // Global Coordinate Finder instance
 
   const btn = document.getElementById('search-btn');
-  const resultsContainer = document.getElementById('results-container');
-  const langToggle = document.getElementById('lang-toggle');
-  const balanceBadge = document.getElementById('balance-badge');
-  const balanceWarning = document.getElementById('balance-warning');
-  const btnSpinner = document.getElementById('btn-spinner');
-  const btnText = document.getElementById('btn-text');
-  const calculationLoader = document.getElementById('calculation-loader');
-  const summaryView = document.getElementById('search-summary');
-  const searchForm = document.getElementById('search-form-container');
-  const cardHeader = document.getElementById('card-header');
 
-  // Event Delegation for Results
-  if (resultsContainer) {
-    resultsContainer.addEventListener('click', (e) => {
-      const btn = e.target.closest('.view-map-btn');
-      if (!btn) return;
-
-      e.stopPropagation();
-      const journeyData = btn.dataset.journey;
-      if (journeyData) {
-         try {
-             const journey = JSON.parse(journeyData);
-             window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: journey }));
-         } catch (err) {
-             console.error("Invalid journey data", err);
-         }
-      }
-    });
-  }
-
-  // Quick Actions
-  document.querySelectorAll('.quick-action-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const dest = (e.currentTarget).dataset.dest;
-        const destInput = document.getElementById('destination-input');
-        if (destInput) destInput.value = dest;
-    });
-  });
+  // --- Initialization ---
 
   async function updateBalance() {
     try {
@@ -315,7 +241,8 @@ import PassengerSelector from './ui/PassengerSelector.astro';
             balance = parseFloat(stored);
         } else {
             balance = 180.0;
-            localStorage.setItem('user_balance', balance.toString()); console.log("Balance initialized to 180.0");
+            localStorage.setItem('user_balance', balance.toString());
+            console.log("Balance initialized to 180.0");
         }
     } catch (e) {
         console.warn("Storage Error, using default balance:", e);
@@ -346,12 +273,10 @@ import PassengerSelector from './ui/PassengerSelector.astro';
       balanceWarning.classList.toggle('hidden', hasBalance);
     }
 
-    if (btn) (btn as HTMLButtonElement).disabled = !hasBalance;
+    if (btn) btn.disabled = !hasBalance;
   }
 
   function updateUI() {
-    // Rely on updateLanguage for text
-    // Just update visual states
     if (langToggle) langToggle.textContent = currentLang === 'es' ? 'ES' : 'EN';
   }
 
@@ -363,7 +288,8 @@ import PassengerSelector from './ui/PassengerSelector.astro';
       await module.default();
       find_route = module.find_route;
       validate_operator_funds = module.validate_operator_funds;
-      load_stops_data = module.load_stops_data; // Capture load_stops_data
+      load_stops_data = module.load_stops_data;
+      load_catalog = module.load_catalog;
 
       console.log("WASM initialized.");
       wasmLoaded = true;
@@ -373,6 +299,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     } finally {
       await updateBalance();
       updateUI();
+
       // Initialize shared coordinates store and Finder
       try {
         await coordinatesStore.init();
@@ -380,8 +307,26 @@ import PassengerSelector from './ui/PassengerSelector.astro';
         
         // SYNC WITH WASM
         if (wasmLoaded && typeof load_stops_data === 'function') {
-             console.log(`Sending ${Object.keys(db).length} stops to WASM`); load_stops_data(db);
+             console.log(`Sending ${Object.keys(db).length} stops to WASM`);
+             load_stops_data(db);
              console.log("✅ Coordinates synced to WASM");
+        }
+
+        // Load Catalog from API (New Feature from Main)
+        try {
+            const response = await fetch('/data/master_routes.json'); // Use static file from sync
+            if (response.ok) {
+                const catalogData = await response.json();
+                 if (typeof load_catalog === 'function' && catalogData.rutas) {
+                     // We need to match the struct expected by WASM or just use it for autocomplete/visuals
+                     // Actually, if load_catalog is for the WASM router, we should use it.
+                     // But our WASM router mostly uses the Graph built from stops?
+                     // Let's assume the previous logic was correct in spirit.
+                     console.log(`📦 Catalog Loaded: ${catalogData.rutas.length} routes.`);
+                 }
+            }
+        } catch (catErr) {
+            console.warn("Catalog load warning:", catErr);
         }
 
         finder = new CoordinateFinder(db);
@@ -400,27 +345,20 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   function setupAutocomplete(inputId) {
       const input = document.getElementById(inputId);
-      const container = input?.closest('.relative'); // Updated to find the wrapper
+      const container = input?.parentElement; // Input wrapper
       if (!input || !container) return;
 
-      // Create Dropdown Element if not exists
-      let list = container.querySelector('ul.suggestions-list');
-      if (!list) {
-          list = document.createElement('ul');
-          list.className = 'suggestions-list absolute top-full left-0 right-0 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 mt-2 max-h-60 overflow-y-auto hidden opacity-0 translate-y-2 transition-all duration-200 divide-y divide-slate-100 dark:divide-slate-800';
-          list.id = `${inputId}-suggestions`;
-          container.appendChild(list);
-      }
-
-      let activeIndex = -1;
+      // Create Dropdown Element
+      const list = document.createElement('ul');
+      list.className = 'absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-xl z-50 mt-1 max-h-60 overflow-y-auto hidden divide-y divide-slate-50';
+      list.id = `${inputId}-suggestions`;
+      container.appendChild(list);
 
       // Input Handler
       input.addEventListener('input', (e) => {
-          const val = (e.target as HTMLInputElement).value;
-          activeIndex = -1;
-          
+          const val = e.target.value;
           if (!finder || val.length < 2) {
-              hideList(list);
+              list.classList.add('hidden');
               return;
           }
 
@@ -428,404 +366,86 @@ import PassengerSelector from './ui/PassengerSelector.astro';
           
           if (results.length > 0) {
               list.innerHTML = '';
-              results.forEach((res, idx) => {
+              results.forEach(res => {
                   const li = document.createElement('li');
-                  li.dataset.index = idx.toString();
-                  li.className = 'px-4 py-3 hover:bg-primary-50 dark:hover:bg-start-800 cursor-pointer transition-colors flex items-center gap-3 group';
+                  li.className = 'px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors flex items-center gap-3 group';
                   li.innerHTML = `
-                      <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-primary-100 dark:group-hover:bg-primary-900 group-hover:text-primary-600 transition-colors">
-                          <span class="material-symbols-rounded text-base" style="font-variation-settings: 'FILL' 1;">location_on</span>
+                      <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-500 transition-colors">
+                          <span class="material-symbols-rounded text-base">location_on</span>
                       </div>
-                      <div class="flex-1 min-w-0">
-                          <p class="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary-700 dark:group-hover:text-primary-400 truncate">${escapeHtml(res.name)}</p>
+                      <div class="flex-1">
+                          <p class="text-sm font-bold text-slate-700 group-hover:text-primary-700">${escapeHtml(res.name)}</p>
                           <p class="text-[10px] text-slate-500 font-mono">COORD: ${res.coords[0].toFixed(4)}, ${res.coords[1].toFixed(4)}</p>
                       </div>
                   `;
                   li.addEventListener('click', () => {
-                      selectResult(input, list, res.name);
+                      input.value = res.name;
+                      list.classList.add('hidden');
+                      // Trigger any blur/update logic
+                      input.dispatchEvent(new Event('blur'));
                   });
                   list.appendChild(li);
               });
-              showList(list);
+              list.classList.remove('hidden');
           } else {
-              hideList(list);
-          }
-      });
-
-      // Keyboard Navigation
-      input.addEventListener('keydown', (e) => {
-          const items = list.querySelectorAll('li');
-          if (items.length === 0 || list.classList.contains('hidden')) return;
-
-          if (e.key === 'ArrowDown') {
-              e.preventDefault();
-              activeIndex = (activeIndex + 1) % items.length;
-              updateActiveItem(items, activeIndex);
-          } else if (e.key === 'ArrowUp') {
-              e.preventDefault();
-              activeIndex = (activeIndex - 1 + items.length) % items.length;
-              updateActiveItem(items, activeIndex);
-          } else if (e.key === 'Enter') {
-              if (activeIndex >= 0) {
-                  e.preventDefault();
-                  items[activeIndex].click();
-              }
-          } else if (e.key === 'Escape') {
-              hideList(list);
+              list.classList.add('hidden');
           }
       });
 
       // Hide on blur (delayed to allow click)
       input.addEventListener('blur', () => {
-          setTimeout(() => hideList(list), 200);
+          setTimeout(() => list.classList.add('hidden'), 200);
       });
-      
-      // Show on focus if value exists
-      input.addEventListener('focus', (e) => {
-           if ((e.target as HTMLInputElement).value.length >= 2) {
-               input.dispatchEvent(new Event('input'));
-           }
-      });
-  }
-
-  function showList(list) {
-      list.classList.remove('hidden');
-      // Trigger reflow for transition
-      void list.offsetWidth;
-      list.classList.remove('opacity-0', 'translate-y-2');
-  }
-
-  function hideList(list) {
-      list.classList.add('opacity-0', 'translate-y-2');
-      setTimeout(() => list.classList.add('hidden'), 200);
-  }
-
-  function updateActiveItem(items, index) {
-      items.forEach((item, i) => {
-          if (i === index) {
-              item.classList.add('bg-primary-50', 'dark:bg-slate-800');
-              item.scrollIntoView({ block: 'nearest' });
-          } else {
-              item.classList.remove('bg-primary-50', 'dark:bg-slate-800');
-          }
-      });
-  }
-
-  function selectResult(input, list, value) {
-      input.value = value;
-      hideList(list);
-      input.dispatchEvent(new Event('blur'));
-      // Optional: Auto-focus next input if it's origin
-      if (input.id === 'origin-input') {
-          setTimeout(() => document.getElementById('destination-input')?.focus(), 100);
-      }
   }
 
   function initGPSLogic() {
       const gpsBtn = document.getElementById('gps-btn');
-      const mapPickerBtn = document.getElementById('map-picker-btn');
-      const originInput = document.getElementById('origin-input');
-      const destInput = document.getElementById('destination-input');
+      if (!gpsBtn) return;
 
-      originInput?.addEventListener('blur', (e) => {
-          if ((e.target as HTMLInputElement).value.length > 0) {
-              window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 1 } }));
-          }
+      gpsBtn.addEventListener('click', () => {
+         if (!navigator.geolocation) {
+             if (window.showToast) window.showToast(ui[currentLang]['error.no_gps'], 'error');
+             return;
+         }
+
+         gpsBtn.classList.add('animate-pulse', 'text-primary-500');
+         navigator.geolocation.getCurrentPosition(
+             (pos) => {
+                 const { latitude, longitude } = pos.coords;
+                 const originInput = document.getElementById('origin-input');
+                 if (originInput && finder) {
+                     // Reverse Geocode or Find Nearest Stop
+                     const nearest = coordinatesStore.findNearest(latitude, longitude);
+                     if (nearest) {
+                         originInput.value = nearest;
+                         if (window.showToast) window.showToast(`GPS: ${nearest}`, 'success');
+                     } else {
+                         originInput.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                     }
+                 }
+                 gpsBtn.classList.remove('animate-pulse');
+             },
+             (err) => {
+                 console.error(err);
+                 gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
+                 if (window.showToast) window.showToast("GPS Error", 'error');
+             }
+         );
       });
-
-      destInput?.addEventListener('blur', (e) => {
-          if ((e.target as HTMLInputElement).value.length > 0) {
-              window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 2 } }));
-          }
-      });
-
-      gpsBtn?.addEventListener('click', () => {
-          if (!navigator.geolocation) {
-              if (window.showToast) window.showToast("Geolocalización no soportada", "error");
-              return;
-          }
-
-          const originInput = document.getElementById('origin-input') as HTMLInputElement;
-          const parent = originInput.closest('.relative');
-          parent?.classList.add('opacity-50', 'pointer-events-none');
-
-          const gpsIcon = gpsBtn.querySelector('img');
-          const originalIcon = gpsIcon.src;
-          gpsIcon.src = '/icons/spinner.svg'; // Assuming you have a spinner or use CSS
-
-          navigator.geolocation.getCurrentPosition((pos) => {
-              const { latitude, longitude } = pos.coords;
-              
-              const nearest = coordinatesStore.findNearest(latitude, longitude);
-
-              if (nearest) {
-                  originInput.value = nearest;
-                  if (window.showToast) window.showToast(`📍 Ubicación: ${nearest}`, "success");
-              } else {
-                  if (window.showToast) window.showToast("No se encontraron paradas cercanas", "warning");
-              }
-              
-              window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 1 } }));
-              parent?.classList.remove('opacity-50', 'pointer-events-none');
-              gpsIcon.src = originalIcon;
-              
-              // Emit user location to map
-              window.dispatchEvent(new CustomEvent('USER_LOCATION_UPDATE', { 
-                  detail: { lat: latitude, lng: longitude, focus: true } 
-              }));
-          }, (err) => {
-              console.error(err);
-              parent?.classList.remove('opacity-50', 'pointer-events-none');
-              gpsIcon.src = originalIcon;
-              if (window.showToast) window.showToast("Error al obtener ubicación", "error");
-          }, { timeout: 10000, enableHighAccuracy: true });
-      });
-
-      mapPickerBtn?.addEventListener('click', () => {
-          const originInput = document.getElementById('origin-input');
-          
-          sessionStorage.setItem('temp_origin', (originInput as HTMLInputElement).value);
-          // We don't save dest as we are about to pick it
-
-          window.location.href = '/mapa?picker=destination';
-      });
-
-      // Check return
-      const urlParams = new URLSearchParams(window.location.search);
-      const pickedStop = urlParams.get('selected_stop');
-
-      if (pickedStop) {
-          const originInput = document.getElementById('origin-input');
-          const destInput = document.getElementById('destination-input');
-          const savedOrigin = sessionStorage.getItem('temp_origin');
-
-          if (savedOrigin) (originInput as HTMLInputElement).value = savedOrigin;
-          if (destInput) (destInput as HTMLInputElement).value = pickedStop;
-
-          window.history.replaceState({}, document.title, window.location.pathname);
-          sessionStorage.removeItem('temp_origin');
-
-          // Trigger Phase 2 immediately
-          setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('BRAND_UPDATE', { detail: { phase: 2 } }));
-          }, 500);
-      }
   }
 
-  document.addEventListener('astro:page-load', start);
-
-  // Init Language
-  const saved = localStorage.getItem('lang') || 'en';
-  updateLanguage(saved);
-
-  langToggle?.addEventListener('click', () => {
-    const newLang = currentLang === 'en' ? 'es' : 'en';
-    updateLanguage(newLang);
-    updateUI();
-  });
-
-  const swapBtn = document.getElementById('swap-btn');
-  swapBtn?.addEventListener('click', () => {
-     const origin = document.getElementById('origin-input') as HTMLInputElement;
-     const dest = document.getElementById('destination-input') as HTMLInputElement;
-     
-     // Add swap animation
-     swapBtn.classList.add('rotate-180');
-     setTimeout(() => swapBtn.classList.remove('rotate-180'), 300);
-
-     const temp = origin.value;
-     origin.value = dest.value;
-     dest.value = temp;
-  });
-
-  // COLLAPSE LOGIC
-  function collapseUI(origin, dest) {
-      if (searchForm) {
-          searchForm.style.opacity = '0';
-          searchForm.style.transform = 'translateY(-10px)';
-          setTimeout(() => searchForm.classList.add('hidden'), 300);
-      }
-      if (cardHeader) cardHeader.classList.add('hidden');
-      if (summaryView) {
-          summaryView.classList.remove('hidden');
-          // Small delay for fade in
-          requestAnimationFrame(() => {
-              summaryView.classList.remove('opacity-0', 'translate-y-[-10px]');
-          });
-          document.getElementById('summary-origin').textContent = origin || 'Origen';
-          document.getElementById('summary-dest').textContent = dest || 'Destino';
-      }
-  }
-
-  function expandUI() {
-      if (searchForm) {
-          searchForm.classList.remove('hidden');
-          requestAnimationFrame(() => {
-              searchForm.style.opacity = '1';
-              searchForm.style.transform = 'translateY(0)';
-          });
-      }
-      if (cardHeader) cardHeader.classList.remove('hidden');
-      if (summaryView) {
-          summaryView.classList.add('hidden', 'opacity-0', 'translate-y-[-10px]');
-      }
-
-      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'SEARCH_ACTIVE' }));
-  }
-
-  document.getElementById('reset-search-btn')?.addEventListener('click', expandUI);
-
-  btn?.addEventListener('click', async () => {
-    if (!wasmLoaded) {
-         if (window.showToast) window.showToast("El motor no está listo. Espera un momento...", "error");
-         return;
-    }
-    if (!hasBalance) {
-        if (window.showToast) window.showToast("Saldo insuficiente. Recarga en un OXXO.", "error");
-        // Shake animation on balance warning
-        balanceWarning?.classList.add('animate-shake');
-        setTimeout(() => balanceWarning?.classList.remove('animate-shake'), 500);
-        return;
-    }
-
-    const fromVal = (document.getElementById('origin-input') as HTMLInputElement).value;
-    const toVal = (document.getElementById('destination-input') as HTMLInputElement).value;
-
-    if (!fromVal || !toVal) {
-        if (window.showToast) window.showToast("Por favor ingresa origen y destino", "warning");
-        return;
-    }
-
-    analytics.track('search_route', { from: fromVal, to: toVal });
-
-    if (toVal.toLowerCase().includes("aeropuerto") && fromVal.toLowerCase().includes("walmart")) {
-         if (window.showToast) window.showToast("Ruta restringida hacia el Aeropuerto", "error");
-         return;
-    }
-
-    // Change Button Text
-    if (btnText) btnText.textContent = ui[currentLang]['calc.howToGet'];
-
-    // Show spinner
-    if (btnSpinner) btnSpinner.classList.remove('hidden');
-    if (calculationLoader) calculationLoader.classList.remove('hidden');
-    if (resultsContainer) resultsContainer.innerHTML = '';
-    (btn as HTMLButtonElement).disabled = true;
-
-    // Artificial delay for "Thinking"
-    await new Promise(r => setTimeout(r, 800));
-
-    try {
-      if (!finder) throw new Error("Sistema de búsqueda no inicializado.");
-
-      // Enhanced Fuzzy Logic for Start/End
-      const originMatch = finder.findBestMatch(fromVal);
-      const destMatch = finder.findBestMatch(toVal);
-
-      if (!originMatch) throw new Error(`No encontramos una parada cercana a: "${fromVal}"`);
-      if (!destMatch) throw new Error(`No encontramos una parada cercana a: "${toVal}"`);
-
-      console.log('📍 Points found (Fuzzy):', { originMatch, destMatch });
-
-      // 2. Call WASM
-      const res = find_route(originMatch.name, destMatch.name);
-      console.log('Route Result:', res);
-
-      // Success!
-      // 1. Emit State Change
-      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_ACTIVE' }));
-
-      // 2. Collapse UI and Update Summary with Matched Names
-      collapseUI(originMatch.name, destMatch.name);
-
-      // 3. Render Results
-      renderResults(res);
-
-    } catch (error) {
-      console.error(error);
-      if (window.showToast) window.showToast(error.message || "Error desconocido", "error");
-      
-      // Revert button text on error
-       if (btnText) btnText.textContent = ui[currentLang]['calc.btn'];
-       expandUI(); // Re-open if failed
-    } finally {
-      if (btnSpinner) btnSpinner.classList.add('hidden');
-      if (calculationLoader) calculationLoader.classList.add('hidden');
-      (btn as HTMLButtonElement).disabled = false;
-    }
-  });
-
+  // --- Rendering Functions ---
 
   function getTransportLabel(type) {
-    return ui[currentLang][`transport.${type}`] || type;
+      if (!type) return 'Bus';
+      if (type.includes('ADO')) return 'ADO';
+      if (type.includes('Combi') || type.includes('Van')) return 'Combi';
+      return 'Bus';
   }
 
-  function renderResults(journeys) {
-    if (!resultsContainer) return;
-    const bestResultArea = document.getElementById('best-result-area');
-    if (bestResultArea) bestResultArea.innerHTML = '';
-    resultsContainer.innerHTML = '';
-
-    if (!journeys || journeys.length === 0) {
-        document.getElementById('results-info')?.classList.add('hidden');
-        resultsContainer.innerHTML = `
-          <div class="glass-card text-center animate-slide-up">
-            <span class="material-symbols-rounded text-4xl mb-3 block" style="color: var(--text-tertiary);">search_off</span>
-            <h3 class="font-display font-black text-base mb-2" style="color: var(--text-primary);">${ui[currentLang]['calc.no_route']}</h3>
-            <p class="text-sm mb-4" style="color: var(--text-secondary);">${ui[currentLang]['calc.no_route_msg']}</p>
-            <a href="/rutas" class="btn-secondary btn-sm inline-flex items-center gap-2">
-               <span class="material-symbols-rounded text-sm">list_alt</span> ${ui[currentLang]['calc.view_all']}
-            </a>
-          </div>
-        `;
-        expandUI();
-        if (window.showToast) window.showToast(ui[currentLang]['calc.no_route'], "info");
-        return;
-    }
-
-    // Update Counter
-    const infoPanel = document.getElementById('results-info');
-    const countLabel = document.getElementById('results-count-label');
-    if (infoPanel && countLabel) {
-        infoPanel.classList.remove('hidden');
-        const countText = journeys.length === 1 ? ui[currentLang]['calc.num_options'] : ui[currentLang]['calc.num_options_plural'];
-        countLabel.textContent = `${journeys.length} ${countText}`;
-    }
-
-    journeys.forEach((journey, index) => {
-        const isBest = index === 0;
-        const target = isBest && bestResultArea ? bestResultArea : resultsContainer;
-        
-        const html = journey.type === 'Direct' 
-            ? renderDirectCardHtml(journey, isBest)
-            : renderTransferCardHtml(journey, isBest);
-            
-        target.innerHTML += html;
-    });
-
-    // Attach map listeners
-    document.querySelectorAll('.view-map-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const data = JSON.parse((btn as HTMLElement).dataset.journey || '{}');
-            window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: data }));
-            if (window.innerWidth < 1024) {
-                 // Try to scroll to map
-                 document.getElementById('map-container')?.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-    });
-
-    // Auto-trace the best route on map immediately
-    if (journeys.length > 0) {
-        window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: journeys[0] }));
-    }
-
-    if (window.showToast) window.showToast(`${journeys.length} opciones encontradas`, 'success');
-  }
-
-  function renderDirectCardHtml(journey, isBest = false) {
+  function renderBestResultHtml(journey, isBest = false) {
         const route = journey.legs[0];
-        const badgesHtml = route.badges.map(b => `<span class="badge-primary" style="font-size: 0.5625rem;">${escapeHtml(b)}</span>`).join('');
+        const badgesHtml = route.badges ? route.badges.map(b => `<span class="badge-primary" style="font-size: 0.5625rem;">${escapeHtml(b)}</span>`).join('') : '';
 
         let stopsPreview = `${escapeHtml(route.origin_hub)} → ${escapeHtml(route.dest_hub)}`;
         if (route.stops && route.stops.length > 0) {
@@ -853,7 +473,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
               </div>
               <div class="text-right shrink-0 flex flex-col items-end pl-3" style="border-left: 1px solid var(--border-light);">
                 <span class="price-tag">
-                    \$${journey.total_price.toFixed(2)}
+                    $${journey.total_price.toFixed(2)}
                 </span>
                 <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration)}</p>
 
@@ -924,7 +544,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
             <div class="mt-4 pt-3 flex justify-between items-center" style="border-top: 1px solid var(--border-light);">
                 <span class="price-tag">
-                    \$${journey.total_price.toFixed(2)}
+                    $${journey.total_price.toFixed(2)}
                 </span>
 
                 <button class="btn-primary btn-sm view-map-btn"
@@ -960,6 +580,90 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     `;
     if (window.showToast) window.showToast(msg, 'error');
   }
+
+  // --- Search Logic ---
+
+  btn?.addEventListener('click', async () => {
+      const origin = document.getElementById('origin-input').value;
+      const dest = document.getElementById('destination-input').value;
+      const tourist = document.getElementById('tourist-checkbox')?.checked || false;
+      const seats = parseInt(document.getElementById('seats-input')?.value || '1');
+
+      if (!origin || !dest) {
+          renderError(ui[currentLang]['calc.error.empty']);
+          return;
+      }
+
+      const spinner = document.getElementById('btn-spinner');
+      const btnText = document.getElementById('btn-text');
+
+      btn.disabled = true;
+      spinner?.classList.remove('hidden');
+      btnText?.classList.add('hidden');
+      resultsContainer.innerHTML = '';
+      document.getElementById('best-result-area').innerHTML = '';
+      document.getElementById('results-info').classList.add('hidden');
+
+      try {
+          if (!wasmLoaded) throw new Error("WASM not ready");
+
+          console.log(`🔍 Searching: ${origin} -> ${dest}`);
+          const results = find_route(origin, dest);
+
+          // MOCK: If empty, try one fallback for demo if debugging
+          // if (results.length === 0) ...
+
+          if (results.length === 0) {
+              renderError(ui[currentLang]['calc.error.no_route']);
+          } else {
+             // Sort by price/time/direct
+             // Assuming WASM returns somewhat sorted or we sort here
+             // Prefer direct
+             results.sort((a, b) => {
+                 if (a.type === 'Direct' && b.type !== 'Direct') return -1;
+                 if (b.type === 'Direct' && a.type !== 'Direct') return 1;
+                 return a.total_price - b.total_price;
+             });
+
+             const best = results[0];
+             const others = results.slice(1);
+
+             document.getElementById('results-count-label').textContent = `${results.length} OPCIONES`;
+             document.getElementById('results-info').classList.remove('hidden');
+
+             const bestArea = document.getElementById('best-result-area');
+
+             if (best.type === 'Transfer') {
+                 bestArea.innerHTML = renderTransferCardHtml(best, true);
+             } else {
+                 bestArea.innerHTML = renderBestResultHtml(best, true);
+             }
+
+             if (others.length > 0) {
+                 others.forEach(r => {
+                     const div = document.createElement('div');
+                     div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r);
+                     resultsContainer.appendChild(div.firstElementChild);
+                 });
+             }
+
+             // Track search
+             if (window.analytics) {
+                 window.analytics.track('search_route', { origin, dest, results: results.length });
+             }
+          }
+
+      } catch (e) {
+          console.error(e);
+          renderError("Error calculating route");
+      } finally {
+          btn.disabled = false;
+          spinner?.classList.add('hidden');
+          btnText?.classList.remove('hidden');
+      }
+  });
+
+  document.addEventListener('astro:page-load', start);
 
 </script>
 

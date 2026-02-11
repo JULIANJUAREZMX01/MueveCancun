@@ -3,16 +3,11 @@ export interface StopMatch {
   coords: [number, number];
 }
 
-// Helper function for accent normalization
-const normalizeText = (text: string): string => {
-    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-};
-
 export class CoordinateFinder {
     private db: Record<string, [number, number]>;
     private cache: Map<string, [number, number]> = new Map();
+    private tokenIndex: Map<string, string[]> = new Map();
     private keys: string[];
-    private normalizedKeys: Map<string, string> = new Map(); // normalized -> original
 
     constructor(db: Record<string, [number, number]>) {
         this.db = db;
@@ -22,97 +17,100 @@ export class CoordinateFinder {
 
     private buildIndex() {
         for (const key of this.keys) {
-            const normalized = normalizeText(key);
-            this.normalizedKeys.set(normalized, key);
+            // Tokenize: split by non-alphanumeric (including Spanish accents)
+            const tokens = key.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
+            for (const token of tokens) {
+                if (token.length < 3) continue;
+                if (!this.tokenIndex.has(token)) {
+                    this.tokenIndex.set(token, []);
+                }
+                this.tokenIndex.get(token)!.push(key);
+            }
         }
     }
 
     public find(stopName: string): [number, number] | null {
         if (!stopName) return null;
-        const q = normalizeText(stopName);
+        const q = stopName.trim();
 
-        // 1. Exact match (High speed)
-        if (this.db[stopName]) return this.db[stopName];
+        // 1. Exact match
+        if (this.db[q]) return this.db[q];
 
-        // 2. Normalized Exact Match
-        if (this.normalizedKeys.has(q)) {
-            const originalKey = this.normalizedKeys.get(q)!;
-            return this.db[originalKey];
-        }
-
-        // 3. Cache check
+        // 2. Cache check
         if (this.cache.has(q)) return this.cache.get(q)!;
 
-        return null;
+        // 3. Fuzzy Search
+        const searchTokens = q.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
+        const candidates = new Set<string>();
+
+        for (const token of searchTokens) {
+            if (token.length < 2) continue;
+            const matches = this.tokenIndex.get(token);
+            if (matches) {
+                for (const m of matches) candidates.add(m);
+            }
+        }
+
+        let bestKey: string | null = null;
+        if (candidates.size > 0) {
+             // Prefer candidates that are substrings or contain the query
+             const lowerQ = q.toLowerCase();
+             bestKey = Array.from(candidates).find(k => {
+                 const lowerK = k.toLowerCase();
+                 return lowerQ.includes(lowerK) || lowerK.includes(lowerQ);
+             }) || Array.from(candidates)[0];
+        }
+
+        const result = bestKey ? this.db[bestKey] : null;
+        if (result) this.cache.set(q, result);
+        return result;
     }
 
     public findBestMatch(query: string): StopMatch | null {
-        // Fast exact find
         const coords = this.find(query);
         if (coords) {
+             // Find original key for coords
              const name = Object.keys(this.db).find(k => this.db[k][0] === coords[0] && this.db[k][1] === coords[1]) || query;
              return { name, coords };
         }
-        
-        // Fallback to search if no exact match found
-        const results = this.search(query, 1);
-        return results.length > 0 ? results[0] : null;
+        return null;
     }
 
     public search(query: string, limit: number = 5): StopMatch[] {
         if (!query || query.length < 2) return [];
-        const q = normalizeText(query);
+        const q = query.toLowerCase().trim();
         const candidates = new Set<string>();
 
-        const qTokens = q.split(/\s+/).filter(t => t.length > 0);
-
-        // 1. Starts With (High ranking) and Contains (Medium ranking) Combined
+        // 1. Direct includes (high priority)
         for (const key of this.keys) {
-            const normKey = normalizeText(key);
-            
-            // Starts with query (Highest Priority)
-            if (normKey.startsWith(q)) {
+            if (key.toLowerCase().includes(q)) {
                 candidates.add(key);
-                continue;
             }
-            
-            // Contains query (High Priority)
-            if (normKey.includes(q)) {
-                 candidates.add(key);
-                 continue;
-            }
-            
-            // Token Match (Medium Priority - "Aeropuerto T2" finds "Terminal 2 Aeropuerto")
-            // Check if ALL query tokens are present in the key
-            if (qTokens.length > 1) {
-                const allTokensMatch = qTokens.every(token => normKey.includes(token));
-                if (allTokensMatch) {
-                    candidates.add(key);
-                }
+        }
+
+        // 2. Token based (medium priority)
+        const searchTokens = q.split(/[^a-z0-9\u00C0-\u017F]+/);
+        for (const token of searchTokens) {
+            if (token.length < 2) continue;
+            const matches = this.tokenIndex.get(token);
+            if (matches) {
+                for (const m of matches) candidates.add(m);
             }
         }
 
         // Convert to array and sort by relevance
         return Array.from(candidates)
             .sort((a, b) => {
-                const aNorm = normalizeText(a);
-                const bNorm = normalizeText(b);
+                const aLower = a.toLowerCase();
+                const bLower = b.toLowerCase();
                 
                 // Exact match first
-                if (aNorm === q) return -1;
-                if (bNorm === q) return 1;
+                if (aLower === q) return -1;
+                if (bLower === q) return 1;
 
                 // Starts with query second
-                const aStarts = aNorm.startsWith(q);
-                const bStarts = bNorm.startsWith(q);
-                if (aStarts && !bStarts) return -1;
-                if (!aStarts && bStarts) return 1;
-
-                // Contains query as a distinct word (Stronger contain)
-                const aWord = aNorm.includes(` ${q}`) || aNorm.includes(`${q} `);
-                const bWord = bNorm.includes(` ${q}`) || bNorm.includes(`${q} `);
-                if (aWord && !bWord) return -1;
-                if (!aWord && bWord) return 1;
+                if (aLower.startsWith(q) && !bLower.startsWith(q)) return -1;
+                if (!aLower.startsWith(q) && bLower.startsWith(q)) return 1;
 
                 // Length (shorter is usually better match)
                 return a.length - b.length;

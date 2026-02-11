@@ -5,9 +5,9 @@ export function find_route(origin: string, dest: string): any;
 
 export function get_all_routes(): any;
 
-export function load_stops_data(val: any): void;
+export function get_route_by_id(id: string): any;
 
-export function validate_operator_funds(balance: number): boolean;
+export function load_catalog(json_payload: string): void;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
@@ -15,12 +15,10 @@ export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly find_route: (a: number, b: number, c: number, d: number) => [number, number, number];
     readonly get_all_routes: () => [number, number, number];
-    readonly load_stops_data: (a: any) => void;
-    readonly validate_operator_funds: (a: number) => number;
+    readonly get_route_by_id: (a: number, b: number) => [number, number, number];
+    readonly load_catalog: (a: number, b: number) => [number, number];
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-    readonly __wbindgen_exn_store: (a: number) => void;
-    readonly __externref_table_alloc: () => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __externref_table_dealloc: (a: number) => void;
     readonly __wbindgen_start: () => void;

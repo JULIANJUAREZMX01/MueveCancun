@@ -1,0 +1,68 @@
+<div class="brand-tetris-container">
+  <span class="brand-text active">
+    Cancún<span class="highlight">Mueve</span>
+  </span>
+  <span class="brand-text">
+    <span class="highlight">Muévete</span> en Cancún
+  </span>
+</div>
+
+<style>
+  .brand-tetris-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 1.5rem;
+    overflow: hidden;
+    font-family: var(--font-display, sans-serif);
+    font-weight: 900;
+    font-size: 1.125rem; /* text-lg */
+    letter-spacing: -0.025em;
+    color: var(--text-primary, #0f172a);
+  }
+
+  /* Dark mode support via global class or CSS variable */
+  :global(.dark) .brand-tetris-container {
+    color: white;
+  }
+
+  .highlight {
+    color: var(--color-primary, #F97316);
+  }
+
+  .brand-text {
+    position: absolute;
+    left: 0;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+  }
+
+  .brand-text.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Keyframe animation handled by JS for precise timing or pure CSS */
+  /* Pure CSS Loop */
+  .brand-text:nth-child(1) {
+    animation: slideUpOut 6s infinite;
+  }
+  .brand-text:nth-child(2) {
+    animation: slideUpIn 6s infinite;
+  }
+
+  @keyframes slideUpOut {
+    0%, 45% { opacity: 1; transform: translateY(0); }
+    50%, 95% { opacity: 0; transform: translateY(-100%); }
+    100% { opacity: 1; transform: translateY(0); } /* Reset */
+  }
+
+  @keyframes slideUpIn {
+    0%, 45% { opacity: 0; transform: translateY(100%); }
+    50%, 95% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(100%); } /* Reset */
+  }
+</style>

@@ -1,9 +1,12 @@
 services:
   - type: web
-    name: cancunmueve-pwa
-    runtime: node
-    buildCommand: pnpm run build
-    startCommand: node ./dist/server/entry.mjs
+    name: muevecancun
+    env: static
+    buildCommand: "./scripts/build_render.sh"
+    staticPublishPath: ./dist
+    branch: main
     envVars:
       - key: NODE_VERSION
-        value: 20.10.0
+        value: 20
+      - key: ENABLE_PNPM
+        value: 1
