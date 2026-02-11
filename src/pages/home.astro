@@ -3,7 +3,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 import InteractiveMap from '../components/InteractiveMap.astro';
 import RouteCalculator from '../components/RouteCalculator.astro';
 
-const title = "Dashboard";
+const title = "Inicio";
 ---
 
 <MainLayout title={title} useMap={true}>
@@ -14,7 +14,19 @@ const title = "Dashboard";
 
     <!-- Dashboard Overlay -->
 	<div class="dashboard-container pointer-events-none">
-		<div class="glass-panel-wrapper animate-fade-in-up pointer-events-auto">
+		<div class="glass-panel-wrapper animate-fade-in-up pointer-events-auto flex flex-col items-center">
+
+            <!-- Hero Headline (Restored) -->
+            <div class="hero-headline mb-6 text-center">
+                <h1 class="font-display font-black text-4xl md:text-5xl tracking-tight text-slate-900 drop-shadow-sm leading-tight">
+                    ¿Qué ruta me lleva?
+                    <span class="block text-primary-500">Cancún</span>
+                </h1>
+                <p class="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full inline-block shadow-sm">
+                    La guía oficial de transporte público
+                </p>
+            </div>
+
 			<RouteCalculator />
 		</div>
     </div>
@@ -30,7 +42,7 @@ const title = "Dashboard";
 
         container.classList.remove('map-mode', 'map-maximized');
 
-        if (state === 'MAP_ACTIVE') {
+        if (state === 'MAP_ACTIVE' || state === 'map') {
             container.classList.add('map-mode');
         } else if (state === 'MAP_MAXIMIZED') {
             container.classList.add('map-maximized');
@@ -46,9 +58,10 @@ const title = "Dashboard";
     z-index: 10;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: flex-end; /* Mobile: Bottom aligned */
     padding: 1rem;
     padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    pointer-events: none; /* Let clicks pass to map */
 }
 
 .glass-panel-wrapper {
@@ -56,9 +69,24 @@ const title = "Dashboard";
     max-width: 480px;
     margin: 0 auto;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto; /* Catch clicks on form */
 }
 
-/* Map Mode Adjustments */
+/* Hero Headline Styles */
+.hero-headline {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Map Mode Adjustments (Hide Hero when searching/mapping) */
+.dashboard-container.map-mode .hero-headline {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
 .dashboard-container.map-mode .glass-panel-wrapper {
     transform: translateY(10%) scale(0.95);
     opacity: 0.95;
@@ -71,14 +99,15 @@ const title = "Dashboard";
 
 @media (min-width: 1024px) {
     .dashboard-container {
-        justify-content: center;
+        justify-content: center; /* Desktop: Center aligned */
         align-items: flex-start;
-        padding-left: 2rem;
-        padding-top: 2rem;
+        padding-left: 4rem; /* Offset for left-aligned layout if preferred */
+        padding-top: 4rem;
     }
     
     .glass-panel-wrapper {
-        margin: 0;
+        margin: 0; /* Left align on desktop? Or center? User image shows centered-ish but maybe left column. */
+        margin-left: 2rem;
     }
 }
 
