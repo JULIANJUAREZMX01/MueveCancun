@@ -282,6 +282,8 @@ const {
         legs = data.legs;
     } else if (data.stops && Array.isArray(data.stops)) {
         legs = [{ stops: data.stops }];
+    } else if (data.paradas && Array.isArray(data.paradas)) {
+        legs = [{ stops: data.paradas }];
     } else {
          layerGroup = window.L.layerGroup().addTo(map);
          return;
@@ -294,13 +296,15 @@ const {
         const routeCoords = [];
         const validStops = [];
 
-        // ⚡ SPEEDY: Use pre-computed coordinates from WASM if available (stops_info)
+        // ⚡ SPEEDY: Use pre-computed coordinates from WASM if available (stops_info, paradas or stops)
         // This avoids the O(N) fuzzy search loop in JS
-        if (leg.stops_info && leg.stops_info.length > 0) {
-             leg.stops_info.forEach(stop => {
+        const stopsData = leg.stops_info || leg.paradas || leg.stops || [];
+        
+        if (stopsData.length > 0 && typeof stopsData[0] === 'object' && stopsData[0].lat !== undefined) {
+             stopsData.forEach(stop => {
                  const coords = [stop.lat, stop.lng];
                  routeCoords.push(coords);
-                 validStops.push({ name: stop.name, latlng: coords });
+                 validStops.push({ name: stop.nombre || stop.name, latlng: coords });
                  allBounds.push(coords);
              });
         } else {

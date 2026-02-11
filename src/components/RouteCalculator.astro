@@ -173,7 +173,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
         <!-- Best match card injected here -->
     </div>
 
-    <div id="results-container" class="space-y-4 empty:hidden transition-all duration-500 origin-top">
+    <div id="results-container" class="space-y-4 empty:hidden transition-all duration-500 origin-top overflow-y-auto max-h-[300px] no-scrollbar p-1">
         <!-- Other results injected here -->
     </div>
 
@@ -600,6 +600,33 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     updateUI();
   });
 
+  // Results Toggle Logic
+  const toggleListBtn = document.getElementById('toggle-list-btn');
+  const resultsList = document.getElementById('results-container');
+  const resultsInfo = document.getElementById('results-info');
+  const toggleListText = document.getElementById('toggle-list-text');
+  const toggleListIcon = document.getElementById('toggle-list-icon');
+
+  toggleListBtn?.addEventListener('click', () => {
+    const isHidden = resultsList?.classList.toggle('hidden');
+    const bestResultArea = document.getElementById('best-result-area');
+    if (bestResultArea) bestResultArea.classList.toggle('hidden', isHidden);
+    
+    if (toggleListText) {
+      toggleListText.textContent = isHidden 
+        ? (ui[currentLang]['calc.toggle.show'] || 'Show') 
+        : (ui[currentLang]['calc.toggle.hide'] || 'Hide');
+    }
+    if (toggleListIcon) {
+      toggleListIcon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+    
+    // Notify home to adjust layout if needed
+    window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { 
+        detail: isHidden ? 'MAP_MAXIMIZED' : 'MAP_ACTIVE' 
+    }));
+  });
+
   const swapBtn = document.getElementById('swap-btn');
   swapBtn?.addEventListener('click', () => {
      const origin = document.getElementById('origin-input');
@@ -731,7 +758,13 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     const countLabel = document.getElementById('results-count-label');
     if (infoPanel && countLabel) {
         infoPanel.classList.remove('hidden');
-        const countText = journeys.length === 1 ? ui[currentLang]['calc.num_options'] : ui[currentLang]['calc.num_options_plural'];
+        if (resultsContainer) resultsContainer.classList.remove('hidden');
+        if (bestResultArea) bestResultArea.classList.remove('hidden');
+        
+        const toggleListText = document.getElementById('toggle-list-text');
+        if (toggleListText) toggleListText.textContent = ui[currentLang]['calc.toggle.hide'] || 'Hide';
+        
+        const countText = journeys.length === 1 ? ui[currentLang]['calc.num_options'] || 'OPCIÓN' : ui[currentLang]['calc.num_options_plural'] || 'OPCIONES';
         countLabel.textContent = `${journeys.length} ${countText}`;
     }
 
@@ -768,11 +801,14 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   function renderDirectCardHtml(journey, isBest = false) {
         const route = journey.legs[0];
-        const badgesHtml = route.badges.map(b => `<span class="badge-primary" style="font-size: 0.5625rem;">${escapeHtml(b)}</span>`).join('');
+        const badgesHtml = [
+            ...(route.social_alerts || []),
+            ...(route.badges || [])
+        ].map(b => `<span class="badge-primary" style="font-size: 0.5625rem;">${escapeHtml(b)}</span>`).join('');
 
-        let stopsPreview = `${escapeHtml(route.origin_hub)} → ${escapeHtml(route.dest_hub)}`;
+        let stopsPreview = `${escapeHtml(route.origin_hub || '...') } → ${escapeHtml(route.dest_hub || '...')}`;
         if (route.stops && route.stops.length > 0) {
-             stopsPreview = `${escapeHtml(route.stops[0])} → ${escapeHtml(route.stops[route.stops.length - 1])}`;
+             stopsPreview = `${escapeHtml(route.stops[0].nombre)} → ${escapeHtml(route.stops[route.stops.length - 1].nombre)}`;
         }
 
         return `
@@ -781,13 +817,13 @@ import PassengerSelector from './ui/PassengerSelector.astro';
             <div class="flex justify-between items-start">
               <div class="flex-1 min-w-0 pr-2">
                 <span class="badge-primary mb-2">
-                  ${escapeHtml(getTransportLabel(route.transport_type))}
+                  ${escapeHtml(getTransportLabel(route.tipo || route.transport_type))}
                 </span>
-                <h3 class="font-display font-black text-base leading-tight tracking-tight group-hover:text-primary-500 transition-colors truncate" style="color: var(--text-primary);">${escapeHtml(route.name)}</h3>
+                <h3 class="font-display font-black text-base leading-tight tracking-tight group-hover:text-primary-500 transition-colors truncate" style="color: var(--text-primary);">${escapeHtml(route.nombre || route.name)}</h3>
 
                 <div class="mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5 text-xxs font-bold uppercase tracking-widest" style="color: var(--text-tertiary);">
-                    ${route.operator ? `<div class="flex items-center gap-1"><span class="material-symbols-rounded text-xs" style="font-variation-settings: 'FILL' 1;">directions_bus</span> <span>${escapeHtml(route.operator)}</span></div>` : ''}
-                    ${route.frequency ? `<div class="flex items-center gap-1"><span class="material-symbols-rounded text-xs" style="font-variation-settings: 'FILL' 1;">schedule</span> <span>${escapeHtml(route.frequency)}</span></div>` : ''}
+                    ${route.empresa ? `<div class="flex items-center gap-1"><span class="material-symbols-rounded text-xs" style="font-variation-settings: 'FILL' 1;">directions_bus</span> <span>${escapeHtml(route.empresa)}</span></div>` : ''}
+                    ${route.frecuencia_minutos ? `<div class="flex items-center gap-1"><span class="material-symbols-rounded text-xs" style="font-variation-settings: 'FILL' 1;">schedule</span> <span>${escapeHtml(route.frecuencia_minutos)} min</span></div>` : ''}
                 </div>
 
                 <div class="flex gap-1.5 mt-3 flex-wrap">
@@ -798,7 +834,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
                 <span class="price-tag">
                     \$${journey.total_price.toFixed(2)}
                 </span>
-                <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration)}</p>
+                <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration || 'Calculando...')}</p>
 
                 <button class="btn-primary btn-sm mt-3 whitespace-nowrap view-map-btn" data-journey='${JSON.stringify(journey).replace(/'/g, "&#39;")}'>
                     <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> ${ui[currentLang]['calc.view_map']}
@@ -833,9 +869,9 @@ import PassengerSelector from './ui/PassengerSelector.astro';
                     </div>
                     <div>
                          <span class="badge-primary" style="font-size: 0.5rem;">
-                            ${escapeHtml(getTransportLabel(leg1.transport_type))}
+                            ${escapeHtml(getTransportLabel(leg1.tipo || leg1.transport_type))}
                          </span>
-                         <h4 class="font-display font-black text-sm leading-tight tracking-tight" style="color: var(--text-primary);">${escapeHtml(leg1.name)}</h4>
+                         <h4 class="font-display font-black text-sm leading-tight tracking-tight" style="color: var(--text-primary);">${escapeHtml(leg1.nombre || leg1.name)}</h4>
                     </div>
                 </div>
 
@@ -858,9 +894,9 @@ import PassengerSelector from './ui/PassengerSelector.astro';
                     </div>
                     <div>
                          <span class="badge-accent" style="font-size: 0.5rem;">
-                            ${escapeHtml(getTransportLabel(leg2.transport_type))}
+                            ${escapeHtml(getTransportLabel(leg2.tipo || leg2.transport_type))}
                          </span>
-                         <h4 class="font-display font-black text-sm leading-tight tracking-tight" style="color: var(--text-primary);">${escapeHtml(leg2.name)}</h4>
+                         <h4 class="font-display font-black text-sm leading-tight tracking-tight" style="color: var(--text-primary);">${escapeHtml(leg2.nombre || leg2.name)}</h4>
                     </div>
                 </div>
             </div>

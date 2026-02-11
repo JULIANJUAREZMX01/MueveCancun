@@ -363,7 +363,11 @@
       "nombre": "Las Américas - Aeropuerto",
       "tarifa": 15,
       "frecuencia_minutos": 20,
-      "horario": "04:00-23:00",
+      "tipo": "Bus_Urban",
+      "horario": {
+        "inicio": "04:00",
+        "fin": "23:00"
+      },
       "paradas": [
         {
           "id": "R10_001",

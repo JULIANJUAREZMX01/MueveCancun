@@ -26,10 +26,14 @@ const title = "Dashboard";
     window.addEventListener('VIEW_STATE_CHANGE', (e) => {
         const state = (e as CustomEvent).detail;
         const container = document.querySelector('.dashboard-container');
+        if (!container) return;
+
+        container.classList.remove('map-mode', 'map-maximized');
+
         if (state === 'MAP_ACTIVE') {
-            container?.classList.add('map-mode');
-        } else {
-            container?.classList.remove('map-mode');
+            container.classList.add('map-mode');
+        } else if (state === 'MAP_MAXIMIZED') {
+            container.classList.add('map-maximized');
         }
     });
 </script>
@@ -57,7 +61,12 @@ const title = "Dashboard";
 /* Map Mode Adjustments */
 .dashboard-container.map-mode .glass-panel-wrapper {
     transform: translateY(10%) scale(0.95);
-    opacity: 0.9;
+    opacity: 0.95;
+}
+
+.dashboard-container.map-maximized .glass-panel-wrapper {
+    transform: translateY(40%) scale(0.9);
+    opacity: 0.8;
 }
 
 @media (min-width: 1024px) {
