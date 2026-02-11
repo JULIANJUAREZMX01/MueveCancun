@@ -1,8 +1,16 @@
 ---
 import { ui } from '../lib/i18n';
 import Input from './ui/Input.astro';
-import Switch from './ui/Switch.astro';
+// Switch removed
 import PassengerSelector from './ui/PassengerSelector.astro';
+
+// Quick Access Items
+const QUICK_ZONES = [
+  { label: 'Cancún', icon: 'beach_access' },
+  { label: 'Pto. Morelos', icon: 'anchor' },
+  { label: 'Riviera Maya', icon: 'nature_people' },
+  { label: 'Aeropuerto', icon: 'flight' }
+];
 ---
 
 <div class="calculator-wrapper" id="route-calculator-wrapper">
@@ -13,9 +21,9 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     <div id="card-header" class="card-header">
       <div class="header-controls">
         <div id="balance-badge-container" class="balance-container">
-           <span class="price-tag" id="balance-badge">Cargando...</span>
+           <span class="price-tag" id="balance-badge">MOBI Card</span>
         </div>
-        <button id="lang-toggle" class="lang-toggle">EN</button>
+        <button id="lang-toggle" class="lang-toggle">ES</button>
       </div>
     </div>
 
@@ -35,7 +43,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
             </div>
         </div>
         <button id="reset-search-btn" class="btn-edit" data-i18n="calc.reset">
-            EDIT
+            EDITAR
         </button>
     </div>
 
@@ -46,53 +54,60 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
       <div class="inputs-group">
           <!-- Origin Input -->
-          <div class="input-wrapper">
+          <div class="input-wrapper group">
             <Input
               type="text"
               id="origin-input"
               name="origin"
-              label={ui.es['calc.origin']}
-              placeholder={ui.es['calc.origin_ph']}
+              label="¿Dónde estás?"
+              placeholder="Ej. Villas Otoch, El Crucero..."
               icon="/icons/map-pin.svg"
             >
                <button type="button" slot="action" id="gps-btn" class="action-btn gps-btn" aria-label="Use GPS">
                   <span class="material-symbols-rounded">my_location</span>
                </button>
-               <div class="graffiti-tooltip bottom">Ubicación Actual</div>
             </Input>
+            <!-- Suggestions List -->
             <ul id="origin-suggestions" class="suggestions-list hidden"></ul>
           </div>
 
           <!-- Destination Input -->
-          <div class="input-wrapper">
+          <div class="input-wrapper group">
              <Input
               type="text"
               id="dest-input"
               name="dest"
-              label={ui.es['calc.dest']}
-              placeholder={ui.es['calc.dest_ph']}
+              label="¿A dónde vas?"
+              placeholder="Ej. Zona Hotelera, Aeropuerto..."
               icon="/icons/flag.svg"
             >
                <button type="button" slot="action" id="map-picker-btn" class="action-btn map-btn" aria-label="Pick on Map">
                   <span class="material-symbols-rounded">map</span>
                </button>
-               <div class="graffiti-tooltip bottom">Seleccionar en Mapa</div>
             </Input>
+            <!-- Suggestions List -->
             <ul id="dest-suggestions" class="suggestions-list hidden"></ul>
           </div>
       </div>
 
+      <!-- Quick Access Zones -->
+      <div class="quick-zones">
+        {QUICK_ZONES.map(zone => (
+            <button class="zone-chip" type="button" data-zone={zone.label}>
+                <span class="material-symbols-rounded text-base">{zone.icon}</span>
+                {zone.label}
+            </button>
+        ))}
+      </div>
+
       <!-- Settings & Search -->
       <div class="settings-row">
-        <div class="toggles">
-            <Switch id="ac-toggle" label="A/C" checked={true} />
-            <Switch id="wifi-toggle" label="WiFi" />
-        </div>
-
+        <!-- AC/WiFi Toggles Removed -->
+        <div class="flex-1"></div> <!-- Spacer -->
         <PassengerSelector />
       </div>
 
-      <button id="search-btn" class="btn-primary search-btn">
+      <button id="search-btn" class="btn-primary btn-lg w-full search-btn shadow-lg shadow-primary-500/30">
         <span class="material-symbols-rounded icon">search</span>
         <span data-i18n="calc.btn">Buscar Rutas</span>
       </button>
@@ -109,15 +124,14 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   </div>
 
   <!-- Results Container -->
-  <div id="results-container" class="results-container"></div>
+  <div id="results-container" class="results-container pb-24"></div>
 
 </div>
 
 <script>
   import { ui } from '../lib/i18n';
   import { favoritesStore } from '../lib/FavoritesStore';
-  // Use relative import for WASM functions (bundled by Vite/Rollup)
-  // Ensure strict imports from public/wasm generated files
+  // Use relative import for WASM functions
   import init, { find_route, load_catalog } from '../wasm/route-calculator/route_calculator.js';
 
   // State
@@ -125,6 +139,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   let wasmLoaded = false;
   let catalogLoaded = false;
   let userLocation = null;
+  let routeDataCache = []; // Store raw routes for autocomplete
 
   // DOM Elements
   const originInput = document.getElementById('origin-input');
@@ -168,29 +183,37 @@ import PassengerSelector from './ui/PassengerSelector.astro';
       console.log("WASM initialized.");
       wasmLoaded = true;
 
-      // Load master_routes.json into WASM
+      // Load aggregated routes from API
       if (typeof load_catalog === 'function') {
         try {
           console.log("📦 Loading route catalog...");
-          const response = await fetch('/data/master_routes.json');
+          // Use the aggregated endpoint we created
+          const response = await fetch('/api/master_routes.json');
           
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
           const catalogData = await response.json();
+          // Store for autocomplete
+          if (catalogData.rutas) {
+             routeDataCache = catalogData.rutas;
+          }
+
           const catalogString = JSON.stringify(catalogData);
           
           await load_catalog(catalogString);
-          catalogLoaded = true; // 🔥 Mark catalog as loaded
+          catalogLoaded = true;
           console.log("✅ Catalog loaded into WASM:", catalogData.rutas?.length || 0, "routes");
+
+          // Enable Search
+          if (searchBtn) searchBtn.disabled = false;
+
         } catch (catalogError) {
           console.error("❌ Failed to load catalog:", catalogError);
           catalogLoaded = false;
           renderError("Error loading route data. Please refresh.");
         }
-      } else {
-        console.warn("⚠️ WASM load_catalog() not available");
       }
 
     } catch (e) {
@@ -205,6 +228,85 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   // Listen for favorites updates
   window.addEventListener('FAVORITES_UPDATED', () => renderFavorites());
+
+  // --- Autocomplete Logic ---
+  function setupAutocomplete(input, suggestionList) {
+      if (!input || !suggestionList) return;
+
+      input.addEventListener('input', (e) => {
+          const query = e.target.value.toLowerCase();
+          if (query.length < 2) {
+              suggestionList.classList.add('hidden');
+              return;
+          }
+
+          // Search in route names and stops
+          const suggestions = new Set();
+          routeDataCache.forEach(route => {
+              // Match route name
+              if (route.nombre && route.nombre.toLowerCase().includes(query)) {
+                  suggestions.add({ type: 'route', text: route.nombre });
+              }
+              // Match stops
+              if (route.paradas) {
+                  route.paradas.forEach(stop => {
+                      const stopName = stop.nombre || stop.parada;
+                      if (stopName && stopName.toLowerCase().includes(query)) {
+                           suggestions.add({ type: 'stop', text: stopName });
+                      }
+                  });
+              }
+          });
+
+          // Limit results
+          const results = Array.from(suggestions).slice(0, 5);
+
+          if (results.length > 0) {
+              suggestionList.innerHTML = results.map(s => `
+                  <li class="suggestion-item" data-val="${escapeHtml(s.text)}">
+                    <span class="material-symbols-rounded icon-sm text-slate-400">
+                        ${s.type === 'route' ? 'directions_bus' : 'location_on'}
+                    </span>
+                    ${escapeHtml(s.text)}
+                  </li>
+              `).join('');
+              suggestionList.classList.remove('hidden');
+          } else {
+              suggestionList.classList.add('hidden');
+          }
+      });
+
+      // Selection
+      suggestionList.addEventListener('click', (e) => {
+          const item = e.target.closest('.suggestion-item');
+          if (item) {
+              input.value = item.dataset.val;
+              suggestionList.classList.add('hidden');
+          }
+      });
+
+      // Hide on blur
+      document.addEventListener('click', (e) => {
+          if (!input.contains(e.target) && !suggestionList.contains(e.target)) {
+              suggestionList.classList.add('hidden');
+          }
+      });
+  }
+
+  setupAutocomplete(originInput, originSuggestions);
+  setupAutocomplete(destInput, destSuggestions);
+
+  // Quick Zone Buttons
+  document.querySelectorAll('.zone-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+          const zone = btn.dataset.zone;
+          if (destInput) {
+              destInput.value = zone;
+              // Trigger search animation or focus
+              destInput.focus();
+          }
+      });
+  });
 
   // --- UI Logic ---
 
@@ -236,17 +338,12 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   }
 
   function updateUIText() {
-    // Basic text updates based on data-i18n attributes
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
       if (ui[currentLang][key]) {
         el.textContent = ui[currentLang][key];
       }
     });
-
-    // Update placeholders
-    if (originInput) originInput.placeholder = ui[currentLang]['calc.origin_ph'];
-    if (destInput) destInput.placeholder = ui[currentLang]['calc.dest_ph'];
   }
 
   // Search Logic
@@ -275,8 +372,6 @@ import PassengerSelector from './ui/PassengerSelector.astro';
            renderResults(results);
            transitionToSummary(origin, dest);
 
-           // Dispatch event for Map to draw route
-           // We pick the best route (first one) to show initially
            if (results && results.length > 0) {
               const bestJourney = results[0];
                window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', {
@@ -298,60 +393,40 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   // View State Transition (Search -> Summary)
   function transitionToSummary(origin, dest) {
-      // Hide Header
       if (cardHeader) {
           cardHeader.style.height = '0';
           cardHeader.style.opacity = '0';
           cardHeader.style.overflow = 'hidden';
           cardHeader.style.padding = '0';
       }
-
-      // Hide Form
-      if (searchFormContainer) {
-          searchFormContainer.style.display = 'none';
-      }
-
-      // Show Summary
+      if (searchFormContainer) searchFormContainer.style.display = 'none';
       if (searchSummary) {
           searchSummary.classList.remove('hidden');
           if (summaryOrigin) summaryOrigin.textContent = origin;
           if (summaryDest) summaryDest.textContent = dest;
       }
+      if (searchCard) searchCard.classList.add('collapsed');
 
-      // Update Container State
-      if (searchCard) {
-          searchCard.classList.add('collapsed');
-      }
+      // Notify Home to hide Hero
+      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_ACTIVE' }));
   }
 
   // Reset Logic (Summary -> Search)
   if (resetSearchBtn) {
       resetSearchBtn.addEventListener('click', () => {
-          // Show Header
           if (cardHeader) {
               cardHeader.style.height = '';
               cardHeader.style.opacity = '';
               cardHeader.style.overflow = '';
               cardHeader.style.padding = '';
           }
-
-          // Show Form
-          if (searchFormContainer) {
-              searchFormContainer.style.display = 'block';
-          }
-
-          // Hide Summary
-          if (searchSummary) {
-              searchSummary.classList.add('hidden');
-          }
-
-          // Clear Results
+          if (searchFormContainer) searchFormContainer.style.display = 'block';
+          if (searchSummary) searchSummary.classList.add('hidden');
           if (resultsContainer) resultsContainer.innerHTML = '';
+          if (searchCard) searchCard.classList.remove('collapsed');
 
-          // Reset Container State
-          if (searchCard) {
-              searchCard.classList.remove('collapsed');
-          }
+          // Notify Home to show Hero
+          window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'HOME' }));
       });
   }
 
@@ -387,12 +462,10 @@ import PassengerSelector from './ui/PassengerSelector.astro';
               html = renderTransferCardHtml(journey, isBest);
           }
 
-          // Create element from HTML string
           const template = document.createElement('div');
           template.innerHTML = html.trim();
           const card = template.firstChild;
 
-          // Add Event Listeners to Buttons inside the card
           const mapBtn = card.querySelector('.view-map-btn');
           if (mapBtn) {
              mapBtn.addEventListener('click', (e) => {
@@ -404,7 +477,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
                     }
                  }));
                  // Trigger View State Change
-                 window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'map' }));
+                 window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
              });
           }
 
@@ -413,8 +486,6 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   }
 
   function getTransportLabel(type) {
-      // Map internal types to UI labels
-      // "Bus_Urban", "Combi", "ADO", etc.
       return type.replace('_', ' ');
   }
 
@@ -541,9 +612,6 @@ import PassengerSelector from './ui/PassengerSelector.astro';
             <span class="material-symbols-rounded icon-xl error-color">cloud_off</span>
             <h3 class="result-title">${ui[currentLang]['calc.offline']}</h3>
             <p class="error-text">${ui[currentLang]['calc.offline_msg']}</p>
-            <a href="/rutas" class="btn-secondary btn-sm">
-               <span class="material-symbols-rounded icon-sm">list_alt</span> ${ui[currentLang]['calc.view_all']}
-            </a>
         </div>
     `;
   }
@@ -575,14 +643,17 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   /* ── Search Card ── */
   .search-card {
     position: relative;
-    overflow: hidden;
-    padding: 0 !important; /* Override glass-card default padding */
+    overflow: visible; /* For Suggestions */
+    padding: 0 !important;
     transition: all 0.5s ease;
+    background: var(--surface-card);
+    backdrop-filter: blur(20px);
   }
 
   .search-card.collapsed {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+    overflow: hidden;
   }
 
   /* ── Header ── */
@@ -678,7 +749,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   .connector {
     height: 0.75rem;
     border-left: 1px solid var(--border-light);
-    margin-left: 0.25rem; /* center with dot */
+    margin-left: 0.25rem;
     margin-top: 0.125rem;
     margin-bottom: 0.125rem;
   }
@@ -726,6 +797,68 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
   .input-wrapper {
     position: relative;
+    z-index: 10;
+  }
+
+  /* Autocomplete Suggestions */
+  .suggestions-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    margin-top: 4px;
+    padding: 4px;
+    list-style: none;
+    z-index: 100;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .suggestions-list.hidden { display: none; }
+
+  .suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .suggestion-item:hover {
+    background: var(--surface-bg);
+  }
+
+  /* Quick Zones */
+  .quick-zones {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: -0.5rem;
+  }
+  .zone-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: var(--surface-bg);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .zone-chip:hover {
+    background: var(--primary-light);
+    color: var(--color-primary);
+    border-color: var(--color-primary-light);
   }
 
   /* Action Buttons inside Input */
@@ -761,11 +894,6 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: var(--space-md);
-  }
-
-  .toggles {
-    display: flex;
     gap: var(--space-md);
   }
 
@@ -811,6 +939,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   .icon-primary { color: var(--color-primary); }
 
   /* ── Result Cards ── */
+  /* ── Results Container ── */
   .results-container {
     display: flex;
     flex-direction: column;
@@ -1064,4 +1193,8 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   .hidden { display: none !important; }
   .result-badge { margin-bottom: 0.5rem; }
   .view-map-btn { margin-top: 0.75rem; }
+  /* ── Shared Animations ── */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
 </style>
