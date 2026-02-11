@@ -28,10 +28,10 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   let coordinatesDB = {};
   let finder; // Fuzzy finder instance
 
-  // Helper: Escape HTML
+  // Helper: Escape HTML (Security: prevent XSS in popups)
   function escapeHtml(unsafe) {
-    if (!unsafe) return '';
-    return unsafe
+    if (unsafe === null || unsafe === undefined) return '';
+    return String(unsafe)
          .replace(/&/g, "&amp;")
          .replace(/</g, "&lt;")
          .replace(/>/g, "&gt;")
