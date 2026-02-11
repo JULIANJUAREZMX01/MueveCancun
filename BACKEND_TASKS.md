@@ -17,14 +17,14 @@ El formulario utiliza validación nativa HTML5 y estilos CSS5 (Floating Labels).
 
 ## 2. Motor de Búsqueda WASM (`route-calculator`)
 
-**Estado Actual:** ✅ ¡CONECTADO Y FUNCIONAL!
-**Archivos:** `src/wasm/route_calculator_bg.wasm`, `src/pages/home.astro`, `src/components/RouteCalculator.astro`
+**Estado Actual:** ✅ ¡CONECTADO Y DINÁMICO (Phase P0 COMPLETE)!
+**Archivos:** `src/wasm/route_calculator_bg.wasm`, `src/components/RouteCalculator.astro`, `public/data/master_routes.json`
 
-El módulo Rust/WASM ya está plenamente integrado.
+El módulo Rust/WASM está plenamente integrado y desacoplado:
 
-- Inicialización en `RouteCalculator.astro` con hidratación del lado del cliente.
-- Conexión completa de "Origen" y "Destino" con lógica fuzzy-search en JS + Ruteo en Rust.
-- Sistema bilingüe integrado en el motor de resultados.
+- **Carga Dinámica:** El catálogo de rutas se inyecta desde `master_routes.json` al inicio (`load_catalog`), eliminando la necesidad de recompilar Rust para cambios en datos.
+- **Seguridad:** Implementación "Zero Panics" verificada.
+- **Rendimiento:** Búsquedas O(1) con `HashMap` y `RwLock` para concurrencia segura.
 - Comunicación via eventos (`SHOW_ROUTE_ON_MAP`) para dibujar en el mapa.
 
 ## 3. Mapas e Interactividad
@@ -32,7 +32,7 @@ El módulo Rust/WASM ya está plenamente integrado.
 **Estado Actual:** Funcional (Leaflet + Datos Estáticos)
 **Archivo:** `src/components/InteractiveMap.astro`
 
-El mapa carga y muestra rutas basadas en `src/data/routes.json`.
+El mapa carga y muestra rutas basadas en `src/data/master_routes.json`.
 
 **Tarea:**
 

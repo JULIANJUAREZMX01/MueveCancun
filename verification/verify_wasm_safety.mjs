@@ -1,9 +1,10 @@
-import init, { find_route, calculate_route } from '../public/wasm/route-calculator/route_calculator.js';
+import init, { find_route, load_catalog } from '../public/wasm/route-calculator/route_calculator.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function verify() {
   console.log('🐢 Crush.yaml: Verifying WASM Safety...');
@@ -15,69 +16,73 @@ async function verify() {
     await init(wasmBuffer);
     console.log('✅ WASM Module Loaded.');
 
-    // --- TEST 1: Normal Usage (find_route) ---
-    console.log('\n--- Test 1: Normal Usage (find_route) ---');
-    const res1 = find_route("Villas Otoch Paraíso", "Zona Hotelera");
-    if (Array.isArray(res1) && res1.length > 0) {
-        console.log(`✅ Success: Found ${res1.length} routes.`);
-    } else {
-        console.warn('⚠️ Warning: No routes found (could be valid depending on data).');
+    // --- TEST 0: Catalog Not Loaded (Should return Error, not Panic) ---
+    console.log('\n--- Test 0: Catalog Not Loaded ---');
+    try {
+        find_route("Zona Hotelera", "El Crucero");
+        console.error('❌ Expected failure when catalog is not loaded, but got result.');
+        process.exit(1);
+    } catch (e) {
+        if (typeof e === 'string' && e.includes("Catalog not loaded")) {
+            console.log('✅ Correctly failed with "Catalog not loaded".');
+        } else {
+            console.error('❌ Unexpected error type or message:', e);
+            process.exit(1);
+        }
     }
 
-    // --- TEST 2: Invalid/Unknown Stops (Should not panic) ---
-    console.log('\n--- Test 2: Unknown Stops (find_route) ---');
+    // --- TEST 1: Load Catalog ---
+    console.log('\n--- Test 1: Load Catalog ---');
+    const jsonPath = path.resolve(__dirname, '../public/data/master_routes.json');
+    if (!fs.existsSync(jsonPath)) {
+        console.error('❌ master_routes.json not found at:', jsonPath);
+        process.exit(1);
+    }
+    const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
+
+    try {
+        load_catalog(jsonContent);
+        console.log('✅ Catalog loaded successfully.');
+    } catch (e) {
+        console.error('❌ Failed to load catalog:', e);
+        process.exit(1);
+    }
+
+    // --- TEST 2: Normal Usage (find_route) ---
+    console.log('\n--- Test 2: Normal Usage (find_route) ---');
+    // Using known stops from master_routes.json (e.g., "Villas Otoch Paraíso" and "Zona Hotelera")
+    try {
+        const res1 = find_route("Villas Otoch Paraíso", "Zona Hotelera");
+        if (Array.isArray(res1) && res1.length > 0) {
+            console.log(`✅ Success: Found ${res1.length} routes.`);
+        } else {
+            console.warn('⚠️ Warning: No routes found (could be valid depending on data).');
+        }
+    } catch (e) {
+        console.error('❌ Error in find_route:', e);
+        process.exit(1);
+    }
+
+    // --- TEST 3: Invalid/Unknown Stops (Should return empty array, not panic) ---
+    console.log('\n--- Test 3: Unknown Stops (find_route) ---');
     try {
         const res2 = find_route("Narnia", "Mordor");
         console.log(`✅ Handled Unknown Stops: Returns ${JSON.stringify(res2)}`);
+        if (!Array.isArray(res2) || res2.length !== 0) {
+             console.warn('⚠️ Expected empty array for unknown stops.');
+        }
     } catch (e) {
         console.error('❌ PANIC or ERROR in Unknown Stops:', e);
         process.exit(1);
     }
 
-    // --- TEST 3: Edge Case - Same Origin/Dest ---
-    console.log('\n--- Test 3: Same Origin/Dest (find_route) ---');
+    // --- TEST 4: Edge Case - Same Origin/Dest ---
+    console.log('\n--- Test 4: Same Origin/Dest (find_route) ---');
     try {
         const res3 = find_route("Zona Hotelera", "Zona Hotelera");
         console.log(`✅ Handled Same Origin/Dest: Returns ${JSON.stringify(res3)}`);
     } catch (e) {
         console.error('❌ PANIC in Same Origin/Dest:', e);
-        process.exit(1);
-    }
-
-    // --- TEST 4: Legacy calculate_route Safety ---
-    console.log('\n--- Test 4: Legacy calculate_route Safety ---');
-    // Load minimal mock data for calculate_route
-    const mockData = {
-        routes: [
-            {
-                id: "R1",
-                name: "Test Route",
-                color: "red",
-                fare: 10,
-                transport_type: "Bus",
-                stops: [
-                    { id: "S1", name: "Stop 1", lat: 0, lng: 0, order: 1 },
-                    { id: "S2", name: "Stop 2", lat: 0.01, lng: 0.01, order: 2 }
-                ]
-            }
-        ]
-    };
-
-    // Case A: Valid Path
-    try {
-        const res4a = calculate_route(0, 0, 0.01, 0.01, mockData);
-        console.log(`✅ calculate_route Valid: Success=${res4a.success}`);
-    } catch (e) {
-        console.error('❌ PANIC in calculate_route (Valid):', e);
-        process.exit(1);
-    }
-
-    // Case B: Impossible Path (Should not panic)
-    try {
-        const res4b = calculate_route(0, 0, 10.0, 10.0, mockData); // Far away
-        console.log(`✅ calculate_route Impossible: Success=${res4b.success} Error=${res4b.error?.en}`);
-    } catch (e) {
-        console.error('❌ PANIC in calculate_route (Impossible):', e);
         process.exit(1);
     }
 
@@ -88,11 +93,14 @@ async function verify() {
     const hugeString = "A".repeat(10000);
     try {
         const res5a = find_route(hugeString, "Zona Hotelera");
-        console.log(`✅ Handled Huge String (Length ${hugeString.length}): Returns ${JSON.stringify(res5a)}`);
+        // Expect empty array due to length check > 100
+        if (Array.isArray(res5a) && res5a.length === 0) {
+             console.log(`✅ Handled Huge String (Length ${hugeString.length}): Rejected safely.`);
+        } else {
+             console.log(`❓ Handled Huge String: Returns ${JSON.stringify(res5a)}`);
+        }
     } catch (e) {
-         // It might throw a JS error if string is too long for WASM boundary, but shouldn't panic the runtime irrecoverably?
-         // Actually, find_route has a check: if origin.len() > 100 return empty.
-         console.log('✅ Handled Huge String (Likely rejected safely).');
+         console.log('✅ Handled Huge String (Likely rejected safely). Error:', e);
     }
 
     // B. Special Characters / Injection
