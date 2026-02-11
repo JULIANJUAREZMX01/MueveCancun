@@ -8,6 +8,8 @@
     "inicio": "05:00",
     "fin": "00:00"
   },
+  "social_alerts": [],
+  "last_updated": "2026-01-30T06:16:46.258Z",
   "paradas": [
     {
       "id": "VAN_PLAYA_EXPRESS_001_001",

@@ -92,9 +92,9 @@ import PassengerSelector from './ui/PassengerSelector.astro';
         <PassengerSelector />
       </div>
 
-      <button id="search-btn" class="btn-primary btn-lg w-full search-btn">
-        <span class="material-symbols-rounded icon">search</span>
-        <span data-i18n="calc.btn">Buscar Rutas</span>
+      <button id="search-btn" class="btn-primary btn-lg w-full search-btn" disabled>
+        <span class="material-symbols-rounded icon animate-spin" id="search-icon">progress_activity</span>
+        <span id="search-btn-text" data-i18n="calc.loading">Cargando rutas...</span>
       </button>
 
       <!-- Favorites Section (Hidden by default) -->
@@ -184,6 +184,12 @@ import PassengerSelector from './ui/PassengerSelector.astro';
           await load_catalog(catalogString);
           catalogLoaded = true; // 🔥 Mark catalog as loaded
           console.log("✅ Catalog loaded into WASM:", catalogData.rutas?.length || 0, "routes");
+          const btn = document.getElementById("search-btn");
+          const icon = document.getElementById("search-icon");
+          const txt = document.getElementById("search-btn-text");
+          if (btn) btn.disabled = false;
+          if (icon) { icon.textContent = "search"; icon.classList.remove("animate-spin"); }
+          if (txt) { txt.setAttribute("data-i18n", "calc.btn"); txt.textContent = ui[currentLang]["calc.btn"]; }
         } catch (catalogError) {
           console.error("❌ Failed to load catalog:", catalogError);
           catalogLoaded = false;
@@ -361,7 +367,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
           searchBtn.innerHTML = '<span class="loader"></span> ' + ui[currentLang]['calc.calculating'];
           searchBtn.disabled = true;
       } else {
-          searchBtn.innerHTML = '<span class="material-symbols-rounded icon">search</span> ' + ui[currentLang]['calc.btn'];
+          searchBtn.innerHTML = '<span class="material-symbols-rounded icon animate-spin" id="search-icon">progress_activity</span> ' + ui[currentLang]['calc.btn'];
           searchBtn.disabled = false;
       }
   }
