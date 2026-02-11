@@ -3,6 +3,8 @@
   "nombre": "ADO Aeropuerto → Centro Cancún",
   "tarifa": 150,
   "tipo": "Bus_Foraneo",
+  "social_alerts": [],
+  "last_updated": "2026-01-30T06:16:46.258Z",
   "paradas": [
     {
       "id": "ADO_AEROPUERTO_001_001",

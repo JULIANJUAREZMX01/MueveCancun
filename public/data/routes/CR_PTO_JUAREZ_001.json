@@ -9,6 +9,10 @@
     "inicio": "05:30",
     "fin": "00:30"
   },
+  "social_alerts": [
+    "Solo las unidades con letrero 'PUERTO JUÁREZ' llegan al muelle"
+  ],
+  "last_updated": "2026-01-30T06:16:46.258Z",
   "paradas": [
     {
       "id": "CR_PTO_JUAREZ_001_001",

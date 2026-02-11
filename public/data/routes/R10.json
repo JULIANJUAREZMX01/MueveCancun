@@ -2,8 +2,13 @@
   "id": "R10",
   "nombre": "Las Américas - Aeropuerto",
   "tarifa": 15,
+  "tipo": "Transporte",
   "frecuencia_minutos": 20,
-  "horario": "04:00-23:00",
+  "horario": {
+    "inicio_oficial": "04:00-23:00"
+  },
+  "social_alerts": [],
+  "last_updated": "2026-01-30T06:16:46.258Z",
   "paradas": [
     {
       "id": "R10_001",
