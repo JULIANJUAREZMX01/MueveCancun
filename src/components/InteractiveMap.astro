@@ -28,6 +28,17 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   let coordinatesDB = {};
   let finder; // Fuzzy finder instance
 
+  // Helper: Escape HTML
+  function escapeHtml(unsafe) {
+    if (!unsafe) return '';
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+  }
+
   async function initMap() {
     const container = document.getElementById('map-container');
     if (!container) return;
@@ -167,14 +178,14 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
             if (index === 0) {
                  const start = validStops[0];
                  newLayers.push(window.L.marker(start.latlng)
-                    .bindPopup(`<b>Inicio:</b> ${start.name}`));
+                    .bindPopup(`<b>Inicio:</b> ${escapeHtml(start.name)}`));
             }
 
             // End Marker (only for last leg)
             if (index === legs.length - 1) {
                  const end = validStops[validStops.length - 1];
                  newLayers.push(window.L.marker(end.latlng)
-                    .bindPopup(`<b>Fin:</b> ${end.name}`));
+                    .bindPopup(`<b>Fin:</b> ${escapeHtml(end.name)}`));
             }
 
             // Transfer Marker (if not last leg)
@@ -182,7 +193,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
                 const end = validStops[validStops.length - 1];
                  newLayers.push(window.L.circleMarker(end.latlng, {
                      radius: 6, color: '#0EA5E9', fillOpacity: 1
-                 }).bindPopup(`<b>Transbordo:</b> ${end.name}`));
+                 }).bindPopup(`<b>Transbordo:</b> ${escapeHtml(end.name)}`));
             }
 
             // Intermediate dots

@@ -58,7 +58,7 @@ const schemaData = {
 
 <MainLayout title={pageTitle} description={pageDescription}>
   <!-- Inject JSON-LD -->
-  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemaData)} />
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemaData).replace(/</g, '\\u003c')} />
 
   <div class="animate-fade-in pb-20">
     
