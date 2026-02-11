@@ -57,7 +57,9 @@ const navItems = [
     <!-- Leaflet (Lazy Loaded & Self-Hosted) -->
     {useMap && (
         <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
-        <script is:inline src="/vendor/leaflet/leaflet.js"></script>
+        <link rel="preconnect" href="https://basemaps.cartocdn.com" />
+        <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
+        <script is:inline defer src="/vendor/leaflet/leaflet.js"></script>
     )}
 
     <script is:inline>
