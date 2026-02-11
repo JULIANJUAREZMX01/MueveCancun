@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import ReportTypeSelector from '../components/ui/ReportTypeSelector.astro';
+import Input from '../components/ui/Input.astro';
 
 const reportOptions = [
   { value: 'new_route', label: 'Ruta Nueva', icon: '🗺️' },
@@ -23,10 +24,15 @@ const reportOptions = [
 
     <div class="sunny-card p-8">
       <form id="contribution-form" class="space-y-6">
-        <div class="graffiti-input-group">
-          <input type="text" id="name" name="name" class="graffiti-input" placeholder=" " required />
-          <label for="name" class="graffiti-label">Nombre Completo</label>
-        </div>
+
+        <Input
+          type="text"
+          id="name"
+          name="name"
+          label="Nombre Completo"
+          variant="floating"
+          required
+        />
 
         <ReportTypeSelector
           name="reportType"
@@ -34,10 +40,14 @@ const reportOptions = [
           options={reportOptions}
         />
 
-        <div class="graffiti-input-group">
-          <textarea id="details" name="details" class="graffiti-input textarea" placeholder=" " required></textarea>
-          <label for="details" class="graffiti-label">Detalles del Reporte</label>
-        </div>
+        <Input
+          type="textarea"
+          id="details"
+          name="details"
+          label="Detalles del Reporte"
+          variant="floating"
+          required
+        />
 
         <button type="submit" id="submit-btn" class="w-full btn-primary btn-lg group flex items-center justify-center gap-2">
           <span id="submit-text">Enviar Reporte</span>
@@ -106,67 +116,3 @@ const reportOptions = [
     else window.addEventListener('load', setupForm);
   </script>
 </MainLayout>
-
-
-<style>
-  /* GRAFFITI WARRIOR: CSS5 Floating Labels & Validation */
-  .graffiti-input-group {
-    position: relative;
-    /* Space for the floating label when it moves up */
-    margin-top: 0.5rem;
-
-    .graffiti-label {
-      position: absolute;
-      left: 1rem;
-      top: 0.8rem;
-      color: var(--text-secondary);
-      font-size: 1rem;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      pointer-events: none;
-      transform-origin: left top;
-      background: transparent;
-      padding: 0 0.25rem;
-    }
-
-    .graffiti-input {
-      width: 100%;
-      padding: 0.8rem 1rem;
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      font-size: 1rem;
-      background: var(--surface-bg);
-      color: var(--text-primary);
-      transition: all 0.2s ease;
-
-      &:focus {
-        border-color: var(--color-sunset);
-        outline: 2px solid transparent;
-        box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
-      }
-
-      /* Float the label when focused or has value (placeholder-shown is false) */
-      &:focus + .graffiti-label,
-      &:not(:placeholder-shown) + .graffiti-label {
-        transform: translateY(-1.5rem) scale(0.85);
-        color: var(--color-sunset);
-        background: var(--surface-bg);
-        font-weight: 600;
-        z-index: 10;
-      }
-
-      /* Invalid State (User Interaction) */
-      &:user-invalid {
-        border-color: var(--color-coral);
-
-        & + .graffiti-label {
-          color: var(--color-coral);
-        }
-      }
-
-      &.textarea {
-        min-height: 8rem;
-        resize: vertical;
-      }
-    }
-  }
-</style>
