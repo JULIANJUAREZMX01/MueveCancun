@@ -1,9 +1,15 @@
 services:
   - type: web
-    name: cancunmueve-pwa
-    runtime: node
-    buildCommand: pnpm run build
-    startCommand: node ./dist/server/entry.mjs
+    name: muevecancun
+    env: static
+    buildCommand: "export RUSTUP_HOME=$HOME/.rustup CARGO_HOME=$HOME/.cargo && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env && rustup target add wasm32-unknown-unknown && pnpm install && pnpm run build"
+    staticPublishPath: ./dist
     envVars:
       - key: NODE_VERSION
-        value: 20.10.0
+        value: 20
+      - key: ENABLE_PNPM
+        value: 1
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
