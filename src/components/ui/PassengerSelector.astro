@@ -39,8 +39,8 @@ const { id = 'passenger-selector', initialCount = 3 } = Astro.props;
     /* Reuse existing styles for the trigger */
     .passengers-selector {
         flex: 1;
-        background-color: rgba(255, 255, 255, 0.5);
-        border: 1px solid #E5E7EB;
+        background-color: var(--surface-card);
+        border: 1px solid var(--border-light);
         border-radius: 0.75rem;
         padding: 0.5rem 0.75rem;
         cursor: pointer;
@@ -51,12 +51,12 @@ const { id = 'passenger-selector', initialCount = 3 } = Astro.props;
     }
 
     .passengers-selector:hover {
-        background-color: rgba(255, 255, 255, 0.8);
+        background-color: var(--surface-elevated);
     }
 
     .passengers-selector label {
         font-size: 10px;
-        color: #6B7280;
+        color: var(--text-secondary);
         text-transform: uppercase;
         font-weight: 700;
         letter-spacing: 0.05em;
@@ -74,11 +74,11 @@ const { id = 'passenger-selector', initialCount = 3 } = Astro.props;
     .selector-value span {
         font-size: 0.875rem;
         font-weight: 600;
-        color: #111827;
+        color: var(--text-primary);
     }
 
     .selector-value .arrow {
-        color: #9CA3AF;
+        color: var(--text-tertiary);
         font-size: 1rem;
     }
 
@@ -122,8 +122,8 @@ const { id = 'passenger-selector', initialCount = 3 } = Astro.props;
 
     /* Content Styling */
     .counter-control {
-        background: white;
-        border: 1px solid #E5E7EB;
+        background: var(--surface-card);
+        border: 1px solid var(--border-light);
         border-radius: 1rem;
         padding: 1rem;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -138,44 +138,44 @@ const { id = 'passenger-selector', initialCount = 3 } = Astro.props;
         width: 2rem;
         height: 2rem;
         border-radius: 50%;
-        border: 1px solid #E5E7EB;
-        background: #F9FAFB;
+        border: 1px solid var(--border-light);
+        background: var(--surface-bg);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        color: #4B5563;
+        color: var(--text-secondary);
         transition: all 0.1s;
     }
 
     .circle-btn:hover {
-        background: #F3F4F6;
-        border-color: #D1D5DB;
-        color: #111827;
+        background: var(--border-subtle);
+        border-color: var(--border-light);
+        color: var(--text-primary);
     }
 
     .circle-btn:active {
         transform: scale(0.95);
-        background: #E5E7EB;
+        background: var(--border-light);
     }
 
     .count-display {
         font-size: 1.25rem;
         font-weight: 700;
-        color: #111827;
+        color: var(--text-primary);
         width: 1.5rem;
         text-align: center;
     }
 
     .help-text {
         font-size: 0.75rem;
-        color: #6B7280;
+        color: var(--text-secondary);
         text-align: center;
         margin-top: 0.5rem;
-        background: rgba(255, 255, 255, 0.9);
+        background: var(--surface-elevated);
         padding: 0.25rem 0.5rem;
         border-radius: 0.5rem;
-        border: 1px solid #E5E7EB;
+        border: 1px solid var(--border-light);
     }
 </style>
 

@@ -92,7 +92,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
         <PassengerSelector />
       </div>
 
-      <button id="search-btn" class="btn-primary btn-lg w-full search-btn">
+      <button id="search-btn" class="btn-primary search-btn">
         <span class="material-symbols-rounded icon">search</span>
         <span data-i18n="calc.btn">Buscar Rutas</span>
       </button>
@@ -220,7 +220,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     favoritesSection.classList.remove('hidden');
     favoritesList.innerHTML = favorites.map(fav => `
       <a href="/ruta/${fav.id}" class="favorite-item">
-        <span class="material-symbols-rounded icon-sm text-primary">directions_bus</span>
+        <span class="material-symbols-rounded icon-sm icon-primary">directions_bus</span>
         <span class="fav-name">${escapeHtml(fav.nombre)}</span>
       </a>
     `).join('');
@@ -433,7 +433,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
 
             <div class="result-row top">
               <div class="result-info">
-                <span class="badge-primary mb-2">
+                <span class="badge badge-primary result-badge">
                   ${escapeHtml(getTransportLabel(route.tipo || route.transport_type))}
                 </span>
                 <h3 class="result-title">${escapeHtml(route.nombre || route.name)}</h3>
@@ -454,7 +454,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
                 </span>
                 <p class="duration-text">${escapeHtml(route.duration || 'Calculando...')}</p>
 
-                <button class="btn-primary btn-sm mt-3 view-map-btn">
+                <button class="btn-primary btn-sm view-map-btn">
                     <span class="material-symbols-rounded icon-sm">map</span> ${ui[currentLang]['calc.view_map']}
                 </button>
               </div>
@@ -664,7 +664,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     align-items: center;
     gap: 0.375rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--icon-primary);
     overflow: hidden;
   }
 
@@ -802,13 +802,13 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   .fav-name {
     font-size: 0.75rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--icon-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .text-primary { color: var(--color-primary); }
+  .icon-primary { color: var(--color-primary); }
 
   /* ── Result Cards ── */
   .results-container {
@@ -881,7 +881,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     font-size: 1rem;
     font-weight: 900;
     line-height: 1.2;
-    color: var(--text-primary);
+    color: var(--icon-primary);
     margin: 0.5rem 0;
     white-space: nowrap;
     overflow: hidden;
@@ -987,7 +987,7 @@ import PassengerSelector from './ui/PassengerSelector.astro';
   .leg-title {
     font-size: 0.875rem;
     font-weight: 900;
-    color: var(--text-primary);
+    color: var(--icon-primary);
     margin: 0;
     line-height: 1.2;
   }
@@ -1059,4 +1059,9 @@ import PassengerSelector from './ui/PassengerSelector.astro';
     opacity: 1;
     translate: 0 6px;
   }
+
+  /* ── Utilities ── */
+  .hidden { display: none !important; }
+  .result-badge { margin-bottom: 0.5rem; }
+  .view-map-btn { margin-top: 0.75rem; }
 </style>
