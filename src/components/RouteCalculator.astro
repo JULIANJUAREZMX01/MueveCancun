@@ -322,7 +322,7 @@ const QUICK_ZONES = [
     favoritesSection.classList.remove('hidden');
     favoritesList.innerHTML = favorites.map(fav => `
       <a href="/ruta/${fav.id}" class="favorite-item">
-        <span class="material-symbols-rounded icon-sm text-primary">directions_bus</span>
+        <span class="material-symbols-rounded icon-sm icon-primary">directions_bus</span>
         <span class="fav-name">${escapeHtml(fav.nombre)}</span>
       </a>
     `).join('');
@@ -504,7 +504,7 @@ const QUICK_ZONES = [
 
             <div class="result-row top">
               <div class="result-info">
-                <span class="badge-primary mb-2">
+                <span class="badge badge-primary result-badge">
                   ${escapeHtml(getTransportLabel(route.tipo || route.transport_type))}
                 </span>
                 <h3 class="result-title">${escapeHtml(route.nombre || route.name)}</h3>
@@ -525,7 +525,7 @@ const QUICK_ZONES = [
                 </span>
                 <p class="duration-text">${escapeHtml(route.duration || 'Calculando...')}</p>
 
-                <button class="btn-primary btn-sm mt-3 view-map-btn">
+                <button class="btn-primary btn-sm view-map-btn">
                     <span class="material-symbols-rounded icon-sm">map</span> ${ui[currentLang]['calc.view_map']}
                 </button>
               </div>
@@ -735,7 +735,7 @@ const QUICK_ZONES = [
     align-items: center;
     gap: 0.375rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--icon-primary);
     overflow: hidden;
   }
 
@@ -903,6 +903,42 @@ const QUICK_ZONES = [
     padding: 0.875rem;
   }
 
+  /* ── Favorites ── */
+  .favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .favorite-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .favorite-item:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+  }
+
+  .fav-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--icon-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .icon-primary { color: var(--color-primary); }
+
+  /* ── Result Cards ── */
   /* ── Results Container ── */
   .results-container {
     display: flex;
@@ -910,6 +946,253 @@ const QUICK_ZONES = [
     gap: var(--space-md);
   }
 
+  .result-card {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  .result-card:active { transform: scale(0.98); }
+  .result-card:hover { transform: translateY(-2px); }
+
+  .result-card.best {
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.3);
+  }
+
+  .best-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--color-primary);
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 900;
+    padding: 0.25rem 0.75rem;
+    border-bottom-left-radius: var(--radius-xl);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    z-index: 10;
+  }
+
+  .transfer-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--color-accent);
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 900;
+    padding: 0.25rem 0.75rem;
+    border-bottom-left-radius: var(--radius-xl);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .transfer-badge.offset-best {
+    margin-right: 6rem; /* Make room for best badge */
+  }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .result-row.top {
+    margin-bottom: 0.5rem;
+  }
+
+  .result-info {
+    flex: 1;
+    min-width: 0;
+    padding-right: var(--space-sm);
+  }
+
+  .result-title {
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1.2;
+    color: var(--icon-primary);
+    margin: 0.5rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .group:hover .result-title { color: var(--color-primary); }
+
+  .result-meta {
+    margin-top: 0.625rem;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 0.75rem;
+    row-gap: 0.375rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+  }
+  .meta-item { display: flex; align-items: center; gap: 0.25rem; }
+
+  .result-badges {
+    display: flex;
+    gap: 0.375rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .result-price-column {
+    text-align: right;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-left: 0.75rem;
+    border-left: 1px solid var(--border-light);
+  }
+
+  .duration-text {
+    font-size: 0.625rem;
+    font-weight: 900;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .result-footer {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-tertiary);
+  }
+
+  .footer-text {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+
+  /* ── Transfer Card Specifics ── */
+  .transfer-legs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .leg-row { display: flex; align-items: center; gap: 0.75rem; }
+  .transfer-row { display: flex; align-items: center; gap: 0.75rem; margin-top: -0.5rem; }
+
+  .timeline-col {
+    flex-shrink: 0;
+    width: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .timeline-col.center { justify-content: center; }
+
+  .line {
+    width: 2px;
+    height: 1.5rem;
+    background: var(--border-light);
+    border-radius: 9999px;
+    margin: 0.125rem 0;
+  }
+
+  .dot-start { width: 0.75rem; height: 0.75rem; background: var(--color-success); border-radius: 9999px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .dot-end { width: 0.75rem; height: 0.75rem; background: var(--color-danger); border-radius: 9999px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .dot-transfer { width: 0.625rem; height: 0.625rem; background: var(--color-accent); border-radius: 9999px; border: 2px solid white; box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2); }
+
+  .leg-info {
+    flex: 1;
+  }
+  .leg-title {
+    font-size: 0.875rem;
+    font-weight: 900;
+    color: var(--icon-primary);
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .highlight { color: var(--color-primary); font-weight: 900; }
+  .badge-primary.small { font-size: 0.5rem; padding: 0.1rem 0.3rem; margin-bottom: 0.1rem; }
+  .badge-accent.small { font-size: 0.5rem; padding: 0.1rem 0.3rem; margin-bottom: 0.1rem; }
+  .chip.small { padding: 0.25rem 0.5rem; font-size: 0.625rem; }
+
+  .result-footer-split {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* ── Icons ── */
+  .icon { font-size: 1.25rem; font-variation-settings: 'FILL' 1; }
+  .icon-lg { font-size: 1.5rem; font-variation-settings: 'FILL' 1; }
+  .icon-xl { font-size: 2.25rem; font-variation-settings: 'FILL' 1; }
+  .icon-sm { font-size: 0.875rem; font-variation-settings: 'FILL' 1; }
+  .icon-xs { font-size: 0.75rem; font-variation-settings: 'FILL' 1; }
+
+  .error-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-left: 3px solid var(--color-coral);
+    animation: slideUp 0.3s ease;
+  }
+  .error-color { color: var(--color-coral); }
+  .error-msg { font-size: 0.875rem; font-weight: 700; color: var(--color-coral); }
+
+  .result-card.centered { text-align: center; display: flex; flex-direction: column; align-items: center; padding: var(--space-xl); }
+  .error-text { font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem; }
+
+  /* ── Animations ── */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+
+  /* ── Tooltips (GraffitiWarrior) ── */
+  .graffiti-tooltip {
+    position: absolute;
+    background: var(--color-ocean);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), translate 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 50;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  }
+
+  .graffiti-tooltip.bottom {
+    top: anchor(bottom);
+    right: anchor(right);
+    translate: 0 10px;
+  }
+
+  button:hover + .graffiti-tooltip,
+  button:focus-visible + .graffiti-tooltip {
+    opacity: 1;
+    translate: 0 6px;
+  }
+
+  /* ── Utilities ── */
+  .hidden { display: none !important; }
+  .result-badge { margin-bottom: 0.5rem; }
+  .view-map-btn { margin-top: 0.75rem; }
   /* ── Shared Animations ── */
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

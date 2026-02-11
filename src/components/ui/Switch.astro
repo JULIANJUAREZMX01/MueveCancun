@@ -9,7 +9,7 @@ const { id, label, checked = false } = Astro.props;
 ---
 
 <label class="switch-container">
-  <input type="checkbox" id={id} checked={checked} role="switch" class="sr-only peer" />
+  <input type="checkbox" id={id} checked={checked} role="switch" class="sr-only" />
   <span class="switch-track">
     <span class="switch-thumb"></span>
   </span>
@@ -70,5 +70,17 @@ const { id, label, checked = false } = Astro.props;
 
   input:checked + .switch-track .switch-thumb {
     transform: translateX(1.25rem); /* width - thumb_size - padding*2 */
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 </style>
