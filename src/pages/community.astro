@@ -1,123 +1,104 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import Container from '../components/Container.astro'; // Assuming Container exists or I'll use standard div
+
+const title = "Comunidad";
+
+// Mock Data
+const REPORTS = [
+  { user: "Juan Pérez", time: "Hace 5 min", type: "Tráfico", text: "Accidente en la entrada a Zona Hotelera, tomen precauciones.", location: "Km 0", votes: 12 },
+  { user: "Maria G.", time: "Hace 20 min", type: "Demora", text: "La R-1 no está pasando por Crucero.", location: "El Crucero", votes: 5 },
+  { user: "Sistema", time: "Hace 1 hora", type: "Noticia", text: "Nueva ruta R-2-94 ya disponible en la app.", location: "General", votes: 45 }
+];
 ---
 
-<MainLayout title="Comunidad">
-  <div class="space-y-6 animate-fade-in pb-20">
+<MainLayout title={title}>
+  <div class="pb-24 pt-6 px-4 max-w-lg mx-auto md:max-w-2xl">
     
-    <!-- Header with Stats -->
-    <div class="flex items-center justify-between px-2 pt-4">
-      <div>
-        <h1 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Comunidad</h1>
-        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cancún en tiempo real</p>
-      </div>
-      <div class="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">1.2k Online</span>
-      </div>
+    <!-- Header -->
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="font-display font-black text-3xl text-slate-900 dark:text-white tracking-tight">Comunidad</h1>
+            <p class="text-sm text-slate-500">Reportes en tiempo real</p>
+        </div>
+        <button class="bg-primary-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:scale-105 transition-transform">
+            <span class="material-symbols-rounded">add</span>
+        </button>
     </div>
 
-    <!-- Filters Section -->
-    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x px-1">
-      <button class="snap-start flex-shrink-0 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-black shadow-lg">🔥 POPULARES</button>
-      <button class="snap-start flex-shrink-0 px-4 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors">🔴 ALERTAS</button>
-      <button class="snap-start flex-shrink-0 px-4 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors">🚌 RUTAS</button>
-      <button class="snap-start flex-shrink-0 px-4 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors">⭐ FAVORITOS</button>
-    </div>
-
-    <!-- Posts Feed -->
+    <!-- Feed -->
     <div class="space-y-4">
-      <!-- Post 1: Alert -->
-      <article class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-        <div class="p-5">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-primary-500 flex items-center justify-center text-slate-400">👤</div>
-              <div>
-                <h4 class="text-sm font-black text-slate-800 dark:text-white">Carlos Ruiz</h4>
-                <p class="text-[10px] font-medium text-slate-400 dark:text-slate-500 lowercase">Hace 5 min • Av. Tulum</p>
-              </div>
-            </div>
-            <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 text-[9px] font-black uppercase tracking-widest">Alerta Movilidad</span>
-          </div>
-          <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
-            La Ruta 2 tiene un retraso de 20 minutos por accidente en la Av. Tulum. Sugiero tomar la 5 si pueden. 🚧
-          </p>
-          <div class="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800/50">
-            <div class="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-full">
-              <button class="p-1 px-2 hover:text-primary-500 transition-colors">▲</button>
-              <span class="text-xs font-black text-slate-700 dark:text-slate-300">42</span>
-              <button class="p-1 px-2 hover:text-rose-500 transition-colors">▼</button>
-            </div>
-            <button class="flex items-center gap-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:text-primary-500 transition-colors">
-              💬 12 COMENTARIOS
-            </button>
-          </div>
-        </div>
-      </article>
+        {REPORTS.map(report => (
+            <div class="glass-card p-4 animate-slide-up">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300">
+                            {report.user.charAt(0)}
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white leading-none">{report.user}</h4>
+                            <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{report.time} • {report.location}</span>
+                        </div>
+                    </div>
+                    <span class={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                        report.type === 'Tráfico' ? 'bg-red-100 text-red-600' :
+                        report.type === 'Noticia' ? 'bg-blue-100 text-blue-600' :
+                        'bg-orange-100 text-orange-600'
+                    }`}>
+                        {report.type}
+                    </span>
+                </div>
 
-      <!-- Post 2: Service Review -->
-      <article class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-        <div class="p-5">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-emerald-500 flex items-center justify-center text-slate-400">👩</div>
-              <div>
-                <h4 class="text-sm font-black text-slate-800 dark:text-white">Elena Gómez</h4>
-                <p class="text-[10px] font-medium text-slate-400 dark:text-slate-500 lowercase">Hace 15 min • Zona Hotelera</p>
-              </div>
-            </div>
-            <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-[9px] font-black uppercase tracking-widest">Reseña de Ruta</span>
-          </div>
-          <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
-            ¡Excelente servicio en la unidad 402! Aire acondicionado funcionando a tope y el conductor muy amable. ❄️🚌 Todo muy limpio.
-          </p>
-          <div class="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800/50">
-            <div class="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-full">
-              <button class="p-1 px-2 text-primary-500">▲</button>
-              <span class="text-xs font-black text-slate-700 dark:text-slate-300">128</span>
-              <button class="p-1 px-2 hover:text-rose-500 transition-colors">▼</button>
-            </div>
-            <button class="flex items-center gap-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:text-primary-500 transition-colors">
-              💬 3 COMENTARIOS
-            </button>
-          </div>
-        </div>
-      </article>
+                <p class="mt-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {report.text}
+                </p>
 
-      <!-- Post 3: Question -->
-      <article class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-        <div class="p-5">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-amber-500 flex items-center justify-center text-slate-400">👤</div>
-              <div>
-                <h4 class="text-sm font-black text-slate-800 dark:text-white">Anónimo</h4>
-                <p class="text-[10px] font-medium text-slate-400 dark:text-slate-500 lowercase">Hace 1 h • Playa Delfines</p>
-              </div>
+                <div class="mt-4 flex items-center gap-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+                    <button class="flex items-center gap-1.5 text-slate-400 hover:text-primary-500 transition-colors text-xs font-bold">
+                        <span class="material-symbols-rounded text-base">thumb_up</span>
+                        {report.votes}
+                    </button>
+                    <button class="flex items-center gap-1.5 text-slate-400 hover:text-blue-500 transition-colors text-xs font-bold">
+                        <span class="material-symbols-rounded text-base">chat_bubble</span>
+                        Comentar
+                    </button>
+                    <div class="flex-1"></div>
+                    <button class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <span class="material-symbols-rounded text-base">share</span>
+                    </button>
+                </div>
             </div>
-            <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-[9px] font-black uppercase tracking-widest">Pregunta</span>
-          </div>
-          <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
-            ¿Alguien sabe si ya restablecieron el servicio hacia Playa Delfines? Estaba cortada la circulación hace unas horas.
-          </p>
-          <div class="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800/50">
-            <div class="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-full">
-              <button class="p-1 px-2 hover:text-primary-500 transition-colors">▲</button>
-              <span class="text-xs font-black text-slate-700 dark:text-slate-300">8</span>
-              <button class="p-1 px-2 hover:text-rose-500 transition-colors">▼</button>
-            </div>
-            <button class="flex items-center gap-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:text-primary-500 transition-colors">
-              💬 21 COMENTARIOS
-            </button>
-          </div>
-        </div>
-      </article>
+        ))}
     </div>
-  </div>
 
-  <!-- Floating Action Button -->
-  <button class="fixed bottom-24 right-6 w-14 h-14 bg-primary-500 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl font-black hover:bg-primary-600 active:scale-90 transition-all z-20 shadow-primary-500/40">
-    +
-  </button>
+    <!-- Empty State / Call to Action -->
+    <div class="mt-8 text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+        <span class="material-symbols-rounded text-4xl text-slate-300 mb-2">forum</span>
+        <h3 class="font-bold text-slate-500">¿Viste algo?</h3>
+        <p class="text-xs text-slate-400 max-w-xs mx-auto mt-1">Comparte reportes de tráfico, accidentes o cambios de ruta con la comunidad.</p>
+    </div>
+
+  </div>
 </MainLayout>
+
+<style>
+  .glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+  :global(.dark) .glass-card {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out forwards;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
