@@ -197,15 +197,18 @@ const QUICK_ZONES = [
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
-          const catalogData = await response.json();
-          // Store for autocomplete
+          // ✅ SIMÓN: Bypass redundant parse-stringify cycle by fetching text
+          console.time("WASM Load");
+          const catalogString = await response.text();
+
+          await load_catalog(catalogString);
+          console.timeEnd("WASM Load");
+
+          // Parse for JS-side autocomplete only
+          const catalogData = JSON.parse(catalogString);
           if (catalogData.rutas) {
              routeDataCache = catalogData.rutas;
           }
-
-          const catalogString = JSON.stringify(catalogData);
-          
-          await load_catalog(catalogString);
           catalogLoaded = true;
           console.log("✅ Catalog loaded into WASM:", catalogData.rutas?.length || 0, "routes");
           const btn = document.getElementById("search-btn");
