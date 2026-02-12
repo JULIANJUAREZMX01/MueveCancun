@@ -128,11 +128,7 @@ const ui = useTranslations(currentLang);
         </div>
       </div>
 
-<<<<<<< HEAD
-      <button id="search-btn" class="btn-primary btn-lg w-full search-btn shadow-lg shadow-primary-500/30" disabled>
-        <span class="material-symbols-rounded icon animate-spin" id="search-icon">progress_activity</span>
-        <span id="search-btn-text" data-i18n="calc.loading">Cargando rutas...</span>
-=======
+
       <!-- Options -->
       <div class="grid grid-cols-2 gap-4">
         <div>
@@ -147,10 +143,9 @@ const ui = useTranslations(currentLang);
         </div>
       </div>
 
-      <button id="search-btn" class="btn-primary btn-lg w-full">
-        <span id="btn-text" class="uppercase tracking-wider" data-i18n="calc.btn">CALCULATE ROUTE</span>
-        <span class="material-symbols-rounded text-lg animate-spin hidden" id="btn-spinner">progress_activity</span>
->>>>>>> feat/integrate-saturmex-fix-balance-6414667202118047842
+      <button id="search-btn" class="btn-primary btn-lg w-full" disabled>
+        <span id="btn-text" class="uppercase tracking-wider" data-i18n="calc.loading">Cargando rutas...</span>
+        <span class="material-symbols-rounded text-lg animate-spin" id="btn-spinner">progress_activity</span>
       </button>
 
     </div>
@@ -300,6 +295,41 @@ const ui = useTranslations(currentLang);
       console.log("WASM initialized.");
       wasmLoaded = true;
 
+      // Load aggregated routes from API (Optimized)
+      if (typeof load_catalog === 'function') {
+        try {
+          console.log("📦 Loading route catalog...");
+          // Use static file
+          const response = await fetch('/data/master_routes.json');
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          // ✅ SIMÓN: Bypass redundant parse-stringify cycle by fetching text
+          console.time("WASM Load");
+          const catalogString = await response.text();
+
+          await load_catalog(catalogString);
+          console.timeEnd("WASM Load");
+
+          const jsonData = JSON.parse(catalogString); // Parse once for cache if needed
+          console.log("✅ Catalog loaded into WASM:", jsonData.rutas?.length || 0, "routes");
+          
+          const searchBtn = document.getElementById("search-btn");
+          const spinner = document.getElementById("btn-spinner");
+          const txt = document.getElementById("btn-text");
+          
+          if (searchBtn) searchBtn.disabled = false;
+          if (spinner) spinner.classList.add("hidden");
+          if (txt) { txt.setAttribute("data-i18n", "calc.btn"); txt.textContent = "CALCULATE ROUTE"; }
+          updateUI(); // Ensure i18n text updates if needed
+
+        } catch (catalogError) {
+          console.error("❌ Failed to load catalog:", catalogError);
+          renderError("Error loading route data. Please refresh.");
+        }
+      }
     } catch (e) {
       console.error("WASM Load Critical Error:", e);
       renderWasmError();
@@ -319,20 +349,6 @@ const ui = useTranslations(currentLang);
              console.log("✅ Coordinates synced to WASM");
         }
 
-        // Load Catalog from API (New Feature from Main)
-        try {
-            const response = await fetch('/data/master_routes.json'); // Use static file from sync
-            if (response.ok) {
-                const catalogData = await response.json();
-                 if (typeof load_catalog === 'function' && catalogData) {
-                     const catalogString = JSON.stringify(catalogData);
-                     load_catalog(catalogString);
-                     console.log(`📦 Catalog Loaded: ${catalogData.rutas?.length || 0} routes.`);
-                 }
-            }
-        } catch (catErr) {
-            console.warn("Catalog load warning:", catErr);
-        }
 
         finder = new CoordinateFinder(db);
         console.log("Coordinate Finder Ready");
