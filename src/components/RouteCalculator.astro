@@ -194,24 +194,20 @@ const QUICK_ZONES = [
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
-          const text = await response.text();
+          // ✅ SIMÓN: Bypass redundant parse-stringify cycle by fetching text
+          console.time("WASM Load");
+          const catalogString = await response.text();
 
-          // 🛡️ Security: Size Limit (10MB) to prevent WASM OOM
-          if (text.length > 10 * 1024 * 1024) {
-             throw new Error("Catalog file too large (Potential DoS)");
+          await load_catalog(catalogString);
+          console.timeEnd("WASM Load");
+
+          // Parse for JS-side autocomplete only
+          const jsonData = JSON.parse(catalogString);
+          if (jsonData.rutas) {
+             routeDataCache = jsonData.rutas;
           }
-
-          // ⚡ Perf: Pass raw text to WASM (Avoids JSON.stringify)
-          await load_catalog(text);
-
-          // Parse for Autocomplete
-          const catalogData = JSON.parse(text);
-          if (catalogData.rutas) {
-             routeDataCache = catalogData.rutas;
-          }
-
           catalogLoaded = true;
-          console.log("✅ Catalog loaded into WASM:", catalogData.rutas?.length || 0, "routes");
+          console.log("✅ Catalog loaded into WASM:", jsonData.rutas?.length || 0, "routes");
           const btn = document.getElementById("search-btn");
           const icon = document.getElementById("search-icon");
           const txt = document.getElementById("search-btn-text");

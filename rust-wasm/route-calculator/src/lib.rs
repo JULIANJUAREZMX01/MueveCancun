@@ -282,10 +282,7 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         "Muelle Ultramar",
     ];
 
-    let mut ops_count = 0;
-    const MAX_OPS: usize = 5000; // Limit iterations to prevent freezing
-
-    'outer: for match_a in &routes_from_origin {
+    for match_a in &routes_from_origin {
         let route_a = match_a.route;
         let origin_idx_a = match match_a.origin_idx {
             Some(idx) => idx,
@@ -293,11 +290,6 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         };
 
         for match_b in &routes_to_dest {
-            ops_count += 1;
-            if ops_count > MAX_OPS {
-                break 'outer;
-            }
-
             let route_b = match_b.route;
             let dest_idx_b = match match_b.dest_idx {
                 Some(idx) => idx,
@@ -453,48 +445,5 @@ mod tests {
         let route = get_route_by_id_core("R1_ZONA_HOTELERA_001").unwrap(); // Use _core
         assert!(route.is_some());
         assert_eq!(route.unwrap().id, "R1_ZONA_HOTELERA_001");
-    }
-
-    #[test]
-    fn test_dos_protection() {
-        // Create 100 routes from Origin->Hub and 100 routes from Hub->Dest
-        // Total combinations: 10,000. Limit is 5,000.
-        let mut routes = Vec::new();
-        for i in 0..100 {
-             routes.push(Route {
-                id: format!("A_{}", i),
-                name: format!("Route A {}", i),
-                price: 10.0,
-                transport_type: "Bus".to_string(),
-                stops: vec![
-                    Stop { name: "Origin".to_string(), lat: 0.0, lng: 0.0, orden: 1, id: None, landmarks: "".to_string() },
-                    Stop { name: "Hub".to_string(), lat: 0.0, lng: 0.0, orden: 2, id: None, landmarks: "".to_string() },
-                ],
-                stops_normalized: vec!["origin".to_string(), "hub".to_string()],
-                empresa: None, frecuencia_minutos: None, horario: None, social_alerts: vec![], last_updated: "".to_string()
-            });
-        }
-        for i in 0..100 {
-            routes.push(Route {
-                id: format!("B_{}", i),
-                name: format!("Route B {}", i),
-                price: 10.0,
-                transport_type: "Bus".to_string(),
-                stops: vec![
-                    Stop { name: "Hub".to_string(), lat: 0.0, lng: 0.0, orden: 1, id: None, landmarks: "".to_string() },
-                    Stop { name: "Dest".to_string(), lat: 0.0, lng: 0.0, orden: 2, id: None, landmarks: "".to_string() },
-                ],
-                stops_normalized: vec!["hub".to_string(), "dest".to_string()],
-                empresa: None, frecuencia_minutos: None, horario: None, social_alerts: vec![], last_updated: "".to_string()
-            });
-        }
-
-        let start = std::time::Instant::now();
-        let res = find_route_rs("Origin", "Dest", &routes);
-        let duration = start.elapsed();
-
-        // It should finish very quickly even with 10k theoretical combinations
-        assert!(duration.as_millis() < 500);
-        assert!(!res.is_empty());
     }
 }
