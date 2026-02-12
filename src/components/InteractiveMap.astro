@@ -20,6 +20,23 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 </div>
 
 <script>
+  import { coordinatesStore } from '../lib/CoordinatesStore';
+
+  function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return unsafe;
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+  }
+
+  function safeUrl(name) {
+      if (typeof name !== 'string') return '';
+      return encodeURIComponent(name).replace(/'/g, "%27");
+  }
+
   let map;
   let layerGroup;
   let coordinatesDB = {};
@@ -74,7 +91,72 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         // console.warn("No legacy coordinates DB found");
     }
 
+<<<<<<< HEAD
     // Check for pending route (SSR/Navigation state)
+=======
+    if (loader) loader.classList.add('hidden');
+
+    // Check for Picker Mode
+    const urlParams = new URLSearchParams(window.location.search);
+    const isPicker = urlParams.get('picker');
+
+    if (isPicker) {
+        if (window.showToast) window.showToast("Toque el mapa para seleccionar una parada cercana", "info");
+
+        // Add visual indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'absolute top-4 left-1/2 -translate-x-1/2 bg-primary-600 text-white px-4 py-2 rounded-full shadow-lg z-[1000] font-bold text-sm animate-bounce';
+        indicator.textContent = "📍 Modo Selección";
+        container.parentElement.appendChild(indicator);
+
+        map.on('click', (e) => {
+            const { lat, lng } = e.latlng;
+
+            // Use Store for Spatial Search
+            const nearest = coordinatesStore.findNearest(lat, lng);
+            let minDist = Infinity;
+
+            if (nearest && coordinatesDB[nearest]) {
+                 // Calculate distance to verify threshold (Store does it, but we need it for UI logic if we want strict < 1000m)
+                 // Store fallback is 1.5km. Map logic was 1000m.
+                 // We can trust the store or re-verify. Let's re-verify with Leaflet's distance to be consistent with previous logic.
+                 const coords = coordinatesDB[nearest];
+                 minDist = map.distance(e.latlng, coords);
+            }
+
+            // Threshold: 1000 meters
+            if (nearest && minDist < 1000) {
+                // Show confirmation popup at location
+                window.L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(`
+                        <div class="text-center">
+                            <p class="font-bold mb-2">¿Seleccionar "${escapeHtml(nearest)}"?</p>
+                            <button id="confirm-pick-btn" class="bg-primary-500 text-white px-3 py-1 rounded text-xs font-bold">
+                                ✅ Confirmar
+                            </button>
+                        </div>
+                    `)
+                    .openOn(map);
+
+                // Bind click to button (need delay for DOM)
+                setTimeout(() => {
+                    document.getElementById('confirm-pick-btn')?.addEventListener('click', () => {
+                         window.location.href = `/?selected_stop=${encodeURIComponent(nearest)}`;
+                    });
+                }, 100);
+
+            } else {
+                 if (window.showToast) window.showToast("No hay paradas registradas cerca", "warning");
+            }
+        });
+
+        // Return early to avoid drawing routes or default markers that might confuse
+        return;
+    }
+
+    // Check for pending route from other pages
+>>>>>>> origin/security/fix-map-xss-5650283237918085370
     const pendingRoute = localStorage.getItem('pending_route');
     if (pendingRoute) {
         try {
@@ -85,6 +167,43 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
             console.error("Error parsing pending route", e);
         }
     }
+<<<<<<< HEAD
+=======
+
+    // Draw all points from DB as refined markers
+    if (!pendingRoute) {
+        const newLayers = [];
+        Object.entries(coordinatesDB).forEach(([name, coords]) => {
+            const isRoute = name.startsWith('RUTA') || name.startsWith('Ruta');
+            
+            // Premium Marker Styling
+            const marker = window.L.circleMarker(coords, {
+                radius: isRoute ? 8 : 5,
+                fillColor: isRoute ? '#F97316' : '#3B82F6',
+                color: '#FFFFFF',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.9
+            }).bindPopup(`
+                <div class="p-1">
+                    <p class="font-bold text-gray-900">${escapeHtml(name)}</p>
+                    <p class="text-xs text-gray-500">${isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés'}</p>
+                    <button onclick="window.location.href='/rutas?search=${safeUrl(name)}'" class="mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
+                </div>
+            `);
+            newLayers.push(marker);
+        });
+        
+        if (newLayers.length > 0) {
+            layerGroup = window.L.layerGroup(newLayers).addTo(map);
+            // Optionally fit bounds to all points if database is not empty
+            const allCoords = Object.values(coordinatesDB);
+            if (allCoords.length > 0) {
+                map.fitBounds(allCoords, { padding: [40, 40], maxZoom: 15 });
+            }
+        }
+    }
+>>>>>>> origin/security/fix-map-xss-5650283237918085370
   }
 
   function drawRoute(data) {
@@ -161,6 +280,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
                 color, weight: 4, opacity: 0.8, dashArray
             }).addTo(layerGroup);
 
+<<<<<<< HEAD
             // Markers (Start/End)
             if (validStops.length > 0) {
                 const start = validStops[0];
@@ -169,24 +289,38 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
                 // Start
                 if (index === 0) {
                      window.L.marker(start.latlng)
-                        .bindPopup(`<b>Inicio:</b> ${escapeHtml(start.name)}`)
-                        .addTo(layerGroup);
-                }
-
-                // End
-                window.L.marker(end.latlng)
-                    .bindPopup(`<b>${index === legs.length - 1 ? 'Fin' : 'Transbordo'}:</b> ${escapeHtml(end.name)}`)
-                    .addTo(layerGroup);
-
-                // Intermediate dots (sampled)
-                validStops.forEach((stop, i) => {
-                    if (i > 0 && i < validStops.length - 1) {
-                         window.L.circleMarker(stop.latlng, {
-                             radius: 3, color: '#64748B', fillOpacity: 0.8, weight: 0
-                         }).addTo(layerGroup);
-                    }
-                });
+            // Start Marker (only for first leg)
+            if (index === 0) {
+                 const start = validStops[0];
+                 newLayers.push(window.L.marker(start.latlng)
+                    .bindPopup(`<b>Inicio:</b> ${escapeHtml(start.name)}`));
             }
+
+            // End Marker (only for last leg)
+            if (index === legs.length - 1) {
+                 const end = validStops[validStops.length - 1];
+                 newLayers.push(window.L.marker(end.latlng)
+                    .bindPopup(`<b>Fin:</b> ${escapeHtml(end.name)}`));
+            }
+
+            // Transfer Marker (if not last leg)
+            if (index < legs.length - 1) {
+                const end = validStops[validStops.length - 1];
+                 newLayers.push(window.L.marker(end.latlng, {
+                     // Custom icon for transfer? Or just a marker.
+                 }).bindPopup(`<b>Transbordo:</b> ${escapeHtml(end.name)}`));
+            }
+
+            // Intermediate dots
+            validStops.slice(1, -1).forEach(stop => {
+                 newLayers.push(
+                    window.L.circleMarker(stop.latlng, { radius: 4, color: '#334155', fillOpacity: 1 })
+                    .bindPopup(escapeHtml(stop.name))
+                 );
+            });
+
+        } else {
+            console.warn("No coordinates found for stops:", stops);
         }
     });
 
