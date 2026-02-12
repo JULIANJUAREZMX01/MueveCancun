@@ -9,7 +9,47 @@ const rootDir = path.resolve(__dirname, '..');
 
 const modules = ['route-calculator', 'spatial-index'];
 
-console.log('🏗️  Starting WASM build...');
+console.log('🏗️  Starting WASM build process...');
+
+// Check for required tools
+const hasWasmPack = (() => {
+    try {
+        execSync('wasm-pack --version', { stdio: 'ignore' });
+        return true;
+    } catch (e) {
+        return false;
+    }
+})();
+
+const hasCargo = (() => {
+    try {
+        execSync('cargo --version', { stdio: 'ignore' });
+        return true;
+    } catch (e) {
+        return false;
+    }
+})();
+
+// Check for existing artifacts
+const artifactsExist = modules.every(mod => {
+    const wasmPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}_bg.wasm`);
+    const jsPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}.js`);
+    return fs.existsSync(wasmPath) && fs.existsSync(jsPath);
+});
+
+if (!hasWasmPack || !hasCargo) {
+    if (artifactsExist) {
+        console.warn('⚠️  WASM build tools (wasm-pack/cargo) missing or failed.');
+        console.warn('✅ Pre-built WASM artifacts found. Skipping build and using existing files.');
+        process.exit(0);
+    } else {
+        console.error('❌ WASM build tools missing AND artifacts missing.');
+        console.error('   Please install Rust and wasm-pack to build the project.');
+        process.exit(1);
+    }
+}
+
+console.log('✅ Build tools found. Proceeding with compilation...');
 
 // Helper to check if wasm-pack is available
 const isWasmPackAvailable = () => {
@@ -32,7 +72,18 @@ modules.forEach(mod => {
     const publicOutDir = path.join(rootDir, 'public', 'wasm', mod);
     const srcOutDir = path.join(rootDir, 'src', 'wasm', mod);
 
+<<<<<<< HEAD
     let buildSuccess = false;
+=======
+    // 1. Build with wasm-pack
+    try {
+        execSync(`wasm-pack build --target web --out-dir ${publicOutDir} --no-typescript`, {
+            cwd: sourceDir,
+            stdio: 'inherit'
+        });
+        // Run again to generate types if needed, but usually one pass is enough.
+        // Re-running without --no-typescript to match original behavior (it didn't have flags other than target and out-dir).
+>>>>>>> origin/security/harden-wasm-ffi-6480731573874893142
 
     if (hasWasmPack) {
         try {
