@@ -91,9 +91,6 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         // console.warn("No legacy coordinates DB found");
     }
 
-<<<<<<< HEAD
-    // Check for pending route (SSR/Navigation state)
-=======
     if (loader) loader.classList.add('hidden');
 
     // Check for Picker Mode
@@ -156,7 +153,6 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     }
 
     // Check for pending route from other pages
->>>>>>> origin/security/fix-map-xss-5650283237918085370
     const pendingRoute = localStorage.getItem('pending_route');
     if (pendingRoute) {
         try {
@@ -167,8 +163,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
             console.error("Error parsing pending route", e);
         }
     }
-<<<<<<< HEAD
-=======
+
 
     // Draw all points from DB as refined markers
     if (!pendingRoute) {
@@ -203,7 +198,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
             }
         }
     }
->>>>>>> origin/security/fix-map-xss-5650283237918085370
+  }
   }
 
   function drawRoute(data) {
@@ -280,15 +275,6 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
                 color, weight: 4, opacity: 0.8, dashArray
             }).addTo(layerGroup);
 
-<<<<<<< HEAD
-            // Markers (Start/End)
-            if (validStops.length > 0) {
-                const start = validStops[0];
-                const end = validStops[validStops.length - 1];
-
-                // Start
-                if (index === 0) {
-                     window.L.marker(start.latlng)
             // Start Marker (only for first leg)
             if (index === 0) {
                  const start = validStops[0];
