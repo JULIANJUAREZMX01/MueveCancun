@@ -148,6 +148,17 @@ pub fn find_route_core_wrapper(origin: &str, dest: &str) -> Result<Vec<Journey>,
 // --- WASM EXPORTS ---
 
 #[wasm_bindgen]
+pub fn validate_operator_funds(balance: f64) -> bool {
+    balance >= 180.0
+}
+
+#[wasm_bindgen]
+pub fn load_stops_data(_stops: JsValue) -> Result<(), JsValue> {
+    // No-op: Stops are now loaded via load_catalog() inside routes
+    Ok(())
+}
+
+#[wasm_bindgen]
 pub fn load_catalog(json_payload: &str) -> Result<(), JsValue> {
     load_catalog_core(json_payload).map_err(|e| JsValue::from_str(&e))
 }

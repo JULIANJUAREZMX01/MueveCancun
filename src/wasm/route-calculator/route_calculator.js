@@ -54,6 +54,25 @@ export function load_catalog(json_payload) {
     }
 }
 
+/**
+ * @param {any} _stops
+ */
+export function load_stops_data(_stops) {
+    const ret = wasm.load_stops_data(_stops);
+    if (ret[1]) {
+        throw takeFromExternrefTable0(ret[0]);
+    }
+}
+
+/**
+ * @param {number} balance
+ * @returns {boolean}
+ */
+export function validate_operator_funds(balance) {
+    const ret = wasm.validate_operator_funds(balance);
+    return ret !== 0;
+}
+
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
