@@ -14,13 +14,10 @@ async function test() {
   load_catalog(JSON.stringify(routesData));
   console.log('✅ Catalog loaded');
 
-  // Test Route Calculation (Simple case)
-  // Just use arbitrary points that should return something or at least not crash
-  // Origin: "Hotel Zone"
-  // Dest: "Airport"
+  // Test Transfer Route (Villas Otoch -> Muelle Ultramar)
   try {
-      const origin = "Zona Hotelera";
-      const dest = "Aeropuerto";
+      const origin = "Villas Otoch";
+      const dest = "Muelle Ultramar";
       console.log(`🔍 Searching route: ${origin} -> ${dest}`);
 
       const results = find_route(origin, dest);
@@ -28,7 +25,11 @@ async function test() {
       if (Array.isArray(results)) {
           console.log(`✅ Success! Found ${results.length} routes.`);
           if (results.length > 0) {
-              console.log('First route:', results[0].legs[0].name);
+              console.log('First route type:', results[0].type);
+              console.log('Legs:', results[0].legs.map(l => l.id));
+              console.log('Transfer at:', results[0].transfer_point);
+          } else {
+              console.warn("⚠️ No routes found. Check catalog data.");
           }
       } else {
           console.error('❌ Expected array result, got:', results);
