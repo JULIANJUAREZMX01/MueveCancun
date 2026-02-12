@@ -14,7 +14,7 @@ console.log('🏗️  Starting WASM build...');
 // Helper to check if wasm-pack is available
 const isWasmPackAvailable = () => {
     try {
-        execSync('wasm-pack --version', { stdio: 'ignore' });
+        execSync('npx wasm-pack --version', { stdio: 'ignore' });
         return true;
     } catch (e) {
         return false;
@@ -37,10 +37,9 @@ modules.forEach(mod => {
     if (hasWasmPack) {
         try {
             // 1. Build with wasm-pack
-            // Build with wasm-pack (single pass with types)
-
-            // Second pass for types (matching original logic)
-            execSync(`wasm-pack build --target web --out-dir ${publicOutDir}`, {
+            // Build with wasm-pack (via npx)
+            console.log(`🚀 Building ${mod} with npx wasm-pack...`);
+            execSync(`npx wasm-pack build --target web --out-dir ${publicOutDir}`, {
                 cwd: sourceDir,
                 stdio: 'inherit'
             });
