@@ -282,7 +282,9 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         "Muelle Ultramar",
     ];
 
-    for match_a in &routes_from_origin {
+    const MAX_TRANSFER_ROUTES: usize = 50;
+
+    'outer: for match_a in &routes_from_origin {
         let route_a = match_a.route;
         let origin_idx_a = match match_a.origin_idx {
             Some(idx) => idx,
@@ -290,6 +292,10 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         };
 
         for match_b in &routes_to_dest {
+            if journeys.len() >= MAX_TRANSFER_ROUTES {
+                break 'outer;
+            }
+
             let route_b = match_b.route;
             let dest_idx_b = match match_b.dest_idx {
                 Some(idx) => idx,
@@ -299,6 +305,9 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
             if route_a.id == route_b.id {
                 continue;
             }
+
+            // Find the best transfer point for this pair
+            let mut best_transfer: Option<(usize, bool)> = None; // (index in A, is_preferred)
 
             for (idx_a, stop_name_a) in route_a.stops_normalized.iter().enumerate() {
                 if idx_a <= origin_idx_a {
@@ -312,16 +321,29 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
 
                     if stop_name_a == stop_name_b {
                         // Found intersection
-                        let transfer_name = route_a.stops[idx_a].name.clone();
+                        let stop_name = &route_a.stops[idx_a].name;
+                        let is_preferred = preferred_hubs.iter().any(|h| stop_name.contains(h));
 
-                        journeys.push(Journey {
-                            type_: "Transfer".to_string(),
-                            legs: vec![route_a.clone(), route_b.clone()],
-                            transfer_point: Some(transfer_name),
-                            total_price: route_a.price + route_b.price,
-                        });
+                        if best_transfer.is_none() {
+                            best_transfer = Some((idx_a, is_preferred));
+                        } else {
+                            // If current is preferred and previous wasn't, switch
+                            if is_preferred && !best_transfer.unwrap().1 {
+                                best_transfer = Some((idx_a, is_preferred));
+                            }
+                        }
                     }
                 }
+            }
+
+            if let Some((idx_a, _)) = best_transfer {
+                let transfer_name = route_a.stops[idx_a].name.clone();
+                journeys.push(Journey {
+                    type_: "Transfer".to_string(),
+                    legs: vec![route_a.clone(), route_b.clone()],
+                    transfer_point: Some(transfer_name),
+                    total_price: route_a.price + route_b.price,
+                });
             }
         }
     }
