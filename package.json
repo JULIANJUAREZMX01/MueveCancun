@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "astro dev",
     "dev:network": "astro dev --host",
-    "build": "node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build && ln -sfn dist build",
+    "build": "node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
     "build:wasm": "node scripts/build-wasm.mjs",
     "astro": "astro",
     "lint": "eslint .",

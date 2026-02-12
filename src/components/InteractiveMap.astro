@@ -22,15 +22,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 <script>
   import { coordinatesStore } from '../lib/CoordinatesStore';
 
-  function escapeHtml(unsafe) {
-    if (typeof unsafe !== 'string') return unsafe;
-    return unsafe
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
-  }
+
 
   function safeUrl(name) {
       if (typeof name !== 'string') return '';
