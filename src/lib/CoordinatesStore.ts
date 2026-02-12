@@ -21,27 +21,42 @@ class CoordinatesStore {
 
         this.loadingPromise = (async () => {
             try {
-                console.log("[CoordinatesStore] Fetching coordinates...");
-                const res = await fetch('/coordinates.json');
+                console.log("[CoordinatesStore] Fetching master routes for coordinates...");
+                const res = await fetch('/data/master_routes.json');
                 if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                this.db = await res.json();
-
-                this.spatialIndex = new SpatialHash(0.01);
+                const data = await res.json();
+                
+                this.db = {};
                 this.allPoints = [];
+                this.spatialIndex = new SpatialHash(0.01);
 
+                if (data && Array.isArray(data.rutas)) {
+                    data.rutas.forEach((route: any) => {
+                        if (Array.isArray(route.paradas)) {
+                            route.paradas.forEach((stop: any) => {
+                                if (stop.nombre && typeof stop.lat === 'number' && typeof stop.lng === 'number') {
+                                    // Use name as key, overwrite duplicates (assuming same location)
+                                    this.db![stop.nombre] = [stop.lat, stop.lng];
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                // Populate Spatial Index and List
                 if (this.db) {
                     Object.entries(this.db).forEach(([name, coords]) => {
                          if(Array.isArray(coords) && coords.length === 2) {
                             const lat = coords[0];
                             const lng = coords[1];
                             this.spatialIndex!.insert(lat, lng, name);
-                            this.allPoints.push({ name, lat, lng });
+                            this.allPoints.push({ name: name, lat, lng } as any);
                          }
                     });
                 }
-                console.log(`[CoordinatesStore] Loaded ${this.allPoints.length} points.`);
+                console.log(`[CoordinatesStore] Loaded ${this.allPoints.length} unique stops from master routes.`);
             } catch (e) {
-                console.error("[CoordinatesStore] Failed to load:", e);
+                console.error("[CoordinatesStore] Failed to load routes:", e);
                 this.loadingPromise = null; // Allow retry
                 throw e;
             }

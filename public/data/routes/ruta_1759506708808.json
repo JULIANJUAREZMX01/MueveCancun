@@ -1,0 +1,177 @@
+{
+  "id": "ruta_1759506708808",
+  "nombre": "RUTA 30",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1759506708808_s_1",
+      "nombre": "Parada RUTA 30 #1",
+      "lat": 21.17870948390136,
+      "lng": -86.90832495689394,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_2",
+      "nombre": "Parada RUTA 30 #2",
+      "lat": 21.17290193745221,
+      "lng": -86.90498292446138,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_3",
+      "nombre": "Parada RUTA 30 #3",
+      "lat": 21.16952535213544,
+      "lng": -86.91163480281831,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_4",
+      "nombre": "Parada RUTA 30 #4",
+      "lat": 21.176343473986677,
+      "lng": -86.91425263881683,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_5",
+      "nombre": "Parada RUTA 30 #5",
+      "lat": 21.17813924395913,
+      "lng": -86.90970361232758,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_6",
+      "nombre": "Parada RUTA 30 #6",
+      "lat": 21.182105867477393,
+      "lng": -86.90307319164276,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_7",
+      "nombre": "Parada RUTA 30 #7",
+      "lat": 21.178049205872508,
+      "lng": -86.90014958381654,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_8",
+      "nombre": "Parada RUTA 30 #8",
+      "lat": 21.185787279084234,
+      "lng": -86.87958240509035,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_9",
+      "nombre": "Parada RUTA 30 #9",
+      "lat": 21.181180498241005,
+      "lng": -86.87632083892822,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_10",
+      "nombre": "Parada RUTA 30 #10",
+      "lat": 21.174607709028184,
+      "lng": -86.87274277210236,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_11",
+      "nombre": "Parada RUTA 30 #11",
+      "lat": 21.169135163976023,
+      "lng": -86.87235653400421,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_12",
+      "nombre": "Parada RUTA 30 #12",
+      "lat": 21.181490622630314,
+      "lng": -86.84667706489563,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_13",
+      "nombre": "Parada RUTA 30 #13",
+      "lat": 21.184001605826953,
+      "lng": -86.84118390083314,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_14",
+      "nombre": "Parada RUTA 30 #14",
+      "lat": 21.187522912810724,
+      "lng": -86.8343871831894,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_15",
+      "nombre": "Parada RUTA 30 #15",
+      "lat": 21.177008761783807,
+      "lng": -86.82851850986482,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_16",
+      "nombre": "Parada RUTA 30 #16",
+      "lat": 21.1712261602984,
+      "lng": -86.82651758193971,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_17",
+      "nombre": "Parada RUTA 30 #17",
+      "lat": 21.164202696732836,
+      "lng": -86.82600259780885,
+      "orden": 17,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_18",
+      "nombre": "Parada RUTA 30 #18",
+      "lat": 21.15749908015619,
+      "lng": -86.82546079158784,
+      "orden": 18,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_19",
+      "nombre": "Parada RUTA 30 #19",
+      "lat": 21.150715111374257,
+      "lng": -86.82509064674377,
+      "orden": 19,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_20",
+      "nombre": "Parada RUTA 30 #20",
+      "lat": 21.14456624581876,
+      "lng": -86.82461321353914,
+      "orden": 20,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759506708808_s_21",
+      "nombre": "Parada RUTA 30 #21",
+      "lat": 21.147308000968543,
+      "lng": -86.82430744171143,
+      "orden": 21,
+      "landmarks": ""
+    }
+  ]
+}

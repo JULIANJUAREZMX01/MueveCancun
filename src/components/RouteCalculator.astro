@@ -1,173 +1,227 @@
 ---
-import { ui } from '../lib/i18n';
+import { getLangFromUrl, useTranslations } from '../lib/i18n';
 import Input from './ui/Input.astro';
-// Switch removed
+import Switch from './ui/Switch.astro';
 import PassengerSelector from './ui/PassengerSelector.astro';
 
-// Quick Access Items
-const QUICK_ZONES = [
-  { label: 'Cancún', icon: 'beach_access' },
-  { label: 'Pto. Morelos', icon: 'anchor' },
-  { label: 'Riviera Maya', icon: 'nature_people' },
-  { label: 'Aeropuerto', icon: 'flight' }
-];
+const currentLang = getLangFromUrl(Astro.url);
+const ui = useTranslations(currentLang);
 ---
 
-<div class="calculator-wrapper" id="route-calculator-wrapper">
+<div class="calculator-wrapper">
 
+  <!-- Search Card -->
   <div class="glass-card search-card" id="search-card">
 
-    <!-- Collapsible Header -->
-    <div id="card-header" class="card-header">
+    <!-- Header with Balance & Lang -->
+    <div class="card-header">
+      <div class="flex items-center gap-2">
+         <span class="material-symbols-rounded text-primary-500 text-xl">directions_bus</span>
+         <h2 class="text-sm font-black uppercase tracking-widest text-slate-800" data-i18n="calc.title">Route Finder</h2>
+      </div>
+
       <div class="header-controls">
-        <div id="balance-badge-container" class="balance-container">
-           <span class="price-tag" id="balance-badge">MOBI Card</span>
+        <div class="balance-container">
+            <span id="balance-badge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-100 text-slate-500 font-mono">
+                LOADING...
+            </span>
         </div>
-        <button id="lang-toggle" class="lang-toggle">ES</button>
-      </div>
-    </div>
-
-    <!-- Summary Bar (Initially Hidden) -->
-    <div id="search-summary" class="summary-bar hidden">
-        <div class="summary-info">
-            <div class="summary-route">
-               <div class="summary-point">
-                  <span class="dot origin"></span>
-                  <span id="summary-origin" class="summary-text" data-i18n="calc.origin">Origin</span>
-               </div>
-               <div class="connector"></div>
-               <div class="summary-point">
-                  <span class="dot dest"></span>
-                  <span id="summary-dest" class="summary-text" data-i18n="calc.dest">Destination</span>
-               </div>
-            </div>
-        </div>
-        <button id="reset-search-btn" class="btn-edit" data-i18n="calc.reset">
-            EDITAR
+        <button id="lang-toggle" class="lang-toggle">
+            {currentLang === 'es' ? 'ES' : 'EN'}
         </button>
+      </div>
     </div>
 
-    <!-- Main Search Form -->
-    <div id="search-form-container" class="search-form">
-      <!-- Alerts -->
-      <div id="alerts-container"></div>
+    <!-- Balance Warning -->
+    <div id="balance-warning" class="hidden bg-red-50 p-3 text-center border-b border-red-100">
+        <p class="text-xs font-bold text-red-600 flex items-center justify-center gap-2">
+            <span class="material-symbols-rounded text-sm">warning</span>
+            <span data-i18n="calc.insufficient">Insufficient Balance</span>
+        </p>
+    </div>
 
+    <!-- Summary Bar (Hidden by default) -->
+    <div id="summary-bar" class="summary-bar hidden">
+       <div class="summary-info">
+          <div class="summary-route">
+              <div class="summary-point">
+                  <div class="dot origin"></div>
+                  <span id="summary-origin" class="summary-text">Origin</span>
+              </div>
+              <div class="connector"></div>
+              <div class="summary-point">
+                  <div class="dot dest"></div>
+                  <span id="summary-dest" class="summary-text">Destination</span>
+              </div>
+          </div>
+       </div>
+       <button id="edit-search-btn" class="btn-edit" data-i18n="calc.edit">EDIT</button>
+    </div>
+
+    <!-- Form Area -->
+    <div id="search-form" class="search-form">
+
+      <!-- Inputs -->
       <div class="inputs-group">
-          <!-- Origin Input -->
-          <div class="input-wrapper group">
-            <Input
-              type="text"
-              id="origin-input"
-              name="origin"
-              label="¿Dónde estás?"
-              placeholder="Ej. Villas Otoch, El Crucero..."
-              icon="/icons/map-pin.svg"
-            >
-               <button type="button" slot="action" id="gps-btn" class="action-btn gps-btn" aria-label="Use GPS">
-                  <span class="material-symbols-rounded">my_location</span>
-               </button>
-            </Input>
-            <!-- Suggestions List -->
-            <ul id="origin-suggestions" class="suggestions-list hidden"></ul>
-          </div>
+        <div class="relative z-20">
+          <Input
+            id="origin-input"
+            label="Origin"
+            icon="/icons/map-pin.svg"
+            placeholder="From where?"
+            list="locations"
+            aria-controls="locations"
+            aria-expanded="false"
+            data-i18n-label="calc.origin"
+            data-i18n-placeholder="calc.placeholder.origin"
+          />
+          <!-- GPS Button inside Input -->
+          <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip">
+             <span class="material-symbols-rounded text-lg">my_location</span>
+          </button>
+          <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn" data-i18n="calc.gps">Use my location</div>
+        </div>
 
-          <!-- Destination Input -->
-          <div class="input-wrapper group">
-             <Input
-              type="text"
-              id="dest-input"
-              name="dest"
-              label="¿A dónde vas?"
-              placeholder="Ej. Zona Hotelera, Aeropuerto..."
-              icon="/icons/flag.svg"
-            >
-               <button type="button" slot="action" id="map-picker-btn" class="action-btn map-btn" aria-label="Pick on Map">
-                  <span class="material-symbols-rounded">map</span>
-               </button>
-            </Input>
-            <!-- Suggestions List -->
-            <ul id="dest-suggestions" class="suggestions-list hidden"></ul>
-          </div>
-      </div>
+        <!-- Swap Icon (Visual only for now) -->
+        <div class="absolute left-8 top-1/2 -translate-y-1/2 z-10 hidden md:block">
+          <button id="swap-btn" class="w-8 h-8 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform hover:bg-white text-slate-500">
+            <img src="/icons/swap.svg" class="w-5 h-5 opacity-60" alt="Swap" />
+          </button>
+        </div>
 
-      <!-- Quick Access Zones -->
-      <div class="quick-zones">
-        {QUICK_ZONES.map(zone => (
-            <button class="zone-chip" type="button" data-zone={zone.label}>
-                <span class="material-symbols-rounded text-base">{zone.icon}</span>
-                {zone.label}
+        <div class="relative z-0">
+          <Input
+            id="destination-input"
+            label="Destination"
+            icon="/icons/flag.svg"
+            placeholder="Where to?"
+            list="locations"
+            aria-controls="locations"
+            aria-expanded="false"
+            data-i18n-label="calc.dest"
+            data-i18n-placeholder="calc.placeholder.dest"
+          />
+            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip">
+              <img src="/icons/map-plus.svg" class="w-5 h-5" alt="Map Picker" />
             </button>
-        ))}
+            <div slot="action" id="map-tooltip" class="graffiti-tooltip top" style="position-anchor: --map-btn" data-i18n="calc.map">Select on map</div>
+          </Input>
+        </div>
       </div>
 
-      <!-- Settings & Search -->
-      <div class="settings-row">
-        <!-- AC/WiFi Toggles Removed -->
-        <div class="flex-1"></div> <!-- Spacer -->
-        <PassengerSelector />
+      <!-- Quick Actions -->
+      <div>
+        <div class="section-label mb-2" data-i18n="calc.quick">Quick Actions</div>
+        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar snap-x">
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Walmart" data-i18n-html="calc.home">
+            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">home</span> Home
+          </button>
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Plaza Las Américas" data-i18n-html="calc.work">
+            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">work</span> Work
+          </button>
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Aeropuerto Terminal 2" data-i18n-html="calc.airport">
+            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">flight</span> Airport
+          </button>
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Playa Delfines (El Mirador)" data-i18n-html="calc.beach">
+            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">beach_access</span> Beach
+          </button>
+        </div>
       </div>
 
+<<<<<<< HEAD
       <button id="search-btn" class="btn-primary btn-lg w-full search-btn shadow-lg shadow-primary-500/30" disabled>
         <span class="material-symbols-rounded icon animate-spin" id="search-icon">progress_activity</span>
         <span id="search-btn-text" data-i18n="calc.loading">Cargando rutas...</span>
-      </button>
-
-      <!-- Favorites Section (Hidden by default) -->
-      <div id="favorites-section" class="hidden">
-        <h4 class="section-label">Tus Rutas Favoritas</h4>
-        <div id="favorites-list" class="favorites-grid">
-           <!-- Items injected via JS -->
+=======
+      <!-- Options -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <div class="section-label mb-1.5" style="font-size: 0.6rem;" data-i18n="calc.passengers">Passengers</div>
+          <PassengerSelector id="seats-input" />
+        </div>
+        <div>
+          <div class="section-label mb-1.5" style="font-size: 0.6rem;" data-i18n="calc.mode">Mode</div>
+          <div class="h-[44px] flex items-center">
+            <Switch id="tourist-checkbox" label="Tourist" data-i18n-label="calc.tourist" />
+          </div>
         </div>
       </div>
 
+      <button id="search-btn" class="btn-primary btn-lg w-full">
+        <span id="btn-text" class="uppercase tracking-wider" data-i18n="calc.btn">CALCULATE ROUTE</span>
+        <span class="material-symbols-rounded text-lg animate-spin hidden" id="btn-spinner">progress_activity</span>
+>>>>>>> feat/integrate-saturmex-fix-balance-6414667202118047842
+      </button>
+
     </div>
+
+    <!-- Loading State -->
+    <div id="calculation-loader" class="hidden p-5 space-y-3" style="border-top: 1px solid var(--border-light); background: var(--surface-bg);">
+        <div class="skeleton h-24 rounded-xl"></div>
+        <div class="skeleton h-12 rounded-xl"></div>
+        <div class="skeleton h-12 rounded-xl"></div>
+    </div>
+
   </div>
 
-  <!-- Results Container -->
-  <div id="results-container" class="results-container pb-24"></div>
+    <!-- Results Area -->
+    <div id="results-info" class="mb-4 hidden animate-fade-in group">
+        <div class="glass-card flex items-center justify-between px-4 py-3">
+            <div class="flex flex-col">
+                <span class="text-xxs font-black uppercase tracking-widest mb-0.5" style="color: var(--text-tertiary);" id="results-count-label">0 OPCIONES</span>
+                <span class="badge-success font-mono" id="results-time-badge">MÁS RÁPIDA: 12min</span>
+            </div>
+            
+            <button id="toggle-list-btn" class="chip">
+                <span class="text-xs font-bold" id="toggle-list-text" data-i18n="calc.toggle.hide">Hide</span>
+                <span class="material-symbols-rounded text-sm" id="toggle-list-icon">expand_more</span>
+            </button>
+        </div>
+    </div>
+    <div id="best-result-area" class="mb-6 space-y-4 empty:hidden">
+        <!-- Best match card injected here -->
+    </div>
+
+    <div id="results-container" class="space-y-4 empty:hidden transition-all duration-500 origin-top">
+        <!-- Other results injected here -->
+    </div>
+
+  <datalist id="locations">
+    <option value="El Crucero Hub"></option>
+    <option value="ADO Centro / Terminal"></option>
+    <option value="Plaza Las Américas"></option>
+    <option value="Aeropuerto Terminal 2"></option>
+    <option value="Aeropuerto Terminal 4"></option>
+    <option value="Muelle Ultramar (Puerto Juárez)"></option>
+    <option value="Playa Delfines (El Mirador)"></option>
+    <option value="Playa del Carmen Centro"></option>
+    <option value="Walmart"></option>
+    <option value="Villas Otoch Paraíso"></option>
+    <option value="Hospital General (Av. Kabah)"></option>
+  </datalist>
 
 </div>
 
+<div id="i18n-data" data-ui={JSON.stringify(ui)} class="hidden"></div>
 <script>
-  import { ui } from '../lib/i18n';
-  import { favoritesStore } from '../lib/FavoritesStore';
-  // Use relative import for WASM functions
-  import init, { find_route, load_catalog } from '../wasm/route-calculator/route_calculator.js';
+  import { openDB } from 'idb';
+  import { coordinatesStore } from '../lib/CoordinatesStore';
+  import { CoordinateFinder } from '../lib/CoordinateFinder';
 
-  // State
-  let currentLang = 'es';
-  let wasmLoaded = false;
-  let catalogLoaded = false;
-  let userLocation = null;
-  let routeDataCache = []; // Store raw routes for autocomplete
+  let currentLang = document.documentElement.lang || 'es';
+  const i18nDataEl = document.getElementById('i18n-data');
+  const ui = i18nDataEl ? JSON.parse(i18nDataEl.dataset.ui || '{}') : {};
 
   // DOM Elements
-  const originInput = document.getElementById('origin-input');
-  const destInput = document.getElementById('dest-input');
-  const originSuggestions = document.getElementById('origin-suggestions');
-  const destSuggestions = document.getElementById('dest-suggestions');
-  const searchBtn = document.getElementById('search-btn');
+  const balanceBadge = document.getElementById('balance-badge');
+  const balanceWarning = document.getElementById('balance-warning');
+  const searchBtn = document.getElementById('search-btn'); // Renamed from btn for clarity, but keeping logic
   const resultsContainer = document.getElementById('results-container');
-  const gpsBtn = document.getElementById('gps-btn');
-  const mapPickerBtn = document.getElementById('map-picker-btn');
   const langToggle = document.getElementById('lang-toggle');
-  const wrapper = document.getElementById('route-calculator-wrapper');
 
-  // UI State Elements
-  const searchCard = document.getElementById('search-card');
-  const searchFormContainer = document.getElementById('search-form-container');
-  const searchSummary = document.getElementById('search-summary');
-  const cardHeader = document.getElementById('card-header');
-  const resetSearchBtn = document.getElementById('reset-search-btn');
-  const summaryOrigin = document.getElementById('summary-origin');
-  const summaryDest = document.getElementById('summary-dest');
-  const favoritesSection = document.getElementById('favorites-section');
-  const favoritesList = document.getElementById('favorites-list');
-
-  // Helper: Escape HTML
-  function escapeHtml(unsafe) {
-    if (unsafe === null || unsafe === undefined) return '';
-    return String(unsafe)
+  // Helpers
+  const escapeHtml = (unsafe) => {
+    return unsafe
          .replace(/&/g, "&amp;")
          .replace(/</g, "&lt;")
          .replace(/>/g, "&gt;")
@@ -175,270 +229,217 @@ const QUICK_ZONES = [
          .replace(/'/g, "&#039;");
   }
 
+  // State
+  let balance = 0;
+  let hasBalance = false;
+  let wasmLoaded = false;
+  let find_route, validate_operator_funds, load_stops_data, load_catalog;
+  let finder; // Global Coordinate Finder instance
+
+  const btn = document.getElementById('search-btn');
+
   // --- Initialization ---
 
-  async function initWasm() {
+  async function updateBalance() {
     try {
-      await init();
+        const stored = localStorage.getItem('user_balance');
+        if (stored !== null) {
+            balance = parseFloat(stored);
+        } else {
+            balance = 180.0;
+            localStorage.setItem('user_balance', balance.toString());
+            console.log("Balance initialized to 180.0");
+        }
+    } catch (e) {
+        console.warn("Storage Error, using default balance:", e);
+        balance = 180.0;
+    }
+
+    if (wasmLoaded && typeof validate_operator_funds === 'function') {
+        try {
+            hasBalance = validate_operator_funds(balance);
+        } catch (e) {
+            console.warn("WASM validation failed, fallback to strict check", e);
+            hasBalance = balance >= 180.0;
+        }
+    } else {
+        hasBalance = balance >= 180.0;
+    }
+
+    if (balanceBadge) {
+        balanceBadge.textContent = `$${balance.toFixed(0)}`;
+        if (hasBalance) {
+            balanceBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-green-100 text-green-700 font-mono";
+        } else {
+            balanceBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-red-100 text-red-700 font-mono";
+        }
+    }
+
+    if (balanceWarning) {
+      balanceWarning.classList.toggle('hidden', hasBalance);
+    }
+
+    if (btn) btn.disabled = !hasBalance;
+  }
+
+  function updateUI() {
+    if (langToggle) langToggle.textContent = currentLang === 'es' ? 'ES' : 'EN';
+  }
+
+  async function start() {
+    try {
+      console.log("Initializing WASM...");
+      const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
+      const module = await import(/* @vite-ignore */ wasmPath);
+      await module.default();
+      find_route = module.find_route;
+      validate_operator_funds = module.validate_operator_funds;
+      load_stops_data = module.load_stops_data;
+      load_catalog = module.load_catalog;
+
       console.log("WASM initialized.");
       wasmLoaded = true;
 
-      // Load aggregated routes from API
-      if (typeof load_catalog === 'function') {
-        try {
-          console.log("📦 Loading route catalog...");
-          // Use the aggregated endpoint we created
-          const response = await fetch('/api/master_routes.json');
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          // ✅ SIMÓN: Bypass redundant parse-stringify cycle by fetching text
-          console.time("WASM Load");
-          const catalogString = await response.text();
-
-          await load_catalog(catalogString);
-          console.timeEnd("WASM Load");
-
-          // Parse for JS-side autocomplete only
-          const jsonData = JSON.parse(catalogString);
-          if (jsonData.rutas) {
-             routeDataCache = jsonData.rutas;
-          }
-          catalogLoaded = true;
-          console.log("✅ Catalog loaded into WASM:", jsonData.rutas?.length || 0, "routes");
-          const btn = document.getElementById("search-btn");
-          const icon = document.getElementById("search-icon");
-          const txt = document.getElementById("search-btn-text");
-          if (btn) btn.disabled = false;
-          if (icon) { icon.textContent = "search"; icon.classList.remove("animate-spin"); }
-          if (txt) { txt.setAttribute("data-i18n", "calc.btn"); txt.textContent = ui[currentLang]["calc.btn"]; }
-
-          // Enable Search
-          if (searchBtn) searchBtn.disabled = false;
-
-        } catch (catalogError) {
-          console.error("❌ Failed to load catalog:", catalogError);
-          catalogLoaded = false;
-          renderError("Error loading route data. Please refresh.");
-        }
-      }
-
     } catch (e) {
-      console.error("Failed to init WASM:", e);
+      console.error("WASM Load Critical Error:", e);
       renderWasmError();
+    } finally {
+      await updateBalance();
+      updateUI();
+
+      // Initialize shared coordinates store and Finder
+      try {
+        await coordinatesStore.init();
+        const db = coordinatesStore.getDB();
+        
+        // SYNC WITH WASM
+        if (wasmLoaded && typeof load_stops_data === 'function') {
+             console.log(`Sending ${Object.keys(db).length} stops to WASM`);
+             load_stops_data(db);
+             console.log("✅ Coordinates synced to WASM");
+        }
+
+        // Load Catalog from API (New Feature from Main)
+        try {
+            const response = await fetch('/data/master_routes.json'); // Use static file from sync
+            if (response.ok) {
+                const catalogData = await response.json();
+                 if (typeof load_catalog === 'function' && catalogData) {
+                     const catalogString = JSON.stringify(catalogData);
+                     load_catalog(catalogString);
+                     console.log(`📦 Catalog Loaded: ${catalogData.rutas?.length || 0} routes.`);
+                 }
+            }
+        } catch (catErr) {
+            console.warn("Catalog load warning:", catErr);
+        }
+
+        finder = new CoordinateFinder(db);
+        console.log("Coordinate Finder Ready");
+        
+        // Setup Autocomplete
+        setupAutocomplete('origin-input');
+        setupAutocomplete('destination-input');
+
+      } catch (e) {
+        console.warn("GPS/Finder features might be unavailable", e);
+      }
+      initGPSLogic();
     }
   }
 
-  // Start init
-  initWasm();
-  renderFavorites();
+  function setupAutocomplete(inputId) {
+      const input = document.getElementById(inputId);
+      const container = input?.parentElement; // Input wrapper
+      if (!input || !container) return;
 
-  // Listen for favorites updates
-  window.addEventListener('FAVORITES_UPDATED', () => renderFavorites());
+      // Create Dropdown Element
+      const list = document.createElement('ul');
+      list.className = 'absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-xl z-50 mt-1 max-h-60 overflow-y-auto hidden divide-y divide-slate-50';
+      list.id = `${inputId}-suggestions`;
+      container.appendChild(list);
 
-  // --- Autocomplete Logic ---
-  function setupAutocomplete(input, suggestionList) {
-      if (!input || !suggestionList) return;
-
+      // Input Handler
       input.addEventListener('input', (e) => {
-          const query = e.target.value.toLowerCase();
-          if (query.length < 2) {
-              suggestionList.classList.add('hidden');
+          const val = e.target.value;
+          if (!finder || val.length < 2) {
+              list.classList.add('hidden');
               return;
           }
 
-          // Search in route names and stops
-          const suggestions = new Set();
-          routeDataCache.forEach(route => {
-              // Match route name
-              if (route.nombre && route.nombre.toLowerCase().includes(query)) {
-                  suggestions.add({ type: 'route', text: route.nombre });
-              }
-              // Match stops
-              if (route.paradas) {
-                  route.paradas.forEach(stop => {
-                      const stopName = stop.nombre || stop.parada;
-                      if (stopName && stopName.toLowerCase().includes(query)) {
-                           suggestions.add({ type: 'stop', text: stopName });
-                      }
-                  });
-              }
-          });
-
-          // Limit results
-          const results = Array.from(suggestions).slice(0, 5);
-
+          const results = finder.search(val, 6); // Limit to 6 suggestions
+          
           if (results.length > 0) {
-              suggestionList.innerHTML = results.map(s => `
-                  <li class="suggestion-item" data-val="${escapeHtml(s.text)}">
-                    <span class="material-symbols-rounded icon-sm text-slate-400">
-                        ${s.type === 'route' ? 'directions_bus' : 'location_on'}
-                    </span>
-                    ${escapeHtml(s.text)}
-                  </li>
-              `).join('');
-              suggestionList.classList.remove('hidden');
+              list.innerHTML = '';
+              results.forEach(res => {
+                  const li = document.createElement('li');
+                  li.className = 'px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors flex items-center gap-3 group';
+                  li.innerHTML = `
+                      <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-500 transition-colors">
+                          <span class="material-symbols-rounded text-base">location_on</span>
+                      </div>
+                      <div class="flex-1">
+                          <p class="text-sm font-bold text-slate-700 group-hover:text-primary-700">${escapeHtml(res.name)}</p>
+                          <p class="text-[10px] text-slate-500 font-mono">COORD: ${res.coords[0].toFixed(4)}, ${res.coords[1].toFixed(4)}</p>
+                      </div>
+                  `;
+                  li.addEventListener('click', () => {
+                      input.value = res.name;
+                      list.classList.add('hidden');
+                      // Trigger any blur/update logic
+                      input.dispatchEvent(new Event('blur'));
+                  });
+                  list.appendChild(li);
+              });
+              list.classList.remove('hidden');
           } else {
-              suggestionList.classList.add('hidden');
+              list.classList.add('hidden');
           }
       });
 
-      // Selection
-      suggestionList.addEventListener('click', (e) => {
-          const item = e.target.closest('.suggestion-item');
-          if (item) {
-              input.value = item.dataset.val;
-              suggestionList.classList.add('hidden');
-          }
-      });
-
-      // Hide on blur
-      document.addEventListener('click', (e) => {
-          if (!input.contains(e.target) && !suggestionList.contains(e.target)) {
-              suggestionList.classList.add('hidden');
-          }
+      // Hide on blur (delayed to allow click)
+      input.addEventListener('blur', () => {
+          setTimeout(() => list.classList.add('hidden'), 200);
       });
   }
 
-  setupAutocomplete(originInput, originSuggestions);
-  setupAutocomplete(destInput, destSuggestions);
+  function initGPSLogic() {
+      const gpsBtn = document.getElementById('gps-btn');
+      if (!gpsBtn) return;
 
-  // Quick Zone Buttons
-  document.querySelectorAll('.zone-chip').forEach(btn => {
-      btn.addEventListener('click', () => {
-          const zone = btn.dataset.zone;
-          if (destInput) {
-              destInput.value = zone;
-              // Trigger search animation or focus
-              destInput.focus();
-          }
-      });
-  });
+      gpsBtn.addEventListener('click', () => {
+         if (!navigator.geolocation) {
+             if (window.showToast) window.showToast(ui[currentLang]['error.no_gps'], 'error');
+             return;
+         }
 
-  // --- UI Logic ---
-
-  function renderFavorites() {
-    if (!favoritesList || !favoritesSection) return;
-
-    const favorites = favoritesStore.getFavorites();
-    if (favorites.length === 0) {
-      favoritesSection.classList.add('hidden');
-      return;
-    }
-
-    favoritesSection.classList.remove('hidden');
-    favoritesList.innerHTML = favorites.map(fav => `
-      <a href="/ruta/${fav.id}" class="favorite-item">
-        <span class="material-symbols-rounded icon-sm icon-primary">directions_bus</span>
-        <span class="fav-name">${escapeHtml(fav.nombre)}</span>
-      </a>
-    `).join('');
-  }
-
-  // Language Toggle
-  if (langToggle) {
-    langToggle.addEventListener('click', () => {
-      currentLang = currentLang === 'es' ? 'en' : 'es';
-      langToggle.textContent = currentLang.toUpperCase();
-      updateUIText();
-    });
-  }
-
-  function updateUIText() {
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-      const key = el.getAttribute('data-i18n');
-      if (ui[currentLang][key]) {
-        el.textContent = ui[currentLang][key];
-      }
-    });
-  }
-
-  // Search Logic
-  if (searchBtn) {
-    searchBtn.addEventListener('click', async () => {
-       if (!wasmLoaded || !catalogLoaded) {
-           renderError(ui[currentLang]['calc.offline_msg']);
-           return;
-       }
-
-       const origin = originInput.value.trim();
-       const dest = destInput.value.trim();
-
-       if (!origin || !dest) {
-           renderError("Please enter both origin and destination.");
-           return;
-       }
-
-       setLoading(true);
-
-       // Simulate network/calc delay for UX
-       await new Promise(r => setTimeout(r, 600));
-
-       try {
-           const results = find_route(origin, dest);
-           renderResults(results);
-           transitionToSummary(origin, dest);
-
-           if (results && results.length > 0) {
-              const bestJourney = results[0];
-               window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', {
-                 detail: {
-                   journey: bestJourney,
-                   userLocation: userLocation
+         gpsBtn.classList.add('animate-pulse', 'text-primary-500');
+         navigator.geolocation.getCurrentPosition(
+             (pos) => {
+                 const { latitude, longitude } = pos.coords;
+                 const originInput = document.getElementById('origin-input');
+                 if (originInput && finder) {
+                     // Reverse Geocode or Find Nearest Stop
+                     const nearest = coordinatesStore.findNearest(latitude, longitude);
+                     if (nearest) {
+                         originInput.value = nearest;
+                         if (window.showToast) window.showToast(`GPS: ${nearest}`, 'success');
+                     } else {
+                         originInput.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                     }
                  }
-               }));
-           }
-
-       } catch (e) {
-           console.error("Search error:", e);
-           renderError("Error calculating route. Try different stops.");
-       } finally {
-           setLoading(false);
-       }
-    });
-  }
-
-  // View State Transition (Search -> Summary)
-  function transitionToSummary(origin, dest) {
-      if (cardHeader) {
-          cardHeader.style.height = '0';
-          cardHeader.style.opacity = '0';
-          cardHeader.style.overflow = 'hidden';
-          cardHeader.style.padding = '0';
-      }
-      if (searchFormContainer) searchFormContainer.style.display = 'none';
-      if (searchSummary) {
-          searchSummary.classList.remove('hidden');
-          if (summaryOrigin) summaryOrigin.textContent = origin;
-          if (summaryDest) summaryDest.textContent = dest;
-      }
-      if (searchCard) searchCard.classList.add('collapsed');
-
-      // Notify Home to hide Hero
-      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_ACTIVE' }));
-  }
-
-  // Reset Logic (Summary -> Search)
-  if (resetSearchBtn) {
-      resetSearchBtn.addEventListener('click', () => {
-          if (cardHeader) {
-              cardHeader.style.height = '';
-              cardHeader.style.opacity = '';
-              cardHeader.style.overflow = '';
-              cardHeader.style.padding = '';
-          }
-          if (searchFormContainer) searchFormContainer.style.display = 'block';
-          if (searchSummary) searchSummary.classList.add('hidden');
-          if (resultsContainer) resultsContainer.innerHTML = '';
-          if (searchCard) searchCard.classList.remove('collapsed');
-
-          // Notify Home to show Hero
-          window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'HOME' }));
+                 gpsBtn.classList.remove('animate-pulse');
+             },
+             (err) => {
+                 console.error(err);
+                 gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
+                 if (window.showToast) window.showToast("GPS Error", 'error');
+             }
+         );
       });
   }
 
+<<<<<<< HEAD
   function setLoading(isLoading) {
       if (!searchBtn) return;
       if (isLoading) {
@@ -493,56 +494,58 @@ const QUICK_ZONES = [
           resultsContainer.appendChild(card);
       });
   }
+=======
+  // --- Rendering Functions ---
+>>>>>>> feat/integrate-saturmex-fix-balance-6414667202118047842
 
   function getTransportLabel(type) {
-      return type.replace('_', ' ');
+      if (!type) return 'Bus';
+      if (type.includes('ADO')) return 'ADO';
+      if (type.includes('Combi') || type.includes('Van')) return 'Combi';
+      return 'Bus';
   }
 
-  function renderCardHtml(journey, isBest = false) {
+  function renderBestResultHtml(journey, isBest = false) {
         const route = journey.legs[0];
-        const badgesHtml = (route.social_alerts || []).map(b => `<span class="badge-accent">${escapeHtml(b)}</span>`).join('');
+        const badgesHtml = route.badges ? route.badges.map(b => `<span class="badge-primary" style="font-size: 0.5625rem;">${escapeHtml(b)}</span>`).join('') : '';
 
-        let stopsPreview = `${escapeHtml(route.origin_hub || '...')} → ${escapeHtml(route.dest_hub || '...')}`;
+        let stopsPreview = `${escapeHtml(route.origin_hub)} → ${escapeHtml(route.dest_hub)}`;
         if (route.stops && route.stops.length > 0) {
-             stopsPreview = `${escapeHtml(route.stops[0].nombre)} → ${escapeHtml(route.stops[route.stops.length - 1].nombre)}`;
+             stopsPreview = `${escapeHtml(route.stops[0])} → ${escapeHtml(route.stops[route.stops.length - 1])}`;
         }
 
         return `
-          <div class="glass-card result-card ${isBest ? 'best' : ''} animate-slide-up">
-            ${isBest ? `<div class="best-badge">${ui[currentLang]['calc.best']}</div>` : ''}
-
-            <div class="result-row top">
-              <div class="result-info">
-                <span class="badge badge-primary result-badge">
-                  ${escapeHtml(getTransportLabel(route.tipo || route.transport_type))}
+          <div class="glass-card active:scale-[0.98] transition-all duration-300 mb-4 animate-slide-up relative overflow-hidden group hover:-translate-y-0.5 ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
+            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${ui[currentLang]['calc.best']}</div>` : ''}
+            <div class="flex justify-between items-start">
+              <div class="flex-1 min-w-0 pr-2">
+                <span class="badge-primary mb-2">
+                  ${escapeHtml(getTransportLabel(route.transport_type))}
                 </span>
-                <h3 class="result-title">${escapeHtml(route.nombre || route.name)}</h3>
+                <h3 class="font-display font-black text-base leading-tight tracking-tight group-hover:text-primary-500 transition-colors truncate" style="color: var(--text-primary);">${escapeHtml(route.name)}</h3>
 
-                <div class="result-meta">
-                    ${route.empresa ? `<div class="meta-item"><span class="material-symbols-rounded icon-sm">directions_bus</span> <span>${escapeHtml(route.empresa)}</span></div>` : ''}
-                    ${route.frecuencia_minutos ? `<div class="meta-item"><span class="material-symbols-rounded icon-sm">schedule</span> <span>${escapeHtml(route.frecuencia_minutos)} min</span></div>` : ''}
+                <div class="mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5 text-xxs font-bold uppercase tracking-widest" style="color: var(--text-tertiary);">
+                    ${route.operator ? `<div class="flex items-center gap-1"><span class="material-symbols-rounded text-xs" style="font-variation-settings: 'FILL' 1;">directions_bus</span> <span>${escapeHtml(route.operator)}</span></div>` : ''}
+                    ${route.frequency ? `<div class="flex items-center gap-1"><span class="material-symbols-rounded text-xs" style="font-variation-settings: 'FILL' 1;">schedule</span> <span>${escapeHtml(route.frequency)}</span></div>` : ''}
                 </div>
 
-                <div class="result-badges">
+                <div class="flex gap-1.5 mt-3 flex-wrap">
                    ${badgesHtml}
                 </div>
               </div>
-
-              <div class="result-price-column">
+              <div class="text-right shrink-0 flex flex-col items-end pl-3" style="border-left: 1px solid var(--border-light);">
                 <span class="price-tag">
                     $${journey.total_price.toFixed(2)}
                 </span>
-                <p class="duration-text">${escapeHtml(route.duration || 'Calculando...')}</p>
+                <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration)}</p>
 
-                <button class="btn-primary btn-sm view-map-btn">
-                    <span class="material-symbols-rounded icon-sm">map</span> ${ui[currentLang]['calc.view_map']}
+                <button class="btn-primary btn-sm mt-3 whitespace-nowrap view-map-btn" data-journey='${JSON.stringify(journey).replace(/'/g, "&#39;")}'>
+                    <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> ${ui[currentLang]['calc.view_map']}
                 </button>
               </div>
             </div>
-
-            <div class="result-footer">
-                <span class="material-symbols-rounded icon-sm">near_me</span>
-                <span class="footer-text">${stopsPreview}</span>
+            <div class="mt-3 pt-3 text-xxs font-bold flex items-center gap-2 uppercase tracking-widest" style="border-top: 1px solid var(--border-light); color: var(--text-tertiary);">
+                <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">near_me</span> <span class="truncate flex-1">${stopsPreview}</span>
             </div>
           </div>
         `;
@@ -554,60 +557,61 @@ const QUICK_ZONES = [
       const transferPoint = journey.transfer_point;
 
       return `
-          <div class="glass-card result-card ${isBest ? 'best' : ''} animate-slide-up">
-            <div class="transfer-badge ${isBest ? 'offset-best' : ''}">
+          <div class="glass-card active:scale-[0.98] transition-all mb-3 animate-slide-up relative overflow-hidden group ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
+            <div class="absolute top-0 right-0 bg-accent-500 text-white px-3 py-1 rounded-bl-xl text-xxs font-black uppercase tracking-widest ${isBest ? 'mr-24' : ''}">
                ${ui[currentLang]['calc.transfer']}
             </div>
-            ${isBest ? `<div class="best-badge">${ui[currentLang]['calc.best']}</div>` : ''}
+            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${ui[currentLang]['calc.best']}</div>` : ''}
 
-            <div class="transfer-legs">
+            <div class="flex flex-col gap-3 mt-5">
                 <!-- Leg 1 -->
-                <div class="leg-row">
-                    <div class="timeline-col">
-                        <span class="dot-start"></span>
-                        <div class="line"></div>
+                <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0 w-8 text-center">
+                        <span class="w-3 h-3 rounded-full bg-success-500 border-2 border-white dark:border-slate-900 shadow-md mx-auto block"></span>
+                        <div class="h-6 w-0.5 mx-auto my-0.5 rounded-full" style="background: var(--border-light);"></div>
                     </div>
-                    <div class="leg-info">
-                         <span class="badge-primary small">
-                            ${escapeHtml(getTransportLabel(leg1.tipo || leg1.transport_type))}
+                    <div>
+                         <span class="badge-primary" style="font-size: 0.5rem;">
+                            ${escapeHtml(getTransportLabel(leg1.transport_type))}
                          </span>
-                         <h4 class="leg-title">${escapeHtml(leg1.nombre || leg1.name)}</h4>
+                         <h4 class="font-display font-black text-sm leading-tight tracking-tight" style="color: var(--text-primary);">${escapeHtml(leg1.name)}</h4>
                     </div>
                 </div>
 
                 <!-- Transfer point -->
-                <div class="transfer-row">
-                    <div class="timeline-col center">
-                        <div class="dot-transfer"></div>
+                <div class="flex items-center gap-3 -mt-2">
+                    <div class="flex-shrink-0 w-8 text-center flex justify-center">
+                        <div class="w-2.5 h-2.5 rounded-full bg-accent-500 border-2 border-white dark:border-slate-900 shadow-md ring-2 ring-accent-500/20 animate-pulse"></div>
                     </div>
-                    <div class="chip small">
-                        <span class="material-symbols-rounded icon-xs">sync_alt</span>
-                        Cambio en <span class="highlight">${escapeHtml(transferPoint)}</span>
+                    <div class="chip text-xxs">
+                        <span class="material-symbols-rounded text-xs" style="font-variation-settings: 'FILL' 1;">sync_alt</span>
+                        Cambio en <span class="text-primary-500 font-black">${escapeHtml(transferPoint)}</span>
                     </div>
                 </div>
 
                 <!-- Leg 2 -->
-                <div class="leg-row">
-                    <div class="timeline-col">
-                        <div class="line"></div>
-                        <span class="dot-end"></span>
+                <div class="flex items-center gap-3 -mt-2">
+                    <div class="flex-shrink-0 w-8 text-center">
+                        <div class="h-6 w-0.5 mx-auto my-0.5 rounded-full" style="background: var(--border-light);"></div>
+                        <span class="w-3 h-3 rounded-full bg-danger-500 border-2 border-white dark:border-slate-900 shadow-md mx-auto block"></span>
                     </div>
-                    <div class="leg-info">
-                         <span class="badge-accent small">
-                            ${escapeHtml(getTransportLabel(leg2.tipo || leg2.transport_type))}
+                    <div>
+                         <span class="badge-accent" style="font-size: 0.5rem;">
+                            ${escapeHtml(getTransportLabel(leg2.transport_type))}
                          </span>
-                         <h4 class="leg-title">${escapeHtml(leg2.nombre || leg2.name)}</h4>
+                         <h4 class="font-display font-black text-sm leading-tight tracking-tight" style="color: var(--text-primary);">${escapeHtml(leg2.name)}</h4>
                     </div>
                 </div>
             </div>
 
-            <div class="result-footer-split">
+            <div class="mt-4 pt-3 flex justify-between items-center" style="border-top: 1px solid var(--border-light);">
                 <span class="price-tag">
                     $${journey.total_price.toFixed(2)}
                 </span>
 
-                <button class="btn-primary btn-sm view-map-btn">
-                    <span class="material-symbols-rounded icon-sm">map</span> ${ui[currentLang]['calc.view_route']}
+                <button class="btn-primary btn-sm view-map-btn"
+                    data-journey='${JSON.stringify(journey).replace(/'/g, "&#39;")}'>
+                    <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> ${ui[currentLang]['calc.view_route']}
                 </button>
             </div>
           </div>
@@ -617,10 +621,13 @@ const QUICK_ZONES = [
   function renderWasmError() {
     if (!resultsContainer) return;
     resultsContainer.innerHTML = `
-        <div class="glass-card result-card centered animate-slide-up">
-            <span class="material-symbols-rounded icon-xl error-color">cloud_off</span>
-            <h3 class="result-title">${ui[currentLang]['calc.offline']}</h3>
-            <p class="error-text">${ui[currentLang]['calc.offline_msg']}</p>
+        <div class="glass-card text-center animate-slide-up">
+            <span class="material-symbols-rounded text-4xl mb-3 block" style="color: var(--text-tertiary); font-variation-settings: 'FILL' 1;">cloud_off</span>
+            <h3 class="font-display font-black text-base mb-2" style="color: var(--text-primary);">${ui[currentLang]['calc.offline']}</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">${ui[currentLang]['calc.offline_msg']}</p>
+            <a href="/rutas" class="btn-secondary btn-sm inline-flex items-center gap-2">
+               <span class="material-symbols-rounded text-sm">list_alt</span> ${ui[currentLang]['calc.view_all']}
+            </a>
         </div>
     `;
   }
@@ -628,551 +635,105 @@ const QUICK_ZONES = [
   function renderError(msg) {
     if (!resultsContainer) return;
     resultsContainer.innerHTML = `
-        <div class="glass-card error-card animate-slide-up">
-            <span class="material-symbols-rounded icon-lg error-color">error</span>
-            <span class="error-msg">${escapeHtml(msg)}</span>
+        <div class="glass-card flex items-center gap-3 animate-slide-up" style="border-left: 3px solid var(--danger);">
+            <span class="material-symbols-rounded text-danger-500 text-lg" style="font-variation-settings: 'FILL' 1;">error</span>
+            <span class="font-bold text-sm" style="color: var(--danger);">${escapeHtml(msg)}</span>
         </div>
     `;
     if (window.showToast) window.showToast(msg, 'error');
   }
 
+  // --- Search Logic ---
+
+  btn?.addEventListener('click', async () => {
+      const origin = document.getElementById('origin-input').value;
+      const dest = document.getElementById('destination-input').value;
+      const tourist = document.getElementById('tourist-checkbox')?.checked || false;
+      const seats = parseInt(document.getElementById('seats-input')?.value || '1');
+
+      if (!origin || !dest) {
+          renderError(ui[currentLang]['calc.error.empty']);
+          return;
+      }
+
+      const spinner = document.getElementById('btn-spinner');
+      const btnText = document.getElementById('btn-text');
+
+      btn.disabled = true;
+      spinner?.classList.remove('hidden');
+      btnText?.classList.add('hidden');
+      resultsContainer.innerHTML = '';
+      document.getElementById('best-result-area').innerHTML = '';
+      document.getElementById('results-info').classList.add('hidden');
+
+      try {
+          if (!wasmLoaded) throw new Error("WASM not ready");
+
+          console.log(`🔍 Searching: ${origin} -> ${dest}`);
+          const results = find_route(origin, dest);
+
+          // MOCK: If empty, try one fallback for demo if debugging
+          // if (results.length === 0) ...
+
+          if (results.length === 0) {
+              renderError(ui[currentLang]['calc.error.no_route']);
+          } else {
+             // Sort by price/time/direct
+             // Assuming WASM returns somewhat sorted or we sort here
+             // Prefer direct
+             results.sort((a, b) => {
+                 if (a.type === 'Direct' && b.type !== 'Direct') return -1;
+                 if (b.type === 'Direct' && a.type !== 'Direct') return 1;
+                 return a.total_price - b.total_price;
+             });
+
+             const best = results[0];
+             const others = results.slice(1);
+
+             document.getElementById('results-count-label').textContent = `${results.length} OPCIONES`;
+             document.getElementById('results-info').classList.remove('hidden');
+
+             const bestArea = document.getElementById('best-result-area');
+
+             if (best.type === 'Transfer') {
+                 bestArea.innerHTML = renderTransferCardHtml(best, true);
+             } else {
+                 bestArea.innerHTML = renderBestResultHtml(best, true);
+             }
+
+             if (others.length > 0) {
+                 others.forEach(r => {
+                     const div = document.createElement('div');
+                     div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r);
+                     resultsContainer.appendChild(div.firstElementChild);
+                 });
+             }
+
+             // Track search
+             if (window.analytics) {
+                 window.analytics.track('search_route', { origin, dest, results: results.length });
+             }
+          }
+
+      } catch (e) {
+          console.error(e);
+          renderError("Error calculating route");
+      } finally {
+          btn.disabled = false;
+          spinner?.classList.add('hidden');
+          btnText?.classList.remove('hidden');
+      }
+  });
+
+  document.addEventListener('astro:page-load', start);
+
 </script>
 
 <style>
-  /* ══════════════════════════════════════
-     Route Calculator Styles (CSS5)
-     ══════════════════════════════════════ */
-
-  .calculator-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-  }
-
-  /* ── Search Card ── */
-  .search-card {
-    position: relative;
-    overflow: visible; /* For Suggestions */
-    padding: 0 !important;
-    transition: all 0.5s ease;
-    background: var(--surface-card);
-    backdrop-filter: blur(20px);
-  }
-
-  .search-card.collapsed {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    overflow: hidden;
-  }
-
-  /* ── Header ── */
-  .card-header {
-    padding: var(--space-md);
-    position: relative;
-    min-height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-bottom: 1px solid var(--border-light);
-    transition: all 0.3s ease;
-  }
-
-  .header-controls {
-    position: absolute;
-    right: var(--space-md);
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-  }
-
-  .balance-container {
-    display: none;
-  }
-  @media (min-width: 640px) {
-    .balance-container { display: block; }
-  }
-
-  .lang-toggle {
-    font-size: 0.625rem;
-    font-weight: 700;
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--radius-sm);
-    text-transform: uppercase;
-    transition: background-color 0.2s;
-    background: var(--surface-bg);
-    border: 1px solid var(--border-light);
-    color: var(--text-secondary);
-    cursor: pointer;
-  }
-  .lang-toggle:hover {
-    background: var(--border-light);
-  }
-
-  /* ── Summary Bar ── */
-  .summary-bar {
-    padding: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    animation: fadeIn 0.3s ease;
-    z-index: 20;
-    position: relative;
-    background: var(--surface-card);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border-light);
-  }
-
-  .summary-bar.hidden {
-    display: none;
-  }
-
-  .summary-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    overflow: hidden;
-  }
-
-  .summary-route {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-
-  .summary-point {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-weight: 700;
-    color: var(--icon-primary);
-    overflow: hidden;
-  }
-
-  .summary-text {
-    font-size: 0.75rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .connector {
-    height: 0.75rem;
-    border-left: 1px solid var(--border-light);
-    margin-left: 0.25rem;
-    margin-top: 0.125rem;
-    margin-bottom: 0.125rem;
-  }
-
-  .dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 9999px;
-    flex-shrink: 0;
-  }
-  .dot.origin { background-color: var(--color-success); }
-  .dot.dest { background-color: var(--color-danger); }
-
-  .btn-edit {
-    font-size: 0.625rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-primary);
-    background: var(--color-primary-light);
-    padding: 0.375rem 0.75rem;
-    border-radius: var(--radius-lg);
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s;
-    margin-left: 0.5rem;
-    flex-shrink: 0;
-  }
-  .btn-edit:hover { filter: brightness(0.95); }
-
-  /* ── Search Form ── */
-  .search-form {
-    padding: var(--space-xl);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-    transition: all 0.5s ease;
-  }
-
-  .inputs-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-  }
-
-  .input-wrapper {
-    position: relative;
-    z-index: 10;
-  }
-
-  /* Autocomplete Suggestions */
-  .suggestions-list {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--surface-elevated);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-md);
-    margin-top: 4px;
-    padding: 4px;
-    list-style: none;
-    z-index: 100;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  .suggestions-list.hidden { display: none; }
-
-  .suggestion-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    font-size: 0.875rem;
-    color: var(--text-primary);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .suggestion-item:hover {
-    background: var(--surface-bg);
-  }
-
-  /* Quick Zones */
-  .quick-zones {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: -0.5rem;
-  }
-  .zone-chip {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    background: var(--surface-bg);
-    border: 1px solid var(--border-light);
-    color: var(--text-secondary);
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.375rem 0.75rem;
-    border-radius: 9999px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .zone-chip:hover {
-    background: var(--primary-light);
-    color: var(--color-primary);
-    border-color: var(--color-primary-light);
-  }
-
-  /* Action Buttons inside Input */
-  .action-btn {
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 2rem;
-    height: 2rem;
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: transparent;
-    color: var(--text-tertiary);
-  }
-
-  .action-btn:hover {
-    background: var(--surface-bg);
-    color: var(--color-primary);
-  }
-
-  .gps-btn:hover { color: var(--color-accent); }
-  .map-btn:hover { color: var(--color-success); }
-
-  /* Settings Row */
-  .settings-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--space-md);
-  }
-
-  .search-btn {
-    width: 100%;
-    font-size: 1rem;
-    padding: 0.875rem;
-  }
-
-  /* ── Favorites ── */
-  .favorites-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-  }
-
-  .favorite-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    background: var(--surface-elevated);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-lg);
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-  .favorite-item:hover {
-    border-color: var(--color-primary);
-    transform: translateY(-2px);
-  }
-
-  .fav-name {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--icon-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .icon-primary { color: var(--color-primary); }
-
-  /* ── Result Cards ── */
-  /* ── Results Container ── */
-  .results-container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-  }
-
-  .result-card {
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-  .result-card:active { transform: scale(0.98); }
-  .result-card:hover { transform: translateY(-2px); }
-
-  .result-card.best {
-    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.3);
-  }
-
-  .best-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: var(--color-primary);
-    color: white;
-    font-size: 0.625rem;
-    font-weight: 900;
-    padding: 0.25rem 0.75rem;
-    border-bottom-left-radius: var(--radius-xl);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    z-index: 10;
-  }
-
-  .transfer-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: var(--color-accent);
-    color: white;
-    font-size: 0.625rem;
-    font-weight: 900;
-    padding: 0.25rem 0.75rem;
-    border-bottom-left-radius: var(--radius-xl);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .transfer-badge.offset-best {
-    margin-right: 6rem; /* Make room for best badge */
-  }
-
-  .result-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-  .result-row.top {
-    margin-bottom: 0.5rem;
-  }
-
-  .result-info {
-    flex: 1;
-    min-width: 0;
-    padding-right: var(--space-sm);
-  }
-
-  .result-title {
-    font-size: 1rem;
-    font-weight: 900;
-    line-height: 1.2;
-    color: var(--icon-primary);
-    margin: 0.5rem 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .group:hover .result-title { color: var(--color-primary); }
-
-  .result-meta {
-    margin-top: 0.625rem;
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: 0.75rem;
-    row-gap: 0.375rem;
-    font-size: 0.625rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-tertiary);
-  }
-  .meta-item { display: flex; align-items: center; gap: 0.25rem; }
-
-  .result-badges {
-    display: flex;
-    gap: 0.375rem;
-    margin-top: 0.75rem;
-    flex-wrap: wrap;
-  }
-
-  .result-price-column {
-    text-align: right;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    padding-left: 0.75rem;
-    border-left: 1px solid var(--border-light);
-  }
-
-  .duration-text {
-    font-size: 0.625rem;
-    font-weight: 900;
-    margin-top: 0.5rem;
-    text-transform: uppercase;
-    color: var(--text-tertiary);
-  }
-
-  .result-footer {
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--border-light);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--text-tertiary);
-  }
-
-  .footer-text {
-    font-size: 0.625rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex: 1;
-  }
-
-  /* ── Transfer Card Specifics ── */
-  .transfer-legs {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
-  }
-
-  .leg-row { display: flex; align-items: center; gap: 0.75rem; }
-  .transfer-row { display: flex; align-items: center; gap: 0.75rem; margin-top: -0.5rem; }
-
-  .timeline-col {
-    flex-shrink: 0;
-    width: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .timeline-col.center { justify-content: center; }
-
-  .line {
-    width: 2px;
-    height: 1.5rem;
-    background: var(--border-light);
-    border-radius: 9999px;
-    margin: 0.125rem 0;
-  }
-
-  .dot-start { width: 0.75rem; height: 0.75rem; background: var(--color-success); border-radius: 9999px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .dot-end { width: 0.75rem; height: 0.75rem; background: var(--color-danger); border-radius: 9999px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .dot-transfer { width: 0.625rem; height: 0.625rem; background: var(--color-accent); border-radius: 9999px; border: 2px solid white; box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2); }
-
-  .leg-info {
-    flex: 1;
-  }
-  .leg-title {
-    font-size: 0.875rem;
-    font-weight: 900;
-    color: var(--icon-primary);
-    margin: 0;
-    line-height: 1.2;
-  }
-
-  .highlight { color: var(--color-primary); font-weight: 900; }
-  .badge-primary.small { font-size: 0.5rem; padding: 0.1rem 0.3rem; margin-bottom: 0.1rem; }
-  .badge-accent.small { font-size: 0.5rem; padding: 0.1rem 0.3rem; margin-bottom: 0.1rem; }
-  .chip.small { padding: 0.25rem 0.5rem; font-size: 0.625rem; }
-
-  .result-footer-split {
-    margin-top: 1rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--border-light);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  /* ── Icons ── */
-  .icon { font-size: 1.25rem; font-variation-settings: 'FILL' 1; }
-  .icon-lg { font-size: 1.5rem; font-variation-settings: 'FILL' 1; }
-  .icon-xl { font-size: 2.25rem; font-variation-settings: 'FILL' 1; }
-  .icon-sm { font-size: 0.875rem; font-variation-settings: 'FILL' 1; }
-  .icon-xs { font-size: 0.75rem; font-variation-settings: 'FILL' 1; }
-
-  .error-card {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    border-left: 3px solid var(--color-coral);
-    animation: slideUp 0.3s ease;
-  }
-  .error-color { color: var(--color-coral); }
-  .error-msg { font-size: 0.875rem; font-weight: 700; color: var(--color-coral); }
-
-  .result-card.centered { text-align: center; display: flex; flex-direction: column; align-items: center; padding: var(--space-xl); }
-  .error-text { font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem; }
-
-  /* ── Animations ── */
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
-
-  /* ── Tooltips (GraffitiWarrior) ── */
+  /* GraffitiWarrior: CSS Anchor Positioning Tooltips */
   .graffiti-tooltip {
     position: absolute;
-    background: var(--color-ocean);
+    background: #1e293b; /* slate-800 */
     color: white;
     padding: 6px 12px;
     border-radius: 8px;
@@ -1183,27 +744,31 @@ const QUICK_ZONES = [
     transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), translate 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 50;
     white-space: nowrap;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   }
 
+  /* Position Logic */
   .graffiti-tooltip.bottom {
     top: anchor(bottom);
-    right: anchor(right);
+    right: anchor(right); /* Align right edges to prevent clipping */
     translate: 0 10px;
   }
 
+  .graffiti-tooltip.top {
+    bottom: anchor(top);
+    right: anchor(right); /* Align right edges to prevent clipping */
+    translate: 0 -10px;
+  }
+
+  /* Reveal Logic - Sibling Selector inside Slot */
   button:hover + .graffiti-tooltip,
   button:focus-visible + .graffiti-tooltip {
     opacity: 1;
-    translate: 0 6px;
+    translate: 0 6px; /* Offset for bottom */
   }
 
-  /* ── Utilities ── */
-  .hidden { display: none !important; }
-  .result-badge { margin-bottom: 0.5rem; }
-  .view-map-btn { margin-top: 0.75rem; }
-  /* ── Shared Animations ── */
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+  button:hover + .graffiti-tooltip.top,
+  button:focus-visible + .graffiti-tooltip.top {
+    translate: 0 -6px; /* Offset for top */
+  }
 </style>

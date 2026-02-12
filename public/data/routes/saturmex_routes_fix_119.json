@@ -1,0 +1,982 @@
+[
+  {
+    "id": "R2_94_VILLAS_OTOCH_001",
+    "nombre": "R-2-94 Villas Otoch (Eje Kabah - ZH)",
+    "tipo": "Bus_Urban",
+    "tarifa": 15,
+    "horario": {
+      "inicio": "05:00 - 22:30 (Guardia 03:00-05:00)"
+    },
+    "frecuencia_minutos": "10 min",
+    "paradas": [
+      {
+        "nombre": "OXXO Villas Otoch Paraíso",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Chedraui Lakin",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Av. Kabah",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Plaza Las Américas",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Entrada Zona Hotelera",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      },
+      {
+        "nombre": "Zona Hotelera",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 6
+      }
+    ]
+  },
+  {
+    "id": "CR_PTO_JUAREZ_001",
+    "nombre": "Combi Roja Puerto Juárez (Ultramar)",
+    "tipo": "Combi_Municipal",
+    "tarifa": 13,
+    "horario": {
+      "inicio": "05:30 - 00:30"
+    },
+    "frecuencia_minutos": "15 min",
+    "empresa": "Autocar",
+    "paradas": [
+      {
+        "nombre": "La Rehoyada",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "El Crucero",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Av. Tulum Norte",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Playa del Niño",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Muelle Ultramar",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      }
+    ]
+  },
+  {
+    "id": "R1_ZONA_HOTELERA_001",
+    "nombre": "R-1 Centro - Zona Hotelera",
+    "tipo": "Bus_Urban",
+    "tarifa": 15,
+    "horario": {
+      "inicio": "06:00 - 22:30"
+    },
+    "frecuencia_minutos": "10 min",
+    "empresa": "SEA / Maya Caribe",
+    "paradas": [
+      {
+        "nombre": "La Rehoyada",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "El Crucero",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Av. Tulum Sur",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "El Cebiche",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Zona Hotelera",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      },
+      {
+        "nombre": "Playa Delfines",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 6
+      }
+    ]
+  },
+  {
+    "id": "VAN_PLAYA_EXPRESS_001",
+    "nombre": "Playa Express (Cancún - Playa del Carmen)",
+    "tipo": "Van_Foranea",
+    "tarifa": 55,
+    "horario": {
+      "inicio": "05:00 - 00:00"
+    },
+    "frecuencia_minutos": "30 min",
+    "paradas": [
+      {
+        "nombre": "Terminal ADO Centro",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Entrada Aeropuerto",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Gasolinera López Portillo",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Puerto Morelos",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Playa Maroma",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      },
+      {
+        "nombre": "Playa del Carmen Centro",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 6
+      }
+    ]
+  },
+  {
+    "id": "R19_VILLAS_OTOCH_002",
+    "nombre": "R-19 Villas Otoch - Crucero",
+    "tipo": "Bus_Urban",
+    "tarifa": 13,
+    "paradas": [
+      {
+        "nombre": "Villas Otoch",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Hospital General",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Zona Industrial",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Mercado 28",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "El Crucero",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      }
+    ]
+  },
+  {
+    "id": "ADO_AEROPUERTO_001",
+    "nombre": "ADO Aeropuerto - Centro",
+    "tipo": "Bus_Urban",
+    "tarifa": 150,
+    "paradas": [
+      {
+        "nombre": "Aeropuerto T2",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Aeropuerto T3",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Aeropuerto T4",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Terminal ADO Centro",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      }
+    ]
+  },
+  {
+    "id": "R10_AEROPUERTO",
+    "nombre": "R-10 Las Américas - Aeropuerto (Trabajadores)",
+    "tipo": "Bus_Urban",
+    "tarifa": 15,
+    "horario": {
+      "inicio": "04:00-23:00"
+    },
+    "paradas": [
+      {
+        "nombre": "Plaza Las Américas",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Av. Nichupté",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Av. Kabah",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Av. La Luna",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Av. Las Torres",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      },
+      {
+        "nombre": "Av. Huayacán",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 6
+      },
+      {
+        "nombre": "Carr. Federal 307",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 7
+      },
+      {
+        "nombre": "UT Cancún",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 8
+      },
+      {
+        "nombre": "Aeropuerto T3",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 9
+      },
+      {
+        "nombre": "Aeropuerto T2",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 10
+      }
+    ]
+  },
+  {
+    "id": "R6_WALMART_001",
+    "nombre": "R-6 Santa Fe - Walmart A.Q. Roo",
+    "tipo": "Bus_Urban",
+    "tarifa": 12,
+    "horario": {
+      "inicio": "06:00 - 22:30"
+    },
+    "frecuencia_minutos": "10 min",
+    "empresa": "Turicun",
+    "paradas": [
+      {
+        "nombre": "Santa Fe",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Av. Kabah",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Multiplaza Kabah",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Walmart Andrés Quintana Roo",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "El Crucero",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      }
+    ]
+  },
+  {
+    "id": "R29_OUTLET_001",
+    "nombre": "R-29 ADO - Plaza Outlet",
+    "tipo": "Bus_Urban",
+    "tarifa": 12,
+    "horario": {
+      "inicio": "06:30 - 23:00"
+    },
+    "frecuencia_minutos": "12 min",
+    "empresa": "Autocar",
+    "paradas": [
+      {
+        "nombre": "Terminal ADO Centro",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Parque Las Palapas",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Mercado 28",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Plaza Outlet",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Av. Andrés Quintana Roo",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      },
+      {
+        "nombre": "Comalcalco",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 6
+      }
+    ]
+  },
+  {
+    "id": "R17_LAKIN_001",
+    "nombre": "R-17 Tierra Maya - Lak'in",
+    "tipo": "Bus_Urban",
+    "tarifa": 12,
+    "horario": {
+      "inicio": "05:00 - 23:30"
+    },
+    "frecuencia_minutos": "8 min",
+    "empresa": "Autocar",
+    "paradas": [
+      {
+        "nombre": "Tierra Maya",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Aurrera Lakin",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Chedraui Lakin",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Av. Miguel Hidalgo",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "El Crucero",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      }
+    ]
+  },
+  {
+    "id": "R21_AMERICAS_001",
+    "nombre": "R-21 Las Américas - Kabah",
+    "tipo": "Bus_Urban",
+    "tarifa": 12,
+    "horario": {
+      "inicio": "06:00 - 22:00"
+    },
+    "frecuencia_minutos": "15 min",
+    "empresa": "Maya Caribe",
+    "paradas": [
+      {
+        "nombre": "Plaza Las Américas",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Av. Tulum Sur",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Chedraui Ceviche",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Av. Kabah",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Villas del Mar",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      }
+    ]
+  },
+  {
+    "id": "R44_CENTRO_001",
+    "nombre": "R-44 Centro - Plaza Las Américas",
+    "tipo": "Bus_Urban",
+    "tarifa": 13,
+    "horario": {
+      "inicio": "05:45 - 23:00"
+    },
+    "frecuencia_minutos": "10 min",
+    "empresa": "Turicun",
+    "paradas": [
+      {
+        "nombre": "El Crucero",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Av. Tulum Norte",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Plaza Las Américas",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Av. Bonampak",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Puerto Cancun",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      },
+      {
+        "nombre": "Km 0",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 6
+      }
+    ]
+  },
+  {
+    "id": "R5_HEROES_001",
+    "nombre": "R-5 Los Héroes - Crucero",
+    "tipo": "Bus_Urban",
+    "tarifa": 12,
+    "horario": {
+      "inicio": "06:00 - 22:00"
+    },
+    "frecuencia_minutos": "12 min",
+    "empresa": "Autocar",
+    "paradas": [
+      {
+        "nombre": "Héroes",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Av. Chac Mool",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Tierra Maya",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Av. Kabah",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "El Crucero",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      }
+    ]
+  },
+  {
+    "id": "R27_TIERRA_MAYA_001",
+    "nombre": "R-27 Tierra Maya - Zona Hotelera",
+    "tipo": "Bus_Urban",
+    "tarifa": 15,
+    "horario": {
+      "inicio": "05:30 - 23:00"
+    },
+    "frecuencia_minutos": "10 min",
+    "empresa": "Turicun",
+    "paradas": [
+      {
+        "nombre": "Tierra Maya",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Av. Kabah",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Plaza Las Américas",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Entrada Zona Hotelera",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Zona Hotelera",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      },
+      {
+        "nombre": "Playa Delfines",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 6
+      }
+    ]
+  },
+  {
+    "id": "R237_RANCHO_001",
+    "nombre": "R-237 Rancho Viejo - Crucero",
+    "tipo": "Bus_Urban",
+    "tarifa": 12,
+    "horario": {
+      "inicio": "06:00 - 22:00"
+    },
+    "frecuencia_minutos": "15 min",
+    "empresa": "Maya Caribe",
+    "paradas": [
+      {
+        "nombre": "Rancho Viejo",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Arco Norte",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Prado Norte",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Av. Tulum Norte",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "El Crucero",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      }
+    ]
+  },
+  {
+    "id": "R71_RESIDENCIAL_001",
+    "nombre": "R-71 Polígono Sur - Centro",
+    "tipo": "Bus_Urban",
+    "tarifa": 13,
+    "horario": {
+      "inicio": "06:00 - 22:00"
+    },
+    "frecuencia_minutos": "20 min",
+    "empresa": "Turicun",
+    "paradas": [
+      {
+        "nombre": "Polígono Sur",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Jardines del Sur",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Av. Las Torres",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Plaza Las Américas",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Terminal ADO Centro",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      }
+    ]
+  },
+  {
+    "id": "R31_UNIVERSIDAD_001",
+    "nombre": "R-31 Universidad del Caribe - Centro",
+    "tipo": "Bus_Urban",
+    "tarifa": 12,
+    "horario": {
+      "inicio": "07:00 - 21:00"
+    },
+    "frecuencia_minutos": "30 min",
+    "empresa": "Autocar",
+    "paradas": [
+      {
+        "nombre": "Universidad del Caribe",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Av. Bonampak",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Puerto Cancun",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "El Crucero",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Mercado 28",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      }
+    ]
+  },
+  {
+    "id": "R30_REG103_001",
+    "nombre": "R-30 Región 103 - Zona Hotelera",
+    "tipo": "Bus_Urban",
+    "tarifa": 15,
+    "horario": {
+      "inicio": "05:00 - 23:00"
+    },
+    "frecuencia_minutos": "10 min",
+    "empresa": "Turicun",
+    "paradas": [
+      {
+        "nombre": "Región 103",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Av. Talleres",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Av. Tulum Norte",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "El Crucero",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Zona Hotelera",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      }
+    ]
+  },
+  {
+    "id": "R33_REG102_001",
+    "nombre": "R-33 Región 102 - Plaza Las Américas",
+    "tipo": "Bus_Urban",
+    "tarifa": 12,
+    "horario": {
+      "inicio": "06:00 - 22:00"
+    },
+    "frecuencia_minutos": "15 min",
+    "empresa": "Autocar",
+    "paradas": [
+      {
+        "nombre": "Región 102",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Av. Talleres",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Av. Kabah",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Plaza Las Américas",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      }
+    ]
+  },
+  {
+    "id": "ruta_1753802299281",
+    "nombre": "RUTA 81",
+    "tipo": "Bus_Urban",
+    "tarifa": 12,
+    "empresa": "Transporte Público",
+    "paradas": [
+      {
+        "nombre": "Parada RUTA 81 #1",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 1
+      },
+      {
+        "nombre": "Parada RUTA 81 #2",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 2
+      },
+      {
+        "nombre": "Parada RUTA 81 #3",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 3
+      },
+      {
+        "nombre": "Parada RUTA 81 #4",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 4
+      },
+      {
+        "nombre": "Parada RUTA 81 #5",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 5
+      },
+      {
+        "nombre": "Parada RUTA 81 #6",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 6
+      },
+      {
+        "nombre": "Parada RUTA 81 #7",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 7
+      },
+      {
+        "nombre": "Parada RUTA 81 #8",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 8
+      },
+      {
+        "nombre": "Parada RUTA 81 #9",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 9
+      },
+      {
+        "nombre": "Parada RUTA 81 #10",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 10
+      },
+      {
+        "nombre": "Parada RUTA 81 #11",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 11
+      },
+      {
+        "nombre": "Parada RUTA 81 #12",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 12
+      },
+      {
+        "nombre": "Parada RUTA 81 #13",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 13
+      },
+      {
+        "nombre": "Parada RUTA 81 #14",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 14
+      },
+      {
+        "nombre": "Parada RUTA 81 #15",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 15
+      },
+      {
+        "nombre": "Parada RUTA 81 #16",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 16
+      },
+      {
+        "nombre": "Parada RUTA 81 #17",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 17
+      },
+      {
+        "nombre": "Parada RUTA 81 #18",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 18
+      },
+      {
+        "nombre": "Parada RUTA 81 #19",
+        "lat": 21.1619,
+        "lng": -86.8515,
+        "orden": 19
+      }
+    ]
+  }
+]

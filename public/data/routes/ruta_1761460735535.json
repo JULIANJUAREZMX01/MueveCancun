@@ -1,0 +1,97 @@
+{
+  "id": "ruta_1761460735535",
+  "nombre": "RUTA 5",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1761460735535_s_1",
+      "nombre": "Parada RUTA 5 #1",
+      "lat": 21.143675664796877,
+      "lng": -86.91974580287933,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761460735535_s_2",
+      "nombre": "Parada RUTA 5 #2",
+      "lat": 21.144441164537714,
+      "lng": -86.90440356731415,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761460735535_s_3",
+      "nombre": "Parada RUTA 5 #3",
+      "lat": 21.17987496746965,
+      "lng": -86.8300849199295,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761460735535_s_4",
+      "nombre": "Parada RUTA 5 #4",
+      "lat": 21.17457769562208,
+      "lng": -86.83314800262453,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761460735535_s_5",
+      "nombre": "Parada RUTA 5 #5",
+      "lat": 21.173952414943177,
+      "lng": -86.82702720165253,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761460735535_s_6",
+      "nombre": "Parada RUTA 5 #6",
+      "lat": 21.169195192990603,
+      "lng": -86.82634592056276,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761460735535_s_7",
+      "nombre": "Parada RUTA 5 #7",
+      "lat": 21.164254975702406,
+      "lng": -86.82596125320606,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761460735535_s_8",
+      "nombre": "Parada RUTA 5 #8",
+      "lat": 21.157464060466523,
+      "lng": -86.82542324066162,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761460735535_s_9",
+      "nombre": "Parada RUTA 5 #9",
+      "lat": 21.150840187357275,
+      "lng": -86.82491898536684,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761460735535_s_10",
+      "nombre": "Parada RUTA 5 #10",
+      "lat": 21.144386128740596,
+      "lng": -86.82462930679323,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761460735535_s_11",
+      "nombre": "Parada RUTA 5 #11",
+      "lat": 21.14588209449566,
+      "lng": -86.82422161102296,
+      "orden": 11,
+      "landmarks": ""
+    }
+  ]
+}

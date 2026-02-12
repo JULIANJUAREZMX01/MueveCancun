@@ -45,8 +45,9 @@ export async function getAllRoutes(): Promise<Route[]> {
         const content = await fs.readFile(filePath, 'utf-8');
         const routeData = JSON.parse(content);
 
-        // Handle both single object and array wrapper
-        if (Array.isArray(routeData)) {
+        if (routeData.rutas && Array.isArray(routeData.rutas)) {
+            allRoutes.push(...routeData.rutas);
+        } else if (Array.isArray(routeData)) {
             allRoutes.push(...routeData);
         } else {
             allRoutes.push(routeData);

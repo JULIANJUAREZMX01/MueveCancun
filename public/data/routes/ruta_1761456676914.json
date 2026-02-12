@@ -1,0 +1,177 @@
+{
+  "id": "ruta_1761456676914",
+  "nombre": "RUTA 44",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1761456676914_s_1",
+      "nombre": "Parada RUTA 44 #1",
+      "lat": 21.17923970503269,
+      "lng": -86.9071662425995,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_2",
+      "nombre": "Parada RUTA 44 #2",
+      "lat": 21.173517218030593,
+      "lng": -86.90380811691286,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_3",
+      "nombre": "Parada RUTA 44 #3",
+      "lat": 21.169595385798733,
+      "lng": -86.91147923469545,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_4",
+      "nombre": "Parada RUTA 44 #4",
+      "lat": 21.176653608520123,
+      "lng": -86.91424727439882,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_5",
+      "nombre": "Parada RUTA 44 #5",
+      "lat": 21.18875334973565,
+      "lng": -86.91439747810364,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_6",
+      "nombre": "Parada RUTA 44 #6",
+      "lat": 21.177128813398372,
+      "lng": -86.91324949264528,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_7",
+      "nombre": "Parada RUTA 44 #7",
+      "lat": 21.16969543383161,
+      "lng": -86.91453158855438,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_8",
+      "nombre": "Parada RUTA 44 #8",
+      "lat": 21.169040117986455,
+      "lng": -86.91948294639589,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_9",
+      "nombre": "Parada RUTA 44 #9",
+      "lat": 21.165353286959075,
+      "lng": -86.9250351190567,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_10",
+      "nombre": "Parada RUTA 44 #10",
+      "lat": 21.161101061130537,
+      "lng": -86.91692411899568,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_11",
+      "nombre": "Parada RUTA 44 #11",
+      "lat": 21.15705883202643,
+      "lng": -86.91292762756349,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_12",
+      "nombre": "Parada RUTA 44 #12",
+      "lat": 21.152896421374003,
+      "lng": -86.91033124923707,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_13",
+      "nombre": "Parada RUTA 44 #13",
+      "lat": 21.149594425853035,
+      "lng": -86.90631866455078,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_14",
+      "nombre": "Parada RUTA 44 #14",
+      "lat": 21.144411145014548,
+      "lng": -86.90378665924074,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_15",
+      "nombre": "Parada RUTA 44 #15",
+      "lat": 21.136966115466127,
+      "lng": -86.90134048461915,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_16",
+      "nombre": "Parada RUTA 44 #16",
+      "lat": 21.140308419626855,
+      "lng": -86.89453840255737,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_17",
+      "nombre": "Parada RUTA 44 #17",
+      "lat": 21.139848106763594,
+      "lng": -86.86866044998169,
+      "orden": 17,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_18",
+      "nombre": "Parada RUTA 44 #18",
+      "lat": 21.13962795662786,
+      "lng": -86.85739517211915,
+      "orden": 18,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_19",
+      "nombre": "Parada RUTA 44 #19",
+      "lat": 21.141108960330854,
+      "lng": -86.83419942855836,
+      "orden": 19,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_20",
+      "nombre": "Parada RUTA 44 #20",
+      "lat": 21.14367066151758,
+      "lng": -86.82821273803711,
+      "orden": 20,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761456676914_s_21",
+      "nombre": "Parada RUTA 44 #21",
+      "lat": 21.145411792508483,
+      "lng": -86.82418942451478,
+      "orden": 21,
+      "landmarks": ""
+    }
+  ]
+}

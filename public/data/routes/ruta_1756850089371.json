@@ -1,0 +1,121 @@
+{
+  "id": "ruta_1756850089371",
+  "nombre": "RUTA 29",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1756850089371_s_1",
+      "nombre": "Parada RUTA 29 #1",
+      "lat": 21.179309734096584,
+      "lng": -86.90853953361513,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_2",
+      "nombre": "Parada RUTA 29 #2",
+      "lat": 21.183911571310034,
+      "lng": -86.91114127635957,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_3",
+      "nombre": "Parada RUTA 29 #3",
+      "lat": 21.16354235395405,
+      "lng": -86.91468715667725,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_4",
+      "nombre": "Parada RUTA 29 #4",
+      "lat": 21.152696302529215,
+      "lng": -86.91018104553223,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_5",
+      "nombre": "Parada RUTA 29 #5",
+      "lat": 21.149534388889368,
+      "lng": -86.90627038478853,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_6",
+      "nombre": "Parada RUTA 29 #6",
+      "lat": 21.156718639393134,
+      "lng": -86.89181327819826,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_7",
+      "nombre": "Parada RUTA 29 #7",
+      "lat": 21.14511159897001,
+      "lng": -86.88516139984132,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_8",
+      "nombre": "Parada RUTA 29 #8",
+      "lat": 21.14607221615178,
+      "lng": -86.88029050827028,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_9",
+      "nombre": "Parada RUTA 29 #9",
+      "lat": 21.147813318915652,
+      "lng": -86.85657978057863,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_10",
+      "nombre": "Parada RUTA 29 #10",
+      "lat": 21.152536207258667,
+      "lng": -86.84185981750488,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_11",
+      "nombre": "Parada RUTA 29 #11",
+      "lat": 21.15601824033373,
+      "lng": -86.83110952377321,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_12",
+      "nombre": "Parada RUTA 29 #12",
+      "lat": 21.15665360247717,
+      "lng": -86.82608842849731,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_13",
+      "nombre": "Parada RUTA 29 #13",
+      "lat": 21.16301207655928,
+      "lng": -86.82562708854677,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1756850089371_s_14",
+      "nombre": "Parada RUTA 29 #14",
+      "lat": 21.16390254128956,
+      "lng": -86.82136774063112,
+      "orden": 14,
+      "landmarks": ""
+    }
+  ]
+}

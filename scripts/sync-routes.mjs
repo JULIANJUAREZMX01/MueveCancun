@@ -6,11 +6,16 @@ async function sync() {
     
     // 1. Read source
     const sourcePath = path.resolve('src/data/routes.json');
-    const sourceContent = await fs.readFile(sourcePath, 'utf-8');
-    const sourceData = JSON.parse(sourceContent);
+    let sourceData;
+    try {
+        const sourceContent = await fs.readFile(sourcePath, 'utf-8');
+        sourceData = JSON.parse(sourceContent);
+    } catch (e) {
+        console.error("❌ Failed to read src/data/routes.json", e);
+        process.exit(1);
+    }
     
     // 2. Prepare master routes for search/catalog
-    // We only need basic info for the master list
     const masterRoutes = {
         version: sourceData.version,
         rutas: sourceData.rutas.map(r => ({
@@ -36,6 +41,9 @@ async function sync() {
 
     // 3. Write public files
     const publicPath = path.resolve('public/data');
+    const rootPublicPath = path.resolve('public'); // For coordinates.json at root? Or public/data/coordinates.json?
+    // CoordinateStore fetches '/coordinates.json', so it expects it at public root.
+
     await fs.mkdir(publicPath, { recursive: true });
     
     // Master Registry
@@ -44,7 +52,7 @@ async function sync() {
         JSON.stringify(masterRoutes, null, 2)
     );
     
-    // Individual Route Files (Modular for lazy loading)
+    // Individual Route Files
     const routesDir = path.join(publicPath, 'routes');
     await fs.mkdir(routesDir, { recursive: true });
     
@@ -54,8 +62,36 @@ async function sync() {
             JSON.stringify(route, null, 2)
         );
     }
+
+    // 4. Generate Coordinates DB for Autocomplete & WASM
+    const coordinatesDB = {};
+    let stopCount = 0;
+
+    for (const route of masterRoutes.rutas) {
+        for (const stop of route.paradas) {
+            if (stop.nombre && stop.lat && stop.lng) {
+                // Use name as key. Handle duplicates?
+                // If duplicates exist (same name, diff coords), maybe we should be smarter.
+                // But for now, last write wins or we can append ID.
+                // The current CoordinateFinder expects { "Name": [lat, lng] }.
+                // Let's use name.
+                const key = stop.nombre.trim();
+                coordinatesDB[key] = [stop.lat, stop.lng];
+                stopCount++;
+            }
+        }
+    }
+
+    // Also include known landmarks or hubs if defined elsewhere?
+    // For now, just stops.
     
+    await fs.writeFile(
+        path.join(rootPublicPath, 'coordinates.json'),
+        JSON.stringify(coordinatesDB, null, 2)
+    );
+
     console.log(`✅ Synced ${masterRoutes.rutas.length} routes to public/data/`);
+    console.log(`✅ Generated public/coordinates.json with ${Object.keys(coordinatesDB).length} unique stops.`);
 }
 
 sync().catch(console.error);

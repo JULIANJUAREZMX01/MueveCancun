@@ -1,0 +1,169 @@
+{
+  "id": "ruta_1760340184559",
+  "nombre": "RUTA 234",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1760340184559_s_1",
+      "nombre": "Parada RUTA 234 #1",
+      "lat": 21.189618650869356,
+      "lng": -86.91324949264528,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_2",
+      "nombre": "Parada RUTA 234 #2",
+      "lat": 21.177248864915512,
+      "lng": -86.91324949264528,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_3",
+      "nombre": "Parada RUTA 234 #3",
+      "lat": 21.17942978384326,
+      "lng": -86.90718233585358,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_4",
+      "nombre": "Parada RUTA 234 #4",
+      "lat": 21.18212087341729,
+      "lng": -86.90308392047882,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_5",
+      "nombre": "Parada RUTA 234 #5",
+      "lat": 21.18086036915688,
+      "lng": -86.89822375774384,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_6",
+      "nombre": "Parada RUTA 234 #6",
+      "lat": 21.183456395968555,
+      "lng": -86.89359962940216,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_7",
+      "nombre": "Parada RUTA 234 #7",
+      "lat": 21.185527182360808,
+      "lng": -86.88929736614229,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_8",
+      "nombre": "Parada RUTA 234 #8",
+      "lat": 21.186262454608737,
+      "lng": -86.88275814056398,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_9",
+      "nombre": "Parada RUTA 234 #9",
+      "lat": 21.18662258662034,
+      "lng": -86.87755465507509,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_10",
+      "nombre": "Parada RUTA 234 #10",
+      "lat": 21.190533963895874,
+      "lng": -86.86987280845644,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_11",
+      "nombre": "Parada RUTA 234 #11",
+      "lat": 21.19303479025553,
+      "lng": -86.86488389968872,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_12",
+      "nombre": "Parada RUTA 234 #12",
+      "lat": 21.198106336161878,
+      "lng": -86.85500264167787,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_13",
+      "nombre": "Parada RUTA 234 #13",
+      "lat": 21.20045699365859,
+      "lng": -86.85012102127077,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_14",
+      "nombre": "Parada RUTA 234 #14",
+      "lat": 21.19640583720999,
+      "lng": -86.84747099876405,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_15",
+      "nombre": "Parada RUTA 234 #15",
+      "lat": 21.190123824333586,
+      "lng": -86.84584558010101,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_16",
+      "nombre": "Parada RUTA 234 #16",
+      "lat": 21.191444269589464,
+      "lng": -86.83784723281862,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_17",
+      "nombre": "Parada RUTA 234 #17",
+      "lat": 21.177028770392997,
+      "lng": -86.82851314544678,
+      "orden": 17,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_18",
+      "nombre": "Parada RUTA 234 #18",
+      "lat": 21.17131120019327,
+      "lng": -86.82651221752168,
+      "orden": 18,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_19",
+      "nombre": "Parada RUTA 234 #19",
+      "lat": 21.16423271224368,
+      "lng": -86.82597041130067,
+      "orden": 19,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760340184559_s_20",
+      "nombre": "Parada RUTA 234 #20",
+      "lat": 21.164948080117274,
+      "lng": -86.82584702968599,
+      "orden": 20,
+      "landmarks": ""
+    }
+  ]
+}

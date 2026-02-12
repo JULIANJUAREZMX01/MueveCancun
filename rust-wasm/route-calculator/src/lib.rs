@@ -148,6 +148,17 @@ pub fn find_route_core_wrapper(origin: &str, dest: &str) -> Result<Vec<Journey>,
 // --- WASM EXPORTS ---
 
 #[wasm_bindgen]
+pub fn validate_operator_funds(balance: f64) -> bool {
+    balance >= 180.0
+}
+
+#[wasm_bindgen]
+pub fn load_stops_data(_stops: JsValue) -> Result<(), JsValue> {
+    // No-op: Stops are now loaded via load_catalog() inside routes
+    Ok(())
+}
+
+#[wasm_bindgen]
 pub fn load_catalog(json_payload: &str) -> Result<(), JsValue> {
     load_catalog_core(json_payload).map_err(|e| JsValue::from_str(&e))
 }
@@ -244,6 +255,9 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         });
     }
 
+    // Limit for DoS prevention
+    const MAX_SEARCH_RESULTS: usize = 200;
+
     // 1. Direct Routes
     for m in &route_matches {
         if let Some(origin_idx) = m.origin_idx {
@@ -282,7 +296,7 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         "Muelle Ultramar",
     ];
 
-    for match_a in &routes_from_origin {
+    'outer: for match_a in &routes_from_origin {
         let route_a = match_a.route;
         let origin_idx_a = match match_a.origin_idx {
             Some(idx) => idx,
@@ -290,6 +304,11 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         };
 
         for match_b in &routes_to_dest {
+            // Check limit
+            if journeys.len() >= MAX_SEARCH_RESULTS {
+                break 'outer;
+            }
+
             let route_b = match_b.route;
             let dest_idx_b = match match_b.dest_idx {
                 Some(idx) => idx,

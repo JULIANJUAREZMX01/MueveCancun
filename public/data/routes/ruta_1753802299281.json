@@ -1,0 +1,161 @@
+{
+  "id": "ruta_1753802299281",
+  "nombre": "RUTA 81",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1753802299281_s_1",
+      "nombre": "Parada RUTA 81 #1",
+      "lat": 21.17769905723677,
+      "lng": -86.91071212291718,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_2",
+      "nombre": "Parada RUTA 81 #2",
+      "lat": 21.172461735142715,
+      "lng": -86.91120564937593,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_3",
+      "nombre": "Parada RUTA 81 #3",
+      "lat": 21.17621841955534,
+      "lng": -86.89838469028474,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_4",
+      "nombre": "Parada RUTA 81 #4",
+      "lat": 21.183106260136903,
+      "lng": -86.88484489917755,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_5",
+      "nombre": "Parada RUTA 81 #5",
+      "lat": 21.18598235132647,
+      "lng": -86.87919080257417,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_6",
+      "nombre": "Parada RUTA 81 #6",
+      "lat": 21.198101334723077,
+      "lng": -86.8550616502762,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_7",
+      "nombre": "Parada RUTA 81 #7",
+      "lat": 21.20047699909379,
+      "lng": -86.85024976730348,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_8",
+      "nombre": "Parada RUTA 81 #8",
+      "lat": 21.195500563608256,
+      "lng": -86.84712231159212,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_9",
+      "nombre": "Parada RUTA 81 #9",
+      "lat": 21.189843728368682,
+      "lng": -86.84585094451906,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_10",
+      "nombre": "Parada RUTA 81 #10",
+      "lat": 21.18156565262678,
+      "lng": -86.84961140155792,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_11",
+      "nombre": "Parada RUTA 81 #11",
+      "lat": 21.182335958388464,
+      "lng": -86.84460103511812,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_12",
+      "nombre": "Parada RUTA 81 #12",
+      "lat": 21.185382128220134,
+      "lng": -86.83874309062959,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_13",
+      "nombre": "Parada RUTA 81 #13",
+      "lat": 21.17775908277606,
+      "lng": -86.8344783782959,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_14",
+      "nombre": "Parada RUTA 81 #14",
+      "lat": 21.17164135461595,
+      "lng": -86.83158159255983,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_15",
+      "nombre": "Parada RUTA 81 #15",
+      "lat": 21.17391239688972,
+      "lng": -86.82700574398041,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_16",
+      "nombre": "Parada RUTA 81 #16",
+      "lat": 21.168805003960465,
+      "lng": -86.82624936103822,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_17",
+      "nombre": "Parada RUTA 81 #17",
+      "lat": 21.164167678629145,
+      "lng": -86.82599186897279,
+      "orden": 17,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_18",
+      "nombre": "Parada RUTA 81 #18",
+      "lat": 21.15749908015619,
+      "lng": -86.82548761367799,
+      "orden": 18,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753802299281_s_19",
+      "nombre": "Parada RUTA 81 #19",
+      "lat": 21.158029377301467,
+      "lng": -86.82531595230104,
+      "orden": 19,
+      "landmarks": ""
+    }
+  ]
+}
