@@ -30,10 +30,7 @@
     "fuse.js": "^7.0.0",
     "idb": "^8.0.3",
     "postcss": "^8.5.6",
-<<<<<<< HEAD
     "serve": "^14.2.5",
-=======
->>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
     "sharp": "^0.33.2",
     "tailwind-merge": "^2.2.1",
     "tailwindcss": "^3.4.0",

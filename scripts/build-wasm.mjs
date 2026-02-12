@@ -52,19 +52,7 @@ if (!hasWasmPack || !hasCargo) {
 console.log('✅ Build tools found. Proceeding with compilation...');
 
 // Helper to check if wasm-pack is available
-const isWasmPackAvailable = () => {
-    try {
-        execSync('npx wasm-pack --version', { stdio: 'ignore' });
-        return true;
-    } catch (e) {
-        return false;
-    }
-};
 
-const hasWasmPack = isWasmPackAvailable();
-if (!hasWasmPack) {
-    console.warn('⚠️  wasm-pack not found. Skipping compilation and checking for existing artifacts...');
-}
 
 modules.forEach(mod => {
     console.log(`📦 Processing ${mod}...`);
@@ -72,18 +60,7 @@ modules.forEach(mod => {
     const publicOutDir = path.join(rootDir, 'public', 'wasm', mod);
     const srcOutDir = path.join(rootDir, 'src', 'wasm', mod);
 
-<<<<<<< HEAD
     let buildSuccess = false;
-=======
-    // 1. Build with wasm-pack
-    try {
-        execSync(`wasm-pack build --target web --out-dir ${publicOutDir} --no-typescript`, {
-            cwd: sourceDir,
-            stdio: 'inherit'
-        });
-        // Run again to generate types if needed, but usually one pass is enough.
-        // Re-running without --no-typescript to match original behavior (it didn't have flags other than target and out-dir).
->>>>>>> origin/security/harden-wasm-ffi-6480731573874893142
 
     if (hasWasmPack) {
         try {
