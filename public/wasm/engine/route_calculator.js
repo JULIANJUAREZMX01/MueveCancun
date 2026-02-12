@@ -1,6 +1,55 @@
 /* @ts-self-types="./route_calculator.d.ts" */
 
 /**
+<<<<<<< HEAD
+=======
+ * @param {number} user_lat
+ * @param {number} user_lng
+ * @param {number} dest_lat
+ * @param {number} dest_lng
+ * @returns {any}
+ */
+export function analyze_gap(user_lat, user_lng, dest_lat, dest_lng) {
+    const ret = wasm.analyze_gap(user_lat, user_lng, dest_lat, dest_lng);
+    return ret;
+}
+
+/**
+ * @param {number} origin_lat
+ * @param {number} origin_lng
+ * @param {number} dest_lat
+ * @param {number} dest_lng
+ * @param {any} routes_val
+ * @returns {any}
+ */
+export function calculate_route(origin_lat, origin_lng, dest_lat, dest_lng, routes_val) {
+    const ret = wasm.calculate_route(origin_lat, origin_lng, dest_lat, dest_lng, routes_val);
+    return ret;
+}
+
+/**
+ * @param {number} distance
+ * @param {number} seats
+ * @param {boolean} is_tourist
+ * @returns {any}
+ */
+export function calculate_trip_cost(distance, seats, is_tourist) {
+    const ret = wasm.calculate_trip_cost(distance, seats, is_tourist);
+    return ret;
+}
+
+/**
+ * @param {number} lat
+ * @param {number} lng
+ * @returns {any}
+ */
+export function find_nearest_stop(lat, lng) {
+    const ret = wasm.find_nearest_stop(lat, lng);
+    return ret;
+}
+
+/**
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
  * @param {string} origin
  * @param {string} dest
  * @returns {any}
@@ -11,10 +60,14 @@ export function find_route(origin, dest) {
     const ptr1 = passStringToWasm0(dest, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
     const ret = wasm.find_route(ptr0, len0, ptr1, len1);
+<<<<<<< HEAD
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
     return takeFromExternrefTable0(ret[0]);
+=======
+    return ret;
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
 }
 
 /**
@@ -22,10 +75,14 @@ export function find_route(origin, dest) {
  */
 export function get_all_routes() {
     const ret = wasm.get_all_routes();
+<<<<<<< HEAD
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
     return takeFromExternrefTable0(ret[0]);
+=======
+    return ret;
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
 }
 
 /**
@@ -51,12 +108,18 @@ function __wbg_get_imports() {
             const ret = Error(getStringFromWasm0(arg0, arg1));
             return ret;
         },
+<<<<<<< HEAD
         __wbg_String_8f0eb39a4a4c2f66: function(arg0, arg1) {
             const ret = String(arg1);
             const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
             const len1 = WASM_VECTOR_LEN;
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
             getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+=======
+        __wbg_Number_04624de7d0e8332d: function(arg0) {
+            const ret = Number(arg0);
+            return ret;
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
         },
         __wbg___wbindgen_boolean_get_bbbb1c18aa2f5e25: function(arg0) {
             const v = arg0;
@@ -70,6 +133,13 @@ function __wbg_get_imports() {
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
             getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
         },
+<<<<<<< HEAD
+=======
+        __wbg___wbindgen_in_47fa6863be6f2f25: function(arg0, arg1) {
+            const ret = arg0 in arg1;
+            return ret;
+        },
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
         __wbg___wbindgen_is_function_0095a73b8b156f76: function(arg0) {
             const ret = typeof(arg0) === 'function';
             return ret;
@@ -79,6 +149,17 @@ function __wbg_get_imports() {
             const ret = typeof(val) === 'object' && val !== null;
             return ret;
         },
+<<<<<<< HEAD
+=======
+        __wbg___wbindgen_is_string_cd444516edc5b180: function(arg0) {
+            const ret = typeof(arg0) === 'string';
+            return ret;
+        },
+        __wbg___wbindgen_is_undefined_9e4d92534c42d778: function(arg0) {
+            const ret = arg0 === undefined;
+            return ret;
+        },
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
         __wbg___wbindgen_jsval_loose_eq_9dd77d8cd6671811: function(arg0, arg1) {
             const ret = arg0 == arg1;
             return ret;
@@ -120,6 +201,13 @@ function __wbg_get_imports() {
             const ret = Reflect.get(arg0, arg1);
             return ret;
         }, arguments); },
+<<<<<<< HEAD
+=======
+        __wbg_get_with_ref_key_1dc361bd10053bfe: function(arg0, arg1) {
+            const ret = arg0[arg1];
+            return ret;
+        },
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
         __wbg_instanceof_ArrayBuffer_c367199e2fa2aa04: function(arg0) {
             let result;
             try {
@@ -144,6 +232,13 @@ function __wbg_get_imports() {
             const ret = Array.isArray(arg0);
             return ret;
         },
+<<<<<<< HEAD
+=======
+        __wbg_isSafeInteger_bfbc7332a9768d2a: function(arg0) {
+            const ret = Number.isSafeInteger(arg0);
+            return ret;
+        },
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
         __wbg_iterator_6ff6560ca1568e55: function() {
             const ret = Symbol.iterator;
             return ret;
@@ -164,6 +259,13 @@ function __wbg_get_imports() {
             const ret = new Array();
             return ret;
         },
+<<<<<<< HEAD
+=======
+        __wbg_new_dca287b076112a51: function() {
+            const ret = new Map();
+            return ret;
+        },
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
         __wbg_new_dd2b680c8bf6ae29: function(arg0) {
             const ret = new Uint8Array(arg0);
             return ret;
@@ -179,6 +281,13 @@ function __wbg_get_imports() {
         __wbg_prototypesetcall_bdcdcc5842e4d77d: function(arg0, arg1, arg2) {
             Uint8Array.prototype.set.call(getArrayU8FromWasm0(arg0, arg1), arg2);
         },
+<<<<<<< HEAD
+=======
+        __wbg_set_1eb0999cf5d27fc8: function(arg0, arg1, arg2) {
+            const ret = arg0.set(arg1, arg2);
+            return ret;
+        },
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
         __wbg_set_3f1d0b984ed272ed: function(arg0, arg1, arg2) {
             arg0[arg1] = arg2;
         },
@@ -194,11 +303,28 @@ function __wbg_get_imports() {
             const ret = arg0;
             return ret;
         },
+<<<<<<< HEAD
         __wbindgen_cast_0000000000000002: function(arg0, arg1) {
+=======
+        __wbindgen_cast_0000000000000002: function(arg0) {
+            // Cast intrinsic for `I64 -> Externref`.
+            const ret = arg0;
+            return ret;
+        },
+        __wbindgen_cast_0000000000000003: function(arg0, arg1) {
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
             // Cast intrinsic for `Ref(String) -> Externref`.
             const ret = getStringFromWasm0(arg0, arg1);
             return ret;
         },
+<<<<<<< HEAD
+=======
+        __wbindgen_cast_0000000000000004: function(arg0) {
+            // Cast intrinsic for `U64 -> Externref`.
+            const ret = BigInt.asUintN(64, arg0);
+            return ret;
+        },
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
         __wbindgen_init_externref_table: function() {
             const table = wasm.__wbindgen_externrefs;
             const offset = table.grow(4);
@@ -362,12 +488,15 @@ function passStringToWasm0(arg, malloc, realloc) {
     return ptr;
 }
 
+<<<<<<< HEAD
 function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_externrefs.get(idx);
     wasm.__externref_table_dealloc(idx);
     return value;
 }
 
+=======
+>>>>>>> origin/ux/passenger-selector-popover-13861580323473583677
 let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
 cachedTextDecoder.decode();
 const MAX_SAFARI_DECODE_BYTES = 2146435072;
