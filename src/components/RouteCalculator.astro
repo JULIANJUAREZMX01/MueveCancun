@@ -107,12 +107,9 @@ const QUICK_ZONES = [
         <PassengerSelector />
       </div>
 
-      <button id="search-btn" class="btn-primary btn-lg w-full search-btn" disabled>
+      <button id="search-btn" class="btn-primary btn-lg w-full search-btn shadow-lg shadow-primary-500/30" disabled>
         <span class="material-symbols-rounded icon animate-spin" id="search-icon">progress_activity</span>
         <span id="search-btn-text" data-i18n="calc.loading">Cargando rutas...</span>
-      <button id="search-btn" class="btn-primary btn-lg w-full search-btn shadow-lg shadow-primary-500/30">
-        <span class="material-symbols-rounded icon">search</span>
-        <span data-i18n="calc.btn">Buscar Rutas</span>
       </button>
 
       <!-- Favorites Section (Hidden by default) -->
@@ -442,10 +439,10 @@ const QUICK_ZONES = [
   function setLoading(isLoading) {
       if (!searchBtn) return;
       if (isLoading) {
-          searchBtn.innerHTML = '<span class="loader"></span> ' + ui[currentLang]['calc.calculating'];
+          searchBtn.innerHTML = '<span class="material-symbols-rounded icon animate-spin">progress_activity</span> ' + ui[currentLang]['calc.calculating'];
           searchBtn.disabled = true;
       } else {
-          searchBtn.innerHTML = '<span class="material-symbols-rounded icon animate-spin" id="search-icon">progress_activity</span> ' + ui[currentLang]['calc.btn'];
+          searchBtn.innerHTML = '<span class="material-symbols-rounded icon" id="search-icon">search</span> ' + '<span id="search-btn-text" data-i18n="calc.btn">' + ui[currentLang]['calc.btn'] + '</span>';
           searchBtn.disabled = false;
       }
   }
