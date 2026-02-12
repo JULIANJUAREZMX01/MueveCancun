@@ -209,6 +209,22 @@ const QUICK_ZONES = [
           if (catalogData.rutas) {
              routeDataCache = catalogData.rutas;
           }
+          const text = await response.text();
+
+          // 🛡️ Security: Size Limit (10MB) to prevent WASM OOM
+          if (text.length > 10 * 1024 * 1024) {
+             throw new Error("Catalog file too large (Potential DoS)");
+          }
+
+          // ⚡ Perf: Pass raw text to WASM (Avoids JSON.stringify)
+          await load_catalog(text);
+
+          // Parse for Autocomplete
+          const catalogData = JSON.parse(text);
+          if (catalogData.rutas) {
+             routeDataCache = catalogData.rutas;
+          }
+
           catalogLoaded = true;
           console.log("✅ Catalog loaded into WASM:", catalogData.rutas?.length || 0, "routes");
           const btn = document.getElementById("search-btn");
