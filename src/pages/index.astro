@@ -1,3 +1,4 @@
+---
 import MainLayout from '../layouts/MainLayout.astro';
 ---
 
@@ -48,11 +49,10 @@ import MainLayout from '../layouts/MainLayout.astro';
 		<div class="bottom-bar"></div>
 	</div>
 
-	<!-- Redirect logic or enter button could go here, for now it's just the splash -->
 	<script>
 		import { navigate } from 'astro:transitions/client';
 
-		// Simulate splash delay then redirect to home, preserving query params
+		// Simulate splash delay then redirect to home
 		setTimeout(() => {
 			const currentUrl = new URL(window.location.href);
 			const targetUrl = new URL('/home', window.location.origin);
@@ -66,8 +66,8 @@ import MainLayout from '../layouts/MainLayout.astro';
 	.splash-container {
 		position: relative;
 		width: 100%;
-		height: 100vh; /* Full viewport height */
-		background: linear-gradient(175deg, #00A9E0 0%, #3ABEF9 45%, #FF9E50 75%, #FF6A00 100%);
+		height: 100vh;
+		background: linear-gradient(175deg, #00A9E0 0%, #3ABEF9 45%, var(--color-sunset-light) 75%, var(--color-sunset) 100%);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -89,10 +89,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 	.h-full { height: 100%; }
 	.w-full { width: 100%; }
 
-	.top-spacer {
-		height: 2.5rem;
-		width: 100%;
-	}
+	.top-spacer { height: 2.5rem; width: 100%; }
 
 	/* Brand Section */
 	.brand-section {
@@ -111,7 +108,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 
 	.brand-icon {
 		background-color: white;
-		border-radius: 1.5rem; /* rounded-3xl approx */
+		border-radius: 1.5rem;
 		padding: 1rem;
 		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 		display: flex;
@@ -120,29 +117,27 @@ import MainLayout from '../layouts/MainLayout.astro';
 	}
 
 	.icon-bus {
-		color: var(--color-primary);
-		font-size: 3.75rem; /* 6xl */
+		color: var(--color-sunset);
+		font-size: 3.75rem;
 	}
 
 	.brand-title {
 		color: white;
-		font-size: 3.75rem; /* 6xl */
-		font-weight: 800; /* extrabold */
-		letter-spacing: -0.025em; /* tracking-tight */
+		font-size: 3.75rem;
+		font-weight: 800;
+		letter-spacing: -0.025em;
 		margin: 0;
 		line-height: 1;
 	}
 
-	.brand-title-light {
-		font-weight: 300; /* light */
-	}
+	.brand-title-light { font-weight: 300; }
 
 	.brand-tagline {
 		color: white;
-		font-size: 1.25rem; /* xl */
+		font-size: 1.25rem;
 		font-weight: 500;
 		text-transform: uppercase;
-		letter-spacing: 0.25em; /* premium spacing */
+		letter-spacing: 0.25em;
 		opacity: 0.9;
 		margin-top: 1rem;
 	}
@@ -168,14 +163,12 @@ import MainLayout from '../layouts/MainLayout.astro';
 
 	.status-text {
 		color: rgba(255, 255, 255, 0.9);
-		font-size: 0.875rem; /* sm */
+		font-size: 0.875rem;
 		font-weight: 500;
-		letter-spacing: 0.05em; /* wider */
+		letter-spacing: 0.05em;
 	}
 
-	.location-pulse-container {
-		position: relative;
-	}
+	.location-pulse-container { position: relative; }
 
 	.pulse-ring {
 		position: absolute;
@@ -196,7 +189,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 
 	.icon-location {
 		color: white;
-		font-size: 1.875rem; /* 3xl */
+		font-size: 1.875rem;
 	}
 
 	.version-tag {
@@ -209,7 +202,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 		color: rgba(255, 255, 255, 0.6);
 		font-size: 10px;
 		font-family: monospace;
-		letter-spacing: 0.1em; /* widest */
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
 	}
 
@@ -229,35 +222,16 @@ import MainLayout from '../layouts/MainLayout.astro';
 		0%, 100% { transform: translateY(0); }
 		50% { transform: translateY(-10px); }
 	}
-
-	.animate-float {
-		animation: float 3s ease-in-out infinite;
-	}
+	.animate-float { animation: float 3s ease-in-out infinite; }
 
 	@keyframes ping {
-		75%, 100% {
-			transform: scale(2);
-			opacity: 0;
-		}
+		75%, 100% { transform: scale(2); opacity: 0; }
 	}
+	.animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
 
-	.animate-ping {
-		animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
-	}
+	@keyframes pulse { 50% { opacity: .5; } }
+	.animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 
-	@keyframes pulse {
-		50% { opacity: .5; }
-	}
-
-	.animate-pulse {
-		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-	}
-
-	@keyframes pulse-slow {
-		50% { opacity: .5; }
-	}
-
-	.animate-pulse-slow {
-		animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-	}
+	@keyframes pulse-slow { 50% { opacity: .5; } }
+	.animate-pulse-slow { animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 </style>

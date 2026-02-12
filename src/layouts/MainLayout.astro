@@ -3,6 +3,7 @@ import { ClientRouter } from 'astro:transitions';
 import '../index.css';
 import Toast from '../components/ui/Toast.astro';
 import BottomNav from '../components/BottomNav.astro';
+import BrandAnimation from '../components/ui/BrandAnimation.astro';
 
 interface Props {
   title: string;
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/home', label: 'Inicio', icon: 'explore', activePattern: /^\/home/ },
   { href: '/rutas', label: 'Rutas', icon: 'route', activePattern: /^\/rutas/ },
   { href: '/mapa', label: 'Mapa', icon: 'map', activePattern: /^\/mapa/ },
+  { href: '/community', label: 'Foro', icon: 'forum', activePattern: /^\/community/ },
   { href: '/wallet', label: 'Tarjeta', icon: 'account_balance_wallet', activePattern: /^\/wallet/ },
 ];
 ---
@@ -51,25 +53,23 @@ const navItems = [
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
 
-    <!-- Material Symbols (for icons) -->
+    <!-- Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
 
-    <!-- Leaflet (Lazy Loaded & Self-Hosted) -->
+    <!-- Leaflet -->
     {useMap && (
         <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
-        <script is:inline src="/vendor/leaflet/leaflet.js"></script>
+        <link rel="preconnect" href="https://basemaps.cartocdn.com" />
+        <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
+        <script is:inline defer src="/vendor/leaflet/leaflet.js"></script>
     )}
 
     <script is:inline>
       function applyTheme() {
         const theme = localStorage.getItem('theme') || 
           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
+        if (theme === 'dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
         document.documentElement.setAttribute('data-theme', theme);
       }
       applyTheme();
@@ -79,155 +79,135 @@ const navItems = [
   </head>
   <body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
-    <!-- ═══ Unified Header ═══ -->
+    <!-- ═══ Desktop Header (Hidden on Mobile) ═══ -->
     { !hideNav && (
-    <header class="fixed top-0 left-0 right-0 z-40 h-14 px-4 md:px-6 flex items-center justify-between transition-all duration-300"
-            style="background: var(--surface-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-light);">
+    <header class="hidden md:flex fixed top-0 left-0 right-0 z-40 h-16 px-6 items-center justify-between transition-all duration-300"
+            style="background: var(--surface-card); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-light);">
 
-      <!-- Left: Brand -->
       <a href="/home" class="flex items-center gap-2.5 no-underline group outline-none">
         <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform">
           <span class="material-symbols-rounded text-white text-lg" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
         </div>
-        <!-- <span class="font-display font-black text-base tracking-tight text-slate-900 dark:text-white leading-none">
-          Cancún<span class="text-primary-500">Mueve</span>
-        </span> -->
+        <!-- Animated Brand -->
+        <BrandAnimation />
       </a>
 
-      <!-- Center: Desktop Nav -->
-      <nav class="hidden md:flex items-center gap-1">
+      <nav class="flex items-center gap-1">
         {navItems.map(item => (
           <a href={item.href}
              class:list={[
-               'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all no-underline',
+               'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold transition-all no-underline',
                item.activePattern.test(pathname)
                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
              ]}>
-            <span class="material-symbols-rounded text-base" style="font-variation-settings: 'FILL' 1;">{item.icon}</span>
+            <span class="material-symbols-rounded text-lg" style="font-variation-settings: 'FILL' 1;">{item.icon}</span>
             {item.label}
           </a>
         ))}
       </nav>
 
-      <!-- Right: Actions -->
       <div class="flex items-center gap-2">
-         <button class="theme-toggle w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 hover:bg-slate-100 dark:hover:bg-slate-800"
+         <button class="theme-toggle w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
                  style="color: var(--text-secondary);">
-            <span class="material-symbols-rounded text-xl sun hidden dark:block" style="font-variation-settings: 'FILL' 1;">light_mode</span>
-            <span class="material-symbols-rounded text-xl moon block dark:hidden" style="font-variation-settings: 'FILL' 1;">dark_mode</span>
+            <span class="material-symbols-rounded text-xl sun hidden dark:block">light_mode</span>
+            <span class="material-symbols-rounded text-xl moon block dark:hidden">dark_mode</span>
          </button>
       </div>
     </header>
     )}
 
+    <!-- ═══ Mobile Top Bar (Minimal - Brand Only) ═══ -->
+    { !hideNav && (
+    <div class="md:hidden fixed top-0 left-0 right-0 z-40 h-14 px-4 flex items-center justify-between"
+         style="background: var(--surface-card); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-light);">
+
+         <a href="/home" class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center shadow-md">
+                <span class="material-symbols-rounded text-white text-lg">directions_bus</span>
+            </div>
+            <!-- Animated Brand -->
+            <BrandAnimation />
+         </a>
+
+         <button class="theme-toggle w-8 h-8 flex items-center justify-center rounded-full active:bg-slate-100 dark:active:bg-slate-800">
+            <span class="material-symbols-rounded text-xl sun hidden dark:block">light_mode</span>
+            <span class="material-symbols-rounded text-xl moon block dark:hidden">dark_mode</span>
+         </button>
+    </div>
+    )}
+
     <!-- ═══ Main Content ═══ -->
     <main class:list={[
-      'w-full max-w-lg mx-auto lg:max-w-5xl min-h-screen',
-      !hideNav && 'pt-14'
-    ]} style={!hideNav ? "padding-bottom: calc(var(--bottom-nav-h) + 1rem);" : ""}>
+      'w-full max-w-lg mx-auto lg:max-w-7xl min-h-screen',
+      !hideNav && 'pt-16 pb-24 md:pb-0' // Adjust padding for navs
+    ]}>
       <slot />
     </main>
 
-    <!-- ═══ Bottom Nav (Mobile) ═══ -->
-    {!hideNav && <BottomNav />}
+    <!-- ═══ Bottom Nav (Mobile Only) ═══ -->
+    { !hideNav && (
+      <div class="md:hidden">
+        <BottomNav />
+      </div>
+    )}
 
-    <!-- ═══ Toast Notifications ═══ -->
     <Toast />
 
-    <!-- ═══ PWA Update Banner ═══ -->
-    <div id="pwa-update-toast" class="hidden fixed z-50 animate-slide-up"
-         style="bottom: calc(var(--bottom-nav-h) + 0.5rem); left: 1rem; right: 1rem;">
-      <div class="glass-card p-4 flex items-center justify-between gap-4" style="background: var(--surface-card);">
+    <!-- PWA Toast -->
+    <div id="pwa-update-toast" class="hidden fixed z-50 bottom-20 left-4 right-4 animate-slide-up">
+      <div class="glass-card p-4 flex items-center justify-between gap-4 bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 rounded-2xl">
         <div>
-          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Nueva versión disponible</h4>
-          <p class="text-xs mt-0.5" style="color: var(--text-secondary);">Recarga para ver los cambios.</p>
+          <h4 class="font-bold text-sm">Actualización disponible</h4>
+          <p class="text-xs text-slate-500">Nueva versión lista.</p>
         </div>
-        <button id="pwa-refresh-btn" class="btn-primary btn-sm whitespace-nowrap">
+        <button id="pwa-refresh-btn" class="bg-primary-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold">
             ACTUALIZAR
         </button>
       </div>
     </div>
 
-    <!-- ═══ Scripts ═══ -->
     <script is:inline>
+      /* Service Worker & Theme Logic (Same as before) */
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(registration => {
-            if (registration.waiting) {
-                const toast = document.getElementById('pwa-update-toast');
-                if (toast) toast.classList.remove('hidden');
-            }
-
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
+          navigator.serviceWorker.register('/sw.js').then(reg => {
+            if (reg.waiting) document.getElementById('pwa-update-toast')?.classList.remove('hidden');
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    const toast = document.getElementById('pwa-update-toast');
-                    if (toast) toast.classList.remove('hidden');
+                    document.getElementById('pwa-update-toast')?.classList.remove('hidden');
                 }
               });
             });
-          }).catch(err => {
-            console.log('SW registration failed: ', err);
           });
         });
-
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (refreshing) return;
             window.location.reload();
             refreshing = true;
         });
-
         document.getElementById('pwa-refresh-btn')?.addEventListener('click', () => {
-            navigator.serviceWorker.ready.then(registration => {
-                if (registration.waiting) {
-                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                }
+            navigator.serviceWorker.ready.then(reg => {
+                if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
             });
         });
       }
-    </script>
 
-    <script is:inline>
-      /* ── Theme Toggle ── */
       function setupThemeToggle() {
-        document.querySelectorAll('.theme-toggle').forEach(toggle => {
-          toggle.addEventListener('click', () => {
-            const el = document.documentElement;
-            el.classList.toggle("dark");
-            const isDark = el.classList.contains("dark");
+        document.querySelectorAll('.theme-toggle').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.documentElement.classList.toggle("dark");
+            const isDark = document.documentElement.classList.contains("dark");
             localStorage.setItem("theme", isDark ? "dark" : "light");
-            if (window.showToast) {
-              window.showToast(isDark ? "Modo oscuro activado" : "Modo claro activado", "info");
-            }
           });
         });
       }
-
-      /* ── Init ── */
-      function initLayout() {
-        setupThemeToggle();
-      }
-
-      document.addEventListener('astro:page-load', initLayout);
-
-      if (document.readyState === 'complete') {
-        initLayout();
-      } else {
-        window.addEventListener('load', initLayout);
-      }
+      document.addEventListener('astro:page-load', setupThemeToggle);
+      if (document.readyState === 'complete') setupThemeToggle();
+      else window.addEventListener('load', setupThemeToggle);
     </script>
-
-    <style>
-      /* Pop-in animation for interactive elements */
-      @keyframes pop-in {
-        0% { transform: scale(0); opacity: 0; }
-        80% { transform: scale(1.05); opacity: 1; }
-        100% { transform: scale(1); }
-      }
-      .animate-pop-in { animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-    </style>
   </body>
 </html>

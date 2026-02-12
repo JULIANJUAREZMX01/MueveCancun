@@ -8,6 +8,8 @@
     "inicio": "06:00",
     "fin": "22:30"
   },
+  "social_alerts": [],
+  "last_updated": "2026-01-30T06:16:46.258Z",
   "paradas": [
     {
       "nombre": "Villas Otoch",

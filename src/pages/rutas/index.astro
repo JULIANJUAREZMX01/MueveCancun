@@ -1,20 +1,11 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import { getAllRoutes } from '../../lib/routes';
 
-const routesPath = path.resolve('./public/data/master_routes.json');
-let routesData: any = { rutas: [] };
+const rawRoutes = await getAllRoutes();
 
-try {
-  const fileContent = await fs.readFile(routesPath, 'utf-8');
-  routesData = JSON.parse(fileContent);
-} catch (err) {
-  console.error("Error loading routes for catalog:", err);
-}
-
-// Types
-interface Route {
+// Types for UI transformation
+interface UIRoute {
   id: string;
   name: string;
   price: number;
@@ -37,44 +28,47 @@ const TRANSPORT_LABELS: Record<string, string> = {
   "PlayaExpress": "Playa Express",
   "Bus_Urban": "Autobús Urbano",
   "Bus_HotelZone": "Autobús Zona Hotelera",
+  "ADO_Airport": "ADO Aeropuerto",
+  "Van_Foranea": "Van Foránea",
+  "Combi_Municipal": "Combi Municipal"
 };
 
 const getTransportLabel = (type: string) => TRANSPORT_LABELS[type] || type;
 
-const transformRoute = (raw: any): Route => {
-  let transport_type = raw.tipo || "Bus";
+const transformRoute = (raw: any): UIRoute => {
+  let transport_type = raw.tipo_transporte || raw.tipo || "Bus";
   
   // Format Schedule
-  let schedule = "";
+  let schedule = "06:00 - 23:00"; // Default
   if (raw.horario) {
      if (typeof raw.horario === 'string') {
         schedule = raw.horario;
      } else {
-        const start = raw.horario.inicio || "06:00";
-        const end = raw.horario.fin || "23:00";
+        const start = raw.horario.inicio || raw.horario.inicio_oficial || "06:00";
+        const end = raw.horario.fin || raw.horario.fin_oficial || "23:00";
         schedule = `${start} - ${end}`;
      }
   }
 
-  const stops = raw.paradas ? raw.paradas.map((p: any) => p.nombre) : [];
+  const stops = raw.paradas ? raw.paradas.map((p: any) => p.nombre || p.parada) : [];
 
   return {
     id: raw.id,
     name: raw.nombre,
     price: raw.tarifa || 15,
     transport_type,
-    operator: raw.operador || "Consorcio Urbano",
+    operator: raw.operador || raw.empresa || "Consorcio Urbano",
     frequency: raw.frecuencia_minutos ? `${raw.frecuencia_minutos} min` : "10 min",
     schedule,
-    duration: "45 min est.",
-    badges: raw.tags || [],
+    duration: raw.duracion_minutos ? `${raw.duracion_minutos} min` : "45 min est.",
+    badges: raw.tags || raw.social_alerts || [],
     stops,
     origin_hub: stops[0] || "Origen",
     dest_hub: stops[stops.length - 1] || "Destino"
   };
 };
 
-const routes: Route[] = (routesData.rutas || []).map(transformRoute);
+const routes: UIRoute[] = rawRoutes.map(transformRoute);
 ---
 
 <MainLayout title="Catálogo de Rutas">
@@ -85,7 +79,7 @@ const routes: Route[] = (routesData.rutas || []).map(transformRoute);
         Red de Transporte
       </h1>
       <p class="text-slate-500 font-medium text-sm">
-        Explora las {routes.length} rutas oficiales de Cancún.
+        Explora las {routes.length} rutas oficiales de Cancún y Riviera Maya.
       </p>
     </div>
 
