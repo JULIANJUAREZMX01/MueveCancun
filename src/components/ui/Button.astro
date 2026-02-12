@@ -23,7 +23,7 @@ const { variant = 'primary', type = 'button', id, class: className, disabled = f
 <style>
   /*
    * GRAFFITI WARRIOR: CSS5 LOGIC
-   * Pure CSS Variables & Nesting. No utility class dependency for component definition.
+   * Pure CSS Variables & Nesting with Global Tropical Tokens
    */
   .graffiti-btn {
     /* Layout & Box Model */
@@ -33,7 +33,7 @@ const { variant = 'primary', type = 'button', id, class: className, disabled = f
     gap: 0.5rem;
     min-height: 44px;
     padding: 0.75rem 1.5rem; /* px-6 py-3 */
-    border-radius: 1rem; /* rounded-2xl */
+    border-radius: var(--radius-lg); /* rounded-lg */
     border: 1px solid transparent;
 
     /* Typography */
@@ -48,11 +48,11 @@ const { variant = 'primary', type = 'button', id, class: className, disabled = f
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Default Variables (Primary) */
-    --btn-bg: #F97316; /* primary-500 */
+    --btn-bg: var(--color-sunset);
     --btn-text: white;
     --btn-border: transparent;
-    --btn-hover-bg: #EA580C; /* primary-600 */
-    --btn-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.3);
+    --btn-hover-bg: #EA580C; /* Sunset Darker */
+    --btn-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.35);
 
     background-color: var(--btn-bg);
     color: var(--btn-text);
@@ -62,32 +62,36 @@ const { variant = 'primary', type = 'button', id, class: className, disabled = f
     /* --- VARIANTS --- */
 
     &[data-variant="primary"] {
-      --btn-bg: #F97316;
+      --btn-bg: var(--color-sunset);
       --btn-text: white;
       --btn-hover-bg: #EA580C;
-      --btn-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.3); /* shadow-lg colored */
+      --btn-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.35);
     }
 
     &[data-variant="secondary"] {
-      --btn-bg: #0EA5E9; /* sky-500 */
+      --btn-bg: var(--color-turquoise);
       --btn-text: white;
-      --btn-hover-bg: #0284C7; /* sky-600 */
-      --btn-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.3);
+      --btn-hover-bg: #0284C7; /* Turquoise Darker */
+      --btn-shadow: 0 4px 14px -2px rgba(14, 165, 233, 0.35);
     }
 
     &[data-variant="ghost"] {
       --btn-bg: transparent;
-      --btn-text: #475569; /* slate-600 */
-      --btn-hover-bg: #F1F5F9; /* slate-100 */
+      --btn-text: var(--text-secondary); /* slate-500 */
+      --btn-hover-bg: var(--surface-elevated);
       --btn-shadow: none;
       --btn-border: transparent;
+
+      &:hover {
+        border-color: var(--border-light);
+      }
     }
 
     &[data-variant="danger"] {
-      --btn-bg: #FEF2F2; /* red-50 */
-      --btn-text: #B91C1C; /* red-700 */
-      --btn-border: #FECACA; /* red-200 */
-      --btn-hover-bg: #FEE2E2; /* red-100 */
+      --btn-bg: #FEF2F2; /* coral-50 equivalent */
+      --btn-text: var(--color-coral);
+      --btn-border: #FECACA; /* coral-200 equivalent */
+      --btn-hover-bg: #FEE2E2; /* coral-100 equivalent */
       --btn-shadow: none;
     }
 
@@ -95,16 +99,18 @@ const { variant = 'primary', type = 'button', id, class: className, disabled = f
 
     &:hover:not(:disabled) {
       background-color: var(--btn-hover-bg);
+      transform: translateY(-1px);
     }
 
     &:active:not(:disabled) {
-      transform: scale(0.95);
+      transform: scale(0.96);
     }
 
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
       box-shadow: none;
+      filter: grayscale(1);
 
       &:active {
         transform: none;

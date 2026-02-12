@@ -1,7 +1,7 @@
 ---
 // ✅ TypeScript in Astro Frontmatter
 interface Props {
-  type?: 'text' | 'email' | 'password' | 'number' | 'search';
+  type?: 'text' | 'email' | 'password' | 'number' | 'search' | 'textarea';
   id?: string;
   name?: string;
   placeholder?: string;
@@ -12,12 +12,34 @@ interface Props {
   icon?: string; // URL to icon
   'aria-controls'?: string;
   'aria-expanded'?: boolean | string;
+  required?: boolean;
+  variant?: 'default' | 'floating';
 }
 
-const { type = 'text', id, name, placeholder, value, list, class: className, label, icon, 'aria-controls': ariaControls, 'aria-expanded': ariaExpanded } = Astro.props;
+const {
+  type = 'text',
+  id,
+  name,
+  placeholder,
+  value,
+  list,
+  class: className,
+  label,
+  icon,
+  'aria-controls': ariaControls,
+  'aria-expanded': ariaExpanded,
+  required = false,
+  variant = 'default'
+} = Astro.props;
+
+// Determine if we should use the floating label behavior
+const isFloating = variant === 'floating';
+// For floating labels, we need a placeholder to trigger :placeholder-shown.
+// If none provided, use a single space.
+const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
 ---
 
-<div class={`graffiti-input-wrapper ${className || ''}`}>
+<div class={`graffiti-input-wrapper ${variant} ${className || ''}`}>
   {label && (
     <label for={id} class="graffiti-label">
       {icon && <img src={icon} class="icon" alt="" />}
@@ -25,17 +47,30 @@ const { type = 'text', id, name, placeholder, value, list, class: className, lab
     </label>
   )}
   <div class="input-container">
-    <input
-      type={type}
-      id={id}
-      name={name}
-      placeholder={placeholder}
-      value={value}
-      list={list}
-      aria-controls={ariaControls}
-      aria-expanded={ariaExpanded}
-      class="graffiti-input"
-    />
+    {type === 'textarea' ? (
+      <textarea
+        id={id}
+        name={name}
+        placeholder={inputPlaceholder}
+        class="graffiti-input textarea"
+        required={required}
+        aria-controls={ariaControls}
+        aria-expanded={ariaExpanded}
+      >{value}</textarea>
+    ) : (
+      <input
+        type={type}
+        id={id}
+        name={name}
+        placeholder={inputPlaceholder}
+        value={value}
+        list={list}
+        required={required}
+        aria-controls={ariaControls}
+        aria-expanded={ariaExpanded}
+        class="graffiti-input"
+      />
+    )}
     <slot name="action" />
   </div>
   <slot name="datalist" />
@@ -44,20 +79,11 @@ const { type = 'text', id, name, placeholder, value, list, class: className, lab
 <style>
   /*
    * GRAFFITI WARRIOR: CSS5 Logic
-   * No Tailwind here. Just pure CSS with Nesting and Variables.
+   * Now using Global Tropical Tokens
    */
   .graffiti-input-wrapper {
     width: 100%;
     position: relative;
-
-    /* Theme Variables (scoped) */
-    --primary-500: #F97316;
-    --primary-100: #FFEDD5;
-    --slate-200: #E2E8F0;
-    --slate-300: #cbd5e1;
-    --slate-500: #64748b;
-    --slate-900: #0f172a;
-    --danger-500: #EF4444;
 
     /* Label Styling */
     .graffiti-label {
@@ -67,8 +93,8 @@ const { type = 'text', id, name, placeholder, value, list, class: className, lab
       margin-bottom: 0.25rem;
       font-size: 0.875rem;
       font-weight: 500;
-      color: var(--slate-500);
-      transition: color 0.2s ease;
+      color: var(--text-secondary); /* slate-500 */
+      transition: all 0.2s ease;
 
       .icon {
         width: 1rem;
@@ -88,42 +114,81 @@ const { type = 'text', id, name, placeholder, value, list, class: className, lab
       padding: 0.75rem 1rem; /* py-3 px-4 */
       padding-right: 3rem; /* pr-12 for action slot space */
 
-      background-color: white;
-      border: 2px solid var(--slate-200);
-      border-radius: 0.75rem; /* rounded-xl */
+      background-color: var(--surface-elevated);
+      border: 2px solid var(--border-light); /* slate-200 */
+      border-radius: var(--radius-xl); /* rounded-xl */
 
       font-size: 1.125rem; /* text-lg */
       font-weight: 700;
-      color: var(--slate-900);
+      color: var(--text-primary); /* slate-900 */
+      font-family: inherit;
 
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
       &::placeholder {
-        color: var(--slate-300);
+        color: var(--text-tertiary); /* slate-300 */
         font-weight: 400;
       }
 
       &:focus-visible {
         outline: none;
-        border-color: var(--primary-500);
-        box-shadow: 0 0 0 4px var(--primary-100); /* ring-2 ring-primary-100 equivalent but cooler */
+        border-color: var(--color-sunset); /* primary-500 */
+        box-shadow: 0 0 0 4px var(--color-sunset-light); /* primary-100 */
+      }
+
+      &.textarea {
+        min-height: 8rem;
+        resize: vertical;
+        line-height: 1.5;
       }
 
       /* Native Validation Feedback */
       &:user-invalid {
-        border-color: var(--danger-500);
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger-500) 20%, transparent);
+        border-color: var(--color-coral); /* danger-500 */
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-coral) 20%, transparent);
       }
     }
 
     /* Focus Within State using :has() to style Label */
     &:has(.graffiti-input:focus-visible) .graffiti-label {
-      color: var(--primary-500);
+      color: var(--color-sunset);
     }
 
     /* Invalid State Label */
     &:has(.graffiti-input:user-invalid) .graffiti-label {
-      color: var(--danger-500);
+      color: var(--color-coral);
+    }
+
+    /*
+     * FLOATING VARIANT
+     */
+    &.floating {
+      margin-top: 0.5rem;
+
+      .graffiti-label {
+        position: absolute;
+        left: 1rem;
+        top: 0.8rem;
+        z-index: 10;
+        margin-bottom: 0;
+        transform-origin: left top;
+        pointer-events: none; /* crucial for floating label click-through */
+      }
+
+      .graffiti-input::placeholder {
+         color: transparent;
+      }
+
+      /* Float logic */
+      &:has(.graffiti-input:focus-visible),
+      &:has(.graffiti-input:not(:placeholder-shown)) {
+        .graffiti-label {
+          transform: translateY(-1.5rem) scale(0.85);
+          background: var(--surface-bg);
+          padding: 0 0.25rem;
+          font-weight: 600;
+        }
+      }
     }
   }
 </style>

@@ -12,6 +12,12 @@
         "fin_oficial": "22:30",
         "guardia_nocturna": "03:00 - 05:00 (Sistema de llenado en OXXO)"
       },
+      "social_alerts": [
+        "Madrugada (3-5am): Tarifa puede subir a $20 MXN (ajuste chofer)",
+        "Salidas de guardia dependen de llenado, no horario fijo",
+        "Es la ruta principal para trabajadores de ZH desde Villas Otoch"
+      ],
+      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "nombre": "OXXO Villas Otoch Paraíso (El Arco)",
@@ -63,6 +69,10 @@
         "inicio": "05:30",
         "fin": "00:30"
       },
+      "social_alerts": [
+        "Solo las unidades con letrero 'PUERTO JUÁREZ' llegan al muelle"
+      ],
+      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "CR_PTO_JUAREZ_001_001",
@@ -112,6 +122,8 @@
         "inicio": "06:00",
         "fin": "22:30"
       },
+      "social_alerts": [],
+      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "R1_ZONA_HOTELERA_001_001",
@@ -167,6 +179,8 @@
         "inicio": "05:00",
         "fin": "00:00"
       },
+      "social_alerts": [],
+      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "VAN_PLAYA_EXPRESS_001_001",
@@ -224,6 +238,8 @@
       "nombre": "R-28 Villas Otoch → Av. Tulum",
       "tarifa": 13,
       "tipo": "Bus_Urban",
+      "social_alerts": [],
+      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "R28_VILLAS_OTOCH_001_001",
@@ -260,6 +276,8 @@
       "nombre": "R-19 Villas Otoch → López Portillo",
       "tarifa": 13,
       "tipo": "Bus_Urban",
+      "social_alerts": [],
+      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "R19_VILLAS_OTOCH_002_001",
@@ -301,6 +319,8 @@
         "inicio": "06:00",
         "fin": "22:30"
       },
+      "social_alerts": [],
+      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "nombre": "Villas Otoch",
@@ -327,6 +347,8 @@
       "nombre": "ADO Aeropuerto → Centro Cancún",
       "tarifa": 150,
       "tipo": "Bus_Foraneo",
+      "social_alerts": [],
+      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "ADO_AEROPUERTO_001_001",
@@ -362,8 +384,13 @@
       "id": "R10",
       "nombre": "Las Américas - Aeropuerto",
       "tarifa": 15,
+      "tipo": "Transporte",
       "frecuencia_minutos": 20,
-      "horario": "04:00-23:00",
+      "horario": {
+        "inicio_oficial": "04:00-23:00"
+      },
+      "social_alerts": [],
+      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "R10_001",

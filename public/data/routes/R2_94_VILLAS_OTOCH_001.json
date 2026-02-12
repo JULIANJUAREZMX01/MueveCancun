@@ -9,6 +9,12 @@
     "fin_oficial": "22:30",
     "guardia_nocturna": "03:00 - 05:00 (Sistema de llenado en OXXO)"
   },
+  "social_alerts": [
+    "Madrugada (3-5am): Tarifa puede subir a $20 MXN (ajuste chofer)",
+    "Salidas de guardia dependen de llenado, no horario fijo",
+    "Es la ruta principal para trabajadores de ZH desde Villas Otoch"
+  ],
+  "last_updated": "2026-01-30T06:16:46.258Z",
   "paradas": [
     {
       "nombre": "OXXO Villas Otoch Paraíso (El Arco)",

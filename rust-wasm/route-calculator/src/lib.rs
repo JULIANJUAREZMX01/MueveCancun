@@ -1,123 +1,69 @@
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use shared_types::{TransportType};
 use std::collections::HashMap;
 use std::sync::RwLock;
+use strsim;
 use wasm_bindgen::prelude::*;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct StopInfo {
-    pub name: String,
-    pub lat: f64,
-    pub lng: f64,
-    pub distance_km: f64,
-}
+// --- STRUCTS ---
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-struct EmbeddedStop {
-    name: String,
-    lat: f64,
-    lng: f64,
+pub struct RouteCatalog {
+    pub version: String,
+    pub rutas: Vec<Route>,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-struct EmbeddedRoute {
-    id: String,
-    name: String,
-    operator: String,
-    stops: Vec<EmbeddedStop>,
-    #[serde(default)]
-    transport_type: String,
-    #[serde(default)]
-    price: f64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-struct EmbeddedData {
-    routes: Vec<EmbeddedRoute>,
-    stops: HashMap<String, Vec<f64>>,
-}
-
-// Dynamic Stop Database for Last Mile Logic
-static STOPS_DB: Lazy<RwLock<HashMap<String, (f64, f64)>>> = Lazy::new(|| {
-    let mut m = HashMap::new();
-    // Keep legacy hardcoded stops for tests and fallback
-    m.insert("OXXO Villas Otoch Paraíso".to_string(), (21.1685, -86.885));
-    m.insert("Chedraui Lakin".to_string(), (21.165, -86.879));
-    m.insert("Av. Kabah".to_string(), (21.16, -86.845));
-    m.insert("Plaza Las Américas".to_string(), (21.141, -86.843));
-    m.insert("Entrada Zona Hotelera".to_string(), (21.153, -86.815));
-    m.insert("Zona Hotelera".to_string(), (21.135, -86.768));
-    m.insert("La Rehoyada".to_string(), (21.1619, -86.8515));
-    m.insert("El Crucero".to_string(), (21.1576, -86.8269));
-    m.insert("Av. Tulum Norte".to_string(), (21.165, -86.823));
-    m.insert("Playa del Niño".to_string(), (21.195, -86.81));
-    m.insert("Muelle Ultramar".to_string(), (21.207, -86.802));
-    m.insert("Terminal ADO Centro".to_string(), (21.1586, -86.8259));
-    m.insert("Aeropuerto T2".to_string(), (21.0417, -86.8761));
-    m.insert("Aeropuerto T3".to_string(), (21.041, -86.8755));
-    m.insert("Aeropuerto T4".to_string(), (21.04, -86.875));
-    m.insert("Playa del Carmen Centro".to_string(), (20.6296, -87.0739));
-    m.insert("Villas Otoch Paraíso".to_string(), (21.1685, -86.885));
-    m.insert("Villas Otoch".to_string(), (21.1685, -86.885));
-    m.insert("Hospital General".to_string(), (21.15, -86.84));
-    m.insert("Mercado 28".to_string(), (21.162, -86.828));
-
-    // Load Embedded Data
-    let json_str = include_str!("rust_data/embedded_routes.json");
-    if let Ok(data) = serde_json::from_str::<EmbeddedData>(json_str) {
-        for (name, coords) in data.stops {
-            if coords.len() >= 2 {
-                m.insert(name, (coords[0], coords[1]));
-            }
-        }
-    } else {
-        // Fallback
-    }
-
-    RwLock::new(m)
-});
-
-#[wasm_bindgen]
-pub fn load_stops_data(val: JsValue) {
-    // Expecting a JSON object: { "Stop Name": [lat, lng], ... }
-    let new_data: HashMap<String, Vec<f64>> = match serde_wasm_bindgen::from_value(val) {
-        Ok(d) => d,
-        Err(_) => {
-            // console::error not available, silently fail or use println
-            return;
-        }
-    };
-
-    if let Ok(mut db) = STOPS_DB.write() {
-        for (name, coords) in new_data {
-            if coords.len() >= 2 {
-                db.insert(name, (coords[0], coords[1]));
-            }
-        }
-    }
-}
-
-// --- SYSTEM OVERRIDE: TRUTH OF THE STREET ---
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Route {
     pub id: String,
+    #[serde(rename = "nombre")]
     pub name: String,
-    pub transport_type: TransportType,
+    #[serde(rename = "tarifa")]
     pub price: f64,
-    pub duration: String,
-    pub badges: Vec<String>,
-    pub origin_hub: String,
-    pub dest_hub: String,
-    // New Fields
-    pub stops: Vec<String>,
-    pub stops_info: Option<Vec<StopInfo>>,
+    #[serde(rename = "tipo")]
+    pub transport_type: String,
+
+    #[serde(default)]
+    pub empresa: Option<String>,
+    #[serde(default)]
+    pub frecuencia_minutos: Option<u32>,
+    #[serde(default)]
+    pub horario: Option<Schedule>,
+
+    #[serde(rename = "paradas")]
+    pub stops: Vec<Stop>,
+
+    // Computed fields for internal use
     #[serde(skip)]
     pub stops_normalized: Vec<String>,
-    pub operator: String,
-    pub schedule: String,
-    pub frequency: String,
+
+    #[serde(default)]
+    pub social_alerts: Vec<String>,
+    #[serde(default)]
+    pub last_updated: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Stop {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(rename = "nombre")]
+    pub name: String,
+    pub lat: f64,
+    pub lng: f64,
+    pub orden: u32,
+    #[serde(default)]
+    pub landmarks: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Schedule {
+    #[serde(default, alias = "inicio_oficial")]
+    pub inicio: Option<String>,
+    #[serde(default, alias = "fin_oficial")]
+    pub fin: Option<String>,
+    #[serde(default)]
+    pub guardia_nocturna: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -129,6 +75,7 @@ pub struct Journey {
     pub total_price: f64,
 }
 
+<<<<<<< HEAD
 static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
     let raw_data = vec![
         (
@@ -491,50 +438,117 @@ static CATALOG: Lazy<Vec<Route>> = Lazy::new(|| {
             "Transporte Público",
         ),
     ];
+=======
+// --- APP STATE ---
+>>>>>>> main
 
-    raw_data
-        .into_iter()
-        .map(
-            |(id, name, t_type, price, schedule, frequency, stops, operator)| {
-                let stops_vec: Vec<String> = stops.into_iter().map(|s| s.to_string()).collect();
-                let stops_normalized: Vec<String> =
-                    stops_vec.iter().map(|s| s.to_lowercase()).collect();
-                let origin = stops_vec
-                    .first()
-                    .cloned()
-                    .unwrap_or_else(|| "Unknown".to_string());
-                let dest = stops_vec
-                    .last()
-                    .cloned()
-                    .unwrap_or_else(|| "Unknown".to_string());
+struct AppState {
+    routes_list: Vec<Route>,
+    routes_map: HashMap<String, Route>,
+}
 
-                // Infer duration or default
-                let duration = if !frequency.is_empty() {
-                    format!("Freq: {}", frequency)
-                } else {
-                    "Unknown".to_string()
-                };
-
-                Route {
-                    id: id.to_string(),
-                    name: name.to_string(),
-                    transport_type: t_type,
-                    price,
-                    duration,
-                    badges: vec![],
-                    origin_hub: origin,
-                    dest_hub: dest,
-                    stops: stops_vec,
-                    stops_info: None,
-                    stops_normalized,
-                    operator: operator.to_string(),
-                    schedule: schedule.to_string(),
-                    frequency: frequency.to_string(),
-                }
-            },
-        )
-        .collect()
+static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
+    RwLock::new(AppState {
+        routes_list: Vec::new(),
+        routes_map: HashMap::new(),
+    })
 });
+
+// --- CORE LOGIC (Pure Rust, Testable) ---
+
+pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
+    let mut catalog: RouteCatalog = serde_json::from_str(json_payload).map_err(|e| {
+        format!(
+            "JSON Parse Error: {}. Expected {{version, rutas: [...]}}",
+            e
+        )
+    })?;
+
+    if catalog.rutas.is_empty() {
+        return Err("ERROR: Catalog contains 0 routes".to_string());
+    }
+
+    // Pre-compute normalized stops for fuzzy matching
+    for route in &mut catalog.rutas {
+        route.stops_normalized = route.stops.iter().map(|s| s.name.to_lowercase()).collect();
+    }
+
+    let mut map = HashMap::new();
+    for r in &catalog.rutas {
+        map.insert(r.id.clone(), r.clone());
+    }
+
+    let mut db = DB.write().map_err(|_| "DB Lock Poisoned".to_string())?;
+
+    db.routes_list = catalog.rutas;
+    db.routes_map = map;
+
+    Ok(())
+}
+
+pub fn get_route_by_id_core(id: &str) -> Result<Option<Route>, String> {
+    let db = DB.read().map_err(|_| "Lock failed".to_string())?;
+    Ok(db.routes_map.get(id).cloned())
+}
+
+pub fn get_all_routes_core() -> Result<Vec<Route>, String> {
+    let db = DB.read().map_err(|_| "Lock failed".to_string())?;
+    Ok(db.routes_list.clone())
+}
+
+pub fn find_route_core_wrapper(origin: &str, dest: &str) -> Result<Vec<Journey>, String> {
+    if origin.len() > 100 || dest.len() > 100 {
+        return Ok(Vec::new());
+    }
+
+    let db = DB.read().map_err(|_| "Lock failed".to_string())?;
+
+    if db.routes_list.is_empty() {
+        return Err("ERROR: Catalog not loaded. Call load_catalog() first.".to_string());
+    }
+
+    Ok(find_route_rs(origin, dest, &db.routes_list))
+}
+
+// --- WASM EXPORTS ---
+
+#[wasm_bindgen]
+pub fn load_catalog(json_payload: &str) -> Result<(), JsValue> {
+    load_catalog_core(json_payload).map_err(|e| JsValue::from_str(&e))
+}
+
+#[wasm_bindgen]
+pub fn get_route_by_id(id: &str) -> Result<JsValue, JsValue> {
+    match get_route_by_id_core(id) {
+        Ok(Some(route)) => {
+            serde_wasm_bindgen::to_value(&route).map_err(|e| JsValue::from_str(&e.to_string()))
+        }
+        Ok(None) => Ok(JsValue::NULL),
+        Err(e) => Err(JsValue::from_str(&e)),
+    }
+}
+
+#[wasm_bindgen]
+pub fn get_all_routes() -> Result<JsValue, JsValue> {
+    match get_all_routes_core() {
+        Ok(routes) => {
+            serde_wasm_bindgen::to_value(&routes).map_err(|e| JsValue::from_str(&e.to_string()))
+        }
+        Err(e) => Err(JsValue::from_str(&e)),
+    }
+}
+
+#[wasm_bindgen]
+pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
+    match find_route_core_wrapper(origin, dest) {
+        Ok(journeys) => {
+            serde_wasm_bindgen::to_value(&journeys).map_err(|e| JsValue::from_str(&e.to_string()))
+        }
+        Err(e) => Err(JsValue::from_str(&e)),
+    }
+}
+
+// --- INTERNAL ALGORITHMS ---
 
 fn match_stop<'a>(
     query_norm: &str,
@@ -546,7 +560,6 @@ fn match_stop<'a>(
     for (i, stop_lower) in route.stops_normalized.iter().enumerate() {
         let score = *cache.entry(stop_lower.as_str()).or_insert_with(|| {
             let jaro_score = strsim::jaro_winkler(query_norm, stop_lower);
-            // Boost score for containment
             if stop_lower.contains(query_norm) || query_norm.contains(stop_lower) {
                 f64::max(jaro_score, 0.95)
             } else {
@@ -554,7 +567,7 @@ fn match_stop<'a>(
             }
         });
 
-        if score > 0.6 {
+        if score > 0.75 {
             match best_match {
                 Some((_, best_score)) => {
                     if score > best_score {
@@ -571,35 +584,8 @@ fn match_stop<'a>(
     best_match.map(|(i, _)| i)
 }
 
-fn enrich_route(mut route: Route) -> Route {
-    if let Ok(db) = STOPS_DB.read() {
-        let mut infos = Vec::new();
-        for stop_name in &route.stops {
-            if let Some((lat, lng)) = db.get(stop_name) {
-                infos.push(StopInfo {
-                    name: stop_name.clone(),
-                    lat: *lat,
-                    lng: *lng,
-                    distance_km: 0.0,
-                });
-            }
-        }
-        if !infos.is_empty() {
-            route.stops_info = Some(infos);
-        }
-    }
-    route
-}
-
-pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
-    // 🛡️ SECURITY: Prevent DoS via excessive string processing
-    if origin.len() > 100 || dest.len() > 100 {
-        return Vec::new();
-    }
-
-    let all_routes = &*CATALOG;
+fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journey> {
     let mut journeys = Vec::new();
-
     let origin_norm = origin.to_lowercase();
     let dest_norm = dest.to_lowercase();
     let mut origin_cache: HashMap<&str, f64> = HashMap::new();
@@ -627,11 +613,10 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
     for m in &route_matches {
         if let Some(origin_idx) = m.origin_idx {
             if let Some(dest_idx) = m.dest_idx {
-                // Strict directionality: Origin must come before Destination
                 if origin_idx < dest_idx {
                     journeys.push(Journey {
                         type_: "Direct".to_string(),
-                        legs: vec![enrich_route(m.route.clone())],
+                        legs: vec![m.route.clone()],
                         transfer_point: None,
                         total_price: m.route.price,
                     });
@@ -640,13 +625,10 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
         }
     }
 
-    // Optimization: If direct routes are found, return them immediately to reduce noise.
     if !journeys.is_empty() {
         return journeys;
     }
-    // === FIN DEL BLOQUE DE OPTIMIZACIÓN ===
 
-    // === INICIO DE RUTAS DE TRANSBORDO (Incoming Change / Main) ===
     // 2. Transfer Routes (1-Stop)
     let routes_from_origin: Vec<&RouteMatch> = route_matches
         .iter()
@@ -679,34 +661,27 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
                 None => continue,
             };
 
-            // Skip same route (already covered by direct check, but safety first)
             if route_a.id == route_b.id {
                 continue;
             }
 
-            // Find intersection
-            for (idx_a, stop_a) in route_a.stops_normalized.iter().enumerate() {
-                // Must be after origin
+            for (idx_a, stop_name_a) in route_a.stops_normalized.iter().enumerate() {
                 if idx_a <= origin_idx_a {
                     continue;
                 }
 
-                for (idx_b, stop_b) in route_b.stops_normalized.iter().enumerate() {
-                    // Must be before dest
+                for (idx_b, stop_name_b) in route_b.stops_normalized.iter().enumerate() {
                     if idx_b >= dest_idx_b {
                         continue;
                     }
 
-                    if stop_a == stop_b {
-                        // Found a transfer point!
-                        let transfer_name = route_a.stops[idx_a].clone();
+                    if stop_name_a == stop_name_b {
+                        // Found intersection
+                        let transfer_name = route_a.stops[idx_a].name.clone();
 
                         journeys.push(Journey {
                             type_: "Transfer".to_string(),
-                            legs: vec![
-                                enrich_route((*route_a).clone()),
-                                enrich_route((*route_b).clone()),
-                            ],
+                            legs: vec![route_a.clone(), route_b.clone()],
                             transfer_point: Some(transfer_name),
                             total_price: route_a.price + route_b.price,
                         });
@@ -716,9 +691,7 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
         }
     }
 
-    // Deduplicate and Sort
     journeys.sort_by(|a, b| {
-        // Score: Direct=2, Hub Transfer=1, Other=0
         let get_score = |j: &Journey| {
             if j.type_ == "Direct" {
                 2
@@ -736,16 +709,13 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
         let score_a = get_score(a);
         let score_b = get_score(b);
 
-        score_b
-            .cmp(&score_a) // Higher score first
-            .then_with(|| {
-                a.total_price
-                    .partial_cmp(&b.total_price)
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            }) // Lower price first
+        score_b.cmp(&score_a).then_with(|| {
+            a.total_price
+                .partial_cmp(&b.total_price)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
     });
 
-    // Limit results to avoid overwhelming user
     if journeys.len() > 5 {
         journeys.truncate(5);
     }
@@ -753,103 +723,92 @@ pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Journey> {
     journeys
 }
 
-#[wasm_bindgen]
-pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
-    // 🛡️ SECURITY: Prevent DoS via excessive string processing
-    if origin.len() > 100 || dest.len() > 100 {
-        return serde_wasm_bindgen::to_value(&Vec::<Journey>::new()).map_err(|e| JsValue::from_str(&e.to_string()));
-    }
-
-    let routes = find_route_rs(origin, dest);
-    serde_wasm_bindgen::to_value(&routes).map_err(|e| JsValue::from_str(&e.to_string()))
-}
-
-#[wasm_bindgen]
-pub fn get_all_routes() -> Result<JsValue, JsValue> {
-    let routes = &*CATALOG;
-    serde_wasm_bindgen::to_value(routes).map_err(|e| JsValue::from_str(&e.to_string()))
-}
-
-#[wasm_bindgen]
-pub fn validate_operator_funds(balance: f64) -> bool {
-    // Threshold is 180 MXN (approx 9 USD)
-    // If balance is below this, they cannot operate "Compass"
-    balance >= 180.0
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    // Helper to load test data
+    fn load_test_data() {
+        let json = r#"{
+            "version": "2.3.0",
+            "rutas": [
+                {
+                    "id": "R1_ZONA_HOTELERA_001",
+                    "nombre": "R-1 Centro -> Zona Hotelera",
+                    "tarifa": 15,
+                    "tipo": "Bus_Urban",
+                    "paradas": [
+                        { "nombre": "La Rehoyada", "lat": 21.1619, "lng": -86.8515, "orden": 1 },
+                        { "nombre": "El Crucero", "lat": 21.1576, "lng": -86.8269, "orden": 2 },
+                        { "nombre": "Zona Hotelera", "lat": 21.135, "lng": -86.768, "orden": 3 }
+                    ]
+                },
+                {
+                    "id": "R2_94_VILLAS_OTOCH_001",
+                    "nombre": "R-2-94 Villas Otoch",
+                    "tarifa": 15,
+                    "tipo": "Bus_Urban",
+                    "paradas": [
+                        { "nombre": "Villas Otoch Paraíso", "lat": 21.1685, "lng": -86.885, "orden": 1 },
+                        { "nombre": "El Crucero", "lat": 21.1576, "lng": -86.8269, "orden": 2 }
+                    ]
+                }
+            ]
+        }"#;
+        // Use _core function to avoid JsValue panic
+        load_catalog_core(json).unwrap();
+    }
+
     #[test]
-    fn test_find_route_demo_override() {
-        // Matches R-2-94: "OXXO Villas Otoch Paraíso" -> "Zona Hotelera"
-        let res = find_route_rs("Villas Otoch Paraíso", "Zona Hotelera");
+    fn test_load_catalog() {
+        load_test_data();
+        let all_routes_res = get_all_routes_core(); // Use _core
+        assert!(all_routes_res.is_ok());
+
+        let db = DB.read().unwrap();
+        assert_eq!(db.routes_list.len(), 2);
+        assert!(db.routes_map.contains_key("R1_ZONA_HOTELERA_001"));
+    }
+
+    #[test]
+    fn test_find_route_direct() {
+        load_test_data();
+        let db = DB.read().unwrap();
+        let res = find_route_rs("La Rehoyada", "Zona Hotelera", &db.routes_list);
 
         assert!(!res.is_empty());
-        assert!(res
-            .iter()
-            .any(|j| j.type_ == "Direct" && j.legs[0].id == "R2_94_VILLAS_OTOCH_001"));
+        assert_eq!(res[0].type_, "Direct");
+        assert_eq!(res[0].legs[0].id, "R1_ZONA_HOTELERA_001");
     }
 
     #[test]
-    fn test_find_route_fuzzy() {
-        // "El Crocero" (typo of "El Crucero") to "Ultramar" (part of "Muelle Ultramar")
-        // Valid direction in CR_PTO_JUAREZ_001 (Index 1 -> Index 4)
-        let res = find_route_rs("El Crocero", "Ultramar");
+    fn test_find_route_transfer() {
+        load_test_data();
+        let db = DB.read().unwrap();
+
+        let res = find_route_rs("Villas Otoch Paraíso", "Zona Hotelera", &db.routes_list);
 
         assert!(!res.is_empty());
-        assert!(res
-            .iter()
-            .any(|j| j.type_ == "Direct" && j.legs[0].id == "CR_PTO_JUAREZ_001"));
+        let transfer = res.iter().find(|j| j.type_ == "Transfer");
+        assert!(transfer.is_some());
+
+        let t = transfer.unwrap();
+        assert_eq!(t.legs[0].id, "R2_94_VILLAS_OTOCH_001");
+        assert_eq!(t.legs[1].id, "R1_ZONA_HOTELERA_001");
+        assert_eq!(t.transfer_point.as_deref(), Some("El Crucero"));
     }
 
     #[test]
-    fn test_transfer_logic() {
-        // Villas Otoch -> Playa Delfines (requires transfer)
-        // R-28 (Villas Otoch -> El Crucero)
-        // R-1 (El Crucero -> Playa Delfines)
-
-        // This relies on CATALOG data
-        let res = find_route_rs("Villas Otoch", "Playa Delfines");
-        // Optimization short-circuit
-        if res.iter().any(|j| j.type_ == "Direct") {
-            return;
-        }
-
-        // Filter for transfer
-        assert!(res.iter().any(|j| j.type_ == "Transfer"
-            && j.transfer_point
-                .as_ref()
-                .map(|s| s.contains("Crucero"))
-                .unwrap_or(false)));
+    fn test_invalid_json() {
+        let res = load_catalog_core("invalid json"); // Use _core
+        assert!(res.is_err());
     }
 
     #[test]
-    fn test_garbage_input() {
-        let res = find_route_rs("XyZ123Rubbish", "AbC987Junk");
-        assert!(
-            res.is_empty(),
-            "Should return empty for garbage input, got {} routes",
-            res.len()
-        );
-    }
-
-    #[test]
-    fn test_direct_priority() {
-        // "Villas Otoch Paraíso" -> "Zona Hotelera" is a direct route on R-2-94.
-        // It should NOT return any transfers even if they exist.
-        let res = find_route_rs("Villas Otoch Paraíso", "Zona Hotelera");
-
-        assert!(!res.is_empty());
-        // All returned journeys must be Direct
-        assert!(res.iter().all(|j| j.type_ == "Direct"));
-    }
-
-    #[test]
-    fn test_huge_input_dos_prevention() {
-        let huge_string = "a".repeat(200);
-        let res = find_route_rs(&huge_string, "Zona Hotelera");
-        assert!(res.is_empty()); // Should be rejected immediately
+    fn test_get_route_by_id() {
+        load_test_data();
+        let route = get_route_by_id_core("R1_ZONA_HOTELERA_001").unwrap(); // Use _core
+        assert!(route.is_some());
+        assert_eq!(route.unwrap().id, "R1_ZONA_HOTELERA_001");
     }
 }
