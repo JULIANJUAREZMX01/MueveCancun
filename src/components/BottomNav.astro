@@ -10,37 +10,23 @@ const navItems = [
 ];
 ---
 
-<nav transition:persist
-     class="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom"
-     style="background: var(--surface-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--border-light);">
-  <div class="grid grid-cols-5 h-16 max-w-lg mx-auto">
+<nav transition:persist class="graffiti-nav">
+  <div class="nav-container">
     {navItems.map((item) => {
       const isActive = item.activePattern.test(pathname);
       return (
-        <a
-          href={item.href}
-          class:list={[
-            'flex flex-col items-center justify-center gap-0.5 transition-all no-underline relative group',
-            isActive ? 'text-primary-500' : 'text-slate-400 dark:text-slate-500'
-          ]}
-        >
-          {/* Active indicator dot */}
+        <a href={item.href} class={`nav-item ${isActive ? 'active' : ''}`}>
+          {/* Active Indicator with View Transition Name for smooth gliding */}
           {isActive && (
-            <div class="absolute -top-px left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-primary-500 animate-scale-in"></div>
+            <div class="active-indicator" transition:name="nav-indicator"></div>
           )}
 
-          <span
-            class:list={[
-              'material-symbols-rounded text-2xl transition-all',
-              isActive ? 'scale-105' : 'group-hover:scale-105 group-active:scale-95'
-            ]}
-            style={isActive ? "font-variation-settings: 'FILL' 1;" : "font-variation-settings: 'FILL' 0;"}
-          >{item.icon}</span>
+          <span class="material-symbols-rounded nav-icon"
+                style={`font-variation-settings: 'FILL' ${isActive ? 1 : 0};`}>
+            {item.icon}
+          </span>
 
-          <span class:list={[
-            'text-[10px] font-bold tracking-wide transition-colors truncate w-full text-center',
-            isActive ? 'text-primary-600 dark:text-primary-400' : ''
-          ]}>
+          <span class="nav-label">
             {item.label}
           </span>
         </a>
@@ -48,3 +34,91 @@ const navItems = [
     })}
   </div>
 </nav>
+
+<style>
+  /*
+   * GRAFFITI WARRIOR: CSS5
+   * Pure CSS Grid & Variables. No Tailwind.
+   */
+
+  .graffiti-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: var(--surface-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border-light);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .nav-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    height: var(--bottom-nav-h); /* 4rem from tokens */
+    max-width: 32rem; /* max-w-lg */
+    margin: 0 auto;
+  }
+
+  .nav-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.125rem;
+    text-decoration: none;
+    color: var(--text-tertiary); /* Slate-400 */
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Active State Logic */
+    &.active {
+      color: var(--color-primary); /* Primary-500 */
+    }
+
+    &:hover:not(.active) {
+      color: var(--text-primary);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  /* The magic gliding indicator */
+  .active-indicator {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2rem; /* w-8 approx */
+    height: 3px;
+    background: var(--color-primary);
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    /* view-transition-name: nav-indicator; <- handled via transition:name attribute */
+  }
+
+  .nav-icon {
+    font-size: 1.5rem; /* text-2xl */
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    /* Scale up slightly when active */
+    .active & {
+      transform: scale(1.1);
+    }
+  }
+
+  .nav-label {
+    font-size: 0.625rem; /* text-[10px] */
+    font-weight: 700;
+    letter-spacing: 0.025em;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>
