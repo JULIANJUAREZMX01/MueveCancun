@@ -37,11 +37,7 @@ modules.forEach(mod => {
     if (hasWasmPack) {
         try {
             // 1. Build with wasm-pack
-            // First pass with --no-typescript
-            execSync(`wasm-pack build --target web --out-dir ${publicOutDir} --no-typescript`, {
-                cwd: sourceDir,
-                stdio: 'inherit'
-            });
+            // Build with wasm-pack (single pass with types)
 
             // Second pass for types (matching original logic)
             execSync(`wasm-pack build --target web --out-dir ${publicOutDir}`, {
