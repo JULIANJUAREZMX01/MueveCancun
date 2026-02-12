@@ -455,64 +455,7 @@ const ui = useTranslations(currentLang);
       });
   }
 
-<<<<<<< HEAD
-  function setLoading(isLoading) {
-      if (!searchBtn) return;
-      if (isLoading) {
-          searchBtn.innerHTML = '<span class="material-symbols-rounded icon animate-spin">progress_activity</span> ' + ui[currentLang]['calc.calculating'];
-          searchBtn.disabled = true;
-      } else {
-          searchBtn.innerHTML = '<span class="material-symbols-rounded icon" id="search-icon">search</span> ' + '<span id="search-btn-text" data-i18n="calc.btn">' + ui[currentLang]['calc.btn'] + '</span>';
-          searchBtn.disabled = false;
-      }
-  }
-
-  // --- Rendering Results ---
-
-  function renderResults(journeys) {
-      if (!resultsContainer) return;
-      resultsContainer.innerHTML = '';
-
-      if (!journeys || journeys.length === 0) {
-          renderError(ui[currentLang]['calc.no_routes']);
-          return;
-      }
-
-      journeys.forEach((journey, index) => {
-          const isBest = index === 0;
-          let html = '';
-
-          if (journey.type === 'Direct') {
-              html = renderCardHtml(journey, isBest);
-          } else {
-              html = renderTransferCardHtml(journey, isBest);
-          }
-
-          const template = document.createElement('div');
-          template.innerHTML = html.trim();
-          const card = template.firstChild;
-
-          const mapBtn = card.querySelector('.view-map-btn');
-          if (mapBtn) {
-             mapBtn.addEventListener('click', (e) => {
-                 e.stopPropagation();
-                 window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', {
-                    detail: {
-                       journey: journey,
-                       userLocation: userLocation
-                    }
-                 }));
-                 // Trigger View State Change
-                 window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
-             });
-          }
-
-          resultsContainer.appendChild(card);
-      });
-  }
-=======
   // --- Rendering Functions ---
->>>>>>> feat/integrate-saturmex-fix-balance-6414667202118047842
 
   function getTransportLabel(type) {
       if (!type) return 'Bus';
