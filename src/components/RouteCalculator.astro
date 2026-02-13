@@ -316,6 +316,9 @@ const ui = useTranslations(currentLang);
           const jsonData = JSON.parse(catalogString); // Parse once for cache if needed
           console.log("✅ Catalog loaded into WASM:", jsonData.rutas?.length || 0, "routes");
           
+          // Optimization: Initialize store with data we already have
+          coordinatesStore.init(jsonData);
+
           const searchBtn = document.getElementById("search-btn");
           const spinner = document.getElementById("btn-spinner");
           const txt = document.getElementById("btn-text");
