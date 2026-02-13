@@ -69,12 +69,16 @@ const { id = 'passenger-selector', initialCount = 3 } = Astro.props;
         align-items: center;
         justify-content: space-between;
         pointer-events: none;
+        gap: 0.5rem; /* Add gap to prevent overlap */
     }
 
     .selector-value span {
         font-size: 0.875rem;
         font-weight: 600;
         color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .selector-value .arrow {

@@ -604,85 +604,121 @@ const ui = useTranslations(currentLang);
 
   // --- Search Logic ---
 
-  btn?.addEventListener('click', async () => {
-      const origin = document.getElementById('origin-input').value;
-      const dest = document.getElementById('destination-input').value;
-      const tourist = document.getElementById('tourist-checkbox')?.checked || false;
-      const seats = parseInt(document.getElementById('seats-input')?.value || '1');
+  // --- Event Listeners ---
 
-      if (!origin || !dest) {
-          renderError(ui[currentLang]['calc.error.empty']);
-          return;
+  function setupEventListeners() {
+      const btn = document.getElementById('search-btn');
+      
+      // Remove existing listener to prevent duplicates if any
+      const newBtn = btn?.cloneNode(true);
+      if (btn && newBtn) {
+          btn.parentNode.replaceChild(newBtn, btn);
       }
+      
+      const searchButton = document.getElementById('search-btn');
 
-      const spinner = document.getElementById('btn-spinner');
-      const btnText = document.getElementById('btn-text');
-
-      btn.disabled = true;
-      spinner?.classList.remove('hidden');
-      btnText?.classList.add('hidden');
-      resultsContainer.innerHTML = '';
-      document.getElementById('best-result-area').innerHTML = '';
-      document.getElementById('results-info').classList.add('hidden');
-
-      try {
-          if (!wasmLoaded) throw new Error("WASM not ready");
-
-          console.log(`🔍 Searching: ${origin} -> ${dest}`);
-          const results = find_route(origin, dest);
-
-          // MOCK: If empty, try one fallback for demo if debugging
-          // if (results.length === 0) ...
-
-          if (results.length === 0) {
-              renderError(ui[currentLang]['calc.error.no_route']);
-          } else {
-             // Sort by price/time/direct
-             // Assuming WASM returns somewhat sorted or we sort here
-             // Prefer direct
-             results.sort((a, b) => {
-                 if (a.type === 'Direct' && b.type !== 'Direct') return -1;
-                 if (b.type === 'Direct' && a.type !== 'Direct') return 1;
-                 return a.total_price - b.total_price;
-             });
-
-             const best = results[0];
-             const others = results.slice(1);
-
-             document.getElementById('results-count-label').textContent = `${results.length} OPCIONES`;
-             document.getElementById('results-info').classList.remove('hidden');
-
-             const bestArea = document.getElementById('best-result-area');
-
-             if (best.type === 'Transfer') {
-                 bestArea.innerHTML = renderTransferCardHtml(best, true);
-             } else {
-                 bestArea.innerHTML = renderBestResultHtml(best, true);
-             }
-
-             if (others.length > 0) {
-                 others.forEach(r => {
-                     const div = document.createElement('div');
-                     div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r);
-                     resultsContainer.appendChild(div.firstElementChild);
-                 });
-             }
-
-             // Track search
-             if (window.analytics) {
-                 window.analytics.track('search_route', { origin, dest, results: results.length });
-             }
+      searchButton?.addEventListener('click', async () => {
+          const originInput = document.getElementById('origin-input');
+          const destInput = document.getElementById('destination-input');
+          const origin = originInput?.value;
+          const dest = destInput?.value;
+          
+          if (!origin || !dest) {
+              renderError(ui[currentLang]?.['calc.error.empty'] || "Please fill in both fields");
+              return;
           }
 
-      } catch (e) {
-          console.error(e);
-          renderError("Error calculating route");
-      } finally {
-          btn.disabled = false;
-          spinner?.classList.add('hidden');
-          btnText?.classList.remove('hidden');
-      }
-  });
+          const spinner = document.getElementById('btn-spinner');
+          const btnText = document.getElementById('btn-text');
+          const resultsContainer = document.getElementById('results-container');
+
+          if (searchButton) searchButton.disabled = true;
+          spinner?.classList.remove('hidden');
+          btnText?.classList.add('hidden');
+          
+          if (resultsContainer) resultsContainer.innerHTML = '';
+          const bestResultArea = document.getElementById('best-result-area');
+          if (bestResultArea) bestResultArea.innerHTML = '';
+          document.getElementById('results-info')?.classList.add('hidden');
+
+          try {
+              if (!wasmLoaded || typeof find_route !== 'function') {
+                  throw new Error("WASM not ready or find_route not defined");
+              }
+
+              console.log(`🔍 Searching: ${origin} -> ${dest}`);
+              const results = find_route(origin, dest); // Pass strings directly
+
+              console.log("🔍 Raw Results:", results);
+
+              if (!results || results.length === 0) {
+                  renderError(ui[currentLang]?.['calc.error.no_route'] || "No route found");
+              } else {
+                 results.sort((a, b) => {
+                     // Prioritize Direct routes
+                     if (a.type === 'Direct' && b.type !== 'Direct') return -1;
+                     if (b.type === 'Direct' && a.type !== 'Direct') return 1;
+                     return a.total_price - b.total_price;
+                 });
+
+                 const best = results[0];
+                 const others = results.slice(1);
+
+                 const countLabel = document.getElementById('results-count-label');
+                 if (countLabel) countLabel.textContent = `${results.length} ${currentLang === 'es' ? 'OPCIONES' : 'OPTIONS'}`;
+                 
+                 document.getElementById('results-info')?.classList.remove('hidden');
+
+                 if (bestResultArea) {
+                     if (best.type === 'Transfer') {
+                         bestArea.innerHTML = renderTransferCardHtml(best, true);
+                     } else {
+                         bestArea.innerHTML = renderBestResultHtml(best, true);
+                     }
+                 }
+
+                 if (others.length > 0 && resultsContainer) {
+                     others.forEach(r => {
+                         const div = document.createElement('div');
+                         div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r);
+                         resultsContainer.appendChild(div.firstElementChild);
+                     });
+                 }
+                 
+                 // Re-attach map buttons
+                 document.querySelectorAll('.view-map-btn').forEach(btn => {
+                     btn.addEventListener('click', (e) => {
+                         try {
+                             const journeyData = JSON.parse(btn.dataset.journey);
+                             window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', {
+                                detail: { journey: journeyData }
+                             }));
+                             // Also trigger view state change to map
+                             window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
+                         } catch (err) {
+                             console.error("Error parsing journey data for map:", err);
+                         }
+                     });
+                 });
+              }
+
+          } catch (e) {
+              console.error("❌ Search Error:", e);
+              renderError(`Error: ${e.message || "Calculation failed"}`);
+          } finally {
+              if (searchButton) searchButton.disabled = false;
+              spinner?.classList.add('hidden');
+              btnText?.classList.remove('hidden');
+          }
+      });
+  }
+
+  // Hook into start
+  const originalStart = start;
+  start = async function() {
+      await originalStart(); // Run initialization
+      setupEventListeners(); // Then setup listeners
+  };
 
   document.addEventListener('astro:page-load', start);
 
