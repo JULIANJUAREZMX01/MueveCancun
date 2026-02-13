@@ -66,6 +66,7 @@ const ui = useTranslations(currentLang);
         <div class="relative z-20">
           <Input
             id="origin-input"
+            variant="floating"
             label="Origin"
             icon="/icons/map-pin.svg"
             placeholder="From where?"
@@ -74,12 +75,13 @@ const ui = useTranslations(currentLang);
             aria-expanded="false"
             data-i18n-label="calc.origin"
             data-i18n-placeholder="calc.placeholder.origin"
-          />
-          <!-- GPS Button inside Input -->
-          <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip">
-             <span class="material-symbols-rounded text-lg">my_location</span>
-          </button>
-          <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn" data-i18n="calc.gps">Use my location</div>
+          >
+            <!-- GPS Button inside Input -->
+            <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip">
+               <span class="material-symbols-rounded text-lg">my_location</span>
+            </button>
+            <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn" data-i18n="calc.gps">Use my location</div>
+          </Input>
         </div>
 
         <!-- Swap Icon (Visual only for now) -->
@@ -92,6 +94,7 @@ const ui = useTranslations(currentLang);
         <div class="relative z-0">
           <Input
             id="destination-input"
+            variant="floating"
             label="Destination"
             icon="/icons/flag.svg"
             placeholder="Where to?"
@@ -100,7 +103,7 @@ const ui = useTranslations(currentLang);
             aria-expanded="false"
             data-i18n-label="calc.dest"
             data-i18n-placeholder="calc.placeholder.dest"
-          />
+          >
             <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip">
               <img src="/icons/map-plus.svg" class="w-5 h-5" alt="Map Picker" />
             </button>
