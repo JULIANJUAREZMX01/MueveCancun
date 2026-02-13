@@ -71,10 +71,47 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
         class="graffiti-input"
       />
     )}
+
+    {/* Password Toggle (GraffitiWarrior Micro-UX) */}
+    {type === 'password' && (
+      <button
+        type="button"
+        id={`${id}-toggle`}
+        class="password-toggle"
+        aria-label="Toggle password visibility"
+        tabindex="-1"
+      >
+        <span class="material-symbols-rounded icon">visibility</span>
+      </button>
+    )}
+
     <slot name="action" />
   </div>
   <slot name="datalist" />
 </div>
+
+<script define:vars={{ id, type }}>
+  if (type === 'password') {
+    const toggle = document.getElementById(`${id}-toggle`);
+    const input = document.getElementById(id);
+
+    if (toggle && input) {
+      toggle.addEventListener('click', () => {
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+
+        // Update Icon
+        const icon = toggle.querySelector('.icon');
+        if (icon) {
+            icon.textContent = isPassword ? 'visibility_off' : 'visibility';
+        }
+
+        // Focus back to input for better UX
+        input.focus();
+      });
+    }
+  }
+</script>
 
 <style>
   /*
@@ -128,6 +165,8 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
       &::placeholder {
         color: var(--text-tertiary); /* slate-300 */
         font-weight: 400;
+        opacity: 1; /* Default visible */
+        transition: opacity 0.2s ease;
       }
 
       &:focus-visible {
@@ -147,6 +186,33 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
         border-color: var(--color-coral); /* danger-500 */
         box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-coral) 20%, transparent);
       }
+    }
+
+    /* Password Toggle Button */
+    .password-toggle {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 0.5rem;
+        border-radius: 9999px; /* full */
+        color: var(--text-tertiary);
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+
+        &:hover {
+            background-color: var(--surface-hover, rgba(0,0,0,0.05));
+            color: var(--text-primary);
+        }
+
+        .icon {
+            font-size: 1.25rem;
+        }
     }
 
     /* Focus Within State using :has() to style Label */
@@ -175,8 +241,14 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
         pointer-events: none; /* crucial for floating label click-through */
       }
 
+      /* Hide placeholder initially in floating mode */
       .graffiti-input::placeholder {
-         color: transparent;
+         opacity: 0;
+      }
+
+      /* Reveal placeholder on focus */
+      .graffiti-input:focus-visible::placeholder {
+         opacity: 1;
       }
 
       /* Float logic */
