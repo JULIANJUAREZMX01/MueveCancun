@@ -9,14 +9,14 @@ export interface Coordinate {
 class CoordinatesStore {
     private db: Record<string, [number, number]> | null = null;
     private spatialIndex: SpatialHash<string> | null = null;
-    private loadingPromise: Promise<void> | null = null;
+    private loadingPromise: Promise<{ text: string, data: any }> | null = null;
     private allPoints: Coordinate[] = [];
 
     // Singleton instance
     static instance = new CoordinatesStore();
 
-    async init() {
-        if (this.db) return;
+    async init(): Promise<{ text: string, data: any }> {
+        // If already loading or loaded, return the promise
         if (this.loadingPromise) return this.loadingPromise;
 
         this.loadingPromise = (async () => {
@@ -24,7 +24,10 @@ class CoordinatesStore {
                 console.log("[CoordinatesStore] Fetching master routes for coordinates...");
                 const res = await fetch('/data/master_routes.json');
                 if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                const data = await res.json();
+
+                // Fetch as text to pass raw string to WASM later if needed
+                const text = await res.text();
+                const data = JSON.parse(text);
                 
                 this.db = {};
                 this.allPoints = [];
@@ -55,6 +58,7 @@ class CoordinatesStore {
                     });
                 }
                 console.log(`[CoordinatesStore] Loaded ${this.allPoints.length} unique stops from master routes.`);
+                return { text, data };
             } catch (e) {
                 console.error("[CoordinatesStore] Failed to load routes:", e);
                 this.loadingPromise = null; // Allow retry

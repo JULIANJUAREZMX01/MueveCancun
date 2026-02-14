@@ -199,7 +199,6 @@ const ui = useTranslations(currentLang);
 
 <div id="i18n-data" data-ui={JSON.stringify(ui)} class="hidden"></div>
 <script>
-  import { openDB } from 'idb';
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
 
@@ -298,22 +297,15 @@ const ui = useTranslations(currentLang);
       // Load aggregated routes from API (Optimized)
       if (typeof load_catalog === 'function') {
         try {
-          console.log("📦 Loading route catalog...");
-          // Use static file
-          const response = await fetch('/data/master_routes.json');
+          console.log("📦 Loading route catalog via CoordinatesStore...");
           
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          // ✅ SIMÓN: Bypass redundant parse-stringify cycle by fetching text
+          // ✅ SIMÓN: Use CoordinatesStore to avoid redundant fetch
           console.time("WASM Load");
-          const catalogString = await response.text();
+          const { text: catalogString, data: jsonData } = await coordinatesStore.init();
 
           await load_catalog(catalogString);
           console.timeEnd("WASM Load");
 
-          const jsonData = JSON.parse(catalogString); // Parse once for cache if needed
           console.log("✅ Catalog loaded into WASM:", jsonData.rutas?.length || 0, "routes");
           
           const searchBtn = document.getElementById("search-btn");
