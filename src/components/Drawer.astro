@@ -5,7 +5,7 @@ const { pathname } = Astro.url
 const subpath = pathname.match(/[^/]+/g)
 ---
 
-<div id="drawer" class="fixed inset-0 h-0 z-40 overflow-hidden flex flex-col items-center justify-center md:hidden bg-neutral-100 dark:bg-neutral-900 transition-[height] duration-300 ease-in-out">
+<div id="drawer" popover class="fixed inset-0 w-screen h-screen z-40 flex flex-col items-center justify-center md:hidden bg-neutral-100 dark:bg-neutral-900 transition-colors duration-300">
   <nav class="flex flex-col items-center space-y-2">
     {
       LINKS.map((LINK) => (
@@ -41,7 +41,88 @@ const subpath = pathname.match(/[^/]+/g)
 </div>
 
 <style>
-  #drawer.open {
-    @apply h-full;
+  #drawer {
+    /* Native Popover Reset */
+    margin: 0;
+    padding: 0;
+    border: none;
+
+    /* Full Screen Overlay */
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+
+    /* Animation Base State (Closed) */
+    opacity: 0;
+    transform: translateY(-20px);
+
+    /* Transition Properties */
+    transition:
+      opacity 0.3s ease-out,
+      transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+      display 0.3s allow-discrete,
+      overlay 0.3s allow-discrete;
+  }
+
+  #drawer:popover-open {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @starting-style {
+    #drawer:popover-open {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  }
+
+  /* Backdrop Blur Effect */
+  #drawer::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition:
+      opacity 0.3s ease-out,
+      display 0.3s allow-discrete,
+      overlay 0.3s allow-discrete;
+  }
+
+  #drawer:popover-open::backdrop {
+    opacity: 1;
+  }
+
+  @starting-style {
+    #drawer:popover-open::backdrop {
+      opacity: 0;
+    }
   }
 </style>
+
+<script>
+  function initDrawer() {
+    const drawer = document.getElementById("drawer");
+    if (!drawer) return;
+
+    // Remove any existing listeners to be safe (though usually new element)
+    // Actually, simple named function avoids mess, but cloning node is cleaner if needed.
+    // For now, just adding is fine as the element is likely fresh from swap.
+
+    drawer.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest("a") || target.closest("button")) {
+        // Don't close if it's the theme button
+        if (target.closest("#drawer-theme-button")) return;
+
+        // Native method to hide popover
+        (drawer as HTMLElement).hidePopover();
+      }
+    });
+  }
+
+  // Initial load
+  initDrawer();
+
+  // View Transitions support
+  document.addEventListener("astro:after-swap", initDrawer);
+</script>
