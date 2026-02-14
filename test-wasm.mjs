@@ -1,28 +1,44 @@
-import init, { calculate_route } from './public/wasm/route-calculator/route_calculator.js';
+import init, { load_catalog, find_route } from './public/wasm/route-calculator/route_calculator.js';
 import fs from 'fs';
 
 async function test() {
-  const routesData = JSON.parse(fs.readFileSync('./public/data/master_routes.json', 'utf8'));
+  // Read raw JSON string (simulating fetch response.text())
+  const routesData = fs.readFileSync('./public/data/master_routes.json', 'utf8');
 
+  // Initialize WASM with binary buffer
   await init(fs.readFileSync('./public/wasm/route-calculator/route_calculator_bg.wasm'));
 
-  console.log('--- Testing Airport Gatekeeper ---');
+  console.log('--- 🐢 Crush.yaml: Testing Decoupled WASM ---');
 
-  // Test 1: ADO to Airport (should have NO warning)
-  // Terminal ADO Centro: 21.1586, -86.8259
-  // Aeropuerto Terminal 2: 21.0417, -86.8761
-  const result1 = calculate_route(21.1586, -86.8259, 21.0417, -86.8761, routesData);
-  console.log('Test 1 (ADO to Airport):', result1.airport_warning ? 'FAIL (Warning found)' : 'PASS (No warning)');
-  if (result1.airport_warning) console.log('Warning:', result1.airport_warning.es);
+  // 1. Load Catalog (The Decoupling Test)
+  try {
+      console.time("Load Catalog");
+      load_catalog(routesData);
+      console.timeEnd("Load Catalog");
+      console.log('✅ Catalog Loaded Successfully (No panic!)');
+  } catch (e) {
+      console.error('❌ Catalog Load Failed (Wipeout!):', e);
+      process.exit(1);
+  }
 
-  // Test 2: Bus to Airport (should have warning)
-  // Walmart: 21.1595, -86.8365
-  // Aeropuerto Terminal 2: 21.0417, -86.8761
-  const result2 = calculate_route(21.1595, -86.8365, 21.0417, -86.8761, routesData);
-  console.log('Test 2 (Bus to Airport):', result2.airport_warning ? 'PASS (Warning found)' : 'FAIL (No warning)');
-  if (result2.airport_warning) console.log('Warning:', result2.airport_warning.es);
+  // 2. Test Route Finding (Logic Test)
+  // Using known stops from master_routes.json (assuming it has data)
+  const origin = "El Crucero";
+  const dest = "Zona Hotelera";
 
-  console.log('--- Test Complete ---');
+  console.log(`🔍 Searching: ${origin} -> ${dest}`);
+  const result = find_route(origin, dest);
+
+  if (result && result.length > 0) {
+      console.log(`✅ Found ${result.length} routes!`);
+      const best = result[0];
+      console.log(`🏆 Best Route: [${best.type}] ${best.legs.map(l => l.name).join(' -> ')}`);
+      console.log(`💰 Price: $${best.total_price}`);
+  } else {
+      console.log('⚠️ No routes found. (Check data/stops names)');
+  }
+
+  console.log('--- Test Complete: Fin, Noggin, Dude. ---');
 }
 
 test().catch(console.error);

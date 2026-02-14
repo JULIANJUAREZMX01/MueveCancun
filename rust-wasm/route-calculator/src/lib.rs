@@ -340,9 +340,9 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
 
                         if best_transfer.is_none() {
                             best_transfer = Some((idx_a, is_preferred));
-                        } else {
+                        } else if let Some((_, prev_preferred)) = best_transfer {
                             // If current is preferred and previous wasn't, switch
-                            if is_preferred && !best_transfer.unwrap().1 {
+                            if is_preferred && !prev_preferred {
                                 best_transfer = Some((idx_a, is_preferred));
                             }
                         }

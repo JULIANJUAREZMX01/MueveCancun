@@ -308,7 +308,19 @@ const ui = useTranslations(currentLang);
 
           // ✅ SIMÓN: Bypass redundant parse-stringify cycle by fetching text
           console.time("WASM Load");
+
+          // 🛡️ Crush.yaml: Prevent Memory Wipeout (10MB Limit)
+          const MAX_SIZE = 10 * 1024 * 1024;
+          const contentLength = response.headers.get('content-length');
+          if (contentLength && parseInt(contentLength) > MAX_SIZE) {
+              throw new Error("Catalog too large (Header Check)");
+          }
+
           const catalogString = await response.text();
+
+          if (catalogString.length > MAX_SIZE) {
+             throw new Error("Catalog too large (Body Check)");
+          }
 
           await load_catalog(catalogString);
           console.timeEnd("WASM Load");
