@@ -81,8 +81,7 @@ const navItems = [
 
     <!-- ═══ Desktop Header (Hidden on Mobile) ═══ -->
     { !hideNav && (
-    <header class="hidden md:flex fixed top-0 left-0 right-0 z-40 h-16 px-6 items-center justify-between transition-all duration-300"
-            style="background: var(--surface-card); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-light);">
+    <header class="hidden md:flex fixed top-0 left-0 right-0 z-40 h-16 px-6 items-center justify-between transition-colors duration-300 app-header">
 
       <a href="/home" class="flex items-center gap-2.5 no-underline group outline-none">
         <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform">
@@ -119,8 +118,7 @@ const navItems = [
 
     <!-- ═══ Mobile Top Bar (Minimal - Brand Only) ═══ -->
     { !hideNav && (
-    <div class="md:hidden fixed top-0 left-0 right-0 z-40 h-14 px-4 flex items-center justify-between"
-         style="background: var(--surface-card); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-light);">
+    <div class="md:hidden fixed top-0 left-0 right-0 z-40 h-14 px-4 flex items-center justify-between app-header">
 
          <a href="/home" class="flex items-center gap-2">
             <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center shadow-md">
@@ -209,5 +207,34 @@ const navItems = [
       if (document.readyState === 'complete') setupThemeToggle();
       else window.addEventListener('load', setupThemeToggle);
     </script>
+
+    <style>
+      /*
+       * GRAFFITI WARRIOR: CSS5 Scroll-Driven Animations
+       * Header becomes opaque when scrolling down.
+       * No JS required.
+       */
+      .app-header {
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border-bottom: 1px solid transparent;
+
+        /* Animation Logic */
+        animation: header-scroll linear forwards;
+        animation-timeline: scroll();
+        animation-range: 0px 50px;
+      }
+
+      @keyframes header-scroll {
+        to {
+          background: var(--surface-card);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-bottom: 1px solid var(--border-light);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+      }
+    </style>
   </body>
 </html>

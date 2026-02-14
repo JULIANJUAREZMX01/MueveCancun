@@ -54,7 +54,13 @@ import Container from "@components/Container.astro"
         </svg>
       </button>
 
-      <button id="header-drawer-button" aria-label={`Toggle drawer open and closed`} class={cn("flex md:hidden", "size-9 rounded-full p-2 items-center justify-center", "bg-transparent hover:bg-black/5 dark:hover:bg-white/20", "stroke-current hover:stroke-black hover:dark:stroke-white", "border border-black/10 dark:border-white/25", "transition-colors duration-300 ease-in-out")}>
+      <button
+        id="header-drawer-button"
+        popovertarget="drawer"
+        popovertargetaction="toggle"
+        aria-label={`Toggle drawer open and closed`}
+        class={cn("flex md:hidden", "size-9 rounded-full p-2 items-center justify-center", "bg-transparent hover:bg-black/5 dark:hover:bg-white/20", "stroke-current hover:stroke-black hover:dark:stroke-white", "border border-black/10 dark:border-white/25", "transition-colors duration-300 ease-in-out")}
+      >
         <svg id="drawer-open" class="size-full">
           <use href="/ui.svg#menu"></use>
         </svg>
@@ -68,36 +74,24 @@ import Container from "@components/Container.astro"
 </header>
 
 <style>
+  /* Default State */
   #header-drawer-button > #drawer-open {
-    @apply block;
+    display: block;
   }
-
   #header-drawer-button > #drawer-close {
-    @apply hidden;
+    display: none;
   }
 
-  #header-drawer-button.open > #drawer-open {
-    @apply hidden;
+  /*
+    GraffitiWarrior Magic:
+    When #drawer is open (anywhere in body), hide menu icon, show X icon.
+    Using :global because #drawer is outside this component scope.
+  */
+  :global(body:has(#drawer:popover-open)) #header-drawer-button > #drawer-open {
+    display: none;
   }
 
-  #header-drawer-button.open > #drawer-close {
-    @apply block;
+  :global(body:has(#drawer:popover-open)) #header-drawer-button > #drawer-close {
+    display: block;
   }
 </style>
-
-<script is:inline>
-  function toggleDrawer() {
-    const drawer = document.getElementById("drawer")
-    const drawerButton = document.getElementById("header-drawer-button")
-    drawer?.classList.toggle("open")
-    drawerButton?.classList.toggle("open")
-  }
-
-  function initializeDrawerButton() {
-    const drawerButton = document.getElementById("header-drawer-button")
-    drawerButton?.addEventListener("click", toggleDrawer)
-  }
-
-  document.addEventListener("astro:after-swap", initializeDrawerButton)
-  initializeDrawerButton()
-</script>
