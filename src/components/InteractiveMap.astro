@@ -75,12 +75,12 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         maxZoom: 19
     }).addTo(map);
 
-    // Load coordinates DB if needed (legacy fallback)
+    // Load coordinates DB via Store (Optimized)
     try {
-        const res = await fetch('/coordinates.json');
-        if (res.ok) coordinatesDB = await res.json();
+        await coordinatesStore.init();
+        coordinatesDB = coordinatesStore.getDB() || {};
     } catch (e) {
-        // console.warn("No legacy coordinates DB found");
+        console.warn("Failed to load coordinates via Store", e);
     }
 
     if (loader) loader.classList.add('hidden');
