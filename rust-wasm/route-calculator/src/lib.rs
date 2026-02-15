@@ -256,9 +256,14 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
 
     // Limit for DoS prevention
     const MAX_SEARCH_RESULTS: usize = 200;
+    const MAX_OPS: usize = 1_000_000;
+    let mut ops_count = 0;
 
     // 1. Direct Routes
     for m in &route_matches {
+        if journeys.len() >= MAX_SEARCH_RESULTS {
+            break;
+        }
         if let Some(origin_idx) = m.origin_idx {
             if let Some(dest_idx) = m.dest_idx {
                 if origin_idx < dest_idx {
@@ -329,6 +334,10 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
                 }
 
                 for (idx_b, stop_name_b) in route_b.stops_normalized.iter().enumerate() {
+                    ops_count += 1;
+                    if ops_count > MAX_OPS {
+                        break 'outer;
+                    }
                     if idx_b >= dest_idx_b {
                         continue;
                     }
@@ -487,5 +496,52 @@ mod tests {
         let db = DB.read().unwrap();
         let res = find_route_rs("XyZ123Rubbish", "AbC987Junk", &db.routes_list);
         assert!(res.is_empty(), "Should return empty for garbage input");
+    }
+
+    #[test]
+    fn test_dos_protection() {
+        // Generate synthetic heavy load: 300 routes, 50 stops each.
+        // All stops contain "Match" to ensure worst-case O(N^2) intersection.
+        let mut routes = Vec::new();
+        for i in 0..300 {
+            let mut stops = Vec::new();
+            for j in 0..50 {
+                stops.push(Stop {
+                    id: None,
+                    name: format!("Common Stop {} Match", j),
+                    lat: 0.0,
+                    lng: 0.0,
+                    orden: j,
+                    landmarks: "".to_string(),
+                });
+            }
+            routes.push(Route {
+                id: format!("R{}", i),
+                name: format!("Route {}", i),
+                price: 10.0,
+                transport_type: "Bus".to_string(),
+                empresa: None,
+                frecuencia_minutos: None,
+                horario: None,
+                stops: stops.clone(),
+                stops_normalized: stops.iter().map(|s| s.name.to_lowercase()).collect(),
+                social_alerts: vec![],
+                last_updated: "".to_string(),
+            });
+        }
+
+        let start = std::time::Instant::now();
+
+        // Without protection:
+        // 300 * 300 = 90,000 route pairs.
+        // 50 * 50 = 2,500 stop pairs per route pair.
+        // Total ops = 90,000 * 2,500 = 225,000,000 ops.
+        // This would normally take > 1-2 seconds even in Rust.
+
+        let _res = find_route_rs("Match", "Match", &routes);
+
+        let duration = start.elapsed();
+        // With MAX_OPS = 1,000,000, it should exit almost instantly (e.g., < 100ms).
+        assert!(duration.as_millis() < 500, "DoS protection failed! Took {:?}ms", duration.as_millis());
     }
 }
