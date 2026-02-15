@@ -91,6 +91,10 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
 // --- CORE LOGIC (Pure Rust, Testable) ---
 
 pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
+    if json_payload.len() > 10 * 1024 * 1024 {
+        return Err("ERROR: Payload too large (max 10MB)".to_string());
+    }
+
     let mut catalog: RouteCatalog = serde_json::from_str(json_payload).map_err(|e| {
         format!(
             "JSON Parse Error: {}. Expected {{version, rutas: [...]}}",
@@ -338,12 +342,15 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
                         let stop_name = &route_a.stops[idx_a].name;
                         let is_preferred = preferred_hubs.iter().any(|h| stop_name.contains(h));
 
-                        if best_transfer.is_none() {
-                            best_transfer = Some((idx_a, is_preferred));
-                        } else {
-                            // If current is preferred and previous wasn't, switch
-                            if is_preferred && !best_transfer.unwrap().1 {
+                        match best_transfer {
+                            None => {
                                 best_transfer = Some((idx_a, is_preferred));
+                            }
+                            Some((_, existing_is_preferred)) => {
+                                // If current is preferred and previous wasn't, switch
+                                if is_preferred && !existing_is_preferred {
+                                    best_transfer = Some((idx_a, is_preferred));
+                                }
                             }
                         }
                     }
