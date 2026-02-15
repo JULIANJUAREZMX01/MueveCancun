@@ -82,10 +82,10 @@ const ui = useTranslations(currentLang);
           <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn" data-i18n="calc.gps">Use my location</div>
         </div>
 
-        <!-- Swap Icon (Visual only for now) -->
-        <div class="absolute left-8 top-1/2 -translate-y-1/2 z-10 hidden md:block">
-          <button id="swap-btn" class="w-8 h-8 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform hover:bg-white text-slate-500">
-            <img src="/icons/swap.svg" class="w-5 h-5 opacity-60" alt="Swap" />
+        <!-- Swap Button -->
+        <div class="swap-btn-container">
+          <button id="swap-btn" class="swap-btn" type="button" aria-label="Intercambiar origen y destino">
+            <span class="material-symbols-rounded">swap_vert</span>
           </button>
         </div>
 
@@ -607,6 +607,35 @@ const ui = useTranslations(currentLang);
   // --- Event Listeners ---
 
   function setupEventListeners() {
+      // Swap Button Logic
+      const swapBtn = document.getElementById('swap-btn');
+      if (swapBtn) {
+          const newSwapBtn = swapBtn.cloneNode(true);
+          swapBtn.parentNode.replaceChild(newSwapBtn, swapBtn);
+
+          newSwapBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log("Swap clicked!");
+              const originInput = document.getElementById('origin-input');
+              const destInput = document.getElementById('destination-input');
+              if (originInput && destInput) {
+                  console.log("Before swap:", originInput.value, destInput.value);
+                  const temp = originInput.value;
+                  originInput.value = destInput.value;
+                  destInput.value = temp;
+                  console.log("After swap:", originInput.value, destInput.value);
+
+                  // Rotate animation
+                  newSwapBtn.classList.toggle('rotated');
+
+                  // Trigger input events
+                  originInput.dispatchEvent(new Event('input'));
+                  destInput.dispatchEvent(new Event('input'));
+              }
+          });
+      }
+
       const btn = document.getElementById('search-btn');
       
       // Remove existing listener to prevent duplicates if any
@@ -765,5 +794,57 @@ const ui = useTranslations(currentLang);
   button:hover + .graffiti-tooltip.top,
   button:focus-visible + .graffiti-tooltip.top {
     translate: 0 -6px; /* Offset for top */
+  }
+
+  /* Swap Button Logic */
+  .inputs-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+    isolation: isolate;
+  }
+
+  .swap-btn-container {
+    position: absolute;
+    inset-inline-end: 1rem;
+    top: 50%;
+    translate: 0 -50%;
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  .swap-btn {
+    pointer-events: auto;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--glass-shadow);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, color 0.2s;
+  }
+
+  .swap-btn:hover {
+    background-color: var(--surface-card);
+    color: var(--color-primary);
+    transform: scale(1.1);
+  }
+
+  .swap-btn:active {
+    transform: scale(0.9);
+  }
+
+  .swap-btn.rotated {
+    transform: rotate(180deg);
+  }
+
+  .swap-btn .material-symbols-rounded {
+    font-size: 1.25rem;
   }
 </style>
