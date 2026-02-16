@@ -4,7 +4,6 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 use strsim;
 use wasm_bindgen::prelude::*;
-use std::cmp::Ordering; // Sentinel: Added for safe comparison
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RouteCatalog {
@@ -259,6 +258,10 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
 
     // 1. Direct Routes
     for m in &route_matches {
+        if journeys.len() >= MAX_SEARCH_RESULTS {
+            break;
+        }
+
         if let Some(origin_idx) = m.origin_idx {
             if let Some(dest_idx) = m.dest_idx {
                 if origin_idx < dest_idx {
@@ -338,12 +341,15 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
                         let stop_name = &route_a.stops[idx_a].name;
                         let is_preferred = preferred_hubs.iter().any(|h| stop_name.contains(h));
 
-                        if best_transfer.is_none() {
-                            best_transfer = Some((idx_a, is_preferred));
-                        } else {
-                            // If current is preferred and previous wasn't, switch
-                            if is_preferred && !best_transfer.unwrap().1 {
+                        match best_transfer {
+                            None => {
                                 best_transfer = Some((idx_a, is_preferred));
+                            }
+                            Some((_, current_is_preferred)) => {
+                                // If current is preferred and previous wasn't, switch
+                                if is_preferred && !current_is_preferred {
+                                    best_transfer = Some((idx_a, is_preferred));
+                                }
                             }
                         }
                     }
