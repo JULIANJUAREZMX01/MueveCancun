@@ -259,6 +259,11 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
 
     // 1. Direct Routes
     for m in &route_matches {
+        // Enforce limit on direct routes
+        if journeys.len() >= MAX_SEARCH_RESULTS {
+            break;
+        }
+
         if let Some(origin_idx) = m.origin_idx {
             if let Some(dest_idx) = m.dest_idx {
                 if origin_idx < dest_idx {
@@ -296,6 +301,8 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
     ];
 
     const MAX_TRANSFER_ROUTES: usize = 50;
+    const MAX_OPS: usize = 2_000_000;
+    let mut ops_count = 0;
 
     'outer: for match_a in &routes_from_origin {
         let route_a = match_a.route;
@@ -329,6 +336,11 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
                 }
 
                 for (idx_b, stop_name_b) in route_b.stops_normalized.iter().enumerate() {
+                    ops_count += 1;
+                    if ops_count > MAX_OPS {
+                        break 'outer;
+                    }
+
                     if idx_b >= dest_idx_b {
                         continue;
                     }
@@ -487,5 +499,81 @@ mod tests {
         let db = DB.read().unwrap();
         let res = find_route_rs("XyZ123Rubbish", "AbC987Junk", &db.routes_list);
         assert!(res.is_empty(), "Should return empty for garbage input");
+    }
+
+    #[test]
+    fn test_dos_repro() {
+        // Create 2000 routes that all start with "Start"
+        // Create 2000 routes that all end with "End"
+        // Each has 50 stops.
+        // Start routes: Stop A 0..49
+        // End routes: Stop B 0..49
+        // NO OVERLAP -> Worst case for finding no transfers (scan all pairs)
+
+        let mut routes = Vec::new();
+        for i in 0..2000 {
+            let mut stops = Vec::new();
+            for j in 0..50 {
+                stops.push(Stop {
+                    id: None,
+                    name: format!("Common Long Prefix Stop A {}", j),
+                    lat: 0.0,
+                    lng: 0.0,
+                    orden: j as u32,
+                    landmarks: String::new(),
+                });
+            }
+            routes.push(Route {
+                id: format!("Start_{}", i),
+                name: format!("Start Route {}", i),
+                price: 10.0,
+                transport_type: "Bus".to_string(),
+                empresa: None,
+                frecuencia_minutos: None,
+                horario: None,
+                stops: stops,
+                stops_normalized: (0..50).map(|j| format!("common long prefix stop a {}", j)).collect(),
+                social_alerts: Vec::new(),
+                last_updated: String::new(),
+            });
+        }
+
+        for i in 0..2000 {
+            let mut stops = Vec::new();
+            for j in 0..50 {
+                stops.push(Stop {
+                    id: None,
+                    name: format!("Common Long Prefix Stop B {}", j),
+                    lat: 0.0,
+                    lng: 0.0,
+                    orden: j as u32,
+                    landmarks: String::new(),
+                });
+            }
+            routes.push(Route {
+                id: format!("End_{}", i),
+                name: format!("End Route {}", i),
+                price: 10.0,
+                transport_type: "Bus".to_string(),
+                empresa: None,
+                frecuencia_minutos: None,
+                horario: None,
+                stops: stops,
+                stops_normalized: (0..50).map(|j| format!("common long prefix stop b {}", j)).collect(),
+                social_alerts: Vec::new(),
+                last_updated: String::new(),
+            });
+        }
+
+        let start = std::time::Instant::now();
+        // Search from "Stop A 0" to "Stop B 49"
+        // 2000 start routes * 2000 end routes * 49 stops * 50 stops
+        // No matches found, so it scans everything.
+        let _res = find_route_rs("Common Long Prefix Stop A 0", "Common Long Prefix Stop B 49", &routes);
+        let duration = start.elapsed();
+        println!("Time taken: {:?}", duration);
+
+        // Without fix, this should take > 500ms (likely > 1s).
+        assert!(duration.as_millis() < 500, "DoS vulnerability: took too long ({:?})", duration);
     }
 }
