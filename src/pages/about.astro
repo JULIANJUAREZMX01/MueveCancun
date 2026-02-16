@@ -1,0 +1,51 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Acerca de MueveCancun">
+  <div class="max-w-2xl mx-auto space-y-8 py-8">
+    <header class="text-center">
+      <h1 class="text-4xl font-display font-bold text-gray-900 mb-4">
+        Acerca de MueveCancun
+      </h1>
+      <p class="text-xl text-gray-600">
+        La guía definitiva de transporte público para Cancún.
+      </p>
+    </header>
+
+    <div class="sunny-card p-8 prose prose-lg mx-auto">
+      <h2 class="text-2xl font-bold text-primary-700">Nuestra Misión</h2>
+      <p>
+        MueveCancun nace con el objetivo de simplificar la movilidad en nuestra ciudad. 
+        Entendemos lo complejo que puede ser navegar las rutas de transporte, por eso hemos 
+        creado una herramienta rápida, fiable y accesible para todos.
+      </p>
+
+      <h2 class="text-2xl font-bold text-primary-700 mt-8">Tecnología de Punta</h2>
+      <p>
+        A diferencia de otras apps, MueveCancun está construida como una 
+        <strong>Progressive Web App (PWA)</strong> con un enfoque "Offline-First".
+      </p>
+      <ul class="list-disc pl-6 space-y-2">
+        <li>
+          <strong>Motor Ultrarrápido:</strong> Utilizamos <strong>Rust y WebAssembly (WASM)</strong> 
+          para calcular rutas en milisegundos directamente en tu dispositivo, sin necesidad de internet.
+        </li>
+        <li>
+          <strong>Interfaz Moderna:</strong> Desarrollada con <strong>Astro</strong> y 
+          <strong>Vanilla JS</strong> para máxima velocidad y bajo consumo de batería.
+        </li>
+        <li>
+          <strong>Mapas Interactivos:</strong> Integración optimizada con Leaflet para visualizar 
+          tu trayecto con claridad.
+        </li>
+      </ul>
+
+      <h2 class="text-2xl font-bold text-primary-700 mt-8">Comunidad</h2>
+      <p>
+        Este es un proyecto impulsado por la comunidad. Si encuentras una ruta nueva o un cambio, 
+        puedes reportarlo en nuestra sección de <a href="/contribuir" class="text-primary-600 hover:underline">Contribuir</a>.
+      </p>
+    </div>
+  </div>
+</MainLayout>

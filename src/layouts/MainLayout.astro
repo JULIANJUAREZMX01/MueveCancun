@@ -28,7 +28,7 @@ const navItems = [
   { href: '/rutas', label: 'Rutas', icon: 'route', activePattern: /^\/rutas/ },
   { href: '/mapa', label: 'Mapa', icon: 'map', activePattern: /^\/mapa/ },
   { href: '/community', label: 'Foro', icon: 'forum', activePattern: /^\/community/ },
-  { href: '/wallet', label: 'Tarjeta', icon: 'account_balance_wallet', activePattern: /^\/wallet/ },
+  { href: '/about', label: 'Nosotros', icon: 'info', activePattern: /^\/about/ },
 ];
 ---
 
@@ -195,14 +195,23 @@ const navItems = [
       }
 
       function setupThemeToggle() {
-        document.querySelectorAll('.theme-toggle').forEach(btn => {
-          btn.addEventListener('click', () => {
+        // Find existing buttons (desktop + mobile)
+        const toggles = document.querySelectorAll('.theme-toggle');
+        
+        toggles.forEach(btn => {
+          // Remove old listeners to prevent duplicates if any
+          const newBtn = btn.cloneNode(true);
+          btn.parentNode.replaceChild(newBtn, btn);
+
+          newBtn.addEventListener('click', () => {
             document.documentElement.classList.toggle("dark");
             const isDark = document.documentElement.classList.contains("dark");
             localStorage.setItem("theme", isDark ? "dark" : "light");
+            // Sync all toggles visual state if needed (SVG visibility handles itself via CSS usually)
           });
         });
       }
+      // Run on every navigation because MainLayout persists but content updates
       document.addEventListener('astro:page-load', setupThemeToggle);
       if (document.readyState === 'complete') setupThemeToggle();
       else window.addEventListener('load', setupThemeToggle);

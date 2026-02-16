@@ -47,12 +47,24 @@ export const LINKS: Links = [
     HREF: "/rutas",
   },
   {
-    TEXT: "Conductor",
-    HREF: "/driver",
+    TEXT: "Nosotros",
+    HREF: "/about",
+  },
+  {
+    TEXT: "Comunidad",
+    HREF: "/community",
+  },
+  {
+    TEXT: "Wallet",
+    HREF: "/wallet",
   },
   {
     TEXT: "Contribuir",
     HREF: "/contribuir",
+  },
+  {
+    TEXT: "Tracking",
+    HREF: "/tracking",
   },
 ]
 

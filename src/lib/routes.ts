@@ -32,7 +32,7 @@ export interface Route {
 
 export async function getAllRoutes(): Promise<Route[]> {
   const routesDir = path.resolve('./public/data/routes');
-  let allRoutes: Route[] = [];
+  const allRoutes: Route[] = [];
 
   try {
     // Try reading individual files first

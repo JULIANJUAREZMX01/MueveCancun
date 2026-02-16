@@ -750,6 +750,20 @@ const ui = useTranslations(currentLang);
   start = async function() {
       await originalStart(); // Run initialization
       setupEventListeners(); // Then setup listeners
+
+      // Handle Query Params (e.g., from "Trazar Ruta Aquí")
+      const urlParams = new URLSearchParams(window.location.search);
+      const selectedStop = urlParams.get('selected_stop');
+      if (selectedStop) {
+          const destInput = document.getElementById('destination-input');
+          if (destInput) {
+              destInput.value = selectedStop; // Already decoded by URLSearchParams
+              destInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger floating label
+              
+              const originInput = document.getElementById('origin-input');
+              if (originInput) originInput.focus(); // Focus origin to prompt user
+          }
+      }
   };
 
   document.addEventListener('astro:page-load', start);

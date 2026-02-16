@@ -28,7 +28,7 @@ class FavoritesStore {
     }
 
     toggleFavorite(id: string, nombre: string): boolean {
-        let favorites = this.getFavorites();
+        const favorites = this.getFavorites();
         const index = favorites.findIndex(f => f.id === id);
         let added = false;
 
