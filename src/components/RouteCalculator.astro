@@ -369,17 +369,29 @@ const ui = useTranslations(currentLang);
       const container = input?.parentElement; // Input wrapper
       if (!input || !container) return;
 
-      // Create Dropdown Element
+      // Create Dropdown Element (Native Popover)
       const list = document.createElement('ul');
-      list.className = 'absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-xl z-50 mt-1 max-h-60 overflow-y-auto hidden divide-y divide-slate-50';
+      list.className = 'graffiti-dropdown divide-y divide-slate-50';
       list.id = `${inputId}-suggestions`;
+
+      // GraffitiWarrior: Native Popover API
+      try {
+        list.popover = "auto";
+      } catch (e) {
+        console.warn("Popover API not fully supported, fallback behavior may be degraded.");
+      }
+
+      // GraffitiWarrior: CSS Anchor Positioning
+      const anchorName = `--${inputId}`;
+      input.style.setProperty('anchor-name', anchorName);
+      list.style.setProperty('position-anchor', anchorName);
+
       container.appendChild(list);
 
-      // Input Handler
-      input.addEventListener('input', (e) => {
-          const val = e.target.value;
+      const updateList = () => {
+          const val = input.value;
           if (!finder || val.length < 2) {
-              list.classList.add('hidden');
+              try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
               return;
           }
 
@@ -401,22 +413,28 @@ const ui = useTranslations(currentLang);
                   `;
                   li.addEventListener('click', () => {
                       input.value = res.name;
-                      list.classList.add('hidden');
+                      try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
                       // Trigger any blur/update logic
                       input.dispatchEvent(new Event('blur'));
                   });
                   list.appendChild(li);
               });
-              list.classList.remove('hidden');
-          } else {
-              list.classList.add('hidden');
-          }
-      });
 
-      // Hide on blur (delayed to allow click)
-      input.addEventListener('blur', () => {
-          setTimeout(() => list.classList.add('hidden'), 200);
-      });
+              try {
+                list.showPopover();
+              } catch(e) {
+                list.style.display = 'block';
+              }
+          } else {
+              try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
+          }
+      };
+
+      // Input Handler
+      input.addEventListener('input', updateList);
+
+      // Focus Handler (Re-open if valid)
+      input.addEventListener('focus', updateList);
   }
 
   function initGPSLogic() {
@@ -766,4 +784,57 @@ const ui = useTranslations(currentLang);
   button:focus-visible + .graffiti-tooltip.top {
     translate: 0 -6px; /* Offset for top */
   }
+</style>
+
+<style is:global>
+  /*
+   * GRAFFITI WARRIOR: Native Popover Dropdown
+   * No Z-Index. No JS Positioning. Pure CSS5 Magic.
+   */
+  .graffiti-dropdown {
+    /* Popover Reset */
+    position: fixed; /* Explicit for anchor positioning */
+    margin: 0;
+    padding: 0;
+    border: none;
+    inset: auto; /* Reset default inset */
+
+    /* Box Model */
+    background: white;
+    border: 1px solid #cbd5e1; /* slate-200 */
+    border-radius: 0.75rem; /* rounded-xl */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-height: 15rem;
+    overflow-y: auto;
+    z-index: 50; /* Fallback */
+
+    /* Anchor Positioning Logic */
+    top: anchor(bottom);
+    left: anchor(left);
+    width: anchor-size(width);
+    translate: 0 0.5rem; /* mt-2 equivalent */
+
+    /* Animation: Entry */
+    opacity: 0;
+    transform: translateY(-0.5rem);
+    transition:
+      opacity 0.2s ease-out,
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      display 0.2s allow-discrete,
+      overlay 0.2s allow-discrete;
+
+    &:popover-open {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @starting-style {
+      &:popover-open {
+        opacity: 0;
+        transform: translateY(-0.5rem);
+      }
+    }
+  }
+
+  /* Dark mode support if needed, but we stick to light for now as per design */
 </style>
