@@ -219,6 +219,7 @@ const ui = uiTranslations[currentLang];
   const langToggle = document.getElementById('lang-toggle');
 
   // Helpers
+  // Sentinel Fix: Robust escapeHtml that handles non-string inputs to prevent crash (DoS)
   const escapeHtml = (unsafe) => {
     if (unsafe === undefined || unsafe === null) return '';
     return String(unsafe)
@@ -235,6 +236,29 @@ const ui = uiTranslations[currentLang];
       return JSON.stringify(obj)
           .replace(/</g, '\\u003c') // Escape < to prevent tag injection
           .replace(/'/g, "&#39;"); // Escape ' to prevent attribute breakout
+  }
+
+  // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
+  if (typeof document !== 'undefined') {
+      document.addEventListener('click', (e) => {
+          const target = e.target;
+          if (!target || !target.closest) return;
+
+          const btn = target.closest('.view-map-btn');
+          if (btn) {
+              try {
+                  const raw = btn.dataset.journey;
+                  if (raw) {
+                      const journey = JSON.parse(raw);
+                      window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey } }));
+                      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_ACTIVE' }));
+                  }
+              } catch (err) {
+                  console.error("Invalid journey data", err);
+              }
+          }
+      });
+  }
   }
 
   // State
@@ -320,9 +344,20 @@ const ui = uiTranslations[currentLang];
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
+          // Sentinel: Enforce 10MB limit to prevent WASM DoS
+          const contentLength = response.headers.get('content-length');
+          if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
+             throw new Error("Catalog too large (DoS protection)");
+          }
+
           // ✅ SIMÓN: Bypass redundant parse-stringify cycle by fetching text
           console.time("WASM Load");
           const catalogString = await response.text();
+
+          // Double check size after fetch (in case content-length was missing/lied)
+          if (catalogString.length > 10 * 1024 * 1024) {
+             throw new Error("Catalog too large (DoS protection)");
+          }
 
           await load_catalog(catalogString);
           console.timeEnd("WASM Load");
@@ -505,6 +540,7 @@ const ui = uiTranslations[currentLang];
              stopsPreview = `${escapeHtml(route.stops[0])} → ${escapeHtml(route.stops[route.stops.length - 1])}`;
         }
 
+        // Sentinel Fix: Replace < with \u003c to prevent JSON-based HTML injection
         return `
           <div class="glass-card active:scale-[0.98] transition-all duration-300 mb-4 animate-slide-up relative overflow-hidden group hover:-translate-y-0.5 ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
             ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${ui['calc.best']}</div>` : ''}
@@ -547,6 +583,7 @@ const ui = uiTranslations[currentLang];
       const leg2 = journey.legs[1];
       const transferPoint = journey.transfer_point;
 
+      // Sentinel Fix: Replace < with \u003c to prevent JSON-based HTML injection
       return `
           <div class="glass-card active:scale-[0.98] transition-all mb-3 animate-slide-up relative overflow-hidden group ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
             <div class="absolute top-0 right-0 bg-accent-500 text-white px-3 py-1 rounded-bl-xl text-xxs font-black uppercase tracking-widest ${isBest ? 'mr-24' : ''}">
