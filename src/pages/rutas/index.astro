@@ -20,8 +20,6 @@ interface UIRoute {
   origin_hub?: string;
   dest_hub?: string;
 }
-
-
 const transformRoute = (raw: any): UIRoute => {
   let transport_type = raw.tipo_transporte || raw.tipo || "Bus";
   

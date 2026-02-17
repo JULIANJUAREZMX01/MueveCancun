@@ -16,19 +16,26 @@ describe('getTransportLabel', () => {
     expect(getTransportLabel('Bus_Urbano_Isla')).toBe('Autobús Urbano');
   });
 
-  it('should return default "Autobús" for null/undefined/empty', () => {
-    expect(getTransportLabel(null)).toBe('Autobús');
-    expect(getTransportLabel(undefined)).toBe('Autobús');
-    expect(getTransportLabel('')).toBe('Autobús');
-  });
-
   it('should handle fuzzy matching correctly', () => {
     expect(getTransportLabel('ADO_Something')).toBe('ADO');
     expect(getTransportLabel('Combi_Other')).toBe('Combi');
     expect(getTransportLabel('Van_Something')).toBe('Combi'); // Matches "Van" -> Combi (RouteCalculator logic)
   });
 
-  it('should return default "Autobús" for unknown types not matching fuzzy logic', () => {
+  it('should prioritize exact match over fuzzy match', () => {
+    // "Van" is in TRANSPORT_LABELS -> "Van / Colectivo"
+    // "Van_Something" matches fuzzy -> "Combi"
+    expect(getTransportLabel('Van')).toBe('Van / Colectivo');
+  });
+
+  it('should handle null/undefined/empty', () => {
+    expect(getTransportLabel(null)).toBe('Autobús');
+    expect(getTransportLabel(undefined)).toBe('Autobús');
+    expect(getTransportLabel('')).toBe('Autobús');
+  });
+
+  it('should return default "Autobús" for unknown types', () => {
     expect(getTransportLabel('UnknownType')).toBe('Autobús');
+    expect(getTransportLabel('UnknownTransport')).toBe('Autobús');
   });
 });

@@ -197,12 +197,8 @@ const ui = uiTranslations[currentLang];
 <script>
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
-<<<<<<< HEAD
   import { escapeHtml } from "../lib/utils";
-=======
-  import { escapeHtml } from '../lib/utils';
->>>>>>> origin/refactor/remove-duplicated-escape-html-13586855509857311838
-
+  import { getWalletBalance, setWalletBalance } from '../utils/db';
   import { getTransportLabel } from "../lib/transport";
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
@@ -259,16 +255,19 @@ const ui = uiTranslations[currentLang];
 
   async function updateBalance() {
     try {
-        const stored = localStorage.getItem('user_balance');
-        if (stored !== null) {
-            balance = parseFloat(stored);
+        // Use IndexedDB (via db.ts) as the single source of truth
+        const walletData = await getWalletBalance();
+        if (walletData && walletData.amount !== undefined) {
+            balance = walletData.amount;
+            console.log("[RouteCalculator] Balance loaded from IndexedDB:", balance);
         } else {
+            // Fallback: initialize to 180.0 if no balance found
             balance = 180.0;
-            localStorage.setItem('user_balance', balance.toString());
-            console.log("Balance initialized to 180.0");
+            await setWalletBalance(balance);
+            console.log("[RouteCalculator] Balance initialized to 180.0 in IndexedDB");
         }
     } catch (e) {
-        console.warn("Storage Error, using default balance:", e);
+        console.warn("[RouteCalculator] IndexedDB Error, using default balance:", e);
         balance = 180.0;
     }
 
@@ -291,10 +290,6 @@ const ui = uiTranslations[currentLang];
             balanceBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-red-100 text-red-700 font-mono";
         }
     }
-
-
-
-
   }
 
 
