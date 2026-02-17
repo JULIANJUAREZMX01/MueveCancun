@@ -314,43 +314,18 @@ const ui = uiTranslations[currentLang];
         try {
           console.log("📦 Loading route catalog via CoordinatesStore...");
           
-<<<<<<< HEAD
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          // Sentinel: Enforce 10MB limit to prevent WASM DoS
-          const contentLength = response.headers.get('content-length');
-          if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
-             throw new Error("Catalog too large (DoS protection)");
-          }
-
-          // ✅ SIMÓN: Bypass redundant parse-stringify cycle by fetching text
-=======
           // ✅ SIMÓN: Use CoordinatesStore to avoid redundant fetch
->>>>>>> pr/145
           console.time("WASM Load");
           const { text: catalogString, data: jsonData } = await coordinatesStore.init();
 
-          // Double check size after fetch (in case content-length was missing/lied)
+          // Sentinel: Enforce 10MB limit to prevent WASM DoS
           if (catalogString.length > 10 * 1024 * 1024) {
              throw new Error("Catalog too large (DoS protection)");
           }
 
           await load_catalog(catalogString);
           console.timeEnd("WASM Load");
-
-<<<<<<< HEAD
-          jsonData = JSON.parse(catalogString); // Parse once for cache if needed
-=======
->>>>>>> pr/145
           console.log("✅ Catalog loaded into WASM:", jsonData.rutas?.length || 0, "routes");
-
-          // Initialize shared coordinates store with ALREADY LOADED data (Optimization ⚡)
-          await coordinatesStore.init(jsonData);
-          
-          // Optimization: Initialize store with data we already have
-          coordinatesStore.init(jsonData);
 
           const searchBtn = document.getElementById("search-btn");
           const spinner = document.getElementById("btn-spinner");
