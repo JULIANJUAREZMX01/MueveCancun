@@ -3,14 +3,14 @@ export const languages = {
     es: 'Español'
 };
 
-export const defaultLang = 'en';
+export const defaultLang = 'es';
 
 export const ui = {
     en: {
         'nav.home': 'Home',
         'nav.routes': 'Routes',
         'nav.map': 'Map',
-        'nav.card': 'Card',
+        'nav.wallet': 'Wallet',
         'calc.title': 'Where are we going?',
         'calc.origin': 'Origin',
         'calc.dest': 'Destination',
@@ -61,7 +61,7 @@ export const ui = {
         'nav.home': 'Inicio',
         'nav.routes': 'Rutas',
         'nav.map': 'Mapa',
-        'nav.card': 'Tarjeta',
+        'nav.wallet': 'Tarjeta',
         'calc.title': '¿A dónde vamos hoy?',
         'calc.origin': 'Origen',
         'calc.dest': 'Destino',

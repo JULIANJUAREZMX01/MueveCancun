@@ -26,7 +26,13 @@ const navItems = [
             {item.icon}
           </span>
 
-          <span class="nav-label">
+          <span class="nav-label" data-i18n={
+            item.href === '/home' ? 'nav.home' :
+            item.href === '/rutas' ? 'nav.routes' :
+            item.href === '/mapa' ? 'nav.map' :
+            item.href === '/community' ? 'nav.community' :
+            item.href === '/wallet' ? 'nav.wallet' : ''
+          }>
             {item.label}
           </span>
         </a>

@@ -27,9 +27,7 @@ const ui = uiTranslations[currentLang];
                 LOADING...
             </span>
         </div>
-        <button id="lang-toggle" class="lang-toggle">
-            {currentLang === 'es' ? 'ES' : 'EN'}
-        </button>
+
       </div>
     </div>
 
@@ -211,7 +209,7 @@ const ui = uiTranslations[currentLang];
   const balanceBadge = document.getElementById('balance-badge');
   const searchBtn = document.getElementById('search-btn'); // Renamed from btn for clarity, but keeping logic
   const resultsContainer = document.getElementById('results-container');
-  const langToggle = document.getElementById('lang-toggle');
+
 
   // Helpers
 
@@ -291,16 +289,12 @@ const ui = uiTranslations[currentLang];
         }
     }
 
-    if (balanceWarning) {
-      balanceWarning.classList.toggle('hidden', hasBalance);
-    }
 
-    if (btn) btn.disabled = !hasBalance;
+
+
   }
 
-  function updateUI() {
-    if (langToggle) langToggle.textContent = currentLang === 'es' ? 'ES' : 'EN';
-  }
+
 
   async function start() {
     let jsonData = null;
@@ -358,7 +352,7 @@ const ui = uiTranslations[currentLang];
           if (searchBtn) searchBtn.disabled = false;
           if (spinner) spinner.classList.add("hidden");
           if (txt) { txt.setAttribute("data-i18n", "calc.btn"); txt.textContent = "CALCULATE ROUTE"; }
-          updateUI(); // Ensure i18n text updates if needed
+
 
         } catch (catalogError) {
           console.error("❌ Failed to load catalog:", catalogError);
@@ -370,8 +364,6 @@ const ui = uiTranslations[currentLang];
       renderWasmError();
     } finally {
       await updateBalance();
-      updateUI();
-
       // Initialize shared coordinates store and Finder
       try {
         await coordinatesStore.init(jsonData);
@@ -539,7 +531,7 @@ const ui = uiTranslations[currentLang];
                 <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration)}</p>
 
                 <button class="btn-primary btn-sm mt-3 whitespace-nowrap view-map-btn" data-journey='${safeJsonStringify(journey)}'>
-                    <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> ${ui['calc.view_map']}
+                    <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> <span data-i18n="calc.results.map">${ui['calc.results.map'] || 'Ver Mapa'}</span>
                 </button>
               </div>
             </div>
@@ -585,7 +577,7 @@ const ui = uiTranslations[currentLang];
                     </div>
                     <div class="chip text-xxs">
                         <span class="material-symbols-rounded text-xs" style="font-variation-settings: 'FILL' 1;">sync_alt</span>
-                        Cambio en <span class="text-primary-500 font-black">${escapeHtml(transferPoint)}</span>
+                        <span data-i18n="calc.results.transfer_at">${ui['calc.results.transfer_at'] || 'Transfer at'}</span> <span class="text-primary-500 font-black ml-1">${escapeHtml(transferPoint)}</span>
                     </div>
                 </div>
 
@@ -611,7 +603,7 @@ const ui = uiTranslations[currentLang];
 
                 <button class="btn-primary btn-sm view-map-btn"
                     data-journey='${safeJsonStringify(journey)}'>
-                    <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> ${ui['calc.view_route']}
+                    <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> <span data-i18n="calc.view_route">${ui['calc.view_route']}</span>
                 </button>
             </div>
           </div>
@@ -641,6 +633,24 @@ const ui = uiTranslations[currentLang];
         </div>
     `;
     if (window.showToast) window.showToast(msg, 'error');
+  }
+
+  function renderEmptyState() {
+      if (!resultsContainer) return;
+      resultsContainer.innerHTML = `
+          <div class="glass-card text-center animate-slide-up py-8">
+              <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span class="material-symbols-rounded text-3xl text-slate-400" style="font-variation-settings: 'FILL' 1;">directions_off</span>
+              </div>
+              <h3 class="font-display font-black text-lg mb-2" style="color: var(--text-primary);" data-i18n="calc.no_route">${ui['calc.no_route'] || 'No routes found'}</h3>
+              <p class="text-sm mb-6 max-w-[200px] mx-auto" style="color: var(--text-secondary);" data-i18n="calc.no_route_msg">
+                  ${ui['calc.no_route_msg'] || 'Try changing your origin or destination, or walking to a main avenue.'}
+              </p>
+               <button class="btn-secondary btn-sm" onclick="document.getElementById('origin-input').focus()" data-i18n="calc.retry">
+                  ${ui['calc.retry'] || 'Try Again'}
+              </button>
+          </div>
+      `;
   }
 
   // --- Search Logic ---
@@ -730,7 +740,7 @@ const ui = uiTranslations[currentLang];
               console.log("🔍 Raw Results:", results);
 
               if (!results || results.length === 0) {
-                  renderError(ui?.['calc.error.no_route'] || "No route found");
+                  renderEmptyState();
               } else {
                  results.sort((a, b) => {
                      // Prioritize Direct routes
@@ -742,24 +752,38 @@ const ui = uiTranslations[currentLang];
                  const best = results[0];
                  const others = results.slice(1);
 
-                 const countLabel = document.getElementById('results-count-label');
-                 if (countLabel) countLabel.textContent = `${results.length} ${currentLang === 'es' ? 'OPCIONES' : 'OPTIONS'}`;
-                 
-                 const timeBadge = document.getElementById('results-time-badge');
-                 if (timeBadge && best) {
-                     let duration = best.duration_minutes || 0;
-                     // Fallback if needed
-                     if (!duration && best.legs) {
-                        // This logic is simplified; backend usually provides duration
-                     }
+                  // Prepare UI Data
+                 const optionsLabel = ui['calc.results.options'] || 'OPCIONES';
+                 const fastestLabel = ui['calc.results.fastest'] || 'MÁS RÁPIDA';
+                 const countText = `${results.length} ${optionsLabel}`;
+                 let timeText = '';
+                 let showTimeBadge = false;
 
-                     const timeText = currentLang === 'es' ? 'MÁS RÁPIDA' : 'FASTEST';
-                     timeBadge.textContent = `${timeText}: ${duration}min`;
-                     timeBadge.classList.remove('hidden');
+                 if (best) {
+                     let duration = best.duration_minutes || 0;
+                     timeText = `${fastestLabel}: ${duration}min`;
+                     showTimeBadge = true;
                  }
 
+                 // ATOMIC DOM UPDATE
+                 const countLabel = document.getElementById('results-count-label');
+                 const timeBadge = document.getElementById('results-time-badge');
+                 
+                 if (countLabel) countLabel.textContent = countText;
+                 
+                 if (timeBadge) {
+                     timeBadge.textContent = timeText;
+                     if (showTimeBadge) {
+                         timeBadge.classList.remove('hidden');
+                     } else {
+                         timeBadge.classList.add('hidden');
+                     }
+                 }
+
+                 // Show Info Bar NOW
                  document.getElementById('results-info')?.classList.remove('hidden');
 
+                 // Render Cards
                  if (bestResultArea) {
                      if (best.type === 'Transfer') {
                          bestResultArea.innerHTML = renderTransferCardHtml(best, true);

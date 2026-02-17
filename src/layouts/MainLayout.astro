@@ -4,6 +4,7 @@ import '../index.css';
 import Toast from '../components/ui/Toast.astro';
 import BottomNav from '../components/BottomNav.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
+import { ui as uiTranslations } from '../lib/i18n';
 
 interface Props {
   title: string;
@@ -63,81 +64,38 @@ const navItems = [
       }
       
       // 2. I18n Initialization
-      const translations = {
-          es: {
-              "nav.home": "Inicio",
-              "nav.routes": "Rutas",
-              "nav.map": "Mapa",
-              "nav.community": "Foro",
-              "nav.wallet": "Wallet",
-              "nav.about": "Nosotros",
-              "calc.title": "BUSCAR RUTA",
-              "calc.origin": "Origen",
-              "calc.dest": "Destino",
-              "calc.placeholder.origin": "¿Desde dónde sales?",
-              "calc.placeholder.dest": "¿A dónde vas?",
-              "calc.gps": "Usar mi ubicación",
-              "calc.map": "Seleccionar en mapa",
-              "calc.quick": "Accesos Rápidos",
-              "calc.home": "Casa",
-              "calc.work": "Trabajo",
-              "calc.airport": "Aeropuerto",
-              "calc.beach": "Playa",
-              "calc.passengers": "Pasajeros",
-              "calc.mode": "Modo",
-              "calc.tourist": "Turista",
-              "calc.loading": "Cargando rutas...",
-              "calc.edit": "EDITAR",
-              "calc.toggle.hide": "Ocultar",
-              "calc.toggle.show": "Mostrar",
-              "calc.error.empty": "Por favor llena ambos campos",
-              "calc.error.no_route": "No se encontraron rutas",
-              "calc.insufficient": "Saldo insuficiente"
-          },
-          en: {
-              "nav.home": "Home",
-              "nav.routes": "Routes",
-              "nav.map": "Map",
-              "nav.community": "Forum",
-              "nav.wallet": "Wallet",
-              "nav.about": "About",
-              "calc.title": "ROUTE FINDER",
-              "calc.origin": "Origin",
-              "calc.dest": "Destination",
-              "calc.placeholder.origin": "From where?",
-              "calc.placeholder.dest": "Where to?",
-              "calc.gps": "Use my location",
-              "calc.map": "Select on map",
-              "calc.quick": "Quick Actions",
-              "calc.home": "Home",
-              "calc.work": "Work",
-              "calc.airport": "Airport",
-              "calc.beach": "Beach",
-              "calc.passengers": "Passengers",
-              "calc.mode": "Mode",
-              "calc.tourist": "Tourist",
-              "calc.loading": "Finding routes...",
-              "calc.edit": "EDIT",
-              "calc.toggle.hide": "Hide",
-              "calc.toggle.show": "Show",
-              "calc.error.empty": "Please fill in both fields",
-              "calc.error.no_route": "No route found",
-              "calc.insufficient": "Insufficient Balance"
-          }
-      };
-
       function applyLanguage() {
-          const lang = localStorage.getItem('lang') || 'es';
+          const stored = localStorage.getItem('lang');
+          if (stored) {
+              updateTranslations(stored);
+              return;
+          }
+
+          // Auto-detect browser language
+          const navLang = navigator.language.split('-')[0];
+          const supported = ['es', 'en'];
+          const lang = supported.includes(navLang) ? navLang : 'es';
+          
+          localStorage.setItem('lang', lang);
           updateTranslations(lang);
       }
 
       function updateTranslations(lang) {
+          const dataEl = document.getElementById('i18n-translations');
+          const allTranslations = dataEl ? JSON.parse(dataEl.dataset.translations || '{}') : {};
+          const translations = allTranslations[lang] || allTranslations['es'] || {};
+
           // Update simple text elements
           document.querySelectorAll('[data-i18n]').forEach(el => {
               const key = el.getAttribute('data-i18n');
-              const text = translations[lang]?.[key];
+              const text = translations[key];
               if (text) {
-                  // Handle input placeholders specifically if needed, but usually those are attributes
+                  // Update lang toggle visual state
+                  const langToggles = document.querySelectorAll('.lang-toggle-btn');
+                  langToggles.forEach(btn => {
+                      btn.textContent = lang.toUpperCase();
+                  });
+
                   if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
                        // handled by data-i18n-placeholder
                   } else {
@@ -149,7 +107,7 @@ const navItems = [
           // Custom Input Labels
           document.querySelectorAll('[data-i18n-label]').forEach(el => {
               const key = el.getAttribute('data-i18n-label');
-              const text = translations[lang]?.[key];
+              const text = translations[key];
               if (text) {
                  if (el.tagName === 'INPUT') {
                      const id = el.id;
@@ -167,7 +125,7 @@ const navItems = [
           // Placeholders
           document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
                const key = el.getAttribute('data-i18n-placeholder');
-               const text = translations[lang]?.[key];
+               const text = translations[key];
                if (text && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
                    el.placeholder = text;
                }
@@ -176,7 +134,7 @@ const navItems = [
           // Quick Action Buttons (HTML content)
           document.querySelectorAll('[data-i18n-html]').forEach(el => {
              const key = el.getAttribute('data-i18n-html');
-             const text = translations[lang]?.[key];
+             const text = translations[key];
              // Preserves icon if we replace innerText carefully or just update text node
              // For quick actions: <span icon></span> Text
              if (text) {
@@ -245,6 +203,9 @@ const navItems = [
 
       <!-- Controls -->
       <div class="flex items-center gap-2">
+         <button class="lang-toggle-btn w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            ES
+         </button>
          <button class="theme-toggle w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
                  style="color: var(--text-secondary);">
             <span class="material-symbols-rounded text-xl sun hidden dark:block">light_mode</span>
@@ -270,6 +231,8 @@ const navItems = [
     )}
 
     <Toast />
+
+    <div id="i18n-translations" data-translations={JSON.stringify(uiTranslations)} class="hidden"></div>
 
     <!-- PWA Toast -->
     <div id="pwa-update-toast" class="hidden fixed z-50 bottom-20 left-4 right-4 animate-slide-up">
@@ -318,7 +281,6 @@ const navItems = [
         const toggles = document.querySelectorAll('.theme-toggle');
         
         toggles.forEach(btn => {
-          // Remove old listeners to prevent duplicates if any
           const newBtn = btn.cloneNode(true);
           btn.parentNode.replaceChild(newBtn, btn);
 
@@ -326,14 +288,41 @@ const navItems = [
             document.documentElement.classList.toggle("dark");
             const isDark = document.documentElement.classList.contains("dark");
             localStorage.setItem("theme", isDark ? "dark" : "light");
-            // Sync all toggles visual state if needed (SVG visibility handles itself via CSS usually)
           });
         });
       }
+
+      function setupLangToggle() {
+        const toggles = document.querySelectorAll('.lang-toggle-btn');
+        toggles.forEach(btn => {
+          const newBtn = btn.cloneNode(true);
+          btn.parentNode.replaceChild(newBtn, btn);
+
+          newBtn.addEventListener('click', () => {
+            const currentLang = localStorage.getItem('lang') || 'es';
+            const newLang = currentLang === 'es' ? 'en' : 'es';
+            localStorage.setItem('lang', newLang);
+            updateTranslations(newLang);
+            window.dispatchEvent(new CustomEvent('LANGUAGE_CHANGE', { detail: newLang }));
+          });
+        });
+      }
+
       // Run on every navigation because MainLayout persists but content updates
-      document.addEventListener('astro:page-load', setupThemeToggle);
-      if (document.readyState === 'complete') setupThemeToggle();
-      else window.addEventListener('load', setupThemeToggle);
+      document.addEventListener('astro:page-load', () => {
+        setupThemeToggle();
+        setupLangToggle();
+      });
+
+      if (document.readyState === 'complete') {
+          setupThemeToggle();
+          setupLangToggle();
+      } else {
+          window.addEventListener('load', () => {
+              setupThemeToggle();
+              setupLangToggle();
+          });
+      }
     </script>
 
     <style>
