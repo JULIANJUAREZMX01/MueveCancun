@@ -49,100 +49,97 @@ const navItems = [
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icons/pwa-192x192.png" />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
-
-    <!-- Material Symbols -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
-
-    <!-- Leaflet -->
-    {useMap && (
-        <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
-        <link rel="preconnect" href="https://basemaps.cartocdn.com" />
-        <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
-        <script is:inline defer src="/vendor/leaflet/leaflet.js"></script>
-    )}
-
     <script is:inline>
+      // 1. Theme Initialization (Blocking to prevent FOUC)
       function applyTheme() {
-        const theme = localStorage.getItem('theme') || 
-          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        if (theme === 'dark') document.documentElement.classList.add('dark');
-        else document.documentElement.classList.remove('dark');
-        document.documentElement.setAttribute('data-theme', theme);
+          const theme = localStorage.getItem("theme");
+          const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+          if (theme === "dark" || (!theme && systemDark)) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
       }
       
-      function applyLanguage() {
-        const lang = localStorage.getItem('lang') || 'es';
-        document.documentElement.lang = lang;
-        window.currentLang = lang;
-        window.dispatchEvent(new CustomEvent('LANGUAGE_CHANGE', { detail: lang }));
-        updateTranslations(lang);
-      }
-
+      // 2. I18n Initialization
       const translations = {
-        en: {
-            'nav.home': 'Home',
-            'nav.routes': 'Routes',
-            'nav.map': 'Map',
-            'nav.card': 'Card',
-            'nav.community': 'Community',
-            'nav.about': 'About',
-            'nav.wallet': 'Wallet',
-            'calc.title': 'Where are we going?',
-            'calc.origin': 'Origin',
-            'calc.dest': 'Destination',
-            'calc.btn': 'CALCULATE ROUTE',
-            'calc.passengers': 'Passengers',
-            'calc.gps': 'Use my location',
-            'calc.map': 'Select on map',
-            'calc.placeholder.origin': 'From where?',
-            'calc.placeholder.dest': 'Where to?',
-            'calc.mode': 'Mode',
-            'calc.tourist': 'Tourist',
-            'calc.quick': 'Quick Actions',
-            'calc.loading': 'Loading...',
-            'calc.toggle.hide': 'Hide',
-            'calc.best': 'Best Route',
-            'calc.view_map': 'View Map',
-        },
-        es: {
-            'nav.home': 'Inicio',
-            'nav.routes': 'Rutas',
-            'nav.map': 'Mapa',
-            'nav.card': 'Tarjeta',
-            'nav.community': 'Comunidad',
-            'nav.about': 'Nosotros',
-            'nav.wallet': 'Billetera',
-            'calc.title': '¿A dónde vamos hoy?',
-            'calc.origin': 'Origen',
-            'calc.dest': 'Destino',
-            'calc.btn': 'TRAZAR RUTA',
-            'calc.passengers': 'Pasajeros',
-            'calc.gps': 'Usar mi ubicación',
-            'calc.map': 'Seleccionar en mapa',
-            'calc.placeholder.origin': '¿Dónde estás?',
-            'calc.placeholder.dest': '¿A dónde vas?',
-            'calc.mode': 'Modo',
-            'calc.tourist': 'Turista',
-            'calc.quick': 'Accesos Rápidos',
-            'calc.loading': 'Cargando...',
-            'calc.toggle.hide': 'Ocultar',
-            'calc.best': 'Mejor Ruta',
-            'calc.view_map': 'Ver Mapa',
-        }
+          es: {
+              "nav.home": "Inicio",
+              "nav.routes": "Rutas",
+              "nav.map": "Mapa",
+              "nav.community": "Foro",
+              "nav.wallet": "Wallet",
+              "nav.about": "Nosotros",
+              "calc.title": "BUSCAR RUTA",
+              "calc.origin": "Origen",
+              "calc.dest": "Destino",
+              "calc.placeholder.origin": "¿Desde dónde sales?",
+              "calc.placeholder.dest": "¿A dónde vas?",
+              "calc.gps": "Usar mi ubicación",
+              "calc.map": "Seleccionar en mapa",
+              "calc.quick": "Accesos Rápidos",
+              "calc.home": "Casa",
+              "calc.work": "Trabajo",
+              "calc.airport": "Aeropuerto",
+              "calc.beach": "Playa",
+              "calc.passengers": "Pasajeros",
+              "calc.mode": "Modo",
+              "calc.tourist": "Turista",
+              "calc.loading": "Cargando rutas...",
+              "calc.edit": "EDITAR",
+              "calc.toggle.hide": "Ocultar",
+              "calc.toggle.show": "Mostrar",
+              "calc.error.empty": "Por favor llena ambos campos",
+              "calc.error.no_route": "No se encontraron rutas",
+              "calc.insufficient": "Saldo insuficiente"
+          },
+          en: {
+              "nav.home": "Home",
+              "nav.routes": "Routes",
+              "nav.map": "Map",
+              "nav.community": "Forum",
+              "nav.wallet": "Wallet",
+              "nav.about": "About",
+              "calc.title": "ROUTE FINDER",
+              "calc.origin": "Origin",
+              "calc.dest": "Destination",
+              "calc.placeholder.origin": "From where?",
+              "calc.placeholder.dest": "Where to?",
+              "calc.gps": "Use my location",
+              "calc.map": "Select on map",
+              "calc.quick": "Quick Actions",
+              "calc.home": "Home",
+              "calc.work": "Work",
+              "calc.airport": "Airport",
+              "calc.beach": "Beach",
+              "calc.passengers": "Passengers",
+              "calc.mode": "Mode",
+              "calc.tourist": "Tourist",
+              "calc.loading": "Finding routes...",
+              "calc.edit": "EDIT",
+              "calc.toggle.hide": "Hide",
+              "calc.toggle.show": "Show",
+              "calc.error.empty": "Please fill in both fields",
+              "calc.error.no_route": "No route found",
+              "calc.insufficient": "Insufficient Balance"
+          }
       };
 
+      function applyLanguage() {
+          const lang = localStorage.getItem('lang') || 'es';
+          updateTranslations(lang);
+      }
+
       function updateTranslations(lang) {
-          // Standard text content
+          // Update simple text elements
           document.querySelectorAll('[data-i18n]').forEach(el => {
               const key = el.getAttribute('data-i18n');
               const text = translations[lang]?.[key];
               if (text) {
+                  // Handle input placeholders specifically if needed, but usually those are attributes
                   if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                      el.placeholder = text;
+                       // handled by data-i18n-placeholder
                   } else {
                       el.textContent = text;
                   }
@@ -207,9 +204,9 @@ const navItems = [
   </head>
   <body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
-    <!-- ═══ Desktop Header (Hidden on Mobile) ═══ -->
+    <!-- ═══ Unified Header (Responsive) ═══ -->
     { !hideNav && (
-    <header class="hidden md:flex fixed top-0 left-0 right-0 z-40 h-16 px-6 items-center justify-between transition-colors duration-300 app-header">
+    <header class="fixed top-0 left-0 right-0 z-40 h-14 md:h-16 px-4 md:px-6 flex items-center justify-between transition-colors duration-300 app-header">
 
       <a href="/home" class="flex items-center gap-2.5 no-underline group outline-none">
         <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform">
@@ -219,7 +216,8 @@ const navItems = [
         <BrandAnimation />
       </a>
 
-      <nav class="flex items-center gap-1">
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex items-center gap-1">
         {navItems.map(item => {
           // Map href to i18n key
           let i18nKey = '';
@@ -245,6 +243,7 @@ const navItems = [
         })}
       </nav>
 
+      <!-- Controls -->
       <div class="flex items-center gap-2">
          <button class="theme-toggle w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
                  style="color: var(--text-secondary);">
@@ -253,25 +252,6 @@ const navItems = [
          </button>
       </div>
     </header>
-    )}
-
-    <!-- ═══ Mobile Top Bar (Minimal - Brand Only) ═══ -->
-    { !hideNav && (
-    <div class="md:hidden fixed top-0 left-0 right-0 z-40 h-14 px-4 flex items-center justify-between app-header">
-
-         <a href="/home" class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center shadow-md">
-                <span class="material-symbols-rounded text-white text-lg">directions_bus</span>
-            </div>
-            <!-- Animated Brand -->
-            <BrandAnimation />
-         </a>
-
-         <button class="theme-toggle w-8 h-8 flex items-center justify-center rounded-full active:bg-slate-100 dark:active:bg-slate-800">
-            <span class="material-symbols-rounded text-xl sun hidden dark:block">light_mode</span>
-            <span class="material-symbols-rounded text-xl moon block dark:hidden">dark_mode</span>
-         </button>
-    </div>
     )}
 
     <!-- ═══ Main Content ═══ -->
