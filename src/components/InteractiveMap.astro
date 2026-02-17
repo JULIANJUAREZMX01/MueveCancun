@@ -22,8 +22,8 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 <script>
 
   import { coordinatesStore } from '../lib/CoordinatesStore';
-  import { drawRoute } from '../lib/RouteDrawer';
-  import { escapeHtml, safeUrl } from '../lib/utils';
+  import { drawRoute } from '../utils/RouteDrawer';
+  import { escapeHtml, safeUrl } from '../utils/utils';
 
   let map;
   let layerGroup;
