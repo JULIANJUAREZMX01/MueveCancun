@@ -54,6 +54,10 @@ import Container from "@components/Container.astro"
         </svg>
       </button>
 
+      <button id="header-lang-button" aria-label="Cambiar idioma / Switch language" class={cn("hidden md:flex", "size-9 rounded-full p-1 items-center justify-center", "bg-transparent hover:bg-black/5 dark:hover:bg-white/20", "text-current hover:text-black hover:dark:text-white font-bold text-xs uppercase tracking-wide", "border border-black/10 dark:border-white/25", "transition-colors duration-300 ease-in-out")}>
+        <span class="lang-text">ES</span>
+      </button>
+
       <button
         id="header-drawer-button"
         popovertarget="drawer"
@@ -95,3 +99,42 @@ import Container from "@components/Container.astro"
     display: block;
   }
 </style>
+
+<script>
+  function setupLangToggle() {
+    const btn = document.getElementById('header-lang-button');
+    if (!btn) return;
+
+    // Clone to remove old listeners
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+
+    const span = newBtn.querySelector('span');
+
+    const updateUI = () => {
+      const current = localStorage.getItem('lang') || 'es';
+      if (span) span.textContent = current.toUpperCase();
+      document.documentElement.lang = current;
+    };
+
+    updateUI();
+
+    newBtn.addEventListener('click', () => {
+      const current = localStorage.getItem('lang') || 'es';
+      const next = current === 'es' ? 'en' : 'es';
+      localStorage.setItem('lang', next);
+      
+      // Update global state
+      document.documentElement.lang = next;
+      // Dispatch event for components to uphold reactivity
+      window.dispatchEvent(new CustomEvent('LANGUAGE_CHANGE', { detail: next }));
+      updateUI();
+    });
+    
+    window.addEventListener('LANGUAGE_CHANGE', updateUI);
+  }
+
+  document.addEventListener('astro:page-load', setupLangToggle);
+  // Initial load
+  setupLangToggle();
+</script>

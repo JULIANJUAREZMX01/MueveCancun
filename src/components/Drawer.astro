@@ -37,6 +37,9 @@ const subpath = pathname.match(/[^/]+/g)
         <use href="/ui.svg#moon"></use>
       </svg>
     </button>
+    <button id="drawer-lang-button" aria-label="Cambiar idioma / Switch language" class="size-9 rounded-full p-1 items-center justify-center bg-transparent hover:bg-black/5 dark:hover:bg-white/20 text-current hover:text-black hover:dark:text-white border border-black/10 dark:border-white/25 transition-colors duration-300 ease-in-out font-bold text-xs uppercase tracking-wide">
+      <span class="lang-text">ES</span>
+    </button>
   </div>
 </div>
 
@@ -104,20 +107,42 @@ const subpath = pathname.match(/[^/]+/g)
     const drawer = document.getElementById("drawer");
     if (!drawer) return;
 
-    // Remove any existing listeners to be safe (though usually new element)
-    // Actually, simple named function avoids mess, but cloning node is cleaner if needed.
-    // For now, just adding is fine as the element is likely fresh from swap.
-
     drawer.addEventListener("click", (event) => {
       const target = event.target as HTMLElement;
       if (target.closest("a") || target.closest("button")) {
-        // Don't close if it's the theme button
-        if (target.closest("#drawer-theme-button")) return;
+        // Don't close if it's the theme or lang button (they need interaction)
+        if (target.closest("#drawer-theme-button") || target.closest("#drawer-lang-button")) return;
 
         // Native method to hide popover
         (drawer as HTMLElement).hidePopover();
       }
     });
+
+    // Language Toggle Logic for Drawer
+    const btn = document.getElementById("drawer-lang-button");
+    if (btn) {
+        const updateUI = () => {
+             const current = localStorage.getItem('lang') || 'es';
+             const span = btn.querySelector('.lang-text');
+             if (span) span.textContent = current.toUpperCase();
+        };
+        updateUI();
+        
+        // Remove old listeners by cloning
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        newBtn.addEventListener('click', () => {
+             const current = localStorage.getItem('lang') || 'es';
+             const next = current === 'es' ? 'en' : 'es';
+             localStorage.setItem('lang', next);
+             document.documentElement.lang = next;
+             window.dispatchEvent(new CustomEvent('LANGUAGE_CHANGE', { detail: next }));
+             updateUI();
+        });
+        
+        window.addEventListener('LANGUAGE_CHANGE', updateUI);
+    }
   }
 
   // Initial load
