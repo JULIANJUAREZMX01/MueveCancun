@@ -260,6 +260,8 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
 
     // Limit for DoS prevention
     const MAX_SEARCH_RESULTS: usize = 200;
+    const MAX_OPS: usize = 1_000_000;
+    let mut ops_count = 0;
 
     // 1. Direct Routes (Support bidirectional routes)
     for m in &route_matches {
@@ -267,7 +269,6 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         if journeys.len() >= MAX_SEARCH_RESULTS {
             break;
         }
-
         if let Some(origin_idx) = m.origin_idx {
             if let Some(dest_idx) = m.dest_idx {
                 // ✅ FIX: Allow routes in BOTH directions
@@ -551,6 +552,7 @@ mod tests {
                 empresa: None,
                 frecuencia_minutos: None,
                 horario: None,
+<<<<<<< HEAD
                 stops: stops,
                 stops_normalized: (0..50)
                     .map(|j| format!("common long prefix stop a {}", j))
