@@ -9,41 +9,29 @@ export interface Coordinate {
 class CoordinatesStore {
     private db: Record<string, [number, number]> | null = null;
     private spatialIndex: SpatialHash<string> | null = null;
-    private loadingPromise: Promise<void> | null = null;
+    private loadingPromise: Promise<{ text: string, data: any }> | null = null;
     private allPoints: Coordinate[] = [];
 
     // Singleton instance
     static instance = new CoordinatesStore();
 
-<<<<<<< HEAD
-    async init(initialData?: any) {
-=======
-    async init(initialData: any = null) {
->>>>>>> pr/142
-        if (this.db) return;
+    async init(initialData?: any): Promise<{ text: string, data: any }> {
         if (this.loadingPromise && !initialData) return this.loadingPromise;
 
         this.loadingPromise = (async () => {
             try {
                 let data = initialData;
+                let text = "";
 
-<<<<<<< HEAD
                 if (data) {
                     console.log("[CoordinatesStore] ⚡ Using injected data (Skipped Fetch)");
+                    text = JSON.stringify(data);
                 } else {
                     console.log("[CoordinatesStore] 🌍 Fetching master routes for coordinates...");
                     const res = await fetch('/data/master_routes.json');
                     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    data = await res.json();
-=======
-                if (!data) {
-                    console.log("[CoordinatesStore] Fetching master routes for coordinates...");
-                    const res = await fetch('/data/master_routes.json');
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    data = await res.json();
-                } else {
-                    console.log("[CoordinatesStore] Initialized with pre-loaded data.");
->>>>>>> pr/142
+                    text = await res.text();
+                    data = JSON.parse(text);
                 }
                 
                 this.db = {};
@@ -75,6 +63,7 @@ class CoordinatesStore {
                     });
                 }
                 console.log(`[CoordinatesStore] Loaded ${this.allPoints.length} unique stops from master routes.`);
+                return { text, data };
             } catch (e) {
                 console.error("[CoordinatesStore] Failed to load routes:", e);
                 this.loadingPromise = null; // Allow retry
