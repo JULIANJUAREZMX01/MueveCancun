@@ -260,7 +260,7 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
 
     // Limit for DoS prevention
     const MAX_SEARCH_RESULTS: usize = 200;
-    const MAX_OPS: usize = 1_000_000;
+    const MAX_OPS: usize = 10_000_000;
     let mut ops_count = 0;
 
     // 1. Direct Routes (Support bidirectional routes)
@@ -308,8 +308,6 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
     ];
 
     const MAX_TRANSFER_ROUTES: usize = 50;
-    const MAX_OPS: usize = 10_000_000; // Increased limit
-    let mut ops_count = 0;
 
     'outer: for match_a in &routes_from_origin {
         let route_a = match_a.route;
