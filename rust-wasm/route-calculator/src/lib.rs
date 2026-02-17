@@ -374,8 +374,6 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
                             }
                         }
                     }
-                        }
-                    }
                 }
             }
 
