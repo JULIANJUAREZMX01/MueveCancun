@@ -200,6 +200,7 @@ const ui = uiTranslations[currentLang];
   import { openDB } from 'idb';
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
+  import { getTransportLabel } from '../lib/transport';
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
@@ -509,13 +510,6 @@ const ui = uiTranslations[currentLang];
   }
 
   // --- Rendering Functions ---
-
-  function getTransportLabel(type) {
-      if (!type) return 'Bus';
-      if (type.includes('ADO')) return 'ADO';
-      if (type.includes('Combi') || type.includes('Van')) return 'Combi';
-      return 'Bus';
-  }
 
   function renderBestResultHtml(journey, isBest = false) {
         const route = journey.legs[0];
