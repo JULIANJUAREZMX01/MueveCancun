@@ -221,9 +221,6 @@ const navItems = [
 
       <!-- Controls -->
       <div class="flex items-center gap-2">
-         <button class="lang-toggle-btn w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-            ES
-         </button>
          <button class="theme-toggle w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
                  style="color: var(--text-secondary);">
             <span class="material-symbols-rounded text-xl sun hidden dark:block">light_mode</span>
@@ -256,10 +253,10 @@ const navItems = [
     <div id="pwa-update-toast" class="hidden fixed z-50 bottom-20 left-4 right-4 animate-slide-up">
       <div class="glass-card p-4 flex items-center justify-between gap-4 bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 rounded-2xl">
         <div>
-          <h4 class="font-bold text-sm">Actualización disponible</h4>
-          <p class="text-xs text-slate-500">Nueva versión lista.</p>
+          <h4 class="font-bold text-sm" data-i18n="pwa.update">Actualización disponible</h4>
+          <p class="text-xs text-slate-500" data-i18n="pwa.new_version">Nueva versión lista.</p>
         </div>
-        <button id="pwa-refresh-btn" class="bg-primary-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold">
+        <button id="pwa-refresh-btn" class="bg-primary-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold" data-i18n="pwa.refresh">
             ACTUALIZAR
         </button>
       </div>
@@ -297,7 +294,7 @@ const navItems = [
       function setupThemeToggle() {
         // Find existing buttons (desktop + mobile)
         const toggles = document.querySelectorAll('.theme-toggle');
-        
+
         toggles.forEach(btn => {
           const newBtn = btn.cloneNode(true);
           btn.parentNode.replaceChild(newBtn, btn);
@@ -310,35 +307,16 @@ const navItems = [
         });
       }
 
-      function setupLangToggle() {
-        const toggles = document.querySelectorAll('.lang-toggle-btn');
-        toggles.forEach(btn => {
-          const newBtn = btn.cloneNode(true);
-          btn.parentNode.replaceChild(newBtn, btn);
-
-          newBtn.addEventListener('click', () => {
-            const currentLang = localStorage.getItem('lang') || 'es';
-            const newLang = currentLang === 'es' ? 'en' : 'es';
-            localStorage.setItem('lang', newLang);
-            updateTranslations(newLang);
-            window.dispatchEvent(new CustomEvent('LANGUAGE_CHANGE', { detail: newLang }));
-          });
-        });
-      }
-
       // Run on every navigation because MainLayout persists but content updates
       document.addEventListener('astro:page-load', () => {
         setupThemeToggle();
-        setupLangToggle();
       });
 
       if (document.readyState === 'complete') {
           setupThemeToggle();
-          setupLangToggle();
       } else {
           window.addEventListener('load', () => {
               setupThemeToggle();
-              setupLangToggle();
           });
       }
     </script>

@@ -117,22 +117,27 @@ import MainLayout from '../layouts/MainLayout.astro';
   </dialog>
 
   <script>
-    function setupWallet() {
+    import { getWalletBalance, setWalletBalance, updateWalletBalance } from '../utils/db';
+
+    async function setupWallet() {
       const balanceAmount = document.getElementById('balance-amount');
       const openBtn = document.getElementById('open-recharge');
       const closeBtn = document.getElementById('close-recharge');
       const dialog = document.getElementById('recharge-dialog') as HTMLDialogElement;
       const confirmBtn = document.getElementById('confirm-recharge');
       const amountOptions = document.querySelectorAll('.amount-option');
-      
+
       let selectedAmount = 50;
 
-      function updateBalanceUI() {
-          const balance = parseFloat(localStorage.getItem('muevecancun_balance') || '180.00');
+      async function updateBalanceUI() {
+          // Use IndexedDB as single source of truth
+          const walletData = await getWalletBalance();
+          const balance = walletData?.amount ?? 180.00;
           if (balanceAmount) balanceAmount.textContent = `$${balance.toFixed(2)}`;
       }
 
-      updateBalanceUI();
+      // Initial load - wait for IndexedDB to be ready
+      await updateBalanceUI();
 
       openBtn?.addEventListener('click', () => dialog?.showModal());
       closeBtn?.addEventListener('click', () => dialog?.close());
@@ -141,22 +146,28 @@ import MainLayout from '../layouts/MainLayout.astro';
           opt.addEventListener('click', () => {
               amountOptions.forEach(o => o.classList.remove('border-primary-500', 'bg-primary-50/50', 'dark:bg-primary-900/20', 'text-primary-600', 'dark:text-primary-400'));
               amountOptions.forEach(o => o.classList.add('border-slate-100', 'dark:border-slate-800', 'text-slate-600', 'dark:text-slate-400'));
-              
+
               opt.classList.remove('border-slate-100', 'dark:border-slate-800', 'text-slate-600', 'dark:text-slate-400');
               opt.classList.add('border-primary-500', 'bg-primary-50/50', 'dark:bg-primary-900/20', 'text-primary-600', 'dark:text-primary-400');
-              
+
               selectedAmount = parseInt(opt.getAttribute('data-amount') || '50');
           });
       });
 
-      confirmBtn?.addEventListener('click', () => {
-          const currentBalance = parseFloat(localStorage.getItem('muevecancun_balance') || '180.00');
+      confirmBtn?.addEventListener('click', async () => {
+          // Use IndexedDB as single source of truth
+          const walletData = await getWalletBalance();
+          const currentBalance = walletData?.amount ?? 180.00;
           const newBalance = currentBalance + selectedAmount;
-          localStorage.setItem('muevecancun_balance', newBalance.toFixed(2));
-          
-          updateBalanceUI();
+
+          // Update IndexedDB
+          await setWalletBalance(newBalance);
+
+          // Update UI
+          if (balanceAmount) balanceAmount.textContent = `$${newBalance.toFixed(2)}`;
+
           dialog?.close();
-          
+
           if (window.showToast) {
             window.showToast(`¡Recarga exitosa! +$${selectedAmount}`, "success");
           }

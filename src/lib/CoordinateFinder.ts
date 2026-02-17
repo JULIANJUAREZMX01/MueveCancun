@@ -8,10 +8,12 @@ export class CoordinateFinder {
     private cache: Map<string, [number, number]> = new Map();
     private tokenIndex: Map<string, string[]> = new Map();
     private keys: string[];
+    private lowerKeys: string[];
 
     constructor(db: Record<string, [number, number]>) {
         this.db = db;
         this.keys = Object.keys(db);
+        this.lowerKeys = this.keys.map(k => k.toLowerCase());
         this.buildIndex();
     }
 
@@ -82,9 +84,9 @@ export class CoordinateFinder {
         const candidates = new Set<string>();
 
         // 1. Direct includes (high priority)
-        for (const key of this.keys) {
-            if (key.toLowerCase().includes(q)) {
-                candidates.add(key);
+        for (let i = 0; i < this.lowerKeys.length; i++) {
+            if (this.lowerKeys[i].includes(q)) {
+                candidates.add(this.keys[i]);
             }
         }
 
