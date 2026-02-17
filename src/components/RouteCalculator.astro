@@ -200,6 +200,7 @@ const ui = uiTranslations[currentLang];
   import { openDB } from 'idb';
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
+  import { escapeHtml } from '../lib/utils';
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
@@ -212,16 +213,6 @@ const ui = uiTranslations[currentLang];
   const langToggle = document.getElementById('lang-toggle');
 
   // Helpers
-  // Sentinel Fix: Robust escapeHtml that handles non-string inputs to prevent crash (DoS)
-  const escapeHtml = (unsafe) => {
-    if (unsafe === undefined || unsafe === null) return '';
-    return String(unsafe)
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
-  }
 
   // Security: Safe JSON Serialization for HTML Attributes
   // Prevents XSS via attribute injection (e.g. </button><script>)
