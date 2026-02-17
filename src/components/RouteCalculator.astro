@@ -34,12 +34,6 @@ const ui = uiTranslations[currentLang];
     </div>
 
     <!-- Balance Warning -->
-    <div id="balance-warning" class="hidden bg-red-50 p-3 text-center border-b border-red-100">
-        <p class="text-xs font-bold text-red-600 flex items-center justify-center gap-2">
-            <span class="material-symbols-rounded text-sm">warning</span>
-            <span data-i18n="calc.insufficient">Insufficient Balance</span>
-        </p>
-    </div>
 
     <!-- Summary Bar (Hidden by default) -->
     <div id="summary-bar" class="summary-bar hidden">
@@ -167,8 +161,8 @@ const ui = uiTranslations[currentLang];
     <div id="results-info" class="mb-4 hidden animate-fade-in group">
         <div class="glass-card flex items-center justify-between px-4 py-3">
             <div class="flex flex-col">
-                <span class="text-xxs font-black uppercase tracking-widest mb-0.5" style="color: var(--text-tertiary);" id="results-count-label">0 OPCIONES</span>
-                <span class="badge-success font-mono" id="results-time-badge">MÁS RÁPIDA: 12min</span>
+                <span class="text-xxs font-black uppercase tracking-widest mb-0.5" style="color: var(--text-tertiary);" id="results-count-label"></span>
+                <span class="badge-success font-mono" id="results-time-badge"></span>
             </div>
             
             <button id="toggle-list-btn" class="chip">
@@ -213,7 +207,6 @@ const ui = uiTranslations[currentLang];
 
   // DOM Elements
   const balanceBadge = document.getElementById('balance-badge');
-  const balanceWarning = document.getElementById('balance-warning');
   const searchBtn = document.getElementById('search-btn'); // Renamed from btn for clarity, but keeping logic
   const resultsContainer = document.getElementById('results-container');
   const langToggle = document.getElementById('lang-toggle');
@@ -725,8 +718,16 @@ const ui = uiTranslations[currentLang];
 
           if (searchButton) searchButton.disabled = true;
           spinner?.classList.remove('hidden');
+
           btnText?.classList.add('hidden');
           
+          // Clear previous results badges
+          const countLabel = document.getElementById('results-count-label');
+          if (countLabel) countLabel.textContent = '';
+          const timeBadge = document.getElementById('results-time-badge');
+          if (timeBadge) timeBadge.textContent = '';
+
+
           if (resultsContainer) resultsContainer.innerHTML = '';
           const bestResultArea = document.getElementById('best-result-area');
           if (bestResultArea) bestResultArea.innerHTML = '';
@@ -758,6 +759,19 @@ const ui = uiTranslations[currentLang];
                  const countLabel = document.getElementById('results-count-label');
                  if (countLabel) countLabel.textContent = `${results.length} ${currentLang === 'es' ? 'OPCIONES' : 'OPTIONS'}`;
                  
+                 const timeBadge = document.getElementById('results-time-badge');
+                 if (timeBadge && best) {
+                     let duration = best.duration_minutes || 0;
+                     // Fallback if needed
+                     if (!duration && best.legs) {
+                        // This logic is simplified; backend usually provides duration
+                     }
+
+                     const timeText = currentLang === 'es' ? 'MÁS RÁPIDA' : 'FASTEST';
+                     timeBadge.textContent = `${timeText}: ${duration}min`;
+                     timeBadge.classList.remove('hidden');
+                 }
+
                  document.getElementById('results-info')?.classList.remove('hidden');
 
                  if (bestResultArea) {
