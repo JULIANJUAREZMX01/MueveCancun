@@ -345,6 +345,9 @@ const ui = uiTranslations[currentLang];
           // Initialize shared coordinates store with ALREADY LOADED data (Optimization ⚡)
           await coordinatesStore.init(jsonData);
           
+          // Optimization: Initialize store with data we already have
+          coordinatesStore.init(jsonData);
+
           const searchBtn = document.getElementById("search-btn");
           const spinner = document.getElementById("btn-spinner");
           const txt = document.getElementById("btn-text");
