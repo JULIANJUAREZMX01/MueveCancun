@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest';
-import { CoordinateFinder } from '../../lib/CoordinateFinder';
+import { CoordinateFinder } from '../../utils/CoordinateFinder';
 
 function generateRandomString(length: number): string {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

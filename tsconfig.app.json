@@ -22,7 +22,8 @@
       "@components/*": ["src/components/*"],
       "@layouts/*": ["src/layouts/*"],
       "@styles/*": ["src/styles/*"],
-      "@lib/*": ["src/lib/*"],
+      "@lib/*": ["src/utils/*"],
+      "@utils/*": ["src/utils/*"],
       "@consts": ["src/consts.ts"],
       "@types": ["src/types.ts"]
     },

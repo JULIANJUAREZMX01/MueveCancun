@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CoordinateFinder } from '../lib/CoordinateFinder';
+import { CoordinateFinder } from '../utils/CoordinateFinder';
 
 describe('CoordinateFinder', () => {
     const db = {
