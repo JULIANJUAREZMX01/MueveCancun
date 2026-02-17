@@ -1,4 +1,4 @@
-import { getAllRoutes } from '../../lib/routes';
+import { getAllRoutes } from '../../utils/routes';
 
 export async function GET() {
   const routes = await getAllRoutes();

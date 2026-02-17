@@ -291,6 +291,12 @@ const ui = uiTranslations[currentLang];
     }
   }
 
+  // Listen for global balance updates
+  window.addEventListener('BALANCE_UPDATED', () => {
+      console.log("[RouteCalculator] Global balance update received");
+      updateBalance();
+  });
+
 
 
   async function start() {

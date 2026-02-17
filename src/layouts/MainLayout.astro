@@ -68,13 +68,13 @@ const navItems = [
         <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
         <script is:inline defer src="/vendor/leaflet/leaflet.js"></script>
     )}
-    <script is:inline>
-      // 1. Theme Initialization (Blocking to prevent FOUC)
+    <script>
+      import { getWalletBalance } from '../utils/db';
+      
+      // 1. Theme Initialization
       function applyTheme() {
           const theme = localStorage.getItem("theme");
-          const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-          if (theme === "dark" || (!theme && systemDark)) {
+          if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
             document.documentElement.classList.add("dark");
           } else {
             document.documentElement.classList.remove("dark");
@@ -167,9 +167,29 @@ const navItems = [
       applyTheme();
       applyLanguage();
       
+      // 3. Global Balance Sync
+      async function syncGlobalBalance() {
+          try {
+            const walletData = await getWalletBalance();
+            const balance = walletData?.amount ?? 180.00;
+            const balanceEl = document.getElementById('header-balance-amount');
+            if (balanceEl) balanceEl.textContent = `$${balance.toFixed(2)}`;
+          } catch (e) {
+            console.warn("[MainLayout] Balance sync failed", e);
+          }
+      }
+
+      syncGlobalBalance();
+      
       document.addEventListener('astro:after-swap', () => {
         applyTheme();
         applyLanguage();
+        syncGlobalBalance();
+      });
+
+      window.addEventListener('BALANCE_UPDATED', () => {
+          console.log("[MainLayout] Balance update event received");
+          syncGlobalBalance();
       });
 
       window.addEventListener('LANGUAGE_CHANGE', (e) => {
@@ -221,6 +241,12 @@ const navItems = [
 
       <!-- Controls -->
       <div class="flex items-center gap-2">
+         <!-- Unified Balance Badge -->
+         <a href="/wallet" id="header-balance-badge" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 no-underline transition-all hover:scale-105 active:scale-95 group">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+            <span id="header-balance-amount" class="text-xs font-black text-slate-700 dark:text-slate-300">$180.00</span>
+         </a>
+
          <button class="theme-toggle w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
                  style="color: var(--text-secondary);">
             <span class="material-symbols-rounded text-xl sun hidden dark:block">light_mode</span>

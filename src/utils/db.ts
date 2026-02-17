@@ -48,12 +48,12 @@ export const migrateBalanceFromLocalStorage = async (): Promise<void> => {
         // Preserve the higher balance from localStorage
         if (localBalance > existing.amount) {
           existing.amount = localBalance;
-          await store.put(existing);
+          await store.put(existing, 'current_balance');
           console.log(`[DB] Migrated balance from ${source}: ${localBalance}`);
         }
       } else {
         // Create new balance record
-        await store.put({ id: 'current_balance', amount: localBalance, currency: 'MXN' });
+        await store.put({ id: 'current_balance', amount: localBalance, currency: 'MXN' }, 'current_balance');
         console.log(`[DB] Created balance from ${source}: ${localBalance}`);
       }
     }
@@ -61,9 +61,9 @@ export const migrateBalanceFromLocalStorage = async (): Promise<void> => {
     // Mark migration as done
     localStorage.setItem('balance_migration_done', 'true');
 
-    // Clean up localStorage (optional - keeping for fallback during transition)
-    // localStorage.removeItem('muevecancun_balance');
-    // localStorage.removeItem('user_balance');
+    // Clean up localStorage
+    localStorage.removeItem('muevecancun_balance');
+    localStorage.removeItem('user_balance');
 
     await tx.done;
     console.log('[DB] Balance migration completed successfully');
@@ -92,7 +92,7 @@ export const initDB = async () => {
   const balance = await store.get('current_balance');
 
   if (balance === undefined) {
-    await store.put({ id: 'current_balance', amount: 180.00, currency: 'MXN' });
+    await store.put({ id: 'current_balance', amount: 180.00, currency: 'MXN' }, 'current_balance');
     console.log('[DB] Initial wallet balance set to 180.00 MXN');
   }
 
@@ -117,9 +117,9 @@ export const setWalletBalance = async (amount: number): Promise<void> => {
 
   if (existing) {
     existing.amount = amount;
-    await store.put(existing);
+    await store.put(existing, 'current_balance');
   } else {
-    await store.put({ id: 'current_balance', amount, currency: 'MXN' });
+    await store.put({ id: 'current_balance', amount, currency: 'MXN' }, 'current_balance');
   }
 
   await tx.done;
@@ -130,6 +130,6 @@ export const updateWalletBalance = async (amount: number) => {
   const balance = await db.get('wallet-status', 'current_balance');
   if (balance) {
     balance.amount += amount;
-    await db.put('wallet-status', balance);
+    await db.put('wallet-status', balance, 'current_balance');
   }
 };

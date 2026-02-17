@@ -166,6 +166,9 @@ import MainLayout from '../layouts/MainLayout.astro';
           // Update UI
           if (balanceAmount) balanceAmount.textContent = `$${newBalance.toFixed(2)}`;
 
+          // Dispatch Global Sync Event
+          window.dispatchEvent(new CustomEvent('BALANCE_UPDATED'));
+
           dialog?.close();
 
           if (window.showToast) {

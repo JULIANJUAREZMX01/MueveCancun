@@ -76,6 +76,10 @@ export class CoordinatesStore {
         return this.db[key] || null;
     }
 
+    getDB() {
+        return this.db;
+    }
+
     findNearest(lat: number, lng: number): string | null {
         if (!this.db) return null;
         let minDist = Infinity;
