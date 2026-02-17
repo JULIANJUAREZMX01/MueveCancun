@@ -1,12 +1,24 @@
-import { defineMiddleware } from "astro:middleware";
+import { defineMiddleware } from 'astro:middleware';
 
-export const onRequest = defineMiddleware(async (context, next) => {
-  const response = await next();
+const SUPPORTED_LOCALES = ['es', 'en'] as const;
+type Locale = typeof SUPPORTED_LOCALES[number];
 
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("X-Frame-Options", "SAMEORIGIN");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+export const onRequest = defineMiddleware(({ request, redirect, cookies, url }, next) => {
+  const path = url.pathname;
 
-  return response;
+  // Handle root redirect
+  if (path === '/' || path === '') {
+    // 1. Cookie preference
+    const saved = cookies.get('locale')?.value as Locale;
+    if (saved && SUPPORTED_LOCALES.includes(saved)) {
+      return redirect(`/${saved}/home`, 302);
+    }
+
+    // 2. Browser preference
+    const lang = request.headers.get('accept-language') ?? '';
+    const locale = lang.toLowerCase().startsWith('en') ? 'en' : 'es';
+    return redirect(`/${locale}/home`, 302);
+  }
+
+  return next();
 });

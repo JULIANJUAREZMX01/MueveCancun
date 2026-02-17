@@ -1,7 +1,8 @@
 ---
-import MainLayout from '../../layouts/MainLayout.astro';
+import MainLayout from '../../../layouts/MainLayout.astro';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { getLangFromUrl, useTranslations } from '../../../lib/i18n';
 
 export const prerender = true;
 
@@ -11,11 +12,14 @@ export async function getStaticPaths() {
   try {
     const fileContent = await fs.readFile(routesPath, 'utf-8');
     const routesData = JSON.parse(fileContent);
+    const languages = ['es', 'en'];
 
-    return routesData.rutas.map((route: any) => ({
-      params: { id: route.id },
-      props: { route },
-    }));
+    return languages.flatMap(lang =>
+      routesData.rutas.map((route: any) => ({
+        params: { lang, id: route.id },
+        props: { route },
+      }))
+    );
   } catch (err) {
     console.error("Error generating static paths for routes:", err);
     return [];
@@ -23,6 +27,8 @@ export async function getStaticPaths() {
 }
 
 const { route } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 
 // --- SEO Logic ---
 const pageTitle = `Ruta ${route.nombre} | CancúnMueve`;
@@ -201,7 +207,7 @@ const schemaData = {
              <p class="text-xs opacity-90 leading-relaxed mb-6 font-medium">
                 Usa nuestra IA de ruteo para encontrar la mejor combinación desde tu ubicación actual.
              </p>
-             <a href={`/home?selected_stop=${encodeURIComponent(route.nombre)}`} class="w-full py-3 bg-white text-primary-600 rounded-xl font-black text-xs uppercase tracking-widest text-center block shadow-lg active:scale-95 transition-all">
+             <a href={`/${lang}/home?selected_stop=${encodeURIComponent(route.nombre)}`} class="w-full py-3 bg-white text-primary-600 rounded-xl font-black text-xs uppercase tracking-widest text-center block shadow-lg active:scale-95 transition-all">
                 TRAZAR RUTA AQUÍ
              </a>
           </div>
@@ -213,8 +219,8 @@ const schemaData = {
 </MainLayout>
 
 <script>
-  import { favoritesStore } from '../../lib/FavoritesStore';
-  import { analytics } from '../../lib/Analytics';
+  import { favoritesStore } from '../../../lib/FavoritesStore';
+  import { analytics } from '../../../lib/Analytics';
 
   function initPage() {
     const favoriteBtn = document.getElementById('favorite-btn');
@@ -222,7 +228,14 @@ const schemaData = {
 
     // Use current path as ID or extract it
     const parts = window.location.pathname.split('/');
-    const routeId = parts[parts.length - 1] || parts[parts.length - 2]; // Handle trailing slash
+    // Path structure: /es/ruta/[id] or /en/ruta/[id]
+    // parts[0] = ""
+    // parts[1] = "es"
+    // parts[2] = "ruta"
+    // parts[3] = id
+    let routeId = parts[3];
+    if (!routeId || routeId === "") routeId = parts[2]; // Fallback if no lang? No, standard is 3.
+
     const routeName = document.querySelector('h1')?.textContent?.trim() || 'Ruta';
 
     const updateUI = () => {
@@ -264,7 +277,6 @@ const schemaData = {
   }
 
   document.addEventListener('astro:page-load', initPage);
-  // Also run on initial load if view transitions aren't triggering immediately or if disabled
   if (document.readyState === 'complete') initPage();
   else window.addEventListener('load', initPage);
 </script>

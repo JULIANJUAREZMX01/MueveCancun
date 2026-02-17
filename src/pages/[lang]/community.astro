@@ -1,6 +1,13 @@
 ---
-import MainLayout from '../layouts/MainLayout.astro';
-import Container from '../components/Container.astro'; // Assuming Container exists or I'll use standard div
+export function getStaticPaths() {
+  return [
+    { params: { lang: "es" } },
+    { params: { lang: "en" } },
+  ];
+}
+
+import MainLayout from '../../layouts/MainLayout.astro';
+import Container from '../../components/Container.astro'; // Assuming Container exists or I'll use standard div
 
 const title = "Comunidad";
 

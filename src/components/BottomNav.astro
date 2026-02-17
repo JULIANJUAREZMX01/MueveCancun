@@ -1,12 +1,16 @@
 ---
+import { getLangFromUrl, useTranslations } from '../lib/i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const pathname = Astro.url.pathname;
 
 const navItems = [
-  { href: '/home', icon: 'explore', label: 'Inicio', activePattern: /^\/home/ },
-  { href: '/rutas', icon: 'route', label: 'Rutas', activePattern: /^\/rutas/ },
-  { href: '/mapa', icon: 'map', label: 'Mapa', activePattern: /^\/mapa/ },
-  { href: '/community', icon: 'forum', label: 'Foro', activePattern: /^\/community/ },
-  { href: '/wallet', icon: 'account_balance_wallet', label: 'Tarjeta', activePattern: /^\/wallet/ },
+  { href: `/${lang}/home`, icon: 'explore', label: t('nav.home'), activePattern: new RegExp(`^/${lang}/home`) },
+  { href: `/${lang}/rutas`, icon: 'route', label: t('nav.routes'), activePattern: new RegExp(`^/${lang}/rutas`) },
+  { href: `/${lang}/mapa`, icon: 'map', label: t('nav.map'), activePattern: new RegExp(`^/${lang}/mapa`) },
+  { href: `/${lang}/community`, icon: 'forum', label: t('nav.community'), activePattern: new RegExp(`^/${lang}/community`) },
+  { href: `/${lang}/wallet`, icon: 'account_balance_wallet', label: t('nav.wallet'), activePattern: new RegExp(`^/${lang}/wallet`) },
 ];
 ---
 

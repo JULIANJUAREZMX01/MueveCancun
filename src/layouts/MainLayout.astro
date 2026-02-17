@@ -4,6 +4,7 @@ import '../index.css';
 import Toast from '../components/ui/Toast.astro';
 import BottomNav from '../components/BottomNav.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
+import { getLangFromUrl, useTranslations } from '../lib/i18n';
 
 interface Props {
   title: string;
@@ -21,24 +22,33 @@ const {
   hideNav = false
 } = Astro.props;
 
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const pathname = Astro.url.pathname;
 
 const navItems = [
-  { href: '/home', label: 'Inicio', icon: 'explore', activePattern: /^\/home/ },
-  { href: '/rutas', label: 'Rutas', icon: 'route', activePattern: /^\/rutas/ },
-  { href: '/mapa', label: 'Mapa', icon: 'map', activePattern: /^\/mapa/ },
-  { href: '/community', label: 'Foro', icon: 'forum', activePattern: /^\/community/ },
-  { href: '/wallet', label: 'Wallet', icon: 'account_balance_wallet', activePattern: /^\/wallet/ },
-  { href: '/about', label: 'Nosotros', icon: 'info', activePattern: /^\/about/ },
+  { href: `/${lang}/home`, label: t('nav.home'), icon: 'explore', activePattern: new RegExp(`^/${lang}/home`) },
+  { href: `/${lang}/rutas`, label: t('nav.routes'), icon: 'route', activePattern: new RegExp(`^/${lang}/rutas`) },
+  { href: `/${lang}/mapa`, label: t('nav.map'), icon: 'map', activePattern: new RegExp(`^/${lang}/mapa`) },
+  { href: `/${lang}/community`, label: t('nav.community'), icon: 'forum', activePattern: new RegExp(`^/${lang}/community`) },
+  { href: `/${lang}/wallet`, label: t('nav.wallet'), icon: 'account_balance_wallet', activePattern: new RegExp(`^/${lang}/wallet`) },
+  { href: `/${lang}/about`, label: t('nav.about'), icon: 'info', activePattern: new RegExp(`^/${lang}/about`) },
 ];
 ---
 
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang={lang} class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Poppins:wght@400;700;900&display=swap" rel="stylesheet">
+
     <meta name="generator" content={Astro.generator} />
     <title>{title} | CancúnMueve</title>
     <meta name="description" content={description} />
@@ -50,7 +60,7 @@ const navItems = [
     <link rel="apple-touch-icon" href="/icons/pwa-192x192.png" />
 
     <script is:inline>
-      // 1. Theme Initialization (Blocking to prevent FOUC)
+      // Theme Initialization
       function applyTheme() {
           const theme = localStorage.getItem("theme");
           const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -61,144 +71,8 @@ const navItems = [
             document.documentElement.classList.remove("dark");
           }
       }
-      
-      // 2. I18n Initialization
-      const translations = {
-          es: {
-              "nav.home": "Inicio",
-              "nav.routes": "Rutas",
-              "nav.map": "Mapa",
-              "nav.community": "Foro",
-              "nav.wallet": "Wallet",
-              "nav.about": "Nosotros",
-              "calc.title": "BUSCAR RUTA",
-              "calc.origin": "Origen",
-              "calc.dest": "Destino",
-              "calc.placeholder.origin": "¿Desde dónde sales?",
-              "calc.placeholder.dest": "¿A dónde vas?",
-              "calc.gps": "Usar mi ubicación",
-              "calc.map": "Seleccionar en mapa",
-              "calc.quick": "Accesos Rápidos",
-              "calc.home": "Casa",
-              "calc.work": "Trabajo",
-              "calc.airport": "Aeropuerto",
-              "calc.beach": "Playa",
-              "calc.passengers": "Pasajeros",
-              "calc.mode": "Modo",
-              "calc.tourist": "Turista",
-              "calc.loading": "Cargando rutas...",
-              "calc.edit": "EDITAR",
-              "calc.toggle.hide": "Ocultar",
-              "calc.toggle.show": "Mostrar",
-              "calc.error.empty": "Por favor llena ambos campos",
-              "calc.error.no_route": "No se encontraron rutas",
-              "calc.insufficient": "Saldo insuficiente"
-          },
-          en: {
-              "nav.home": "Home",
-              "nav.routes": "Routes",
-              "nav.map": "Map",
-              "nav.community": "Forum",
-              "nav.wallet": "Wallet",
-              "nav.about": "About",
-              "calc.title": "ROUTE FINDER",
-              "calc.origin": "Origin",
-              "calc.dest": "Destination",
-              "calc.placeholder.origin": "From where?",
-              "calc.placeholder.dest": "Where to?",
-              "calc.gps": "Use my location",
-              "calc.map": "Select on map",
-              "calc.quick": "Quick Actions",
-              "calc.home": "Home",
-              "calc.work": "Work",
-              "calc.airport": "Airport",
-              "calc.beach": "Beach",
-              "calc.passengers": "Passengers",
-              "calc.mode": "Mode",
-              "calc.tourist": "Tourist",
-              "calc.loading": "Finding routes...",
-              "calc.edit": "EDIT",
-              "calc.toggle.hide": "Hide",
-              "calc.toggle.show": "Show",
-              "calc.error.empty": "Please fill in both fields",
-              "calc.error.no_route": "No route found",
-              "calc.insufficient": "Insufficient Balance"
-          }
-      };
-
-      function applyLanguage() {
-          const lang = localStorage.getItem('lang') || 'es';
-          updateTranslations(lang);
-      }
-
-      function updateTranslations(lang) {
-          // Update simple text elements
-          document.querySelectorAll('[data-i18n]').forEach(el => {
-              const key = el.getAttribute('data-i18n');
-              const text = translations[lang]?.[key];
-              if (text) {
-                  // Handle input placeholders specifically if needed, but usually those are attributes
-                  if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                       // handled by data-i18n-placeholder
-                  } else {
-                      el.textContent = text;
-                  }
-              }
-          });
-
-          // Custom Input Labels
-          document.querySelectorAll('[data-i18n-label]').forEach(el => {
-              const key = el.getAttribute('data-i18n-label');
-              const text = translations[lang]?.[key];
-              if (text) {
-                 if (el.tagName === 'INPUT') {
-                     const id = el.id;
-                     if (id) {
-                         const label = document.querySelector(`label[for="${id}"]`);
-                         if (label) label.textContent = text;
-                     }
-                 } else {
-                     const labelSpan = el.querySelector('.label-text');
-                     if (labelSpan) labelSpan.textContent = text;
-                 }
-              }
-          });
-          
-          // Placeholders
-          document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-               const key = el.getAttribute('data-i18n-placeholder');
-               const text = translations[lang]?.[key];
-               if (text && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
-                   el.placeholder = text;
-               }
-          });
-
-          // Quick Action Buttons (HTML content)
-          document.querySelectorAll('[data-i18n-html]').forEach(el => {
-             const key = el.getAttribute('data-i18n-html');
-             const text = translations[lang]?.[key];
-             // Preserves icon if we replace innerText carefully or just update text node
-             // For quick actions: <span icon></span> Text
-             if (text) {
-                 const icon = el.querySelector('span');
-                 el.innerHTML = '';
-                 if (icon) el.appendChild(icon);
-                 el.appendChild(document.createTextNode(' ' + text));
-             }
-          });
-      }
-
       applyTheme();
-      applyLanguage();
-      
-      document.addEventListener('astro:after-swap', () => {
-        applyTheme();
-        applyLanguage();
-      });
-
-      window.addEventListener('LANGUAGE_CHANGE', (e) => {
-          updateTranslations(e.detail);
-      });
+      document.addEventListener('astro:after-swap', applyTheme);
     </script>
     <ClientRouter />
   </head>
@@ -208,7 +82,7 @@ const navItems = [
     { !hideNav && (
     <header class="fixed top-0 left-0 right-0 z-40 h-14 md:h-16 px-4 md:px-6 flex items-center justify-between transition-colors duration-300 app-header">
 
-      <a href="/home" class="flex items-center gap-2.5 no-underline group outline-none">
+      <a href={`/${lang}/home`} class="flex items-center gap-2.5 no-underline group outline-none">
         <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform">
           <span class="material-symbols-rounded text-white text-lg" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
         </div>
@@ -218,17 +92,7 @@ const navItems = [
 
       <!-- Desktop Navigation -->
       <nav class="hidden md:flex items-center gap-1">
-        {navItems.map(item => {
-          // Map href to i18n key
-          let i18nKey = '';
-          if (item.href === '/home') i18nKey = 'nav.home';
-          else if (item.href === '/rutas') i18nKey = 'nav.routes';
-          else if (item.href === '/mapa') i18nKey = 'nav.map';
-          else if (item.href === '/community') i18nKey = 'nav.community';
-          else if (item.href === '/wallet') i18nKey = 'nav.wallet';
-          else if (item.href === '/about') i18nKey = 'nav.about';
-
-          return (
+        {navItems.map(item => (
             <a href={item.href}
                class:list={[
                  'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold transition-all no-underline',
@@ -237,14 +101,16 @@ const navItems = [
                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
                ]}>
               <span class="material-symbols-rounded text-lg" style="font-variation-settings: 'FILL' 1;">{item.icon}</span>
-              <span data-i18n={i18nKey}>{item.label}</span>
+              <span>{item.label}</span>
             </a>
-          );
-        })}
+        ))}
       </nav>
 
       <!-- Controls -->
       <div class="flex items-center gap-2">
+         <button id="lang-switch-btn" class="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-black uppercase tracking-wider text-slate-500" data-current={lang}>
+            {lang === 'es' ? 'EN' : 'ES'}
+         </button>
          <button class="theme-toggle w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
                  style="color: var(--text-secondary);">
             <span class="material-symbols-rounded text-xl sun hidden dark:block">light_mode</span>
@@ -284,8 +150,33 @@ const navItems = [
       </div>
     </div>
 
-    <script is:inline>
-      /* Service Worker & Theme Logic (Same as before) */
+    <script>
+      /* Language Switch Logic */
+      function setupLangSwitch() {
+        const btn = document.getElementById('lang-switch-btn');
+        if (!btn) return;
+
+        btn.onclick = () => {
+            const currentLang = btn.dataset.current;
+            const targetLang = currentLang === 'es' ? 'en' : 'es';
+            const currentPath = window.location.pathname;
+
+            // Replace /es/ with /en/ or vice versa
+            let newPath = currentPath.replace(`/${currentLang}`, `/${targetLang}`);
+
+            // Handle root case if needed (though middleware handles it)
+            if (newPath === currentPath) {
+                newPath = `/${targetLang}/home`;
+            }
+
+            // Save preference
+            document.cookie = `locale=${targetLang};path=/;max-age=31536000`;
+
+            window.location.href = newPath;
+        };
+      }
+
+      /* Service Worker & Theme Logic */
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').then(reg => {
@@ -314,41 +205,30 @@ const navItems = [
       }
 
       function setupThemeToggle() {
-        // Find existing buttons (desktop + mobile)
         const toggles = document.querySelectorAll('.theme-toggle');
-        
         toggles.forEach(btn => {
-          // Remove old listeners to prevent duplicates if any
           const newBtn = btn.cloneNode(true);
           btn.parentNode.replaceChild(newBtn, btn);
-
           newBtn.addEventListener('click', () => {
             document.documentElement.classList.toggle("dark");
             const isDark = document.documentElement.classList.contains("dark");
             localStorage.setItem("theme", isDark ? "dark" : "light");
-            // Sync all toggles visual state if needed (SVG visibility handles itself via CSS usually)
           });
         });
       }
-      // Run on every navigation because MainLayout persists but content updates
-      document.addEventListener('astro:page-load', setupThemeToggle);
-      if (document.readyState === 'complete') setupThemeToggle();
-      else window.addEventListener('load', setupThemeToggle);
+
+      document.addEventListener('astro:page-load', () => {
+          setupThemeToggle();
+          setupLangSwitch();
+      });
     </script>
 
     <style>
-      /*
-       * GRAFFITI WARRIOR: CSS5 Scroll-Driven Animations
-       * Header becomes opaque when scrolling down.
-       * No JS required.
-       */
       .app-header {
         background: transparent;
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
         border-bottom: 1px solid transparent;
-
-        /* Animation Logic */
         animation: header-scroll linear forwards;
         animation-timeline: scroll();
         animation-range: 0px 50px;

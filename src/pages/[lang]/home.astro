@@ -1,7 +1,14 @@
 ---
-import MainLayout from '../layouts/MainLayout.astro';
-import InteractiveMap from '../components/InteractiveMap.astro';
-import RouteCalculator from '../components/RouteCalculator.astro';
+export function getStaticPaths() {
+  return [
+    { params: { lang: "es" } },
+    { params: { lang: "en" } },
+  ];
+}
+
+import MainLayout from '../../layouts/MainLayout.astro';
+import InteractiveMap from '../../components/InteractiveMap.astro';
+import RouteCalculator from '../../components/RouteCalculator.astro';
 
 const title = "Inicio";
 ---

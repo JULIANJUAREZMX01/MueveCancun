@@ -20,13 +20,7 @@ const ui = uiTranslations[currentLang];
          <span class="material-symbols-rounded text-primary-500 text-xl">directions_bus</span>
          <h2 class="text-sm font-black uppercase tracking-widest text-slate-800" data-i18n="calc.title">Route Finder</h2>
       </div>
-
-      <div class="header-controls">
-        <!-- Balance removed per Sprint 1 requirement -->
-        <button id="lang-toggle" class="lang-toggle">
-            {currentLang === 'es' ? 'ES' : 'EN'}
-        </button>
-      </div>
+      <!-- Controls moved to Topbar -->
     </div>
 
     <!-- Summary Bar (Hidden by default) -->
@@ -202,7 +196,6 @@ const ui = uiTranslations[currentLang];
   // DOM Elements
   const searchBtn = document.getElementById('search-btn');
   const resultsContainer = document.getElementById('results-container');
-  const langToggle = document.getElementById('lang-toggle');
 
   // Helpers
   const escapeHtml = (unsafe) => {
@@ -350,10 +343,6 @@ const ui = uiTranslations[currentLang];
         }
   }
 
-  function updateUI() {
-    if (langToggle) langToggle.textContent = currentLang === 'es' ? 'ES' : 'EN';
-  }
-
   async function start() {
     let jsonData = null;
     try {
@@ -404,7 +393,6 @@ const ui = uiTranslations[currentLang];
           if (searchBtn) searchBtn.disabled = false;
           if (spinner) spinner.classList.add("hidden");
           if (txt) { txt.setAttribute("data-i18n", "calc.btn"); txt.textContent = "CALCULATE ROUTE"; }
-          updateUI();
 
         } catch (catalogError) {
           console.error("❌ Failed to load catalog:", catalogError);
@@ -415,8 +403,6 @@ const ui = uiTranslations[currentLang];
       console.error("WASM Load Critical Error:", e);
       renderWasmError();
     } finally {
-      updateUI();
-
       try {
         await coordinatesStore.init(jsonData);
         const db = coordinatesStore.getDB();
