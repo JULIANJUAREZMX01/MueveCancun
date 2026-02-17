@@ -265,7 +265,7 @@ const ui = uiTranslations[currentLang];
   let balance = 0;
   let hasBalance = false;
   let wasmLoaded = false;
-  let find_route, validate_operator_funds, load_stops_data, load_catalog;
+      let find_route, validate_operator_funds, load_catalog;
   let finder; // Global Coordinate Finder instance
 
   const btn = document.getElementById('search-btn');
@@ -327,7 +327,6 @@ const ui = uiTranslations[currentLang];
       await module.default();
       find_route = module.find_route;
       validate_operator_funds = module.validate_operator_funds;
-      load_stops_data = module.load_stops_data;
       load_catalog = module.load_catalog;
 
       console.log("WASM initialized.");
@@ -364,6 +363,9 @@ const ui = uiTranslations[currentLang];
 
           jsonData = JSON.parse(catalogString); // Parse once for cache if needed
           console.log("✅ Catalog loaded into WASM:", jsonData.rutas?.length || 0, "routes");
+
+          // Initialize shared coordinates store with ALREADY LOADED data (Optimization ⚡)
+          await coordinatesStore.init(jsonData);
           
           const searchBtn = document.getElementById("search-btn");
           const spinner = document.getElementById("btn-spinner");
@@ -391,14 +393,6 @@ const ui = uiTranslations[currentLang];
         await coordinatesStore.init(jsonData);
         const db = coordinatesStore.getDB();
         
-        // SYNC WITH WASM
-        if (wasmLoaded && typeof load_stops_data === 'function') {
-             console.log(`Sending ${Object.keys(db).length} stops to WASM`);
-             load_stops_data(db);
-             console.log("✅ Coordinates synced to WASM");
-        }
-
-
         finder = new CoordinateFinder(db);
         console.log("Coordinate Finder Ready");
         

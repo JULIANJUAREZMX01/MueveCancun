@@ -23,6 +23,7 @@ class CoordinatesStore {
             try {
                 let data = initialData;
 
+<<<<<<< HEAD
                 if (data) {
                     console.log("[CoordinatesStore] ⚡ Using injected data (Skipped Fetch)");
                 } else {
@@ -30,6 +31,15 @@ class CoordinatesStore {
                     const res = await fetch('/data/master_routes.json');
                     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                     data = await res.json();
+=======
+                if (!data) {
+                    console.log("[CoordinatesStore] Fetching master routes for coordinates...");
+                    const res = await fetch('/data/master_routes.json');
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    data = await res.json();
+                } else {
+                    console.log("[CoordinatesStore] Using injected data (Optimization ⚡)");
+>>>>>>> origin/main
                 }
                 
                 this.db = {};
