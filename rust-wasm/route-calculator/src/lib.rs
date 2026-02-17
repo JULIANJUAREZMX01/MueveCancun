@@ -363,12 +363,17 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
                     let stop_name = &route_a.stops[idx_a].name;
                     let is_preferred = preferred_hubs.iter().any(|h| stop_name.contains(h));
 
-                    if best_transfer.is_none() {
-                        best_transfer = Some((idx_a, is_preferred));
-                    } else {
-                        // If current is preferred and previous wasn't, switch
-                        if is_preferred && !best_transfer.unwrap().1 {
+                    match best_transfer {
+                        None => {
                             best_transfer = Some((idx_a, is_preferred));
+                        }
+                        Some((_, current_is_preferred)) => {
+                            // If current is preferred and previous wasn't, switch
+                            if is_preferred && !current_is_preferred {
+                                best_transfer = Some((idx_a, is_preferred));
+                            }
+                        }
+                    }
                         }
                     }
                 }
