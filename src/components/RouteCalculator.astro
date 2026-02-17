@@ -229,6 +229,14 @@ const ui = uiTranslations[currentLang];
          .replace(/'/g, "&#039;");
   }
 
+  // Security: Safe JSON Serialization for HTML Attributes
+  // Prevents XSS via attribute injection (e.g. </button><script>)
+  const safeJsonStringify = (obj) => {
+      return JSON.stringify(obj)
+          .replace(/</g, '\\u003c') // Escape < to prevent tag injection
+          .replace(/'/g, "&#39;"); // Escape ' to prevent attribute breakout
+  }
+
   // State
   let balance = 0;
   let hasBalance = false;
@@ -522,7 +530,7 @@ const ui = uiTranslations[currentLang];
                 </span>
                 <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration)}</p>
 
-                <button class="btn-primary btn-sm mt-3 whitespace-nowrap view-map-btn" data-journey='${JSON.stringify(journey).replace(/'/g, "&#39;")}'>
+                <button class="btn-primary btn-sm mt-3 whitespace-nowrap view-map-btn" data-journey='${safeJsonStringify(journey)}'>
                     <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> ${ui['calc.view_map']}
                 </button>
               </div>
@@ -593,7 +601,7 @@ const ui = uiTranslations[currentLang];
                 </span>
 
                 <button class="btn-primary btn-sm view-map-btn"
-                    data-journey='${JSON.stringify(journey).replace(/'/g, "&#39;")}'>
+                    data-journey='${safeJsonStringify(journey)}'>
                     <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">map</span> ${ui['calc.view_route']}
                 </button>
             </div>
