@@ -4,7 +4,6 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 use strsim;
 use wasm_bindgen::prelude::*;
-use std::cmp::Ordering; // Sentinel: Added for safe comparison
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RouteCatalog {
@@ -154,12 +153,6 @@ pub fn find_route_core_wrapper(origin: &str, dest: &str) -> Result<Vec<Journey>,
 #[wasm_bindgen]
 pub fn validate_operator_funds(balance: f64) -> bool {
     balance >= 180.0
-}
-
-#[wasm_bindgen]
-pub fn load_stops_data(_stops: JsValue) -> Result<(), JsValue> {
-    // No-op: Stops are now loaded via load_catalog() inside routes
-    Ok(())
 }
 
 #[wasm_bindgen]

@@ -15,16 +15,22 @@ class CoordinatesStore {
     // Singleton instance
     static instance = new CoordinatesStore();
 
-    async init() {
+    async init(initialData?: any) {
         if (this.db) return;
         if (this.loadingPromise) return this.loadingPromise;
 
         this.loadingPromise = (async () => {
             try {
-                console.log("[CoordinatesStore] Fetching master routes for coordinates...");
-                const res = await fetch('/data/master_routes.json');
-                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                const data = await res.json();
+                let data = initialData;
+
+                if (!data) {
+                    console.log("[CoordinatesStore] Fetching master routes for coordinates...");
+                    const res = await fetch('/data/master_routes.json');
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    data = await res.json();
+                } else {
+                    console.log("[CoordinatesStore] Using injected data (Optimization ⚡)");
+                }
                 
                 this.db = {};
                 this.allPoints = [];
