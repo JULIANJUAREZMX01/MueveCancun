@@ -3,11 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
 use strsim;
-<<<<<<< HEAD
 use wasm_bindgen::prelude::*; // Sentinel: Added for safe comparison
-=======
-use wasm_bindgen::prelude::*;
->>>>>>> origin/main
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RouteCatalog {
