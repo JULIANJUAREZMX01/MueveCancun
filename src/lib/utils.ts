@@ -34,3 +34,27 @@ export function truncateText(str: string, maxLength: number): string {
 
   return sliced + ellipsis;
 }
+/**
+ * Escapes HTML characters to prevent XSS attacks when rendering user-provided content.
+ * @param unsafe The string to escape.
+ * @returns The escaped string.
+ */
+export function escapeHtml(unsafe: string | null | undefined): string {
+  if (unsafe === null || unsafe === undefined) return '';
+  return String(unsafe)
+       .replace(/&/g, "&amp;")
+       .replace(/</g, "&lt;")
+       .replace(/>/g, "&gt;")
+       .replace(/"/g, "&quot;")
+       .replace(/'/g, "&#039;");
+}
+
+/**
+ * Validates and sanitizes a URL component, specifically for query parameters.
+ * @param name The URL component to sanitize.
+ * @returns The sanitized URL component.
+ */
+export function safeUrl(name: unknown): string {
+    if (typeof name !== 'string') return '';
+    return encodeURIComponent(name).replace(/'/g, "%27");
+}

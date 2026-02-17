@@ -20,29 +20,14 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 </div>
 
 <script>
+
   import { coordinatesStore } from '../lib/CoordinatesStore';
-
-
-
-  function safeUrl(name) {
-      if (typeof name !== 'string') return '';
-      return encodeURIComponent(name).replace(/'/g, "%27");
-  }
+  import { drawRoute } from '../lib/RouteDrawer';
+  import { escapeHtml, safeUrl } from '../lib/utils';
 
   let map;
   let layerGroup;
   let coordinatesDB = {};
-
-  // Helper: Escape HTML
-  function escapeHtml(unsafe) {
-    if (unsafe === null || unsafe === undefined) return '';
-    return String(unsafe)
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
-  }
 
   async function initMap() {
     const container = document.getElementById('map-container');
@@ -149,7 +134,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     if (pendingRoute) {
         try {
             const data = JSON.parse(pendingRoute);
-            drawRoute(data);
+            const newLg = drawRoute(map, data, layerGroup, coordinatesDB); if(newLg) layerGroup = newLg;
             localStorage.removeItem('pending_route');
         } catch (e) {
             console.error("Error parsing pending route", e);
@@ -193,130 +178,13 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   }
 
 
-  function drawRoute(data) {
-    if (!map) return;
 
-    // Reset layers
-    if (layerGroup) {
-        layerGroup.clearLayers();
-        layerGroup.remove();
-    }
-    layerGroup = window.L.layerGroup().addTo(map);
-
-    // Normalize Data Structure
-    // 'data' could be a full Journey (with legs) or a single Route object
-    let legs = [];
-    if (data.legs && Array.isArray(data.legs)) {
-        legs = data.legs;
-    } else if (data.paradas && Array.isArray(data.paradas)) {
-        // Single route treated as one leg
-        legs = [{ paradas: data.paradas, name: data.nombre || data.name }];
-    } else if (data.stops && Array.isArray(data.stops)) {
-        // Legacy format
-        legs = [{ stops: data.stops, name: data.nombre || data.name }];
-    } else {
-        return; // Invalid data
-    }
-
-    const allBounds = [];
-    const newLayers = []; // Array to collect all markers before adding to layerGroup
-
-
-    legs.forEach((leg, index) => {
-        const routeCoords = [];
-        const validStops = [];
-
-        // Try to get explicit coordinates from 'paradas' object array
-        const stopsSource = leg.paradas || leg.stops_info || [];
-        
-        if (stopsSource.length > 0 && typeof stopsSource[0] === 'object') {
-            // New Format: [{ lat, lng, nombre }, ...]
-            stopsSource.forEach(stop => {
-                if (stop.lat && stop.lng) {
-                    const lat = parseFloat(stop.lat);
-                    const lng = parseFloat(stop.lng); // Handle "lon" vs "lng" if needed
-                    // Sometimes JSON has "lon" instead of "lng"
-                    // Check logic:
-                    const finalLng = !isNaN(lng) ? lng : parseFloat(stop.lon);
-
-                    if (!isNaN(lat) && !isNaN(finalLng)) {
-                        const coords = [lat, finalLng];
-                        routeCoords.push(coords);
-                        validStops.push({ name: stop.nombre || stop.name || 'Parada', latlng: coords });
-                        allBounds.push(coords);
-                    }
-                }
-            });
-        } else {
-            // Legacy: Array of strings + coordinatesDB
-            const stopNames = leg.stops || [];
-            stopNames.forEach(name => {
-                if (coordinatesDB[name]) {
-                    const coords = coordinatesDB[name];
-                    routeCoords.push(coords);
-                    validStops.push({ name: name, latlng: coords });
-                    allBounds.push(coords);
-                }
-            });
-        }
-
-        if (routeCoords.length > 0) {
-            const color = index === 0 ? '#F97316' : '#0EA5E9'; // Orange -> Blue for transfers
-            const dashArray = index === 0 ? null : '10, 10';
-
-            // Polyline
-            window.L.polyline(routeCoords, {
-                color, weight: 4, opacity: 0.8, dashArray
-            }).addTo(layerGroup);
-
-            // Start Marker (only for first leg)
-            if (index === 0) {
-                 const start = validStops[0];
-                 newLayers.push(window.L.marker(start.latlng)
-                    .bindPopup(`<b>Inicio:</b> ${escapeHtml(start.name)}`));
-            }
-
-            // End Marker (only for last leg)
-            if (index === legs.length - 1) {
-                 const end = validStops[validStops.length - 1];
-                 newLayers.push(window.L.marker(end.latlng)
-                    .bindPopup(`<b>Fin:</b> ${escapeHtml(end.name)}`));
-            }
-
-            // Transfer Marker (if not last leg)
-            if (index < legs.length - 1) {
-                const end = validStops[validStops.length - 1];
-                 newLayers.push(window.L.marker(end.latlng, {
-                     // Custom icon for transfer? Or just a marker.
-                 }).bindPopup(`<b>Transbordo:</b> ${escapeHtml(end.name)}`));
-            }
-
-            // Intermediate dots
-            validStops.slice(1, -1).forEach(stop => {
-                 newLayers.push(
-                    window.L.circleMarker(stop.latlng, { radius: 4, color: '#334155', fillOpacity: 1 })
-                    .bindPopup(escapeHtml(stop.name))
-                 );
-            });
-
-        } else {
-            console.warn("No coordinates found for steps in this leg.");
-        }
-    });
-
-    // Add all markers to the layer group
-    newLayers.forEach(layer => layer.addTo(layerGroup));
-
-    if (allBounds.length > 0) {
-        map.fitBounds(allBounds, { padding: [50, 50] });
-    }
-  }
 
   // --- Event Listeners ---
 
   window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
       const { journey } = event.detail;
-      drawRoute(journey);
+      const newLg = drawRoute(map, journey, layerGroup, coordinatesDB); if(newLg) layerGroup = newLg;
   });
 
   // Cleanup on page swap (Astro)
