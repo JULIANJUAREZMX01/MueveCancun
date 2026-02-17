@@ -39,7 +39,7 @@ export function truncateText(str: string, maxLength: number): string {
  * @param unsafe The string to escape.
  * @returns The escaped string.
  */
-export function escapeHtml(unsafe: string | null | undefined): string {
+export function escapeHtml(unsafe: unknown): string {
   if (unsafe === null || unsafe === undefined) return '';
   return String(unsafe)
        .replace(/&/g, "&amp;")
