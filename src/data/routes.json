@@ -119,14 +119,14 @@
         "fin_oficial": "22:30",
         "guardia_nocturna": "03:00 - 05:00 (Sistema de llenado en OXXO)"
       },
-      "advertencias_usuario": [
+      "social_alerts": [
         "Madrugada (3-5am): Tarifa puede subir a $20 MXN (ajuste chofer)",
         "Salidas de guardia dependen de llenado, no horario fijo",
         "Es la ruta principal para trabajadores de ZH desde Villas Otoch"
       ],
       "paradas": [
         {
-          "parada": "OXXO Villas Otoch Paraíso (El Arco)",
+          "nombre": "OXXO Villas Otoch Paraíso (El Arco)",
           "lat": 21.1685,
           "orden": 1,
           "tipo": "origen_madrugada",
@@ -135,21 +135,21 @@
           "lng": -86.885
         },
         {
-          "parada": "Chedraui Lakin / Av. Talleres",
+          "nombre": "Chedraui Lakin / Av. Talleres",
           "lat": 21.165,
           "orden": 2,
           "tipo": "nodo_conexion",
           "lng": -86.879
         },
         {
-          "parada": "Av. Kabah (Ruta 4)",
+          "nombre": "Av. Kabah (Ruta 4)",
           "lat": 21.16,
           "orden": 3,
           "tipo": "tramo_rapido",
           "lng": -86.845
         },
         {
-          "parada": "Plaza Las Américas (Kabah)",
+          "nombre": "Plaza Las Américas (Kabah)",
           "lat": 21.141,
           "orden": 4,
           "tipo": "hub_secundario",
@@ -160,21 +160,21 @@
           "lng": -86.843
         },
         {
-          "parada": "Entrada Zona Hotelera (Km 0)",
+          "nombre": "Entrada Zona Hotelera (Km 0)",
           "lat": 21.153,
           "orden": 5,
           "tipo": "entrada_zh",
           "lng": -86.815
         },
         {
-          "parada": "Zona Hotelera (Hasta retornar)",
+          "nombre": "Zona Hotelera (Hasta retornar)",
           "lat": 21.135,
           "orden": 6,
           "tipo": "zona_hotelera",
           "lng": -86.768
         }
       ],
-      "tipo_transporte": "Bus_Urbano_Isla"
+      "tipo": "Bus_Urbano_Isla"
     },
     {
       "id": "CR_PTO_JUAREZ_001",
@@ -191,7 +191,7 @@
         "fin": "00:30"
       },
       "duracion_minutos": 20,
-      "advertencias_usuario": [
+      "social_alerts": [
         "Solo las unidades con letrero 'PUERTO JUÁREZ' llegan al muelle"
       ],
       "paradas": [
@@ -232,14 +232,14 @@
           "orden": 5
         }
       ],
-      "tipo_transporte": "Combi_Municipal"
+      "tipo": "Combi_Municipal"
     },
     {
       "id": "R1_ZONA_HOTELERA_001",
       "nombre": "R-1 Centro → Zona Hotelera",
       "color": "#FF6B6B",
       "tarifa": 15,
-      "tipo_transporte": "Bus_Urban",
+      "tipo": "Bus_Urban",
       "empresas": [
         "Controladora SEA (rojas)",
         "Maya Caribe (blancas)"
@@ -303,7 +303,7 @@
       "nombre": "Playa Express Cancún → Playa del Carmen",
       "color": "#10B981",
       "tarifa": 55,
-      "tipo_transporte": "Van_Foranea",
+      "tipo": "Van_Foranea",
       "moneda": "MXN",
       "hub_conexion": "Terminal ADO Centro",
       "frecuencia_minutos": 30,
@@ -369,7 +369,7 @@
       "nombre": "R-28 Villas Otoch → Av. Tulum",
       "color": "#10B981",
       "tarifa": 13,
-      "tipo_transporte": "Bus_Urban",
+      "tipo": "Bus_Urban",
       "paradas": [
         {
           "id": "R28_VILLAS_OTOCH_001_001",
@@ -406,7 +406,7 @@
       "nombre": "R-19 Villas Otoch → López Portillo",
       "color": "#FF6B6B",
       "tarifa": 13,
-      "tipo_transporte": "Bus_Urban",
+      "tipo": "Bus_Urban",
       "paradas": [
         {
           "id": "R19_VILLAS_OTOCH_002_001",
@@ -452,35 +452,35 @@
       },
       "paradas": [
         {
-          "parada": "Villas Otoch",
+          "nombre": "Villas Otoch",
           "lat": 21.138,
           "orden": 1,
           "tipo": "origen_colonia",
           "lng": -86.865
         },
         {
-          "parada": "Hospital General (Av. Kabah)",
+          "nombre": "Hospital General (Av. Kabah)",
           "lat": 21.15,
           "orden": 2,
           "tipo": "servicio_salud",
           "lng": -86.84
         },
         {
-          "parada": "El Crucero",
+          "nombre": "El Crucero",
           "lat": 21.1576,
           "orden": 3,
           "tipo": "hub_principal",
           "lng": -86.8269
         }
       ],
-      "tipo_transporte": "Bus_Urban"
+      "tipo": "Bus_Urban"
     },
     {
       "id": "ADO_AEROPUERTO_001",
       "nombre": "ADO Aeropuerto → Centro Cancún",
       "color": "#E11D48",
       "tarifa": 150,
-      "tipo_transporte": "Bus_Foraneo",
+      "tipo": "Bus_Foraneo",
       "paradas": [
         {
           "id": "ADO_AEROPUERTO_001_001",
@@ -649,7 +649,7 @@
       "id": "ruta_1753801260218",
       "nombre": "RUTA 31",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -754,7 +754,7 @@
       "id": "ruta_1753802299281",
       "nombre": "RUTA 81",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -915,7 +915,7 @@
       "id": "ruta_1759506708808",
       "nombre": "RUTA 30",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1092,7 +1092,7 @@
       "id": "ruta_1761456676914",
       "nombre": "RUTA 44",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1269,7 +1269,7 @@
       "id": "ruta_1761458818964",
       "nombre": "RUTA 71",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1414,7 +1414,7 @@
       "id": "ruta_1754576044305",
       "nombre": "RUTA 33",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1535,7 +1535,7 @@
       "id": "ruta_1756850089371",
       "nombre": "RUTA 29",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1656,7 +1656,7 @@
       "id": "ruta_1759866849505",
       "nombre": "RUTA 79",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1825,7 +1825,7 @@
       "id": "ruta_1758230498578",
       "nombre": "RUTA 19",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1922,7 +1922,7 @@
       "id": "ruta_1759866137331",
       "nombre": "RUTA 18-A",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2051,7 +2051,7 @@
       "id": "ruta_1760327653692",
       "nombre": "RUTA 28",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2212,7 +2212,7 @@
       "id": "ruta_1759952771720",
       "nombre": "RUTA 44 COMBI",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2357,7 +2357,7 @@
       "id": "ruta_1760338237012",
       "nombre": "RUTA 235-227 ",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2542,7 +2542,7 @@
       "id": "ruta_1760340184559",
       "nombre": "RUTA 234",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2711,7 +2711,7 @@
       "id": "ruta_1761273705821",
       "nombre": "RUTA 510",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2864,7 +2864,7 @@
       "id": "ruta_1760328606309",
       "nombre": "RUTA 17",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3041,7 +3041,7 @@
       "id": "ruta_1760414609200",
       "nombre": "RUTA 13",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3202,7 +3202,7 @@
       "id": "ruta_1760462813166",
       "nombre": "RUTA CENTRAL ABASTOS",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3323,7 +3323,7 @@
       "id": "ruta_1760462813165",
       "nombre": "RUTA 70",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3444,7 +3444,7 @@
       "id": "ruta_1761460735535",
       "nombre": "RUTA 5",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3541,7 +3541,7 @@
       "id": "ruta_1760989478537",
       "nombre": "RUTA 21",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3662,7 +3662,7 @@
       "id": "ruta_1464274794329",
       "nombre": "RUTA 2 TORITO",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3975,7 +3975,7 @@
       "id": "ruta_1653475759991",
       "nombre": "RUTA 2 VILLAS DEL MAR",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -4296,7 +4296,7 @@
       "id": "ruta_1760333218631",
       "nombre": "RUTA 2 LA JOYA",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -4641,7 +4641,7 @@
       "id": "ruta_1761276380950",
       "nombre": "RUTA 2 CHACMOOL-PORTILLO",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -4970,7 +4970,7 @@
       "id": "ruta_1761277331648",
       "nombre": "RUTA 2-15",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -5331,7 +5331,7 @@
       "id": "ruta_1761277780965",
       "nombre": "RUTA 1 REHOYADA",
       "tarifa": 12,
-      "tipo_transporte": "Autobús",
+      "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
         {

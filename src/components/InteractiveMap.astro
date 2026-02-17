@@ -219,6 +219,8 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     }
 
     const allBounds = [];
+    const newLayers = []; // Array to collect all markers before adding to layerGroup
+
 
     legs.forEach((leg, index) => {
         const routeCoords = [];
@@ -301,6 +303,9 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
             console.warn("No coordinates found for steps in this leg.");
         }
     });
+
+    // Add all markers to the layer group
+    newLayers.forEach(layer => layer.addTo(layerGroup));
 
     if (allBounds.length > 0) {
         map.fitBounds(allBounds, { padding: [50, 50] });

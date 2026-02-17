@@ -3,8 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
 use strsim;
-use wasm_bindgen::prelude::*;
-use std::cmp::Ordering; // Sentinel: Added for safe comparison
+use wasm_bindgen::prelude::*; // Sentinel: Added for safe comparison
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RouteCatalog {
@@ -19,7 +18,7 @@ pub struct Route {
     pub name: String,
     #[serde(rename = "tarifa")]
     pub price: f64,
-    #[serde(rename = "tipo")]
+    #[serde(rename = "tipo", alias = "tipo_transporte")]
     pub transport_type: String,
 
     #[serde(default)]
@@ -36,7 +35,7 @@ pub struct Route {
     #[serde(skip)]
     pub stops_normalized: Vec<String>,
 
-    #[serde(default)]
+    #[serde(default, alias = "advertencias_usuario")]
     pub social_alerts: Vec<String>,
     #[serde(default)]
     pub last_updated: String,
@@ -46,7 +45,7 @@ pub struct Route {
 pub struct Stop {
     #[serde(default)]
     pub id: Option<String>,
-    #[serde(rename = "nombre")]
+    #[serde(rename = "nombre", alias = "parada")]
     pub name: String,
     pub lat: f64,
     pub lng: f64,
@@ -257,7 +256,7 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
     // Limit for DoS prevention
     const MAX_SEARCH_RESULTS: usize = 200;
 
-    // 1. Direct Routes
+    // 1. Direct Routes (Support bidirectional routes)
     for m in &route_matches {
         // Enforce limit on direct routes
         if journeys.len() >= MAX_SEARCH_RESULTS {
@@ -266,7 +265,9 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
 
         if let Some(origin_idx) = m.origin_idx {
             if let Some(dest_idx) = m.dest_idx {
-                if origin_idx < dest_idx {
+                // ✅ FIX: Allow routes in BOTH directions
+                // Most public transport routes in Cancún are bidirectional
+                if origin_idx != dest_idx {
                     journeys.push(Journey {
                         type_: "Direct".to_string(),
                         legs: vec![m.route.clone()],
@@ -301,7 +302,7 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
     ];
 
     const MAX_TRANSFER_ROUTES: usize = 50;
-    const MAX_OPS: usize = 2_000_000;
+    const MAX_OPS: usize = 10_000_000; // Increased limit
     let mut ops_count = 0;
 
     'outer: for match_a in &routes_from_origin {
@@ -327,36 +328,42 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
                 continue;
             }
 
+            // Optimization: Create a map of stops in route_b for O(1) lookup
+            let mut route_b_stops = HashMap::new();
+            for (idx, stop_name) in route_b.stops_normalized.iter().enumerate() {
+                route_b_stops.insert(stop_name.as_str(), idx);
+            }
+
             // Find the best transfer point for this pair
             let mut best_transfer: Option<(usize, bool)> = None; // (index in A, is_preferred)
 
             for (idx_a, stop_name_a) in route_a.stops_normalized.iter().enumerate() {
-                if idx_a <= origin_idx_a {
+                ops_count += 1;
+                if ops_count > MAX_OPS {
+                    break 'outer;
+                }
+
+                // Skip if same as origin (unless it's a multi-stop loop, but usually redundant)
+                if idx_a == origin_idx_a {
                     continue;
                 }
 
-                for (idx_b, stop_name_b) in route_b.stops_normalized.iter().enumerate() {
-                    ops_count += 1;
-                    if ops_count > MAX_OPS {
-                        break 'outer;
-                    }
-
-                    if idx_b >= dest_idx_b {
+                if let Some(&idx_b) = route_b_stops.get(stop_name_a.as_str()) {
+                    // Skip if same as destination
+                    if idx_b == dest_idx_b {
                         continue;
                     }
 
-                    if stop_name_a == stop_name_b {
-                        // Found intersection
-                        let stop_name = &route_a.stops[idx_a].name;
-                        let is_preferred = preferred_hubs.iter().any(|h| stop_name.contains(h));
+                    // Found intersection
+                    let stop_name = &route_a.stops[idx_a].name;
+                    let is_preferred = preferred_hubs.iter().any(|h| stop_name.contains(h));
 
-                        if best_transfer.is_none() {
+                    if best_transfer.is_none() {
+                        best_transfer = Some((idx_a, is_preferred));
+                    } else {
+                        // If current is preferred and previous wasn't, switch
+                        if is_preferred && !best_transfer.unwrap().1 {
                             best_transfer = Some((idx_a, is_preferred));
-                        } else {
-                            // If current is preferred and previous wasn't, switch
-                            if is_preferred && !best_transfer.unwrap().1 {
-                                best_transfer = Some((idx_a, is_preferred));
-                            }
                         }
                     }
                 }
@@ -393,8 +400,13 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         let score_b = get_score(b);
 
         // Sentinel Fix: Use unwrap_or(Ordering::Equal) to prevent panic on NaN
-        score_b.cmp(&score_a) // Higher score first
-            .then_with(|| a.total_price.partial_cmp(&b.total_price).unwrap_or(std::cmp::Ordering::Equal)) // Lower price first
+        score_b
+            .cmp(&score_a) // Higher score first
+            .then_with(|| {
+                a.total_price
+                    .partial_cmp(&b.total_price)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            }) // Lower price first
     });
 
     if journeys.len() > 5 {
@@ -532,7 +544,9 @@ mod tests {
                 frecuencia_minutos: None,
                 horario: None,
                 stops: stops,
-                stops_normalized: (0..50).map(|j| format!("common long prefix stop a {}", j)).collect(),
+                stops_normalized: (0..50)
+                    .map(|j| format!("common long prefix stop a {}", j))
+                    .collect(),
                 social_alerts: Vec::new(),
                 last_updated: String::new(),
             });
@@ -559,7 +573,9 @@ mod tests {
                 frecuencia_minutos: None,
                 horario: None,
                 stops: stops,
-                stops_normalized: (0..50).map(|j| format!("common long prefix stop b {}", j)).collect(),
+                stops_normalized: (0..50)
+                    .map(|j| format!("common long prefix stop b {}", j))
+                    .collect(),
                 social_alerts: Vec::new(),
                 last_updated: String::new(),
             });
@@ -569,11 +585,19 @@ mod tests {
         // Search from "Stop A 0" to "Stop B 49"
         // 2000 start routes * 2000 end routes * 49 stops * 50 stops
         // No matches found, so it scans everything.
-        let _res = find_route_rs("Common Long Prefix Stop A 0", "Common Long Prefix Stop B 49", &routes);
+        let _res = find_route_rs(
+            "Common Long Prefix Stop A 0",
+            "Common Long Prefix Stop B 49",
+            &routes,
+        );
         let duration = start.elapsed();
         println!("Time taken: {:?}", duration);
 
         // Without fix, this should take > 500ms (likely > 1s).
-        assert!(duration.as_millis() < 500, "DoS vulnerability: took too long ({:?})", duration);
+        assert!(
+            duration.as_millis() < 500,
+            "DoS vulnerability: took too long ({:?})",
+            duration
+        );
     }
 }
