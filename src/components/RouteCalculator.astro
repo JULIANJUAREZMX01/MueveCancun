@@ -14,7 +14,7 @@ const ui = uiTranslations[currentLang];
   <!-- Search Card -->
   <div class="glass-card search-card" id="search-card">
 
-    <!-- Header with Balance & Lang -->
+    <!-- Header -->
     <div class="card-header">
       <div class="flex items-center gap-2">
          <span class="material-symbols-rounded text-primary-500 text-xl">directions_bus</span>
@@ -22,18 +22,12 @@ const ui = uiTranslations[currentLang];
       </div>
 
       <div class="header-controls">
-        <div class="balance-container">
-            <span id="balance-badge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-100 text-slate-500 font-mono">
-                LOADING...
-            </span>
-        </div>
+        <!-- Balance removed per Sprint 1 requirement -->
         <button id="lang-toggle" class="lang-toggle">
             {currentLang === 'es' ? 'ES' : 'EN'}
         </button>
       </div>
     </div>
-
-    <!-- Balance Warning -->
 
     <!-- Summary Bar (Hidden by default) -->
     <div id="summary-bar" class="summary-bar hidden">
@@ -143,7 +137,7 @@ const ui = uiTranslations[currentLang];
 
       <button id="search-btn" class="btn-primary btn-lg w-full" disabled>
         <span id="btn-text" class="uppercase tracking-wider" data-i18n="calc.loading">Cargando rutas...</span>
-        <span class="material-symbols-rounded text-lg animate-spin" id="btn-spinner">progress_activity</span>
+        <span class="material-symbols-rounded text-lg animate-spin hidden" id="btn-spinner">progress_activity</span>
       </button>
 
     </div>
@@ -206,13 +200,11 @@ const ui = uiTranslations[currentLang];
   const ui = i18nDataEl ? JSON.parse(i18nDataEl.dataset.ui || '{}') : {};
 
   // DOM Elements
-  const balanceBadge = document.getElementById('balance-badge');
-  const searchBtn = document.getElementById('search-btn'); // Renamed from btn for clarity, but keeping logic
+  const searchBtn = document.getElementById('search-btn');
   const resultsContainer = document.getElementById('results-container');
   const langToggle = document.getElementById('lang-toggle');
 
   // Helpers
-  // Sentinel Fix: Robust escapeHtml that handles non-string inputs to prevent crash (DoS)
   const escapeHtml = (unsafe) => {
     if (unsafe === undefined || unsafe === null) return '';
     return String(unsafe)
@@ -223,15 +215,12 @@ const ui = uiTranslations[currentLang];
          .replace(/'/g, "&#039;");
   }
 
-  // Security: Safe JSON Serialization for HTML Attributes
-  // Prevents XSS via attribute injection (e.g. </button><script>)
   const safeJsonStringify = (obj) => {
       return JSON.stringify(obj)
-          .replace(/</g, '\\u003c') // Escape < to prevent tag injection
-          .replace(/'/g, "&#39;"); // Escape ' to prevent attribute breakout
+          .replace(/</g, '\\u003c')
+          .replace(/'/g, "&#39;");
   }
 
-  // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
   if (typeof document !== 'undefined') {
       document.addEventListener('click', (e) => {
           const target = e.target;
@@ -253,57 +242,112 @@ const ui = uiTranslations[currentLang];
       });
   }
 
-  // State
-  let balance = 0;
-  let hasBalance = false;
+  // State Management
   let wasmLoaded = false;
-      let find_route, validate_operator_funds, load_catalog;
-  let finder; // Global Coordinate Finder instance
+  let find_route, load_catalog;
+  let finder;
 
-  const btn = document.getElementById('search-btn');
+  // Atomic UI State
+  const state = {
+      status: 'idle', // 'idle' | 'loading' | 'done' | 'empty' | 'error'
+      results: [],
+      fastest: null
+  };
 
-  // --- Initialization ---
-
-  async function updateBalance() {
-    try {
-        const stored = localStorage.getItem('user_balance');
-        if (stored !== null) {
-            balance = parseFloat(stored);
-        } else {
-            balance = 180.0;
-            localStorage.setItem('user_balance', balance.toString());
-            console.log("Balance initialized to 180.0");
+  function updateSearchState(newStatus, data = {}) {
+        state.status = newStatus;
+        if (newStatus === 'idle') {
+            state.results = [];
+            state.fastest = null;
+        } else if (newStatus === 'done') {
+            state.results = data.results || [];
+            state.fastest = data.fastest || null;
         }
-    } catch (e) {
-        console.warn("Storage Error, using default balance:", e);
-        balance = 180.0;
-    }
+        renderState(data.error);
+  }
 
-    if (wasmLoaded && typeof validate_operator_funds === 'function') {
-        try {
-            hasBalance = validate_operator_funds(balance);
-        } catch (e) {
-            console.warn("WASM validation failed, fallback to strict check", e);
-            hasBalance = balance >= 180.0;
+  function renderState(errorMessage) {
+        const resultsContainer = document.getElementById('results-container');
+        const resultsInfo = document.getElementById('results-info');
+        const bestResultArea = document.getElementById('best-result-area');
+        const countLabel = document.getElementById('results-count-label');
+        const timeBadge = document.getElementById('results-time-badge');
+        const spinner = document.getElementById('btn-spinner');
+        const btnText = document.getElementById('btn-text');
+        const searchBtn = document.getElementById('search-btn');
+
+        // Clean up previous renders
+        if (resultsContainer) resultsContainer.innerHTML = '';
+        if (bestResultArea) bestResultArea.innerHTML = '';
+
+        // Reset Base Visibility
+        if (resultsInfo) resultsInfo.classList.add('hidden');
+        if (spinner) spinner.classList.add('hidden');
+        if (btnText) btnText.classList.remove('hidden');
+        if (searchBtn) searchBtn.disabled = false;
+
+        switch (state.status) {
+            case 'loading':
+                if (spinner) spinner.classList.remove('hidden');
+                if (btnText) btnText.classList.add('hidden');
+                if (searchBtn) searchBtn.disabled = true;
+                break;
+            case 'done':
+                if (state.results.length > 0) {
+                     if (resultsInfo) resultsInfo.classList.remove('hidden');
+                     if (countLabel) countLabel.textContent = `${state.results.length} ${currentLang === 'es' ? 'OPCIONES' : 'OPTIONS'}`;
+
+                     if (state.fastest && timeBadge) {
+                         let duration = state.fastest.duration_minutes || 0;
+                         const timeText = currentLang === 'es' ? 'MÁS RÁPIDA' : 'FASTEST';
+                         timeBadge.textContent = `${timeText}: ${duration}min`;
+                         timeBadge.classList.remove('hidden');
+                     }
+
+                     if (bestResultArea && state.fastest) {
+                         if (state.fastest.type === 'Transfer') {
+                             bestResultArea.innerHTML = renderTransferCardHtml(state.fastest, true);
+                         } else {
+                             bestResultArea.innerHTML = renderBestResultHtml(state.fastest, true);
+                         }
+                     }
+
+                     if (resultsContainer) {
+                         // Render others (skip first as it is best)
+                         const others = state.results.slice(1);
+                         others.forEach(r => {
+                             const div = document.createElement('div');
+                             div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r);
+                             resultsContainer.appendChild(div.firstElementChild);
+                         });
+                     }
+
+                     // Re-attach listeners for map buttons
+                     document.querySelectorAll('.view-map-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            try {
+                                const journeyData = JSON.parse(btn.dataset.journey);
+                                window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', {
+                                    detail: { journey: journeyData }
+                                }));
+                                window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
+                            } catch (err) {
+                                console.error("Error parsing journey data for map:", err);
+                            }
+                        });
+                     });
+
+                } else {
+                    renderError(ui?.['calc.no_route'] || "No route found");
+                }
+                break;
+            case 'empty':
+                 renderError(ui?.['calc.no_route'] || "No route found");
+                 break;
+            case 'error':
+                 renderError(errorMessage || "Error");
+                 break;
         }
-    } else {
-        hasBalance = balance >= 180.0;
-    }
-
-    if (balanceBadge) {
-        balanceBadge.textContent = `$${balance.toFixed(0)}`;
-        if (hasBalance) {
-            balanceBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-green-100 text-green-700 font-mono";
-        } else {
-            balanceBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-red-100 text-red-700 font-mono";
-        }
-    }
-
-    if (balanceWarning) {
-      balanceWarning.classList.toggle('hidden', hasBalance);
-    }
-
-    if (btn) btn.disabled = !hasBalance;
   }
 
   function updateUI() {
@@ -318,7 +362,6 @@ const ui = uiTranslations[currentLang];
       const module = await import(/* @vite-ignore */ wasmPath);
       await module.default();
       find_route = module.find_route;
-      validate_operator_funds = module.validate_operator_funds;
       load_catalog = module.load_catalog;
 
       console.log("WASM initialized.");
@@ -328,24 +371,20 @@ const ui = uiTranslations[currentLang];
       if (typeof load_catalog === 'function') {
         try {
           console.log("📦 Loading route catalog...");
-          // Use static file
           const response = await fetch('/data/master_routes.json');
           
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
-          // Sentinel: Enforce 10MB limit to prevent WASM DoS
           const contentLength = response.headers.get('content-length');
           if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
              throw new Error("Catalog too large (DoS protection)");
           }
 
-          // ✅ SIMÓN: Bypass redundant parse-stringify cycle by fetching text
           console.time("WASM Load");
           const catalogString = await response.text();
 
-          // Double check size after fetch (in case content-length was missing/lied)
           if (catalogString.length > 10 * 1024 * 1024) {
              throw new Error("Catalog too large (DoS protection)");
           }
@@ -353,10 +392,9 @@ const ui = uiTranslations[currentLang];
           await load_catalog(catalogString);
           console.timeEnd("WASM Load");
 
-          jsonData = JSON.parse(catalogString); // Parse once for cache if needed
+          jsonData = JSON.parse(catalogString);
           console.log("✅ Catalog loaded into WASM:", jsonData.rutas?.length || 0, "routes");
 
-          // Initialize shared coordinates store with ALREADY LOADED data (Optimization ⚡)
           await coordinatesStore.init(jsonData);
           
           const searchBtn = document.getElementById("search-btn");
@@ -366,7 +404,7 @@ const ui = uiTranslations[currentLang];
           if (searchBtn) searchBtn.disabled = false;
           if (spinner) spinner.classList.add("hidden");
           if (txt) { txt.setAttribute("data-i18n", "calc.btn"); txt.textContent = "CALCULATE ROUTE"; }
-          updateUI(); // Ensure i18n text updates if needed
+          updateUI();
 
         } catch (catalogError) {
           console.error("❌ Failed to load catalog:", catalogError);
@@ -377,21 +415,14 @@ const ui = uiTranslations[currentLang];
       console.error("WASM Load Critical Error:", e);
       renderWasmError();
     } finally {
-      await updateBalance();
       updateUI();
 
-      // Initialize shared coordinates store and Finder
       try {
         await coordinatesStore.init(jsonData);
         const db = coordinatesStore.getDB();
-        
         finder = new CoordinateFinder(db);
-        console.log("Coordinate Finder Ready");
-        
-        // Setup Autocomplete
         setupAutocomplete('origin-input');
         setupAutocomplete('destination-input');
-
       } catch (e) {
         console.warn("GPS/Finder features might be unavailable", e);
       }
@@ -401,22 +432,15 @@ const ui = uiTranslations[currentLang];
 
   function setupAutocomplete(inputId) {
       const input = document.getElementById(inputId);
-      const container = input?.parentElement; // Input wrapper
+      const container = input?.parentElement;
       if (!input || !container) return;
 
-      // Create Dropdown Element (Native Popover)
       const list = document.createElement('ul');
       list.className = 'graffiti-dropdown divide-y divide-slate-50';
       list.id = `${inputId}-suggestions`;
 
-      // GraffitiWarrior: Native Popover API
-      try {
-        list.popover = "auto";
-      } catch (e) {
-        console.warn("Popover API not fully supported, fallback behavior may be degraded.");
-      }
+      try { list.popover = "auto"; } catch (e) { }
 
-      // GraffitiWarrior: CSS Anchor Positioning
       const anchorName = `--${inputId}`;
       input.style.setProperty('anchor-name', anchorName);
       list.style.setProperty('position-anchor', anchorName);
@@ -430,7 +454,7 @@ const ui = uiTranslations[currentLang];
               return;
           }
 
-          const results = finder.search(val, 6); // Limit to 6 suggestions
+          const results = finder.search(val, 6);
           
           if (results.length > 0) {
               list.innerHTML = '';
@@ -449,26 +473,18 @@ const ui = uiTranslations[currentLang];
                   li.addEventListener('click', () => {
                       input.value = res.name;
                       try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
-                      // Trigger any blur/update logic
                       input.dispatchEvent(new Event('blur'));
                   });
                   list.appendChild(li);
               });
 
-              try {
-                list.showPopover();
-              } catch(e) {
-                list.style.display = 'block';
-              }
+              try { list.showPopover(); } catch(e) { list.style.display = 'block'; }
           } else {
               try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
           }
       };
 
-      // Input Handler
       input.addEventListener('input', updateList);
-
-      // Focus Handler (Re-open if valid)
       input.addEventListener('focus', updateList);
   }
 
@@ -488,7 +504,6 @@ const ui = uiTranslations[currentLang];
                  const { latitude, longitude } = pos.coords;
                  const originInput = document.getElementById('origin-input');
                  if (originInput && finder) {
-                     // Reverse Geocode or Find Nearest Stop
                      const nearest = coordinatesStore.findNearest(latitude, longitude);
                      if (nearest) {
                          originInput.value = nearest;
@@ -508,8 +523,6 @@ const ui = uiTranslations[currentLang];
       });
   }
 
-  // --- Rendering Functions ---
-
   function getTransportLabel(type) {
       if (!type) return 'Bus';
       if (type.includes('ADO')) return 'ADO';
@@ -526,7 +539,6 @@ const ui = uiTranslations[currentLang];
              stopsPreview = `${escapeHtml(route.stops[0])} → ${escapeHtml(route.stops[route.stops.length - 1])}`;
         }
 
-        // Sentinel Fix: Replace < with \u003c to prevent JSON-based HTML injection
         return `
           <div class="glass-card active:scale-[0.98] transition-all duration-300 mb-4 animate-slide-up relative overflow-hidden group hover:-translate-y-0.5 ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
             ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${ui['calc.best']}</div>` : ''}
@@ -569,7 +581,6 @@ const ui = uiTranslations[currentLang];
       const leg2 = journey.legs[1];
       const transferPoint = journey.transfer_point;
 
-      // Sentinel Fix: Replace < with \u003c to prevent JSON-based HTML injection
       return `
           <div class="glass-card active:scale-[0.98] transition-all mb-3 animate-slide-up relative overflow-hidden group ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
             <div class="absolute top-0 right-0 bg-accent-500 text-white px-3 py-1 rounded-bl-xl text-xxs font-black uppercase tracking-widest ${isBest ? 'mr-24' : ''}">
@@ -633,6 +644,7 @@ const ui = uiTranslations[currentLang];
   }
 
   function renderWasmError() {
+    const resultsContainer = document.getElementById('results-container');
     if (!resultsContainer) return;
     resultsContainer.innerHTML = `
         <div class="glass-card text-center animate-slide-up">
@@ -647,6 +659,7 @@ const ui = uiTranslations[currentLang];
   }
 
   function renderError(msg) {
+    const resultsContainer = document.getElementById('results-container');
     if (!resultsContainer) return;
     resultsContainer.innerHTML = `
         <div class="glass-card flex items-center gap-3 animate-slide-up" style="border-left: 3px solid var(--danger);">
@@ -656,10 +669,6 @@ const ui = uiTranslations[currentLang];
     `;
     if (window.showToast) window.showToast(msg, 'error');
   }
-
-  // --- Search Logic ---
-
-  // --- Event Listeners ---
 
   function setupEventListeners() {
       // Swap Button Logic
@@ -671,20 +680,15 @@ const ui = uiTranslations[currentLang];
           newSwapBtn.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log("Swap clicked!");
               const originInput = document.getElementById('origin-input');
               const destInput = document.getElementById('destination-input');
               if (originInput && destInput) {
-                  console.log("Before swap:", originInput.value, destInput.value);
                   const temp = originInput.value;
                   originInput.value = destInput.value;
                   destInput.value = temp;
-                  console.log("After swap:", originInput.value, destInput.value);
 
-                  // Rotate animation
                   newSwapBtn.classList.toggle('rotated');
 
-                  // Trigger input events
                   originInput.dispatchEvent(new Event('input'));
                   destInput.dispatchEvent(new Event('input'));
               }
@@ -692,8 +696,6 @@ const ui = uiTranslations[currentLang];
       }
 
       const btn = document.getElementById('search-btn');
-      
-      // Remove existing listener to prevent duplicates if any
       const newBtn = btn?.cloneNode(true);
       if (btn && newBtn) {
           btn.parentNode.replaceChild(newBtn, btn);
@@ -712,26 +714,7 @@ const ui = uiTranslations[currentLang];
               return;
           }
 
-          const spinner = document.getElementById('btn-spinner');
-          const btnText = document.getElementById('btn-text');
-          const resultsContainer = document.getElementById('results-container');
-
-          if (searchButton) searchButton.disabled = true;
-          spinner?.classList.remove('hidden');
-
-          btnText?.classList.add('hidden');
-          
-          // Clear previous results badges
-          const countLabel = document.getElementById('results-count-label');
-          if (countLabel) countLabel.textContent = '';
-          const timeBadge = document.getElementById('results-time-badge');
-          if (timeBadge) timeBadge.textContent = '';
-
-
-          if (resultsContainer) resultsContainer.innerHTML = '';
-          const bestResultArea = document.getElementById('best-result-area');
-          if (bestResultArea) bestResultArea.innerHTML = '';
-          document.getElementById('results-info')?.classList.add('hidden');
+          updateSearchState('loading');
 
           try {
               if (!wasmLoaded || typeof find_route !== 'function') {
@@ -744,7 +727,7 @@ const ui = uiTranslations[currentLang];
               console.log("🔍 Raw Results:", results);
 
               if (!results || results.length === 0) {
-                  renderError(ui?.['calc.error.no_route'] || "No route found");
+                  updateSearchState('empty');
               } else {
                  results.sort((a, b) => {
                      // Prioritize Direct routes
@@ -754,66 +737,16 @@ const ui = uiTranslations[currentLang];
                  });
 
                  const best = results[0];
-                 const others = results.slice(1);
-
-                 const countLabel = document.getElementById('results-count-label');
-                 if (countLabel) countLabel.textContent = `${results.length} ${currentLang === 'es' ? 'OPCIONES' : 'OPTIONS'}`;
                  
-                 const timeBadge = document.getElementById('results-time-badge');
-                 if (timeBadge && best) {
-                     let duration = best.duration_minutes || 0;
-                     // Fallback if needed
-                     if (!duration && best.legs) {
-                        // This logic is simplified; backend usually provides duration
-                     }
-
-                     const timeText = currentLang === 'es' ? 'MÁS RÁPIDA' : 'FASTEST';
-                     timeBadge.textContent = `${timeText}: ${duration}min`;
-                     timeBadge.classList.remove('hidden');
-                 }
-
-                 document.getElementById('results-info')?.classList.remove('hidden');
-
-                 if (bestResultArea) {
-                     if (best.type === 'Transfer') {
-                         bestResultArea.innerHTML = renderTransferCardHtml(best, true);
-                     } else {
-                         bestResultArea.innerHTML = renderBestResultHtml(best, true);
-                     }
-                 }
-
-                 if (others.length > 0 && resultsContainer) {
-                     others.forEach(r => {
-                         const div = document.createElement('div');
-                         div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r);
-                         resultsContainer.appendChild(div.firstElementChild);
-                     });
-                 }
-                 
-                 // Re-attach map buttons
-                 document.querySelectorAll('.view-map-btn').forEach(btn => {
-                     btn.addEventListener('click', (e) => {
-                         try {
-                             const journeyData = JSON.parse(btn.dataset.journey);
-                             window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', {
-                                detail: { journey: journeyData }
-                             }));
-                             // Also trigger view state change to map
-                             window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
-                         } catch (err) {
-                             console.error("Error parsing journey data for map:", err);
-                         }
-                     });
+                 updateSearchState('done', {
+                    results: results,
+                    fastest: best
                  });
               }
 
           } catch (e) {
               console.error("❌ Search Error:", e);
-              renderError(`Error: ${e.message || "Calculation failed"}`);
-          } finally {
-              if (searchButton) searchButton.disabled = false;
-              spinner?.classList.add('hidden');
-              btnText?.classList.remove('hidden');
+              updateSearchState('error', { error: `Error: ${e.message || "Calculation failed"}` });
           }
       });
   }
@@ -830,11 +763,11 @@ const ui = uiTranslations[currentLang];
       if (selectedStop) {
           const destInput = document.getElementById('destination-input');
           if (destInput) {
-              destInput.value = selectedStop; // Already decoded by URLSearchParams
-              destInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger floating label
+              destInput.value = selectedStop;
+              destInput.dispatchEvent(new Event('input', { bubbles: true }));
               
               const originInput = document.getElementById('origin-input');
-              if (originInput) originInput.focus(); // Focus origin to prompt user
+              if (originInput) originInput.focus();
           }
       }
   };

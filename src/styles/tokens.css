@@ -1,0 +1,148 @@
+/* ═══════════════════════════════════════════
+   LAYER 1 — PRIMITIVOS (valores raw, sin semántica)
+   ═══════════════════════════════════════════ */
+:root {
+  /* Colores base */
+  --teal-100: #E0FAF5;
+  --teal-300: #5EECD8;
+  --teal-400: #00D4AA;
+  --teal-500: #00B090;
+  --teal-700: #007A64;
+
+  --navy-50:  #F0F4F8;
+  --navy-100: #DDE6F0;
+  --navy-200: #C5D3E0;
+  --navy-300: #8FA3BF;
+  --navy-500: #3D5A7A;
+  --navy-700: #1C2D42;
+  --navy-800: #141920;
+  --navy-900: #0B0F13;
+
+  --red-400:  #FF5A5F;
+  --yellow-400: #FFB340;
+  --white:    #FFFFFF;
+  --black:    #000000;
+
+  /* Escala de espaciado (base 4px) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Border radius */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   20px;
+  --radius-xl:   28px;
+  --radius-pill: 999px;
+
+  /* Tipografía */
+  --font-display: 'Syne', system-ui, sans-serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  --text-xs:   0.7rem;   /* 11px */
+  --text-sm:   0.8125rem; /* 13px */
+  --text-base: 0.9375rem; /* 15px */
+  --text-lg:   1.0625rem; /* 17px */
+  --text-xl:   1.25rem;  /* 20px */
+  --text-2xl:  1.5rem;   /* 24px */
+  --text-3xl:  2rem;     /* 32px */
+
+  /* Transiciones */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast:   150ms;
+  --duration-base:   220ms;
+  --duration-slow:   350ms;
+}
+
+/* ═══════════════════════════════════════════
+   LAYER 2 — SEMÁNTICOS (significado contextual)
+   El toggle manual ([data-theme]) tiene PRIORIDAD
+   sobre prefers-color-scheme
+   ═══════════════════════════════════════════ */
+
+/* Dark — default */
+:root,
+[data-theme="dark"] {
+  --color-bg:           var(--navy-900);
+  --color-bg-card:      var(--navy-800);
+  --color-bg-input:     var(--navy-700);
+  --color-bg-hover:     #1E2A38;
+
+  --color-border:       #2A3545;
+  --color-border-focus: #00D4AA55;
+
+  --color-text-primary:   var(--navy-50);
+  --color-text-secondary: var(--navy-300);
+  --color-text-muted:     var(--navy-500);
+
+  --color-primary:      var(--teal-400);
+  --color-primary-dim:  var(--teal-500);
+  --color-primary-glow: #00D4AA22;
+
+  --color-danger:       var(--red-400);
+  --color-warning:      var(--yellow-400);
+
+  --color-nav-bg:       rgba(11, 15, 19, 0.92);
+  --shadow-card:        0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-elevated:    0 8px 40px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="light"] {
+  --color-bg:           var(--navy-50);
+  --color-bg-card:      var(--white);
+  --color-bg-input:     var(--navy-100);
+  --color-bg-hover:     var(--navy-200);
+
+  --color-border:       var(--navy-200);
+  --color-border-focus: #00B09055;
+
+  --color-text-primary:   var(--navy-900);
+  --color-text-secondary: var(--navy-500);
+  --color-text-muted:     var(--navy-300);
+
+  --color-primary:      var(--teal-500);
+  --color-primary-dim:  var(--teal-700);
+  --color-primary-glow: #00B09018;
+
+  --color-danger:       var(--red-400);
+  --color-warning:      var(--yellow-400);
+
+  --color-nav-bg:       rgba(240, 244, 248, 0.92);
+  --shadow-card:        0 2px 16px rgba(0, 0, 0, 0.08);
+  --shadow-elevated:    0 4px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* ═══════════════════════════════════════════
+   LAYER 3 — COMPONENTES (tokens de uso específico)
+   ═══════════════════════════════════════════ */
+:root {
+  --header-height:     60px;
+  --bottom-nav-height: 68px;
+  --sidebar-width:     220px;
+  --content-max-width: 720px;
+
+  --card-bg:           var(--color-bg-card);
+  --card-border:       var(--color-border);
+  --card-shadow:       var(--shadow-card);
+  --card-radius:       var(--radius-lg);
+  --card-padding:      var(--space-5);
+
+  --input-bg:          var(--color-bg-input);
+  --input-border:      var(--color-border);
+  --input-border-focus:var(--color-border-focus);
+  --input-radius:      var(--radius-md);
+  --input-height:      48px;
+
+  --btn-primary-bg:    var(--color-primary);
+  --btn-primary-text:  var(--black);
+  --btn-radius:        var(--radius-md);
+  --btn-height:        48px;
+}

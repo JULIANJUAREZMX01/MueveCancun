@@ -1,47 +1,65 @@
-/* ══════════════════════════════════════
-   Legacy/Global Overrides
-   ══════════════════════════════════════
-   Note: Primary styles (including @tailwind directives)
-   are in index.css. Do NOT add @tailwind here.
-   ══════════════════════════════════════ */
+@import './tokens.css';
 
-@layer base {
-  @font-face {
-    font-family: "Atkinson";
-    src: url("/fonts/atkinson-regular.woff") format("woff");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-  }
+/* Reset */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  transition: background var(--duration-base) var(--ease-default),
+              color var(--duration-base) var(--ease-default);
+  -webkit-font-smoothing: antialiased;
+}
 
-  @font-face {
-    font-family: "Atkinson";
-    src: url("/fonts/atkinson-bold.woff") format("woff");
-    font-weight: 700;
-    font-style: normal;
-    font-display: swap;
+/* Focus visible — nunca outline: none */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
-/* Article/prose styling for MDX pages */
+/* Legacy / Content Styles */
 article {
-  @apply prose dark:prose-invert max-w-full pb-12;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding-bottom: var(--space-12);
+  line-height: 1.6;
+}
+
+article h1, article h2, article h3 {
+  color: var(--color-text-primary);
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-4);
+  font-family: var(--font-display);
+}
+
+article p {
+  margin-bottom: var(--space-4);
+  color: var(--color-text-secondary);
 }
 
 article img {
-  padding-top: 1.25rem;
-  padding-bottom: 1.25rem;
   display: block;
-  margin: 0 auto;
+  margin: var(--space-5) auto;
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  box-shadow: var(--card-shadow);
 }
 
-/* Scroll-triggered animations */
+/* Utilities helper (if needed) */
 .animate {
   opacity: 0;
-  transform: translateY(50px);
+  transform: translateY(20px);
   transition: opacity 0.8s ease, transform 0.8s ease;
 }
-
 .animate.show {
   opacity: 1;
   transform: translateY(0);
