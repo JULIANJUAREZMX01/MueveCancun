@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getTransportLabel } from '../lib/transport';
+import { getTransportLabel } from '../utils/transport';
 
 describe('getTransportLabel', () => {
   it('should return exact matches correctly', () => {

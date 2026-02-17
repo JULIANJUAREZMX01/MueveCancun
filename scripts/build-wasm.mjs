@@ -57,6 +57,13 @@ modules.forEach(mod => {
     const publicOutDir = path.join(rootDir, 'public', 'wasm', mod);
     const srcOutDir = path.join(rootDir, 'src', 'wasm', mod);
 
+    // Clean public output directory before building
+    if (fs.existsSync(publicOutDir)) {
+        console.log(`🧹 Cleaning old artifacts in ${publicOutDir}...`);
+        fs.rmSync(publicOutDir, { recursive: true, force: true });
+    }
+    fs.mkdirSync(publicOutDir, { recursive: true });
+
     let buildSuccess = false;
 
     if (hasWasmPack) {
@@ -93,6 +100,10 @@ modules.forEach(mod => {
     if (!fs.existsSync(srcOutDir)) {
         fs.mkdirSync(srcOutDir, { recursive: true });
     }
+
+    // Clean src output directory before copying
+    fs.rmSync(srcOutDir, { recursive: true, force: true });
+    fs.mkdirSync(srcOutDir, { recursive: true });
 
     const files = fs.readdirSync(publicOutDir);
     files.forEach(file => {

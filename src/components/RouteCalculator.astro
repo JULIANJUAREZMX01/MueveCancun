@@ -1,5 +1,5 @@
 ---
-import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../lib/i18n';
+import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../utils/i18n';
 import Input from './ui/Input.astro';
 import Switch from './ui/Switch.astro';
 import PassengerSelector from './ui/PassengerSelector.astro';
@@ -197,9 +197,9 @@ const ui = uiTranslations[currentLang];
 <script>
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
-  import { escapeHtml } from "../lib/utils";
+  import { escapeHtml } from "../utils/utils";
   import { getWalletBalance, setWalletBalance } from '../utils/db';
-  import { getTransportLabel } from "../lib/transport";
+  import { getTransportLabel } from "../utils/transport";
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
   const ui = i18nDataEl ? JSON.parse(i18nDataEl.dataset.ui || '{}') : {};
@@ -246,7 +246,6 @@ const ui = uiTranslations[currentLang];
   let balance = 0;
   let hasBalance = false;
   let wasmLoaded = false;
-      let find_route, validate_operator_funds, load_catalog;
   let finder; // Global Coordinate Finder instance
 
   const btn = document.getElementById('search-btn');

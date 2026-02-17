@@ -1,11 +1,19 @@
 {
-  "version": "2.3.0-normalized",
-  "rutas": [
+  "metadata": {
+    "last_updated": "2026-02-17T07:09:33.432854",
+    "source": "Nexus Listener v1.0",
+    "version": "3.2.0"
+  },
+  "social_alerts": [
+    "Retraso en Zona Hotelera por obra pública"
+  ],
+  "routes": [
     {
       "id": "R2_94_VILLAS_OTOCH_001",
       "nombre": "R-2-94 Villas Otoch (Eje Kabah - ZH)",
       "tarifa": 15,
-      "tipo": "Bus_Urbano_Isla",
+      "moneda": "MXN",
+      "hub_conexion": "Plaza Las Américas / Chedraui Lakin",
       "frecuencia_minutos": 10,
       "horario": {
         "inicio_oficial": "05:00",
@@ -17,69 +25,84 @@
         "Salidas de guardia dependen de llenado, no horario fijo",
         "Es la ruta principal para trabajadores de ZH desde Villas Otoch"
       ],
-      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "nombre": "OXXO Villas Otoch Paraíso (El Arco)",
           "lat": 21.1685,
-          "lng": -86.885,
           "orden": 1,
-          "landmarks": "Punto de agrupación 'La Guardia'"
+          "tipo": "origen_madrugada",
+          "horario_salida_primer_turno": "03:55",
+          "advertencia": "Punto de agrupación 'La Guardia'",
+          "lng": -86.885
         },
         {
           "nombre": "Chedraui Lakin / Av. Talleres",
           "lat": 21.165,
-          "lng": -86.879,
-          "orden": 2
+          "orden": 2,
+          "tipo": "nodo_conexion",
+          "lng": -86.879
         },
         {
           "nombre": "Av. Kabah (Ruta 4)",
           "lat": 21.16,
-          "lng": -86.845,
-          "orden": 3
+          "orden": 3,
+          "tipo": "tramo_rapido",
+          "lng": -86.845
         },
         {
           "nombre": "Plaza Las Américas (Kabah)",
           "lat": 21.141,
-          "lng": -86.843,
-          "orden": 4
+          "orden": 4,
+          "tipo": "hub_secundario",
+          "conexiones": [
+            "R-1",
+            "R-2"
+          ],
+          "lng": -86.843
         },
         {
           "nombre": "Entrada Zona Hotelera (Km 0)",
           "lat": 21.153,
-          "lng": -86.815,
-          "orden": 5
+          "orden": 5,
+          "tipo": "entrada_zh",
+          "lng": -86.815
         },
         {
           "nombre": "Zona Hotelera (Hasta retornar)",
           "lat": 21.135,
-          "lng": -86.768,
-          "orden": 6
+          "orden": 6,
+          "tipo": "zona_hotelera",
+          "lng": -86.768
         }
-      ]
+      ],
+      "tipo": "Bus_Urbano_Isla"
     },
     {
       "id": "CR_PTO_JUAREZ_001",
       "nombre": "Combi Roja Puerto Juárez → Ultramar",
-      "tarifa": 13,
-      "tipo": "Combi_Municipal",
       "empresa": "Autocar (Controladora SEA)",
+      "tarifa": 13,
+      "moneda": "MXN",
+      "color_identificacion": "Rojo completo con logo SEA",
+      "letrero_clave": "PUERTO JUÁREZ o PTO. JUÁREZ (obligatorio verificar)",
+      "hub_conexion": "El Crucero",
       "frecuencia_minutos": 15,
       "horario": {
         "inicio": "05:30",
         "fin": "00:30"
       },
+      "duracion_minutos": 20,
       "social_alerts": [
         "Solo las unidades con letrero 'PUERTO JUÁREZ' llegan al muelle"
       ],
-      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "CR_PTO_JUAREZ_001_001",
           "nombre": "La Rehoyada (Base Operativa)",
           "lat": 21.1619,
           "lng": -86.8515,
-          "orden": 1
+          "orden": 1,
+          "tipo": "origen_base"
         },
         {
           "id": "CR_PTO_JUAREZ_001_002",
@@ -109,28 +132,35 @@
           "lng": -86.802,
           "orden": 5
         }
-      ]
+      ],
+      "tipo": "Combi_Municipal"
     },
     {
       "id": "R1_ZONA_HOTELERA_001",
       "nombre": "R-1 Centro → Zona Hotelera",
+      "color": "#FF6B6B",
       "tarifa": 15,
       "tipo": "Bus_Urban",
-      "empresa": "Controladora SEA (rojas)",
+      "empresas": [
+        "Controladora SEA (rojas)",
+        "Maya Caribe (blancas)"
+      ],
+      "moneda": "MXN",
+      "hub_conexion": "El Crucero",
       "frecuencia_minutos": 10,
       "horario": {
         "inicio": "06:00",
         "fin": "22:30"
       },
-      "social_alerts": [],
-      "last_updated": "2026-01-30T06:16:46.258Z",
+      "duracion_minutos": 45,
       "paradas": [
         {
           "id": "R1_ZONA_HOTELERA_001_001",
           "nombre": "La Rehoyada / Villas Otoch (Origenes)",
           "lat": 21.1619,
           "lng": -86.8515,
-          "orden": 1
+          "orden": 1,
+          "tipo": "origen_multiple"
         },
         {
           "id": "R1_ZONA_HOTELERA_001_002",
@@ -172,22 +202,24 @@
     {
       "id": "VAN_PLAYA_EXPRESS_001",
       "nombre": "Playa Express Cancún → Playa del Carmen",
+      "color": "#10B981",
       "tarifa": 55,
       "tipo": "Van_Foranea",
+      "moneda": "MXN",
+      "hub_conexion": "Terminal ADO Centro",
       "frecuencia_minutos": 30,
       "horario": {
         "inicio": "05:00",
         "fin": "00:00"
       },
-      "social_alerts": [],
-      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "VAN_PLAYA_EXPRESS_001_001",
           "nombre": "Terminal ADO Cancún Centro",
           "lat": 21.1586,
           "lng": -86.8259,
-          "orden": 1
+          "orden": 1,
+          "tipo": "origen_principal"
         },
         {
           "id": "VAN_PLAYA_EXPRESS_001_002",
@@ -236,10 +268,9 @@
     {
       "id": "R28_VILLAS_OTOCH_001",
       "nombre": "R-28 Villas Otoch → Av. Tulum",
+      "color": "#10B981",
       "tarifa": 13,
       "tipo": "Bus_Urban",
-      "social_alerts": [],
-      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "R28_VILLAS_OTOCH_001_001",
@@ -274,10 +305,9 @@
     {
       "id": "R19_VILLAS_OTOCH_002",
       "nombre": "R-19 Villas Otoch → López Portillo",
+      "color": "#FF6B6B",
       "tarifa": 13,
       "tipo": "Bus_Urban",
-      "social_alerts": [],
-      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "R19_VILLAS_OTOCH_002_001",
@@ -312,43 +342,46 @@
     {
       "id": "R19_VILLAS_OTOCH_002",
       "nombre": "R-19 Villas Otoch - Crucero",
+      "color": "#3B82F6",
       "tarifa": 13,
-      "tipo": "Bus_Urban",
+      "moneda": "MXN",
+      "hub_conexion": "El Crucero",
       "frecuencia_minutos": 25,
       "horario": {
         "inicio": "06:00",
         "fin": "22:30"
       },
-      "social_alerts": [],
-      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "nombre": "Villas Otoch",
           "lat": 21.138,
-          "lng": -86.865,
-          "orden": 1
+          "orden": 1,
+          "tipo": "origen_colonia",
+          "lng": -86.865
         },
         {
           "nombre": "Hospital General (Av. Kabah)",
           "lat": 21.15,
-          "lng": -86.84,
-          "orden": 2
+          "orden": 2,
+          "tipo": "servicio_salud",
+          "lng": -86.84
         },
         {
           "nombre": "El Crucero",
           "lat": 21.1576,
-          "lng": -86.8269,
-          "orden": 3
+          "orden": 3,
+          "tipo": "hub_principal",
+          "lng": -86.8269
         }
-      ]
+      ],
+      "tipo": "Bus_Urban"
     },
     {
       "id": "ADO_AEROPUERTO_001",
       "nombre": "ADO Aeropuerto → Centro Cancún",
+      "color": "#E11D48",
       "tarifa": 150,
       "tipo": "Bus_Foraneo",
-      "social_alerts": [],
-      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "ADO_AEROPUERTO_001_001",
@@ -375,22 +408,19 @@
           "id": "ADO_AEROPUERTO_001_004",
           "nombre": "Terminal ADO Centro Cancún",
           "lat": 21.1586,
-          "lng": -86.8259,
-          "orden": 4
+          "orden": 4,
+          "tipo": "destino_final",
+          "lng": -86.8259
         }
       ]
     },
     {
       "id": "R10",
       "nombre": "Las Américas - Aeropuerto",
+      "color": "#FFD93D",
       "tarifa": 15,
-      "tipo": "Transporte",
+      "horario": "04:00-23:00",
       "frecuencia_minutos": 20,
-      "horario": {
-        "inicio_oficial": "04:00-23:00"
-      },
-      "social_alerts": [],
-      "last_updated": "2026-01-30T06:16:46.258Z",
       "paradas": [
         {
           "id": "R10_001",
@@ -398,7 +428,7 @@
           "lat": 21.1472,
           "lng": -86.8234,
           "orden": 1,
-          "landmarks": "Av. Sayil"
+          "referencias": "Av. Sayil"
         },
         {
           "id": "R10_002",
@@ -406,7 +436,7 @@
           "lat": 21.1412,
           "lng": -86.8315,
           "orden": 2,
-          "landmarks": "Cerca de Pabellón Caribe"
+          "referencias": "Cerca de Pabellón Caribe"
         },
         {
           "id": "R10_003",
@@ -414,7 +444,7 @@
           "lat": 21.1355,
           "lng": -86.8412,
           "orden": 3,
-          "landmarks": "Supermercado Soriana"
+          "referencias": "Supermercado Soriana"
         },
         {
           "id": "R10_004",
@@ -422,7 +452,7 @@
           "lat": 21.1285,
           "lng": -86.8485,
           "orden": 4,
-          "landmarks": "Plaza La Luna"
+          "referencias": "Plaza La Luna"
         },
         {
           "id": "R10_005",
@@ -430,7 +460,7 @@
           "lat": 21.1155,
           "lng": -86.8555,
           "orden": 5,
-          "landmarks": "Parque Kabah Sur"
+          "referencias": "Parque Kabah Sur"
         },
         {
           "id": "R10_006",
@@ -438,7 +468,7 @@
           "lat": 21.1025,
           "lng": -86.8612,
           "orden": 6,
-          "landmarks": "Zona Residencial"
+          "referencias": "Zona Residencial"
         },
         {
           "id": "R10_007",
@@ -446,7 +476,7 @@
           "lat": 21.0855,
           "lng": -86.8525,
           "orden": 7,
-          "landmarks": "Entrada Bonfil"
+          "referencias": "Entrada Bonfil"
         },
         {
           "id": "R10_008",
@@ -454,7 +484,7 @@
           "lat": 21.0555,
           "lng": -86.8415,
           "orden": 8,
-          "landmarks": "Universidad"
+          "referencias": "Universidad"
         },
         {
           "id": "R10_009",
@@ -462,7 +492,7 @@
           "lat": 21.0412,
           "lng": -86.8725,
           "orden": 9,
-          "landmarks": "Vuelos Internacionales"
+          "referencias": "Vuelos Internacionales"
         },
         {
           "id": "R10_010",
@@ -470,8 +500,50 @@
           "lat": 21.0365,
           "lng": -86.8775,
           "orden": 10,
-          "landmarks": "Vuelos Nacionales"
+          "referencias": "Vuelos Nacionales"
         }
+      ],
+      "polyline": [
+        [
+          -86.8234,
+          21.1472
+        ],
+        [
+          -86.8315,
+          21.1412
+        ],
+        [
+          -86.8412,
+          21.1355
+        ],
+        [
+          -86.8485,
+          21.1285
+        ],
+        [
+          -86.8555,
+          21.1155
+        ],
+        [
+          -86.8612,
+          21.1025
+        ],
+        [
+          -86.8525,
+          21.0855
+        ],
+        [
+          -86.8415,
+          21.0555
+        ],
+        [
+          -86.8725,
+          21.0412
+        ],
+        [
+          -86.8775,
+          21.0365
+        ]
       ]
     },
     {
@@ -487,7 +559,7 @@
           "lat": 21.17756399968429,
           "lng": -86.82008028030397,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753801260218_s_2",
@@ -495,7 +567,7 @@
           "lat": 21.174287565715755,
           "lng": -86.8266785144806,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753801260218_s_3",
@@ -503,7 +575,7 @@
           "lat": 21.14479139185848,
           "lng": -86.82452201843263,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753801260218_s_4",
@@ -511,7 +583,7 @@
           "lat": 21.141349121698642,
           "lng": -86.83220386505128,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753801260218_s_5",
@@ -519,7 +591,7 @@
           "lat": 21.140868798573802,
           "lng": -86.85563564300539,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753801260218_s_6",
@@ -527,7 +599,7 @@
           "lat": 21.14026839247812,
           "lng": -86.87705039978027,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753801260218_s_7",
@@ -535,7 +607,7 @@
           "lat": 21.130461415238614,
           "lng": -86.87649250030519,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753801260218_s_8",
@@ -543,7 +615,7 @@
           "lat": 21.12585791645462,
           "lng": -86.87739372253418,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753801260218_s_9",
@@ -551,7 +623,7 @@
           "lat": 21.107682708280613,
           "lng": -86.88477516174316,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753801260218_s_10",
@@ -559,7 +631,7 @@
           "lat": 21.10255801819936,
           "lng": -86.87928199768068,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753801260218_s_11",
@@ -567,7 +639,7 @@
           "lat": 21.08754325956202,
           "lng": -86.88529014587404,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753801260218_s_12",
@@ -575,7 +647,7 @@
           "lat": 21.08173714602836,
           "lng": -86.88640594482423,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -592,7 +664,7 @@
           "lat": 21.17769905723677,
           "lng": -86.91071212291718,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_2",
@@ -600,7 +672,7 @@
           "lat": 21.172461735142715,
           "lng": -86.91120564937593,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_3",
@@ -608,7 +680,7 @@
           "lat": 21.17621841955534,
           "lng": -86.89838469028474,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_4",
@@ -616,7 +688,7 @@
           "lat": 21.183106260136903,
           "lng": -86.88484489917755,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_5",
@@ -624,7 +696,7 @@
           "lat": 21.18598235132647,
           "lng": -86.87919080257417,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_6",
@@ -632,7 +704,7 @@
           "lat": 21.198101334723077,
           "lng": -86.8550616502762,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_7",
@@ -640,7 +712,7 @@
           "lat": 21.20047699909379,
           "lng": -86.85024976730348,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_8",
@@ -648,7 +720,7 @@
           "lat": 21.195500563608256,
           "lng": -86.84712231159212,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_9",
@@ -656,7 +728,7 @@
           "lat": 21.189843728368682,
           "lng": -86.84585094451906,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_10",
@@ -664,7 +736,7 @@
           "lat": 21.18156565262678,
           "lng": -86.84961140155792,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_11",
@@ -672,7 +744,7 @@
           "lat": 21.182335958388464,
           "lng": -86.84460103511812,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_12",
@@ -680,7 +752,7 @@
           "lat": 21.185382128220134,
           "lng": -86.83874309062959,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_13",
@@ -688,7 +760,7 @@
           "lat": 21.17775908277606,
           "lng": -86.8344783782959,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_14",
@@ -696,7 +768,7 @@
           "lat": 21.17164135461595,
           "lng": -86.83158159255983,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_15",
@@ -704,7 +776,7 @@
           "lat": 21.17391239688972,
           "lng": -86.82700574398041,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_16",
@@ -712,7 +784,7 @@
           "lat": 21.168805003960465,
           "lng": -86.82624936103822,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_17",
@@ -720,7 +792,7 @@
           "lat": 21.164167678629145,
           "lng": -86.82599186897279,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_18",
@@ -728,7 +800,7 @@
           "lat": 21.15749908015619,
           "lng": -86.82548761367799,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1753802299281_s_19",
@@ -736,7 +808,7 @@
           "lat": 21.158029377301467,
           "lng": -86.82531595230104,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -753,7 +825,7 @@
           "lat": 21.17870948390136,
           "lng": -86.90832495689394,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_2",
@@ -761,7 +833,7 @@
           "lat": 21.17290193745221,
           "lng": -86.90498292446138,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_3",
@@ -769,7 +841,7 @@
           "lat": 21.16952535213544,
           "lng": -86.91163480281831,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_4",
@@ -777,7 +849,7 @@
           "lat": 21.176343473986677,
           "lng": -86.91425263881683,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_5",
@@ -785,7 +857,7 @@
           "lat": 21.17813924395913,
           "lng": -86.90970361232758,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_6",
@@ -793,7 +865,7 @@
           "lat": 21.182105867477393,
           "lng": -86.90307319164276,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_7",
@@ -801,7 +873,7 @@
           "lat": 21.178049205872508,
           "lng": -86.90014958381654,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_8",
@@ -809,7 +881,7 @@
           "lat": 21.185787279084234,
           "lng": -86.87958240509035,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_9",
@@ -817,7 +889,7 @@
           "lat": 21.181180498241005,
           "lng": -86.87632083892822,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_10",
@@ -825,7 +897,7 @@
           "lat": 21.174607709028184,
           "lng": -86.87274277210236,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_11",
@@ -833,7 +905,7 @@
           "lat": 21.169135163976023,
           "lng": -86.87235653400421,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_12",
@@ -841,7 +913,7 @@
           "lat": 21.181490622630314,
           "lng": -86.84667706489563,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_13",
@@ -849,7 +921,7 @@
           "lat": 21.184001605826953,
           "lng": -86.84118390083314,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_14",
@@ -857,7 +929,7 @@
           "lat": 21.187522912810724,
           "lng": -86.8343871831894,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_15",
@@ -865,7 +937,7 @@
           "lat": 21.177008761783807,
           "lng": -86.82851850986482,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_16",
@@ -873,7 +945,7 @@
           "lat": 21.1712261602984,
           "lng": -86.82651758193971,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_17",
@@ -881,7 +953,7 @@
           "lat": 21.164202696732836,
           "lng": -86.82600259780885,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_18",
@@ -889,7 +961,7 @@
           "lat": 21.15749908015619,
           "lng": -86.82546079158784,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_19",
@@ -897,7 +969,7 @@
           "lat": 21.150715111374257,
           "lng": -86.82509064674377,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_20",
@@ -905,7 +977,7 @@
           "lat": 21.14456624581876,
           "lng": -86.82461321353914,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759506708808_s_21",
@@ -913,7 +985,7 @@
           "lat": 21.147308000968543,
           "lng": -86.82430744171143,
           "orden": 21,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -930,7 +1002,7 @@
           "lat": 21.17923970503269,
           "lng": -86.9071662425995,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_2",
@@ -938,7 +1010,7 @@
           "lat": 21.173517218030593,
           "lng": -86.90380811691286,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_3",
@@ -946,7 +1018,7 @@
           "lat": 21.169595385798733,
           "lng": -86.91147923469545,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_4",
@@ -954,7 +1026,7 @@
           "lat": 21.176653608520123,
           "lng": -86.91424727439882,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_5",
@@ -962,7 +1034,7 @@
           "lat": 21.18875334973565,
           "lng": -86.91439747810364,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_6",
@@ -970,7 +1042,7 @@
           "lat": 21.177128813398372,
           "lng": -86.91324949264528,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_7",
@@ -978,7 +1050,7 @@
           "lat": 21.16969543383161,
           "lng": -86.91453158855438,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_8",
@@ -986,7 +1058,7 @@
           "lat": 21.169040117986455,
           "lng": -86.91948294639589,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_9",
@@ -994,7 +1066,7 @@
           "lat": 21.165353286959075,
           "lng": -86.9250351190567,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_10",
@@ -1002,7 +1074,7 @@
           "lat": 21.161101061130537,
           "lng": -86.91692411899568,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_11",
@@ -1010,7 +1082,7 @@
           "lat": 21.15705883202643,
           "lng": -86.91292762756349,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_12",
@@ -1018,7 +1090,7 @@
           "lat": 21.152896421374003,
           "lng": -86.91033124923707,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_13",
@@ -1026,7 +1098,7 @@
           "lat": 21.149594425853035,
           "lng": -86.90631866455078,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_14",
@@ -1034,7 +1106,7 @@
           "lat": 21.144411145014548,
           "lng": -86.90378665924074,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_15",
@@ -1042,7 +1114,7 @@
           "lat": 21.136966115466127,
           "lng": -86.90134048461915,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_16",
@@ -1050,7 +1122,7 @@
           "lat": 21.140308419626855,
           "lng": -86.89453840255737,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_17",
@@ -1058,7 +1130,7 @@
           "lat": 21.139848106763594,
           "lng": -86.86866044998169,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_18",
@@ -1066,7 +1138,7 @@
           "lat": 21.13962795662786,
           "lng": -86.85739517211915,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_19",
@@ -1074,7 +1146,7 @@
           "lat": 21.141108960330854,
           "lng": -86.83419942855836,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_20",
@@ -1082,7 +1154,7 @@
           "lat": 21.14367066151758,
           "lng": -86.82821273803711,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761456676914_s_21",
@@ -1090,7 +1162,7 @@
           "lat": 21.145411792508483,
           "lng": -86.82418942451478,
           "orden": 21,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -1107,7 +1179,7 @@
           "lat": 21.184401758572065,
           "lng": -86.91009521484376,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_2",
@@ -1115,7 +1187,7 @@
           "lat": 21.180195098687168,
           "lng": -86.91298127174377,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_3",
@@ -1123,7 +1195,7 @@
           "lat": 21.165823525606793,
           "lng": -86.91466569900514,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_4",
@@ -1131,7 +1203,7 @@
           "lat": 21.165353286959075,
           "lng": -86.92500829696657,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_5",
@@ -1139,7 +1211,7 @@
           "lat": 21.160991001898925,
           "lng": -86.91945075988771,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_6",
@@ -1147,7 +1219,7 @@
           "lat": 21.156928758464822,
           "lng": -86.91642522811891,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_7",
@@ -1155,7 +1227,7 @@
           "lat": 21.1528764095017,
           "lng": -86.91030979156496,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_8",
@@ -1163,7 +1235,7 @@
           "lat": 21.14950437039841,
           "lng": -86.90629720687868,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_9",
@@ -1171,7 +1243,7 @@
           "lat": 21.175688187591827,
           "lng": -86.8523955345154,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_10",
@@ -1179,7 +1251,7 @@
           "lat": 21.16444282064915,
           "lng": -86.84611916542055,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_11",
@@ -1187,7 +1259,7 @@
           "lat": 21.173932405917803,
           "lng": -86.82702183723451,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_12",
@@ -1195,7 +1267,7 @@
           "lat": 21.16887003553695,
           "lng": -86.82626008987428,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_13",
@@ -1203,7 +1275,7 @@
           "lat": 21.164332763902532,
           "lng": -86.82597041130067,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_14",
@@ -1211,7 +1283,7 @@
           "lat": 21.157504082968302,
           "lng": -86.82548761367799,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_15",
@@ -1219,7 +1291,7 @@
           "lat": 21.15079516001556,
           "lng": -86.82506918907166,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_16",
@@ -1227,7 +1299,7 @@
           "lat": 21.144451171044086,
           "lng": -86.82465076446533,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761458818964_s_17",
@@ -1235,7 +1307,7 @@
           "lat": 21.146407430056296,
           "lng": -86.82424843311311,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -1252,7 +1324,7 @@
           "lat": 21.17935975483621,
           "lng": -86.90721452236176,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_2",
@@ -1260,7 +1332,7 @@
           "lat": 21.173367149832828,
           "lng": -86.90373837947845,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_3",
@@ -1268,7 +1340,7 @@
           "lat": 21.198051320325703,
           "lng": -86.85520112514496,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_4",
@@ -1276,7 +1348,7 @@
           "lat": 21.195955701858257,
           "lng": -86.85961604118347,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_5",
@@ -1284,7 +1356,7 @@
           "lat": 21.17446264417559,
           "lng": -86.8474441766739,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_6",
@@ -1292,7 +1364,7 @@
           "lat": 21.167424326822232,
           "lng": -86.84064745903017,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_7",
@@ -1300,7 +1372,7 @@
           "lat": 21.16305209756101,
           "lng": -86.83911323547365,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_8",
@@ -1308,7 +1380,7 @@
           "lat": 21.160180563218887,
           "lng": -86.83428525924684,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_9",
@@ -1316,7 +1388,7 @@
           "lat": 21.15591318018904,
           "lng": -86.83615744113924,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_10",
@@ -1324,7 +1396,7 @@
           "lat": 21.147613193202194,
           "lng": -86.84306144714357,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_11",
@@ -1332,7 +1404,7 @@
           "lat": 21.148818946532618,
           "lng": -86.83828175067903,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_12",
@@ -1340,7 +1412,7 @@
           "lat": 21.142404826427896,
           "lng": -86.83437108993532,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_13",
@@ -1348,7 +1420,7 @@
           "lat": 21.13832706278553,
           "lng": -86.83146357536317,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1754576044305_s_14",
@@ -1356,7 +1428,7 @@
           "lat": 21.13935777192333,
           "lng": -86.83308362960815,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -1373,7 +1445,7 @@
           "lat": 21.179309734096584,
           "lng": -86.90853953361513,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_2",
@@ -1381,7 +1453,7 @@
           "lat": 21.183911571310034,
           "lng": -86.91114127635957,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_3",
@@ -1389,7 +1461,7 @@
           "lat": 21.16354235395405,
           "lng": -86.91468715667725,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_4",
@@ -1397,7 +1469,7 @@
           "lat": 21.152696302529215,
           "lng": -86.91018104553223,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_5",
@@ -1405,7 +1477,7 @@
           "lat": 21.149534388889368,
           "lng": -86.90627038478853,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_6",
@@ -1413,7 +1485,7 @@
           "lat": 21.156718639393134,
           "lng": -86.89181327819826,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_7",
@@ -1421,7 +1493,7 @@
           "lat": 21.14511159897001,
           "lng": -86.88516139984132,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_8",
@@ -1429,7 +1501,7 @@
           "lat": 21.14607221615178,
           "lng": -86.88029050827028,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_9",
@@ -1437,7 +1509,7 @@
           "lat": 21.147813318915652,
           "lng": -86.85657978057863,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_10",
@@ -1445,7 +1517,7 @@
           "lat": 21.152536207258667,
           "lng": -86.84185981750488,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_11",
@@ -1453,7 +1525,7 @@
           "lat": 21.15601824033373,
           "lng": -86.83110952377321,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_12",
@@ -1461,7 +1533,7 @@
           "lat": 21.15665360247717,
           "lng": -86.82608842849731,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_13",
@@ -1469,7 +1541,7 @@
           "lat": 21.16301207655928,
           "lng": -86.82562708854677,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1756850089371_s_14",
@@ -1477,7 +1549,7 @@
           "lat": 21.16390254128956,
           "lng": -86.82136774063112,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -1494,7 +1566,7 @@
           "lat": 21.147157906196746,
           "lng": -86.82430744171143,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_2",
@@ -1502,7 +1574,7 @@
           "lat": 21.15483255723097,
           "lng": -86.82497262954713,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_3",
@@ -1510,7 +1582,7 @@
           "lat": 21.16299206605435,
           "lng": -86.82569146156312,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_4",
@@ -1518,7 +1590,7 @@
           "lat": 21.16904512040848,
           "lng": -86.82619571685792,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_5",
@@ -1526,7 +1598,7 @@
           "lat": 21.17385236978925,
           "lng": -86.82652831077577,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_6",
@@ -1534,7 +1606,7 @@
           "lat": 21.18757293077164,
           "lng": -86.83423161506654,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_7",
@@ -1542,7 +1614,7 @@
           "lat": 21.184781902676715,
           "lng": -86.84031486511232,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_8",
@@ -1550,7 +1622,7 @@
           "lat": 21.18196080997986,
           "lng": -86.84585094451906,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_9",
@@ -1558,7 +1630,7 @@
           "lat": 21.17489783830654,
           "lng": -86.86045289039613,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_10",
@@ -1566,7 +1638,7 @@
           "lat": 21.180190096642228,
           "lng": -86.86342477798462,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_11",
@@ -1574,7 +1646,7 @@
           "lat": 21.184106646027377,
           "lng": -86.86588168144226,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_12",
@@ -1582,7 +1654,7 @@
           "lat": 21.1769987574782,
           "lng": -86.88045144081117,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_13",
@@ -1590,7 +1662,7 @@
           "lat": 21.17212157791546,
           "lng": -86.87774777412415,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_14",
@@ -1598,7 +1670,7 @@
           "lat": 21.1674393342517,
           "lng": -86.8866366147995,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_15",
@@ -1606,7 +1678,7 @@
           "lat": 21.16242176552656,
           "lng": -86.89719915390016,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_16",
@@ -1614,7 +1686,7 @@
           "lat": 21.15520277153995,
           "lng": -86.9028264284134,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_17",
@@ -1622,7 +1694,7 @@
           "lat": 21.15295145400891,
           "lng": -86.90737545490266,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_18",
@@ -1630,7 +1702,7 @@
           "lat": 21.15098527536522,
           "lng": -86.91422045230865,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_19",
@@ -1638,7 +1710,7 @@
           "lat": 21.146327379043573,
           "lng": -86.91400587558748,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866849505_s_20",
@@ -1646,7 +1718,7 @@
           "lat": 21.14658754467677,
           "lng": -86.90762758255006,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -1663,7 +1735,7 @@
           "lat": 21.20657352922994,
           "lng": -86.88930809497835,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1758230498578_s_2",
@@ -1671,7 +1743,7 @@
           "lat": 21.204818114440513,
           "lng": -86.88480734825136,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1758230498578_s_3",
@@ -1679,7 +1751,7 @@
           "lat": 21.19654587903971,
           "lng": -86.88005447387697,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1758230498578_s_4",
@@ -1687,7 +1759,7 @@
           "lat": 21.19584066704835,
           "lng": -86.87504947185518,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1758230498578_s_5",
@@ -1695,7 +1767,7 @@
           "lat": 21.19048894863368,
           "lng": -86.86987280845644,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1758230498578_s_6",
@@ -1703,7 +1775,7 @@
           "lat": 21.195805656436253,
           "lng": -86.85950875282289,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1758230498578_s_7",
@@ -1711,7 +1783,7 @@
           "lat": 21.179809940731413,
           "lng": -86.85048580169678,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1758230498578_s_8",
@@ -1719,7 +1791,7 @@
           "lat": 21.16444782322659,
           "lng": -86.84607088565828,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1758230498578_s_9",
@@ -1727,7 +1799,7 @@
           "lat": 21.173927403661025,
           "lng": -86.82718276977539,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1758230498578_s_10",
@@ -1735,7 +1807,7 @@
           "lat": 21.14365064839872,
           "lng": -86.82445764541627,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1758230498578_s_11",
@@ -1743,7 +1815,7 @@
           "lat": 21.146612560578966,
           "lng": -86.82428598403932,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -1760,7 +1832,7 @@
           "lat": 21.17725886466589,
           "lng": -86.90566420555115,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_2",
@@ -1768,7 +1840,7 @@
           "lat": 21.172771791164514,
           "lng": -86.90487027168275,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_3",
@@ -1776,7 +1848,7 @@
           "lat": 21.17715881275589,
           "lng": -86.90260112285615,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_4",
@@ -1784,7 +1856,7 @@
           "lat": 21.185772174015504,
           "lng": -86.87960386276247,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_5",
@@ -1792,7 +1864,7 @@
           "lat": 21.1811404238192,
           "lng": -86.87632083892822,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_6",
@@ -1800,7 +1872,7 @@
           "lat": 21.183231304793544,
           "lng": -86.86768949031831,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_7",
@@ -1808,7 +1880,7 @@
           "lat": 21.17994999895828,
           "lng": -86.86344623565674,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_8",
@@ -1816,7 +1888,7 @@
           "lat": 21.165483359841478,
           "lng": -86.85535669326782,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_9",
@@ -1824,7 +1896,7 @@
           "lat": 21.161681372761745,
           "lng": -86.85164451599123,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_10",
@@ -1832,7 +1904,7 @@
           "lat": 21.174147617771684,
           "lng": -86.82671070098878,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_11",
@@ -1840,7 +1912,7 @@
           "lat": 21.16956536792974,
           "lng": -86.82650148868562,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_12",
@@ -1848,7 +1920,7 @@
           "lat": 21.164347770132636,
           "lng": -86.82599186897279,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_13",
@@ -1856,7 +1928,7 @@
           "lat": 21.157604138587082,
           "lng": -86.82548224925996,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_14",
@@ -1864,7 +1936,7 @@
           "lat": 21.150675086701163,
           "lng": -86.82507991790771,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759866137331_s_15",
@@ -1872,7 +1944,7 @@
           "lat": 21.147433076466484,
           "lng": -86.82297706604004,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -1889,7 +1961,7 @@
           "lat": 21.204433020655948,
           "lng": -86.88464105129243,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_2",
@@ -1897,7 +1969,7 @@
           "lat": 21.196510868594736,
           "lng": -86.88008666038515,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_3",
@@ -1905,7 +1977,7 @@
           "lat": 21.19876652459794,
           "lng": -86.87559127807619,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_4",
@@ -1913,7 +1985,7 @@
           "lat": 21.195165460923665,
           "lng": -86.8726032972336,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_5",
@@ -1921,7 +1993,7 @@
           "lat": 21.190338897660638,
           "lng": -86.87470614910127,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_6",
@@ -1929,7 +2001,7 @@
           "lat": 21.198096353619587,
           "lng": -86.85508847236633,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_7",
@@ -1937,7 +2009,7 @@
           "lat": 21.195935582871517,
           "lng": -86.85964822769165,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_8",
@@ -1945,7 +2017,7 @@
           "lat": 21.17964987479236,
           "lng": -86.85039460659027,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_9",
@@ -1953,7 +2025,7 @@
           "lat": 21.18186077024347,
           "lng": -86.84553980827333,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_10",
@@ -1961,7 +2033,7 @@
           "lat": 21.18464184969925,
           "lng": -86.84015393257143,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_11",
@@ -1969,7 +2041,7 @@
           "lat": 21.187522912810724,
           "lng": -86.83439254760744,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_12",
@@ -1977,7 +2049,7 @@
           "lat": 21.177028770392997,
           "lng": -86.8285346031189,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_13",
@@ -1985,7 +2057,7 @@
           "lat": 21.175607898265053,
           "lng": -86.82394266128541,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_14",
@@ -1993,7 +2065,7 @@
           "lat": 21.171246169689827,
           "lng": -86.82654976844789,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_15",
@@ -2001,7 +2073,7 @@
           "lat": 21.164242717412606,
           "lng": -86.82597041130067,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_16",
@@ -2009,7 +2081,7 @@
           "lat": 21.15758913074871,
           "lng": -86.82549297809602,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_17",
@@ -2017,7 +2089,7 @@
           "lat": 21.15065507486489,
           "lng": -86.8250584602356,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_18",
@@ -2025,7 +2097,7 @@
           "lat": 21.144461177549786,
           "lng": -86.82459712028505,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760327653692_s_19",
@@ -2033,7 +2105,7 @@
           "lat": 21.14733801990465,
           "lng": -86.82430207729341,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -2050,7 +2122,7 @@
           "lat": 21.173747322304806,
           "lng": -86.90337896347047,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_2",
@@ -2058,7 +2130,7 @@
           "lat": 21.169505342511272,
           "lng": -86.91161870956421,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_3",
@@ -2066,7 +2138,7 @@
           "lat": 21.165783505354515,
           "lng": -86.91474616527559,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_4",
@@ -2074,7 +2146,7 @@
           "lat": 21.165343281865237,
           "lng": -86.92502975463869,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_5",
@@ -2082,7 +2154,7 @@
           "lat": 21.161071044984574,
           "lng": -86.91825449466707,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_6",
@@ -2090,7 +2162,7 @@
           "lat": 21.157929321381715,
           "lng": -86.91344261169435,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_7",
@@ -2098,7 +2170,7 @@
           "lat": 21.15309653994834,
           "lng": -86.91047072410585,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_8",
@@ -2106,7 +2178,7 @@
           "lat": 21.149774536598027,
           "lng": -86.90632939338684,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_9",
@@ -2114,7 +2186,7 @@
           "lat": 21.144541229570997,
           "lng": -86.90366864204408,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_10",
@@ -2122,7 +2194,7 @@
           "lat": 21.13724130802778,
           "lng": -86.90141022205354,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_11",
@@ -2130,7 +2202,7 @@
           "lat": 21.140358453547567,
           "lng": -86.8945223093033,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_12",
@@ -2138,7 +2210,7 @@
           "lat": 21.14013830417005,
           "lng": -86.8837022781372,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_13",
@@ -2146,7 +2218,7 @@
           "lat": 21.13993816808849,
           "lng": -86.86582803726196,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_14",
@@ -2154,7 +2226,7 @@
           "lat": 21.13961794979572,
           "lng": -86.85755610466003,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_15",
@@ -2162,7 +2234,7 @@
           "lat": 21.14112897379305,
           "lng": -86.83404922485353,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_16",
@@ -2170,7 +2242,7 @@
           "lat": 21.14370068119079,
           "lng": -86.82825565338135,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1759952771720_s_17",
@@ -2178,7 +2250,7 @@
           "lat": 21.14543680860925,
           "lng": -86.82417869567873,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -2195,7 +2267,7 @@
           "lat": 21.17359725434049,
           "lng": -86.91443502902986,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_2",
@@ -2203,7 +2275,7 @@
           "lat": 21.17873949646898,
           "lng": -86.90843760967256,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_3",
@@ -2211,7 +2283,7 @@
           "lat": 21.179709899539805,
           "lng": -86.90353989601135,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_4",
@@ -2219,7 +2291,7 @@
           "lat": 21.18080534690074,
           "lng": -86.89851343631744,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_5",
@@ -2227,7 +2299,7 @@
           "lat": 21.188013088097712,
           "lng": -86.89052045345306,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_6",
@@ -2235,7 +2307,7 @@
           "lat": 21.190333895958908,
           "lng": -86.88573002815247,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_7",
@@ -2243,7 +2315,7 @@
           "lat": 21.196255792245122,
           "lng": -86.88817620277405,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_8",
@@ -2251,7 +2323,7 @@
           "lat": 21.19185440548726,
           "lng": -86.88341259956361,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_9",
@@ -2259,7 +2331,7 @@
           "lat": 21.191354239605893,
           "lng": -86.87700748443604,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_10",
@@ -2267,7 +2339,7 @@
           "lat": 21.195800654919555,
           "lng": -86.85952484607698,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_11",
@@ -2275,7 +2347,7 @@
           "lat": 21.190659006218965,
           "lng": -86.85662269592287,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_12",
@@ -2283,7 +2355,7 @@
           "lat": 21.195375525381998,
           "lng": -86.84712767601015,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_13",
@@ -2291,7 +2363,7 @@
           "lat": 21.19510044091175,
           "lng": -86.83874845504762,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_14",
@@ -2299,7 +2371,7 @@
           "lat": 21.186612582965196,
           "lng": -86.836656332016,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_15",
@@ -2307,7 +2379,7 @@
           "lat": 21.18119050226372,
           "lng": -86.83528304100038,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_16",
@@ -2315,7 +2387,7 @@
           "lat": 21.176983751018508,
           "lng": -86.82851314544678,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_17",
@@ -2323,7 +2395,7 @@
           "lat": 21.171066085069544,
           "lng": -86.82651758193971,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_18",
@@ -2331,7 +2403,7 @@
           "lat": 21.1641726812159,
           "lng": -86.82599186897279,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_19",
@@ -2339,7 +2411,7 @@
           "lat": 21.157539102648517,
           "lng": -86.82548761367799,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_20",
@@ -2347,7 +2419,7 @@
           "lat": 21.150845190394392,
           "lng": -86.82491898536684,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_21",
@@ -2355,7 +2427,7 @@
           "lat": 21.144941489028184,
           "lng": -86.82461321353914,
           "orden": 21,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760338237012_s_22",
@@ -2363,7 +2435,7 @@
           "lat": 21.146452458731947,
           "lng": -86.82426989078523,
           "orden": 22,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -2380,7 +2452,7 @@
           "lat": 21.189618650869356,
           "lng": -86.91324949264528,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_2",
@@ -2388,7 +2460,7 @@
           "lat": 21.177248864915512,
           "lng": -86.91324949264528,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_3",
@@ -2396,7 +2468,7 @@
           "lat": 21.17942978384326,
           "lng": -86.90718233585358,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_4",
@@ -2404,7 +2476,7 @@
           "lat": 21.18212087341729,
           "lng": -86.90308392047882,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_5",
@@ -2412,7 +2484,7 @@
           "lat": 21.18086036915688,
           "lng": -86.89822375774384,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_6",
@@ -2420,7 +2492,7 @@
           "lat": 21.183456395968555,
           "lng": -86.89359962940216,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_7",
@@ -2428,7 +2500,7 @@
           "lat": 21.185527182360808,
           "lng": -86.88929736614229,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_8",
@@ -2436,7 +2508,7 @@
           "lat": 21.186262454608737,
           "lng": -86.88275814056398,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_9",
@@ -2444,7 +2516,7 @@
           "lat": 21.18662258662034,
           "lng": -86.87755465507509,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_10",
@@ -2452,7 +2524,7 @@
           "lat": 21.190533963895874,
           "lng": -86.86987280845644,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_11",
@@ -2460,7 +2532,7 @@
           "lat": 21.19303479025553,
           "lng": -86.86488389968872,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_12",
@@ -2468,7 +2540,7 @@
           "lat": 21.198106336161878,
           "lng": -86.85500264167787,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_13",
@@ -2476,7 +2548,7 @@
           "lat": 21.20045699365859,
           "lng": -86.85012102127077,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_14",
@@ -2484,7 +2556,7 @@
           "lat": 21.19640583720999,
           "lng": -86.84747099876405,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_15",
@@ -2492,7 +2564,7 @@
           "lat": 21.190123824333586,
           "lng": -86.84584558010101,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_16",
@@ -2500,7 +2572,7 @@
           "lat": 21.191444269589464,
           "lng": -86.83784723281862,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_17",
@@ -2508,7 +2580,7 @@
           "lat": 21.177028770392997,
           "lng": -86.82851314544678,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_18",
@@ -2516,7 +2588,7 @@
           "lat": 21.17131120019327,
           "lng": -86.82651221752168,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_19",
@@ -2524,7 +2596,7 @@
           "lat": 21.16423271224368,
           "lng": -86.82597041130067,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760340184559_s_20",
@@ -2532,7 +2604,7 @@
           "lat": 21.164948080117274,
           "lng": -86.82584702968599,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -2549,7 +2621,7 @@
           "lat": 21.165178197719115,
           "lng": -86.93047463893892,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_2",
@@ -2557,7 +2629,7 @@
           "lat": 21.161051034217238,
           "lng": -86.91945075988771,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_3",
@@ -2565,7 +2637,7 @@
           "lat": 21.151060320830794,
           "lng": -86.91937029361726,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_4",
@@ -2573,7 +2645,7 @@
           "lat": 21.15490760074678,
           "lng": -86.91155433654785,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_5",
@@ -2581,7 +2653,7 @@
           "lat": 21.15153560789633,
           "lng": -86.9075256586075,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_6",
@@ -2589,7 +2661,7 @@
           "lat": 21.144631288043154,
           "lng": -86.9036900997162,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_7",
@@ -2597,7 +2669,7 @@
           "lat": 21.13701615051534,
           "lng": -86.90135121345521,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_8",
@@ -2605,7 +2677,7 @@
           "lat": 21.14034344337313,
           "lng": -86.8945223093033,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_9",
@@ -2613,7 +2685,7 @@
           "lat": 21.140168324558974,
           "lng": -86.88807964324953,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_10",
@@ -2621,7 +2693,7 @@
           "lat": 21.138967504258186,
           "lng": -86.88266158103943,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_11",
@@ -2629,7 +2701,7 @@
           "lat": 21.137071189049962,
           "lng": -86.86805963516237,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_12",
@@ -2637,7 +2709,7 @@
           "lat": 21.13529493511796,
           "lng": -86.86018466949464,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_13",
@@ -2645,7 +2717,7 @@
           "lat": 21.13723630453121,
           "lng": -86.85579657554626,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_14",
@@ -2653,7 +2725,7 @@
           "lat": 21.151425541553724,
           "lng": -86.83952093124391,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_15",
@@ -2661,7 +2733,7 @@
           "lat": 21.15495762973619,
           "lng": -86.83416187763216,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_16",
@@ -2669,7 +2741,7 @@
           "lat": 21.15601824033373,
           "lng": -86.82907104492189,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_17",
@@ -2677,7 +2749,7 @@
           "lat": 21.150650071821335,
           "lng": -86.82510137557983,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761273705821_s_18",
@@ -2685,7 +2757,7 @@
           "lat": 21.147132890386654,
           "lng": -86.82299852371216,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -2702,7 +2774,7 @@
           "lat": 21.174812800473557,
           "lng": -86.90945684909822,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_2",
@@ -2710,7 +2782,7 @@
           "lat": 21.17091601438519,
           "lng": -86.91445112228394,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_3",
@@ -2718,7 +2790,7 @@
           "lat": 21.165808518013463,
           "lng": -86.91470861434937,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_4",
@@ -2726,7 +2798,7 @@
           "lat": 21.165343281865237,
           "lng": -86.93048000335693,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_5",
@@ -2734,7 +2806,7 @@
           "lat": 21.161091055749228,
           "lng": -86.91884994506837,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_6",
@@ -2742,7 +2814,7 @@
           "lat": 21.157078843333455,
           "lng": -86.91298127174377,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_7",
@@ -2750,7 +2822,7 @@
           "lat": 21.152916433243604,
           "lng": -86.9103527069092,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_8",
@@ -2758,7 +2830,7 @@
           "lat": 21.149854585747708,
           "lng": -86.90644741058351,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_9",
@@ -2766,7 +2838,7 @@
           "lat": 21.15484256303528,
           "lng": -86.89531624317169,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_10",
@@ -2774,7 +2846,7 @@
           "lat": 21.157844273796744,
           "lng": -86.88945293426515,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_11",
@@ -2782,7 +2854,7 @@
           "lat": 21.172586792750216,
           "lng": -86.85881137847902,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_12",
@@ -2790,7 +2862,7 @@
           "lat": 21.17751898047271,
           "lng": -86.84879064559937,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_13",
@@ -2798,7 +2870,7 @@
           "lat": 21.18523207206274,
           "lng": -86.83314800262453,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_14",
@@ -2806,7 +2878,7 @@
           "lat": 21.177013763936362,
           "lng": -86.82853996753694,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_15",
@@ -2814,7 +2886,7 @@
           "lat": 21.17563316341128,
           "lng": -86.82394266128541,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_16",
@@ -2822,7 +2894,7 @@
           "lat": 21.171296193156554,
           "lng": -86.82650685310364,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_17",
@@ -2830,7 +2902,7 @@
           "lat": 21.164212701903796,
           "lng": -86.82598650455475,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_18",
@@ -2838,7 +2910,7 @@
           "lat": 21.157539102648517,
           "lng": -86.82548761367799,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_19",
@@ -2846,7 +2918,7 @@
           "lat": 21.15069509920717,
           "lng": -86.82509064674377,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_20",
@@ -2854,7 +2926,7 @@
           "lat": 21.144806401582283,
           "lng": -86.8246239423752,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760328606309_s_21",
@@ -2862,7 +2934,7 @@
           "lat": 21.144826414545005,
           "lng": -86.82411432266237,
           "orden": 21,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -2879,7 +2951,7 @@
           "lat": 21.155307832188747,
           "lng": -86.90307319164276,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_2",
@@ -2887,7 +2959,7 @@
           "lat": 21.162691908155747,
           "lng": -86.90509021282196,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_3",
@@ -2895,7 +2967,7 @@
           "lat": 21.15557298492325,
           "lng": -86.90317511558533,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_4",
@@ -2903,7 +2975,7 @@
           "lat": 21.15800436332787,
           "lng": -86.8970650434494,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_5",
@@ -2911,7 +2983,7 @@
           "lat": 21.166508870747137,
           "lng": -86.88885748386384,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_6",
@@ -2919,7 +2991,7 @@
           "lat": 21.1709910497464,
           "lng": -86.87955021858215,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_7",
@@ -2927,7 +2999,7 @@
           "lat": 21.174337588154003,
           "lng": -86.87272667884828,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_8",
@@ -2935,7 +3007,7 @@
           "lat": 21.169285236466813,
           "lng": -86.87237262725831,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_9",
@@ -2943,7 +3015,7 @@
           "lat": 21.174637722428198,
           "lng": -86.86059236526489,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_10",
@@ -2951,7 +3023,7 @@
           "lat": 21.180800344876438,
           "lng": -86.84814691543579,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_11",
@@ -2959,7 +3031,7 @@
           "lat": 21.18402161348993,
           "lng": -86.84118390083314,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_12",
@@ -2967,7 +3039,7 @@
           "lat": 21.18751290921653,
           "lng": -86.83445692062378,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_13",
@@ -2975,7 +3047,7 @@
           "lat": 21.176988753171916,
           "lng": -86.82856678962708,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_14",
@@ -2983,7 +3055,7 @@
           "lat": 21.171086094482625,
           "lng": -86.82653903961183,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_15",
@@ -2991,7 +3063,7 @@
           "lat": 21.164332763902532,
           "lng": -86.82600259780885,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_16",
@@ -2999,7 +3071,7 @@
           "lat": 21.15745905765302,
           "lng": -86.82549834251405,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_17",
@@ -3007,7 +3079,7 @@
           "lat": 21.1507001022492,
           "lng": -86.82510137557983,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_18",
@@ -3015,7 +3087,7 @@
           "lat": 21.144571249067802,
           "lng": -86.82464003562929,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760414609200_s_19",
@@ -3023,7 +3095,7 @@
           "lat": 21.146902744735616,
           "lng": -86.82427525520326,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -3040,7 +3112,7 @@
           "lat": 21.170630879665527,
           "lng": -86.82564318180086,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_2",
@@ -3048,7 +3120,7 @@
           "lat": 21.16407763203878,
           "lng": -86.8261206150055,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_3",
@@ -3056,7 +3128,7 @@
           "lat": 21.15737901261427,
           "lng": -86.82551980018617,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_4",
@@ -3064,7 +3136,7 @@
           "lat": 21.150750132660143,
           "lng": -86.82510673999788,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_5",
@@ -3072,7 +3144,7 @@
           "lat": 21.144871443701252,
           "lng": -86.82464003562929,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_6",
@@ -3080,7 +3152,7 @@
           "lat": 21.140053246368414,
           "lng": -86.8253481388092,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_7",
@@ -3088,7 +3160,7 @@
           "lat": 21.122975653159287,
           "lng": -86.83365225791933,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_8",
@@ -3096,7 +3168,7 @@
           "lat": 21.114573736214354,
           "lng": -86.83780431747438,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_9",
@@ -3104,7 +3176,7 @@
           "lat": 21.107332393303302,
           "lng": -86.83970332145691,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_10",
@@ -3112,7 +3184,7 @@
           "lat": 21.10083640292821,
           "lng": -86.8407654762268,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_11",
@@ -3120,7 +3192,7 @@
           "lat": 21.09093672776495,
           "lng": -86.84223532676698,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_12",
@@ -3128,7 +3200,7 @@
           "lat": 21.084209777283217,
           "lng": -86.843318939209,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_13",
@@ -3136,7 +3208,7 @@
           "lat": 21.05644787610703,
           "lng": -86.84769630432129,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813166_s_14",
@@ -3144,7 +3216,7 @@
           "lat": 21.043010577150227,
           "lng": -86.84973478317262,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -3161,7 +3233,7 @@
           "lat": 21.169110151879423,
           "lng": -86.82649612426758,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_2",
@@ -3169,7 +3241,7 @@
           "lat": 21.16407763203878,
           "lng": -86.8261206150055,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_3",
@@ -3177,7 +3249,7 @@
           "lat": 21.15737901261427,
           "lng": -86.82551980018617,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_4",
@@ -3185,7 +3257,7 @@
           "lat": 21.150750132660143,
           "lng": -86.82510673999788,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_5",
@@ -3193,7 +3265,7 @@
           "lat": 21.144871443701252,
           "lng": -86.82464003562929,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_6",
@@ -3201,7 +3273,7 @@
           "lat": 21.140053246368414,
           "lng": -86.8253481388092,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_7",
@@ -3209,7 +3281,7 @@
           "lat": 21.122975653159287,
           "lng": -86.83365225791933,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_8",
@@ -3217,7 +3289,7 @@
           "lat": 21.114573736214354,
           "lng": -86.83780431747438,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_9",
@@ -3225,7 +3297,7 @@
           "lat": 21.107332393303302,
           "lng": -86.83970332145691,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_10",
@@ -3233,7 +3305,7 @@
           "lat": 21.10083640292821,
           "lng": -86.8407654762268,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_11",
@@ -3241,7 +3313,7 @@
           "lat": 21.09093672776495,
           "lng": -86.84223532676698,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_12",
@@ -3249,7 +3321,7 @@
           "lat": 21.084209777283217,
           "lng": -86.843318939209,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_13",
@@ -3257,7 +3329,7 @@
           "lat": 21.05644787610703,
           "lng": -86.84769630432129,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760462813165_s_14",
@@ -3265,7 +3337,7 @@
           "lat": 21.043010577150227,
           "lng": -86.84973478317262,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -3282,7 +3354,7 @@
           "lat": 21.143675664796877,
           "lng": -86.91974580287933,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761460735535_s_2",
@@ -3290,7 +3362,7 @@
           "lat": 21.144441164537714,
           "lng": -86.90440356731415,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761460735535_s_3",
@@ -3298,7 +3370,7 @@
           "lat": 21.17987496746965,
           "lng": -86.8300849199295,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761460735535_s_4",
@@ -3306,7 +3378,7 @@
           "lat": 21.17457769562208,
           "lng": -86.83314800262453,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761460735535_s_5",
@@ -3314,7 +3386,7 @@
           "lat": 21.173952414943177,
           "lng": -86.82702720165253,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761460735535_s_6",
@@ -3322,7 +3394,7 @@
           "lat": 21.169195192990603,
           "lng": -86.82634592056276,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761460735535_s_7",
@@ -3330,7 +3402,7 @@
           "lat": 21.164254975702406,
           "lng": -86.82596125320606,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761460735535_s_8",
@@ -3338,7 +3410,7 @@
           "lat": 21.157464060466523,
           "lng": -86.82542324066162,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761460735535_s_9",
@@ -3346,7 +3418,7 @@
           "lat": 21.150840187357275,
           "lng": -86.82491898536684,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761460735535_s_10",
@@ -3354,7 +3426,7 @@
           "lat": 21.144386128740596,
           "lng": -86.82462930679323,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761460735535_s_11",
@@ -3362,7 +3434,7 @@
           "lat": 21.14588209449566,
           "lng": -86.82422161102296,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -3379,7 +3451,7 @@
           "lat": 21.176963742403224,
           "lng": -86.88044607639314,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_2",
@@ -3387,7 +3459,7 @@
           "lat": 21.179424781772422,
           "lng": -86.87543034553529,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_3",
@@ -3395,7 +3467,7 @@
           "lat": 21.174602706794257,
           "lng": -86.87276959419252,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_4",
@@ -3403,7 +3475,7 @@
           "lat": 21.169135163976023,
           "lng": -86.87234044075014,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_5",
@@ -3411,7 +3483,7 @@
           "lat": 21.1746777402854,
           "lng": -86.86050653457643,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_6",
@@ -3419,7 +3491,7 @@
           "lat": 21.165293256385855,
           "lng": -86.85519576072694,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_7",
@@ -3427,7 +3499,7 @@
           "lat": 21.161926502759073,
           "lng": -86.8517678976059,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_8",
@@ -3435,7 +3507,7 @@
           "lat": 21.146152267302398,
           "lng": -86.83563709259035,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_9",
@@ -3443,7 +3515,7 @@
           "lat": 21.141339114982763,
           "lng": -86.83416724205017,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_10",
@@ -3451,7 +3523,7 @@
           "lat": 21.136565834464257,
           "lng": -86.83279395103455,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_11",
@@ -3459,7 +3531,7 @@
           "lat": 21.131742363392508,
           "lng": -86.83264374732973,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_12",
@@ -3467,7 +3539,7 @@
           "lat": 21.131101890699096,
           "lng": -86.82766556739809,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_13",
@@ -3475,7 +3547,7 @@
           "lat": 21.1434705302074,
           "lng": -86.82138919830324,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760989478537_s_14",
@@ -3483,7 +3555,7 @@
           "lat": 21.14701781760582,
           "lng": -86.82430207729341,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -3500,7 +3572,7 @@
           "lat": 21.19789627558624,
           "lng": -86.85582876205446,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_2",
@@ -3508,7 +3580,7 @@
           "lat": 21.190659006218965,
           "lng": -86.86999082565309,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_3",
@@ -3516,7 +3588,7 @@
           "lat": 21.186602579309376,
           "lng": -86.86769485473634,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_4",
@@ -3524,7 +3596,7 @@
           "lat": 21.180530235312958,
           "lng": -86.86400413513185,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_5",
@@ -3532,7 +3604,7 @@
           "lat": 21.1658935610222,
           "lng": -86.85553908348085,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_6",
@@ -3540,7 +3612,7 @@
           "lat": 21.15321160800611,
           "lng": -86.84280931949617,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_7",
@@ -3548,7 +3620,7 @@
           "lat": 21.15462743809368,
           "lng": -86.83510065078737,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_8",
@@ -3556,7 +3628,7 @@
           "lat": 21.155973214566554,
           "lng": -86.8303370475769,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_9",
@@ -3564,7 +3636,7 @@
           "lat": 21.156488508639114,
           "lng": -86.82543933391572,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_10",
@@ -3572,7 +3644,7 @@
           "lat": 21.155943197380843,
           "lng": -86.81849241256715,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_11",
@@ -3580,7 +3652,7 @@
           "lat": 21.15879980561845,
           "lng": -86.80723786354065,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_12",
@@ -3588,7 +3660,7 @@
           "lat": 21.157384015430466,
           "lng": -86.80137991905212,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_13",
@@ -3596,7 +3668,7 @@
           "lat": 21.153046510330118,
           "lng": -86.79800033569337,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_14",
@@ -3604,7 +3676,7 @@
           "lat": 21.14475636916366,
           "lng": -86.79006099700929,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_15",
@@ -3612,7 +3684,7 @@
           "lat": 21.142675005576226,
           "lng": -86.78493797779085,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_16",
@@ -3620,7 +3692,7 @@
           "lat": 21.14342049733759,
           "lng": -86.77943944931032,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_17",
@@ -3628,7 +3700,7 @@
           "lat": 21.138937483625977,
           "lng": -86.77042722702028,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_18",
@@ -3636,7 +3708,7 @@
           "lat": 21.13644574995287,
           "lng": -86.76589965820314,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_19",
@@ -3644,7 +3716,7 @@
           "lat": 21.13479457805478,
           "lng": -86.76108241081239,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_20",
@@ -3652,7 +3724,7 @@
           "lat": 21.13466448494167,
           "lng": -86.75572872161867,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_21",
@@ -3660,7 +3732,7 @@
           "lat": 21.13657584150247,
           "lng": -86.75121188163759,
           "orden": 21,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_22",
@@ -3668,7 +3740,7 @@
           "lat": 21.13254295036798,
           "lng": -86.74854040145875,
           "orden": 22,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_23",
@@ -3676,7 +3748,7 @@
           "lat": 21.127329050083844,
           "lng": -86.75275683403017,
           "orden": 23,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_24",
@@ -3684,7 +3756,7 @@
           "lat": 21.12223005856929,
           "lng": -86.75526201725008,
           "orden": 24,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_25",
@@ -3692,7 +3764,7 @@
           "lat": 21.117376096126097,
           "lng": -86.75736486911775,
           "orden": 25,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_26",
@@ -3700,7 +3772,7 @@
           "lat": 21.113372708620254,
           "lng": -86.7606908082962,
           "orden": 26,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_27",
@@ -3708,7 +3780,7 @@
           "lat": 21.109294146526697,
           "lng": -86.76332473754883,
           "orden": 27,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_28",
@@ -3716,7 +3788,7 @@
           "lat": 21.10021581578446,
           "lng": -86.76725149154665,
           "orden": 28,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_29",
@@ -3724,7 +3796,7 @@
           "lat": 21.090346129725607,
           "lng": -86.7719078063965,
           "orden": 29,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_30",
@@ -3732,7 +3804,7 @@
           "lat": 21.08141680212701,
           "lng": -86.77574872970582,
           "orden": 30,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_31",
@@ -3740,7 +3812,7 @@
           "lat": 21.07545027078886,
           "lng": -86.77752971649171,
           "orden": 31,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_32",
@@ -3748,7 +3820,7 @@
           "lat": 21.07002412332077,
           "lng": -86.78092002868654,
           "orden": 32,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_33",
@@ -3756,7 +3828,7 @@
           "lat": 21.06473794426043,
           "lng": -86.7797613143921,
           "orden": 33,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_34",
@@ -3764,7 +3836,7 @@
           "lat": 21.060162444434255,
           "lng": -86.7805337905884,
           "orden": 34,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_35",
@@ -3772,7 +3844,7 @@
           "lat": 21.05580707866271,
           "lng": -86.78266882896425,
           "orden": 35,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_36",
@@ -3780,7 +3852,7 @@
           "lat": 21.049278797481843,
           "lng": -86.78322672843933,
           "orden": 36,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_37",
@@ -3788,7 +3860,7 @@
           "lat": 21.04225456789002,
           "lng": -86.78306043148041,
           "orden": 37,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1464274794329_s_38",
@@ -3796,7 +3868,7 @@
           "lat": 21.040987868276197,
           "lng": -86.78317844867708,
           "orden": 38,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -3813,7 +3885,7 @@
           "lat": 21.2064384980639,
           "lng": -86.87938928604127,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_2",
@@ -3821,7 +3893,7 @@
           "lat": 21.196925991908415,
           "lng": -86.87465250492097,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_3",
@@ -3829,7 +3901,7 @@
           "lat": 21.190659006218965,
           "lng": -86.86999082565309,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_4",
@@ -3837,7 +3909,7 @@
           "lat": 21.186602579309376,
           "lng": -86.86769485473634,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_5",
@@ -3845,7 +3917,7 @@
           "lat": 21.180530235312958,
           "lng": -86.86400413513185,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_6",
@@ -3853,7 +3925,7 @@
           "lat": 21.1658935610222,
           "lng": -86.85553908348085,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_7",
@@ -3861,7 +3933,7 @@
           "lat": 21.15321160800611,
           "lng": -86.84280931949617,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_8",
@@ -3869,7 +3941,7 @@
           "lat": 21.15462743809368,
           "lng": -86.83510065078737,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_9",
@@ -3877,7 +3949,7 @@
           "lat": 21.155973214566554,
           "lng": -86.8303370475769,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_10",
@@ -3885,7 +3957,7 @@
           "lat": 21.156488508639114,
           "lng": -86.82543933391572,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_11",
@@ -3893,7 +3965,7 @@
           "lat": 21.155943197380843,
           "lng": -86.81849241256715,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_12",
@@ -3901,7 +3973,7 @@
           "lat": 21.15879980561845,
           "lng": -86.80723786354065,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_13",
@@ -3909,7 +3981,7 @@
           "lat": 21.157384015430466,
           "lng": -86.80137991905212,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_14",
@@ -3917,7 +3989,7 @@
           "lat": 21.153046510330118,
           "lng": -86.79800033569337,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_15",
@@ -3925,7 +3997,7 @@
           "lat": 21.14475636916366,
           "lng": -86.79006099700929,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_16",
@@ -3933,7 +4005,7 @@
           "lat": 21.142675005576226,
           "lng": -86.78493797779085,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_17",
@@ -3941,7 +4013,7 @@
           "lat": 21.14342049733759,
           "lng": -86.77943944931032,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_18",
@@ -3949,7 +4021,7 @@
           "lat": 21.138937483625977,
           "lng": -86.77042722702028,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_19",
@@ -3957,7 +4029,7 @@
           "lat": 21.13644574995287,
           "lng": -86.76589965820314,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_20",
@@ -3965,7 +4037,7 @@
           "lat": 21.13479457805478,
           "lng": -86.76108241081239,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_21",
@@ -3973,7 +4045,7 @@
           "lat": 21.13466448494167,
           "lng": -86.75572872161867,
           "orden": 21,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_22",
@@ -3981,7 +4053,7 @@
           "lat": 21.13657584150247,
           "lng": -86.75121188163759,
           "orden": 22,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_23",
@@ -3989,7 +4061,7 @@
           "lat": 21.13254295036798,
           "lng": -86.74854040145875,
           "orden": 23,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_24",
@@ -3997,7 +4069,7 @@
           "lat": 21.127329050083844,
           "lng": -86.75275683403017,
           "orden": 24,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_25",
@@ -4005,7 +4077,7 @@
           "lat": 21.12223005856929,
           "lng": -86.75526201725008,
           "orden": 25,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_26",
@@ -4013,7 +4085,7 @@
           "lat": 21.117376096126097,
           "lng": -86.75736486911775,
           "orden": 26,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_27",
@@ -4021,7 +4093,7 @@
           "lat": 21.113372708620254,
           "lng": -86.7606908082962,
           "orden": 27,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_28",
@@ -4029,7 +4101,7 @@
           "lat": 21.109294146526697,
           "lng": -86.76332473754883,
           "orden": 28,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_29",
@@ -4037,7 +4109,7 @@
           "lat": 21.10021581578446,
           "lng": -86.76725149154665,
           "orden": 29,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_30",
@@ -4045,7 +4117,7 @@
           "lat": 21.090346129725607,
           "lng": -86.7719078063965,
           "orden": 30,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_31",
@@ -4053,7 +4125,7 @@
           "lat": 21.08141680212701,
           "lng": -86.77574872970582,
           "orden": 31,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_32",
@@ -4061,7 +4133,7 @@
           "lat": 21.07545027078886,
           "lng": -86.77752971649171,
           "orden": 32,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_33",
@@ -4069,7 +4141,7 @@
           "lat": 21.07002412332077,
           "lng": -86.78092002868654,
           "orden": 33,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_34",
@@ -4077,7 +4149,7 @@
           "lat": 21.06473794426043,
           "lng": -86.7797613143921,
           "orden": 34,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_35",
@@ -4085,7 +4157,7 @@
           "lat": 21.060162444434255,
           "lng": -86.7805337905884,
           "orden": 35,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_36",
@@ -4093,7 +4165,7 @@
           "lat": 21.05580707866271,
           "lng": -86.78266882896425,
           "orden": 36,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_37",
@@ -4101,7 +4173,7 @@
           "lat": 21.049278797481843,
           "lng": -86.78322672843933,
           "orden": 37,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_38",
@@ -4109,7 +4181,7 @@
           "lat": 21.04225456789002,
           "lng": -86.78306043148041,
           "orden": 38,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1653475759991_s_39",
@@ -4117,7 +4189,7 @@
           "lat": 21.040987868276197,
           "lng": -86.78317844867708,
           "orden": 39,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -4134,7 +4206,7 @@
           "lat": 21.181005427733993,
           "lng": -86.9133085012436,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_2",
@@ -4142,7 +4214,7 @@
           "lat": 21.17103106859015,
           "lng": -86.91448867321016,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_3",
@@ -4150,7 +4222,7 @@
           "lat": 21.17530802010832,
           "lng": -86.90911352634431,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_4",
@@ -4158,7 +4230,7 @@
           "lat": 21.173357145280892,
           "lng": -86.9037276506424,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_5",
@@ -4166,7 +4238,7 @@
           "lat": 21.185712251230203,
           "lng": -86.87965750694276,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_6",
@@ -4174,7 +4246,7 @@
           "lat": 21.187833023895468,
           "lng": -86.87511920928956,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_7",
@@ -4182,7 +4254,7 @@
           "lat": 21.190533963895874,
           "lng": -86.86991572380067,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_8",
@@ -4190,7 +4262,7 @@
           "lat": 21.186152414096863,
           "lng": -86.86734080314636,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_9",
@@ -4198,7 +4270,7 @@
           "lat": 21.1658935610222,
           "lng": -86.85553908348085,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_10",
@@ -4206,7 +4278,7 @@
           "lat": 21.15321160800611,
           "lng": -86.84280931949617,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_11",
@@ -4214,7 +4286,7 @@
           "lat": 21.15462743809368,
           "lng": -86.83510065078737,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_12",
@@ -4222,7 +4294,7 @@
           "lat": 21.155973214566554,
           "lng": -86.8303370475769,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_13",
@@ -4230,7 +4302,7 @@
           "lat": 21.156488508639114,
           "lng": -86.82543933391572,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_14",
@@ -4238,7 +4310,7 @@
           "lat": 21.155943197380843,
           "lng": -86.81849241256715,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_15",
@@ -4246,7 +4318,7 @@
           "lat": 21.15879980561845,
           "lng": -86.80723786354065,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_16",
@@ -4254,7 +4326,7 @@
           "lat": 21.157384015430466,
           "lng": -86.80137991905212,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_17",
@@ -4262,7 +4334,7 @@
           "lat": 21.153046510330118,
           "lng": -86.79800033569337,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_18",
@@ -4270,7 +4342,7 @@
           "lat": 21.14475636916366,
           "lng": -86.79006099700929,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_19",
@@ -4278,7 +4350,7 @@
           "lat": 21.142675005576226,
           "lng": -86.78493797779085,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_20",
@@ -4286,7 +4358,7 @@
           "lat": 21.14342049733759,
           "lng": -86.77943944931032,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_21",
@@ -4294,7 +4366,7 @@
           "lat": 21.138937483625977,
           "lng": -86.77042722702028,
           "orden": 21,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_22",
@@ -4302,7 +4374,7 @@
           "lat": 21.13644574995287,
           "lng": -86.76589965820314,
           "orden": 22,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_23",
@@ -4310,7 +4382,7 @@
           "lat": 21.13479457805478,
           "lng": -86.76108241081239,
           "orden": 23,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_24",
@@ -4318,7 +4390,7 @@
           "lat": 21.13466448494167,
           "lng": -86.75572872161867,
           "orden": 24,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_25",
@@ -4326,7 +4398,7 @@
           "lat": 21.13657584150247,
           "lng": -86.75121188163759,
           "orden": 25,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_26",
@@ -4334,7 +4406,7 @@
           "lat": 21.13254295036798,
           "lng": -86.74854040145875,
           "orden": 26,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_27",
@@ -4342,7 +4414,7 @@
           "lat": 21.127329050083844,
           "lng": -86.75275683403017,
           "orden": 27,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_28",
@@ -4350,7 +4422,7 @@
           "lat": 21.12223005856929,
           "lng": -86.75526201725008,
           "orden": 28,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_29",
@@ -4358,7 +4430,7 @@
           "lat": 21.117376096126097,
           "lng": -86.75736486911775,
           "orden": 29,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_30",
@@ -4366,7 +4438,7 @@
           "lat": 21.113372708620254,
           "lng": -86.7606908082962,
           "orden": 30,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_31",
@@ -4374,7 +4446,7 @@
           "lat": 21.109294146526697,
           "lng": -86.76332473754883,
           "orden": 31,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_32",
@@ -4382,7 +4454,7 @@
           "lat": 21.10021581578446,
           "lng": -86.76725149154665,
           "orden": 32,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_33",
@@ -4390,7 +4462,7 @@
           "lat": 21.090346129725607,
           "lng": -86.7719078063965,
           "orden": 33,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_34",
@@ -4398,7 +4470,7 @@
           "lat": 21.08141680212701,
           "lng": -86.77574872970582,
           "orden": 34,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_35",
@@ -4406,7 +4478,7 @@
           "lat": 21.07545027078886,
           "lng": -86.77752971649171,
           "orden": 35,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_36",
@@ -4414,7 +4486,7 @@
           "lat": 21.07002412332077,
           "lng": -86.78092002868654,
           "orden": 36,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_37",
@@ -4422,7 +4494,7 @@
           "lat": 21.06473794426043,
           "lng": -86.7797613143921,
           "orden": 37,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_38",
@@ -4430,7 +4502,7 @@
           "lat": 21.060162444434255,
           "lng": -86.7805337905884,
           "orden": 38,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_39",
@@ -4438,7 +4510,7 @@
           "lat": 21.05580707866271,
           "lng": -86.78266882896425,
           "orden": 39,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_40",
@@ -4446,7 +4518,7 @@
           "lat": 21.049278797481843,
           "lng": -86.78322672843933,
           "orden": 40,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_41",
@@ -4454,7 +4526,7 @@
           "lat": 21.04225456789002,
           "lng": -86.78306043148041,
           "orden": 41,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1760333218631_s_42",
@@ -4462,7 +4534,7 @@
           "lat": 21.040987868276197,
           "lng": -86.78317844867708,
           "orden": 42,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -4479,7 +4551,7 @@
           "lat": 21.195430542214588,
           "lng": -86.8876075744629,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_2",
@@ -4487,7 +4559,7 @@
           "lat": 21.191764375753536,
           "lng": -86.88327312469484,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_3",
@@ -4495,7 +4567,7 @@
           "lat": 21.18585230319359,
           "lng": -86.87945365905762,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_4",
@@ -4503,7 +4575,7 @@
           "lat": 21.180870373201245,
           "lng": -86.8760633468628,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_5",
@@ -4511,7 +4583,7 @@
           "lat": 21.174687744748013,
           "lng": -86.8728232383728,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_6",
@@ -4519,7 +4591,7 @@
           "lat": 21.15212596233785,
           "lng": -86.87098860740663,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_7",
@@ -4527,7 +4599,7 @@
           "lat": 21.161641350716934,
           "lng": -86.85160160064697,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_8",
@@ -4535,7 +4607,7 @@
           "lat": 21.15321160800611,
           "lng": -86.84280931949617,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_9",
@@ -4543,7 +4615,7 @@
           "lat": 21.15462743809368,
           "lng": -86.83510065078737,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_10",
@@ -4551,7 +4623,7 @@
           "lat": 21.155973214566554,
           "lng": -86.8303370475769,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_11",
@@ -4559,7 +4631,7 @@
           "lat": 21.156488508639114,
           "lng": -86.82543933391572,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_12",
@@ -4567,7 +4639,7 @@
           "lat": 21.155943197380843,
           "lng": -86.81849241256715,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_13",
@@ -4575,7 +4647,7 @@
           "lat": 21.15879980561845,
           "lng": -86.80723786354065,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_14",
@@ -4583,7 +4655,7 @@
           "lat": 21.157384015430466,
           "lng": -86.80137991905212,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_15",
@@ -4591,7 +4663,7 @@
           "lat": 21.153046510330118,
           "lng": -86.79800033569337,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_16",
@@ -4599,7 +4671,7 @@
           "lat": 21.14475636916366,
           "lng": -86.79006099700929,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_17",
@@ -4607,7 +4679,7 @@
           "lat": 21.142675005576226,
           "lng": -86.78493797779085,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_18",
@@ -4615,7 +4687,7 @@
           "lat": 21.14342049733759,
           "lng": -86.77943944931032,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_19",
@@ -4623,7 +4695,7 @@
           "lat": 21.138937483625977,
           "lng": -86.77042722702028,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_20",
@@ -4631,7 +4703,7 @@
           "lat": 21.13644574995287,
           "lng": -86.76589965820314,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_21",
@@ -4639,7 +4711,7 @@
           "lat": 21.13479457805478,
           "lng": -86.76108241081239,
           "orden": 21,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_22",
@@ -4647,7 +4719,7 @@
           "lat": 21.13466448494167,
           "lng": -86.75572872161867,
           "orden": 22,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_23",
@@ -4655,7 +4727,7 @@
           "lat": 21.13657584150247,
           "lng": -86.75121188163759,
           "orden": 23,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_24",
@@ -4663,7 +4735,7 @@
           "lat": 21.13254295036798,
           "lng": -86.74854040145875,
           "orden": 24,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_25",
@@ -4671,7 +4743,7 @@
           "lat": 21.127329050083844,
           "lng": -86.75275683403017,
           "orden": 25,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_26",
@@ -4679,7 +4751,7 @@
           "lat": 21.12223005856929,
           "lng": -86.75526201725008,
           "orden": 26,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_27",
@@ -4687,7 +4759,7 @@
           "lat": 21.117376096126097,
           "lng": -86.75736486911775,
           "orden": 27,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_28",
@@ -4695,7 +4767,7 @@
           "lat": 21.113372708620254,
           "lng": -86.7606908082962,
           "orden": 28,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_29",
@@ -4703,7 +4775,7 @@
           "lat": 21.109294146526697,
           "lng": -86.76332473754883,
           "orden": 29,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_30",
@@ -4711,7 +4783,7 @@
           "lat": 21.10021581578446,
           "lng": -86.76725149154665,
           "orden": 30,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_31",
@@ -4719,7 +4791,7 @@
           "lat": 21.090346129725607,
           "lng": -86.7719078063965,
           "orden": 31,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_32",
@@ -4727,7 +4799,7 @@
           "lat": 21.08141680212701,
           "lng": -86.77574872970582,
           "orden": 32,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_33",
@@ -4735,7 +4807,7 @@
           "lat": 21.07545027078886,
           "lng": -86.77752971649171,
           "orden": 33,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_34",
@@ -4743,7 +4815,7 @@
           "lat": 21.07002412332077,
           "lng": -86.78092002868654,
           "orden": 34,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_35",
@@ -4751,7 +4823,7 @@
           "lat": 21.06473794426043,
           "lng": -86.7797613143921,
           "orden": 35,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_36",
@@ -4759,7 +4831,7 @@
           "lat": 21.060162444434255,
           "lng": -86.7805337905884,
           "orden": 36,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_37",
@@ -4767,7 +4839,7 @@
           "lat": 21.05580707866271,
           "lng": -86.78266882896425,
           "orden": 37,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_38",
@@ -4775,7 +4847,7 @@
           "lat": 21.049278797481843,
           "lng": -86.78322672843933,
           "orden": 38,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_39",
@@ -4783,7 +4855,7 @@
           "lat": 21.04225456789002,
           "lng": -86.78306043148041,
           "orden": 39,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761276380950_s_40",
@@ -4791,7 +4863,7 @@
           "lat": 21.040987868276197,
           "lng": -86.78317844867708,
           "orden": 40,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -4808,7 +4880,7 @@
           "lat": 21.161921500096405,
           "lng": -86.91502511501314,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_2",
@@ -4816,7 +4888,7 @@
           "lat": 21.157098854637784,
           "lng": -86.91293835639954,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_3",
@@ -4824,7 +4896,7 @@
           "lat": 21.152436147626677,
           "lng": -86.90977334976198,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_4",
@@ -4832,7 +4904,7 @@
           "lat": 21.149174166596268,
           "lng": -86.90624356269838,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_5",
@@ -4840,7 +4912,7 @@
           "lat": 21.144431158030667,
           "lng": -86.90359354019165,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_6",
@@ -4848,7 +4920,7 @@
           "lat": 21.137056178542558,
           "lng": -86.90131902694704,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_7",
@@ -4856,7 +4928,7 @@
           "lat": 21.140418494230115,
           "lng": -86.8945062160492,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_8",
@@ -4864,7 +4936,7 @@
           "lat": 21.139988202134223,
           "lng": -86.86976552009583,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_9",
@@ -4872,7 +4944,7 @@
           "lat": 21.139848106763594,
           "lng": -86.86051726341249,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_10",
@@ -4880,7 +4952,7 @@
           "lat": 21.140788744568276,
           "lng": -86.85567855834962,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_11",
@@ -4888,7 +4960,7 @@
           "lat": 21.140938845793155,
           "lng": -86.84821128845216,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_12",
@@ -4896,7 +4968,7 @@
           "lat": 21.15281637386854,
           "lng": -86.83846950531007,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_13",
@@ -4904,7 +4976,7 @@
           "lat": 21.155858148654918,
           "lng": -86.83131337165833,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_14",
@@ -4912,7 +4984,7 @@
           "lat": 21.156678616678995,
           "lng": -86.82591676712038,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_15",
@@ -4920,7 +4992,7 @@
           "lat": 21.155447912937834,
           "lng": -86.82077765464784,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_16",
@@ -4928,7 +5000,7 @@
           "lat": 21.157158888534518,
           "lng": -86.81495189666748,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_17",
@@ -4936,7 +5008,7 @@
           "lat": 21.15879980561845,
           "lng": -86.80723786354065,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_18",
@@ -4944,7 +5016,7 @@
           "lat": 21.157384015430466,
           "lng": -86.80137991905212,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_19",
@@ -4952,7 +5024,7 @@
           "lat": 21.153046510330118,
           "lng": -86.79800033569337,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_20",
@@ -4960,7 +5032,7 @@
           "lat": 21.14475636916366,
           "lng": -86.79006099700929,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_21",
@@ -4968,7 +5040,7 @@
           "lat": 21.142675005576226,
           "lng": -86.78493797779085,
           "orden": 21,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_22",
@@ -4976,7 +5048,7 @@
           "lat": 21.14342049733759,
           "lng": -86.77943944931032,
           "orden": 22,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_23",
@@ -4984,7 +5056,7 @@
           "lat": 21.138937483625977,
           "lng": -86.77042722702028,
           "orden": 23,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_24",
@@ -4992,7 +5064,7 @@
           "lat": 21.13644574995287,
           "lng": -86.76589965820314,
           "orden": 24,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_25",
@@ -5000,7 +5072,7 @@
           "lat": 21.13479457805478,
           "lng": -86.76108241081239,
           "orden": 25,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_26",
@@ -5008,7 +5080,7 @@
           "lat": 21.13466448494167,
           "lng": -86.75572872161867,
           "orden": 26,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_27",
@@ -5016,7 +5088,7 @@
           "lat": 21.13657584150247,
           "lng": -86.75121188163759,
           "orden": 27,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_28",
@@ -5024,7 +5096,7 @@
           "lat": 21.13254295036798,
           "lng": -86.74854040145875,
           "orden": 28,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_29",
@@ -5032,7 +5104,7 @@
           "lat": 21.127329050083844,
           "lng": -86.75275683403017,
           "orden": 29,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_30",
@@ -5040,7 +5112,7 @@
           "lat": 21.12223005856929,
           "lng": -86.75526201725008,
           "orden": 30,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_31",
@@ -5048,7 +5120,7 @@
           "lat": 21.117376096126097,
           "lng": -86.75736486911775,
           "orden": 31,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_32",
@@ -5056,7 +5128,7 @@
           "lat": 21.113372708620254,
           "lng": -86.7606908082962,
           "orden": 32,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_33",
@@ -5064,7 +5136,7 @@
           "lat": 21.109294146526697,
           "lng": -86.76332473754883,
           "orden": 33,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_34",
@@ -5072,7 +5144,7 @@
           "lat": 21.10021581578446,
           "lng": -86.76725149154665,
           "orden": 34,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_35",
@@ -5080,7 +5152,7 @@
           "lat": 21.090346129725607,
           "lng": -86.7719078063965,
           "orden": 35,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_36",
@@ -5088,7 +5160,7 @@
           "lat": 21.08141680212701,
           "lng": -86.77574872970582,
           "orden": 36,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_37",
@@ -5096,7 +5168,7 @@
           "lat": 21.07545027078886,
           "lng": -86.77752971649171,
           "orden": 37,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_38",
@@ -5104,7 +5176,7 @@
           "lat": 21.07002412332077,
           "lng": -86.78092002868654,
           "orden": 38,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_39",
@@ -5112,7 +5184,7 @@
           "lat": 21.06473794426043,
           "lng": -86.7797613143921,
           "orden": 39,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_40",
@@ -5120,7 +5192,7 @@
           "lat": 21.060162444434255,
           "lng": -86.7805337905884,
           "orden": 40,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_41",
@@ -5128,7 +5200,7 @@
           "lat": 21.05580707866271,
           "lng": -86.78266882896425,
           "orden": 41,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_42",
@@ -5136,7 +5208,7 @@
           "lat": 21.049278797481843,
           "lng": -86.78322672843933,
           "orden": 42,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_43",
@@ -5144,7 +5216,7 @@
           "lat": 21.04225456789002,
           "lng": -86.78306043148041,
           "orden": 43,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277331648_s_44",
@@ -5152,7 +5224,7 @@
           "lat": 21.040987868276197,
           "lng": -86.78317844867708,
           "orden": 44,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     },
@@ -5169,7 +5241,7 @@
           "lat": 21.1759182884887,
           "lng": -86.82342767715456,
           "orden": 1,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_2",
@@ -5177,7 +5249,7 @@
           "lat": 21.17137122832493,
           "lng": -86.82653903961183,
           "orden": 2,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_3",
@@ -5185,7 +5257,7 @@
           "lat": 21.164052619087283,
           "lng": -86.82610452175142,
           "orden": 3,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_4",
@@ -5193,7 +5265,7 @@
           "lat": 21.157489074531416,
           "lng": -86.82549834251405,
           "orden": 4,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_5",
@@ -5201,7 +5273,7 @@
           "lat": 21.155437907174438,
           "lng": -86.8209332227707,
           "orden": 5,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_6",
@@ -5209,7 +5281,7 @@
           "lat": 21.157158888534518,
           "lng": -86.81495189666748,
           "orden": 6,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_7",
@@ -5217,7 +5289,7 @@
           "lat": 21.15879980561845,
           "lng": -86.80723786354065,
           "orden": 7,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_8",
@@ -5225,7 +5297,7 @@
           "lat": 21.157384015430466,
           "lng": -86.80137991905212,
           "orden": 8,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_9",
@@ -5233,7 +5305,7 @@
           "lat": 21.153046510330118,
           "lng": -86.79800033569337,
           "orden": 9,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_10",
@@ -5241,7 +5313,7 @@
           "lat": 21.14475636916366,
           "lng": -86.79006099700929,
           "orden": 10,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_11",
@@ -5249,7 +5321,7 @@
           "lat": 21.142675005576226,
           "lng": -86.78493797779085,
           "orden": 11,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_12",
@@ -5257,7 +5329,7 @@
           "lat": 21.14342049733759,
           "lng": -86.77943944931032,
           "orden": 12,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_13",
@@ -5265,7 +5337,7 @@
           "lat": 21.138937483625977,
           "lng": -86.77042722702028,
           "orden": 13,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_14",
@@ -5273,7 +5345,7 @@
           "lat": 21.13644574995287,
           "lng": -86.76589965820314,
           "orden": 14,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_15",
@@ -5281,7 +5353,7 @@
           "lat": 21.13479457805478,
           "lng": -86.76108241081239,
           "orden": 15,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_16",
@@ -5289,7 +5361,7 @@
           "lat": 21.13466448494167,
           "lng": -86.75572872161867,
           "orden": 16,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_17",
@@ -5297,7 +5369,7 @@
           "lat": 21.13657584150247,
           "lng": -86.75121188163759,
           "orden": 17,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_18",
@@ -5305,7 +5377,7 @@
           "lat": 21.13254295036798,
           "lng": -86.74854040145875,
           "orden": 18,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_19",
@@ -5313,7 +5385,7 @@
           "lat": 21.127329050083844,
           "lng": -86.75275683403017,
           "orden": 19,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_20",
@@ -5321,7 +5393,7 @@
           "lat": 21.12223005856929,
           "lng": -86.75526201725008,
           "orden": 20,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_21",
@@ -5329,7 +5401,7 @@
           "lat": 21.117376096126097,
           "lng": -86.75736486911775,
           "orden": 21,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_22",
@@ -5337,7 +5409,7 @@
           "lat": 21.113372708620254,
           "lng": -86.7606908082962,
           "orden": 22,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_23",
@@ -5345,7 +5417,7 @@
           "lat": 21.109294146526697,
           "lng": -86.76332473754883,
           "orden": 23,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_24",
@@ -5353,7 +5425,7 @@
           "lat": 21.10021581578446,
           "lng": -86.76725149154665,
           "orden": 24,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_25",
@@ -5361,7 +5433,7 @@
           "lat": 21.090346129725607,
           "lng": -86.7719078063965,
           "orden": 25,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_26",
@@ -5369,7 +5441,7 @@
           "lat": 21.08141680212701,
           "lng": -86.77574872970582,
           "orden": 26,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_27",
@@ -5377,7 +5449,7 @@
           "lat": 21.07545027078886,
           "lng": -86.77752971649171,
           "orden": 27,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_28",
@@ -5385,7 +5457,7 @@
           "lat": 21.07002412332077,
           "lng": -86.78092002868654,
           "orden": 28,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_29",
@@ -5393,7 +5465,7 @@
           "lat": 21.06473794426043,
           "lng": -86.7797613143921,
           "orden": 29,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_30",
@@ -5401,7 +5473,7 @@
           "lat": 21.060162444434255,
           "lng": -86.7805337905884,
           "orden": 30,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_31",
@@ -5409,7 +5481,7 @@
           "lat": 21.05580707866271,
           "lng": -86.78266882896425,
           "orden": 31,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_32",
@@ -5417,7 +5489,7 @@
           "lat": 21.049278797481843,
           "lng": -86.78322672843933,
           "orden": 32,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_33",
@@ -5425,7 +5497,7 @@
           "lat": 21.04225456789002,
           "lng": -86.78306043148041,
           "orden": 33,
-          "landmarks": ""
+          "referencias": ""
         },
         {
           "id": "ruta_1761277780965_s_34",
@@ -5433,9 +5505,46 @@
           "lat": 21.040987868276197,
           "lng": -86.78317844867708,
           "orden": 34,
-          "landmarks": ""
+          "referencias": ""
         }
       ]
     }
-  ]
+  ],
+  "airport_restrictions": {
+    "protocolo": "Búnker - Acceso Restringido",
+    "empresa_autorizada": "ADO (monopolio exclusivo)",
+    "transporte_prohibido": [
+      "Combis municipales",
+      "Vans foráneas (Playa Express)",
+      "Rutas urbanas (R-1, R-2, etc.)",
+      "Cualquier transporte público NO-ADO"
+    ],
+    "punto_mas_cercano": {
+      "ubicacion": "Entrada principal Carr. Fed. 307",
+      "distancia_terminal_2": "1.5 km (20-25 min caminando)",
+      "distancia_terminal_3": "2.0 km (25-30 min caminando)",
+      "distancia_terminal_4": "2.5 km (30-35 min caminando)"
+    },
+    "advertencia_critica": "NO existe transporte público que entre al aeropuerto excepto ADO. Vans y combis quedan en carretera a 1.5-2.5 km de distancia."
+  },
+  "general_warnings": {
+    "pago": {
+      "metodo": "Solo efectivo (2026)",
+      "recomendacion": "Billetes pequeños (10, 20, 50 MXN)",
+      "problema": "Operadores NO siempre tienen cambio"
+    },
+    "abordaje": {
+      "zona_hotelera": "Solo paradas con marquesina - NO paran fuera",
+      "zona_urbana": "Levantar mano al conductor en cualquier esquina",
+      "verificacion": "Ver letrero de destino ANTES de subir"
+    },
+    "seguridad": {
+      "equipaje": "Espacio limitado en combis - para aeropuerto preferir ADO",
+      "horario": "Servicio seguro en día - después de 10 PM considerar taxi/Uber"
+    },
+    "lenguaje": {
+      "choferes": "Hablan español",
+      "turistas": "Preguntar '¿Va a [destino]?' antes de subir"
+    }
+  }
 }

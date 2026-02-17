@@ -1,20 +1,8 @@
 services:
-  - type: web
-<<<<<<< HEAD
+  - type: static_site
     name: muevecancun
-    env: static
     buildCommand: "./scripts/build_render.sh"
-    staticPublishPath: ./dist
-    branch: main
-=======
-    name: cancunmueve-pwa
-    runtime: node
-    buildCommand: pnpm run build
-    # Fallback to serving static files if running as a Web Service
-    startCommand: npx serve -s dist
-    # Explicitly set static publish path for Static Site services
-    staticPublishPath: ./dist
->>>>>>> security/ffi-hardening-2939308447874549092
+    publishPath: dist
     envVars:
       - key: NODE_VERSION
         value: 20

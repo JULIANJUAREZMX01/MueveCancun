@@ -7,7 +7,7 @@ import MainLayout from '../layouts/MainLayout.astro';
     
     <!-- Hero Section -->
     <header class="text-center space-y-4">
-      <h1 class="text-4xl md:text-5xl font-display font-black text-slate-900 tracking-tight leading-tight">
+      <h1 class="text-4xl md:text-5xl font-display font-black text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
         MueveCancun: <span class="text-primary-600">La Verdad de la Calle</span>
       </h1>
       <div class="h-1 w-24 bg-primary-500 mx-auto rounded-full"></div>
@@ -15,8 +15,8 @@ import MainLayout from '../layouts/MainLayout.astro';
 
     <!-- The Problem -->
     <section class="prose prose-lg prose-slate mx-auto">
-      <div class="bg-orange-50/50 border border-orange-100 rounded-2xl p-8 shadow-sm">
-        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+      <div class="bg-orange-50/50 dark:bg-slate-900/50 border border-orange-100 dark:border-slate-700 rounded-2xl p-8 shadow-sm">
+        <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
           <span class="material-symbols-rounded text-orange-500">location_off</span>
           El Problema: Google Maps no entiende a Cancún
         </h2>
@@ -34,55 +34,55 @@ import MainLayout from '../layouts/MainLayout.astro';
 
     <!-- The Structure -->
     <section class="space-y-6">
-      <h2 class="text-3xl font-display font-bold text-slate-900 flex items-center gap-3">
+      <h2 class="text-3xl font-display font-bold text-slate-900 dark:text-slate-100 flex items-center gap-3">
         <span class="material-symbols-rounded text-primary-600 text-4xl">settings_suggest</span>
         La Estructura: El Protocolo Nexus
       </h2>
-      <p class="text-lg text-slate-600">
+      <p class="text-lg text-slate-600 dark:text-slate-400">
         Detrás de esa simplicidad hay una arquitectura de alto rendimiento que construimos rompiendo las reglas convencionales del desarrollo web. A este sistema lo llamamos <strong>Nexus</strong>.
       </p>
 
       <div class="grid md:grid-cols-2 gap-6">
         <!-- Card 1 -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
           <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 text-blue-600">
             <span class="material-symbols-rounded text-2xl">speed</span>
           </div>
-          <h3 class="font-bold text-lg text-slate-900 mb-2">Rendimiento Nativo (WASM + Rust)</h3>
-          <p class="text-sm text-slate-600">
+          <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-2">Rendimiento Nativo (WASM + Rust)</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400">
             Mientras otras apps agotan tu batería con JavaScript pesado, MueveCancun utiliza un motor en <strong>Rust</strong> compilado a <strong>WebAssembly</strong>. Tu teléfono calcula miles de trayectos en milisegundos.
           </p>
         </div>
 
         <!-- Card 2 -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
           <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4 text-green-600">
             <span class="material-symbols-rounded text-2xl">signal_wifi_off</span>
           </div>
-          <h3 class="font-bold text-lg text-slate-900 mb-2">Supervivencia Extrema (Offline-First)</h3>
-          <p class="text-sm text-slate-600">
+          <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-2">Supervivencia Extrema (Offline-First)</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400">
             Diseñada para ser resiliente. Una vez instalada, <strong>no necesitas señal</strong>. El mapa y el motor de búsqueda viven en tu dispositivo.
           </p>
         </div>
 
         <!-- Card 3 -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
           <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4 text-purple-600">
             <span class="material-symbols-rounded text-2xl">deployed_code</span>
           </div>
-          <h3 class="font-bold text-lg text-slate-900 mb-2">Desacoplamiento de Datos (Hot-Swap)</h3>
-          <p class="text-sm text-slate-600">
+          <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-2">Desacoplamiento de Datos (Hot-Swap)</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400">
             Separamos el "cerebro" de los "datos". Actualizamos rutas y precios en tiempo real mediante JSONs dinámicos, garantizando información fresca sin descargas pesadas.
           </p>
         </div>
 
         <!-- Card 4 -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
           <div class="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center mb-4 text-rose-600">
             <span class="material-symbols-rounded text-2xl">hearing</span>
           </div>
-          <h3 class="font-bold text-lg text-slate-900 mb-2">El Oyente (Social Intelligence)</h3>
-          <p class="text-sm text-slate-600">
+          <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100 mb-2">El Oyente (Social Intelligence)</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400">
             Un "Listener" en Python procesa datos no estructurados de redes sociales, convirtiendo el caos de reportes ciudadanos en información lógica para el motor.
           </p>
         </div>
@@ -115,15 +115,15 @@ import MainLayout from '../layouts/MainLayout.astro';
     </section>
 
     <!-- Behind the Project -->
-    <section class="flex flex-col md:flex-row gap-8 items-center bg-white p-8 rounded-2xl border border-slate-200">
+    <section class="flex flex-col md:flex-row gap-8 items-center bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700">
       <div class="w-24 h-24 md:w-32 md:h-32 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
         <span class="material-symbols-rounded text-5xl text-slate-400">person</span>
       </div>
       <div class="flex-1 space-y-2 text-center md:text-left">
-        <h2 class="text-2xl font-bold text-slate-900">👤 Detrás del Proyecto</h2>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">👤 Detrás del Proyecto</h2>
         <h3 class="text-lg font-semibold text-primary-600">Julián Alexander Juárez Alvarado</h3>
         <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Full Stack Data Engineer & Analista de Seguridad</p>
-        <p class="text-slate-600 mt-4 leading-relaxed">
+        <p class="text-slate-600 dark:text-slate-400 mt-4 leading-relaxed">
           Mi carrera se define por una obsesión: la eficiencia. MueveCancun es mi laboratorio de pruebas donde aplico la experiencia adquirida en entornos de alta demanda (logística y hotelería de lujo) para resolver problemas sociales reales. Si el reto es complejo, tengo el stack y la mentalidad para construir la solución.
         </p>
       </div>
