@@ -90,6 +90,11 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
 // --- CORE LOGIC (Pure Rust, Testable) ---
 
 pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
+    const MAX_PAYLOAD_SIZE: usize = 10 * 1024 * 1024; // 10MB
+    if json_payload.len() > MAX_PAYLOAD_SIZE {
+        return Err("Payload too large (max 10MB)".to_string());
+    }
+
     let mut catalog: RouteCatalog = serde_json::from_str(json_payload).map_err(|e| {
         format!(
             "JSON Parse Error: {}. Expected {{version, rutas: [...]}}",
@@ -599,5 +604,16 @@ mod tests {
             "DoS vulnerability: took too long ({:?})",
             duration
         );
+    }
+
+    #[test]
+    fn test_large_payload() {
+        let padding = " ".repeat(11 * 1024 * 1024);
+        let route = r#"{"id": "R1", "nombre": "R1", "tarifa": 10.0, "tipo": "Bus", "paradas": []}"#;
+        let json = format!(r#"{{"version": "1.0", "rutas": [{}]{}}}"#, route, padding);
+
+        let res = load_catalog_core(&json);
+        assert!(res.is_err(), "Should reject large payload > 10MB");
+        assert_eq!(res.err().unwrap(), "Payload too large (max 10MB)");
     }
 }
