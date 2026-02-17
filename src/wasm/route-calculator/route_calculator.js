@@ -1,6 +1,67 @@
 /* @ts-self-types="./route_calculator.d.ts" */
 
 /**
+<<<<<<< HEAD
+=======
+ * @param {number} user_lat
+ * @param {number} user_lng
+ * @param {number} dest_lat
+ * @param {number} dest_lng
+ * @returns {any}
+ */
+export function analyze_gap(user_lat, user_lng, dest_lat, dest_lng) {
+    const ret = wasm.analyze_gap(user_lat, user_lng, dest_lat, dest_lng);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * @param {number} origin_lat
+ * @param {number} origin_lng
+ * @param {number} dest_lat
+ * @param {number} dest_lng
+ * @param {any} routes_val
+ * @returns {any}
+ */
+export function calculate_route(origin_lat, origin_lng, dest_lat, dest_lng, routes_val) {
+    const ret = wasm.calculate_route(origin_lat, origin_lng, dest_lat, dest_lng, routes_val);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * @param {number} distance
+ * @param {number} seats
+ * @param {boolean} is_tourist
+ * @returns {any}
+ */
+export function calculate_trip_cost(distance, seats, is_tourist) {
+    const ret = wasm.calculate_trip_cost(distance, seats, is_tourist);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * @param {number} lat
+ * @param {number} lng
+ * @returns {any}
+ */
+export function find_nearest_stop(lat, lng) {
+    const ret = wasm.find_nearest_stop(lat, lng);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+>>>>>>> security/ffi-hardening-2939308447874549092
  * @param {string} origin
  * @param {string} dest
  * @returns {any}
@@ -76,8 +137,33 @@ export function validate_operator_funds(balance) {
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
+<<<<<<< HEAD
         __wbg_String_8f0eb39a4a4c2f66: function(arg0, arg1) {
             const ret = String(arg1);
+=======
+        __wbg_Error_8c4e43fe74559d73: function(arg0, arg1) {
+            const ret = Error(getStringFromWasm0(arg0, arg1));
+            return ret;
+        },
+        __wbg_Number_04624de7d0e8332d: function(arg0) {
+            const ret = Number(arg0);
+            return ret;
+        },
+        __wbg_String_8f0eb39a4a4c2f66: function(arg0, arg1) {
+            const ret = String(arg1);
+            const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+            getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+        },
+        __wbg___wbindgen_boolean_get_bbbb1c18aa2f5e25: function(arg0) {
+            const v = arg0;
+            const ret = typeof(v) === 'boolean' ? v : undefined;
+            return isLikeNone(ret) ? 0xFFFFFF : ret ? 1 : 0;
+        },
+        __wbg___wbindgen_debug_string_0bc8482c6e3508ae: function(arg0, arg1) {
+            const ret = debugString(arg1);
+>>>>>>> security/ffi-hardening-2939308447874549092
             const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
             const len1 = WASM_VECTOR_LEN;
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);

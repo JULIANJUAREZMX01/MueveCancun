@@ -17,11 +17,21 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
+<<<<<<< HEAD
     readonly find_route: (a: number, b: number, c: number, d: number) => [number, number, number];
     readonly get_all_routes: () => [number, number, number];
     readonly get_route_by_id: (a: number, b: number) => [number, number, number];
     readonly load_catalog: (a: number, b: number) => [number, number];
     readonly load_stops_data: (a: any) => [number, number];
+=======
+    readonly analyze_gap: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly calculate_route: (a: number, b: number, c: number, d: number, e: any) => [number, number, number];
+    readonly calculate_trip_cost: (a: number, b: number, c: number) => [number, number, number];
+    readonly find_nearest_stop: (a: number, b: number) => [number, number, number];
+    readonly find_route: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly get_all_routes: () => [number, number, number];
+    readonly load_stops_data: (a: any) => void;
+>>>>>>> security/ffi-hardening-2939308447874549092
     readonly validate_operator_funds: (a: number) => number;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

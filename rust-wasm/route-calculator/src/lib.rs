@@ -552,7 +552,6 @@ mod tests {
                 empresa: None,
                 frecuencia_minutos: None,
                 horario: None,
-<<<<<<< HEAD
                 stops: stops,
                 stops_normalized: (0..50)
                     .map(|j| format!("common long prefix stop a {}", j))
