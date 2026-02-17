@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getAllRoutes } from '../../lib/routes';
+import { getTransportLabel } from "../../lib/transport";
 
 const rawRoutes = await getAllRoutes();
 
@@ -20,20 +21,6 @@ interface UIRoute {
   dest_hub?: string;
 }
 
-const TRANSPORT_LABELS: Record<string, string> = {
-  "Bus": "Autobús",
-  "Combi": "Combi",
-  "Van": "Van / Colectivo",
-  "ADO": "ADO",
-  "PlayaExpress": "Playa Express",
-  "Bus_Urban": "Autobús Urbano",
-  "Bus_HotelZone": "Autobús Zona Hotelera",
-  "ADO_Airport": "ADO Aeropuerto",
-  "Van_Foranea": "Van Foránea",
-  "Combi_Municipal": "Combi Municipal"
-};
-
-const getTransportLabel = (type: string) => TRANSPORT_LABELS[type] || type;
 
 const transformRoute = (raw: any): UIRoute => {
   let transport_type = raw.tipo_transporte || raw.tipo || "Bus";
