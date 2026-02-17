@@ -198,6 +198,7 @@ const ui = uiTranslations[currentLang];
 <div id="i18n-data" data-ui={JSON.stringify(ui)} class="hidden"></div>
 <script>
   import { openDB } from 'idb';
+  import { getTransportLabel } from "../lib/transport";
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
 
@@ -510,12 +511,6 @@ const ui = uiTranslations[currentLang];
 
   // --- Rendering Functions ---
 
-  function getTransportLabel(type) {
-      if (!type) return 'Bus';
-      if (type.includes('ADO')) return 'ADO';
-      if (type.includes('Combi') || type.includes('Van')) return 'Combi';
-      return 'Bus';
-  }
 
   function renderBestResultHtml(journey, isBest = false) {
         const route = journey.legs[0];
