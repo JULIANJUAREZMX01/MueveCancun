@@ -287,6 +287,7 @@ const ui = uiTranslations[currentLang];
   }
 
   async function start() {
+    let jsonData = null;
     try {
       console.log("Initializing WASM...");
       const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
@@ -318,7 +319,7 @@ const ui = uiTranslations[currentLang];
           await load_catalog(catalogString);
           console.timeEnd("WASM Load");
 
-          const jsonData = JSON.parse(catalogString); // Parse once for cache if needed
+          jsonData = JSON.parse(catalogString); // Parse once for cache if needed
           console.log("✅ Catalog loaded into WASM:", jsonData.rutas?.length || 0, "routes");
           
           const searchBtn = document.getElementById("search-btn");
@@ -344,7 +345,7 @@ const ui = uiTranslations[currentLang];
 
       // Initialize shared coordinates store and Finder
       try {
-        await coordinatesStore.init();
+        await coordinatesStore.init(jsonData);
         const db = coordinatesStore.getDB();
         
         // SYNC WITH WASM
