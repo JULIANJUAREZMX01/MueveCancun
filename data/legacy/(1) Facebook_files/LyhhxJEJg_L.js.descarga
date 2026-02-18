@@ -1,4 +1,0 @@
-;/*FB_PKG_DELIM*/
-
-__d("CometComposerCreatorCollaborationsGating",["CreatorCollaborationsSitevarConfig","gkx"],(function(t,n,r,o,a,i,l){"use strict";function e(){return r("gkx")("5417")}function s(t){var n=!1;return t>0&&(n=r("gkx")("10001"),t>1&&(n=e())),n}function u(){var t=e();return t?r("CreatorCollaborationsSitevarConfig").max_number_of_allowed_invitees_multi_collab:r("CreatorCollaborationsSitevarConfig").max_number_of_allowed_invitees}l.getIsMultiCollabsEnabledComet=e,l.shouldPassCollaboratorsViaPostCollabsField=s,l.getMaxCollaboratorsComet=u}),98);
-__d("EventCometLightweightEditRootQuery_facebookRelayOperation",[],(function(t,n,r,o,a,i){a.exports="25794211846839080"}),null);

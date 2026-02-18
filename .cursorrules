@@ -1,23 +1,32 @@
 # CancúnMueve - AI Context & Development Rules
 
 ## Tech Stack
-- **Frontend**: React 18+ (TSX), Vite, Tailwind CSS v4.
-- **Routing Engine**: Rust compiled to WebAssembly (WASM).
-- **Maps**: Mapbox GL JS.
-- **PWA**: Service Workers (Offline-first), IndexedDB.
+- **Frontend**: Astro 5 (Islands Architecture) + TypeScript, Vite, Tailwind CSS v3.
+- **Routing Engine**: Rust compiled to WebAssembly (wasm-pack).
+- **Maps**: Leaflet (via `/public/vendor/leaflet/`).
+- **PWA**: Service Workers (`/public/sw.js`), IndexedDB (`src/utils/db.ts`).
+- **Icons**: Material Symbols Rounded (font) + inline SVGs for critical paths.
 
 ## Core Principles
 1. **Offline-first**: All route calculations MUST happen locally via WASM. Do not rely on external APIs for routing.
-2. **High Contrast UI**: The app will be used under intense sunlight. Use the `sunny-mode` palette defined in `index.css`.
-3. **Data Integrity**: Use `src/data/master_routes.json` as the source of truth for R1, R2, and R10.
+2. **High Contrast UI**: The app will be used under intense sunlight. Use the design tokens defined in `src/index.css`.
+3. **Data Integrity**: Use `public/data/master_routes.json` as the source of truth for routes. Individual route files in `public/data/routes/`.
 4. **Performance**: Minimal bundle size, optimized WASM calls, and lazy loading for map components.
 
+## Project Structure
+- `src/utils/` — All utility modules. Path alias: `@utils/*`.
+- `src/components/` — Astro components. Path alias: `@components/*`.
+- `src/layouts/` — Page layouts. Path alias: `@layouts/*`.
+- `src/pages/` — File-based routing (Astro convention).
+- `public/wasm/` — Compiled WASM binaries (route-calculator, spatial-index).
+- `public/data/` — Route JSON data (source of truth).
+
 ## Development Workflows
+- Build: `npx astro build` (runs WASM build + check + Astro build).
+- Test: `npx vitest run` (unit tests in `src/tests/`).
 - WASM functions should be small and focused on heavy math (Dijkstra, Haversine).
 - UI components should use semantic HTML and Tailwind utility classes.
-- Use `lucide-react` for iconography.
 
 ## TypeScript Standards
-- No `any` types.
 - Strict interface definitions for Routes and Stops.
-- Use `Zod` or similar if validation is needed for crowdsourced data later.
+- Use path aliases (@utils, @components, @layouts) instead of relative paths when possible.

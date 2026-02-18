@@ -7,31 +7,24 @@
    ══════════════════════════════════════ */
 
 :root {
-  /* 🌴 Tropical Palette */
-  --color-sunset: #f97316; /* Primary Brand (Orange) */
+  /* 🌴 Tropical Palette — Cancún Inspired */
+  --color-sunset: hsl(25, 95%, 60%); /* Primary Brand (Sunset Orange) */
   --color-sunset-light: #ffedd5; /* Light Orange */
-  --color-turquoise: #0ea5e9; /* Accent (Caribbean Blue) */
+  --color-turquoise: hsl(174, 72%, 56%); /* Accent (Caribbean Water) */
   --color-turquoise-light: #e0f2fe;
   --color-jungle: #22c55e; /* Success (Green) */
-  --color-coral: #ef4444; /* Danger (Red) */
-  --color-ocean: #0f172a; /* Dark Navy (Text/BG) */
-  --color-sand: #f8fafc; /* Background (Off-white) */
+  --color-coral: hsl(16, 90%, 65%); /* Danger (Coral Reef) */
+  --color-ocean: hsl(200, 85%, 55%); /* Deep Ocean */
+  --color-sand: hsl(45, 70%, 85%); /* Beach Sand */
   --color-white: #ffffff;
 
-  /* Aliases for Semantic Usage */
+  /* Semantic Aliases */
   --color-primary: var(--color-sunset);
   --color-primary-light: var(--color-sunset-light);
   --color-accent: var(--color-turquoise);
   --color-success: var(--color-jungle);
   --color-danger: var(--color-coral);
   --color-deep-navy: var(--color-ocean);
-
-  /* Tropical Accents - Cancún Inspired */
-  --color-turquoise: hsl(174, 72%, 56%); /* Caribbean Water */
-  --color-coral: hsl(16, 90%, 65%); /* Coral Reef */
-  --color-sunset: hsl(25, 95%, 60%); /* Sunset Orange */
-  --color-ocean: hsl(200, 85%, 55%); /* Deep Ocean */
-  --color-sand: hsl(45, 70%, 85%); /* Beach Sand */
 
   /* Gradients */
   --gradient-primary: linear-gradient(
@@ -121,6 +114,22 @@
    ══════════════════════════════════════ */
 
 @layer base {
+  @font-face {
+    font-family: "Atkinson";
+    src: url("/fonts/atkinson-regular.woff") format("woff");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: "Atkinson";
+    src: url("/fonts/atkinson-bold.woff") format("woff");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
   html {
     font-family:
       "Inter",
@@ -153,6 +162,30 @@
     background-color: rgba(249, 115, 22, 0.2);
     color: var(--text-primary);
   }
+}
+
+/* Article/prose styling for MDX pages */
+article {
+  @apply prose dark:prose-invert max-w-full pb-12;
+}
+
+article img {
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Scroll-triggered animations */
+.animate {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.animate.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ══════════════════════════════════════

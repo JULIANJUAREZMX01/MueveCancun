@@ -18,15 +18,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
-server_log.txt
-preview_output.txt
 
 # Dependencies
 node_modules
 package-lock.json
 .venv
-pip-wheel-metadata
 
 # Build Outputs
 dist
@@ -34,47 +30,32 @@ dist-ssr
 out
 target
 build
+.astro
 
-# Project Specific
-.codersinflow
-.claude
-CLAUDE.md
-.codex
-*.vsix
-__pycache__
-*.pyc
-.next
-
-# AI Agent Directories (should not be committed)
+# AI Agent Directories
 .agent
 .agent_context
 .Jules
 .cursor
+.claude
+CLAUDE.md
+.codex
+.codersinflow
 
 # Rust / WASM
 /rust-wasm/target
-/src/wasm/route_calculator/pkg
-# Keep only public/wasm/ - src/wasm/ is a duplicate
+Cargo.lock
 /src/wasm/
+public/wasm/engine/
 
 # Temporary files
 *.tmp
 tmp/
+__pycache__
+*.pyc
 
-# Snapshots and Testing Artifacts
+# Testing Artifacts
+test-results
 *_snapshot.html
 *_content.md
 snapshot_*.png
-mapa_snapshot.html
-mapa_updated_snapshot.html
-home_snapshot.html
-rutas_snapshot.html
-
-# Frameworks / Tooling
-.astro
-test-results
-node_modules/
-dist/
-.astro/
-Cargo.lock
-public/wasm/engine/

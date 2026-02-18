@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', '.astro/**', 'public/wasm/**', 'src/wasm/**']),
+  globalIgnores(['dist', '.astro/**', 'public/wasm/**']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
