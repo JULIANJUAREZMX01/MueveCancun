@@ -145,26 +145,35 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     // Draw all points from DB as refined markers
     if (!pendingRoute) {
         const newLayers = [];
-        Object.entries(coordinatesDB).forEach(([name, coords]) => {
-            const isRoute = name.startsWith('RUTA') || name.startsWith('Ruta');
-            
-            // Premium Marker Styling
-            const marker = window.L.circleMarker(coords, {
-                radius: isRoute ? 8 : 5,
-                fillColor: isRoute ? '#F97316' : '#3B82F6',
-                color: '#FFFFFF',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.9
-            }).bindPopup(`
-                <div class="p-1">
-                    <p class="font-bold text-gray-900">${escapeHtml(name)}</p>
-                    <p class="text-xs text-gray-500">${isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés'}</p>
-                    <button onclick="window.location.href='/rutas?search=${safeUrl(name)}'" class="mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
-                </div>
-            `);
-            newLayers.push(marker);
-        });
+        const allStops = Object.entries(coordinatesDB);
+
+        // 🛡️ SECURITY: Prevent Client-Side DoS
+        // Rendering 1000+ markers crashes the browser. Only render if count is low (< 100).
+        if (allStops.length > 100) {
+                console.warn(`[Map] Too many stops (${allStops.length}) to render safely. Showing optimized view.`);
+                if (window.showToast) window.showToast("Zoom to explore area", "info");
+        } else {
+            allStops.forEach(([name, coords]) => {
+                const isRoute = name.startsWith('RUTA') || name.startsWith('Ruta');
+
+                // Premium Marker Styling
+                const marker = window.L.circleMarker(coords, {
+                    radius: isRoute ? 8 : 5,
+                    fillColor: isRoute ? '#F97316' : '#3B82F6',
+                    color: '#FFFFFF',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).bindPopup(`
+                    <div class="p-1">
+                        <p class="font-bold text-gray-900">${escapeHtml(name)}</p>
+                        <p class="text-xs text-gray-500">${isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés'}</p>
+                        <button onclick="window.location.href='/rutas?search=${safeUrl(name)}'" class="mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
+                    </div>
+                `);
+                newLayers.push(marker);
+            });
+        }
         
         if (newLayers.length > 0) {
             layerGroup = window.L.layerGroup(newLayers).addTo(map);
