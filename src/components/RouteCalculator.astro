@@ -17,14 +17,14 @@ const ui = uiTranslations[currentLang];
     <!-- Header with Balance & Lang -->
     <div class="card-header">
       <div class="flex items-center gap-2">
-         <span class="material-symbols-rounded text-primary-500 text-xl">directions_bus</span>
-         <h2 class="text-sm font-black uppercase tracking-widest text-slate-800" data-i18n="calc.title">Route Finder</h2>
+         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-primary-500" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
+         <h2 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-slate-200" data-i18n="calc.title">Route Finder</h2>
       </div>
 
       <div class="header-controls">
         <div class="balance-container">
-            <span id="balance-badge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-100 text-slate-500 font-mono">
-                LOADING...
+            <span id="balance-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-100 text-slate-600 font-mono" aria-live="polite">
+                <span class="spinner" aria-hidden="true" style="width: 0.75rem; height: 0.75rem; border-width: 2px;"></span>
             </span>
         </div>
 
@@ -48,7 +48,7 @@ const ui = uiTranslations[currentLang];
               </div>
           </div>
        </div>
-       <button id="edit-search-btn" class="btn-edit" data-i18n="calc.edit">EDIT</button>
+       <button id="edit-search-btn" class="btn-edit" data-i18n="calc.edit" aria-label="Edit search">EDIT</button>
     </div>
 
     <!-- Form Area -->
@@ -70,8 +70,8 @@ const ui = uiTranslations[currentLang];
             data-i18n-placeholder="calc.placeholder.origin"
           >
             <!-- GPS Button inside Input -->
-            <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip">
-               <span class="material-symbols-rounded text-lg">my_location</span>
+            <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip" aria-label="Use my location">
+               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
             </button>
             <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn" data-i18n="calc.gps">Use my location</div>
           </Input>
@@ -80,7 +80,7 @@ const ui = uiTranslations[currentLang];
         <!-- Swap Button -->
         <div class="swap-btn-container">
           <button id="swap-btn" class="swap-btn" type="button" aria-label="Intercambiar origen y destino">
-            <span class="material-symbols-rounded">swap_vert</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
           </button>
         </div>
 
@@ -109,17 +109,17 @@ const ui = uiTranslations[currentLang];
       <div>
         <div class="section-label mb-2" data-i18n="calc.quick">Quick Actions</div>
         <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar snap-x">
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Walmart" data-i18n-html="calc.home">
-            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">home</span> Home
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Walmart" data-i18n-html="calc.home" aria-label="Navigate home">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Home
           </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Plaza Las Américas" data-i18n-html="calc.work">
-            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">work</span> Work
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Plaza Las Américas" data-i18n-html="calc.work" aria-label="Navigate to work">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg> Work
           </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Aeropuerto Terminal 2" data-i18n-html="calc.airport">
-            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">flight</span> Airport
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Aeropuerto Terminal 2" data-i18n-html="calc.airport" aria-label="Navigate to airport">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg> Airport
           </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Playa Delfines (El Mirador)" data-i18n-html="calc.beach">
-            <span class="material-symbols-rounded text-sm" style="font-variation-settings: 'FILL' 1;">beach_access</span> Beach
+          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Playa Delfines (El Mirador)" data-i18n-html="calc.beach" aria-label="Navigate to beach">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.127 14.56l1.43-1.43 6.44 6.443L19.57 21zm.68-6.2C14.9 9.46 16.34 10 18 10c.43 0 .84-.04 1.24-.11C18.77 8.61 17.47 7.74 16 7.24l-2.19 1.12zm-1.78 1.78l-2.12-2.12c-.56-.56-1.47-.56-2.03 0l-.71.71 2.83 2.83.71-.71c.55-.57.55-1.49.01-2.04l1.31.33zM2 20l3-3h9l-1.5-1.5-5.36-5.36-.71.71c-.56.56-1.47.56-2.03 0L2.58 9.03c-.56-.56-.56-1.47 0-2.03l.71-.71c.56-.56 1.47-.56 2.03 0l1.83 1.83 2.19-1.12C8.75 5.32 8.37 3.76 8.35 2H10c.16 1.97.79 3.71 1.82 5.12l2.12 2.12 6.36 6.36c.56.56.56 1.47 0 2.03l-.71.71c-.56.56-1.47.56-2.03 0l-1.83-1.83L13 20H2z"/></svg> Beach
           </button>
         </div>
       </div>
@@ -139,15 +139,16 @@ const ui = uiTranslations[currentLang];
         </div>
       </div>
 
-      <button id="search-btn" class="btn-primary btn-lg w-full" disabled>
+      <button id="search-btn" class="btn-primary btn-lg w-full" disabled aria-label="Calculate route">
         <span id="btn-text" class="uppercase tracking-wider" data-i18n="calc.loading">Cargando rutas...</span>
-        <span class="material-symbols-rounded text-lg animate-spin" id="btn-spinner">progress_activity</span>
+        <span class="spinner" id="btn-spinner" aria-hidden="true"></span>
       </button>
 
     </div>
 
-    <!-- Loading State -->
-    <div id="calculation-loader" class="hidden p-5 space-y-3" style="border-top: 1px solid var(--border-light); background: var(--surface-bg);">
+    <!-- Loading State (Skeleton Screens) -->
+    <div id="calculation-loader" class="hidden p-5 space-y-3" style="border-top: 1px solid var(--border-light); background: var(--surface-bg);" aria-label="Loading results" role="status">
+        <div class="skeleton h-6 w-2/3 rounded-lg"></div>
         <div class="skeleton h-24 rounded-xl"></div>
         <div class="skeleton h-12 rounded-xl"></div>
         <div class="skeleton h-12 rounded-xl"></div>
@@ -156,16 +157,16 @@ const ui = uiTranslations[currentLang];
   </div>
 
     <!-- Results Area -->
-    <div id="results-info" class="mb-4 hidden animate-fade-in group">
+    <div id="results-info" class="mb-4 hidden animate-fade-in group" aria-live="polite">
         <div class="glass-card flex items-center justify-between px-4 py-3">
             <div class="flex flex-col">
-                <span class="text-xxs font-black uppercase tracking-widest mb-0.5" style="color: var(--text-tertiary);" id="results-count-label"></span>
-                <span class="badge-success font-mono" id="results-time-badge"></span>
+                <span class="text-xxs font-black uppercase tracking-widest mb-0.5" style="color: var(--text-tertiary);" id="results-count-label" aria-live="polite"></span>
+                <span class="badge-success font-mono" id="results-time-badge" aria-live="polite"></span>
             </div>
             
-            <button id="toggle-list-btn" class="chip">
+            <button id="toggle-list-btn" class="chip" aria-label="Toggle results list">
                 <span class="text-xs font-bold" id="toggle-list-text" data-i18n="calc.toggle.hide">Hide</span>
-                <span class="material-symbols-rounded text-sm" id="toggle-list-icon">expand_more</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" id="toggle-list-icon" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
             </button>
         </div>
     </div>
