@@ -199,6 +199,7 @@ const ui = uiTranslations[currentLang];
   import { getTransportLabel } from "../lib/transport";
   import { coordinatesStore } from '../lib/CoordinatesStore';
   import { CoordinateFinder } from '../lib/CoordinateFinder';
+  import { getTransportLabel } from '../lib/transport';
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
@@ -482,7 +483,6 @@ const ui = uiTranslations[currentLang];
   }
 
   // --- Rendering Functions ---
-
 
   function renderBestResultHtml(journey, isBest = false) {
         const route = journey.legs[0];
