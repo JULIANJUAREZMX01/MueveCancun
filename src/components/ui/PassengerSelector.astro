@@ -12,18 +12,18 @@ const { id = 'passenger-selector', initialCount = 1 } = Astro.props;
         <label data-i18n="calc.passengers">PASSENGERS</label>
         <div class="selector-value">
             <span id={`${id}-display`}>{initialCount} Passengers</span>
-            <span class="material-icons-round arrow">expand_more</span>
+            <span class="material-symbols-rounded arrow">expand_more</span>
         </div>
     </button>
 
     <div id={`${id}-popover`} popover class="passenger-popover" style={`position-anchor: --${id}-anchor`}>
         <div class="counter-control">
             <button type="button" class="circle-btn decrement" aria-label="Menos pasajeros">
-                <span class="material-icons-round">remove</span>
+                <span class="material-symbols-rounded">remove</span>
             </button>
             <span class="count-display" data-value={initialCount}>{initialCount}</span>
             <button type="button" class="circle-btn increment" aria-label="Más pasajeros">
-                <span class="material-icons-round">add</span>
+                <span class="material-symbols-rounded">add</span>
             </button>
         </div>
         <p class="help-text" data-i18n="calc.max_passengers">Maximum 10 passengers</p>

@@ -615,9 +615,9 @@ const ui = uiTranslations[currentLang];
   function renderError(msg) {
     if (!resultsContainer) return;
     resultsContainer.innerHTML = `
-        <div class="glass-card flex items-center gap-3 animate-slide-up" style="border-left: 3px solid var(--danger);">
+        <div class="glass-card flex items-center gap-3 animate-slide-up" style="border-left: 3px solid var(--color-danger);">
             <span class="material-symbols-rounded text-danger-500 text-lg" style="font-variation-settings: 'FILL' 1;">error</span>
-            <span class="font-bold text-sm" style="color: var(--danger);">${escapeHtml(msg)}</span>
+            <span class="font-bold text-sm" style="color: var(--color-danger);">${escapeHtml(msg)}</span>
         </div>
     `;
     if (window.showToast) window.showToast(msg, 'error');
