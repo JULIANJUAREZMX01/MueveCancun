@@ -57,9 +57,9 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
 ---
 
 <MainLayout title="Catálogo de Rutas">
-  <div class="space-y-6 animate-fade-in pb-20">
+  <div class="space-y-6 pb-20">
     <!-- Header -->
-    <div class="pt-6">
+    <div class="pt-6 animate-fade-in">
       <h1 class="text-3xl font-display font-black text-slate-900 tracking-tight mb-1">
         Red de Transporte
       </h1>
@@ -74,7 +74,10 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
           let stopsPreview = `${route.origin_hub} ➔ ${route.dest_hub}`;
 
           return (
-          <a href={`/ruta/${route.id}`} class="glass-card p-5 group hover:border-primary-300 transition-all active:scale-[0.98] no-underline block overflow-hidden relative">
+          <a href={`/ruta/${route.id}`}
+             class="glass-card p-5 group hover:border-primary-300 transition-all active:scale-[0.98] no-underline block overflow-hidden relative scroll-animate-card"
+             style={`view-transition-name: route-card-${route.id}`}
+          >
             
             <!-- Background Badge -->
             <div class="absolute -right-4 -top-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
@@ -92,7 +95,9 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
                     </span>
                 </div>
                 
-                <h3 class="font-bold text-slate-900 group-hover:text-primary-600 transition-colors truncate pr-4">{route.name}</h3>
+                <h3 class="font-bold text-slate-900 group-hover:text-primary-600 transition-colors truncate pr-4"
+                    style={`view-transition-name: route-title-${route.id}`}
+                >{route.name}</h3>
 
                 <!-- Meta Info Row -->
                 <div class="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
@@ -138,5 +143,31 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* GraffitiWarrior: Scroll-Driven Animations */
+  @keyframes enter-card {
+    from {
+      opacity: 0;
+      transform: translateY(30px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .scroll-animate-card {
+    view-timeline-name: --card-scroll;
+    view-timeline-axis: block;
+
+    /* Fallback */
+    animation: enter-card 0.5s ease-out forwards;
+
+    @supports (animation-timeline: view()) {
+      animation: enter-card linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
   }
 </style>

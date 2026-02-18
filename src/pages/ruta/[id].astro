@@ -11,8 +11,9 @@ export async function getStaticPaths() {
   try {
     const fileContent = await fs.readFile(routesPath, 'utf-8');
     const routesData = JSON.parse(fileContent);
+    const routes = routesData.routes || routesData.rutas || [];
 
-    return routesData.rutas.map((route: any) => ({
+    return routes.map((route: any) => ({
       params: { id: route.id },
       props: { route },
     }));
@@ -60,10 +61,15 @@ const schemaData = {
   <!-- Inject JSON-LD -->
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemaData).replace(/</g, '\\u003c')} />
 
+  <!-- GraffitiWarrior: Scroll Progress Bar (Pure CSS) -->
+  <div class="scroll-progress-bar"></div>
+
   <div class="animate-fade-in pb-20">
     
     <!-- Header Card -->
-    <div class="glass-card p-6 md:p-10 mb-6 relative overflow-hidden group">
+    <div class="glass-card p-6 md:p-10 mb-6 relative overflow-hidden group"
+         style={`view-transition-name: route-card-${route.id}`}
+    >
       <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
         <span class="material-symbols-rounded text-9xl text-slate-900">directions_bus</span>
       </div>
@@ -73,7 +79,7 @@ const schemaData = {
            <div class="space-y-1">
                 <div class="flex items-center gap-2 mb-2">
                    <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-bold border border-orange-200 uppercase tracking-tighter">
-                      {route.tipo.replace('_', ' ')}
+                      {(route.tipo || 'Bus').replace('_', ' ')}
                    </span>
                    {route.tarifa && (
                     <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 uppercase tracking-tighter">
@@ -81,7 +87,9 @@ const schemaData = {
                      </span>
                    )}
                 </div>
-                <h1 class="text-3xl md:text-4xl font-display font-black text-slate-900 tracking-tight leading-tight">
+                <h1 class="text-3xl md:text-4xl font-display font-black text-slate-900 tracking-tight leading-tight"
+                    style={`view-transition-name: route-title-${route.id}`}
+                >
                   {route.nombre}
                 </h1>
               </div>
@@ -277,5 +285,27 @@ const schemaData = {
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* GraffitiWarrior: Scroll Progress Bar */
+  .scroll-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--color-primary);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    z-index: 100;
+
+    /* CSS5 Scroll Timeline */
+    animation: grow-progress auto linear;
+    animation-timeline: scroll();
+  }
+
+  @keyframes grow-progress {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
   }
 </style>
