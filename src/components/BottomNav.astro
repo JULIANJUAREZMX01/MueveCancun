@@ -7,6 +7,7 @@ const navItems = [
   { href: '/mapa', icon: 'map', label: 'Mapa', activePattern: /^\/mapa/ },
   { href: '/community', icon: 'forum', label: 'Foro', activePattern: /^\/community/ },
   { href: '/wallet', icon: 'account_balance_wallet', label: 'Tarjeta', activePattern: /^\/wallet/ },
+  { href: '/about', icon: 'info', label: 'Nosotros', activePattern: /^\/about/ },
 ];
 ---
 
@@ -37,6 +38,9 @@ const navItems = [
             {item.icon === 'account_balance_wallet' && (
               <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
             )}
+            {item.icon === 'info' && (
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+            )}
           </svg>
 
           <span class="nav-label" data-i18n={
@@ -44,7 +48,8 @@ const navItems = [
             item.href === '/rutas' ? 'nav.routes' :
             item.href === '/mapa' ? 'nav.map' :
             item.href === '/community' ? 'nav.community' :
-            item.href === '/wallet' ? 'nav.wallet' : ''
+            item.href === '/wallet' ? 'nav.wallet' :
+            item.href === '/about' ? 'nav.about' : ''
           }>
             {item.label}
           </span>
@@ -79,7 +84,7 @@ const navItems = [
 
   .nav-container {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     height: var(--bottom-nav-h); /* 4rem from tokens */
     max-width: 32rem; /* max-w-lg */
     margin: 0 auto;
