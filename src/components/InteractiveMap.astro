@@ -14,7 +14,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     <!-- Map Controls (Custom) -->
     <div class="absolute bottom-24 right-4 z-[400] flex flex-col gap-2">
         <button id="gps-center-btn" class="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center text-slate-600 hover:text-primary-500 transition-colors active:scale-95" aria-label="Centrar en mi ubicación">
-            <span class="material-symbols-rounded text-xl">my_location</span>
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
         </button>
     </div>
 </div>
