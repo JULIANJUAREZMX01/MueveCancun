@@ -18,11 +18,11 @@ const title = "Inicio";
 
             <!-- Hero Headline — compact, doesn't overlap header -->
             <div class="hero-headline mb-4 text-center px-2">
-                <h1 class="font-display font-black text-2xl sm:text-3xl md:text-4xl tracking-tight leading-tight" style="color: var(--text-primary);">
-                    ¿A dónde vamos hoy?
+                <h1 class="hero-title font-display font-black text-2xl sm:text-3xl md:text-4xl tracking-tight leading-tight">
+                    ¿Qué Ruta Me Lleva?
                 </h1>
-                <p class="text-xs font-bold uppercase tracking-widest mt-1.5 text-slate-500 dark:text-slate-400">
-                    Cancún · Transporte Público
+                <p class="hero-destination font-display font-bold text-base sm:text-lg mt-1">
+                    en <span id="destination-cycle" class="destination-text">Cancún</span>
                 </p>
             </div>
 
@@ -33,6 +33,23 @@ const title = "Inicio";
 </MainLayout>
 
 <script>
+    // Animated destination cycling
+    const destinations = ['Cancún', 'Puerto Morelos', 'Isla Mujeres', 'Playa del Carmen', 'Zona Hotelera'];
+    let currentIndex = 0;
+    const cycleEl = document.getElementById('destination-cycle');
+    if (cycleEl) {
+        setInterval(() => {
+            cycleEl.classList.add('destination-exit');
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % destinations.length;
+                cycleEl.textContent = destinations[currentIndex];
+                cycleEl.classList.remove('destination-exit');
+                cycleEl.classList.add('destination-enter');
+                setTimeout(() => cycleEl.classList.remove('destination-enter'), 400);
+            }, 300);
+        }, 3000);
+    }
+
     // Handle View Switching (Minimize/Maximize UI)
     window.addEventListener('VIEW_STATE_CHANGE', (e) => {
         const state = (e as CustomEvent).detail;
@@ -77,6 +94,48 @@ const title = "Inicio";
 /* Hero Headline Styles */
 .hero-headline {
     transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.hero-title {
+    color: #F97316;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.15);
+    animation: hero-bounce-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.hero-destination {
+    color: var(--text-secondary);
+    text-shadow: 0 1px 6px rgba(255, 255, 255, 0.6);
+}
+
+.dark .hero-destination {
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.destination-text {
+    display: inline-block;
+    color: #0d9488;
+    font-weight: 800;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.destination-exit {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.destination-enter {
+    animation: destination-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes destination-pop {
+    0%   { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hero-bounce-in {
+    0%   { opacity: 0; transform: scale(0.9) translateY(12px); }
+    60%  { transform: scale(1.02) translateY(-2px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 /* Map Mode Adjustments */
