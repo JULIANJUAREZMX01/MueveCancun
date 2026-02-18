@@ -6,7 +6,7 @@
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#F97316",
+  "theme_color": "#0d9488",
   "orientation": "portrait",
   "icons": [
     {
@@ -34,29 +34,6 @@
       "name": "Mi Tarjeta",
       "url": "/wallet",
       "icons": [{ "src": "/icons/credit-card.svg", "sizes": "512x512" }]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshots/mobile-home.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Pantalla principal de CancúnMueve"
-    },
-    {
-      "src": "/screenshots/mobile-map.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Mapa interactivo de rutas"
-    },
-    {
-      "src": "/screenshots/desktop-home.png",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Vista de escritorio"
     }
   ]
 }

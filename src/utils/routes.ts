@@ -56,7 +56,7 @@ export async function getAllRoutes(): Promise<Route[]> {
         console.error(`Error parsing route file ${file}:`, e);
       }
     }
-  } catch (err) {
+  } catch {
     console.warn("Routes directory not accessible or empty, falling back to master_routes.json");
   }
 
@@ -74,7 +74,7 @@ export async function getAllRoutes(): Promise<Route[]> {
               }
           });
       }
-  } catch (e) {
+  } catch {
       // master_routes might not exist
   }
 
