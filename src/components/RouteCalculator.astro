@@ -283,11 +283,25 @@ const ui = uiTranslations[currentLang];
 
   async function start() {
     let jsonData = null;
+    // Timeout Promise (8s)
+    const timeoutMs = 8000;
+    const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Timeout initializing engine (${timeoutMs}ms)`)), timeoutMs)
+    );
+
     try {
       console.log("Initializing WASM...");
       const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
-      const module = await import(/* @vite-ignore */ wasmPath);
-      await module.default();
+
+      // 1. Load WASM Module with Timeout
+      const modulePromise = (async () => {
+          const mod = await import(/* @vite-ignore */ wasmPath);
+          await mod.default();
+          return mod;
+      })();
+
+      const module = await Promise.race([modulePromise, timeoutPromise]);
+
       find_route = module.find_route;
       validate_operator_funds = module.validate_operator_funds;
       load_catalog = module.load_catalog;
@@ -295,41 +309,54 @@ const ui = uiTranslations[currentLang];
       console.log("WASM initialized.");
       wasmLoaded = true;
 
-      // Load aggregated routes from API (Optimized)
+      // 2. Load Data Catalog with Timeout
       if (typeof load_catalog === 'function') {
-        try {
           console.log("📦 Loading route catalog via CoordinatesStore...");
-          
-          // ✅ SIMÓN: Use CoordinatesStore to avoid redundant fetch
           console.time("WASM Load");
-          const { text: catalogString, data: jsonData } = await coordinatesStore.init();
 
-          // Sentinel: Enforce 10MB limit to prevent WASM DoS
+          const dataPromise = coordinatesStore.init();
+          const { text: catalogString, data: resolvedData } = await Promise.race([dataPromise, timeoutPromise]);
+          jsonData = resolvedData;
+
+          // Sentinel: Enforce 10MB limit
           if (catalogString.length > 10 * 1024 * 1024) {
              throw new Error("Catalog too large (DoS protection)");
           }
 
-          await load_catalog(catalogString);
+          load_catalog(catalogString);
           console.timeEnd("WASM Load");
-          console.log("✅ Catalog loaded into WASM:", jsonData.rutas?.length || 0, "routes");
+          console.log("✅ Catalog loaded into WASM:", jsonData?.rutas?.length || 0, "routes");
 
+          // UI Ready State
           const searchBtn = document.getElementById("search-btn");
           const spinner = document.getElementById("btn-spinner");
           const txt = document.getElementById("btn-text");
           
           if (searchBtn) searchBtn.disabled = false;
           if (spinner) spinner.classList.add("hidden");
-          if (txt) { txt.setAttribute("data-i18n", "calc.btn"); txt.textContent = "CALCULATE ROUTE"; }
-
-
-        } catch (catalogError) {
-          console.error("❌ Failed to load catalog:", catalogError);
-          renderError("Error loading route data. Please refresh.");
-        }
+          if (txt) {
+              txt.setAttribute("data-i18n", "calc.btn");
+              txt.textContent = "CALCULATE ROUTE";
+          }
       }
     } catch (e) {
       console.error("WASM Load Critical Error:", e);
-      renderWasmError();
+
+      // UI Error State
+      const searchBtn = document.getElementById("search-btn");
+      const spinner = document.getElementById("btn-spinner");
+      const txt = document.getElementById("btn-text");
+
+      if (searchBtn) {
+          searchBtn.disabled = true;
+          // Apply error styles safely
+          searchBtn.classList.add('bg-red-50', 'text-red-600', 'border-red-200');
+          searchBtn.style.opacity = '1';
+      }
+      if (spinner) spinner.classList.add("hidden");
+      if (txt) txt.textContent = "System Offline";
+
+      renderError(`System Error: ${e.message || "Initialization failed"}`);
     } finally {
       await updateBalance();
       // Initialize shared coordinates store and Finder
@@ -337,17 +364,20 @@ const ui = uiTranslations[currentLang];
         await coordinatesStore.init(jsonData);
         const db = coordinatesStore.getDB();
         
-        finder = new CoordinateFinder(db);
-        console.log("Coordinate Finder Ready");
-        
-        // Setup Autocomplete
-        setupAutocomplete('origin-input');
-        setupAutocomplete('destination-input');
+        if (db) {
+            finder = new CoordinateFinder(db);
+            console.log("Coordinate Finder Ready");
+
+            // Setup Autocomplete
+            setupAutocomplete('origin-input');
+            setupAutocomplete('destination-input');
+        }
 
       } catch (e) {
         console.warn("GPS/Finder features might be unavailable", e);
       }
-      initGPSLogic();
+      // Initialize GPS logic regardless of data state (it handles nulls)
+      if (typeof initGPSLogic === 'function') initGPSLogic();
     }
   }
 
