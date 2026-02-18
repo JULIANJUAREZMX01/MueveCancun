@@ -14,25 +14,6 @@ const ui = uiTranslations[currentLang];
   <!-- Search Card -->
   <div class="glass-card search-card" id="search-card">
 
-    <!-- Header with Balance & Lang -->
-    <div class="card-header">
-      <div class="flex items-center gap-2">
-         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-primary-500" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
-         <h2 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-slate-200" data-i18n="calc.title">Route Finder</h2>
-      </div>
-
-      <div class="header-controls">
-        <div class="balance-container">
-            <span id="balance-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-100 text-slate-600 font-mono" aria-live="polite">
-                <span class="spinner" aria-hidden="true" style="width: 0.75rem; height: 0.75rem; border-width: 2px;"></span>
-            </span>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Balance Warning -->
-
     <!-- Summary Bar (Hidden by default) -->
     <div id="summary-bar" class="summary-bar hidden">
        <div class="summary-info">
@@ -107,8 +88,7 @@ const ui = uiTranslations[currentLang];
 
       <!-- Quick Actions -->
       <div>
-        <div class="section-label mb-2" data-i18n="calc.quick">Quick Actions</div>
-        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar snap-x">
+        <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar snap-x">
           <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Walmart" data-i18n-html="calc.home" aria-label="Navigate home">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Home
           </button>
@@ -125,17 +105,13 @@ const ui = uiTranslations[currentLang];
       </div>
 
 
-      <!-- Options -->
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <div class="section-label mb-1.5" style="font-size: 0.6rem;" data-i18n="calc.passengers">Passengers</div>
+      <!-- Options Row — compact -->
+      <div class="flex items-center gap-3">
+        <div class="flex-1">
           <PassengerSelector id="seats-input" />
         </div>
-        <div>
-          <div class="section-label mb-1.5" style="font-size: 0.6rem;" data-i18n="calc.mode">Mode</div>
-          <div class="h-[44px] flex items-center">
-            <Switch id="tourist-checkbox" label="Tourist" data-i18n-label="calc.tourist" />
-          </div>
+        <div class="flex items-center">
+          <Switch id="tourist-checkbox" label="Tourist" data-i18n-label="calc.tourist" />
         </div>
       </div>
 

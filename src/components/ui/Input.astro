@@ -148,43 +148,45 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
     .graffiti-input {
       width: 100%;
       min-height: 44px;
-      padding: 0.75rem 1rem; /* py-3 px-4 */
+      padding: 0.75rem 1rem;
       padding-right: 3rem; /* pr-12 for action slot space */
 
-      background-color: var(--surface-elevated);
-      border: 2px solid var(--border-light); /* slate-200 */
-      border-radius: var(--radius-xl); /* rounded-xl */
+      background-color: #f1f5f9; /* slate-100 — subtle gray pill bg */
+      border: 2px solid transparent;
+      border-radius: var(--radius-full); /* pill-shaped */
 
-      font-size: 1.125rem; /* text-lg */
-      font-weight: 700;
-      color: var(--text-primary); /* slate-900 */
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
       font-family: inherit;
 
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
       &::placeholder {
-        color: var(--text-tertiary); /* slate-300 */
+        color: var(--text-tertiary);
         font-weight: 400;
-        opacity: 1; /* Default visible */
+        opacity: 1;
         transition: opacity 0.2s ease;
       }
 
       &:focus-visible {
         outline: none;
-        border-color: var(--color-sunset); /* primary-500 */
-        box-shadow: 0 0 0 4px var(--color-sunset-light); /* primary-100 */
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+        background-color: var(--color-white);
       }
 
       &.textarea {
         min-height: 8rem;
         resize: vertical;
         line-height: 1.5;
+        border-radius: var(--radius-lg);
       }
 
       /* Native Validation Feedback */
       &:user-invalid {
-        border-color: var(--color-coral); /* danger-500 */
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-coral) 20%, transparent);
+        border-color: var(--color-coral);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-coral) 15%, transparent);
       }
     }
 
@@ -217,7 +219,7 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
 
     /* Focus Within State using :has() to style Label */
     &:has(.graffiti-input:focus-visible) .graffiti-label {
-      color: var(--color-sunset);
+      color: var(--color-primary);
     }
 
     /* Invalid State Label */
@@ -256,10 +258,15 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
       &:has(.graffiti-input:not(:placeholder-shown)) {
         .graffiti-label {
           transform: translateY(-1.5rem) scale(0.85);
-          background: var(--surface-bg);
+          background: #f1f5f9;
           padding: 0 0.25rem;
           font-weight: 600;
         }
+      }
+
+      /* When focused, label bg should match focused input bg */
+      &:has(.graffiti-input:focus-visible) .graffiti-label {
+        background: var(--color-white);
       }
     }
   }

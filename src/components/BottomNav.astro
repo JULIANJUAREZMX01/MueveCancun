@@ -66,11 +66,15 @@ const navItems = [
     left: 0;
     right: 0;
     z-index: 40;
-    background: var(--surface-card);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-top: 1px solid var(--border-light);
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  :global(.dark) .graffiti-nav {
+    background: rgba(15, 23, 42, 0.92);
   }
 
   .nav-container {

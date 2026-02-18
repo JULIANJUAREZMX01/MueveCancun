@@ -7,29 +7,32 @@
    ══════════════════════════════════════ */
 
 :root {
-  /* ═══ Primitive Colors ═══ */
-  --color-sunset: #f97316;
+  /* ═══ Primitive Colors — "Caribe Urbano" ═══ */
+  --color-teal: #0d9488;        /* Caribbean Teal — primary action */
+  --color-teal-bright: #14b8a6; /* Lighter teal for hover/gradient */
+  --color-teal-light: #ccfbf1;  /* Teal-100 tint for badges */
+  --color-sunset: #f97316;      /* Sunset Orange — accent/alerts only */
   --color-sunset-light: #ffedd5;
-  --color-turquoise: #0ea5e9;
+  --color-turquoise: #06b6d4;   /* Bright Cyan for info/maps */
   --color-turquoise-light: #e0f2fe;
   --color-jungle: #22c55e;
   --color-coral: #ef4444;
-  --color-ocean: #0f172a;
-  --color-sand: #f8fafc;
+  --color-ocean: #1e293b;       /* Charcoal Navy — text, never pure black */
+  --color-sand: #f8fafc;        /* Off-white bg */
   --color-white: #ffffff;
 
   /* ═══ Semantic Aliases ═══ */
-  --color-primary: var(--color-sunset);
-  --color-primary-light: var(--color-sunset-light);
-  --color-accent: var(--color-turquoise);
+  --color-primary: var(--color-teal);
+  --color-primary-light: var(--color-teal-light);
+  --color-accent: var(--color-sunset);
   --color-success: var(--color-jungle);
   --color-danger: var(--color-coral);
   --color-deep-navy: var(--color-ocean);
 
   /* ═══ Gradients ═══ */
-  --gradient-primary: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  --gradient-primary: linear-gradient(135deg, var(--color-teal) 0%, var(--color-teal-bright) 100%);
   --gradient-sunset: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-  --gradient-ocean: linear-gradient(180deg, #0ea5e9 0%, #06b6d4 100%);
+  --gradient-ocean: linear-gradient(180deg, var(--color-turquoise) 0%, var(--color-teal) 100%);
 
   /* ═══ Glassmorphism ═══ */
   --glass-blur: blur(20px);
@@ -131,7 +134,7 @@
   }
 
   ::selection {
-    background-color: rgba(249, 115, 22, 0.2);
+    background-color: rgba(13, 148, 136, 0.15);
     color: var(--text-primary);
   }
 }
@@ -143,24 +146,33 @@
 /* ── Glass Card ── */
 .glass-card {
   padding: 1.25rem; /* ~20px */
-  background: var(--surface-card);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1.5px solid var(--border-light);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 24px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  box-shadow: 0 10px 40px rgba(0,0,0,0.12);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
 }
 
 .search-card {
-  border-color: var(--color-primary);
-  background: linear-gradient(to bottom right, var(--surface-card), var(--surface-bg));
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.90);
+  box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .search-card {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 /* ── Buttons ── */
@@ -172,29 +184,25 @@
   font-weight: 700;
   color: var(--text-inverse);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
-  /* Gradient Sunset */
-  background: linear-gradient(
-    135deg,
-    #fb923c 0%,
-    var(--color-sunset) 50%,
-    #ea580c 100%
-  );
-  box-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.35);
+  /* Teal Caribbean Gradient */
+  background: linear-gradient(135deg, var(--color-teal) 0%, var(--color-teal-bright) 100%);
+  box-shadow: 0 4px 14px -2px rgba(13, 148, 136, 0.35);
   border: none;
 }
 
 .btn-primary:hover {
-  box-shadow: 0 6px 20px -2px rgba(249, 115, 22, 0.45);
+  box-shadow: 0 6px 20px -2px rgba(13, 148, 136, 0.45);
   filter: brightness(1.05);
 }
 
 .btn-primary:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
 }
 
 .btn-primary:disabled {
@@ -221,7 +229,7 @@
   gap: 0.5rem;
   font-weight: 700;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -273,11 +281,11 @@
 
 .badge-primary {
   background-color: var(--color-primary-light);
-  color: #c2410c; /* orange-700 approximation */
+  color: #0f766e; /* teal-700 */
 }
 .dark .badge-primary {
-  background-color: rgba(249, 115, 22, 0.2);
-  color: #fb923c; /* orange-400 */
+  background-color: rgba(13, 148, 136, 0.2);
+  color: #5eead4; /* teal-300 */
 }
 
 .badge-accent {
@@ -308,12 +316,12 @@
 .input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-full);
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s ease;
-  background: var(--surface-bg);
-  border: 1.5px solid var(--border-light);
+  background: #f1f5f9;
+  border: 1.5px solid transparent;
   color: var(--text-primary);
 }
 
@@ -323,7 +331,7 @@
 
 .input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
   outline: none;
 }
 
@@ -423,7 +431,7 @@
 
 /* ── Utilities ── */
 .text-gradient-primary {
-  background: linear-gradient(135deg, #fb923c, var(--color-sunset), #ea580c);
+  background: linear-gradient(135deg, var(--color-teal), var(--color-turquoise));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
