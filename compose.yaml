@@ -1,0 +1,6 @@
+services:
+  muevecancun:
+    image: muevecancun
+    build:
+      context: .
+      dockerfile: ./Dockerfile

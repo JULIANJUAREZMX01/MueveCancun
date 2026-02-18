@@ -29,7 +29,8 @@ export function getTransportLabel(type?: string): string {
 
   // 2. Fuzzy / Keyword Fallback
   if (type.includes('ADO')) return 'ADO';
-  if (type.includes('Combi') || type.includes('Van')) return 'Combi';
+  if (type.includes('Van')) return TRANSPORT_LABELS['Van'];
+  if (type.includes('Combi')) return TRANSPORT_LABELS['Combi'];
 
   // 3. Default Fallback
   return "Autobús";
