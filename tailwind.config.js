@@ -9,8 +9,23 @@ export default {
         // Brand
         'deep-navy': '#0F172A',
 
-        // Primary (Caribbean Teal — CTA, highlights)
+        // Primary (Sunset Orange — CTA, highlights) - RESTORED
         primary: {
+          50:  '#FFF7ED',
+          100: '#FFEDD5',
+          200: '#FED7AA',
+          300: '#FDBA74',
+          400: '#FB923C',
+          500: '#F97316',
+          600: '#EA580C',
+          700: '#C2410C',
+          800: '#9A3412',
+          900: '#7C2D12',
+          DEFAULT: '#F97316',
+        },
+
+        // Accent (Caribbean Teal — alerts, secondary actions)
+        accent: {
           50:  '#f0fdfa',
           100: '#ccfbf1',
           200: '#99f6e4',
@@ -23,21 +38,6 @@ export default {
           900: '#134e4a',
           950: '#042f2e',
           DEFAULT: '#0d9488',
-        },
-
-        // Accent (Sunset Orange — alerts, notifications)
-        accent: {
-          50:  '#FFF7ED',
-          100: '#FFEDD5',
-          200: '#FED7AA',
-          300: '#FDBA74',
-          400: '#FB923C',
-          500: '#F97316',
-          600: '#EA580C',
-          700: '#C2410C',
-          800: '#9A3412',
-          900: '#7C2D12',
-          DEFAULT: '#F97316',
         },
 
         // Success
@@ -83,7 +83,7 @@ export default {
         'card':     '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
         'card-hover': '0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05)',
         'btn':      '0 1px 2px rgba(0, 0, 0, 0.05)',
-        'btn-primary': '0 4px 14px -2px rgba(13, 148, 136, 0.35)',
+        'btn-primary': '0 4px 14px -2px rgba(249, 115, 22, 0.35)', // Adjusted to Orange
         'inner-glow': 'inset 0 1px 0 rgba(255, 255, 255, 0.1)',
       },
 

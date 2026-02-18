@@ -12,12 +12,20 @@ const modules = ['route-calculator', 'spatial-index'];
 console.log('🏗️  Starting WASM build process...');
 
 // Check for required tools
+let wasmPackCmd = 'wasm-pack';
 const hasWasmPack = (() => {
     try {
         execSync('wasm-pack --version', { stdio: 'ignore' });
         return true;
     } catch (e) {
-        return false;
+        console.warn('⚠️ Global wasm-pack not found. Trying npx...');
+        try {
+            execSync('npx wasm-pack --version', { stdio: 'ignore' });
+            wasmPackCmd = 'npx wasm-pack';
+            return true;
+        } catch (e2) {
+            return false;
+        }
     }
 })();
 
@@ -49,7 +57,7 @@ if (!hasWasmPack || !hasCargo) {
     }
 }
 
-console.log('✅ Build tools found. Proceeding with compilation...');
+console.log(`✅ Build tools found using: ${wasmPackCmd}. Proceeding with compilation...`);
 
 modules.forEach(mod => {
     console.log(`📦 Processing ${mod}...`);
@@ -68,15 +76,15 @@ modules.forEach(mod => {
     if (hasWasmPack) {
         try {
             // Build with wasm-pack
-            console.log(`🚀 Building ${mod} with wasm-pack...`);
-            execSync(`wasm-pack build --target web --out-dir ${publicOutDir}`, {
+            console.log(`🚀 Building ${mod} with ${wasmPackCmd}...`);
+            execSync(`${wasmPackCmd} build --target web --out-dir ${publicOutDir}`, {
                 cwd: sourceDir,
                 stdio: 'inherit'
             });
 
             buildSuccess = true;
         } catch (e) {
-            console.error(`❌ Failed to build ${mod} with wasm-pack.`);
+            console.error(`❌ Failed to build ${mod} with ${wasmPackCmd}.`);
         }
     }
 
