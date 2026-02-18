@@ -24,6 +24,7 @@ preview_output.txt
 
 # Dependencies
 node_modules
+package-lock.json
 .venv
 pip-wheel-metadata
 

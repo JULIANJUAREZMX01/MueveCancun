@@ -21,10 +21,11 @@ export function getTransportLabel(type?: string | null): string {
     return TRANSPORT_LABELS[type];
   }
 
-  // 2. Try fuzzy matching (logic from RouteCalculator)
+  // 2. Try fuzzy matching (keyword-based)
   if (type.includes('ADO')) return 'ADO';
-  if (type.includes('Combi') || type.includes('Van')) return 'Combi';
+  if (type.includes('Van')) return TRANSPORT_LABELS['Van'];
+  if (type.includes('Combi')) return TRANSPORT_LABELS['Combi'];
 
-  // 3. Fallback
-  return 'Autobús';
+  // 3. Fallback: return original type for unknown transport types
+  return type;
 }
