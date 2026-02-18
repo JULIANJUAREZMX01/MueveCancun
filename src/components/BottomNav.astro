@@ -7,31 +7,49 @@ const navItems = [
   { href: '/mapa', icon: 'map', label: 'Mapa', activePattern: /^\/mapa/ },
   { href: '/community', icon: 'forum', label: 'Foro', activePattern: /^\/community/ },
   { href: '/wallet', icon: 'account_balance_wallet', label: 'Tarjeta', activePattern: /^\/wallet/ },
+  { href: '/about', icon: 'info', label: 'Nosotros', activePattern: /^\/about/ },
 ];
 ---
 
-<nav transition:persist class="graffiti-nav">
+<nav transition:persist class="graffiti-nav" aria-label="Main navigation">
   <div class="nav-container">
     {navItems.map((item) => {
       const isActive = item.activePattern.test(pathname);
       return (
-        <a href={item.href} class={`nav-item ${isActive ? 'active' : ''}`}>
+        <a href={item.href} class={`nav-item ${isActive ? 'active' : ''}`} aria-label={item.label} aria-current={isActive ? 'page' : undefined}>
           {/* Active Indicator with View Transition Name for smooth gliding */}
           {isActive && (
             <div class="active-indicator" transition:name="nav-indicator"></div>
           )}
 
-          <span class="material-symbols-rounded nav-icon"
-                style={`font-variation-settings: 'FILL' ${isActive ? 1 : 0};`}>
-            {item.icon}
-          </span>
+          <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            {item.icon === 'explore' && (
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.43 14.57L7.2 13.2l1.41-1.41 1.96 1.96 5.66-5.66 1.41 1.41-7.07 7.07z" />
+            )}
+            {item.icon === 'route' && (
+              <path d="M9.78 11.16l-1.42 1.42a7.462 7.462 0 01-1.02-2.24l1.93-.48c.17.71.44 1.37.81 1.96l-.3-.66zm8.22.84c0 2.34-1.14 4.33-2.89 5.6L14 16.49c1.3-.95 2.15-2.49 2.15-4.24 0-2.87-2.34-5.2-5.22-5.2-.39 0-.77.05-1.14.13l1.5 1.5C11.44 8.52 11.59 8.5 11.73 8.5c2.05 0 3.72 1.67 3.72 3.73l.55-.23zm-9-4L7.56 9.45 6.14 8.03l.01-.02L3.69 5.55 5.1 4.14l2.47 2.47C8.61 6.23 9.72 6 10.88 6c4.26 0 7.72 3.46 7.72 7.72 0 1.16-.26 2.27-.63 3.3l2.47 2.47-1.41 1.41-2.46-2.46c-1.03.39-2.14.63-3.3.63-4.26 0-7.72-3.46-7.72-7.72 0-1.16.26-2.27.63-3.3l.01-.01z" />
+            )}
+            {item.icon === 'map' && (
+              <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z" />
+            )}
+            {item.icon === 'forum' && (
+              <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z" />
+            )}
+            {item.icon === 'account_balance_wallet' && (
+              <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+            )}
+            {item.icon === 'info' && (
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+            )}
+          </svg>
 
           <span class="nav-label" data-i18n={
             item.href === '/home' ? 'nav.home' :
             item.href === '/rutas' ? 'nav.routes' :
             item.href === '/mapa' ? 'nav.map' :
             item.href === '/community' ? 'nav.community' :
-            item.href === '/wallet' ? 'nav.wallet' : ''
+            item.href === '/wallet' ? 'nav.wallet' :
+            item.href === '/about' ? 'nav.about' : ''
           }>
             {item.label}
           </span>
@@ -52,17 +70,21 @@ const navItems = [
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 50;
-    background: var(--surface-card);
+    z-index: 40;
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-top: 1px solid var(--border-light);
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  :global(.dark) .graffiti-nav {
+    background: rgba(15, 23, 42, 0.92);
+  }
+
   .nav-container {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     height: var(--bottom-nav-h); /* 4rem from tokens */
     max-width: 32rem; /* max-w-lg */
     margin: 0 auto;
@@ -108,13 +130,19 @@ const navItems = [
   }
 
   .nav-icon {
-    font-size: 1.5rem; /* text-2xl */
+    width: 1.5rem;
+    height: 1.5rem;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     /* Scale up slightly when active */
     .active & {
       transform: scale(1.1);
     }
+  }
+
+  /* Soft background pill behind active icon */
+  .active .nav-icon {
+    filter: drop-shadow(0 2px 4px rgba(13, 148, 136, 0.3));
   }
 
   .nav-label {
