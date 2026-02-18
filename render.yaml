@@ -2,7 +2,7 @@ services:
   - type: static_site
     name: muevecancun
     buildCommand: "./scripts/build_render.sh"
-    publishPath: dist
+    staticPublishPath: ./dist
     envVars:
       - key: NODE_VERSION
         value: 20

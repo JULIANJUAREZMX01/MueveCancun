@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SpatialHash } from '../utils/SpatialHash';
+import { SpatialHash } from '../lib/SpatialHash';
 
 describe('SpatialHash', () => {
   it('should create an instance with default cell size', () => {
