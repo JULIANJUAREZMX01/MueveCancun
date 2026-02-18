@@ -178,6 +178,8 @@ const ui = uiTranslations[currentLang];
   import { getTransportLabel } from "../utils/transport";
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { CoordinateFinder } from '../utils/CoordinateFinder';
+  import { escapeHtml } from '../utils/utils';
+  import { getWalletBalance, setWalletBalance } from '../utils/db';
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
@@ -318,12 +320,37 @@ const ui = uiTranslations[currentLang];
           const { text: catalogString, data: resolvedData } = await Promise.race([dataPromise, timeoutPromise]);
           jsonData = resolvedData;
 
+          // Normalize data for WASM: ensure root-level 'version' and valid 'horario' types
+          const normalized = { ...jsonData };
+          if (!normalized.version && normalized.metadata?.version) {
+              normalized.version = normalized.metadata.version;
+          }
+          if (!normalized.version) {
+              normalized.version = "1.0.0";
+          }
+          if (normalized.rutas) {
+              normalized.rutas = normalized.rutas.map((r: any) => {
+                  const route = { ...r };
+                  // Convert string horario to Schedule object
+                  if (typeof route.horario === 'string') {
+                      const parts = route.horario.split('-');
+                      route.horario = { inicio: parts[0]?.trim() || '', fin: parts[1]?.trim() || '' };
+                  }
+                  // Ensure required 'tipo' field exists
+                  if (!route.tipo && !route.tipo_transporte) {
+                      route.tipo = 'Bus_Urbano';
+                  }
+                  return route;
+              });
+          }
+          const normalizedString = JSON.stringify(normalized);
+
           // Sentinel: Enforce 10MB limit
-          if (catalogString.length > 10 * 1024 * 1024) {
+          if (normalizedString.length > 10 * 1024 * 1024) {
              throw new Error("Catalog too large (DoS protection)");
           }
 
-          load_catalog(catalogString);
+          load_catalog(normalizedString);
           console.timeEnd("WASM Load");
           console.log("✅ Catalog loaded into WASM:", jsonData?.rutas?.length || 0, "routes");
 
@@ -358,7 +385,26 @@ const ui = uiTranslations[currentLang];
 
       renderError(`System Error: ${e.message || "Initialization failed"}`);
     } finally {
-      await updateBalance();
+      // Setup event listeners immediately — don't let async operations block this
+      setupEventListeners();
+
+      // Handle Query Params (e.g., from "Trazar Ruta Aquí")
+      const urlParams = new URLSearchParams(window.location.search);
+      const selectedStop = urlParams.get('selected_stop');
+      if (selectedStop) {
+          const destInput = document.getElementById('destination-input');
+          if (destInput) {
+              destInput.value = selectedStop;
+              destInput.dispatchEvent(new Event('input', { bubbles: true }));
+              
+              const originInput = document.getElementById('origin-input');
+              if (originInput) originInput.focus();
+          }
+      }
+
+      // Balance update (non-blocking)
+      updateBalance().catch(e => console.warn("[RouteCalculator] Balance update failed:", e));
+
       // Initialize shared coordinates store and Finder
       try {
         await coordinatesStore.init(jsonData);
@@ -523,9 +569,9 @@ const ui = uiTranslations[currentLang];
               </div>
               <div class="text-right shrink-0 flex flex-col items-end pl-3" style="border-left: 1px solid var(--border-light);">
                 <span class="price-tag">
-                    $${journey.total_price.toFixed(2)}
+                    $${(journey.total_price || 0).toFixed(2)}
                 </span>
-                <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration)}</p>
+                <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration || '')}</p>
 
                 <button class="btn-primary btn-sm mt-3 whitespace-nowrap view-map-btn" data-journey='${safeJsonStringify(journey)}'>
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg> <span data-i18n="calc.results.map">${ui['calc.results.map'] || 'Ver Mapa'}</span>
@@ -595,7 +641,7 @@ const ui = uiTranslations[currentLang];
 
             <div class="mt-4 pt-3 flex justify-between items-center" style="border-top: 1px solid var(--border-light);">
                 <span class="price-tag">
-                    $${journey.total_price.toFixed(2)}
+                    $${(journey.total_price || 0).toFixed(2)}
                 </span>
 
                 <button class="btn-primary btn-sm view-map-btn"
@@ -824,27 +870,6 @@ const ui = uiTranslations[currentLang];
           }
       });
   }
-
-  // Hook into start
-  const originalStart = start;
-  start = async function() {
-      await originalStart(); // Run initialization
-      setupEventListeners(); // Then setup listeners
-
-      // Handle Query Params (e.g., from "Trazar Ruta Aquí")
-      const urlParams = new URLSearchParams(window.location.search);
-      const selectedStop = urlParams.get('selected_stop');
-      if (selectedStop) {
-          const destInput = document.getElementById('destination-input');
-          if (destInput) {
-              destInput.value = selectedStop; // Already decoded by URLSearchParams
-              destInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger floating label
-              
-              const originInput = document.getElementById('origin-input');
-              if (originInput) originInput.focus(); // Focus origin to prompt user
-          }
-      }
-  };
 
   document.addEventListener('astro:page-load', start);
 

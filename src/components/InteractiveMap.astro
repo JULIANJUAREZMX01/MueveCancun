@@ -68,7 +68,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         console.warn("Failed to load coordinates via Store", e);
     }
 
-    if (loader) loader.classList.add('hidden');
+    // Map loading complete
 
     // Check for Picker Mode
     const urlParams = new URLSearchParams(window.location.search);
