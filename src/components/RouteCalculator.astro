@@ -195,11 +195,11 @@ const ui = uiTranslations[currentLang];
 
 <div id="i18n-data" data-ui={JSON.stringify(ui)} class="hidden"></div>
 <script>
-  import { coordinatesStore } from '../utils/CoordinatesStore';
-  import { CoordinateFinder } from '../utils/CoordinateFinder';
-  import { escapeHtml } from "../utils/utils";
-  import { getWalletBalance, setWalletBalance } from '../utils/db';
-  import { getTransportLabel } from "../utils/transport";
+  import { openDB } from 'idb';
+  import { getTransportLabel } from "../lib/transport";
+  import { coordinatesStore } from '../lib/CoordinatesStore';
+  import { CoordinateFinder } from '../lib/CoordinateFinder';
+
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
   const ui = i18nDataEl ? JSON.parse(i18nDataEl.dataset.ui || '{}') : {};

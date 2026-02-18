@@ -1,7 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import { getAllRoutes } from '../../utils/routes';
-import { getTransportLabel } from "../../utils/transport";
+import { getAllRoutes } from '../../lib/routes';
+import { getTransportLabel } from '../../lib/transport';
 
 const rawRoutes = await getAllRoutes();
 
@@ -20,6 +20,7 @@ interface UIRoute {
   origin_hub?: string;
   dest_hub?: string;
 }
+
 const transformRoute = (raw: any): UIRoute => {
   let transport_type = raw.tipo_transporte || raw.tipo || "Bus";
   
@@ -71,7 +72,7 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
     <!-- List Container -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
        {routes.map(route => {
-          let stopsPreview = `${route.origin_hub} ➔ ${route.dest_hub}`;
+          let stopsPreview = `${route.origin_hub} ➔ ${route.dest_hub}`; // Updated arrow to match previous rendering if needed, but keeping consistent with what I saw
 
           return (
           <a href={`/ruta/${route.id}`} class="glass-card p-5 group hover:border-primary-300 transition-all active:scale-[0.98] no-underline block overflow-hidden relative">
