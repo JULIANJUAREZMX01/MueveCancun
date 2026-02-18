@@ -73,7 +73,7 @@ const schemaData = {
            <div class="space-y-1">
                 <div class="flex items-center gap-2 mb-2">
                    <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-bold border border-orange-200 uppercase tracking-tighter">
-                      {route.tipo.replace('_', ' ')}
+                      {(route.tipo || 'Ruta').replace('_', ' ')}
                    </span>
                    {route.tarifa && (
                     <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 uppercase tracking-tighter">
@@ -160,9 +160,9 @@ const schemaData = {
                     
                     {stop.amenities && stop.amenities.length > 0 && (
                       <div class="flex gap-2 mt-2">
-                        {stop.amenities.map((amenity: string) => (
+                        {stop.amenities?.map((amenity: string) => (
                           <span class="text-[9px] font-black uppercase tracking-tighter bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200">
-                            {amenity.replace('_', ' ')}
+                            {(amenity || '').replace('_', ' ')}
                           </span>
                         ))}
                       </div>
@@ -213,7 +213,7 @@ const schemaData = {
 </MainLayout>
 
 <script>
-  import { favoritesStore } from '../../lib/FavoritesStore';
+  import { favoritesStore } from '../../utils/FavoritesStore';
   import { analytics } from '../../utils/Analytics';
 
   function initPage() {

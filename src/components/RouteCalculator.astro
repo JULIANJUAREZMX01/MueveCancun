@@ -195,7 +195,7 @@ const ui = uiTranslations[currentLang];
 
 <div id="i18n-data" data-ui={JSON.stringify(ui)} class="hidden"></div>
 <script>
-  import { coordinatesStore } from '../lib/CoordinatesStore';
+  import { coordinatesStore } from '../utils/CoordinatesStore';
   import { CoordinateFinder } from '../utils/CoordinateFinder';
   import { escapeHtml } from "../utils/utils";
   import { getWalletBalance, setWalletBalance } from '../utils/db';
@@ -247,6 +247,9 @@ const ui = uiTranslations[currentLang];
   let hasBalance = false;
   let wasmLoaded = false;
   let finder; // Global Coordinate Finder instance
+  let find_route;
+  let validate_operator_funds;
+  let load_catalog;
 
   const btn = document.getElementById('search-btn');
 
