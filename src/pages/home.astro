@@ -16,14 +16,13 @@ const title = "Inicio";
 	<div class="dashboard-container pointer-events-none">
 		<div class="glass-panel-wrapper animate-fade-in-up pointer-events-auto flex flex-col items-center">
 
-            <!-- Hero Headline (Restored) -->
-            <div class="hero-headline mb-6 text-center">
-                <h1 class="font-display font-black text-4xl md:text-5xl tracking-tight text-slate-900 drop-shadow-sm leading-tight">
-                    ¿Qué ruta me lleva?
-                    <span class="block text-primary-500">Cancún</span>
+            <!-- Hero Headline — compact, doesn't overlap header -->
+            <div class="hero-headline mb-4 text-center px-2">
+                <h1 class="font-display font-black text-2xl sm:text-3xl md:text-4xl tracking-tight leading-tight" style="color: var(--text-primary);">
+                    ¿A dónde vamos hoy?
                 </h1>
-                <p class="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full inline-block shadow-sm">
-                    La guía oficial de transporte público
+                <p class="text-xs font-bold uppercase tracking-widest mt-1.5 text-slate-500 dark:text-slate-400">
+                    Cancún · Transporte Público
                 </p>
             </div>
 
@@ -58,18 +57,21 @@ const title = "Inicio";
     z-index: 10;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end; /* Mobile: Bottom aligned */
-    padding: 1rem;
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
-    pointer-events: none; /* Let clicks pass to map */
+    justify-content: flex-end;
+    padding: 0.75rem;
+    padding-top: calc(var(--header-h) + 0.5rem);
+    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 0.5rem);
+    pointer-events: none;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .glass-panel-wrapper {
     width: 100%;
-    max-width: 480px;
-    margin: 0 auto;
+    max-width: 440px;
+    margin: auto auto 0;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: auto; /* Catch clicks on form */
+    pointer-events: auto;
 }
 
 /* Hero Headline Styles */
@@ -77,7 +79,7 @@ const title = "Inicio";
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-/* Map Mode Adjustments (Hide Hero when searching/mapping) */
+/* Map Mode Adjustments */
 .dashboard-container.map-mode .hero-headline {
     opacity: 0;
     transform: translateY(-20px);
@@ -97,17 +99,29 @@ const title = "Inicio";
     opacity: 0.8;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
     .dashboard-container {
-        justify-content: center; /* Desktop: Center aligned */
+        justify-content: center;
         align-items: flex-start;
-        padding-left: 4rem; /* Offset for left-aligned layout if preferred */
-        padding-top: 4rem;
+        padding: 2rem;
+        padding-top: calc(var(--header-h) + 2rem);
+        padding-bottom: 2rem;
+        overflow-y: auto;
     }
-    
+
     .glass-panel-wrapper {
-        margin: 0; /* Left align on desktop? Or center? User image shows centered-ish but maybe left column. */
-        margin-left: 2rem;
+        margin: auto 0 auto 2rem;
+        max-width: 420px;
+    }
+}
+
+@media (min-width: 1280px) {
+    .dashboard-container {
+        padding-left: 4rem;
+    }
+
+    .glass-panel-wrapper {
+        margin-left: 3rem;
     }
 }
 
@@ -119,5 +133,21 @@ const title = "Inicio";
 
 .animate-fade-in-up {
     animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Search card subtle scale entrance */
+.search-card {
+    animation: card-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+@keyframes card-enter {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 </style>

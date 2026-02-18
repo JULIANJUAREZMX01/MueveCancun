@@ -6,15 +6,15 @@ import InteractiveMap from '../components/InteractiveMap.astro';
 <MainLayout title="Mapa Interactivo" useMap={true}>
   <div class="space-y-6">
     <header class="text-center max-w-2xl mx-auto">
-      <h1 class="text-4xl font-display font-bold text-gray-900 mb-4">
+      <h1 class="text-4xl font-display font-bold text-slate-900 dark:text-slate-100 mb-4">
         Mapa de Transporte de Cancún
       </h1>
-      <p class="text-gray-600">
+      <p class="text-slate-600 dark:text-slate-300">
         Explora todas las rutas y paradas en tiempo real.
       </p>
     </header>
 
-    <div class="sunny-card overflow-hidden h-[70vh]">
+    <div class="glass-card overflow-hidden h-[70vh]">
       <InteractiveMap />
     </div>
   </div>

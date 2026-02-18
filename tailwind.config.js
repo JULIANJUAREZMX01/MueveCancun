@@ -9,8 +9,24 @@ export default {
         // Brand
         'deep-navy': '#0F172A',
 
-        // Primary (Warm Orange — CTA, highlights)
+        // Primary (Caribbean Teal — CTA, highlights)
         primary: {
+          50:  '#f0fdfa',
+          100: '#ccfbf1',
+          200: '#99f6e4',
+          300: '#5eead4',
+          400: '#2dd4bf',
+          500: '#14b8a6',
+          600: '#0d9488',
+          700: '#0f766e',
+          800: '#115e59',
+          900: '#134e4a',
+          950: '#042f2e',
+          DEFAULT: '#0d9488',
+        },
+
+        // Accent (Sunset Orange — alerts, notifications)
+        accent: {
           50:  '#FFF7ED',
           100: '#FFEDD5',
           200: '#FED7AA',
@@ -21,23 +37,7 @@ export default {
           700: '#C2410C',
           800: '#9A3412',
           900: '#7C2D12',
-          950: '#431407',
           DEFAULT: '#F97316',
-        },
-
-        // Accent (Caribbean Blue — maps, info)
-        accent: {
-          50:  '#F0F9FF',
-          100: '#E0F2FE',
-          200: '#BAE6FD',
-          300: '#7DD3FC',
-          400: '#38BDF8',
-          500: '#0EA5E9',
-          600: '#0284C7',
-          700: '#0369A1',
-          800: '#075985',
-          900: '#0C4A6E',
-          DEFAULT: '#0EA5E9',
         },
 
         // Success
@@ -83,7 +83,7 @@ export default {
         'card':     '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
         'card-hover': '0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05)',
         'btn':      '0 1px 2px rgba(0, 0, 0, 0.05)',
-        'btn-primary': '0 4px 14px -2px rgba(249, 115, 22, 0.35)',
+        'btn-primary': '0 4px 14px -2px rgba(13, 148, 136, 0.35)',
         'inner-glow': 'inset 0 1px 0 rgba(255, 255, 255, 0.1)',
       },
 
@@ -103,6 +103,7 @@ export default {
         'scale-in':     'scaleIn 0.25s ease-out',
         'pulse-soft':   'pulseSoft 2s ease-in-out infinite',
         'shimmer':      'shimmer 2s linear infinite',
+        'bounce-in':    'bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
       },
       keyframes: {
         fadeIn: {
@@ -132,6 +133,11 @@ export default {
         shimmer: {
           '0%':   { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
+        },
+        bounceIn: {
+          '0%':   { transform: 'scale(0.9)', opacity: '0' },
+          '50%':  { transform: 'scale(1.02)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
 
