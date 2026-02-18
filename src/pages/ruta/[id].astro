@@ -11,8 +11,9 @@ export async function getStaticPaths() {
   try {
     const fileContent = await fs.readFile(routesPath, 'utf-8');
     const routesData = JSON.parse(fileContent);
+    const routes = routesData.rutas || routesData.routes || [];
 
-    return routesData.rutas.map((route: any) => ({
+    return routes.map((route: any) => ({
       params: { id: route.id },
       props: { route },
     }));

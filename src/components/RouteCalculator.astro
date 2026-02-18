@@ -49,6 +49,7 @@ const ui = uiTranslations[currentLang];
             aria-expanded="false"
             data-i18n-label="calc.origin"
             data-i18n-placeholder="calc.placeholder.origin"
+            maxlength={100}
           >
             <!-- GPS Button inside Input -->
             <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip" aria-label="Use my location">
@@ -77,6 +78,7 @@ const ui = uiTranslations[currentLang];
             aria-expanded="false"
             data-i18n-label="calc.dest"
             data-i18n-placeholder="calc.placeholder.dest"
+            maxlength={100}
           >
             <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip">
               <img src="/icons/map-plus.svg" class="w-5 h-5" alt="Map Picker" />

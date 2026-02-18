@@ -125,6 +125,9 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
 }
 
 pub fn get_route_by_id_core(id: &str) -> Result<Option<Route>, String> {
+    if id.len() > 100 {
+        return Ok(None);
+    }
     let db = DB.read().map_err(|_| "Lock failed".to_string())?;
     Ok(db.routes_map.get(id).cloned())
 }
