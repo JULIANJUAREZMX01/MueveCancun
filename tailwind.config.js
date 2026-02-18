@@ -103,6 +103,7 @@ export default {
         'scale-in':     'scaleIn 0.25s ease-out',
         'pulse-soft':   'pulseSoft 2s ease-in-out infinite',
         'shimmer':      'shimmer 2s linear infinite',
+        'bounce-in':    'bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
       },
       keyframes: {
         fadeIn: {
@@ -132,6 +133,11 @@ export default {
         shimmer: {
           '0%':   { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
+        },
+        bounceIn: {
+          '0%':   { transform: 'scale(0.9)', opacity: '0' },
+          '50%':  { transform: 'scale(1.02)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
 

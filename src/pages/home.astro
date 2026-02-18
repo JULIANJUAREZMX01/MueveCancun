@@ -134,4 +134,20 @@ const title = "Inicio";
 .animate-fade-in-up {
     animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Search card subtle scale entrance */
+.search-card {
+    animation: card-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+@keyframes card-enter {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
 </style>
