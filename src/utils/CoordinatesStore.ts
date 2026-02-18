@@ -1,4 +1,4 @@
-import { getDistance } from "../utils/utils";
+import { getDistance } from "./utils";
 import { SpatialHash } from "./SpatialHash";
 
 // Define Types

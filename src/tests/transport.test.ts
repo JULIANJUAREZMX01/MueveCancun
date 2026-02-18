@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { getTransportLabel } from '../lib/transport';
+import { getTransportLabel } from '../utils/transport';
 
 test('getTransportLabel handles exact matches', () => {
   expect(getTransportLabel('Bus')).toBe('Autobús');

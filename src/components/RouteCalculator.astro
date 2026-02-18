@@ -173,10 +173,9 @@ const ui = uiTranslations[currentLang];
 <div id="i18n-data" data-ui={JSON.stringify(ui)} class="hidden"></div>
 <script>
   import { openDB } from 'idb';
-  import { getTransportLabel } from "../lib/transport";
-  import { coordinatesStore } from '../lib/CoordinatesStore';
-  import { CoordinateFinder } from '../lib/CoordinateFinder';
-  import { getTransportLabel } from '../lib/transport';
+  import { getTransportLabel } from "../utils/transport";
+  import { coordinatesStore } from '../utils/CoordinatesStore';
+  import { CoordinateFinder } from '../utils/CoordinateFinder';
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
