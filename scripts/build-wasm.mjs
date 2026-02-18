@@ -55,7 +55,6 @@ modules.forEach(mod => {
     console.log(`📦 Processing ${mod}...`);
     const sourceDir = path.join(rootDir, 'rust-wasm', mod);
     const publicOutDir = path.join(rootDir, 'public', 'wasm', mod);
-    const srcOutDir = path.join(rootDir, 'src', 'wasm', mod);
 
     // Clean public output directory before building
     if (fs.existsSync(publicOutDir)) {
@@ -96,21 +95,7 @@ modules.forEach(mod => {
         fs.unlinkSync(gitignorePath);
     }
 
-    // Copy to src/wasm
-    if (!fs.existsSync(srcOutDir)) {
-        fs.mkdirSync(srcOutDir, { recursive: true });
-    }
-
-    // Clean src output directory before copying
-    fs.rmSync(srcOutDir, { recursive: true, force: true });
-    fs.mkdirSync(srcOutDir, { recursive: true });
-
-    const files = fs.readdirSync(publicOutDir);
-    files.forEach(file => {
-        fs.copyFileSync(path.join(publicOutDir, file), path.join(srcOutDir, file));
-    });
-
-    console.log(`✅ ${mod} synced to src/wasm/.`);
+    console.log(`✅ ${mod} built successfully to public/wasm/${mod}/`);
 });
 
 console.log('🎉 WASM setup complete.');

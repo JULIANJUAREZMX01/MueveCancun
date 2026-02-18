@@ -19,6 +19,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+server_log.txt
+preview_output.txt
 
 # Dependencies
 node_modules
@@ -42,13 +44,30 @@ __pycache__
 *.pyc
 .next
 
+# AI Agent Directories (should not be committed)
+.agent
+.agent_context
+.Jules
+.cursor
+
 # Rust / WASM
 /rust-wasm/target
 /src/wasm/route_calculator/pkg
+# Keep only public/wasm/ - src/wasm/ is a duplicate
+/src/wasm/
 
 # Temporary files
 *.tmp
 tmp/
+
+# Snapshots and Testing Artifacts
+*_snapshot.html
+*_content.md
+snapshot_*.png
+mapa_snapshot.html
+mapa_updated_snapshot.html
+home_snapshot.html
+rutas_snapshot.html
 
 # Frameworks / Tooling
 .astro
@@ -57,6 +76,4 @@ node_modules/
 dist/
 .astro/
 Cargo.lock
-.git
-.github
 public/wasm/engine/
