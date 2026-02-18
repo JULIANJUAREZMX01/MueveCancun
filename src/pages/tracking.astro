@@ -6,8 +6,8 @@ import MainLayout from '../layouts/MainLayout.astro';
 	<div class="tracking-page">
 		<!-- Header -->
 		<header class="tracking-header">
-			<button class="back-btn" onclick="history.back()">
-				<span class="material-icons-round">arrow_back</span>
+			<button class="back-btn" onclick="history.back()" aria-label="Go back">
+				<svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
 			</button>
 			<div class="header-info">
 				<h1 class="route-title">Ruta 12</h1>
@@ -21,7 +21,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 			<!-- Bus Pin -->
 			<div class="bus-pin-container animate-float">
 				<div class="bus-pin">
-					<span class="material-icons-round">directions_bus</span>
+					<svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
 				</div>
 				<div class="pulse-ring"></div>
 				<div class="pin-shadow"></div>
@@ -47,7 +47,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 				<div class="qr-code-container">
 					<!-- CSS/HTML Simulated QR Code -->
 					<div class="qr-placeholder">
-						<span class="material-icons-round qr-icon">qr_code_2</span>
+						<svg class="w-24 h-24 text-slate-800" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zM13 3v8h8V3h-8zm6 6h-4V5h4v4zM19 19h2v2h-2zM13 13h2v2h-2zM15 15h2v2h-2zM13 17h2v2h-2zM15 19h2v2h-2zM17 17h2v2h-2zM17 13h2v2h-2zM19 15h2v2h-2z"/></svg>
 					</div>
 				</div>
 
@@ -108,7 +108,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 		justify-content: center;
 		box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 		cursor: pointer;
-		color: #1E293B;
+		color: var(--text-primary);
 	}
 
 	.header-info {
@@ -236,7 +236,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 		margin: 0;
 		font-size: 1.125rem;
 		font-weight: 700;
-		color: #1E293B;
+		color: var(--text-primary);
 	}
 
 	.live-badge {
@@ -314,7 +314,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 	.value {
 		font-size: 1.125rem;
 		font-weight: 700;
-		color: #1E293B;
+		color: var(--text-primary);
 	}
 
 	.value.highlight {
