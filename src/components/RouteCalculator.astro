@@ -593,9 +593,9 @@ const ui = uiTranslations[currentLang];
   function renderError(msg) {
     if (!resultsContainer) return;
     resultsContainer.innerHTML = `
-        <div class="glass-card flex items-center gap-3 animate-slide-up" style="border-left: 3px solid var(--danger);">
-            <span class="material-symbols-rounded text-danger-500 text-lg" style="font-variation-settings: 'FILL' 1;">error</span>
-            <span class="font-bold text-sm" style="color: var(--danger);">${escapeHtml(msg)}</span>
+        <div class="glass-card flex items-center gap-3 animate-slide-up" style="border-left: 3px solid var(--color-sunset);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--color-sunset)" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            <span class="font-bold text-sm" style="color: var(--text-secondary);">${escapeHtml(msg)}</span>
         </div>
     `;
     if (window.showToast) window.showToast(msg, 'error');

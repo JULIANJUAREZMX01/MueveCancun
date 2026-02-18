@@ -39,19 +39,18 @@ const { id = 'passenger-selector', initialCount = 1 } = Astro.props;
     /* Reuse existing styles for the trigger */
     .passengers-selector {
         flex: 1;
-        background-color: var(--surface-card);
-        border: 1px solid var(--border-light);
-        border-radius: 0.75rem;
+        background-color: #f1f5f9;
+        border: 2px solid transparent;
+        border-radius: var(--radius-full);
         padding: 0.5rem 0.75rem;
         cursor: pointer;
         text-align: left;
         width: 100%;
-        transition: background-color 0.2s;
-        /* Anchor name defined inline */
+        transition: all 0.2s;
     }
 
     .passengers-selector:hover {
-        background-color: var(--surface-elevated);
+        background-color: #e2e8f0;
     }
 
     .passengers-selector label {
