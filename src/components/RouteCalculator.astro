@@ -220,6 +220,11 @@ const ui = uiTranslations[currentLang];
                   console.error("Invalid journey data", err);
               }
           }
+
+          // Sentinel Security Fix: Retry Button Delegation
+          if (target.closest('.js-retry-search-btn')) {
+              setTimeout(() => document.getElementById('origin-input')?.focus(), 50);
+          }
       });
   }
 
@@ -689,7 +694,7 @@ const ui = uiTranslations[currentLang];
               <p class="text-sm mb-6 max-w-[200px] mx-auto" style="color: var(--text-secondary);" data-i18n="calc.no_route_msg">
                   ${ui['calc.no_route_msg'] || 'Try changing your origin or destination, or walking to a main avenue.'}
               </p>
-               <button class="btn-secondary btn-sm" onclick="document.getElementById('origin-input').focus()" data-i18n="calc.retry">
+               <button class="btn-secondary btn-sm js-retry-search-btn" data-i18n="calc.retry">
                   ${ui['calc.retry'] || 'Try Again'}
               </button>
           </div>

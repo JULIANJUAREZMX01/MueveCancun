@@ -168,7 +168,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
                     <div class="p-1">
                         <p class="font-bold text-gray-900">${escapeHtml(name)}</p>
                         <p class="text-xs text-gray-500">${isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés'}</p>
-                        <button onclick="window.location.href='/rutas?search=${safeUrl(name)}'" class="mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
+                        <button data-stop-name="${escapeHtml(name)}" class="js-view-details-btn mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
                     </div>
                 `);
                 newLayers.push(marker);
@@ -219,6 +219,19 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         initMap();
         setupGPS();
       });
+  }
+
+  // --- Global Event Delegation (Security Fix: Remove Inline Handlers) ---
+  // This allows us to comply with stricter CSP (no unsafe-inline eventually)
+  if (typeof document !== 'undefined') {
+    document.addEventListener('click', (e) => {
+        // @ts-ignore
+        const btn = e.target?.closest('.js-view-details-btn');
+        if (btn && btn.dataset.stopName) {
+            const name = btn.dataset.stopName;
+            window.location.href = `/rutas?search=${safeUrl(name)}`;
+        }
+    });
   }
 
   // --- GPS Logic ---
