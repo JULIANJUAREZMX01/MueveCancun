@@ -15,7 +15,7 @@ type RouteData = {
 };
 
 export class CoordinatesStore {
-    private db: { [key: string]: { lat: number; lng: number } } | null = null;
+    private db: { [key: string]: [number, number] } | null = null;
     private spatialIndex: SpatialHash<string> | null = null;
     private loadingPromise: Promise<{ text: string, data: any }> | null = null;
     private allPoints: Coordinate[] = [];
@@ -43,23 +43,24 @@ export class CoordinatesStore {
 
                 this.db = {};
                 this.spatialIndex = new SpatialHash(); // Initialize SpatialHash
+                this.allPoints = []; // Clear on re-init to prevent duplicates
                 
                 if (data.rutas) {
                     data.rutas.forEach((route: RouteData) => {
                         route.paradas.forEach(stop => {
                             // Normalize Key
                             const key = stop.nombre.toLowerCase().trim();
-                            if (this.db) this.db[key] = { lat: stop.lat, lng: stop.lng };
+                            if (this.db) this.db[key] = [stop.lat, stop.lng];
                         });
                     });
                 }
                 // Populate Spatial Index and List
                 if (this.db) {
                     Object.entries(this.db).forEach(([name, coords]) => {
-                         const lat = coords.lat;
-                         const lng = coords.lng;
+                         const lat = coords[0];
+                         const lng = coords[1];
                          if (this.spatialIndex) this.spatialIndex.insert(lat, lng, name);
-                         this.allPoints.push({ name: name, lat, lng } as any);
+                         this.allPoints.push({ name, lat, lng });
                     });
                 }
                 console.log(`[CoordinatesStore] Indexed ${Object.keys(this.db || {}).length} stops.`);
@@ -89,7 +90,7 @@ export class CoordinatesStore {
         let nearest = null;
 
         for (const [name, coords] of Object.entries(this.db)) {
-            const d = getDistance(lat, lng, coords.lat, coords.lng);
+            const d = getDistance(lat, lng, coords[0], coords[1]);
             if (d < minDist) {
                 minDist = d;
                 nearest = name;
