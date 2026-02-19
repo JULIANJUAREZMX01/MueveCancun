@@ -761,6 +761,52 @@ const ui = uiTranslations[currentLang];
           });
       }
 
+      // Quick Action Buttons (Home, Work, Airport, Beach)
+      document.querySelectorAll('.quick-action-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+              const dest = btn.dataset.dest;
+              if (dest) {
+                  const destInput = document.getElementById('destination-input');
+                  if (destInput) {
+                      destInput.value = dest;
+                      destInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  }
+              }
+          });
+      });
+
+      // Toggle Results List
+      const toggleBtn = document.getElementById('toggle-list-btn');
+      if (toggleBtn) {
+          toggleBtn.addEventListener('click', () => {
+              const resultsContainer = document.getElementById('results-container');
+              const bestResultArea = document.getElementById('best-result-area');
+              const toggleText = document.getElementById('toggle-list-text');
+              const toggleIcon = document.getElementById('toggle-list-icon');
+              const isHidden = resultsContainer?.classList.contains('hidden');
+
+              if (isHidden) {
+                  resultsContainer?.classList.remove('hidden');
+                  bestResultArea?.classList.remove('hidden');
+                  if (toggleText) toggleText.textContent = ui['calc.toggle.hide'] || 'Hide';
+                  if (toggleIcon) toggleIcon.style.transform = '';
+              } else {
+                  resultsContainer?.classList.add('hidden');
+                  bestResultArea?.classList.add('hidden');
+                  if (toggleText) toggleText.textContent = ui['calc.toggle.show'] || 'Show';
+                  if (toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
+              }
+          });
+      }
+
+      // Map Picker Button
+      const mapPickerBtn = document.getElementById('map-picker-btn');
+      if (mapPickerBtn) {
+          mapPickerBtn.addEventListener('click', () => {
+              window.location.href = '/mapa?picker=dest';
+          });
+      }
+
       const btn = document.getElementById('search-btn');
       
       // Remove existing listener to prevent duplicates if any
