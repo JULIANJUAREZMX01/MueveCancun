@@ -20,14 +20,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Claude Code Action Official
+      - name: Claude Code Action Official (planning/triage)
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          instructions: ${{ github.event.inputs.instructions }}
+          instructions: |
+            Primary planning/triage. If additional context is provided, use it to outline steps. Then hand off concrete edits to the code-base action.
+            User input: ${{ github.event.inputs.instructions }}
 
-      - name: Claude Code Base Action
+      - name: Claude Code Base Action (apply changes)
         uses: anthropics/claude-code-base-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          instructions: ${{ github.event.inputs.instructions }}
+          instructions: |
+            Apply or propose concrete code changes based on planning above.
+            User input: ${{ github.event.inputs.instructions }}
