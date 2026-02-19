@@ -1,0 +1,32 @@
+name: Delegate to Claude (unscoped tasks)
+
+on:
+  workflow_dispatch:
+    inputs:
+      instructions:
+        description: "Context or tasks to delegate (leave blank to let Claude plan)."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  claude-delegation:
+    name: Send unplanned work to Claude
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Claude Code Action Official
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          instructions: ${{ github.event.inputs.instructions }}
+
+      - name: Claude Code Base Action
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          instructions: ${{ github.event.inputs.instructions }}
