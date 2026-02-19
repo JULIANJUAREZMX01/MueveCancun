@@ -242,8 +242,8 @@ const ui = uiTranslations[currentLang];
           duration_minutes: journey.duration_minutes ?? 0,
           legs: (journey.legs || []).map(leg => {
               const paradas = leg.paradas || [];
-              const firstStop = paradas[0];
-              const lastStop = paradas[paradas.length - 1];
+              const firstStop = paradas.length > 0 ? paradas[0] : null;
+              const lastStop = paradas.length > 0 ? paradas[paradas.length - 1] : null;
               return {
                   ...leg,
                   name: leg.name || leg.nombre || '',
@@ -252,9 +252,9 @@ const ui = uiTranslations[currentLang];
                   frequency: leg.frequency || (leg.frecuencia_minutos ? `${leg.frecuencia_minutos} min` : ''),
                   duration: leg.duration || '',
                   badges: leg.badges || [],
-                  origin_hub: leg.origin_hub || (firstStop?.nombre) || '',
-                  dest_hub: leg.dest_hub || (lastStop?.nombre) || '',
-                  stops: leg.stops || paradas.map(p => p.nombre) || [],
+                  origin_hub: leg.origin_hub || firstStop?.nombre || '',
+                  dest_hub: leg.dest_hub || lastStop?.nombre || '',
+                  stops: leg.stops || (paradas.length > 0 ? paradas.map(p => p.nombre) : []),
               };
           })
       };
