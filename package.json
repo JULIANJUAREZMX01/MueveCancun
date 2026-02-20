@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "packageManager": "pnpm@9.15.4",
+  "pnpm": {
+    "overrides": {
+      "tar": ">=7.4.3",
+      "axios": ">=1.6.0"
+    }
+  },
   "engines": {
     "node": ">=20"
   },
