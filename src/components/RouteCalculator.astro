@@ -89,8 +89,8 @@ const ui = uiTranslations[currentLang];
       </div>
 
       <!-- Quick Actions -->
-      <div>
-        <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar snap-x">
+      <div class="quick-actions-wrapper">
+        <div class="quick-actions-list flex gap-2 overflow-x-auto pb-1 no-scrollbar snap-x">
           <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Walmart" data-i18n-html="calc.home" aria-label="Navigate home">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Home
           </button>
@@ -703,25 +703,21 @@ const ui = uiTranslations[currentLang];
   function setupEventListeners() {
       // Swap Button Logic
       const swapBtn = document.getElementById('swap-btn');
-      if (swapBtn) {
-          const newSwapBtn = swapBtn.cloneNode(true);
-          swapBtn.parentNode.replaceChild(newSwapBtn, swapBtn);
-
-          newSwapBtn.addEventListener('click', (e) => {
+      if (swapBtn && !swapBtn.dataset.initialized) {
+          swapBtn.dataset.initialized = "true";
+          swapBtn.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log("Swap clicked!");
+
               const originInput = document.getElementById('origin-input');
               const destInput = document.getElementById('destination-input');
               if (originInput && destInput) {
-                  console.log("Before swap:", originInput.value, destInput.value);
                   const temp = originInput.value;
                   originInput.value = destInput.value;
                   destInput.value = temp;
-                  console.log("After swap:", originInput.value, destInput.value);
 
                   // Rotate animation
-                  newSwapBtn.classList.toggle('rotated');
+                  swapBtn.classList.toggle('rotated');
 
                   // Trigger input events
                   originInput.dispatchEvent(new Event('input'));
@@ -965,6 +961,59 @@ const ui = uiTranslations[currentLang];
 
   .swap-btn.rotated {
     transform: rotate(180deg);
+  }
+
+  /* GraffitiWarrior: Scroll-Driven Shadows for Quick Actions */
+  .quick-actions-wrapper {
+    position: relative;
+    /* Allows ::before/::after to respond to child's scroll */
+    timeline-scope: --scroll-x;
+  }
+
+  .quick-actions-list {
+    scroll-timeline: --scroll-x inline;
+  }
+
+  /* Shadow Masks */
+  .quick-actions-wrapper::before,
+  .quick-actions-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 40px;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    /* Use 'auto' duration for scroll-driven animations */
+    animation-duration: auto;
+    animation-fill-mode: both;
+    animation-timeline: --scroll-x;
+  }
+
+  /* Left Shadow: Appears when scrolled right */
+  .quick-actions-wrapper::before {
+    left: 0;
+    background: linear-gradient(to right, var(--surface-bg, #f8fafc), transparent);
+    animation-name: gw-fade-in;
+    animation-range: 0px 20px;
+  }
+
+  /* Right Shadow: Disappears when scrolled to end */
+  .quick-actions-wrapper::after {
+    right: 0;
+    background: linear-gradient(to left, var(--surface-bg, #f8fafc), transparent);
+    animation-name: gw-fade-out;
+    animation-range: calc(100% - 20px) 100%;
+  }
+
+  @keyframes gw-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes gw-fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
   }
 </style>
 
