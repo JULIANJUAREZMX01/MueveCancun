@@ -47,6 +47,8 @@ CLAUDE.md
 Cargo.lock
 /src/wasm/
 public/wasm/engine/
+public/wasm/route-calculator/
+public/wasm/spatial-index/
 
 # Temporary files
 *.tmp

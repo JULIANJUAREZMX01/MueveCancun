@@ -6,6 +6,12 @@
   "engines": {
     "node": ">=20"
   },
+  "pnpm": {
+    "overrides": {
+      "tar": "^7.5.3",
+      "axios": "^1.7.9"
+    }
+  },
   "scripts": {
     "dev": "astro dev",
     "dev:network": "astro dev --host",
