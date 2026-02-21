@@ -84,15 +84,24 @@ export class CoordinatesStore {
     }
 
     findNearest(lat: number, lng: number): string | null {
-        if (!this.db) return null;
+        if (!this.db || !this.spatialIndex) return null;
+
+        // Optimized O(1) Spatial Query
+        // Only search stops within the local grid cell + neighbors (3x3 grid)
+        const candidates = this.spatialIndex.query(lat, lng);
+
+        if (candidates.length === 0) {
+            return null; // No stops nearby
+        }
+
         let minDist = Infinity;
         let nearest = null;
 
-        for (const [name, coords] of Object.entries(this.db)) {
-            const d = getDistance(lat, lng, coords.lat, coords.lng);
+        for (const candidate of candidates) {
+            const d = getDistance(lat, lng, candidate.lat, candidate.lng);
             if (d < minDist) {
                 minDist = d;
-                nearest = name;
+                nearest = candidate.data;
             }
         }
         return nearest;
