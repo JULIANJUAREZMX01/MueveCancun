@@ -37,6 +37,12 @@
     "typescript": "^5.9.2",
     "vite": "^6.3.1"
   },
+  "pnpm": {
+    "overrides": {
+      "tar": "^7.5.4",
+      "axios": "^1.6.0"
+    }
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "cheerio": "^1.2.0",
