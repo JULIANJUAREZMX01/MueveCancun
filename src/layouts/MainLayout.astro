@@ -2,6 +2,7 @@
 import { ClientRouter } from 'astro:transitions';
 import '../index.css';
 import Toast from '../components/ui/Toast.astro';
+import PwaReload from '../components/ui/PwaReload.astro';
 import BottomNav from '../components/BottomNav.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import { ui as uiTranslations } from '../utils/i18n';
@@ -272,48 +273,10 @@ const navItems = [
 
     <div id="i18n-translations" data-translations={JSON.stringify(uiTranslations)} class="hidden"></div>
 
-    <!-- PWA Toast -->
-    <div id="pwa-update-toast" class="hidden fixed z-50 bottom-24 left-4 right-4 md:bottom-6 animate-slide-up">
-      <div class="glass-card p-4 flex items-center justify-between gap-4 bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 rounded-2xl">
-        <div>
-          <h4 class="font-bold text-sm" data-i18n="pwa.update">Actualización disponible</h4>
-          <p class="text-xs text-slate-500" data-i18n="pwa.new_version">Nueva versión lista.</p>
-        </div>
-        <button id="pwa-refresh-btn" class="bg-primary-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold" data-i18n="pwa.refresh">
-            ACTUALIZAR
-        </button>
-      </div>
-    </div>
+    <PwaReload />
 
     <script is:inline>
-      /* Service Worker & Theme Logic (Same as before) */
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(reg => {
-            if (reg.waiting) document.getElementById('pwa-update-toast')?.classList.remove('hidden');
-            reg.addEventListener('updatefound', () => {
-              const newWorker = reg.installing;
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    document.getElementById('pwa-update-toast')?.classList.remove('hidden');
-                }
-              });
-            });
-          });
-        });
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (refreshing) return;
-            window.location.reload();
-            refreshing = true;
-        });
-        document.getElementById('pwa-refresh-btn')?.addEventListener('click', () => {
-            navigator.serviceWorker.ready.then(reg => {
-                if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-            });
-        });
-      }
-
+      /* Theme Logic */
       function setupThemeToggle() {
         // Find existing buttons (desktop + mobile)
         const toggles = document.querySelectorAll('.theme-toggle');
