@@ -48,5 +48,11 @@
     "typescript-eslint": "^8.51.0",
     "vitest": "^4.0.1",
     "wasm-pack": "^0.14.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "tar": "^7.5.4",
+      "axios": "^1.6.0"
+    }
   }
 }

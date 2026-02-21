@@ -91,8 +91,8 @@ describe('CoordinatesStore', () => {
 
         await store.init(mockData);
 
-        // Point close to 10,10
-        const nearest = store.findNearest(10.1, 10.1);
+        // Point close to 10,10 (within SpatialHash grid of ~1km)
+        const nearest = store.findNearest(10.005, 10.005);
         expect(nearest).toBe('stop close');
     });
 });
