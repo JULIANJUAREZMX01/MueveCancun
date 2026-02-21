@@ -8,6 +8,11 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 ---
 
 <div id="map-container" class="w-full h-full relative" data-center={JSON.stringify(center)} data-zoom={zoom}>
+    <!-- Loading Spinner -->
+    <div id="map-loader" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50 dark:bg-slate-900 transition-opacity duration-500 pointer-events-none">
+        <div class="w-10 h-10 border-4 border-slate-200 dark:border-slate-800 border-t-primary-500 rounded-full animate-spin"></div>
+    </div>
+
     <!-- Map Element -->
     <div id="leaflet-map" class="w-full h-full z-0"></div>
 
@@ -28,23 +33,58 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   let map;
   let layerGroup;
   let coordinatesDB = {};
+  let leafletPromise = null;
+
+  function loadLeaflet() {
+      if (typeof window !== 'undefined' && window.L) return Promise.resolve();
+      if (leafletPromise) return leafletPromise;
+
+      leafletPromise = new Promise((resolve, reject) => {
+          // 1. Load CSS
+          if (!document.querySelector('link[href*="leaflet.css"]')) {
+              const link = document.createElement('link');
+              link.rel = 'stylesheet';
+              link.href = '/vendor/leaflet/leaflet.css';
+              document.head.appendChild(link);
+          }
+
+          // 2. Load JS
+          const script = document.createElement('script');
+          script.src = '/vendor/leaflet/leaflet.js';
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = reject;
+          document.head.appendChild(script);
+      });
+      return leafletPromise;
+  }
 
   async function initMap() {
     const container = document.getElementById('map-container');
+    const loader = document.getElementById('map-loader');
+
     if (!container) return; // Not on a page with a map
+
+    // Ensure Leaflet is loaded
+    try {
+        await loadLeaflet();
+    } catch (e) {
+        console.error("Failed to load map engine", e);
+        if (loader) loader.innerText = "Error loading map";
+        return;
+    }
+
+    // Hide Loader
+    if (loader) {
+        loader.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => loader.remove(), 500);
+    }
 
     // CLEANUP: If map exists but container is new/different, destroy old map
     // Or if container has content (Leaflet artifact), clear it.
     if (map) {
         map.remove();
         map = null;
-    }
-
-    // Ensure Leaflet is loaded
-    if (!window.L) {
-        // Retry shortly
-        setTimeout(initMap, 100);
-        return;
     }
 
     const center = JSON.parse(container.dataset.center);
@@ -206,18 +246,34 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
   // Re-init on page load
   document.addEventListener('astro:page-load', () => {
-      initMap();
-      setupGPS();
+      // Use requestIdleCallback to defer map initialization
+      if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(() => {
+              initMap();
+              setupGPS();
+          });
+      } else {
+          setTimeout(() => {
+              initMap();
+              setupGPS();
+          }, 200);
+      }
   });
 
   // Initial load
   if (document.readyState === 'complete') {
-      initMap();
-      setupGPS();
+      if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(() => { initMap(); setupGPS(); });
+      } else {
+          setTimeout(() => { initMap(); setupGPS(); }, 200);
+      }
   } else {
       window.addEventListener('load', () => {
-        initMap();
-        setupGPS();
+          if ('requestIdleCallback' in window) {
+              window.requestIdleCallback(() => { initMap(); setupGPS(); });
+          } else {
+              setTimeout(() => { initMap(); setupGPS(); }, 200);
+          }
       });
   }
 
