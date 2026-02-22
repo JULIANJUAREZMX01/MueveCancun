@@ -1,5 +1,6 @@
 ---
 import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../utils/i18n';
+import { safeJsonStringify } from '../utils/utils';
 import Input from './ui/Input.astro';
 import Switch from './ui/Switch.astro';
 import PassengerSelector from './ui/PassengerSelector.astro';
@@ -172,13 +173,13 @@ const ui = uiTranslations[currentLang];
 
 </div>
 
-<div id="i18n-data" data-ui={JSON.stringify(ui)} class="hidden"></div>
+<div id="i18n-data" data-ui={safeJsonStringify(ui)} class="hidden"></div>
 <script>
   import { openDB } from 'idb';
   import { getTransportLabel } from "../utils/transport";
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { CoordinateFinder } from '../utils/CoordinateFinder';
-  import { escapeHtml } from '../utils/utils';
+  import { escapeHtml, safeJsonStringify } from '../utils/utils';
   import { getWalletBalance, setWalletBalance } from '../utils/db';
 
   let currentLang = document.documentElement.lang || 'es';
@@ -193,13 +194,6 @@ const ui = uiTranslations[currentLang];
 
   // Helpers
 
-  // Security: Safe JSON Serialization for HTML Attributes
-  // Prevents XSS via attribute injection (e.g. </button><script>)
-  const safeJsonStringify = (obj) => {
-      return JSON.stringify(obj)
-          .replace(/</g, '\\u003c') // Escape < to prevent tag injection
-          .replace(/'/g, "&#39;"); // Escape ' to prevent attribute breakout
-  }
 
   // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
   if (typeof document !== 'undefined') {
