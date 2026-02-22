@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { escapeHtml } from '../utils/utils';
+import { escapeHtml, safeJsonStringify } from '../utils/utils';
 
 describe('escapeHtml Utility', () => {
   it('should escape HTML characters in strings', () => {
@@ -43,5 +43,22 @@ describe('escapeHtml Utility', () => {
   it('should handle multiple special characters', () => {
     expect(escapeHtml('<div class="test">Bob\'s & Alice\'s</div>'))
       .toBe('&lt;div class=&quot;test&quot;&gt;Bob&#039;s &amp; Alice&#039;s&lt;/div&gt;');
+  });
+});
+
+describe('safeJsonStringify Utility', () => {
+  it('should escape < and \' in JSON strings', () => {
+    const unsafe = { key: "<script>alert('xss')</script>" };
+    const expected = '{"key":"\\u003cscript>alert(\\u0027xss\\u0027)\\u003c/script>"}';
+    expect(safeJsonStringify(unsafe)).toBe(expected);
+  });
+
+  it('should handle complex objects', () => {
+    const obj = {
+        html: '<div class="foo">\'Bar\'</div>',
+        arr: ["<One>", "'Two'"]
+    };
+    const expected = '{"html":"\\u003cdiv class=\\"foo\\">\\u0027Bar\\u0027\\u003c/div>","arr":["\\u003cOne>","\\u0027Two\\u0027"]}';
+    expect(safeJsonStringify(obj)).toBe(expected);
   });
 });
