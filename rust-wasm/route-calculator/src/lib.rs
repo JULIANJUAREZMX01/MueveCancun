@@ -89,6 +89,66 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
 
 // --- CORE LOGIC (Pure Rust, Testable) ---
 
+fn validate_catalog(catalog: &RouteCatalog) -> Result<(), String> {
+    if catalog.rutas.len() > 5000 {
+        return Err(format!(
+            "Too many routes: {} (max 5000)",
+            catalog.rutas.len()
+        ));
+    }
+    for (i, route) in catalog.rutas.iter().enumerate() {
+        if route.id.len() > 100 {
+            return Err(format!(
+                "Route [{}] ID too long: {} (max 100)",
+                i,
+                route.id.len()
+            ));
+        }
+        if route.name.len() > 200 {
+            return Err(format!(
+                "Route [{}] Name too long: {} (max 200)",
+                i,
+                route.name.len()
+            ));
+        }
+        if route.stops.len() > 500 {
+            return Err(format!(
+                "Route [{}] Too many stops: {} (max 500)",
+                i,
+                route.stops.len()
+            ));
+        }
+        for (j, stop) in route.stops.iter().enumerate() {
+            if stop.name.len() > 200 {
+                return Err(format!(
+                    "Route [{}] Stop [{}] Name too long: {} (max 200)",
+                    i,
+                    j,
+                    stop.name.len()
+                ));
+            }
+        }
+        if route.social_alerts.len() > 10 {
+            return Err(format!(
+                "Route [{}] Too many social alerts: {} (max 10)",
+                i,
+                route.social_alerts.len()
+            ));
+        }
+        for (k, alert) in route.social_alerts.iter().enumerate() {
+            if alert.len() > 500 {
+                return Err(format!(
+                    "Route [{}] Social Alert [{}] too long: {} (max 500)",
+                    i,
+                    k,
+                    alert.len()
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
 pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     const MAX_PAYLOAD_SIZE: usize = 10 * 1024 * 1024; // 10MB
     if json_payload.len() > MAX_PAYLOAD_SIZE {
@@ -105,6 +165,8 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     if catalog.rutas.is_empty() {
         return Err("ERROR: Catalog contains 0 routes".to_string());
     }
+
+    validate_catalog(&catalog)?;
 
     // Pre-compute normalized stops for fuzzy matching
     for route in &mut catalog.rutas {
@@ -257,7 +319,7 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
 
     // Limit for DoS prevention
     const MAX_SEARCH_RESULTS: usize = 200;
-    const MAX_OPS: usize = 10_000_000;
+    const MAX_OPS: usize = 2_000_000;
     let mut ops_count = 0;
 
     // 1. Direct Routes
@@ -729,5 +791,72 @@ mod tests {
         assert!(duration.as_millis() < 1000, "High volume transfer took too long: {:?}", duration);
         assert!(!res.is_empty());
         assert_eq!(res.len(), 5); // Should be truncated to 5
+    }
+
+    #[test]
+    fn test_malformed_data() {
+        // Test Logic Bomb: 1000 stops
+        let mut stops = Vec::new();
+        for j in 0..1000 {
+             stops.push(Stop {
+                id: None,
+                name: format!("Stop {}", j),
+                lat: 0.0,
+                lng: 0.0,
+                orden: j as u32,
+                landmarks: String::new(),
+            });
+        }
+        let route = Route {
+            id: "R_BAD".to_string(),
+            name: "Bad Route".to_string(),
+            price: 10.0,
+            transport_type: "Bus".to_string(),
+            empresa: None,
+            frecuencia_minutos: None,
+            horario: None,
+            stops: stops,
+            stops_normalized: Vec::new(),
+            social_alerts: Vec::new(),
+            last_updated: String::new(),
+        };
+
+        let catalog = RouteCatalog {
+            version: "1.0".to_string(),
+            rutas: vec![route],
+        };
+
+        let json = serde_json::to_string(&catalog).unwrap();
+        let res = load_catalog_core(&json);
+
+        assert!(res.is_err(), "Should reject route with > 500 stops");
+        let err = res.err().unwrap();
+        assert!(err.contains("Too many stops"));
+        assert!(err.contains("max 500"));
+
+        // Test Logic Bomb: Huge Name
+        let huge_name = "A".repeat(201);
+        let route2 = Route {
+            id: "R_BAD_2".to_string(),
+            name: huge_name,
+            price: 10.0,
+            transport_type: "Bus".to_string(),
+            empresa: None,
+            frecuencia_minutos: None,
+            horario: None,
+            stops: vec![],
+            stops_normalized: Vec::new(),
+            social_alerts: Vec::new(),
+            last_updated: String::new(),
+        };
+        let catalog2 = RouteCatalog {
+            version: "1.0".to_string(),
+            rutas: vec![route2],
+        };
+        let json2 = serde_json::to_string(&catalog2).unwrap();
+        let res2 = load_catalog_core(&json2);
+
+        assert!(res2.is_err());
+        assert!(res2.err().unwrap().contains("Name too long"));
     }
 }
