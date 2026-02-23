@@ -1,0 +1,34 @@
+# ══════════════════════════════════════
+# GitHub Linguist Configuration
+# Controls language detection and stats
+# ══════════════════════════════════════
+
+# ── Generated Files (exclude from language stats) ──
+public/wasm/**/*.js linguist-generated=true
+public/wasm/**/*.d.ts linguist-generated=true
+public/data/routes/*.json linguist-generated=true
+pnpm-lock.yaml linguist-generated=true
+package-lock.json linguist-generated=true
+
+# ── Binary Files ──
+*.wasm binary linguist-generated=true
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.svg linguist-language=SVG
+
+# ── Vendored Files (exclude from language stats) ──
+public/vendor/** linguist-vendored=true
+
+# ── Language Overrides ──
+# Astro components are their own language
+*.astro linguist-language=Astro
+
+# Rust source (WASM engine)
+*.rs linguist-language=Rust
+
+# TypeScript source
+*.ts linguist-language=TypeScript
+
+# CSS styles
+*.css linguist-language=CSS
