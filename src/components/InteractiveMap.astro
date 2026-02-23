@@ -126,11 +126,8 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
             let minDist = Infinity;
 
             if (nearest && coordinatesDB[nearest]) {
-                 // Calculate distance to verify threshold (Store does it, but we need it for UI logic if we want strict < 1000m)
-                 // Store fallback is 1.5km. Map logic was 1000m.
-                 // We can trust the store or re-verify. Let's re-verify with Leaflet's distance to be consistent with previous logic.
                  const coords = coordinatesDB[nearest];
-                 minDist = map.distance(e.latlng, coords);
+                 minDist = e.latlng.distanceTo(window.L.latLng(coords[0], coords[1]));
             }
 
             // Threshold: 1000 meters

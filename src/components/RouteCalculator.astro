@@ -239,6 +239,32 @@ const ui = uiTranslations[currentLang];
 
   const btn = document.getElementById('search-btn');
 
+  // Normalize WASM journey output: map Spanish field names to English for rendering
+  function normalizeJourney(journey) {
+      return {
+          ...journey,
+          total_price: journey.total_price ?? 0,
+          duration_minutes: journey.duration_minutes ?? 0,
+          legs: (journey.legs || []).map(leg => {
+              const paradas = leg.paradas || [];
+              const firstStop = paradas.length > 0 ? paradas[0] : null;
+              const lastStop = paradas.length > 0 ? paradas[paradas.length - 1] : null;
+              return {
+                  ...leg,
+                  name: leg.name || leg.nombre || '',
+                  transport_type: leg.transport_type || leg.tipo || 'Bus_Urbano',
+                  operator: leg.operator || leg.operador || '',
+                  frequency: leg.frequency || (leg.frecuencia_minutos ? `${leg.frecuencia_minutos} min` : ''),
+                  duration: leg.duration || '',
+                  badges: leg.badges || [],
+                  origin_hub: leg.origin_hub || firstStop?.nombre || '',
+                  dest_hub: leg.dest_hub || lastStop?.nombre || '',
+                  stops: leg.stops || (paradas.length > 0 ? paradas.map(p => p.nombre) : []),
+              };
+          })
+      };
+  }
+
   // --- Initialization ---
 
   async function updateBalance() {
@@ -340,6 +366,11 @@ const ui = uiTranslations[currentLang];
                   if (typeof route.horario === 'string') {
                       const parts = route.horario.split('-');
                       route.horario = { inicio: parts[0]?.trim() || '', fin: parts[1]?.trim() || '' };
+                  } else if (route.horario && typeof route.horario === 'object') {
+                      // Normalize inicio_oficial/fin_oficial to inicio/fin
+                      if (!route.horario.inicio && route.horario.inicio_oficial) {
+                          route.horario = { inicio: route.horario.inicio_oficial, fin: route.horario.fin_oficial || '' };
+                      }
                   }
                   // Ensure required 'tipo' field exists
                   if (!route.tipo && !route.tipo_transporte) {
@@ -735,6 +766,52 @@ const ui = uiTranslations[currentLang];
           });
       }
 
+      // Quick Action Buttons (Home, Work, Airport, Beach)
+      document.querySelectorAll('.quick-action-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+              const dest = btn.dataset.dest;
+              if (dest) {
+                  const destInput = document.getElementById('destination-input');
+                  if (destInput) {
+                      destInput.value = dest;
+                      destInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  }
+              }
+          });
+      });
+
+      // Toggle Results List
+      const toggleBtn = document.getElementById('toggle-list-btn');
+      if (toggleBtn) {
+          toggleBtn.addEventListener('click', () => {
+              const resultsContainer = document.getElementById('results-container');
+              const bestResultArea = document.getElementById('best-result-area');
+              const toggleText = document.getElementById('toggle-list-text');
+              const toggleIcon = document.getElementById('toggle-list-icon');
+              const isHidden = resultsContainer?.classList.contains('hidden');
+
+              if (isHidden) {
+                  resultsContainer?.classList.remove('hidden');
+                  bestResultArea?.classList.remove('hidden');
+                  if (toggleText) toggleText.textContent = ui['calc.toggle.hide'] || 'Hide';
+                  if (toggleIcon) toggleIcon.style.transform = '';
+              } else {
+                  resultsContainer?.classList.add('hidden');
+                  bestResultArea?.classList.add('hidden');
+                  if (toggleText) toggleText.textContent = ui['calc.toggle.show'] || 'Show';
+                  if (toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
+              }
+          });
+      }
+
+      // Map Picker Button
+      const mapPickerBtn = document.getElementById('map-picker-btn');
+      if (mapPickerBtn) {
+          mapPickerBtn.addEventListener('click', () => {
+              window.location.href = '/mapa?picker=dest';
+          });
+      }
+
       const btn = document.getElementById('search-btn');
       
       // Remove existing listener to prevent duplicates if any
@@ -790,20 +867,23 @@ const ui = uiTranslations[currentLang];
               if (!results || results.length === 0) {
                   renderEmptyState();
               } else {
-                 results.sort((a, b) => {
+                 // Normalize WASM output (Spanish → English field mapping)
+                 const normalized = results.map(normalizeJourney);
+
+                 normalized.sort((a, b) => {
                      // Prioritize Direct routes
                      if (a.type === 'Direct' && b.type !== 'Direct') return -1;
                      if (b.type === 'Direct' && a.type !== 'Direct') return 1;
                      return a.total_price - b.total_price;
                  });
 
-                 const best = results[0];
-                 const others = results.slice(1);
+                 const best = normalized[0];
+                 const others = normalized.slice(1);
 
                   // Prepare UI Data
                  const optionsLabel = ui['calc.results.options'] || 'OPCIONES';
                  const fastestLabel = ui['calc.results.fastest'] || 'MÁS RÁPIDA';
-                 const countText = `${results.length} ${optionsLabel}`;
+                 const countText = `${normalized.length} ${optionsLabel}`;
                  let timeText = '';
                  let showTimeBadge = false;
 
