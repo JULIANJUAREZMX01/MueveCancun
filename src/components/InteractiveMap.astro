@@ -13,9 +13,10 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
     <!-- Map Controls (Custom) -->
     <div class="absolute bottom-24 right-4 z-[400] flex flex-col gap-2">
-        <button id="gps-center-btn" class="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-primary-500 transition-colors active:scale-95" aria-label="Centrar en mi ubicación">
+        <button id="gps-center-btn" class="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-primary-500 transition-colors active:scale-95" style="anchor-name: --gps-map-btn" aria-label="Centrar en mi ubicación">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
         </button>
+        <div id="gps-tooltip" class="graffiti-tooltip left" style="position-anchor: --gps-map-btn">Mi Ubicación</div>
     </div>
 </div>
 
@@ -247,6 +248,38 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   }
 
 </script>
+
+<style>
+  /* GraffitiWarrior: Native Tooltip via Anchor Positioning */
+  .graffiti-tooltip {
+    position: absolute;
+    margin: 0;
+    padding: 6px 12px;
+    background: #1e293b; /* slate-800 */
+    color: white;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), translate 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    z-index: 50;
+
+    /* Anchor Positioning */
+    right: anchor(left);
+    top: anchor(top);
+    translate: -12px 6px; /* Offset to center vertically relative to 40px btn */
+  }
+
+  /* Reveal logic */
+  #gps-center-btn:hover + .graffiti-tooltip,
+  #gps-center-btn:focus-visible + .graffiti-tooltip {
+    opacity: 1;
+    translate: -16px 6px; /* Slide out effect */
+  }
+</style>
 
 <style is:global>
   .user-location-marker {
