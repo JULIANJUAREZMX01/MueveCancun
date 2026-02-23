@@ -11,7 +11,6 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
-  useMap?: boolean;
   hideNav?: boolean;
 }
 
@@ -19,7 +18,6 @@ const {
   title,
   description = "La app oficial de transporte público para Cancún y Riviera Maya.",
   image = "/og-image.png",
-  useMap = false,
   hideNav = false
 } = Astro.props;
 
@@ -39,7 +37,11 @@ const navItems = [
 <html lang="es" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
+    <!-- Security: Content Security Policy (CSP) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://*.cartocdn.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self';" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <!-- Sentinel Security: Content Security Policy (Hardening) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://*.basemaps.cartocdn.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{title} | CancúnMueve</title>
@@ -59,13 +61,6 @@ const navItems = [
     <!-- Preload Critical Data -->
     <link rel="preload" href="/data/master_routes.json" as="fetch" crossorigin />
 
-    <!-- Leaflet -->
-    {useMap && (
-        <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
-        <link rel="preconnect" href="https://basemaps.cartocdn.com" />
-        <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
-        <script is:inline defer src="/vendor/leaflet/leaflet.js"></script>
-    )}
     <script>
       import { getWalletBalance } from '../utils/db';
       
