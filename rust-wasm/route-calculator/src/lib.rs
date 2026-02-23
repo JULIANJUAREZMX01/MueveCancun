@@ -858,5 +858,106 @@ mod tests {
 
         assert!(res2.is_err());
         assert!(res2.err().unwrap().contains("Name too long"));
+
+        // Test Logic Bomb: Oversized transport_type
+        let huge_transport_type = "T".repeat(201);
+        let route3 = Route {
+            id: "R_BAD_3".to_string(),
+            name: "Bad Route 3".to_string(),
+            price: 10.0,
+            transport_type: huge_transport_type,
+            empresa: None,
+            frecuencia_minutos: None,
+            horario: None,
+            stops: vec![],
+            stops_normalized: Vec::new(),
+            social_alerts: Vec::new(),
+            last_updated: String::new(),
+        };
+        let catalog3 = RouteCatalog {
+            version: "1.0".to_string(),
+            rutas: vec![route3],
+        };
+        let json3 = serde_json::to_string(&catalog3).unwrap();
+        let res3 = load_catalog_core(&json3);
+        assert!(res3.is_err());
+
+        // Test Logic Bomb: Oversized empresa field (when present)
+        let huge_empresa = "E".repeat(201);
+        let route4 = Route {
+            id: "R_BAD_4".to_string(),
+            name: "Bad Route 4".to_string(),
+            price: 10.0,
+            transport_type: "Bus".to_string(),
+            empresa: Some(huge_empresa),
+            frecuencia_minutos: None,
+            horario: None,
+            stops: vec![],
+            stops_normalized: Vec::new(),
+            social_alerts: Vec::new(),
+            last_updated: String::new(),
+        };
+        let catalog4 = RouteCatalog {
+            version: "1.0".to_string(),
+            rutas: vec![route4],
+        };
+        let json4 = serde_json::to_string(&catalog4).unwrap();
+        let res4 = load_catalog_core(&json4);
+        assert!(res4.is_err());
+
+        // Test Logic Bomb: Oversized landmarks and stop id
+        let huge_landmarks = "L".repeat(201);
+        let huge_stop_id = "S".repeat(201);
+        let bad_stop = Stop {
+            id: Some(huge_stop_id),
+            name: "Bad Stop".to_string(),
+            lat: 0.0,
+            lng: 0.0,
+            orden: 1,
+            landmarks: huge_landmarks,
+        };
+        let route5 = Route {
+            id: "R_BAD_5".to_string(),
+            name: "Bad Route 5".to_string(),
+            price: 10.0,
+            transport_type: "Bus".to_string(),
+            empresa: None,
+            frecuencia_minutos: None,
+            horario: None,
+            stops: vec![bad_stop],
+            stops_normalized: Vec::new(),
+            social_alerts: Vec::new(),
+            last_updated: String::new(),
+        };
+        let catalog5 = RouteCatalog {
+            version: "1.0".to_string(),
+            rutas: vec![route5],
+        };
+        let json5 = serde_json::to_string(&catalog5).unwrap();
+        let res5 = load_catalog_core(&json5);
+        assert!(res5.is_err());
+
+        // Test Logic Bomb: Oversized last_updated field
+        let huge_last_updated = "U".repeat(201);
+        let route6 = Route {
+            id: "R_BAD_6".to_string(),
+            name: "Bad Route 6".to_string(),
+            price: 10.0,
+            transport_type: "Bus".to_string(),
+            empresa: None,
+            frecuencia_minutos: None,
+            horario: None,
+            stops: vec![],
+            stops_normalized: Vec::new(),
+            social_alerts: Vec::new(),
+            last_updated: huge_last_updated,
+        };
+        let catalog6 = RouteCatalog {
+            version: "1.0".to_string(),
+            rutas: vec![route6],
+        };
+        let json6 = serde_json::to_string(&catalog6).unwrap();
+        let res6 = load_catalog_core(&json6);
+        assert!(res6.is_err());
     }
 }
