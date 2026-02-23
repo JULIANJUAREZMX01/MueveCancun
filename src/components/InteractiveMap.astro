@@ -30,6 +30,39 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   let layerGroup;
   let coordinatesDB = {};
 
+  // ⚡ Speedy Gonzalez: Lazy Load Leaflet to unblock Critical Rendering Path
+  async function loadLeaflet() {
+      if (window.L) return;
+
+      // Load CSS
+      if (!document.querySelector('link[href*="leaflet.css"]')) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = '/vendor/leaflet/leaflet.css';
+          document.head.appendChild(link);
+      }
+
+      // Load JS
+      if (!document.querySelector('script[src*="leaflet.js"]')) {
+          await new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = '/vendor/leaflet/leaflet.js';
+              script.defer = true;
+              script.onload = resolve;
+              script.onerror = reject;
+              document.head.appendChild(script);
+          });
+      }
+
+      // Wait for L to be available
+      let retries = 0;
+      while (!window.L && retries < 50) {
+          await new Promise(r => setTimeout(r, 50));
+          retries++;
+      }
+      if (!window.L) throw new Error("Leaflet failed to load");
+  }
+
   async function initMap() {
     const container = document.getElementById('map-container');
     if (!container) return; // Not on a page with a map
@@ -41,10 +74,11 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         map = null;
     }
 
-    // Ensure Leaflet is loaded
-    if (!window.L) {
-        // Retry shortly
-        setTimeout(initMap, 100);
+    // Ensure Leaflet is loaded (Lazy)
+    try {
+        await loadLeaflet();
+    } catch (e) {
+        console.error("Failed to load Leaflet", e);
         return;
     }
 
@@ -205,20 +239,33 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
       }
   });
 
-  // Re-init on page load
+  // Re-init on page load - Defer to unblock UI
   document.addEventListener('astro:page-load', () => {
-      initMap();
-      setupGPS();
+      if ('requestIdleCallback' in window) {
+          requestIdleCallback(() => {
+              initMap();
+              setupGPS();
+          });
+      } else {
+          setTimeout(() => {
+              initMap();
+              setupGPS();
+          }, 200);
+      }
   });
 
   // Initial load
   if (document.readyState === 'complete') {
-      initMap();
-      setupGPS();
-  } else {
-      window.addEventListener('load', () => {
+      setTimeout(() => {
         initMap();
         setupGPS();
+      }, 100);
+  } else {
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+            initMap();
+            setupGPS();
+        }, 100);
       });
   }
 
