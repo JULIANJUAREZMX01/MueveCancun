@@ -32,7 +32,7 @@ jobs:
             User input: ${{ github.event.inputs.instructions }}
 
       - name: Claude Code Base Action (apply changes)
-        uses: anthropics/claude-code-base-action@beta
+        uses: anthropics/claude-code-base-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           instructions: |
