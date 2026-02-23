@@ -146,6 +146,59 @@ fn validate_catalog(catalog: &RouteCatalog) -> Result<(), String> {
             }
         }
     }
+
+    // Additional length validation for string fields to prevent DoS via
+    // extremely long values, consistent with existing route.id (100 chars)
+    // and route.name (200 chars) limits.
+    for (i, route) in catalog.rutas.iter().enumerate() {
+        if route.transport_type.len() > 100 {
+            return Err(format!(
+                "Route [{}] transport_type too long: {} (max 100)",
+                i,
+                route.transport_type.len()
+            ));
+        }
+
+        if let Some(empresa) = &route.empresa {
+            if empresa.len() > 200 {
+                return Err(format!(
+                    "Route [{}] empresa too long: {} (max 200)",
+                    i,
+                    empresa.len()
+                ));
+            }
+        }
+
+        if route.last_updated.len() > 100 {
+            return Err(format!(
+                "Route [{}] last_updated too long: {} (max 100)",
+                i,
+                route.last_updated.len()
+            ));
+        }
+
+        for (j, stop) in route.stops.iter().enumerate() {
+            if stop.landmarks.len() > 200 {
+                return Err(format!(
+                    "Route [{}] Stop [{}] landmarks too long: {} (max 200)",
+                    i,
+                    j,
+                    stop.landmarks.len()
+                ));
+            }
+
+            if let Some(stop_id) = &stop.id {
+                if stop_id.len() > 100 {
+                    return Err(format!(
+                        "Route [{}] Stop [{}] id too long: {} (max 100)",
+                        i,
+                        j,
+                        stop_id.len()
+                    ));
+                }
+            }
+        }
+    }
     Ok(())
 }
 
