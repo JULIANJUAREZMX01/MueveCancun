@@ -15,7 +15,8 @@
   "scripts": {
     "dev": "astro dev",
     "dev:network": "astro dev --host",
-    "build": "node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
+    "build": "pnpm optimize-json && node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
+    "optimize-json": "node scripts/optimize-json.mjs",
     "build:wasm": "node scripts/build-wasm.mjs",
     "astro": "astro",
     "lint": "eslint .",
