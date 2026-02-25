@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { CoordinateFinder } from '../utils/CoordinateFinder';
 
 describe('CoordinateFinder', () => {
-    const db = {
-        'Plaza Las Americas': [21.145, -86.825] as [number, number],
-        'Mercado 28': [21.160, -86.828] as [number, number],
-        'Zona Hotelera': [21.135, -86.750] as [number, number],
-        'Cancun Mall': [21.165, -86.825] as [number, number],
-    };
+    const db = new Map<string, [number, number]>([
+        ['Plaza Las Americas', [21.145, -86.825]],
+        ['Mercado 28', [21.160, -86.828]],
+        ['Zona Hotelera', [21.135, -86.750]],
+        ['Cancun Mall', [21.165, -86.825]],
+    ]);
 
     const finder = new CoordinateFinder(db);
 

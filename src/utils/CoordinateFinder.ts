@@ -4,15 +4,15 @@ export interface StopMatch {
 }
 
 export class CoordinateFinder {
-    private db: Record<string, [number, number]>;
+    private db: Map<string, [number, number]>;
     private cache: Map<string, [number, number]> = new Map();
     private tokenIndex: Map<string, string[]> = new Map();
     private keys: string[];
     private lowerKeys: string[];
 
-    constructor(db: Record<string, [number, number]>) {
+    constructor(db: Map<string, [number, number]>) {
         this.db = db;
-        this.keys = Object.keys(db);
+        this.keys = Array.from(db.keys());
         this.lowerKeys = this.keys.map(k => k.toLowerCase());
         this.buildIndex();
     }
@@ -36,7 +36,7 @@ export class CoordinateFinder {
         const q = stopName.trim();
 
         // 1. Exact match
-        if (this.db[q]) return this.db[q];
+        if (this.db.has(q)) return this.db.get(q)!;
 
         // 2. Cache check
         if (this.cache.has(q)) return this.cache.get(q)!;
@@ -63,7 +63,7 @@ export class CoordinateFinder {
              }) || Array.from(candidates)[0];
         }
 
-        const result = bestKey ? this.db[bestKey] : null;
+        const result = bestKey ? (this.db.get(bestKey) || null) : null;
         if (result) this.cache.set(q, result);
         return result;
     }
@@ -72,7 +72,10 @@ export class CoordinateFinder {
         const coords = this.find(query);
         if (coords) {
              // Find original key for coords
-             const name = Object.keys(this.db).find(k => this.db[k][0] === coords[0] && this.db[k][1] === coords[1]) || query;
+             const name = Array.from(this.db.keys()).find(k => {
+                 const c = this.db.get(k);
+                 return c && c[0] === coords[0] && c[1] === coords[1];
+             }) || query;
              return { name, coords };
         }
         return null;
@@ -120,7 +123,7 @@ export class CoordinateFinder {
             .slice(0, limit)
             .map(name => ({
                 name,
-                coords: this.db[name]
+                coords: this.db.get(name)!
             }));
     }
 }

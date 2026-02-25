@@ -15,7 +15,7 @@ type RouteData = {
 };
 
 export class CoordinatesStore {
-    private db: { [key: string]: [number, number] } | null = null;
+    private db: Map<string, [number, number]> | null = null;
     private spatialIndex: SpatialHash<string> | null = null;
     private loadingPromise: Promise<{ text: string, data: any }> | null = null;
     private allPoints: Coordinate[] = [];
@@ -41,7 +41,7 @@ export class CoordinatesStore {
                     data = JSON.parse(text);
                 }
 
-                this.db = {};
+                this.db = new Map();
                 this.spatialIndex = new SpatialHash(); // Initialize SpatialHash
                 this.allPoints = []; // Clear on re-init to prevent duplicates
                 
@@ -50,20 +50,20 @@ export class CoordinatesStore {
                         route.paradas.forEach(stop => {
                             // Normalize Key
                             const key = stop.nombre.toLowerCase().trim();
-                            if (this.db) this.db[key] = [stop.lat, stop.lng];
+                            if (this.db) this.db.set(key, [stop.lat, stop.lng]);
                         });
                     });
                 }
                 // Populate Spatial Index and List
                 if (this.db) {
-                    Object.entries(this.db).forEach(([name, coords]) => {
+                    for (const [name, coords] of this.db.entries()) {
                          const lat = coords[0];
                          const lng = coords[1];
                          if (this.spatialIndex) this.spatialIndex.insert(lat, lng, name);
                          this.allPoints.push({ name, lat, lng });
-                    });
+                    }
                 }
-                console.log(`[CoordinatesStore] Indexed ${Object.keys(this.db || {}).length} stops.`);
+                console.log(`[CoordinatesStore] Indexed ${this.db?.size || 0} stops.`);
                 return { text, data };
             } catch (e) {
                 console.error("[CoordinatesStore] Failed to load data", e);
@@ -77,7 +77,7 @@ export class CoordinatesStore {
     getCoordinates(stopName: string) {
         if (!this.db) return null;
         const key = stopName.toLowerCase().trim();
-        return this.db[key] || null;
+        return this.db.get(key) || null;
     }
 
     getDB() {
@@ -89,7 +89,7 @@ export class CoordinatesStore {
         let minDist = Infinity;
         let nearest = null;
 
-        for (const [name, coords] of Object.entries(this.db)) {
+        for (const [name, coords] of this.db.entries()) {
             const d = getDistance(lat, lng, coords[0], coords[1]);
             if (d < minDist) {
                 minDist = d;
