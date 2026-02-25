@@ -42,7 +42,7 @@ export class CoordinatesStore {
                 }
 
                 this.db = {};
-                this.spatialIndex = new SpatialHash(); // Initialize SpatialHash
+                this.spatialIndex = new SpatialHash<string>(); // Initialize SpatialHash
                 this.allPoints = []; // Clear on re-init to prevent duplicates
                 
                 if (data.rutas) {
@@ -85,17 +85,34 @@ export class CoordinatesStore {
     }
 
     findNearest(lat: number, lng: number): string | null {
-        if (!this.db) return null;
+        if (!this.db || !this.spatialIndex) return null;
+
+        // Optimization: Use Spatial Hash for O(1) query
+        const candidates = this.spatialIndex.query(lat, lng);
         let minDist = Infinity;
         let nearest = null;
 
-        for (const [name, coords] of Object.entries(this.db)) {
-            const d = getDistance(lat, lng, coords[0], coords[1]);
-            if (d < minDist) {
-                minDist = d;
-                nearest = name;
+        if (candidates.length > 0) {
+            // Search candidates (SpatialHash structure: { lat, lng, data })
+            for (const point of candidates) {
+                const d = getDistance(lat, lng, point.lat, point.lng);
+                if (d < minDist) {
+                    minDist = d;
+                    nearest = point.data;
+                }
+            }
+        } else {
+            // Fallback: Linear scan all points (allPoints structure: { name, lat, lng })
+            // This happens only if no stops are within the spatial grid cells (~3km area)
+            for (const point of this.allPoints) {
+                const d = getDistance(lat, lng, point.lat, point.lng);
+                if (d < minDist) {
+                    minDist = d;
+                    nearest = point.name;
+                }
             }
         }
+
         return nearest;
     }
 }
