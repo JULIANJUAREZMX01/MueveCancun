@@ -42,7 +42,7 @@ describe('CoordinatesStore', () => {
         const result = await store.init(mockData);
         expect(result.data).toEqual(mockData);
         // utils/CoordinatesStore stores as [lat, lng] tuples with lowercase keys
-        expect(store.getDB()!['stop a']).toEqual([10, 10]);
+        expect(store.getDB()!.get('stop a')).toEqual([10, 10]);
     });
 
     it('should fetch data if not injected', async () => {
@@ -68,7 +68,7 @@ describe('CoordinatesStore', () => {
 
         const result = await store.init();
         expect(result.data).toEqual(mockData);
-        expect(store.getDB()!['stop b']).toEqual([20, 20]);
+        expect(store.getDB()!.get('stop b')).toEqual([20, 20]);
         expect(mockFetch).toHaveBeenCalledWith('/data/master_routes.json');
     });
 

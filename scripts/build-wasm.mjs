@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
-const modules = ['route-calculator', 'spatial-index'];
+const modules = ['route-calculator'];
 
 console.log('🏗️  Starting WASM build process...');
 

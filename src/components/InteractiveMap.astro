@@ -28,7 +28,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
   let map;
   let layerGroup;
-  let coordinatesDB = {};
+  let coordinatesDB = new Map();
 
   // ⚡ Speedy Gonzalez: Lazy Load Leaflet to unblock Critical Rendering Path
   async function loadLeaflet() {
@@ -98,7 +98,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     // Load coordinates DB via Store (Optimized)
     try {
         await coordinatesStore.init();
-        coordinatesDB = coordinatesStore.getDB() || {};
+        coordinatesDB = coordinatesStore.getDB() || new Map();
     } catch (e) {
         console.warn("Failed to load coordinates via Store", e);
     }
@@ -125,8 +125,8 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
             const nearest = coordinatesStore.findNearest(lat, lng);
             let minDist = Infinity;
 
-            if (nearest && coordinatesDB[nearest]) {
-                 const coords = coordinatesDB[nearest];
+            if (nearest && coordinatesDB.has(nearest)) {
+                 const coords = coordinatesDB.get(nearest);
                  minDist = e.latlng.distanceTo(window.L.latLng(coords[0], coords[1]));
             }
 
@@ -177,7 +177,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     // Draw all points from DB as refined markers
     if (!pendingRoute) {
         const newLayers = [];
-        const allStops = Object.entries(coordinatesDB);
+        const allStops = Array.from(coordinatesDB.entries());
 
         // 🛡️ SECURITY: Prevent Client-Side DoS
         // Rendering 1000+ markers crashes the browser. Only render if count is low (< 100).
@@ -210,7 +210,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         if (newLayers.length > 0) {
             layerGroup = window.L.layerGroup(newLayers).addTo(map);
             // Optionally fit bounds to all points if database is not empty
-            const allCoords = Object.values(coordinatesDB);
+            const allCoords = Array.from(coordinatesDB.values());
             if (allCoords.length > 0) {
                 map.fitBounds(allCoords, { padding: [40, 40], maxZoom: 15 });
             }
