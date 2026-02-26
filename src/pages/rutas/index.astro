@@ -75,6 +75,7 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
        {routes.map(route => {
           let stopsPreview = `${route.origin_hub} ➔ ${route.dest_hub}`; // Updated arrow to match previous rendering if needed, but keeping consistent with what I saw
+          const safeId = route.id.replace(/[^a-zA-Z0-9]/g, '');
 
           return (
           <a href={`/ruta/${route.id}`} class="glass-card p-5 group hover:border-primary-300 transition-all active:scale-[0.98] no-underline block overflow-hidden relative stagger-item" style={`animation-delay: ${routes.indexOf(route) * 60}ms`}>
@@ -87,7 +88,7 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
             <div class="flex justify-between items-start relative z-10">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-2">
-                    <span class="px-2 py-0.5 rounded-md bg-primary-100 text-primary-700 text-[10px] font-black uppercase tracking-widest">
+                    <span class="px-2 py-0.5 rounded-md bg-primary-100 text-primary-700 text-[10px] font-black uppercase tracking-widest" style={`view-transition-name: route-badge-${safeId}`}>
                       {route.id}
                     </span>
                     <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
@@ -95,7 +96,7 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
                     </span>
                 </div>
                 
-                <h3 class="font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary-600 transition-colors truncate pr-4">{route.name}</h3>
+                <h3 class="font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary-600 transition-colors truncate pr-4" style={`view-transition-name: route-title-${safeId}`}>{route.name}</h3>
 
                 <!-- Meta Info Row -->
                 <div class="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tighter">
@@ -111,7 +112,7 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
               </div>
 
               <div class="text-right shrink-0">
-                <div class="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                <div class="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono" style={`view-transition-name: route-price-${safeId}`}>
                     ${route.price}<span class="text-xs">.00</span>
                 </div>
                 <div class="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tighter">EFECTIVO</div>
