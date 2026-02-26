@@ -89,6 +89,67 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
 
 // --- CORE LOGIC (Pure Rust, Testable) ---
 
+fn validate_catalog_content(catalog: &RouteCatalog) -> Result<(), String> {
+    const MAX_ROUTES: usize = 5000;
+    const MAX_STOPS_PER_ROUTE: usize = 500;
+    const MAX_STRING_LEN: usize = 100;
+    const MAX_LONG_STRING_LEN: usize = 200;
+
+    if catalog.rutas.len() > MAX_ROUTES {
+        return Err(format!(
+            "Too many routes: {} (max {})",
+            catalog.rutas.len(),
+            MAX_ROUTES
+        ));
+    }
+
+    for route in &catalog.rutas {
+        if route.id.len() > MAX_STRING_LEN {
+            return Err(format!("Route ID too long: {}...", &route.id[..20]));
+        }
+        if route.name.len() > MAX_STRING_LEN {
+            return Err(format!("Route name too long: {}...", &route.name[..20]));
+        }
+
+        if route.stops.len() > MAX_STOPS_PER_ROUTE {
+            return Err(format!(
+                "Route {} has too many stops: {} (max {})",
+                route.id,
+                route.stops.len(),
+                MAX_STOPS_PER_ROUTE
+            ));
+        }
+
+        for stop in &route.stops {
+            if stop.name.len() > MAX_STRING_LEN {
+                return Err(format!(
+                    "Stop name too long in route {}: {}...",
+                    route.id,
+                    &stop.name[..20]
+                ));
+            }
+            if stop.landmarks.len() > MAX_LONG_STRING_LEN {
+                return Err(format!(
+                    "Stop landmarks too long in route {}: {}...",
+                    route.id,
+                    &stop.landmarks[..20]
+                ));
+            }
+        }
+
+        for alert in &route.social_alerts {
+            if alert.len() > MAX_LONG_STRING_LEN {
+                return Err(format!(
+                    "Social alert too long in route {}: {}...",
+                    route.id,
+                    &alert[..20]
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
 pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     const MAX_PAYLOAD_SIZE: usize = 10 * 1024 * 1024; // 10MB
     if json_payload.len() > MAX_PAYLOAD_SIZE {
@@ -105,6 +166,8 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     if catalog.rutas.is_empty() {
         return Err("ERROR: Catalog contains 0 routes".to_string());
     }
+
+    validate_catalog_content(&catalog)?;
 
     // Pre-compute normalized stops for fuzzy matching
     for route in &mut catalog.rutas {
@@ -729,5 +792,47 @@ mod tests {
         assert!(duration.as_millis() < 1000, "High volume transfer took too long: {:?}", duration);
         assert!(!res.is_empty());
         assert_eq!(res.len(), 5); // Should be truncated to 5
+    }
+
+    #[test]
+    fn test_validation_limits() {
+        // 1. Test too many routes
+        let mut routes = Vec::new();
+        for i in 0..5001 {
+            routes.push(format!(
+                r#"{{"id": "R{}", "nombre": "R", "tarifa": 10.0, "tipo": "Bus", "paradas": []}}"#,
+                i
+            ));
+        }
+        let json = format!(r#"{{"version": "1.0", "rutas": [{}]}}"#, routes.join(","));
+        let res = load_catalog_core(&json);
+        assert!(res.is_err());
+        assert!(res.err().unwrap().contains("Too many routes"));
+
+        // 2. Test route name too long
+        let long_name = "a".repeat(101);
+        let json_long_name = format!(
+            r#"{{"version": "1.0", "rutas": [{{"id": "R1", "nombre": "{}", "tarifa": 10.0, "tipo": "Bus", "paradas": []}}]}}"#,
+            long_name
+        );
+        let res = load_catalog_core(&json_long_name);
+        assert!(res.is_err());
+        assert!(res.err().unwrap().contains("Route name too long"));
+
+        // 3. Test too many stops
+        let mut stops = Vec::new();
+        for i in 0..501 {
+            stops.push(format!(
+                r#"{{"nombre": "S{}", "lat": 0.0, "lng": 0.0, "orden": {}}}"#,
+                i, i
+            ));
+        }
+        let json_stops = format!(
+            r#"{{"version": "1.0", "rutas": [{{"id": "R1", "nombre": "R1", "tarifa": 10.0, "tipo": "Bus", "paradas": [{}]}}]}}"#,
+            stops.join(",")
+        );
+        let res = load_catalog_core(&json_stops);
+        assert!(res.is_err());
+        assert!(res.err().unwrap().contains("too many stops"));
     }
 }
