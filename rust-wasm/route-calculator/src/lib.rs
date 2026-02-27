@@ -89,6 +89,40 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
 
 // --- CORE LOGIC (Pure Rust, Testable) ---
 
+fn validate_catalog_content(catalog: &RouteCatalog) -> Result<(), String> {
+    const MAX_ROUTES: usize = 5000;
+    const MAX_STOPS_PER_ROUTE: usize = 500;
+    const MAX_STR_LEN: usize = 100;
+    const MAX_SOCIAL_LEN: usize = 200;
+
+    if catalog.rutas.len() > MAX_ROUTES {
+        return Err(format!("Too many routes: {} (max {})", catalog.rutas.len(), MAX_ROUTES));
+    }
+
+    for route in &catalog.rutas {
+        if route.id.len() > MAX_STR_LEN {
+            return Err(format!("Route ID too long: {}", route.id));
+        }
+        if route.name.len() > MAX_STR_LEN {
+            return Err(format!("Route Name too long: {}", route.name));
+        }
+        if route.stops.len() > MAX_STOPS_PER_ROUTE {
+            return Err(format!("Too many stops in route {}: {} (max {})", route.id, route.stops.len(), MAX_STOPS_PER_ROUTE));
+        }
+        for stop in &route.stops {
+             if stop.name.len() > MAX_STR_LEN {
+                 return Err(format!("Stop name too long in route {}: {}", route.id, stop.name));
+             }
+        }
+        for alert in &route.social_alerts {
+            if alert.len() > MAX_SOCIAL_LEN {
+                return Err(format!("Social alert too long in route {}: {}", route.id, alert));
+            }
+        }
+    }
+    Ok(())
+}
+
 pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     const MAX_PAYLOAD_SIZE: usize = 10 * 1024 * 1024; // 10MB
     if json_payload.len() > MAX_PAYLOAD_SIZE {
@@ -105,6 +139,9 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     if catalog.rutas.is_empty() {
         return Err("ERROR: Catalog contains 0 routes".to_string());
     }
+
+    // Sentinel: Security Validation
+    validate_catalog_content(&catalog)?;
 
     // Pre-compute normalized stops for fuzzy matching
     for route in &mut catalog.rutas {
@@ -729,5 +766,37 @@ mod tests {
         assert!(duration.as_millis() < 1000, "High volume transfer took too long: {:?}", duration);
         assert!(!res.is_empty());
         assert_eq!(res.len(), 5); // Should be truncated to 5
+    }
+
+    #[test]
+    fn test_validation_limits() {
+        // Construct a JSON payload with 6000 routes (exceeding limit of 5000)
+        let mut routes_json = String::new();
+        for i in 0..6000 {
+            if i > 0 { routes_json.push(','); }
+            routes_json.push_str(&format!(
+                r#"{{
+                    "id": "R_{}",
+                    "nombre": "Route {}",
+                    "tarifa": 10.0,
+                    "tipo": "Bus",
+                    "paradas": []
+                }}"#,
+                i, i
+            ));
+        }
+
+        let json = format!(r#"{{"version": "1.0", "rutas": [{}]}}"#, routes_json);
+
+        // Ensure payload is under 10MB to pass the first check
+        assert!(json.len() < 10 * 1024 * 1024, "Test payload too large");
+
+        // Attempt to load
+        let res = load_catalog_core(&json);
+
+        // Expectation: Should fail due to strict validation limits
+        assert!(res.is_err(), "Should reject catalog with > 5000 routes");
+        let err_msg = res.err().unwrap();
+        assert!(err_msg.contains("Too many routes"), "Error message mismatch: {}", err_msg);
     }
 }
