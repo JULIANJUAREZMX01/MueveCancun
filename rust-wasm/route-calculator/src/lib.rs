@@ -89,6 +89,39 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
 
 // --- CORE LOGIC (Pure Rust, Testable) ---
 
+fn validate_catalog_content(catalog: &RouteCatalog) -> Result<(), String> {
+    if catalog.rutas.len() > 5000 {
+        return Err("Too many routes (max 5000)".to_string());
+    }
+
+    for route in &catalog.rutas {
+        if route.id.len() > 100 {
+            return Err(format!("Route ID too long: {}", route.id));
+        }
+        if route.name.len() > 100 {
+            return Err(format!("Route name too long: {}", route.name));
+        }
+        if route.stops.len() > 500 {
+            return Err(format!("Too many stops in route {}: max 500", route.id));
+        }
+        for stop in &route.stops {
+            if stop.name.len() > 100 {
+                return Err(format!("Stop name too long in {}: {}", route.id, stop.name));
+            }
+            if stop.landmarks.len() > 200 {
+                return Err(format!("Landmarks too long in {}: {}", route.id, stop.name));
+            }
+        }
+        for alert in &route.social_alerts {
+             if alert.len() > 200 {
+                return Err(format!("Social alert too long in {}: {}", route.id, alert));
+            }
+        }
+    }
+
+    Ok(())
+}
+
 pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     const MAX_PAYLOAD_SIZE: usize = 10 * 1024 * 1024; // 10MB
     if json_payload.len() > MAX_PAYLOAD_SIZE {
@@ -105,6 +138,9 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     if catalog.rutas.is_empty() {
         return Err("ERROR: Catalog contains 0 routes".to_string());
     }
+
+    // Validate structural limits
+    validate_catalog_content(&catalog)?;
 
     // Pre-compute normalized stops for fuzzy matching
     for route in &mut catalog.rutas {
@@ -245,7 +281,18 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
 
     let mut route_matches = Vec::with_capacity(all_routes.len());
 
+    // Limit for DoS prevention
+    const MAX_SEARCH_RESULTS: usize = 200;
+    const MAX_OPS: usize = 200_000; // Decreased to 200k for even faster DoS abort
+    let mut ops_count = 0;
+
     for route in all_routes {
+        // Sentinel: Prevent initial scan DoS
+        ops_count += route.stops_normalized.len() * 2;
+        if ops_count > MAX_OPS {
+             break;
+        }
+
         let origin_idx = match_stop(&origin_norm, route, &mut origin_cache);
         let dest_idx = match_stop(&dest_norm, route, &mut dest_cache);
         route_matches.push(RouteMatch {
@@ -254,11 +301,6 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
             dest_idx,
         });
     }
-
-    // Limit for DoS prevention
-    const MAX_SEARCH_RESULTS: usize = 200;
-    const MAX_OPS: usize = 10_000_000;
-    let mut ops_count = 0;
 
     // 1. Direct Routes
     for m in &route_matches {
@@ -729,5 +771,49 @@ mod tests {
         assert!(duration.as_millis() < 1000, "High volume transfer took too long: {:?}", duration);
         assert!(!res.is_empty());
         assert_eq!(res.len(), 5); // Should be truncated to 5
+    }
+
+    #[test]
+    fn test_validation_limits() {
+        // Test Too Many Routes
+        let mut routes = Vec::new();
+        for i in 0..5001 {
+            routes.push(Route {
+                id: format!("R{}", i),
+                name: "R".to_string(),
+                price: 10.0,
+                transport_type: "Bus".to_string(),
+                empresa: None,
+                frecuencia_minutos: None,
+                horario: None,
+                stops: Vec::new(),
+                stops_normalized: Vec::new(),
+                social_alerts: Vec::new(),
+                last_updated: String::new(),
+            });
+        }
+        let catalog = RouteCatalog { version: "1.0".to_string(), rutas: routes };
+        let res = validate_catalog_content(&catalog);
+        assert!(res.is_err());
+        assert_eq!(res.err().unwrap(), "Too many routes (max 5000)");
+
+        // Test ID Too Long
+        let long_id = "A".repeat(101);
+        let route = Route {
+            id: long_id,
+            name: "R".to_string(),
+            price: 10.0,
+            transport_type: "Bus".to_string(),
+            empresa: None,
+            frecuencia_minutos: None,
+            horario: None,
+            stops: Vec::new(),
+            stops_normalized: Vec::new(),
+            social_alerts: Vec::new(),
+            last_updated: String::new(),
+        };
+        let catalog = RouteCatalog { version: "1.0".to_string(), rutas: vec![route] };
+        let res = validate_catalog_content(&catalog);
+        assert!(res.is_err());
     }
 }
