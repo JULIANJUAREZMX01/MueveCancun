@@ -34,7 +34,7 @@ const ui = uiTranslations[currentLang];
     </div>
 
     <!-- Form Area -->
-    <div id="search-form" class="search-form">
+    <form id="search-form" class="search-form" novalidate onsubmit="event.preventDefault();">
 
       <!-- Inputs -->
       <div class="inputs-group">
@@ -51,6 +51,7 @@ const ui = uiTranslations[currentLang];
             data-i18n-label="calc.origin"
             data-i18n-placeholder="calc.placeholder.origin"
             maxlength={100}
+            required
           >
             <!-- GPS Button inside Input -->
             <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip" aria-label="Use my location">
@@ -80,6 +81,7 @@ const ui = uiTranslations[currentLang];
             data-i18n-label="calc.dest"
             data-i18n-placeholder="calc.placeholder.dest"
             maxlength={100}
+            required
           >
             <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip">
               <img src="/icons/map-plus.svg" class="w-5 h-5" alt="Map Picker" />
@@ -123,7 +125,7 @@ const ui = uiTranslations[currentLang];
         <span class="spinner" id="btn-spinner" aria-hidden="true"></span>
       </button>
 
-    </div>
+    </form>
 
     <!-- Loading State (Skeleton Screens) -->
     <div id="calculation-loader" class="hidden p-5 space-y-3" style="border-top: 1px solid var(--border-light); background: var(--surface-bg);" aria-label="Loading results" role="status">
@@ -1044,6 +1046,35 @@ const ui = uiTranslations[currentLang];
 
   .swap-btn.rotated {
     transform: rotate(180deg);
+  }
+
+  /*
+   * GRAFFITI WARRIOR: CSS5 Form Validation "Bloom"
+   * No JS needed for button state. The browser knows best.
+   */
+
+  /* Invalid State: Make button look disabled but clickable for native feedback */
+  .search-form:has(:invalid) #search-btn {
+      opacity: 0.6;
+      filter: grayscale(0.8);
+      cursor: not-allowed;
+      /* Prevent hover effects */
+      box-shadow: none !important;
+  }
+
+  /* Valid State: Bloom Effect */
+  .search-form:has(:valid) #search-btn {
+      opacity: 1;
+      filter: none;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      /* Subtle Teal Bloom */
+      box-shadow: 0 0 15px rgba(13, 148, 136, 0.5), 0 4px 14px -2px rgba(13, 148, 136, 0.35);
+  }
+
+  .search-form:has(:valid) #search-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 25px rgba(13, 148, 136, 0.6), 0 8px 24px -2px rgba(13, 148, 136, 0.45);
   }
 </style>
 
