@@ -34,11 +34,20 @@ export class CoordinatesStore {
                     console.log("[CoordinatesStore] ⚡ Using injected data (Skipped Fetch)");
                     text = JSON.stringify(data);
                 } else {
-                    console.log("[CoordinatesStore] 🌍 Fetching master routes for coordinates...");
-                    const res = await fetch('/data/master_routes.json');
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    text = await res.text();
-                    data = JSON.parse(text);
+                    console.log("[CoordinatesStore] 🌍 Fetching optimized master routes...");
+                    try {
+                        const res = await fetch('/data/master_routes.optimized.json');
+                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                        text = await res.text();
+                        data = JSON.parse(text);
+                        console.log("[CoordinatesStore] ✅ Optimized routes loaded");
+                    } catch (e) {
+                        console.warn("[CoordinatesStore] ⚠️ Failed to load optimized routes, falling back to raw JSON...", e);
+                        const res = await fetch('/data/master_routes.json');
+                        if (!res.ok) throw new Error(`Fallback HTTP error! status: ${res.status}`);
+                        text = await res.text();
+                        data = JSON.parse(text);
+                    }
                 }
 
                 this.db = {};

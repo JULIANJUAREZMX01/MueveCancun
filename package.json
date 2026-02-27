@@ -13,9 +13,10 @@
     }
   },
   "scripts": {
-    "dev": "astro dev",
-    "dev:network": "astro dev --host",
-    "build": "node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
+    "optimize-json": "node scripts/optimize-json.mjs",
+    "dev": "npm run optimize-json && astro dev",
+    "dev:network": "npm run optimize-json && astro dev --host",
+    "build": "node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && node scripts/optimize-json.mjs && astro build",
     "build:wasm": "node scripts/build-wasm.mjs",
     "astro": "astro",
     "lint": "eslint .",

@@ -345,35 +345,44 @@ const ui = uiTranslations[currentLang];
           const { text: catalogString, data: resolvedData } = await Promise.race([dataPromise, timeoutPromise]);
           jsonData = resolvedData;
 
-          // Normalize data for WASM: ensure root-level 'version' and valid 'horario' types
-          const normalized = { ...jsonData };
-          if (!normalized.version && normalized.metadata?.version) {
-              normalized.version = normalized.metadata.version;
-          }
-          if (!normalized.version) {
-              normalized.version = "1.0.0";
-          }
-          if (normalized.rutas) {
-              normalized.rutas = normalized.rutas.map((r: any) => {
-                  const route = { ...r };
-                  // Convert string horario to Schedule object
-                  if (typeof route.horario === 'string') {
-                      const parts = route.horario.split('-');
-                      route.horario = { inicio: parts[0]?.trim() || '', fin: parts[1]?.trim() || '' };
-                  } else if (route.horario && typeof route.horario === 'object') {
-                      // Normalize inicio_oficial/fin_oficial to inicio/fin
-                      if (!route.horario.inicio && route.horario.inicio_oficial) {
-                          route.horario = { inicio: route.horario.inicio_oficial, fin: route.horario.fin_oficial || '' };
+          let normalizedString = "";
+
+          // ⚡ Speedy Gonzalez: Check if already optimized
+          if (jsonData.metadata?.optimized) {
+              console.log("⚡ [RouteCalculator] Using pre-optimized JSON (Skipped Runtime Normalization)");
+              normalizedString = catalogString; // Use the raw string directly
+          } else {
+              console.warn("⚠️ [RouteCalculator] Data not optimized. Running runtime normalization (Slow).");
+              // Normalize data for WASM: ensure root-level 'version' and valid 'horario' types
+              const normalized = { ...jsonData };
+              if (!normalized.version && normalized.metadata?.version) {
+                  normalized.version = normalized.metadata.version;
+              }
+              if (!normalized.version) {
+                  normalized.version = "1.0.0";
+              }
+              if (normalized.rutas) {
+                  normalized.rutas = normalized.rutas.map((r: any) => {
+                      const route = { ...r };
+                      // Convert string horario to Schedule object
+                      if (typeof route.horario === 'string') {
+                          const parts = route.horario.split('-');
+                          route.horario = { inicio: parts[0]?.trim() || '', fin: parts[1]?.trim() || '' };
+                      } else if (route.horario && typeof route.horario === 'object') {
+                          // Normalize inicio_oficial/fin_oficial to inicio/fin
+                          if (!route.horario.inicio && route.horario.inicio_oficial) {
+                              route.horario = { inicio: route.horario.inicio_oficial, fin: route.horario.fin_oficial || '' };
+                          }
                       }
-                  }
-                  // Ensure required 'tipo' field exists
-                  if (!route.tipo && !route.tipo_transporte) {
-                      route.tipo = 'Bus_Urbano';
-                  }
-                  return route;
-              });
+                      // Ensure required 'tipo' field exists
+                      if (!route.tipo && !route.tipo_transporte) {
+                          route.tipo = 'Bus_Urbano';
+                      }
+                      return route;
+                  });
+              }
+              normalizedString = JSON.stringify(normalized);
           }
-          const normalizedString = JSON.stringify(normalized);
 
           // Sentinel: Enforce 10MB limit
           if (normalizedString.length > 10 * 1024 * 1024) {
