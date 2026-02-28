@@ -89,6 +89,41 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
 
 // --- CORE LOGIC (Pure Rust, Testable) ---
 
+fn validate_catalog_content(catalog: &RouteCatalog) -> Result<(), String> {
+    if catalog.rutas.len() > 5000 {
+        return Err("Validation Error: Too many routes (max 5000)".to_string());
+    }
+
+    for route in &catalog.rutas {
+        if route.id.len() > 100 {
+            return Err("Validation Error: Route ID exceeds 100 characters".to_string());
+        }
+        if route.name.len() > 100 {
+            return Err("Validation Error: Route name exceeds 100 characters".to_string());
+        }
+        if route.stops.len() > 500 {
+            return Err("Validation Error: Too many stops in a route (max 500)".to_string());
+        }
+
+        for stop in &route.stops {
+            if stop.name.len() > 100 {
+                return Err("Validation Error: Stop name exceeds 100 characters".to_string());
+            }
+            if stop.landmarks.len() > 200 {
+                return Err("Validation Error: Landmarks exceed 200 characters".to_string());
+            }
+        }
+
+        for alert in &route.social_alerts {
+            if alert.len() > 200 {
+                return Err("Validation Error: Social alert exceeds 200 characters".to_string());
+            }
+        }
+    }
+
+    Ok(())
+}
+
 pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     const MAX_PAYLOAD_SIZE: usize = 10 * 1024 * 1024; // 10MB
     if json_payload.len() > MAX_PAYLOAD_SIZE {
@@ -105,6 +140,8 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     if catalog.rutas.is_empty() {
         return Err("ERROR: Catalog contains 0 routes".to_string());
     }
+
+    validate_catalog_content(&catalog)?;
 
     // Pre-compute normalized stops for fuzzy matching
     for route in &mut catalog.rutas {
@@ -648,6 +685,42 @@ mod tests {
         let res = load_catalog_core(&json);
         assert!(res.is_err(), "Should reject large payload > 10MB");
         assert_eq!(res.err().unwrap(), "Payload too large (max 10MB)");
+    }
+
+    #[test]
+    fn test_validation_limits() {
+        let mut stops = Vec::new();
+        for i in 0..501 {
+            stops.push(Stop {
+                id: None,
+                name: format!("Stop {}", i),
+                lat: 0.0,
+                lng: 0.0,
+                orden: i as u32,
+                landmarks: String::new(),
+            });
+        }
+
+        let catalog = RouteCatalog {
+            version: "1.0".to_string(),
+            rutas: vec![Route {
+                id: "R1".to_string(),
+                name: "R1".to_string(),
+                price: 10.0,
+                transport_type: "Bus".to_string(),
+                empresa: None,
+                frecuencia_minutos: None,
+                horario: None,
+                stops: stops,
+                stops_normalized: Vec::new(),
+                social_alerts: Vec::new(),
+                last_updated: String::new(),
+            }],
+        };
+
+        let res = validate_catalog_content(&catalog);
+        assert!(res.is_err(), "Should reject catalog with > 500 stops in a route");
+        assert_eq!(res.err().unwrap(), "Validation Error: Too many stops in a route (max 500)");
     }
 
     #[test]
