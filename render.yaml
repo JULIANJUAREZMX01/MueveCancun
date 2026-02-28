@@ -11,9 +11,9 @@ projects:
       repo: https://github.com/JULIANJUAREZMX01/MueveCancun
       envVars:
       - key: NODE_VERSION
-        sync: false
+        value: "20"
       - key: ENABLE_PNPM
-        sync: false
+        value: "9.15.4"
       buildCommand: export RUSTUP_HOME=$HOME/.rustup CARGO_HOME=$HOME/.cargo && curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env && rustup target add wasm32-unknown-unknown && curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf -o install_wasm.sh && sh install_wasm.sh && pnpm install && pnpm run build
       staticPublishPath: dist
       autoDeployTrigger: checksPass
