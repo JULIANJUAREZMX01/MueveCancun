@@ -86,9 +86,26 @@ export class CoordinatesStore {
 
     findNearest(lat: number, lng: number): string | null {
         if (!this.db) return null;
-        let minDist = Infinity;
-        let nearest = null;
 
+        let minDist = Infinity;
+        let nearest: string | null = null;
+
+        // Try O(1) Spatial Hash first
+        if (this.spatialIndex) {
+            const candidates = this.spatialIndex.query(lat, lng);
+            if (candidates.length > 0) {
+                for (const point of candidates) {
+                    const d = getDistance(lat, lng, point.lat, point.lng);
+                    if (d < minDist) {
+                        minDist = d;
+                        nearest = point.data;
+                    }
+                }
+                return nearest;
+            }
+        }
+
+        // Fallback to O(N) scan if spatial index is missing or yields no candidates
         for (const [name, coords] of Object.entries(this.db)) {
             const d = getDistance(lat, lng, coords[0], coords[1]);
             if (d < minDist) {
