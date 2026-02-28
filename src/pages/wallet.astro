@@ -27,7 +27,7 @@ import MainLayout from '../layouts/MainLayout.astro';
           </div>
 
           <div class="mt-12 flex gap-4">
-            <button id="open-recharge" class="flex-1 bg-white hover:bg-slate-100 text-slate-900 font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-white/5">
+            <button id="open-recharge" popovertarget="recharge-popover" class="flex-1 bg-white hover:bg-slate-100 text-slate-900 font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-white/5">
               RECARGAR
             </button>
             <button class="px-6 bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-2xl transition-all active:scale-95 border border-slate-700">
@@ -93,41 +93,169 @@ import MainLayout from '../layouts/MainLayout.astro';
 
   </div>
 
-  <!-- Recharge Dialog -->
-  <dialog id="recharge-dialog" class="bg-white dark:bg-slate-900 rounded-3xl p-0 shadow-2xl w-[90%] max-w-sm border border-slate-200 dark:border-slate-800 backdrop:bg-slate-900/50 backdrop:backdrop-blur-sm overflow-hidden translate-y-4 open:translate-y-0 transition-transform duration-300">
+  <!-- Recharge Popover -->
+  <div id="recharge-popover" popover class="bg-white dark:bg-slate-900 rounded-3xl p-0 shadow-2xl w-[90%] max-w-sm border border-slate-200 dark:border-slate-800 overflow-hidden graffiti-dialog-popover">
     <div class="p-6">
       <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Recargar Saldo</h3>
       <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">El monto se acreditará instantáneamente a tu billetera virtual.</p>
       
-      <div class="grid grid-cols-3 gap-3 mb-8">
-        <button class="amount-option py-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 font-black text-slate-600 dark:text-slate-400 hover:border-primary-500 active:scale-95 transition-all outline-none" data-amount="20">$20</button>
-        <button class="amount-option py-4 rounded-xl border-2 border-primary-500 bg-primary-50/50 dark:bg-primary-900/20 font-black text-primary-600 dark:text-primary-400 active:scale-95 transition-all outline-none" data-amount="50" id="default-amount">$50</button>
-        <button class="amount-option py-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 font-black text-slate-600 dark:text-slate-400 hover:border-primary-500 active:scale-95 transition-all outline-none" data-amount="100">$100</button>
+      <div class="grid grid-cols-3 gap-3 mb-8 graffiti-radio-group">
+        <label class="amount-label" tabindex="0">
+            <input type="radio" name="recharge-amount" value="20" class="sr-only amount-radio" />
+            <span class="amount-text">$20</span>
+        </label>
+
+        <label class="amount-label" tabindex="0">
+            <input type="radio" name="recharge-amount" value="50" class="sr-only amount-radio" checked />
+            <span class="amount-text">$50</span>
+        </label>
+
+        <label class="amount-label" tabindex="0">
+            <input type="radio" name="recharge-amount" value="100" class="sr-only amount-radio" />
+            <span class="amount-text">$100</span>
+        </label>
       </div>
 
       <div class="flex flex-col gap-3">
         <button id="confirm-recharge" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all uppercase tracking-widest">
           CONFIRMAR PAGO
         </button>
-        <button id="close-recharge" class="w-full bg-transparent text-slate-400 dark:text-slate-500 py-2 font-bold text-xs uppercase tracking-widest">
+        <button id="close-recharge" popovertarget="recharge-popover" popovertargetaction="hide" class="w-full bg-transparent text-slate-400 dark:text-slate-500 py-2 font-bold text-xs uppercase tracking-widest">
           CANCELAR
         </button>
       </div>
     </div>
-  </dialog>
+  </div>
+
+  <style>
+    /*
+     * GRAFFITI WARRIOR: CSS5 LOGIC
+     * Native Popover instead of polyfilled dialogs.
+     * Uses `@starting-style` for sweet, native animations.
+     */
+    .graffiti-dialog-popover {
+      margin: auto; /* Centered in viewport */
+
+      /* Base Animation State */
+      opacity: 0;
+      transform: translateY(1rem) scale(0.95);
+      transition: opacity 0.3s ease-out, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), overlay 0.3s allow-discrete, display 0.3s allow-discrete;
+
+      /* Open State */
+      &:popover-open {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+
+        @starting-style {
+          opacity: 0;
+          transform: translateY(1rem) scale(0.95);
+        }
+      }
+
+      /* Backdrop Styling & Animation */
+      &::backdrop {
+        background: rgba(15, 23, 42, 0.5); /* slate-900/50 */
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        transition: opacity 0.3s ease-out, overlay 0.3s allow-discrete, display 0.3s allow-discrete;
+      }
+
+      &:popover-open::backdrop {
+        opacity: 1;
+
+        @starting-style {
+          opacity: 0;
+        }
+      }
+    }
+
+    /*
+     * Native Radio Group Styling
+     * Uses `:has()` and `:checked` to eliminate JS state toggling
+     */
+    .graffiti-radio-group {
+      .amount-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 0; /* py-4 equivalent */
+        border-radius: 0.75rem; /* rounded-xl equivalent */
+        border: 2px solid #f1f5f9; /* border-slate-100 */
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        user-select: none;
+
+        /* Dark mode border fallback */
+        @media (prefers-color-scheme: dark) {
+            border-color: #1e293b; /* border-slate-800 */
+        }
+
+        /* Hover State */
+        &:hover {
+          border-color: #f97316; /* border-primary-500 */
+        }
+
+        /* Active State */
+        &:active {
+          transform: scale(0.95);
+        }
+
+        /* Focus State for Accessibility */
+        &:focus-within, &:focus-visible {
+          outline: 2px solid #f97316; /* primary-500 */
+          outline-offset: 2px;
+        }
+
+        .amount-text {
+          font-weight: 900; /* font-black */
+          color: #475569; /* text-slate-600 */
+
+          /* Dark mode text fallback */
+          @media (prefers-color-scheme: dark) {
+            color: #94a3b8; /* text-slate-400 */
+          }
+        }
+      }
+
+      /* Checked State Logic using Native CSS */
+      .amount-label:has(.amount-radio:checked) {
+        border-color: #f97316; /* border-primary-500 */
+        background-color: rgba(249, 115, 22, 0.1); /* bg-primary-50/50 approx */
+
+        @media (prefers-color-scheme: dark) {
+            background-color: rgba(249, 115, 22, 0.2); /* bg-primary-900/20 approx */
+        }
+
+        .amount-text {
+          color: #ea580c; /* text-primary-600 */
+
+          @media (prefers-color-scheme: dark) {
+            color: #fb923c; /* text-primary-400 */
+          }
+        }
+      }
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
 
   <script>
-    import { getWalletBalance, setWalletBalance, updateWalletBalance } from '../utils/db';
+    import { getWalletBalance, setWalletBalance } from '../utils/db';
 
     async function setupWallet() {
       const balanceAmount = document.getElementById('balance-amount');
-      const openBtn = document.getElementById('open-recharge');
-      const closeBtn = document.getElementById('close-recharge');
-      const dialog = document.getElementById('recharge-dialog') as HTMLDialogElement;
       const confirmBtn = document.getElementById('confirm-recharge');
-      const amountOptions = document.querySelectorAll('.amount-option');
-
-      let selectedAmount = 50;
+      const popover = document.getElementById('recharge-popover');
 
       async function updateBalanceUI() {
           // Use IndexedDB as single source of truth
@@ -139,22 +267,11 @@ import MainLayout from '../layouts/MainLayout.astro';
       // Initial load - wait for IndexedDB to be ready
       await updateBalanceUI();
 
-      openBtn?.addEventListener('click', () => dialog?.showModal());
-      closeBtn?.addEventListener('click', () => dialog?.close());
-
-      amountOptions.forEach(opt => {
-          opt.addEventListener('click', () => {
-              amountOptions.forEach(o => o.classList.remove('border-primary-500', 'bg-primary-50/50', 'dark:bg-primary-900/20', 'text-primary-600', 'dark:text-primary-400'));
-              amountOptions.forEach(o => o.classList.add('border-slate-100', 'dark:border-slate-800', 'text-slate-600', 'dark:text-slate-400'));
-
-              opt.classList.remove('border-slate-100', 'dark:border-slate-800', 'text-slate-600', 'dark:text-slate-400');
-              opt.classList.add('border-primary-500', 'bg-primary-50/50', 'dark:bg-primary-900/20', 'text-primary-600', 'dark:text-primary-400');
-
-              selectedAmount = parseInt(opt.getAttribute('data-amount') || '50');
-          });
-      });
-
       confirmBtn?.addEventListener('click', async () => {
+          // Native Radio check
+          const selectedRadio = document.querySelector('input[name="recharge-amount"]:checked') as HTMLInputElement;
+          const selectedAmount = selectedRadio ? parseInt(selectedRadio.value) : 50;
+
           // Use IndexedDB as single source of truth
           const walletData = await getWalletBalance();
           const currentBalance = walletData?.amount ?? 180.00;
@@ -169,9 +286,15 @@ import MainLayout from '../layouts/MainLayout.astro';
           // Dispatch Global Sync Event
           window.dispatchEvent(new CustomEvent('BALANCE_UPDATED'));
 
-          dialog?.close();
+          // Native Popover Hide
+          if (popover && popover.matches(':popover-open')) {
+            // @ts-ignore
+            popover.hidePopover();
+          }
 
+          // @ts-ignore
           if (window.showToast) {
+            // @ts-ignore
             window.showToast(`¡Recarga exitosa! +$${selectedAmount}`, "success");
           }
       });
