@@ -61,3 +61,4 @@ test-results
 *_snapshot.html
 *_content.md
 snapshot_*.png
+public/data/master_routes.optimized.json

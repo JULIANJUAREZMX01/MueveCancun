@@ -1,5 +1,6 @@
 ---
 import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../utils/i18n';
+import { safeJsonStringify } from '../utils/utils';
 import Input from './ui/Input.astro';
 import Switch from './ui/Switch.astro';
 import PassengerSelector from './ui/PassengerSelector.astro';
@@ -172,13 +173,13 @@ const ui = uiTranslations[currentLang];
 
 </div>
 
-<div id="i18n-data" data-ui={JSON.stringify(ui)} class="hidden"></div>
+<div id="i18n-data" data-ui={safeJsonStringify(ui)} class="hidden"></div>
 <script>
   import { openDB } from 'idb';
   import { getTransportLabel } from "../utils/transport";
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { CoordinateFinder } from '../utils/CoordinateFinder';
-  import { escapeHtml } from '../utils/utils';
+  import { escapeHtml, safeJsonStringify } from '../utils/utils';
   import { getWalletBalance, setWalletBalance } from '../utils/db';
 
   let currentLang = document.documentElement.lang || 'es';
@@ -193,13 +194,6 @@ const ui = uiTranslations[currentLang];
 
   // Helpers
 
-  // Security: Safe JSON Serialization for HTML Attributes
-  // Prevents XSS via attribute injection (e.g. </button><script>)
-  const safeJsonStringify = (obj) => {
-      return JSON.stringify(obj)
-          .replace(/</g, '\\u003c') // Escape < to prevent tag injection
-          .replace(/'/g, "&#39;"); // Escape ' to prevent attribute breakout
-  }
 
   // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
   if (typeof document !== 'undefined') {
@@ -220,6 +214,11 @@ const ui = uiTranslations[currentLang];
                   console.error("Invalid journey data", err);
               }
           }
+
+          // Sentinel Security Fix: Retry Button Delegation
+          if (target.closest('.js-retry-search-btn')) {
+              setTimeout(() => document.getElementById('origin-input')?.focus(), 50);
+          }
       });
   }
 
@@ -233,6 +232,32 @@ const ui = uiTranslations[currentLang];
   let load_catalog;
 
   const btn = document.getElementById('search-btn');
+
+  // Normalize WASM journey output: map Spanish field names to English for rendering
+  function normalizeJourney(journey) {
+      return {
+          ...journey,
+          total_price: journey.total_price ?? 0,
+          duration_minutes: journey.duration_minutes ?? 0,
+          legs: (journey.legs || []).map(leg => {
+              const paradas = leg.paradas || [];
+              const firstStop = paradas.length > 0 ? paradas[0] : null;
+              const lastStop = paradas.length > 0 ? paradas[paradas.length - 1] : null;
+              return {
+                  ...leg,
+                  name: leg.name || leg.nombre || '',
+                  transport_type: leg.transport_type || leg.tipo || 'Bus_Urbano',
+                  operator: leg.operator || leg.operador || '',
+                  frequency: leg.frequency || (leg.frecuencia_minutos ? `${leg.frecuencia_minutos} min` : ''),
+                  duration: leg.duration || '',
+                  badges: leg.badges || [],
+                  origin_hub: leg.origin_hub || firstStop?.nombre || '',
+                  dest_hub: leg.dest_hub || lastStop?.nombre || '',
+                  stops: leg.stops || (paradas.length > 0 ? paradas.map(p => p.nombre) : []),
+              };
+          })
+      };
+  }
 
   // --- Initialization ---
 
@@ -320,37 +345,54 @@ const ui = uiTranslations[currentLang];
           const { text: catalogString, data: resolvedData } = await Promise.race([dataPromise, timeoutPromise]);
           jsonData = resolvedData;
 
-          // Normalize data for WASM: ensure root-level 'version' and valid 'horario' types
-          const normalized = { ...jsonData };
-          if (!normalized.version && normalized.metadata?.version) {
-              normalized.version = normalized.metadata.version;
+          let payload = catalogString;
+
+          // Speedy Gonzalez 🐭⚡: Smart Normalization
+          // Only normalize if using un-optimized fallback data.
+          if (!jsonData.version && jsonData.metadata?.version) {
+              console.warn("⚠️ Using un-optimized catalog. Client-side normalization active (Slower).");
+              const normalized = { ...jsonData };
+
+              // 1. Root Version
+              if (!normalized.version && normalized.metadata?.version) {
+                  normalized.version = normalized.metadata.version;
+              }
+              if (!normalized.version) {
+                  normalized.version = "1.0.0";
+              }
+
+              // 2. Normalize Routes
+              if (normalized.rutas) {
+                  normalized.rutas = normalized.rutas.map((r: any) => {
+                      const route = { ...r };
+                      // Convert string horario to Schedule object
+                      if (typeof route.horario === 'string') {
+                          const parts = route.horario.split('-');
+                          route.horario = { inicio: parts[0]?.trim() || '', fin: parts[1]?.trim() || '' };
+                      } else if (route.horario && typeof route.horario === 'object') {
+                          // Normalize inicio_oficial/fin_oficial to inicio/fin
+                          if (!route.horario.inicio && route.horario.inicio_oficial) {
+                              route.horario = { inicio: route.horario.inicio_oficial, fin: route.horario.fin_oficial || '' };
+                          }
+                      }
+                      // Ensure required 'tipo' field exists
+                      if (!route.tipo && !route.tipo_transporte) {
+                          route.tipo = 'Bus_Urbano';
+                      }
+                      return route;
+                  });
+              }
+              payload = JSON.stringify(normalized);
+          } else {
+              console.log("⚡ Using optimized catalog (Zero-copy pass to WASM)");
           }
-          if (!normalized.version) {
-              normalized.version = "1.0.0";
-          }
-          if (normalized.rutas) {
-              normalized.rutas = normalized.rutas.map((r: any) => {
-                  const route = { ...r };
-                  // Convert string horario to Schedule object
-                  if (typeof route.horario === 'string') {
-                      const parts = route.horario.split('-');
-                      route.horario = { inicio: parts[0]?.trim() || '', fin: parts[1]?.trim() || '' };
-                  }
-                  // Ensure required 'tipo' field exists
-                  if (!route.tipo && !route.tipo_transporte) {
-                      route.tipo = 'Bus_Urbano';
-                  }
-                  return route;
-              });
-          }
-          const normalizedString = JSON.stringify(normalized);
 
           // Sentinel: Enforce 10MB limit
-          if (normalizedString.length > 10 * 1024 * 1024) {
+          if (payload.length > 10 * 1024 * 1024) {
              throw new Error("Catalog too large (DoS protection)");
           }
 
-          load_catalog(normalizedString);
+          load_catalog(payload);
           console.timeEnd("WASM Load");
           console.log("✅ Catalog loaded into WASM:", jsonData?.rutas?.length || 0, "routes");
 
@@ -689,7 +731,7 @@ const ui = uiTranslations[currentLang];
               <p class="text-sm mb-6 max-w-[200px] mx-auto" style="color: var(--text-secondary);" data-i18n="calc.no_route_msg">
                   ${ui['calc.no_route_msg'] || 'Try changing your origin or destination, or walking to a main avenue.'}
               </p>
-               <button class="btn-secondary btn-sm" onclick="document.getElementById('origin-input').focus()" data-i18n="calc.retry">
+               <button class="btn-secondary btn-sm js-retry-search-btn" data-i18n="calc.retry">
                   ${ui['calc.retry'] || 'Try Again'}
               </button>
           </div>
@@ -727,6 +769,52 @@ const ui = uiTranslations[currentLang];
                   originInput.dispatchEvent(new Event('input'));
                   destInput.dispatchEvent(new Event('input'));
               }
+          });
+      }
+
+      // Quick Action Buttons (Home, Work, Airport, Beach)
+      document.querySelectorAll('.quick-action-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+              const dest = btn.dataset.dest;
+              if (dest) {
+                  const destInput = document.getElementById('destination-input');
+                  if (destInput) {
+                      destInput.value = dest;
+                      destInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  }
+              }
+          });
+      });
+
+      // Toggle Results List
+      const toggleBtn = document.getElementById('toggle-list-btn');
+      if (toggleBtn) {
+          toggleBtn.addEventListener('click', () => {
+              const resultsContainer = document.getElementById('results-container');
+              const bestResultArea = document.getElementById('best-result-area');
+              const toggleText = document.getElementById('toggle-list-text');
+              const toggleIcon = document.getElementById('toggle-list-icon');
+              const isHidden = resultsContainer?.classList.contains('hidden');
+
+              if (isHidden) {
+                  resultsContainer?.classList.remove('hidden');
+                  bestResultArea?.classList.remove('hidden');
+                  if (toggleText) toggleText.textContent = ui['calc.toggle.hide'] || 'Hide';
+                  if (toggleIcon) toggleIcon.style.transform = '';
+              } else {
+                  resultsContainer?.classList.add('hidden');
+                  bestResultArea?.classList.add('hidden');
+                  if (toggleText) toggleText.textContent = ui['calc.toggle.show'] || 'Show';
+                  if (toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
+              }
+          });
+      }
+
+      // Map Picker Button
+      const mapPickerBtn = document.getElementById('map-picker-btn');
+      if (mapPickerBtn) {
+          mapPickerBtn.addEventListener('click', () => {
+              window.location.href = '/mapa?picker=dest';
           });
       }
 
@@ -785,20 +873,23 @@ const ui = uiTranslations[currentLang];
               if (!results || results.length === 0) {
                   renderEmptyState();
               } else {
-                 results.sort((a, b) => {
+                 // Normalize WASM output (Spanish → English field mapping)
+                 const normalized = results.map(normalizeJourney);
+
+                 normalized.sort((a, b) => {
                      // Prioritize Direct routes
                      if (a.type === 'Direct' && b.type !== 'Direct') return -1;
                      if (b.type === 'Direct' && a.type !== 'Direct') return 1;
                      return a.total_price - b.total_price;
                  });
 
-                 const best = results[0];
-                 const others = results.slice(1);
+                 const best = normalized[0];
+                 const others = normalized.slice(1);
 
                   // Prepare UI Data
                  const optionsLabel = ui['calc.results.options'] || 'OPCIONES';
                  const fastestLabel = ui['calc.results.fastest'] || 'MÁS RÁPIDA';
-                 const countText = `${results.length} ${optionsLabel}`;
+                 const countText = `${normalized.length} ${optionsLabel}`;
                  let timeText = '';
                  let showTimeBadge = false;
 
