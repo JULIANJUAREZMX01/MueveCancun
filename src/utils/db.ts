@@ -1,4 +1,4 @@
-import { openDB } from 'idb';
+import { openDB, type IDBPDatabase } from 'idb';
 
 const DB_NAME = 'cancunmueve-db';
 const DB_VERSION = 3;
@@ -8,7 +8,7 @@ const DB_VERSION = 3;
  * This consolidates the triple balance system (user_balance, muevecancun_balance, wallet-status)
  * into a single source: IndexedDB via this module.
  */
-export const migrateBalanceFromLocalStorage = async (): Promise<void> => {
+export const migrateBalanceFromLocalStorage = async (db: IDBPDatabase): Promise<void> => {
   try {
     // Check if migration already done
     const migrationDone = localStorage.getItem('balance_migration_done');
@@ -17,7 +17,6 @@ export const migrateBalanceFromLocalStorage = async (): Promise<void> => {
       return;
     }
 
-    const db = await initDB();
     const tx = db.transaction('wallet-status', 'readwrite');
     const store = tx.objectStore('wallet-status');
 
@@ -72,36 +71,44 @@ export const migrateBalanceFromLocalStorage = async (): Promise<void> => {
   }
 };
 
-export const initDB = async () => {
-  const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion) {
-      if (oldVersion < 1) {
-        db.createObjectStore('routes');
-        db.createObjectStore('user-reports');
-      }
-      if (oldVersion < 2) {
-        db.createObjectStore('wallet-status');
-      }
-      // Version 3: Migration handled in code, no schema changes needed
-    },
-  });
+let dbPromise: Promise<IDBPDatabase> | null = null;
 
-  // Initialize test balance if empty (180 MXN for consistency with UI)
-  const tx = db.transaction('wallet-status', 'readwrite');
-  const store = tx.objectStore('wallet-status');
-  const balance = await store.get('current_balance');
+export const initDB = async (): Promise<IDBPDatabase> => {
+  if (dbPromise) return dbPromise;
 
-  if (balance === undefined) {
-    await store.put({ id: 'current_balance', amount: 180.00, currency: 'MXN' }, 'current_balance');
-    console.log('[DB] Initial wallet balance set to 180.00 MXN');
-  }
+  dbPromise = (async () => {
+    const db = await openDB(DB_NAME, DB_VERSION, {
+      upgrade(db, oldVersion) {
+        if (oldVersion < 1) {
+          db.createObjectStore('routes');
+          db.createObjectStore('user-reports');
+        }
+        if (oldVersion < 2) {
+          db.createObjectStore('wallet-status');
+        }
+        // Version 3: Migration handled in code, no schema changes needed
+      },
+    });
 
-  await tx.done;
+    // Initialize test balance if empty (180 MXN for consistency with UI)
+    const tx = db.transaction('wallet-status', 'readwrite');
+    const store = tx.objectStore('wallet-status');
+    const balance = await store.get('current_balance');
 
-  // Run migration after DB initialization
-  await migrateBalanceFromLocalStorage();
+    if (balance === undefined) {
+      await store.put({ id: 'current_balance', amount: 180.00, currency: 'MXN' }, 'current_balance');
+      console.log('[DB] Initial wallet balance set to 180.00 MXN');
+    }
 
-  return db;
+    await tx.done;
+
+    // Run migration after DB initialization
+    await migrateBalanceFromLocalStorage(db);
+
+    return db;
+  })();
+
+  return dbPromise;
 };
 
 export const getWalletBalance = async (): Promise<{ id: string; amount: number; currency: string } | undefined> => {
