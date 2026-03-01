@@ -161,6 +161,8 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
         return Err("ERROR: Catalog contains 0 routes".to_string());
     }
 
+    validate_catalog(&catalog)?;
+
     // Pre-compute normalized stops for fuzzy matching
     for route in &mut catalog.rutas {
         route.stops_normalized = route.stops.iter().map(|s| s.name.to_lowercase()).collect();
@@ -852,5 +854,43 @@ mod tests {
         assert!(duration.as_millis() < 1000, "High volume transfer took too long: {:?}", duration);
         assert!(!res.is_empty());
         assert_eq!(res.len(), 5); // Should be truncated to 5
+    }
+
+    #[test]
+    fn test_malicious_catalog() {
+        // Test ID too long
+        let long_id = "a".repeat(101);
+        let route = format!(
+            r#"{{"id": "{}", "nombre": "R1", "tarifa": 10.0, "tipo": "Bus", "paradas": []}}"#,
+            long_id
+        );
+        let json = format!(r#"{{"version": "1.0", "rutas": [{}]}}"#, route);
+        let res = load_catalog_core(&json);
+        assert!(res.is_err());
+        assert!(res.err().unwrap().contains("ID too long"));
+
+        // Test Name too long
+        let long_name = "a".repeat(201);
+        let route = format!(
+            r#"{{"id": "R1", "nombre": "{}", "tarifa": 10.0, "tipo": "Bus", "paradas": []}}"#,
+            long_name
+        );
+        let json = format!(r#"{{"version": "1.0", "rutas": [{}]}}"#, route);
+        let res = load_catalog_core(&json);
+        assert!(res.is_err());
+        assert!(res.err().unwrap().contains("name too long"));
+
+         // Test Stop Name too long
+        let long_stop_name = "a".repeat(101);
+        let route = format!(
+            r#"{{"id": "R1", "nombre": "R1", "tarifa": 10.0, "tipo": "Bus", "paradas": [
+                {{ "nombre": "{}", "lat": 0.0, "lng": 0.0, "orden": 1 }}
+            ]}}"#,
+            long_stop_name
+        );
+        let json = format!(r#"{{"version": "1.0", "rutas": [{}]}}"#, route);
+        let res = load_catalog_core(&json);
+        assert!(res.is_err());
+        assert!(res.err().unwrap().contains("stop #0 name too long"));
     }
 }
