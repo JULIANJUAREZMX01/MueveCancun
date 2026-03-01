@@ -22,22 +22,9 @@ const store = new CoordinatesStore();
 // Use private API for testing setup
 (CoordinatesStore as any).instance = store;
 
-// We need to wait for init to complete before benchmarking
-// However, `bench` runs immediately.
-// But we can force synchronous population of `db` and `spatialIndex` for the test
-// by manually invoking the logic, bypassing `init` async wrapper.
-
-// Mock the internal logic of init
-(store as any).db = {};
-// Since CoordinatesStore imports SpatialHash, we assume it's available.
-// We need to import SpatialHash to instantiate it manually?
-// No, store has it internally. We can just use init, but wait.
-
-// Let's try to run init and hope it finishes before bench starts?
-// Unlikely.
-
-// Better approach: Re-implement the population logic here synchronously.
+// Synchronously populate the store to avoid async issues with bench runner
 import { SpatialHash } from '../../utils/SpatialHash';
+(store as any).db = {};
 
 (store as any).spatialIndex = new SpatialHash();
 (store as any).allPoints = [];
