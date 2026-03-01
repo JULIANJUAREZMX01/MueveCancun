@@ -11,6 +11,14 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     <!-- Map Element -->
     <div id="leaflet-map" class="w-full h-full z-0"></div>
 
+    <!-- Loader -->
+    <div id="map-loader" class="absolute inset-0 flex items-center justify-center bg-slate-50 dark:bg-slate-900 z-50 transition-opacity duration-300">
+        <div class="flex flex-col items-center gap-3">
+             <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-primary-500"></div>
+             <span class="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Cargando Mapa...</span>
+        </div>
+    </div>
+
     <!-- Map Controls (Custom) -->
     <div class="absolute bottom-24 right-4 z-[400] flex flex-col gap-2">
         <button id="gps-center-btn" class="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-primary-500 transition-colors active:scale-95" style="anchor-name: --gps-map-btn" aria-label="Centrar en mi ubicación">
@@ -25,6 +33,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { drawRoute } from '../utils/RouteDrawer';
   import { escapeHtml, safeUrl } from '../utils/utils';
+  import { loadLeaflet } from '../utils/leafletLoader';
 
   let map;
   let layerGroup;
@@ -67,6 +76,10 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     const container = document.getElementById('map-container');
     if (!container) return; // Not on a page with a map
 
+    // Show Loader
+    const loader = document.getElementById('map-loader');
+    if (loader) loader.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+
     // CLEANUP: If map exists but container is new/different, destroy old map
     // Or if container has content (Leaflet artifact), clear it.
     if (map) {
@@ -74,21 +87,29 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         map = null;
     }
 
-    // Ensure Leaflet is loaded (Lazy)
+    // Load Leaflet dynamically
     try {
         await loadLeaflet();
     } catch (e) {
-        console.error("Failed to load Leaflet", e);
+        console.error("Leaflet failed to load", e);
+        if (loader) loader.innerHTML = `<p class="text-red-500 text-xs font-bold">Error loading map</p>`;
         return;
     }
 
     const center = JSON.parse(container.dataset.center);
     const zoom = parseInt(container.dataset.zoom);
 
+    // Initialize Map
     map = window.L.map('leaflet-map', {
         zoomControl: false,
         attributionControl: false
     }).setView(center, zoom);
+
+    // Hide Loader
+    if (loader) {
+        loader.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => loader.classList.add('hidden'), 300); // Wait for transition
+    }
 
     // Add Tile Layer
     window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -238,6 +259,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
   // Re-init on page load - Defer to unblock UI
   document.addEventListener('astro:page-load', () => {
+      // Use requestIdleCallback to avoid blocking the main thread during navigation
       if ('requestIdleCallback' in window) {
           requestIdleCallback(() => {
               initMap();
@@ -247,7 +269,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
           setTimeout(() => {
               initMap();
               setupGPS();
-          }, 200);
+          }, 0);
       }
   });
 
