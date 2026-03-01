@@ -762,7 +762,6 @@ mod tests {
         assert!(!res.is_empty());
         assert_eq!(res.len(), 5); // Should be truncated to 5
     }
-}
 
     #[test]
     fn test_logic_bomb() {
@@ -787,3 +786,4 @@ mod tests {
         assert!(res.is_err(), "Should enforce MAX_ROUTES limit");
         assert!(res.err().unwrap().contains("Too many routes"), "Should return specific error message");
     }
+}
