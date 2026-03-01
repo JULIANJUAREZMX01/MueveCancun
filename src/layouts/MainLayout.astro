@@ -4,6 +4,7 @@ import '../index.css';
 import Toast from '../components/ui/Toast.astro';
 import PwaReload from '../components/ui/PwaReload.astro';
 import BottomNav from '../components/BottomNav.astro';
+import ScrollToTop from '../components/ui/ScrollToTop.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import { ui as uiTranslations } from '../utils/i18n';
 
@@ -59,7 +60,7 @@ const navItems = [
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
 
     <!-- Preload Critical Data -->
-    <link rel="preload" href="/data/master_routes.json" as="fetch" crossorigin />
+    <link rel="preload" href="/data/master_routes.optimized.json" as="fetch" crossorigin />
 
     <script>
       import { getWalletBalance } from '../utils/db';
@@ -191,7 +192,7 @@ const navItems = [
     </script>
     <ClientRouter />
   </head>
-  <body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
+  <body id="top" class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
     <!-- ═══ Unified Header (Responsive) ═══ -->
     { !hideNav && (
@@ -269,6 +270,8 @@ const navItems = [
     <div id="i18n-translations" data-translations={JSON.stringify(uiTranslations)} class="hidden"></div>
 
     <PwaReload />
+
+    <ScrollToTop />
 
     <script is:inline>
       /* Theme Logic */

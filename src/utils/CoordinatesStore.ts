@@ -35,14 +35,25 @@ export class CoordinatesStore {
                     text = JSON.stringify(data);
                 } else {
                     console.log("[CoordinatesStore] 🌍 Fetching master routes for coordinates...");
-                    const res = await fetch('/data/master_routes.json');
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    text = await res.text();
+                    try {
+                        const res = await fetch('/data/master_routes.optimized.json');
+                        if (res.ok) {
+                            text = await res.text();
+                            console.log("[CoordinatesStore] ⚡ Loaded optimized catalog");
+                        } else {
+                            throw new Error("Optimized not found");
+                        }
+                    } catch (e) {
+                        console.warn("[CoordinatesStore] Optimized catalog missing, falling back...", e);
+                        const res = await fetch('/data/master_routes.json');
+                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                        text = await res.text();
+                    }
                     data = JSON.parse(text);
                 }
 
                 this.db = {};
-                this.spatialIndex = new SpatialHash(); // Initialize SpatialHash
+                this.spatialIndex = new SpatialHash<string>(); // Initialize SpatialHash
                 this.allPoints = []; // Clear on re-init to prevent duplicates
                 
                 if (data.rutas) {
@@ -113,6 +124,7 @@ export class CoordinatesStore {
                 nearest = name;
             }
         }
+
         return nearest;
     }
 }
