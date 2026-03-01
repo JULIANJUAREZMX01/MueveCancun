@@ -1,5 +1,6 @@
 ---
 import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../utils/i18n';
+import { safeJsonStringify } from '../utils/utils';
 import Input from './ui/Input.astro';
 import Switch from './ui/Switch.astro';
 import PassengerSelector from './ui/PassengerSelector.astro';
@@ -172,13 +173,13 @@ const ui = uiTranslations[currentLang];
 
 </div>
 
-<div id="i18n-data" data-ui={JSON.stringify(ui)} class="hidden"></div>
+<div id="i18n-data" data-ui={safeJsonStringify(ui)} class="hidden"></div>
 <script>
   import { openDB } from 'idb';
   import { getTransportLabel } from "../utils/transport";
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { CoordinateFinder } from '../utils/CoordinateFinder';
-  import { escapeHtml } from '../utils/utils';
+  import { escapeHtml, safeJsonStringify } from '../utils/utils';
   import { getWalletBalance, setWalletBalance } from '../utils/db';
 
   let currentLang = document.documentElement.lang || 'es';
@@ -193,13 +194,6 @@ const ui = uiTranslations[currentLang];
 
   // Helpers
 
-  // Security: Safe JSON Serialization for HTML Attributes
-  // Prevents XSS via attribute injection (e.g. </button><script>)
-  const safeJsonStringify = (obj) => {
-      return JSON.stringify(obj)
-          .replace(/</g, '\\u003c') // Escape < to prevent tag injection
-          .replace(/'/g, "&#39;"); // Escape ' to prevent attribute breakout
-  }
 
   // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
   if (typeof document !== 'undefined') {
@@ -351,42 +345,54 @@ const ui = uiTranslations[currentLang];
           const { text: catalogString, data: resolvedData } = await Promise.race([dataPromise, timeoutPromise]);
           jsonData = resolvedData;
 
-          // Normalize data for WASM: ensure root-level 'version' and valid 'horario' types
-          const normalized = { ...jsonData };
-          if (!normalized.version && normalized.metadata?.version) {
-              normalized.version = normalized.metadata.version;
-          }
-          if (!normalized.version) {
-              normalized.version = "1.0.0";
-          }
-          if (normalized.rutas) {
-              normalized.rutas = normalized.rutas.map((r: any) => {
-                  const route = { ...r };
-                  // Convert string horario to Schedule object
-                  if (typeof route.horario === 'string') {
-                      const parts = route.horario.split('-');
-                      route.horario = { inicio: parts[0]?.trim() || '', fin: parts[1]?.trim() || '' };
-                  } else if (route.horario && typeof route.horario === 'object') {
-                      // Normalize inicio_oficial/fin_oficial to inicio/fin
-                      if (!route.horario.inicio && route.horario.inicio_oficial) {
-                          route.horario = { inicio: route.horario.inicio_oficial, fin: route.horario.fin_oficial || '' };
+          let payload = catalogString;
+
+          // Speedy Gonzalez 🐭⚡: Smart Normalization
+          // Only normalize if using un-optimized fallback data.
+          if (!jsonData.version && jsonData.metadata?.version) {
+              console.warn("⚠️ Using un-optimized catalog. Client-side normalization active (Slower).");
+              const normalized = { ...jsonData };
+
+              // 1. Root Version
+              if (!normalized.version && normalized.metadata?.version) {
+                  normalized.version = normalized.metadata.version;
+              }
+              if (!normalized.version) {
+                  normalized.version = "1.0.0";
+              }
+
+              // 2. Normalize Routes
+              if (normalized.rutas) {
+                  normalized.rutas = normalized.rutas.map((r: any) => {
+                      const route = { ...r };
+                      // Convert string horario to Schedule object
+                      if (typeof route.horario === 'string') {
+                          const parts = route.horario.split('-');
+                          route.horario = { inicio: parts[0]?.trim() || '', fin: parts[1]?.trim() || '' };
+                      } else if (route.horario && typeof route.horario === 'object') {
+                          // Normalize inicio_oficial/fin_oficial to inicio/fin
+                          if (!route.horario.inicio && route.horario.inicio_oficial) {
+                              route.horario = { inicio: route.horario.inicio_oficial, fin: route.horario.fin_oficial || '' };
+                          }
                       }
-                  }
-                  // Ensure required 'tipo' field exists
-                  if (!route.tipo && !route.tipo_transporte) {
-                      route.tipo = 'Bus_Urbano';
-                  }
-                  return route;
-              });
+                      // Ensure required 'tipo' field exists
+                      if (!route.tipo && !route.tipo_transporte) {
+                          route.tipo = 'Bus_Urbano';
+                      }
+                      return route;
+                  });
+              }
+              payload = JSON.stringify(normalized);
+          } else {
+              console.log("⚡ Using optimized catalog (Zero-copy pass to WASM)");
           }
-          const normalizedString = JSON.stringify(normalized);
 
           // Sentinel: Enforce 10MB limit
-          if (normalizedString.length > 10 * 1024 * 1024) {
+          if (payload.length > 10 * 1024 * 1024) {
              throw new Error("Catalog too large (DoS protection)");
           }
 
-          load_catalog(normalizedString);
+          load_catalog(payload);
           console.timeEnd("WASM Load");
           console.log("✅ Catalog loaded into WASM:", jsonData?.rutas?.length || 0, "routes");
 
