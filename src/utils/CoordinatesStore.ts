@@ -109,8 +109,21 @@ export class CoordinatesStore {
         // Always run this to guarantee we find the true nearest stop, even if it's
         // outside the spatial grid cells considered by the spatial index.
 
-        // Use pre-computed list to avoid Object.entries() allocation overhead
-        const points = this.allPoints;
+        // Rebuild the list of points from the current DB to avoid relying on any
+        // potentially stale or duplicated state that may exist in this.allPoints.
+        const points: Coordinate[] = [];
+        const routes = this.db as RouteData[];
+        for (let r = 0; r < routes.length; r++) {
+            const route = routes[r];
+            for (let s = 0; s < route.paradas.length; s++) {
+                const stop = route.paradas[s];
+                points.push({
+                    name: stop.nombre,
+                    lat: stop.lat,
+                    lng: stop.lng,
+                });
+            }
+        }
         for (let i = 0; i < points.length; i++) {
             const p = points[i];
             const d = getDistance(lat, lng, p.lat, p.lng);
