@@ -174,3 +174,89 @@ describe('CoordinatesStore', () => {
         expect(nearest).toBe('distant stop a');
     });
 });
+
+describe('CoordinatesStore.findNearest - spatial index fast path', () => {
+    let store: CoordinatesStore;
+
+    // Helper to build minimal route data from a list of stops
+    const makeData = (stops: Array<{ nombre: string; lat: number; lng: number }>) => ({
+        version: '1.0',
+        rutas: [{
+            id: 'R1',
+            nombre: 'Ruta 1',
+            tarifa: 15,
+            tipo: 'Bus',
+            paradas: stops.map((s, i) => ({ ...s, orden: i + 1 }))
+        }]
+    });
+
+    beforeEach(() => {
+        store = new CoordinatesStore();
+        (CoordinatesStore as any).instance = store;
+        (store as any).loadingPromise = null;
+        (store as any).db = null;
+    });
+
+    // All tests use coordinates near (10.0, 10.0).
+    // Default cell size = 0.01 deg (~1.11 km at equator).
+    // Cell for (10.0, 10.0): x=1000, y=1000.
+
+    it('finds nearest stop via spatial index when stop is in the same cell as the query point', async () => {
+        // Stop at (10.005, 10.0) is in cell y=1000 (same as query at 10.0, 10.0).
+        // Haversine distance ≈ 0.556 km < 1.0 km → early-return triggers.
+        await store.init(makeData([
+            { nombre: 'Stop Same Cell', lat: 10.005, lng: 10.0 },
+            { nombre: 'Stop Far Away', lat: 30.0, lng: 30.0 },
+        ]));
+        const nearest = store.findNearest(10.0, 10.0);
+        expect(nearest).toBe('stop same cell');
+    });
+
+    it('finds nearest stop via spatial index when stop is in a neighboring cell', async () => {
+        // Stop at (9.995, 10.0) is in cell y=999 — a direct south neighbor of query cell y=1000.
+        // Haversine distance ≈ 0.556 km < 1.0 km → early-return triggers.
+        await store.init(makeData([
+            { nombre: 'Stop Neighbor Cell', lat: 9.995, lng: 10.0 },
+            { nombre: 'Stop Far Away', lat: 30.0, lng: 30.0 },
+        ]));
+        const nearest = store.findNearest(10.0, 10.0);
+        expect(nearest).toBe('stop neighbor cell');
+    });
+
+    it('returns the closest stop when multiple candidates are returned by the spatial index', async () => {
+        // Both stops are in the same cell (y=1000); Stop Near is 0.222 km away, Stop Mid is 0.666 km away.
+        await store.init(makeData([
+            { nombre: 'Stop Near', lat: 10.002, lng: 10.0 },
+            { nombre: 'Stop Mid',  lat: 10.006, lng: 10.0 },
+        ]));
+        const nearest = store.findNearest(10.0, 10.0);
+        expect(nearest).toBe('stop near');
+    });
+
+    it('invokes spatialIndex.query and returns a non-empty candidate list on a spatial-index hit', async () => {
+        await store.init(makeData([
+            { nombre: 'Stop Alpha', lat: 10.005, lng: 10.0 },
+        ]));
+
+        const spatialIndex = (store as any).spatialIndex;
+        const querySpy = vi.spyOn(spatialIndex, 'query');
+
+        const nearest = store.findNearest(10.0, 10.0);
+
+        expect(nearest).toBe('stop alpha');
+        expect(querySpy).toHaveBeenCalledOnce();
+        // Verify the spatial index actually returned candidates (fast path was exercised)
+        const candidates = querySpy.mock.results[0].value as unknown[];
+        expect(candidates.length).toBeGreaterThan(0);
+    });
+
+    it('falls back to global scan when all spatial-index candidates exceed the 1 km early-return threshold', async () => {
+        // Stop at (10.011, 10.0) is in neighboring cell y=1001.
+        // Haversine distance ≈ 1.22 km > 1.0 km → no early-return; global scan is used to confirm.
+        await store.init(makeData([
+            { nombre: 'Stop Beyond Threshold', lat: 10.011, lng: 10.0 },
+        ]));
+        const nearest = store.findNearest(10.0, 10.0);
+        expect(nearest).toBe('stop beyond threshold');
+    });
+});
