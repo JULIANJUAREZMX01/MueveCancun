@@ -1,26 +1,30 @@
-import { bench, describe, beforeAll } from 'vitest';
+import { bench, describe } from 'vitest';
 import { CoordinatesStore } from '../../utils/CoordinatesStore';
 
-// Generate 5000 random points in a 10x10 degree area (approx 1000km x 1000km)
-const points: any[] = [];
+// Generate 5000 random points in a 10x10 degree area (approx 1100km x 1100km)
+const stops: any[] = [];
 for (let i = 0; i < 5000; i++) {
-    const lat = Math.random() * 10;
-    const lng = Math.random() * 10;
-    points.push({
-        id: `route-${i}`,
-        nombre: `Route ${i}`,
-        paradas: [{ lat, lng, nombre: `Stop ${i}` }]
+    stops.push({
+        nombre: `Stop ${i}`,
+        lat: Math.random() * 10,
+        lng: Math.random() * 10,
+        orden: 1
     });
 }
 
 const mockData = {
     version: '1.0',
-    rutas: points
+    rutas: [
+        {
+            id: 'R1',
+            nombre: 'Ruta Test',
+            paradas: stops
+        }
+    ]
 };
 
-const store = new CoordinatesStore();
-// Use private API for testing setup
-(CoordinatesStore as any).instance = store;
+// Initialize store
+const store = CoordinatesStore.instance;
 
 // Synchronously populate the store to avoid async issues with bench runner
 import { SpatialHash } from '../../utils/SpatialHash';
@@ -39,9 +43,17 @@ mockData.rutas.forEach((route: any) => {
 });
 
 describe('CoordinatesStore Performance', () => {
-    bench('findNearest (random)', () => {
+    bench('findNearest (random query)', () => {
+        // Random point within the area
         const lat = Math.random() * 10;
         const lng = Math.random() * 10;
         store.findNearest(lat, lng);
+    });
+
+    bench('findNearest (close proximity)', () => {
+        // Pick a known location from the dataset to ensure hit
+        const stop = stops[2500];
+        // Slight offset (approx 10m)
+        store.findNearest(stop.lat + 0.0001, stop.lng + 0.0001);
     });
 });

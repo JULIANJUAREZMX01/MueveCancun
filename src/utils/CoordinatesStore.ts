@@ -35,14 +35,25 @@ export class CoordinatesStore {
                     text = JSON.stringify(data);
                 } else {
                     console.log("[CoordinatesStore] 🌍 Fetching master routes for coordinates...");
-                    const res = await fetch('/data/master_routes.json');
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    text = await res.text();
+                    try {
+                        const res = await fetch('/data/master_routes.optimized.json');
+                        if (res.ok) {
+                            text = await res.text();
+                            console.log("[CoordinatesStore] ⚡ Loaded optimized catalog");
+                        } else {
+                            throw new Error("Optimized not found");
+                        }
+                    } catch (e) {
+                        console.warn("[CoordinatesStore] Optimized catalog missing, falling back...", e);
+                        const res = await fetch('/data/master_routes.json');
+                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                        text = await res.text();
+                    }
                     data = JSON.parse(text);
                 }
 
                 this.db = {};
-                this.spatialIndex = new SpatialHash(); // Initialize SpatialHash
+                this.spatialIndex = new SpatialHash<string>(); // Initialize SpatialHash
                 this.allPoints = []; // Clear on re-init to prevent duplicates
                 
                 if (data.rutas) {
@@ -86,18 +97,19 @@ export class CoordinatesStore {
 
     findNearest(lat: number, lng: number): string | null {
         if (!this.db) return null;
-        let minDist = Infinity;
-        let nearest = null;
 
-        // 1. Try Spatial Index First (O(1)) - ~95% Hit Rate
+        let minDist = Infinity;
+        let nearest: string | null = null;
+
+        // Try O(1) Spatial Hash first
         if (this.spatialIndex) {
             const candidates = this.spatialIndex.query(lat, lng);
             if (candidates.length > 0) {
-                for (const candidate of candidates) {
-                    const d = getDistance(lat, lng, candidate.lat, candidate.lng);
+                for (const point of candidates) {
+                    const d = getDistance(lat, lng, point.lat, point.lng);
                     if (d < minDist) {
                         minDist = d;
-                        nearest = candidate.data;
+                        nearest = point.data;
                     }
                 }
             }
@@ -109,7 +121,7 @@ export class CoordinatesStore {
             const d = getDistance(lat, lng, point.lat, point.lng);
             if (d < minDist) {
                 minDist = d;
-                nearest = point.name;
+                nearest = name;
             }
         }
 
