@@ -8,10 +8,6 @@ on:
         required: false
         type: string
 
-permissions:
-  contents: read
-  pull-requests: read
-
 jobs:
   claude-delegation:
     name: Send unplanned work to Claude
