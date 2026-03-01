@@ -12,7 +12,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     <div id="leaflet-map" class="w-full h-full z-0"></div>
 
     <!-- Loader -->
-    <div id="map-loader" class="absolute inset-0 flex items-center justify-center bg-slate-50 dark:bg-slate-900 z-50 transition-opacity duration-300">
+    <div id="map-loader" class="hidden absolute inset-0 flex items-center justify-center bg-slate-50 dark:bg-slate-900 z-50 transition-opacity duration-300">
         <div class="flex flex-col items-center gap-3">
              <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-primary-500"></div>
              <span class="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Cargando Mapa...</span>
@@ -58,7 +58,13 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         await loadLeaflet();
     } catch (e) {
         console.error("Leaflet failed to load", e);
-        if (loader) loader.innerHTML = `<p class="text-red-500 text-xs font-bold">Error loading map</p>`;
+        if (loader) {
+            loader.textContent = '';
+            const msg = document.createElement('p');
+            msg.className = 'text-red-500 text-xs font-bold';
+            msg.textContent = 'Error loading map';
+            loader.appendChild(msg);
+        }
         return;
     }
 
@@ -231,12 +237,12 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
       // Use requestIdleCallback to avoid blocking the main thread during navigation
       if ('requestIdleCallback' in window) {
           requestIdleCallback(() => {
-              initMap();
+              initMap().catch(console.error);
               setupGPS();
           });
       } else {
           setTimeout(() => {
-              initMap();
+              initMap().catch(console.error);
               setupGPS();
           }, 0);
       }
@@ -244,11 +250,11 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
   // Initial load
   if (document.readyState === 'complete') {
-      initMap();
+      initMap().catch(console.error);
       setupGPS();
   } else {
       window.addEventListener('load', () => {
-        initMap();
+        initMap().catch(console.error);
         setupGPS();
       });
   }
