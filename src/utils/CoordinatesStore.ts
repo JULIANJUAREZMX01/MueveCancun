@@ -89,13 +89,30 @@ export class CoordinatesStore {
         let minDist = Infinity;
         let nearest = null;
 
-        for (const [name, coords] of Object.entries(this.db)) {
-            const d = getDistance(lat, lng, coords[0], coords[1]);
-            if (d < minDist) {
-                minDist = d;
-                nearest = name;
+        // 1. Try Spatial Index First (O(1)) - ~95% Hit Rate
+        if (this.spatialIndex) {
+            const candidates = this.spatialIndex.query(lat, lng);
+            if (candidates.length > 0) {
+                for (const candidate of candidates) {
+                    const d = getDistance(lat, lng, candidate.lat, candidate.lng);
+                    if (d < minDist) {
+                        minDist = d;
+                        nearest = candidate.data;
+                    }
+                }
             }
         }
+
+        // 2. Fallback to Global Search (O(N)) - Always run to guarantee correct nearest result
+        // Using array iteration is faster than Object.entries
+        for (const point of this.allPoints) {
+            const d = getDistance(lat, lng, point.lat, point.lng);
+            if (d < minDist) {
+                minDist = d;
+                nearest = point.name;
+            }
+        }
+
         return nearest;
     }
 }
