@@ -964,46 +964,55 @@ const ui = uiTranslations[currentLang];
   }
 
   /* GraffitiWarrior: Scroll-Driven Shadows for Quick Actions */
-  .quick-actions-wrapper {
-    position: relative;
-    /* Allows ::before/::after to respond to child's scroll */
-    timeline-scope: --scroll-x;
-  }
-
-  .quick-actions-list {
-    scroll-timeline: --scroll-x inline;
-  }
-
-  /* Shadow Masks */
+  /* Disable shadow pseudo-elements by default to avoid non-functional overlays */
   .quick-actions-wrapper::before,
   .quick-actions-wrapper::after {
-    content: '';
-    position: absolute;
-    top: 0; bottom: 0;
-    width: 40px;
-    z-index: 10;
-    pointer-events: none;
-    opacity: 0;
-    /* Use 'auto' duration for scroll-driven animations */
-    animation-duration: auto;
-    animation-fill-mode: both;
-    animation-timeline: --scroll-x;
+    content: none;
   }
 
-  /* Left Shadow: Appears when scrolled right */
-  .quick-actions-wrapper::before {
-    left: 0;
-    background: linear-gradient(to right, var(--surface-bg, #f8fafc), transparent);
-    animation-name: gw-fade-in;
-    animation-range: 0px 20px;
-  }
+  @supports (scroll-timeline: --scroll-x inline) and (animation-timeline: auto) {
+    .quick-actions-wrapper {
+      position: relative;
+      /* Allows ::before/::after to respond to child's scroll */
+      timeline-scope: --scroll-x;
+    }
 
-  /* Right Shadow: Disappears when scrolled to end */
-  .quick-actions-wrapper::after {
-    right: 0;
-    background: linear-gradient(to left, var(--surface-bg, #f8fafc), transparent);
-    animation-name: gw-fade-out;
-    animation-range: calc(100% - 20px) 100%;
+    .quick-actions-list {
+      scroll-timeline: --scroll-x inline;
+    }
+
+    /* Shadow Masks */
+    .quick-actions-wrapper::before,
+    .quick-actions-wrapper::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 40px;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      /* Use 'auto' duration for scroll-driven animations */
+      animation-duration: auto;
+      animation-fill-mode: both;
+      animation-timeline: --scroll-x;
+    }
+
+    /* Left Shadow: Appears when scrolled right */
+    .quick-actions-wrapper::before {
+      left: 0;
+      background: linear-gradient(to right, var(--surface-bg, #f8fafc), transparent);
+      animation-name: gw-fade-in;
+      animation-range: 0px 20px;
+    }
+
+    /* Right Shadow: Disappears when scrolled to end */
+    .quick-actions-wrapper::after {
+      right: 0;
+      background: linear-gradient(to left, var(--surface-bg, #f8fafc), transparent);
+      animation-name: gw-fade-out;
+      animation-range: calc(100% - 20px) 100%;
+    }
   }
 
   @keyframes gw-fade-in {
