@@ -77,7 +77,7 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
           let stopsPreview = `${route.origin_hub} ➔ ${route.dest_hub}`; // Updated arrow to match previous rendering if needed, but keeping consistent with what I saw
 
           return (
-          <a href={`/ruta/${route.id}`} class="glass-card p-5 group hover:border-primary-300 transition-all active:scale-[0.98] no-underline block overflow-hidden relative stagger-item" style={`animation-delay: ${routes.indexOf(route) * 60}ms`}>
+          <a href={`/ruta/${route.id}`} class="glass-card p-5 group hover:border-primary-300 transition-all active:scale-[0.98] no-underline block overflow-hidden relative stagger-item" style={`animation-delay: ${routes.indexOf(route) * 60}ms; content-visibility: auto; contain-intrinsic-size: auto 150px;`}>
             
             <!-- Background Badge (inline SVG instead of material icon font) -->
             <div class="absolute -right-4 -top-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
