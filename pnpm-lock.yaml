@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  tar: ^7.5.8
+  tar: ^7.5.3
   axios: ^1.7.9
 
 importers:
