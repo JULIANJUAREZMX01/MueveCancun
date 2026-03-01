@@ -96,31 +96,40 @@ export class CoordinatesStore {
     }
 
     findNearest(lat: number, lng: number): string | null {
-        if (!this.db || !this.spatialIndex) return null;
+        if (!this.db) return null;
 
-        // Optimization: Use Spatial Hash for O(1) query
-        const candidates = this.spatialIndex.query(lat, lng);
         let minDist = Infinity;
-        let nearest = null;
+        let nearest: string | null = null;
 
-        if (candidates.length > 0) {
-            // Search candidates (SpatialHash structure: { lat, lng, data })
-            for (const point of candidates) {
-                const d = getDistance(lat, lng, point.lat, point.lng);
-                if (d < minDist) {
-                    minDist = d;
-                    nearest = point.data;
+        // ⚡ Speedy Gonzalez: Spatial Index Optimization (O(1))
+        // Most queries are for nearby stops (< 1km).
+        if (this.spatialIndex) {
+            const candidates = this.spatialIndex.query(lat, lng);
+            if (candidates.length > 0) {
+                for (const candidate of candidates) {
+                    const d = getDistance(lat, lng, candidate.lat, candidate.lng);
+                    if (d < minDist) {
+                        minDist = d;
+                        nearest = candidate.data;
+                    }
+                }
+
+                // Safe Threshold: If nearest is within 1km, it's guaranteed to be correct
+                // because the 3x3 grid search covers at least ~1.5km radius.
+                if (minDist < 1.0) {
+                    return nearest;
                 }
             }
-        } else {
-            // Fallback: Linear scan all points (allPoints structure: { name, lat, lng })
-            // This happens only if no stops are within the spatial grid cells (~3km area)
-            for (const point of this.allPoints) {
-                const d = getDistance(lat, lng, point.lat, point.lng);
-                if (d < minDist) {
-                    minDist = d;
-                    nearest = point.name;
-                }
+        }
+
+        // Fallback: Global Scan (O(N))
+        // Only runs if no nearby stops found (e.g. user is far from city).
+        // Preserves correctness for edge cases.
+        for (const [name, coords] of Object.entries(this.db)) {
+            const d = getDistance(lat, lng, coords[0], coords[1]);
+            if (d < minDist) {
+                minDist = d;
+                nearest = name;
             }
         }
 
