@@ -9,7 +9,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
 <div id="map-container" class="w-full h-full relative" data-center={JSON.stringify(center)} data-zoom={zoom}>
     <!-- Loading Spinner -->
-    <div id="map-loader" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50 dark:bg-slate-900 transition-opacity duration-500 pointer-events-none">
+    <div id="map-loader" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50 dark:bg-slate-900 transition-opacity duration-500">
         <div class="w-10 h-10 border-4 border-slate-200 dark:border-slate-800 border-t-primary-500 rounded-full animate-spin"></div>
     </div>
 
