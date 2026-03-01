@@ -77,35 +77,40 @@ export const initDB = async (): Promise<IDBPDatabase> => {
   if (dbPromise) return dbPromise;
 
   dbPromise = (async () => {
-    const db = await openDB(DB_NAME, DB_VERSION, {
-      upgrade(db, oldVersion) {
-        if (oldVersion < 1) {
-          db.createObjectStore('routes');
-          db.createObjectStore('user-reports');
-        }
-        if (oldVersion < 2) {
-          db.createObjectStore('wallet-status');
-        }
-        // Version 3: Migration handled in code, no schema changes needed
-      },
-    });
+    try {
+      const db = await openDB(DB_NAME, DB_VERSION, {
+        upgrade(db, oldVersion) {
+          if (oldVersion < 1) {
+            db.createObjectStore('routes');
+            db.createObjectStore('user-reports');
+          }
+          if (oldVersion < 2) {
+            db.createObjectStore('wallet-status');
+          }
+          // Version 3: Migration handled in code, no schema changes needed
+        },
+      });
 
-    // Initialize test balance if empty (180 MXN for consistency with UI)
-    const tx = db.transaction('wallet-status', 'readwrite');
-    const store = tx.objectStore('wallet-status');
-    const balance = await store.get('current_balance');
+      // Initialize test balance if empty (180 MXN for consistency with UI)
+      const tx = db.transaction('wallet-status', 'readwrite');
+      const store = tx.objectStore('wallet-status');
+      const balance = await store.get('current_balance');
 
-    if (balance === undefined) {
-      await store.put({ id: 'current_balance', amount: 180.00, currency: 'MXN' }, 'current_balance');
-      console.log('[DB] Initial wallet balance set to 180.00 MXN');
+      if (balance === undefined) {
+        await store.put({ id: 'current_balance', amount: 180.00, currency: 'MXN' }, 'current_balance');
+        console.log('[DB] Initial wallet balance set to 180.00 MXN');
+      }
+
+      await tx.done;
+
+      // Run migration after DB initialization
+      await migrateBalanceFromLocalStorage(db);
+
+      return db;
+    } catch (e) {
+      dbPromise = null;
+      throw e;
     }
-
-    await tx.done;
-
-    // Run migration after DB initialization
-    await migrateBalanceFromLocalStorage(db);
-
-    return db;
   })();
 
   return dbPromise;
