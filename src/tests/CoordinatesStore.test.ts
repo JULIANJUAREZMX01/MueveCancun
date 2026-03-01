@@ -95,4 +95,82 @@ describe('CoordinatesStore', () => {
         const nearest = store.findNearest(10.1, 10.1);
         expect(nearest).toBe('stop close');
     });
+
+    it('should return correct nearest when spatial index has candidates in same cell', async () => {
+        // Two stops very close together (same spatial hash cell, ~0.001 deg apart)
+        const mockData = {
+            version: '1.0',
+            rutas: [
+                {
+                    id: 'R1',
+                    nombre: 'Ruta 1',
+                    tarifa: 10,
+                    tipo: 'Bus',
+                    paradas: [
+                        { nombre: 'Stop Near', lat: 10.001, lng: 10.001, orden: 1 },
+                        { nombre: 'Stop Nearer', lat: 10.0005, lng: 10.0005, orden: 2 }
+                    ]
+                }
+            ]
+        };
+
+        await store.init(mockData);
+
+        // Query point exactly at 10,10 — "Stop Nearer" is closer
+        const nearest = store.findNearest(10.0, 10.0);
+        expect(nearest).toBe('stop nearer');
+    });
+
+    it('should return correct nearest when candidate is in a neighboring cell', async () => {
+        // Place one stop just across a cell boundary from the query point
+        // Cell size is 0.01 deg. Query at 10.0, nearest stop at 10.009 (same or adjacent cell)
+        // and a farther stop in a different cell
+        const mockData = {
+            version: '1.0',
+            rutas: [
+                {
+                    id: 'R1',
+                    nombre: 'Ruta 1',
+                    tarifa: 10,
+                    tipo: 'Bus',
+                    paradas: [
+                        { nombre: 'Adjacent Cell Stop', lat: 10.009, lng: 10.009, orden: 1 },
+                        { nombre: 'Far Stop', lat: 20.0, lng: 20.0, orden: 2 }
+                    ]
+                }
+            ]
+        };
+
+        await store.init(mockData);
+
+        const nearest = store.findNearest(10.0, 10.0);
+        expect(nearest).toBe('adjacent cell stop');
+    });
+
+    it('should return correct nearest when no stops are in spatial index neighborhood', async () => {
+        // All stops are far from query point — spatial index query returns no candidates
+        // Global fallback must find the correct nearest
+        const mockData = {
+            version: '1.0',
+            rutas: [
+                {
+                    id: 'R1',
+                    nombre: 'Ruta 1',
+                    tarifa: 10,
+                    tipo: 'Bus',
+                    paradas: [
+                        { nombre: 'Distant Stop A', lat: 80.0, lng: 80.0, orden: 1 },
+                        { nombre: 'Distant Stop B', lat: 85.0, lng: 85.0, orden: 2 }
+                    ]
+                }
+            ]
+        };
+
+        await store.init(mockData);
+
+        // Query at 0,0 — neither stop is in the spatial index's 3x3 neighborhood
+        // Global fallback should find "Distant Stop A" as nearer
+        const nearest = store.findNearest(0.0, 0.0);
+        expect(nearest).toBe('distant stop a');
+    });
 });
