@@ -112,13 +112,13 @@ export class CoordinatesStore {
                         nearest = point.data;
                     }
                 }
-                return nearest;
             }
         }
 
-        // Fallback to O(N) scan if spatial index is missing or yields no candidates
-        for (const [name, coords] of Object.entries(this.db)) {
-            const d = getDistance(lat, lng, coords[0], coords[1]);
+        // 2. Global Search (O(N)) - Verifies against all points using minDist from spatial index
+        // Using array iteration is faster than Object.entries
+        for (const point of this.allPoints) {
+            const d = getDistance(lat, lng, point.lat, point.lng);
             if (d < minDist) {
                 minDist = d;
                 nearest = name;

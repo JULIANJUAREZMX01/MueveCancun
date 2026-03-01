@@ -26,8 +26,21 @@ const mockData = {
 // Initialize store
 const store = CoordinatesStore.instance;
 
-// Initialize with data (await at top level for ESM)
-await store.init(mockData);
+// Synchronously populate the store to avoid async issues with bench runner
+import { SpatialHash } from '../../utils/SpatialHash';
+(store as any).db = {};
+
+(store as any).spatialIndex = new SpatialHash();
+(store as any).allPoints = [];
+
+mockData.rutas.forEach((route: any) => {
+    route.paradas.forEach((stop: any) => {
+        const key = stop.nombre.toLowerCase().trim();
+        (store as any).db[key] = [stop.lat, stop.lng];
+        (store as any).spatialIndex.insert(stop.lat, stop.lng, key);
+        (store as any).allPoints.push({ name: key, lat: stop.lat, lng: stop.lng });
+    });
+});
 
 describe('CoordinatesStore Performance', () => {
     bench('findNearest (random query)', () => {
