@@ -17,28 +17,42 @@ export function loadLeaflet(): Promise<void> {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/vendor/leaflet/leaflet.css';
-    document.head.appendChild(link);
 
     // 2. Load JS
     const script = document.createElement('script');
     script.src = '/vendor/leaflet/leaflet.js';
     script.defer = true;
 
-    script.onload = () => {
-        // Double check L exists
+    const cleanup = () => {
+      link.remove();
+      script.remove();
+    };
+
+    const cssPromise = new Promise<void>((cssResolve, cssReject) => {
+      link.onload = () => cssResolve();
+      link.onerror = () => cssReject(new Error('Failed to load Leaflet CSS'));
+      document.head.appendChild(link);
+    });
+
+    const jsPromise = new Promise<void>((jsResolve, jsReject) => {
+      script.onload = () => {
         if ((window as any).L) {
-            resolve();
+          jsResolve();
         } else {
-            reject(new Error('Leaflet script loaded but window.L is missing'));
+          jsReject(new Error('Leaflet script loaded but window.L is missing'));
         }
-    };
+      };
+      script.onerror = () => jsReject(new Error('Failed to load Leaflet JS'));
+      document.head.appendChild(script);
+    });
 
-    script.onerror = () => {
+    Promise.all([cssPromise, jsPromise])
+      .then(() => resolve())
+      .catch((err) => {
+        cleanup();
         loadPromise = null; // Reset on failure so we can retry
-        reject(new Error('Failed to load Leaflet JS'));
-    };
-
-    document.head.appendChild(script);
+        reject(err);
+      });
   });
 
   return loadPromise;
