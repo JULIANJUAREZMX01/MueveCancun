@@ -1,221 +1,131 @@
 ---
-// GraffitiWarrior: PWA Reload Component
-// Uses Popover API for native visibility management and @starting-style for entry animation.
 ---
-
-<div id="pwa-toast" popover="manual" class="pwa-toast">
-  <div class="toast-content">
-    <div class="toast-info">
-      <h4 class="toast-title" data-i18n="pwa.update">Actualización disponible</h4>
-      <p class="toast-desc" data-i18n="pwa.new_version">Nueva versión lista.</p>
+<div id="pwa-toast" popover="manual" class="pwa-popover">
+    <div class="glass-card p-4 flex items-center justify-between gap-4 bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 rounded-2xl">
+        <div>
+            <h4 class="font-bold text-sm" data-i18n="pwa.update">Actualización disponible</h4>
+            <p class="text-xs text-slate-500" data-i18n="pwa.new_version">Nueva versión lista.</p>
+        </div>
+        <button id="pwa-refresh-btn" class="bg-primary-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-600 transition-colors" data-i18n="pwa.refresh">
+            ACTUALIZAR
+        </button>
     </div>
-    <button id="pwa-refresh-btn" class="toast-action" data-i18n="pwa.refresh">
-      ACTUALIZAR
-    </button>
-  </div>
 </div>
 
 <style>
-  /*
-   * GRAFFITI WARRIOR: CSS5
-   * Native Popover + @starting-style
-   */
-  .pwa-toast {
-    /* Position fixed at bottom (Toast behavior) */
-    position: fixed;
-    bottom: 1.5rem; /* 6 (1.5rem) on desktop, adjusted via media query */
-    left: 1rem;
-    right: 1rem;
-    margin: 0 auto;
-    max-width: 28rem; /* max-w-md */
-    z-index: 50; /* Fallback for older browsers, but Popover is Top Layer */
+    /*
+     * GRAFFITI WARRIOR: Native Popover API
+     * No z-index wars. No display:none toggling. Pure browser power.
+     */
+    .pwa-popover {
+        /* Position: Fixed at bottom, full width but constrained */
+        position: fixed;
+        bottom: 6rem; /* Above bottom nav */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 28rem; /* max-w-md */
 
-    background: transparent;
-    border: none;
-    padding: 0;
-    overflow: visible;
+        /* Reset default popover styles */
+        border: none;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        overflow: visible;
 
-    /* Animation State: Open (Final) */
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), display 0.4s allow-discrete, overlay 0.4s allow-discrete;
+        /* Animation State: Open (Final) */
+        opacity: 1;
+        translate: 0 0;
+        transition:
+            opacity 0.4s ease-out,
+            translate 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+            display 0.4s allow-discrete,
+            overlay 0.4s allow-discrete;
+
+        /* Ensure it sits on top if supported, though Top Layer handles it */
+        z-index: 50;
+    }
 
     /* Animation State: Closed (Starting Style for Entry) */
     @starting-style {
-      opacity: 0;
-      transform: translateY(100%);
+        .pwa-popover:popover-open {
+            opacity: 0;
+            translate: 0 2rem;
+        }
     }
 
-    /* Animation State: Closed (Exit) */
-    &:not(:popover-open) {
-      opacity: 0;
-      transform: translateY(100%);
-      display: none;
+    /* Animation State: Exiting */
+    .pwa-popover:not(:popover-open) {
+        opacity: 0;
+        translate: 0 2rem;
+        display: none;
     }
-  }
 
-  /* Mobile Adjustments */
-  @media (max-width: 768px) {
-    .pwa-toast {
-      bottom: 6rem; /* Above bottom nav */
+    /* Mobile adjustment */
+    @media (min-width: 768px) {
+        .pwa-popover {
+            bottom: 2rem;
+        }
     }
-  }
-
-  .toast-content {
-    /* Glassmorphism */
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-
-    border-radius: 1rem; /* rounded-2xl */
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  :global(.dark) .toast-content {
-    background: rgba(15, 23, 42, 0.95); /* slate-900 */
-    border-color: rgba(255, 255, 255, 0.1);
-    color: white;
-  }
-
-  .toast-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-
-  .toast-title {
-    font-size: 0.875rem; /* text-sm */
-    font-weight: 700;
-    margin: 0;
-    color: var(--text-primary, #0f172a);
-  }
-
-  :global(.dark) .toast-title {
-    color: #f1f5f9;
-  }
-
-  .toast-desc {
-    font-size: 0.75rem; /* text-xs */
-    margin: 0;
-    color: var(--text-secondary, #64748b);
-  }
-
-  :global(.dark) .toast-desc {
-    color: #94a3b8;
-  }
-
-  .toast-action {
-    background: var(--color-primary, #F97316);
-    color: white;
-    font-size: 0.75rem; /* text-xs */
-    font-weight: 800;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem; /* rounded-lg */
-    border: none;
-    cursor: pointer;
-    transition: transform 0.2s, background-color 0.2s;
-    white-space: nowrap;
-  }
-
-  .toast-action:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-  }
-
-  .toast-action:active {
-    transform: translateY(0) scale(0.95);
-  }
 </style>
 
 <script>
-  // GraffitiWarrior: PWA Logic
-  // Listens for SW updates and triggers the native popover
+    // Service Worker Logic
+    // Robust for View Transitions and Idempotency
+    if ('serviceWorker' in navigator && !(window as any).pwa_initialized) {
+        (window as any).pwa_initialized = true;
 
-  function initPWA() {
-    if ('serviceWorker' in navigator) {
-      const toast = document.getElementById('pwa-toast');
-      const btn = document.getElementById('pwa-refresh-btn');
-
-      if (!toast || !btn) return;
-
-      // Register SW
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(reg => {
-
-          // Check if waiting
-          if (reg.waiting) {
-             showUpdateToast(toast);
-          }
-
-          reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            if (newWorker) {
-                newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    showUpdateToast(toast);
+        const showToast = () => {
+            const toast = document.getElementById('pwa-toast');
+            if (toast && !toast.matches(':popover-open')) {
+                try {
+                    toast.showPopover();
+                } catch (e) {
+                    console.warn("Popover API fallback");
+                    toast.style.display = 'block';
                 }
+            }
+        };
+
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                if (reg.waiting) showToast();
+
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker?.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showToast();
+                        }
+                    });
                 });
-            }
-          });
+            });
         });
-      });
 
-      // Reload Logic
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return;
-        window.location.reload();
-        refreshing = true;
-      });
-
-      btn.addEventListener('click', () => {
-        navigator.serviceWorker.ready.then(reg => {
-            if (reg.waiting) {
-                reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-            }
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            window.location.reload();
+            refreshing = true;
         });
-      });
+
+        // Re-attach listeners on every navigation (View Transitions)
+        document.addEventListener('astro:page-load', () => {
+            const refreshBtn = document.getElementById('pwa-refresh-btn');
+
+            refreshBtn?.addEventListener('click', () => {
+                navigator.serviceWorker.ready.then(reg => {
+                    if (reg.waiting) {
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                });
+            });
+
+            navigator.serviceWorker.getRegistration().then(reg => {
+                if (reg && reg.waiting) {
+                    showToast();
+                }
+            });
+        });
     }
-  }
-
-  function showUpdateToast(toast) {
-      // Use Native Popover API
-      try {
-          // If already open, do nothing or re-show
-          if (!toast.matches(':popover-open')) {
-              toast.showPopover();
-          }
-      } catch (e) {
-          // Fallback
-          toast.style.display = 'block';
-      }
-  }
-
-  // Run initialization
-  initPWA();
-
-  // Re-run on Astro navigation if needed (though PWA state is global window)
-  document.addEventListener('astro:page-load', () => {
-      // Re-attach listeners if DOM was replaced
-      // But serviceWorker registration is persistent.
-      // We might need to re-check 'reg.waiting' if we navigated away and back?
-      // For now, initPWA handles the initial load.
-      // Since this component is in MainLayout, it persists across navigations if transition:persist is used,
-      // but it's not. It's re-rendered. So we need to re-check.
-
-      if (navigator.serviceWorker) {
-          navigator.serviceWorker.getRegistration().then(reg => {
-              if (reg && reg.waiting) {
-                  const toast = document.getElementById('pwa-toast');
-                  if (toast) showUpdateToast(toast);
-              }
-          });
-      }
-  });
 </script>

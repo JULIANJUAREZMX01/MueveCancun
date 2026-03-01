@@ -266,15 +266,11 @@ const navItems = [
     )}
 
     <Toast />
+    <PwaReload />
 
     <div id="i18n-translations" data-translations={JSON.stringify(uiTranslations)} class="hidden"></div>
 
-    <PwaReload />
-
-    <ScrollToTop />
-
     <script is:inline>
-      /* Theme Logic */
       function setupThemeToggle() {
         // Find existing buttons (desktop + mobile)
         const toggles = document.querySelectorAll('.theme-toggle');
