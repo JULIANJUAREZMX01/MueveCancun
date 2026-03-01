@@ -8,14 +8,28 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 ---
 
 <div id="map-container" class="w-full h-full relative" data-center={JSON.stringify(center)} data-zoom={zoom}>
+    <!-- Loading Spinner -->
+    <div id="map-loader" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50 dark:bg-slate-900 transition-opacity duration-500">
+        <div class="w-10 h-10 border-4 border-slate-200 dark:border-slate-800 border-t-primary-500 rounded-full animate-spin"></div>
+    </div>
+
     <!-- Map Element -->
     <div id="leaflet-map" class="w-full h-full z-0"></div>
 
+    <!-- Loader -->
+    <div id="map-loader" class="hidden absolute inset-0 flex items-center justify-center bg-slate-50 dark:bg-slate-900 z-50 transition-opacity duration-300">
+        <div class="flex flex-col items-center gap-3">
+             <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-primary-500"></div>
+             <span class="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Cargando Mapa...</span>
+        </div>
+    </div>
+
     <!-- Map Controls (Custom) -->
     <div class="absolute bottom-24 right-4 z-[400] flex flex-col gap-2">
-        <button id="gps-center-btn" class="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-primary-500 transition-colors active:scale-95" aria-label="Centrar en mi ubicación">
+        <button id="gps-center-btn" class="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-primary-500 transition-colors active:scale-95" style="anchor-name: --gps-map-btn" aria-label="Centrar en mi ubicación">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
         </button>
+        <div id="gps-tooltip" class="graffiti-tooltip left" style="position-anchor: --gps-map-btn">Mi Ubicación</div>
     </div>
 </div>
 
@@ -24,14 +38,102 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { drawRoute } from '../utils/RouteDrawer';
   import { escapeHtml, safeUrl } from '../utils/utils';
+  import { loadLeaflet } from '../utils/leafletLoader';
 
   let map;
   let layerGroup;
   let coordinatesDB = {};
+  let leafletPromise = null;
+
+  function loadLeaflet() {
+      if (typeof window !== 'undefined' && window.L) return Promise.resolve();
+      if (leafletPromise) return leafletPromise;
+
+      leafletPromise = new Promise((resolve, reject) => {
+          // 1. Load CSS
+          if (!document.querySelector('link[href*="leaflet.css"]')) {
+              const link = document.createElement('link');
+              link.rel = 'stylesheet';
+              link.href = '/vendor/leaflet/leaflet.css';
+              document.head.appendChild(link);
+          }
+
+          // 2. Load JS
+          const script = document.createElement('script');
+          script.src = '/vendor/leaflet/leaflet.js';
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = reject;
+          document.head.appendChild(script);
+      });
+      return leafletPromise;
+  }
+
+  // ⚡ Speedy Gonzalez: Lazy Load Leaflet to unblock Critical Rendering Path
+  async function loadLeaflet() {
+      if (window.L) return;
+
+      // Load CSS
+      if (!document.querySelector('link[href*="leaflet.css"]')) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = '/vendor/leaflet/leaflet.css';
+          document.head.appendChild(link);
+      }
+
+      // Load JS
+      if (!document.querySelector('script[src*="leaflet.js"]')) {
+          await new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = '/vendor/leaflet/leaflet.js';
+              script.defer = true;
+              script.onload = resolve;
+              script.onerror = reject;
+              document.head.appendChild(script);
+          });
+      }
+
+      // Wait for L to be available
+      let retries = 0;
+      while (!window.L && retries < 50) {
+          await new Promise(r => setTimeout(r, 50));
+          retries++;
+      }
+      if (!window.L) throw new Error("Leaflet failed to load");
+  }
 
   async function initMap() {
     const container = document.getElementById('map-container');
+    const loader = document.getElementById('map-loader');
+
     if (!container) return; // Not on a page with a map
+
+    // Ensure Leaflet is loaded
+    try {
+        await loadLeaflet();
+    } catch (e) {
+        console.error("Failed to load map engine", e);
+        if (loader) {
+            const spinner = loader.querySelector('div');
+            if (spinner) {
+                spinner.style.display = 'none';
+            }
+            let errorEl = loader.querySelector('.map-loader-error');
+            if (!errorEl) {
+                errorEl = document.createElement('p');
+                errorEl.className = 'map-loader-error text-sm text-red-600 dark:text-red-400';
+                loader.appendChild(errorEl);
+            }
+            errorEl.textContent = 'Error loading map';
+        }
+        return;
+    }
+
+    // Hide Loader
+    if (loader) {
+        loader.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => loader.remove(), 500);
+    }
 
     // CLEANUP: If map exists but container is new/different, destroy old map
     // Or if container has content (Leaflet artifact), clear it.
@@ -40,20 +142,20 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         map = null;
     }
 
-    // Ensure Leaflet is loaded
-    if (!window.L) {
-        // Retry shortly
-        setTimeout(initMap, 100);
-        return;
-    }
-
     const center = JSON.parse(container.dataset.center);
     const zoom = parseInt(container.dataset.zoom);
 
+    // Initialize Map
     map = window.L.map('leaflet-map', {
         zoomControl: false,
         attributionControl: false
     }).setView(center, zoom);
+
+    // Hide Loader
+    if (loader) {
+        loader.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => loader.classList.add('hidden'), 300); // Wait for transition
+    }
 
     // Add Tile Layer
     window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -91,11 +193,8 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
             let minDist = Infinity;
 
             if (nearest && coordinatesDB[nearest]) {
-                 // Calculate distance to verify threshold (Store does it, but we need it for UI logic if we want strict < 1000m)
-                 // Store fallback is 1.5km. Map logic was 1000m.
-                 // We can trust the store or re-verify. Let's re-verify with Leaflet's distance to be consistent with previous logic.
                  const coords = coordinatesDB[nearest];
-                 minDist = map.distance(e.latlng, coords);
+                 minDist = e.latlng.distanceTo(window.L.latLng(coords[0], coords[1]));
             }
 
             // Threshold: 1000 meters
@@ -168,7 +267,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
                     <div class="p-1">
                         <p class="font-bold text-gray-900">${escapeHtml(name)}</p>
                         <p class="text-xs text-gray-500">${isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés'}</p>
-                        <button onclick="window.location.href='/rutas?search=${safeUrl(name)}'" class="mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
+                        <button data-stop-name="${escapeHtml(name)}" class="js-view-details-btn mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
                     </div>
                 `);
                 newLayers.push(marker);
@@ -204,21 +303,50 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
       }
   });
 
-  // Re-init on page load
+  // Re-init on page load - Defer to unblock UI
   document.addEventListener('astro:page-load', () => {
-      initMap();
-      setupGPS();
+      // Use requestIdleCallback to defer map initialization
+      if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(() => {
+              initMap();
+              setupGPS();
+          });
+      } else {
+          setTimeout(() => {
+              initMap();
+              setupGPS();
+          }, 200);
+      }
   });
 
   // Initial load
   if (document.readyState === 'complete') {
-      initMap();
-      setupGPS();
+      if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(() => { initMap(); setupGPS(); });
+      } else {
+          setTimeout(() => { initMap(); setupGPS(); }, 200);
+      }
   } else {
       window.addEventListener('load', () => {
-        initMap();
-        setupGPS();
+          if ('requestIdleCallback' in window) {
+              window.requestIdleCallback(() => { initMap(); setupGPS(); });
+          } else {
+              setTimeout(() => { initMap(); setupGPS(); }, 200);
+          }
       });
+  }
+
+  // --- Global Event Delegation (Security Fix: Remove Inline Handlers) ---
+  // This allows us to comply with stricter CSP (no unsafe-inline eventually)
+  if (typeof document !== 'undefined') {
+    document.addEventListener('click', (e) => {
+        // @ts-ignore
+        const btn = e.target?.closest('.js-view-details-btn');
+        if (btn && btn.dataset.stopName) {
+            const name = btn.dataset.stopName;
+            window.location.href = `/rutas?search=${safeUrl(name)}`;
+        }
+    });
   }
 
   // --- GPS Logic ---
@@ -250,6 +378,38 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   }
 
 </script>
+
+<style>
+  /* GraffitiWarrior: Native Tooltip via Anchor Positioning */
+  .graffiti-tooltip {
+    position: absolute;
+    margin: 0;
+    padding: 6px 12px;
+    background: #1e293b; /* slate-800 */
+    color: white;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), translate 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    z-index: 50;
+
+    /* Anchor Positioning */
+    right: anchor(left);
+    top: anchor(top);
+    translate: -12px 6px; /* Offset to center vertically relative to 40px btn */
+  }
+
+  /* Reveal logic */
+  #gps-center-btn:hover + .graffiti-tooltip,
+  #gps-center-btn:focus-visible + .graffiti-tooltip {
+    opacity: 1;
+    translate: -16px 6px; /* Slide out effect */
+  }
+</style>
 
 <style is:global>
   .user-location-marker {

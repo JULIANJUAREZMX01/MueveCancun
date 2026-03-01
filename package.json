@@ -12,10 +12,17 @@
   "engines": {
     "node": ">=20"
   },
+  "pnpm": {
+    "overrides": {
+      "tar": "^7.5.3",
+      "axios": "^1.7.9"
+    }
+  },
   "scripts": {
     "dev": "astro dev",
     "dev:network": "astro dev --host",
-    "build": "node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
+    "build": "pnpm optimize-json && node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
+    "optimize-json": "node scripts/optimize-json.mjs",
     "build:wasm": "node scripts/build-wasm.mjs",
     "astro": "astro",
     "lint": "eslint .",
@@ -32,13 +39,13 @@
     "@types/node": "^24.10.1",
     "astro": "^5.16.15",
     "autoprefixer": "^10.4.23",
-    "clsx": "^2.1.0",
+    "clsx": "^2.1.1",
     "fuse.js": "^7.0.0",
     "idb": "^8.0.3",
     "postcss": "^8.5.6",
     "serve": "^14.2.5",
     "sharp": "^0.33.2",
-    "tailwind-merge": "^2.2.1",
+    "tailwind-merge": "^2.6.1",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.9.2",
     "vite": "^6.3.1"

@@ -77,3 +77,15 @@ export function getDistance(lat1: number, lon1: number, lat2: number, lon2: numb
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
 }
+
+/**
+ * Serializes an object to a JSON string that is safe to use in HTML attributes.
+ * Escapes < to prevent tag injection and ' to prevent attribute breakout.
+ * @param obj The object to serialize.
+ * @returns The escaped JSON string.
+ */
+export function safeJsonStringify(obj: unknown): string {
+    return JSON.stringify(obj)
+        .replace(/</g, '\\u003c')
+        .replace(/'/g, "\\u0027");
+}
