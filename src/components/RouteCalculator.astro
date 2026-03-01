@@ -586,7 +586,8 @@ const ui = uiTranslations[currentLang];
 
         let stopsPreview = `${escapeHtml(route.origin_hub)} → ${escapeHtml(route.dest_hub)}`;
         if (route.stops && route.stops.length > 0) {
-             stopsPreview = `${escapeHtml(route.stops[0])} → ${escapeHtml(route.stops[route.stops.length - 1])}`;
+             // Access .name because stops are objects {name, lat, lng...}
+             stopsPreview = `${escapeHtml(route.stops[0].name)} → ${escapeHtml(route.stops[route.stops.length - 1].name)}`;
         }
 
         // Sentinel Fix: Replace < with \u003c to prevent JSON-based HTML injection

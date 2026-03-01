@@ -38,8 +38,7 @@ const navItems = [
 <html lang="es" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <!-- Security: Content Security Policy (CSP) -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://*.cartocdn.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.cartocdn.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.openstreetmap.org https://*.cartocdn.com; connect-src 'self' https://*.cartocdn.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; worker-src 'self'; form-action 'self';" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
 
     <!-- 🛡️ Sentinel: Strict CSP -->
