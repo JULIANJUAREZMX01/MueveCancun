@@ -113,6 +113,18 @@ const navItems = [
     &:active {
       transform: scale(0.95);
     }
+
+    /* GraffitiWarrior: Focus Visible A11y Magic */
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: -2px;
+      border-radius: 0.5rem;
+      background: radial-gradient(
+        circle at center,
+        color-mix(in srgb, var(--color-primary) 20%, transparent) 0%,
+        color-mix(in srgb, var(--color-primary) 5%, transparent) 100%
+      );
+    }
   }
 
   /* The magic gliding indicator */
