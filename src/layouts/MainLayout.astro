@@ -73,7 +73,11 @@ const navItems = [
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
 
     <!-- Preload Critical Data -->
-    <link rel="preload" href="/data/master_routes.optimized.json" as="fetch" crossorigin />
+    <link rel="preload" href="/data/master_routes.json" as="fetch" crossorigin />
+
+    <!-- Leaflet Optimization: Lazy Loaded via InteractiveMap -->
+    <link rel="preconnect" href="https://basemaps.cartocdn.com" />
+    <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
 
     <script>
       import { getWalletBalance } from '../utils/db';

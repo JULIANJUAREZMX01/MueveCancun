@@ -8,6 +8,11 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 ---
 
 <div id="map-container" class="w-full h-full relative" data-center={JSON.stringify(center)} data-zoom={zoom}>
+    <!-- Loading Spinner -->
+    <div id="map-loader" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50 dark:bg-slate-900 transition-opacity duration-500">
+        <div class="w-10 h-10 border-4 border-slate-200 dark:border-slate-800 border-t-primary-500 rounded-full animate-spin"></div>
+    </div>
+
     <!-- Map Element -->
     <div id="leaflet-map" class="w-full h-full z-0"></div>
 
@@ -38,6 +43,31 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   let map;
   let layerGroup;
   let coordinatesDB = {};
+  let leafletPromise = null;
+
+  function loadLeaflet() {
+      if (typeof window !== 'undefined' && window.L) return Promise.resolve();
+      if (leafletPromise) return leafletPromise;
+
+      leafletPromise = new Promise((resolve, reject) => {
+          // 1. Load CSS
+          if (!document.querySelector('link[href*="leaflet.css"]')) {
+              const link = document.createElement('link');
+              link.rel = 'stylesheet';
+              link.href = '/vendor/leaflet/leaflet.css';
+              document.head.appendChild(link);
+          }
+
+          // 2. Load JS
+          const script = document.createElement('script');
+          script.src = '/vendor/leaflet/leaflet.js';
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = reject;
+          document.head.appendChild(script);
+      });
+      return leafletPromise;
+  }
 
   // ⚡ Speedy Gonzalez: Lazy Load Leaflet to unblock Critical Rendering Path
   async function loadLeaflet() {
@@ -74,32 +104,42 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
   async function initMap() {
     const container = document.getElementById('map-container');
+    const loader = document.getElementById('map-loader');
+
     if (!container) return; // Not on a page with a map
 
-    // Show Loader
-    const loader = document.getElementById('map-loader');
-    if (loader) loader.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+    // Ensure Leaflet is loaded
+    try {
+        await loadLeaflet();
+    } catch (e) {
+        console.error("Failed to load map engine", e);
+        if (loader) {
+            const spinner = loader.querySelector('div');
+            if (spinner) {
+                spinner.style.display = 'none';
+            }
+            let errorEl = loader.querySelector('.map-loader-error');
+            if (!errorEl) {
+                errorEl = document.createElement('p');
+                errorEl.className = 'map-loader-error text-sm text-red-600 dark:text-red-400';
+                loader.appendChild(errorEl);
+            }
+            errorEl.textContent = 'Error loading map';
+        }
+        return;
+    }
+
+    // Hide Loader
+    if (loader) {
+        loader.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => loader.remove(), 500);
+    }
 
     // CLEANUP: If map exists but container is new/different, destroy old map
     // Or if container has content (Leaflet artifact), clear it.
     if (map) {
         map.remove();
         map = null;
-    }
-
-    // Load Leaflet dynamically
-    try {
-        await loadLeaflet();
-    } catch (e) {
-        console.error("Leaflet failed to load", e);
-        if (loader) {
-            loader.textContent = '';
-            const msg = document.createElement('p');
-            msg.className = 'text-red-500 text-xs font-bold';
-            msg.textContent = 'Error loading map';
-            loader.appendChild(msg);
-        }
-        return;
     }
 
     const center = JSON.parse(container.dataset.center);
@@ -265,35 +305,34 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
   // Re-init on page load - Defer to unblock UI
   document.addEventListener('astro:page-load', () => {
-      // Use requestIdleCallback to avoid blocking the main thread during navigation
+      // Use requestIdleCallback to defer map initialization
       if ('requestIdleCallback' in window) {
-          requestIdleCallback(() => {
-              initMap().catch(console.error);
+          window.requestIdleCallback(() => {
+              initMap();
               setupGPS();
           });
       } else {
           setTimeout(() => {
-              initMap().catch(console.error);
+              initMap();
               setupGPS();
-          }, 0);
+          }, 200);
       }
   });
 
   // Initial load
   if (document.readyState === 'complete') {
-      initMap().catch(console.error);
-      setupGPS();
+      if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(() => { initMap(); setupGPS(); });
+      } else {
+          setTimeout(() => { initMap(); setupGPS(); }, 200);
+      }
   } else {
       window.addEventListener('load', () => {
-        initMap().catch(console.error);
-        setupGPS();
-      }, 100);
-  } else {
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-            initMap();
-            setupGPS();
-        }, 100);
+          if ('requestIdleCallback' in window) {
+              window.requestIdleCallback(() => { initMap(); setupGPS(); });
+          } else {
+              setTimeout(() => { initMap(); setupGPS(); }, 200);
+          }
       });
   }
 
