@@ -31,6 +31,10 @@ jobs:
           if [ -z "$INPUT" ]; then
             INPUT="No user input provided. Generate a minimal plan, then propose changes via PR against the current branch. Do not push directly to protected branches."
           fi
+          INPUT=$(printf "%s" "$INPUT" | tr -d '\r')
+          if [ ${#INPUT} -gt 4000 ]; then
+            INPUT="${INPUT:0:4000}"
+          fi
           echo "prepared_instructions<<'EOF'" >> "$GITHUB_OUTPUT"
           echo "$INPUT" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
