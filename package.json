@@ -6,10 +6,17 @@
   "engines": {
     "node": ">=20"
   },
+  "pnpm": {
+    "overrides": {
+      "tar": "^7.5.8",
+      "axios": "^1.7.9"
+    }
+  },
   "scripts": {
     "dev": "astro dev",
     "dev:network": "astro dev --host",
-    "build": "node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
+    "build": "pnpm optimize-json && node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
+    "optimize-json": "node scripts/optimize-json.mjs",
     "build:wasm": "node scripts/build-wasm.mjs",
     "astro": "astro",
     "lint": "eslint .",
