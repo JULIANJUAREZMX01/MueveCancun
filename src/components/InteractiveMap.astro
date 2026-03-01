@@ -113,7 +113,19 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         await loadLeaflet();
     } catch (e) {
         console.error("Failed to load map engine", e);
-        if (loader) loader.innerText = "Error loading map";
+        if (loader) {
+            const spinner = loader.querySelector('div');
+            if (spinner) {
+                spinner.style.display = 'none';
+            }
+            let errorEl = loader.querySelector('.map-loader-error');
+            if (!errorEl) {
+                errorEl = document.createElement('p');
+                errorEl.className = 'map-loader-error text-sm text-red-600 dark:text-red-400';
+                loader.appendChild(errorEl);
+            }
+            errorEl.textContent = 'Error loading map';
+        }
         return;
     }
 
