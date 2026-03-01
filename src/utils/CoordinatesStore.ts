@@ -86,28 +86,28 @@ export class CoordinatesStore {
     findNearest(lat: number, lng: number): string | null {
         if (!this.db) return null;
 
-        // 1. Try Spatial Index (O(1))
+        // Track the current best candidate and distance
+        let minDist = Infinity;
+        let nearest: string | null = null;
+
+        // 1. Try Spatial Index (O(1)) as an optimization to get an initial best candidate
         if (this.spatialIndex) {
             const candidates = this.spatialIndex.query(lat, lng);
             if (candidates.length > 0) {
-                let minDist = Infinity;
-                let nearest = null;
                 for (const point of candidates) {
                     const d = getDistance(lat, lng, point.lat, point.lng);
                     if (d < minDist) {
                         minDist = d;
+                        // SpatialHash stores the stop name in point.data
                         nearest = point.data;
                     }
                 }
-                return nearest;
             }
         }
 
         // 2. Fallback: Linear Scan (O(N))
-        // This ensures we find the nearest stop even if it's outside the spatial grid cache
-        // (e.g., user is 50km away).
-        let minDist = Infinity;
-        let nearest = null;
+        // Always run this to guarantee we find the true nearest stop, even if it's
+        // outside the spatial grid cells considered by the spatial index.
 
         // Use pre-computed list to avoid Object.entries() allocation overhead
         const points = this.allPoints;
