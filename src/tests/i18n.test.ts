@@ -54,15 +54,19 @@ describe('useTranslations', () => {
     });
 
     it('should fallback to defaultLang if the translation is missing in the requested language', () => {
-        // Since all keys are currently present in both languages in i18n.ts,
-        // we can test the fallback logic by manually calling the translation function
-        // if we were able to mock ui, but we can also just verify it uses defaultLang
-        // in the implementation.
-        // For now, let's just verify it works for existing keys.
-        const tEn = useTranslations('en');
-        const tEs = useTranslations('es');
+        const key = 'nav.home';
+        const defaultValue = ui[defaultLang][key];
+        const originalEsValue = ui.es[key];
 
-        expect(tEn('nav.home')).toBe('Home');
-        expect(tEs('nav.home')).toBe('Inicio');
+        try {
+            // Simulate missing translation in Spanish for this key
+            delete (ui.es as Record<string, string>)[key];
+
+            const tEs = useTranslations('es');
+            expect(tEs(key)).toBe(defaultValue);
+        } finally {
+            // Restore original Spanish translation to avoid affecting other tests
+            ui.es[key] = originalEsValue;
+        }
     });
 });
