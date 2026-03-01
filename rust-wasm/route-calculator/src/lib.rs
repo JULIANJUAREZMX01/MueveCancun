@@ -94,6 +94,7 @@ fn validate_catalog(catalog: &RouteCatalog) -> Result<(), String> {
     const MAX_STOPS_PER_ROUTE: usize = 500;
     const MAX_ID_LEN: usize = 100;
     const MAX_NAME_LEN: usize = 200;
+    const MAX_STRING_LEN: usize = 200;
 
     if catalog.rutas.len() > MAX_ROUTES {
         return Err(format!("Too many routes: {} (max {})", catalog.rutas.len(), MAX_ROUTES));
@@ -106,12 +107,32 @@ fn validate_catalog(catalog: &RouteCatalog) -> Result<(), String> {
         if route.name.len() > MAX_NAME_LEN {
             return Err(format!("Route Name too long at index {}: {} chars (max {})", i, route.name.len(), MAX_NAME_LEN));
         }
+        if route.transport_type.len() > MAX_STRING_LEN {
+            return Err(format!("Route transport_type too long at index {}: {} chars (max {})", i, route.transport_type.len(), MAX_STRING_LEN));
+        }
+        if let Some(ref empresa) = route.empresa {
+            if empresa.len() > MAX_STRING_LEN {
+                return Err(format!("Route empresa too long at index {}: {} chars (max {})", i, empresa.len(), MAX_STRING_LEN));
+            }
+        }
+        if route.last_updated.len() > MAX_STRING_LEN {
+            return Err(format!("Route last_updated too long at index {}: {} chars (max {})", i, route.last_updated.len(), MAX_STRING_LEN));
+        }
         if route.stops.len() > MAX_STOPS_PER_ROUTE {
             return Err(format!("Route {} has too many stops: {} (max {})", route.id, route.stops.len(), MAX_STOPS_PER_ROUTE));
         }
         for stop in &route.stops {
             if stop.name.len() > MAX_NAME_LEN {
                 return Err(format!("Stop Name too long in route {}: {} chars (max {})", route.id, stop.name.len(), MAX_NAME_LEN));
+            }
+            if let Some(ref sid) = stop.id {
+                if sid.len() > MAX_ID_LEN {
+                    // ID fields use the stricter MAX_ID_LEN limit, consistent with route.id validation
+                    return Err(format!("Stop ID too long in route {}: {} chars (max {})", route.id, sid.len(), MAX_ID_LEN));
+                }
+            }
+            if stop.landmarks.len() > MAX_STRING_LEN {
+                return Err(format!("Stop landmarks too long in route {}: {} chars (max {})", route.id, stop.landmarks.len(), MAX_STRING_LEN));
             }
         }
     }
@@ -786,4 +807,64 @@ mod tests {
         let res = load_catalog_core(&json);
         assert!(res.is_err(), "Should enforce MAX_ROUTES limit");
         assert!(res.err().unwrap().contains("Too many routes"), "Should return specific error message");
+    }
+
+    #[test]
+    fn test_transport_type_too_long() {
+        let long_type = "X".repeat(201);
+        let json = format!(
+            r#"{{"version":"1.0","rutas":[{{"id":"R1","nombre":"Route 1","tarifa":10.0,"tipo":"{}","paradas":[]}}]}}"#,
+            long_type
+        );
+        let res = load_catalog_core(&json);
+        assert!(res.is_err(), "Should reject oversized transport_type");
+        assert!(res.err().unwrap().contains("transport_type too long"));
+    }
+
+    #[test]
+    fn test_empresa_too_long() {
+        let long_empresa = "E".repeat(201);
+        let json = format!(
+            r#"{{"version":"1.0","rutas":[{{"id":"R1","nombre":"Route 1","tarifa":10.0,"tipo":"Bus","empresa":"{}","paradas":[]}}]}}"#,
+            long_empresa
+        );
+        let res = load_catalog_core(&json);
+        assert!(res.is_err(), "Should reject oversized empresa");
+        assert!(res.err().unwrap().contains("empresa too long"));
+    }
+
+    #[test]
+    fn test_last_updated_too_long() {
+        let long_date = "D".repeat(201);
+        let json = format!(
+            r#"{{"version":"1.0","rutas":[{{"id":"R1","nombre":"Route 1","tarifa":10.0,"tipo":"Bus","last_updated":"{}","paradas":[]}}]}}"#,
+            long_date
+        );
+        let res = load_catalog_core(&json);
+        assert!(res.is_err(), "Should reject oversized last_updated");
+        assert!(res.err().unwrap().contains("last_updated too long"));
+    }
+
+    #[test]
+    fn test_stop_id_too_long() {
+        let long_id = "S".repeat(101);
+        let json = format!(
+            r#"{{"version":"1.0","rutas":[{{"id":"R1","nombre":"Route 1","tarifa":10.0,"tipo":"Bus","paradas":[{{"id":"{}","nombre":"Stop 1","lat":0.0,"lng":0.0,"orden":0}}]}}]}}"#,
+            long_id
+        );
+        let res = load_catalog_core(&json);
+        assert!(res.is_err(), "Should reject oversized stop ID");
+        assert!(res.err().unwrap().contains("Stop ID too long"));
+    }
+
+    #[test]
+    fn test_stop_landmarks_too_long() {
+        let long_landmarks = "L".repeat(201);
+        let json = format!(
+            r#"{{"version":"1.0","rutas":[{{"id":"R1","nombre":"Route 1","tarifa":10.0,"tipo":"Bus","paradas":[{{"nombre":"Stop 1","lat":0.0,"lng":0.0,"orden":0,"landmarks":"{}"}},{{"nombre":"Stop 2","lat":0.0,"lng":0.0,"orden":1}}]}}]}}"#,
+            long_landmarks
+        );
+        let res = load_catalog_core(&json);
+        assert!(res.is_err(), "Should reject oversized landmarks");
+        assert!(res.err().unwrap().contains("landmarks too long"));
     }
