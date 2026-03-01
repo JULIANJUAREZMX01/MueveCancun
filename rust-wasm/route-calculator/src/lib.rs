@@ -89,6 +89,38 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
 
 // --- CORE LOGIC (Pure Rust, Testable) ---
 
+fn validate_catalog_content(catalog: &RouteCatalog) -> Result<(), String> {
+    if catalog.rutas.len() > 5000 {
+        return Err("ERROR: Catalog exceeds max 5000 routes limit".to_string());
+    }
+
+    for route in &catalog.rutas {
+        if route.id.len() > 100 {
+            return Err(format!("ERROR: Route ID '{}' exceeds 100 characters", route.id));
+        }
+        if route.name.len() > 100 {
+            return Err(format!("ERROR: Route name '{}' exceeds 100 characters", route.name));
+        }
+        if route.stops.len() > 500 {
+            return Err(format!("ERROR: Route '{}' exceeds max 500 stops limit", route.id));
+        }
+        for stop in &route.stops {
+            if stop.name.len() > 100 {
+                return Err(format!("ERROR: Stop name '{}' exceeds 100 characters", stop.name));
+            }
+            if stop.landmarks.len() > 200 {
+                return Err(format!("ERROR: Stop landmarks '{}' exceeds 200 characters", stop.name));
+            }
+        }
+        for alert in &route.social_alerts {
+            if alert.len() > 200 {
+                return Err(format!("ERROR: Route social alert exceeds 200 characters in route '{}'", route.id));
+            }
+        }
+    }
+    Ok(())
+}
+
 pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     const MAX_PAYLOAD_SIZE: usize = 10 * 1024 * 1024; // 10MB
     if json_payload.len() > MAX_PAYLOAD_SIZE {
@@ -105,6 +137,8 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     if catalog.rutas.is_empty() {
         return Err("ERROR: Catalog contains 0 routes".to_string());
     }
+
+    validate_catalog_content(&catalog)?;
 
     // Pre-compute normalized stops for fuzzy matching
     for route in &mut catalog.rutas {
@@ -457,6 +491,64 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_validation_limits() {
+        let mut routes = Vec::new();
+        // Create 1 valid route to pass emptiness check
+        routes.push(Route {
+            id: "R1".to_string(),
+            name: "Valid Route".to_string(),
+            price: 10.0,
+            transport_type: "Bus".to_string(),
+            empresa: None,
+            frecuencia_minutos: None,
+            horario: None,
+            stops: vec![
+                Stop {
+                    id: None,
+                    name: "Stop A".to_string(),
+                    lat: 0.0,
+                    lng: 0.0,
+                    orden: 1,
+                    landmarks: String::new(),
+                }
+            ],
+            stops_normalized: vec![],
+            social_alerts: Vec::new(),
+            last_updated: String::new(),
+        });
+
+        // 1. Test exceeding 500 stops per route
+        let mut invalid_route = routes[0].clone();
+        invalid_route.id = "R2_INVALID".to_string();
+        for i in 0..501 {
+            invalid_route.stops.push(Stop {
+                id: None,
+                name: format!("Stop {}", i),
+                lat: 0.0,
+                lng: 0.0,
+                orden: i as u32,
+                landmarks: String::new(),
+            });
+        }
+
+        let mut catalog = RouteCatalog {
+            version: "1.0".to_string(),
+            rutas: vec![invalid_route],
+        };
+        let res = validate_catalog_content(&catalog);
+        assert!(res.is_err());
+        assert_eq!(res.unwrap_err(), "ERROR: Route 'R2_INVALID' exceeds max 500 stops limit");
+
+        // 2. Test exceeding 100 character ID
+        let mut invalid_id_route = routes[0].clone();
+        invalid_id_route.id = "A".repeat(101);
+        catalog.rutas = vec![invalid_id_route];
+        let res = validate_catalog_content(&catalog);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("exceeds 100 characters"));
+    }
 
     // Helper to load test data
     fn load_test_data() {
