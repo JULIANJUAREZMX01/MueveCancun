@@ -1,13 +1,8 @@
 import { bench, describe } from 'vitest';
 import { CoordinatesStore } from '../../utils/CoordinatesStore';
 
-// Create a fresh instance for benchmarking to avoid singleton pollution
-// But the class exports a singleton instance.
-// However, the class itself is exported. Wait, looking at file:
-// export class CoordinatesStore { ... }
-// export const coordinatesStore = CoordinatesStore.instance;
-
-// I can instantiate a new one if I import the class.
+// Use a fresh CoordinatesStore instance for benchmarking to avoid interference from the shared singleton.
+// The module exports both the CoordinatesStore class and a singleton `coordinatesStore`; here we use a separate instance.
 const store = new CoordinatesStore();
 
 // Generate 10,000 random stops
