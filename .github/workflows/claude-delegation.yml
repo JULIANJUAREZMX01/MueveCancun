@@ -8,10 +8,15 @@ on:
         required: false
         type: string
 
+concurrency:
+  group: claude-delegation-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   claude-delegation:
     name: Send unplanned work to Claude
     runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
     permissions:
       contents: write
       pull-requests: write
@@ -19,18 +24,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Claude Code Action Official (planning/triage)
-        uses: anthropics/claude-code-action@v1
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          instructions: |
-            Primary planning/triage. If additional context is provided, use it to outline steps. Then hand off concrete edits to the code-base action.
-            User input: ${{ github.event.inputs.instructions }}
+      - name: Prepare delegation instructions
+        id: prepare
+        run: |
+          INPUT="${{ github.event.inputs.instructions }}"
+          if [ -z "$INPUT" ]; then
+            INPUT="No user input provided. Generate a minimal plan, then propose changes via PR against the current branch. Do not push directly to protected branches."
+          fi
+          echo "prepared_instructions<<'EOF'" >> "$GITHUB_OUTPUT"
+          echo "$INPUT" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
-      - name: Claude Code Base Action (apply changes)
+      - name: Claude Code Base Action (plan and apply)
         uses: anthropics/claude-code-base-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           instructions: |
-            Analyze the repository and the user input below, then apply or propose concrete code changes as appropriate.
-            User input: ${{ github.event.inputs.instructions }}
+            Perform planning and application in one run. Outline steps, assumptions, and ambiguities, then apply or propose changes via a branch/PR—not direct pushes to protected branches.
+            User input: ${{ steps.prepare.outputs.prepared_instructions }}

@@ -87,6 +87,13 @@ Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales 
 
 ---
 
+## 🤖 CI / Automatización
+
+- El flujo manual `Delegate to Claude (unscoped tasks)` requiere el secreto `ANTHROPIC_API_KEY`.
+- Ejecútalo sólo en ramas no protegidas; las acciones deben crear cambios vía rama/PR, no push directo a `main`.
+
+---
+
 ## 🛠️ Troubleshooting & Interconexión
 
 Si el sistema falla, sigue esta guía de diagnóstico por capas (Protocolo Nexus):
