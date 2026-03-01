@@ -684,7 +684,7 @@ mod tests {
         println!("Time taken: {:?}", duration);
 
         // Without fix, this should take > 500ms (likely > 1s).
-        // Sentinel: Bumped to 1000ms for Debug builds. Real protection is validate_catalog capping N.
+        // Sentinel: Bumped to 1500ms for Debug builds. Real protection is validate_catalog capping N.
         assert!(
             duration.as_millis() < 1500,
             "DoS vulnerability: took too long ({:?})",
@@ -783,7 +783,6 @@ mod tests {
         assert!(!res.is_empty());
         assert_eq!(res.len(), 5); // Should be truncated to 5
     }
-}
 
     #[test]
     fn test_logic_bomb() {
