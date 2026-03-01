@@ -43,6 +43,7 @@ export class CoordinatesStore {
 
                 this.db = {};
                 this.spatialIndex = new SpatialHash(); // Initialize SpatialHash
+                this.allPoints = []; // Reset to avoid stale/duplicate entries on re-init
                 
                 if (data.rutas) {
                     data.rutas.forEach((route: RouteData) => {
@@ -86,7 +87,6 @@ export class CoordinatesStore {
     findNearest(lat: number, lng: number): string | null {
         if (!this.db) return null;
 
-        // Track the current best candidate and distance
         let minDist = Infinity;
         let nearest: string | null = null;
 
@@ -98,32 +98,16 @@ export class CoordinatesStore {
                     const d = getDistance(lat, lng, point.lat, point.lng);
                     if (d < minDist) {
                         minDist = d;
-                        // SpatialHash stores the stop name in point.data
                         nearest = point.data;
                     }
                 }
             }
         }
 
-        // 2. Fallback: Linear Scan (O(N))
+        // 2. Linear Scan (O(N)) over the pre-built allPoints list (reset on every init()).
         // Always run this to guarantee we find the true nearest stop, even if it's
         // outside the spatial grid cells considered by the spatial index.
-
-        // Rebuild the list of points from the current DB to avoid relying on any
-        // potentially stale or duplicated state that may exist in this.allPoints.
-        const points: Coordinate[] = [];
-        const routes = this.db as RouteData[];
-        for (let r = 0; r < routes.length; r++) {
-            const route = routes[r];
-            for (let s = 0; s < route.paradas.length; s++) {
-                const stop = route.paradas[s];
-                points.push({
-                    name: stop.nombre,
-                    lat: stop.lat,
-                    lng: stop.lng,
-                });
-            }
-        }
+        const points = this.allPoints;
         for (let i = 0; i < points.length; i++) {
             const p = points[i];
             const d = getDistance(lat, lng, p.lat, p.lng);
