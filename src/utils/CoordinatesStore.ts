@@ -101,30 +101,22 @@ export class CoordinatesStore {
         let minDist = Infinity;
         let nearest: string | null = null;
 
-        // ⚡ Speedy Gonzalez: Spatial Index Optimization (O(1))
-        // Most queries are for nearby stops (< 1km).
+        // Try O(1) Spatial Hash first
         if (this.spatialIndex) {
             const candidates = this.spatialIndex.query(lat, lng);
             if (candidates.length > 0) {
-                for (const candidate of candidates) {
-                    const d = getDistance(lat, lng, candidate.lat, candidate.lng);
+                for (const point of candidates) {
+                    const d = getDistance(lat, lng, point.lat, point.lng);
                     if (d < minDist) {
                         minDist = d;
-                        nearest = candidate.data;
+                        nearest = point.data;
                     }
                 }
-
-                // Safe Threshold: If nearest is within 1km, it's guaranteed to be correct
-                // because the 3x3 grid search covers at least ~1.5km radius.
-                if (minDist < 1.0) {
-                    return nearest;
-                }
+                return nearest;
             }
         }
 
-        // Fallback: Global Scan (O(N))
-        // Only runs if no nearby stops found (e.g. user is far from city).
-        // Preserves correctness for edge cases.
+        // Fallback to O(N) scan if spatial index is missing or yields no candidates
         for (const [name, coords] of Object.entries(this.db)) {
             const d = getDistance(lat, lng, coords[0], coords[1]);
             if (d < minDist) {
