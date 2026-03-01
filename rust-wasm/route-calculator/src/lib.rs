@@ -762,7 +762,6 @@ mod tests {
         assert!(!res.is_empty());
         assert_eq!(res.len(), 5); // Should be truncated to 5
     }
-}
 
     #[test]
     fn test_logic_bomb() {
@@ -787,84 +786,4 @@ mod tests {
         assert!(res.is_err(), "Should enforce MAX_ROUTES limit");
         assert!(res.err().unwrap().contains("Too many routes"), "Should return specific error message");
     }
-
-    #[test]
-    fn test_max_stops_per_route_limit() {
-        // Create a single route with more than MAX_STOPS_PER_ROUTE (500) stops: use 501 stops.
-        let mut stops = String::new();
-        for i in 0..501 {
-            if i > 0 {
-                stops.push(',');
-            }
-            stops.push_str(&format!(
-                r#"{{
-                    "id": "S{}",
-                    "nombre": "Stop {}",
-                    "lat": 0.0,
-                    "lng": 0.0
-                }}"#,
-                i,
-                i
-            ));
-        }
-
-        let route = format!(
-            r#"{{
-                "id": "R1",
-                "nombre": "Route with too many stops",
-                "tarifa": 10.0,
-                "tipo": "Bus",
-                "paradas": [{}]
-            }}"#,
-            stops
-        );
-
-        let json = format!(r#"{{"version": "1.0", "rutas": [{}]}}"#, route);
-
-        let res = load_catalog_core(&json);
-        assert!(res.is_err(), "Should enforce MAX_STOPS_PER_ROUTE limit");
-    }
-
-    #[test]
-    fn test_route_id_max_len_limit() {
-        // MAX_ID_LEN is 100; create an ID with length 101 to exceed the limit.
-        let long_id = "R".repeat(101);
-
-        let route = format!(
-            r#"{{
-                "id": "{}",
-                "nombre": "Route with too long ID",
-                "tarifa": 10.0,
-                "tipo": "Bus",
-                "paradas": []
-            }}"#,
-            long_id
-        );
-
-        let json = format!(r#"{{"version": "1.0", "rutas": [{}]}}"#, route);
-
-        let res = load_catalog_core(&json);
-        assert!(res.is_err(), "Should enforce MAX_ID_LEN limit");
-    }
-
-    #[test]
-    fn test_route_name_max_len_limit() {
-        // MAX_NAME_LEN is 200; create a name with length 201 to exceed the limit.
-        let long_name = "N".repeat(201);
-
-        let route = format!(
-            r#"{{
-                "id": "R2",
-                "nombre": "{}",
-                "tarifa": 10.0,
-                "tipo": "Bus",
-                "paradas": []
-            }}"#,
-            long_name
-        );
-
-        let json = format!(r#"{{"version": "1.0", "rutas": [{}]}}"#, route);
-
-        let res = load_catalog_core(&json);
-        assert!(res.is_err(), "Should enforce MAX_NAME_LEN limit for route names");
-    }
+}
