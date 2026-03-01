@@ -94,7 +94,8 @@ fn validate_catalog(catalog: &RouteCatalog) -> Result<(), String> {
     const MAX_STOPS_PER_ROUTE: usize = 500;
     const MAX_ID_LEN: usize = 100;
     const MAX_NAME_LEN: usize = 200;
-    const MAX_STRING_LEN: usize = 200;
+    const MAX_ALERTS_PER_ROUTE: usize = 20;
+    const MAX_ALERT_LEN: usize = 500;
 
     if catalog.rutas.len() > MAX_ROUTES {
         return Err(format!("Too many routes: {} (max {})", catalog.rutas.len(), MAX_ROUTES));
@@ -121,6 +122,14 @@ fn validate_catalog(catalog: &RouteCatalog) -> Result<(), String> {
         if route.stops.len() > MAX_STOPS_PER_ROUTE {
             return Err(format!("Route {} has too many stops: {} (max {})", route.id, route.stops.len(), MAX_STOPS_PER_ROUTE));
         }
+        if route.social_alerts.len() > MAX_ALERTS_PER_ROUTE {
+            return Err(format!(
+                "Route {} has too many social alerts: {} (max {})",
+                route.id,
+                route.social_alerts.len(),
+                MAX_ALERTS_PER_ROUTE
+            ));
+        }
         for stop in &route.stops {
             if stop.name.len() > MAX_NAME_LEN {
                 return Err(format!("Stop Name too long in route {}: {} chars (max {})", route.id, stop.name.len(), MAX_NAME_LEN));
@@ -133,6 +142,16 @@ fn validate_catalog(catalog: &RouteCatalog) -> Result<(), String> {
             }
             if stop.landmarks.len() > MAX_STRING_LEN {
                 return Err(format!("Stop landmarks too long in route {}: {} chars (max {})", route.id, stop.landmarks.len(), MAX_STRING_LEN));
+            }
+        }
+        for alert in &route.social_alerts {
+            if alert.len() > MAX_ALERT_LEN {
+                return Err(format!(
+                    "Social alert in route {} is too long: {} chars (max {})",
+                    route.id,
+                    alert.len(),
+                    MAX_ALERT_LEN
+                ));
             }
         }
     }
@@ -866,4 +885,51 @@ mod tests {
         let res = load_catalog_core(&json);
         assert!(res.is_err(), "Should reject oversized landmarks");
         assert!(res.err().unwrap().contains("landmarks too long"));
+    }
+
+    #[test]
+    fn test_too_many_social_alerts() {
+        // MAX_ALERTS_PER_ROUTE is 20; create a route with 21 alerts to exceed the limit.
+        let alerts: Vec<String> = (0..21).map(|i| format!("\"Alert {}\"", i)).collect();
+        let alerts_json = alerts.join(",");
+
+        let route = format!(
+            r#"{{
+                "id": "R3",
+                "nombre": "Route with too many alerts",
+                "tarifa": 10.0,
+                "tipo": "Bus",
+                "paradas": [],
+                "advertencias_usuario": [{}]
+            }}"#,
+            alerts_json
+        );
+
+        let json = format!(r#"{{"version": "1.0", "rutas": [{}]}}"#, route);
+
+        let res = load_catalog_core(&json);
+        assert!(res.is_err(), "Should enforce MAX_ALERTS_PER_ROUTE limit");
+    }
+
+    #[test]
+    fn test_social_alert_too_long() {
+        // MAX_ALERT_LEN is 500; create an alert with 501 chars to exceed the limit.
+        let long_alert = "A".repeat(501);
+
+        let route = format!(
+            r#"{{
+                "id": "R4",
+                "nombre": "Route with too long alert",
+                "tarifa": 10.0,
+                "tipo": "Bus",
+                "paradas": [],
+                "advertencias_usuario": ["{}"]
+            }}"#,
+            long_alert
+        );
+
+        let json = format!(r#"{{"version": "1.0", "rutas": [{}]}}"#, route);
+
+        let res = load_catalog_core(&json);
+        assert!(res.is_err(), "Should enforce MAX_ALERT_LEN limit");
     }
