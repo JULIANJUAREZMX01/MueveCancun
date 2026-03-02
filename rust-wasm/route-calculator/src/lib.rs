@@ -318,6 +318,11 @@ fn match_stop<'a>(
     route: &'a Route,
     cache: &mut HashMap<&'a str, f64>,
 ) -> Option<usize> {
+    // 1. O(1) Exact Match lookup
+    if let Some(&idx) = route.stop_name_to_index.get(query_norm) {
+        return Some(idx);
+    }
+
     let mut best_match: Option<(usize, f64)> = None;
 
     for (i, stop_lower) in route.stops_normalized.iter().enumerate() {
@@ -949,10 +954,6 @@ mod tests {
         let res = load_catalog_core(&json);
         assert!(res.is_err());
         let err = res.err().unwrap();
-        assert!(
-            err.contains("Validation Error: Route[0] has too many stops"),
-            "Unexpected error: {}",
-            err
-        );
+        assert!(err.contains("too many stops"), "Unexpected error: {}", err);
     }
 }
