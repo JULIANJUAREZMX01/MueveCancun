@@ -57,6 +57,7 @@ afterAll(() => {
 describe('DB Security Checks', () => {
 
   beforeEach(async () => {
+    __resetDBPromise();
     // We clear the mock store before each test
     const db = await openDB('cancunmueve-db', 3);
     // @ts-ignore
@@ -133,7 +134,7 @@ describe('DB Security Checks', () => {
     // Simulate a fresh profile: no migration done and no localStorage values
     localStorageMock.getItem.mockImplementation((_key) => null);
 
-    __resetDBPromise();
+    ___resetDBPromise();
     await initDB();
 
     const balance = await getWalletBalance();

@@ -166,6 +166,7 @@ export const initDB = async (): Promise<IDBPDatabase> => {
       return db;
     } catch (error) {
       console.error('[DB] Initialization failed:', error);
+      dbPromise = null;
       throw error;
     }
   })();
