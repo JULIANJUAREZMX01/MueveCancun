@@ -14,7 +14,7 @@ projects:
         sync: false
       - key: ENABLE_PNPM
         sync: false
-      buildCommand: sh scripts/setup-render.sh
+      buildCommand: bash scripts/setup-render.sh
       staticPublishPath: dist
       autoDeployTrigger: checksPass
       previews:

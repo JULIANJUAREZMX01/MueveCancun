@@ -38,10 +38,6 @@ try {
                         inicio: route.horario.inicio_oficial,
                         fin: route.horario.fin_oficial || ''
                     };
-                    // Remove old keys to save space
-                    delete route.horario.inicio_oficial;
-                    delete route.horario.fin_oficial;
-                    delete route.horario.guardia_nocturna;
                 }
             }
 
@@ -60,7 +56,33 @@ try {
     // 3. Mark as Optimized
     if (!data.metadata) data.metadata = {};
     data.metadata.optimized = true;
-    data.metadata.last_optimized = new Date().toISOString();
+
+    // 3a. Preserve deterministic output by reusing the previous last_optimized
+    //     when the effective content hasn't changed.
+    let reusedLastOptimized = null;
+
+    if (fs.existsSync(outputPath)) {
+        try {
+            const previousRaw = fs.readFileSync(outputPath, 'utf-8');
+            const previousData = JSON.parse(previousRaw);
+
+            const currentCopy = JSON.parse(JSON.stringify(data));
+            const previousCopy = JSON.parse(JSON.stringify(previousData));
+
+            if (currentCopy.metadata) delete currentCopy.metadata.last_optimized;
+            if (previousCopy.metadata) delete previousCopy.metadata.last_optimized;
+
+            if (JSON.stringify(currentCopy) === JSON.stringify(previousCopy) &&
+                previousData.metadata &&
+                typeof previousData.metadata.last_optimized === 'string') {
+                reusedLastOptimized = previousData.metadata.last_optimized;
+            }
+        } catch (e) {
+            // Fall back to generating a fresh timestamp below.
+        }
+    }
+
+    data.metadata.last_optimized = reusedLastOptimized || new Date().toISOString();
 
     // 4. Write Minified JSON
     fs.writeFileSync(outputPath, JSON.stringify(data)); // No pretty print for optimization
