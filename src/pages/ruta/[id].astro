@@ -215,6 +215,7 @@ const schemaData = {
 <script>
   import { favoritesStore } from '../../utils/FavoritesStore';
   import { analytics } from '../../utils/Analytics';
+  import { showToast } from '../../utils/toast';
 
   function initPage() {
     const favoriteBtn = document.getElementById('favorite-btn');
@@ -253,9 +254,7 @@ const schemaData = {
        const added = favoritesStore.toggleFavorite(routeId, routeName);
        updateUI();
        
-       if (window.showToast) {
-          window.showToast(added ? "Ruta guardada en favoritos" : "Ruta eliminada de favoritos", "info");
-       }
+       showToast(added ? "Ruta guardada en favoritos" : "Ruta eliminada de favoritos", "info");
 
        if (analytics) {
          analytics.track(added ? 'add_favorite' : 'remove_favorite', { route_id: routeId, route_name: routeName });

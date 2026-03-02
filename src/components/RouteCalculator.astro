@@ -195,6 +195,7 @@ const ui = uiTranslations[currentLang];
 
 <div id="i18n-data" data-ui={JSON.stringify(ui)} class="hidden"></div>
 <script>
+  import { showToast } from '../utils/toast';
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { CoordinateFinder } from '../utils/CoordinateFinder';
   import { escapeHtml } from "../utils/utils";
@@ -451,7 +452,7 @@ const ui = uiTranslations[currentLang];
 
       gpsBtn.addEventListener('click', () => {
          if (!navigator.geolocation) {
-             if (window.showToast) window.showToast(ui['error.no_gps'], 'error');
+             showToast(ui['error.no_gps'], 'error');
              return;
          }
 
@@ -465,7 +466,7 @@ const ui = uiTranslations[currentLang];
                      const nearest = coordinatesStore.findNearest(latitude, longitude);
                      if (nearest) {
                          originInput.value = nearest;
-                         if (window.showToast) window.showToast(`GPS: ${nearest}`, 'success');
+                         showToast(`GPS: ${nearest}`, 'success');
                      } else {
                          originInput.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
                      }
@@ -475,7 +476,7 @@ const ui = uiTranslations[currentLang];
              (err) => {
                  console.error(err);
                  gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
-                 if (window.showToast) window.showToast("GPS Error", 'error');
+                 showToast("GPS Error", 'error');
              }
          );
       });
@@ -621,7 +622,7 @@ const ui = uiTranslations[currentLang];
             <span class="font-bold text-sm" style="color: var(--danger);">${escapeHtml(msg)}</span>
         </div>
     `;
-    if (window.showToast) window.showToast(msg, 'error');
+    showToast(msg, 'error');
   }
 
   function renderEmptyState() {
