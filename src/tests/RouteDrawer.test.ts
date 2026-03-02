@@ -133,10 +133,10 @@ describe('RouteDrawer', () => {
         const routeData: RouteData = {
             stops: ['Stop1', 'Stop2']
         };
-        const coordinatesDB = {
-            'Stop1': [21.0, -86.0] as [number, number],
-            'Stop2': [21.1, -86.1] as [number, number]
-        };
+        const coordinatesDB = new Map<string, [number, number]>([
+            ['Stop1', [21.0, -86.0]],
+            ['Stop2', [21.1, -86.1]]
+        ]);
 
         drawRoute(mockMap as any, routeData, null, coordinatesDB);
 

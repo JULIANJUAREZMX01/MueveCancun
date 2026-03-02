@@ -134,7 +134,7 @@ describe('DB Security Checks', () => {
     // Simulate a fresh profile: no migration done and no localStorage values
     localStorageMock.getItem.mockImplementation((_key) => null);
 
-    ___resetDBPromise();
+    __resetDBPromise();
     await initDB();
 
     const balance = await getWalletBalance();
