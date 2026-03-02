@@ -45,32 +45,8 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   let coordinatesDB = {};
   let leafletPromise = null;
 
-  function loadLeaflet() {
-      if (typeof window !== 'undefined' && window.L) return Promise.resolve();
-      if (leafletPromise) return leafletPromise;
-
-      leafletPromise = new Promise((resolve, reject) => {
-          // 1. Load CSS
-          if (!document.querySelector('link[href*="leaflet.css"]')) {
-              const link = document.createElement('link');
-              link.rel = 'stylesheet';
-              link.href = '/vendor/leaflet/leaflet.css';
-              document.head.appendChild(link);
-          }
-
-          // 2. Load JS
-          const script = document.createElement('script');
-          script.src = '/vendor/leaflet/leaflet.js';
-          script.async = true;
-          script.onload = () => resolve();
-          script.onerror = reject;
-          document.head.appendChild(script);
-      });
-      return leafletPromise;
-  }
-
   // ⚡ Speedy Gonzalez: Lazy Load Leaflet to unblock Critical Rendering Path
-  async function loadLeaflet() {
+  async function _loadLeaflet() {
       if (window.L) return;
 
       // Load CSS
@@ -110,7 +86,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
     // Ensure Leaflet is loaded
     try {
-        await loadLeaflet();
+        await _loadLeaflet();
     } catch (e) {
         console.error("Failed to load map engine", e);
         if (loader) {

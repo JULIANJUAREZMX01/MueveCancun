@@ -14,11 +14,9 @@ MueveCancun es simple: **Funciona sin internet**, es ultrarrápida y está dise�
 
 Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales que trabajan en conjunto para ofrecer una aplicación offline-first ultrarrápida.
 
-### 1. Capa de Datos: Listener de Python
-- **Ubicación**: `scripts/listener/listener.py`
-- **Función**: Script que inyecta "Señales Sociales" (alertas de tráfico, bloqueos, avisos de madrugada) en el catálogo base de rutas.
-- **Output**: Genera `public/data/master_routes.json` con estructura validada para el motor WASM.
-- **Dependencias**: `scripts/listener/requirements.txt` (Python 3.12+).
+### 1. Capa de Datos: Origen de Rutas
+- **Función**: Catálogo base que contiene "Señales Sociales" (alertas de tráfico, bloqueos, avisos de madrugada) y la información de todas las rutas.
+- **Ubicación**: `public/data/master_routes.json` con estructura validada para el motor WASM.
 
 **Esquema JSON de master_routes.json:**
 ```json
@@ -91,10 +89,9 @@ Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales 
 
 Si el sistema falla, sigue esta guía de diagnóstico por capas (Protocolo Nexus):
 
-### 🔴 Capa 1: Error en el Listener (Datos)
-1. **Verificar ejecución**: `python3 scripts/listener/listener.py`
-2. **Schema Check**: Confirma que `public/data/master_routes.json` tenga las claves `routes`, `social_alerts` y `metadata`.
-3. **Validar JSON**: Asegúrate de que el archivo no tenga errores de sintaxis.
+### 🔴 Capa 1: Error en los Datos Base
+1. **Schema Check**: Confirma que `public/data/master_routes.json` tenga las claves `routes`, `social_alerts` y `metadata`.
+2. **Validar JSON**: Asegúrate de que el archivo no tenga errores de sintaxis.
 
 ### 🟡 Capa 2: Error en Motor WASM (Procesamiento)
 1. **Verificar WASM**: Revisa que `public/wasm/route-calculator/route_calculator_bg.wasm` exista y tenga tamaño >0.
@@ -133,10 +130,8 @@ ls -la src/lib/
    pnpm install
    ```
 
-2. **Generar Datos Maestros (Listener)**:
-   ```bash
-   python3 scripts/listener/listener.py
-   ```
+2. **Datos Maestros**:
+   Los datos se encuentran en `public/data/master_routes.json` y se pueden modificar directamente.
 
 3. **Compilar Motor WASM**:
    ```bash
