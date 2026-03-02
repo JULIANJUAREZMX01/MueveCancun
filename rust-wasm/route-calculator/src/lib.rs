@@ -352,38 +352,34 @@ fn match_stop<'a>(
     best_match.map(|(i, _)| i)
 }
 
-fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journey> {
+struct RouteMatch<'a> {
+    route: &'a Route,
+    origin_idx: Option<usize>,
+    dest_idx: Option<usize>,
+}
+
+const MAX_SEARCH_RESULTS: usize = 200;
+const MAX_OPS: usize = 10_000_000;
+const MAX_CANDIDATES: usize = 2000;
+const PREFERRED_HUBS: &[&str] = &[
+    "El Crucero",
+    "Plaza Las Américas",
+    "ADO Centro",
+    "Zona Hotelera",
+    "Muelle Ultramar",
+];
+
+struct TransferCandidate<'a> {
+    route_a: &'a Route,
+    route_b: &'a Route,
+    transfer_name: &'a str,
+    price: f64,
+    is_preferred: bool,
+}
+
+fn find_direct_routes(route_matches: &[RouteMatch]) -> Vec<Journey> {
     let mut journeys = Vec::new();
-    let origin_norm = origin.to_lowercase();
-    let dest_norm = dest.to_lowercase();
-    let mut origin_cache: HashMap<&str, f64> = HashMap::new();
-    let mut dest_cache: HashMap<&str, f64> = HashMap::new();
-
-    struct RouteMatch<'a> {
-        route: &'a Route,
-        origin_idx: Option<usize>,
-        dest_idx: Option<usize>,
-    }
-
-    let mut route_matches = Vec::with_capacity(all_routes.len());
-
-    for route in all_routes {
-        let origin_idx = match_stop(&origin_norm, route, &mut origin_cache);
-        let dest_idx = match_stop(&dest_norm, route, &mut dest_cache);
-        route_matches.push(RouteMatch {
-            route,
-            origin_idx,
-            dest_idx,
-        });
-    }
-
-    // Limit for DoS prevention
-    const MAX_SEARCH_RESULTS: usize = 200;
-    const MAX_OPS: usize = 10_000_000;
-    let mut ops_count = 0;
-
-    // 1. Direct Routes
-    for m in &route_matches {
+    for m in route_matches {
         if journeys.len() >= MAX_SEARCH_RESULTS {
             break;
         }
@@ -408,10 +404,16 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
         journeys.truncate(5);
-        return journeys;
     }
 
-    // 2. Transfer Routes
+    journeys
+}
+
+fn find_transfer_routes(
+    route_matches: &[RouteMatch],
+    mut ops_count: usize,
+    existing_journeys_len: usize,
+) -> Vec<Journey> {
     let routes_from_origin: Vec<&RouteMatch> = route_matches
         .iter()
         .filter(|m| m.origin_idx.is_some())
@@ -421,23 +423,6 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         .filter(|m| m.dest_idx.is_some())
         .collect();
 
-    let preferred_hubs = [
-        "El Crucero",
-        "Plaza Las Américas",
-        "ADO Centro",
-        "Zona Hotelera",
-        "Muelle Ultramar",
-    ];
-
-    const MAX_CANDIDATES: usize = 2000;
-
-    struct TransferCandidate<'a> {
-        route_a: &'a Route,
-        route_b: &'a Route,
-        transfer_name: &'a str,
-        price: f64,
-        is_preferred: bool,
-    }
     let mut candidates: Vec<TransferCandidate> = Vec::with_capacity(MAX_CANDIDATES);
 
     'outer: for match_a in &routes_from_origin {
@@ -448,7 +433,7 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         };
 
         for match_b in routes_to_dest.iter() {
-            if journeys.len() + candidates.len() >= MAX_CANDIDATES {
+            if existing_journeys_len + candidates.len() >= MAX_CANDIDATES {
                 break 'outer;
             }
 
@@ -480,7 +465,7 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
                     }
 
                     let stop_name = &route_a.stops[idx_a].name;
-                    let is_preferred = preferred_hubs.iter().any(|h| stop_name.contains(h));
+                    let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_name.contains(h));
 
                     match best_transfer {
                         None => {
@@ -517,10 +502,11 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         })
     });
 
-    let slots_needed = 5_usize.saturating_sub(journeys.len());
+    let slots_needed = 5_usize.saturating_sub(existing_journeys_len);
+    let mut transfer_journeys = Vec::new();
 
     for c in candidates.into_iter().take(slots_needed) {
-        journeys.push(Journey {
+        transfer_journeys.push(Journey {
             type_: "Transfer".to_string(),
             legs: vec![c.route_a.clone(), c.route_b.clone()],
             transfer_point: Some(c.transfer_name.to_string()),
@@ -528,12 +514,44 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         });
     }
 
+    transfer_journeys
+}
+
+fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journey> {
+    let origin_norm = origin.to_lowercase();
+    let dest_norm = dest.to_lowercase();
+    let mut origin_cache: HashMap<&str, f64> = HashMap::new();
+    let mut dest_cache: HashMap<&str, f64> = HashMap::new();
+
+    let mut route_matches = Vec::with_capacity(all_routes.len());
+
+    for route in all_routes {
+        let origin_idx = match_stop(&origin_norm, route, &mut origin_cache);
+        let dest_idx = match_stop(&dest_norm, route, &mut dest_cache);
+        route_matches.push(RouteMatch {
+            route,
+            origin_idx,
+            dest_idx,
+        });
+    }
+
+    let ops_count = 0; // ops_count started here in original code before transfers
+
+    let mut journeys = find_direct_routes(&route_matches);
+
+    if journeys.len() >= 5 {
+        return journeys;
+    }
+
+    let transfer_journeys = find_transfer_routes(&route_matches, ops_count, journeys.len());
+    journeys.extend(transfer_journeys);
+
     journeys.sort_by(|a, b| {
         let get_score = |j: &Journey| {
             if j.type_ == "Direct" {
                 2
             } else if let Some(tp) = &j.transfer_point {
-                if preferred_hubs.iter().any(|h| tp.contains(h)) {
+                if PREFERRED_HUBS.iter().any(|h| tp.contains(h)) {
                     1
                 } else {
                     0
