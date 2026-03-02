@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { escapeHtml, safeJsonStringify, getDistance } from '../utils/utils';
+import { escapeHtml, safeJsonStringify, getDistance, truncateText } from '../utils/utils';
 
 describe('escapeHtml Utility', () => {
   it('should escape HTML characters in strings', () => {
@@ -63,7 +63,7 @@ describe('safeJsonStringify Utility', () => {
   });
 });
 
-test/get-distance-1496350834913337795
+
 describe('getDistance Utility', () => {
   it('should calculate distance between two identical points as 0', () => {
     const lat = 48.8566;
@@ -111,6 +111,8 @@ describe('getDistance Utility', () => {
      const distance = getDistance(lat1, lon1, lat2, lon2);
      expect(distance).toBeGreaterThan(490);
      expect(distance).toBeLessThan(515);
+  });
+});
 
 describe('truncateText Utility', () => {
   it('should return original string if length is less than or equal to maxLength', () => {
@@ -140,6 +142,5 @@ describe('truncateText Utility', () => {
     // Cutoff = 1 - 1 = 0
     expect(truncateText('A', 1)).toBe('A');
     expect(truncateText('AB', 1)).toBe('…'); // slice(0, 0) + '…'
- main
   });
 });
