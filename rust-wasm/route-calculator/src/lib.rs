@@ -305,6 +305,9 @@ fn validate_catalog_content(catalog: &RouteCatalog) -> Result<(), String> {
     Ok(())
 }
 
+const MATCH_SCORE_THRESHOLD: f64 = 0.75;
+const SUBSTRING_MATCH_SCORE: f64 = 0.95;
+
 fn match_stop<'a>(
     query_norm: &str,
     route: &'a Route,
@@ -316,13 +319,13 @@ fn match_stop<'a>(
         let score = *cache.entry(stop_lower.as_str()).or_insert_with(|| {
             let jaro_score = strsim::jaro_winkler(query_norm, stop_lower);
             if stop_lower.contains(query_norm) || query_norm.contains(stop_lower) {
-                f64::max(jaro_score, 0.95)
+                f64::max(jaro_score, SUBSTRING_MATCH_SCORE)
             } else {
                 jaro_score
             }
         });
 
-        if score > 0.75 {
+        if score > MATCH_SCORE_THRESHOLD {
             match best_match {
                 Some((_, best_score)) => {
                     if score > best_score {
@@ -939,6 +942,6 @@ mod tests {
         let res = load_catalog_core(&json);
         assert!(res.is_err());
         let err = res.err().unwrap();
-        assert!(err.contains("Validation Error: Route[0] has too many stops"), "Unexpected error: {}", err);
+        assert!(err.contains("Route 'R_BOMB' has too many stops"), "Unexpected error: {}", err);
     }
 }
