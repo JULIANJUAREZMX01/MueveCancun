@@ -55,18 +55,18 @@ describe('useTranslations', () => {
 
     it('should fallback to defaultLang if the translation is missing in the requested language', () => {
         const key = 'nav.home';
-        const defaultValue = ui[defaultLang][key];
-        const originalEsValue = ui.es[key];
+        const defaultValue = ui.es[key];
+        const originalEnValue = ui.en[key];
 
         try {
-            // Simulate missing translation in Spanish for this key
-            delete (ui.es as Record<string, string>)[key];
+            // Simulate missing translation in English for this key, so it falls back to 'es'
+            delete (ui.en as any)[key];
 
-            const tEs = useTranslations('es');
-            expect(tEs(key)).toBe(defaultValue);
+            const tEn = useTranslations('en');
+            expect(tEn(key)).toBe(defaultValue); // falls back to Spanish "Inicio"
         } finally {
-            // Restore original Spanish translation to avoid affecting other tests
-            ui.es[key] = originalEsValue;
+            // Restore original English translation to avoid affecting other tests
+            ui.en[key] = originalEnValue;
         }
     });
 });

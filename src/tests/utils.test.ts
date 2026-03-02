@@ -63,6 +63,7 @@ describe('safeJsonStringify Utility', () => {
   });
 });
 
+test/get-distance-1496350834913337795
 describe('getDistance Utility', () => {
   it('should calculate distance between two identical points as 0', () => {
     const lat = 48.8566;
@@ -110,5 +111,35 @@ describe('getDistance Utility', () => {
      const distance = getDistance(lat1, lon1, lat2, lon2);
      expect(distance).toBeGreaterThan(490);
      expect(distance).toBeLessThan(515);
+
+describe('truncateText Utility', () => {
+  it('should return original string if length is less than or equal to maxLength', () => {
+    expect(truncateText('Hello', 10)).toBe('Hello');
+    expect(truncateText('Hello World', 11)).toBe('Hello World');
+  });
+
+  it('should return trimmed string if trimmed length is less than or equal to maxLength', () => {
+    expect(truncateText('Hello World   ', 11)).toBe('Hello World');
+  });
+
+  it('should truncate and add ellipsis when string exceeds maxLength', () => {
+    expect(truncateText('Hello World', 5)).toBe('Hell…');
+    expect(truncateText('A very long string that needs truncating', 15)).toBe('A very long st…');
+  });
+
+  it('should trim trailing spaces before adding ellipsis', () => {
+    // Cutoff at 6: "Hello " -> trims to "Hello" -> adds "…"
+    expect(truncateText('Hello World', 6)).toBe('Hello…');
+  });
+
+  it('should handle empty strings', () => {
+    expect(truncateText('', 5)).toBe('');
+  });
+
+  it('should handle maxLength less than or equal to ellipsis length (1)', () => {
+    // Cutoff = 1 - 1 = 0
+    expect(truncateText('A', 1)).toBe('A');
+    expect(truncateText('AB', 1)).toBe('…'); // slice(0, 0) + '…'
+ main
   });
 });
