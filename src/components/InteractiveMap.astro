@@ -45,7 +45,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   let leafletPromise = null;
 
   // ⚡ Speedy Gonzalez: Lazy Load Leaflet to unblock Critical Rendering Path
-  async function loadLeafletInternal() {
+
   async function _loadLeaflet() {
       if (window.L) return;
 
@@ -86,7 +86,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
     // Ensure Leaflet is loaded
     try {
-        await loadLeafletInternal();
+
         await _loadLeaflet();
     } catch (e) {
         console.error("Failed to load map engine", e);
