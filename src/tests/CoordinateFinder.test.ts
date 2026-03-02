@@ -143,6 +143,22 @@ describe('CoordinateFinder', () => {
             const coords = finder.find('');
             expect(coords).toBeNull();
         });
+
+        it('should populate the cache on fuzzy match and return from cache on repeat call', () => {
+            // 'Américas Plaza' is not an exact key, so it goes through fuzzy search
+            const query = 'Américas Plaza';
+            expect((finder as any).cache.has(query)).toBe(false);
+
+            const result1 = finder.find(query);
+            expect(result1).toEqual([21.1619, -86.8249]);
+
+            // Cache should now contain the result
+            expect((finder as any).cache.has(query)).toBe(true);
+
+            // Second call should return the same result (served from cache)
+            const result2 = finder.find(query);
+            expect(result2).toEqual([21.1619, -86.8249]);
+        });
     });
 
     describe('findBestMatch', () => {
@@ -174,8 +190,17 @@ describe('CoordinateFinder', () => {
 
         it('should return results based on length', () => {
             const results = finder.search('Ruta 4');
-            // 'Ruta 4 / Mercado 28' should come before 'Ruta 44 / La Joya' because of direct match on the token "4" or similar string rules
-            expect(results.length).toBeGreaterThan(0);
+            // Both 'Ruta 4 / Mercado 28' and 'Ruta 44 / La Joya' start with 'ruta 4'
+            // When startsWith is tied, the shorter name comes first
+            // 'Ruta 44 / La Joya' (17 chars) is shorter than 'Ruta 4 / Mercado 28' (19 chars)
+            const ruta44Index = results.findIndex(r => r.name === 'Ruta 44 / La Joya');
+            const ruta4Index = results.findIndex(r => r.name === 'Ruta 4 / Mercado 28');
+
+            expect(ruta44Index).not.toBe(-1);
+            expect(ruta4Index).not.toBe(-1);
+
+            // Shorter name should rank higher
+            expect(ruta44Index).toBeLessThan(ruta4Index);
         });
 
         it('should handle Direct Substring Fallback for short queries', () => {
@@ -202,7 +227,7 @@ describe('CoordinateFinder', () => {
             expect(results).toEqual([]);
         });
 
-        it('should handle spanish accents in query', () => {
+        it('should handle Spanish accents in query', () => {
             const results = finder.search('Américas');
             expect(results.length).toBeGreaterThan(0);
             expect(results[0].name).toBe('Plaza Las Américas');
