@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const rootDir = path.resolve(__dirname, '..');
-const missing = ['route-calculator/route_calculator_bg.wasm', 'spatial-index/spatial_index_bg.wasm']
+const missing = ['route-calculator/route_calculator_bg.wasm']
     .filter(f => !fs.existsSync(path.join(rootDir, 'public/wasm', f)));
 
 if (missing.length) {
