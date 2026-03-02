@@ -28,26 +28,25 @@ jobs:
       - name: Build route-calculator
         run: |
           cd rust-wasm/route-calculator
-          wasm-pack build --target web --out-dir ../../src/wasm/route-calculator
+          wasm-pack build --target web --out-dir ../../public/wasm/route-calculator
 
       - name: Build spatial-index
         run: |
           cd rust-wasm/spatial-index
-          wasm-pack build --target web --out-dir ../../src/wasm/spatial-index
+          wasm-pack build --target web --out-dir ../../public/wasm/spatial-index
 
       - name: Check bundle sizes
         run: |
           echo "route-calculator size:"
-          du -h src/wasm/route-calculator/route_calculator_bg.wasm
+          du -h public/wasm/route-calculator/route_calculator_bg.wasm
           echo "spatial-index size:"
-          du -h src/wasm/spatial-index/spatial_index_bg.wasm
+          du -h public/wasm/spatial-index/spatial_index_bg.wasm
 
       - name: Commit built files
         if: github.event_name == 'push'
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git add src/wasm/
           git add public/wasm/
           git diff --quiet && git diff --staged --quiet || git commit -m "chore: auto-build WASM modules [skip ci]"
           git push origin HEAD:${{ github.ref_name }}

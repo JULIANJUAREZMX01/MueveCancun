@@ -56,7 +56,7 @@ export async function getAllRoutes(): Promise<Route[]> {
         console.error(`Error parsing route file ${file}:`, e);
       }
     }
-  } catch (err) {
+  } catch {
     console.warn("Routes directory not accessible or empty, falling back to master_routes.json");
   }
 
@@ -66,15 +66,17 @@ export async function getAllRoutes(): Promise<Route[]> {
       const masterContent = await fs.readFile(masterPath, 'utf-8');
       const masterData = JSON.parse(masterContent);
       if (masterData.rutas && Array.isArray(masterData.rutas)) {
+          const existingIds = new Set(allRoutes.map(r => r.id));
           masterData.rutas.forEach((r: Route) => {
               // Only add if ID doesn't exist already (prefer individual files as they might be newer/more granular)
               // OR if individual files were empty.
-              if (!allRoutes.find(existing => existing.id === r.id)) {
+              if (!existingIds.has(r.id)) {
+                  existingIds.add(r.id);
                   allRoutes.push(r);
               }
           });
       }
-  } catch (e) {
+  } catch {
       // master_routes might not exist
   }
 

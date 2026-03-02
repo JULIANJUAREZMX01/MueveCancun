@@ -1,5 +1,0 @@
-;/*FB_PKG_DELIM*/
-
-__d("CometTopChartsCityQuery_facebookRelayOperation",[],(function(t,n,r,o,a,i){a.exports="29548989971382914"}),null);
-__d("CometTopChartsCityQuery$Parameters",["CometTopChartsCityQuery_facebookRelayOperation"],(function(t,n,r,o,a,i){"use strict";var e={kind:"PreloadableConcreteRequest",params:{id:n("CometTopChartsCityQuery_facebookRelayOperation"),metadata:{},name:"CometTopChartsCityQuery",operationKind:"query",text:null}};a.exports=e}),null);
-__d("CometTopChartsCity.entrypoint",["CometTopChartsCityQuery$Parameters","JSResourceForInteraction"],(function(t,n,r,o,a,i,l){"use strict";var e={getPreloadProps:function(t){return{queries:{queryRef:{parameters:r("CometTopChartsCityQuery$Parameters"),variables:{args:{city_extended_info:!0,city_query:t.routeProps.id},pageId:t.routeProps.id,remove_broken_sections:!0}}}}},root:r("JSResourceForInteraction")("CometTopChartsCity.react").__setRef("CometTopChartsCity.entrypoint")};l.default=e}),98);

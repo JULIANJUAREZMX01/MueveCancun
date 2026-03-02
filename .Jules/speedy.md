@@ -1,0 +1,1 @@
+## 2026-03-02 - Speedy: [O(N^2) route deduplication optimization] **Learning:** Array.prototype.find inside a loop leads to quadratic time complexity. **Action:** Use a Set for O(1) lookups to optimize the deduplication of routes.

@@ -16,7 +16,7 @@ export const ui = {
         'pwa.update': 'Update Available',
         'pwa.new_version': 'New version ready.',
         'pwa.refresh': 'UPDATE',
-        'calc.title': 'Where are we going?',
+        'calc.title': 'Which Route Takes Me?',
         'calc.origin': 'Origin',
         'calc.dest': 'Destination',
         'calc.placeholder.origin': 'Where are you?',
@@ -72,7 +72,7 @@ export const ui = {
         'pwa.update': 'Actualización disponible',
         'pwa.new_version': 'Nueva versión lista.',
         'pwa.refresh': 'ACTUALIZAR',
-        'calc.title': '¿A dónde vamos hoy?',
+        'calc.title': '¿Qué Ruta Me Lleva?',
         'calc.origin': 'Origen',
         'calc.dest': 'Destino',
         'calc.placeholder.origin': '¿Dónde estás?',
@@ -128,6 +128,6 @@ export function getLangFromUrl(url: URL) {
 
 export function useTranslations(lang: keyof typeof ui) {
     return function t(key: keyof typeof ui['en']) {
-        return ui[lang][key] || ui[defaultLang][key];
+        return ui[lang]?.[key] || ui[defaultLang]?.[key] || ui['en']?.[key];
     }
 }
