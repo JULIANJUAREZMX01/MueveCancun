@@ -86,8 +86,8 @@ fn validate_catalog_content(catalog: &RouteCatalog) -> Result<(), String> {
     for (i, route) in catalog.rutas.iter().enumerate() {
         if route.stops.len() > 500 {
             return Err(format!(
-                "Route {} has too many stops: {} (max 500)",
-                route.id,
+                "Route at index {} has too many stops: {} (max 500)",
+                i,
                 route.stops.len()
             ));
         }
