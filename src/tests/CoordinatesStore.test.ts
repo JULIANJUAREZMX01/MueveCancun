@@ -69,7 +69,7 @@ describe('CoordinatesStore', () => {
         const result = await store.init();
         expect(result.data).toEqual(mockData);
         expect(store.getDB()!['stop b']).toEqual([20, 20]);
-        expect(mockFetch).toHaveBeenCalledWith('/data/master_routes.json');
+        expect(mockFetch).toHaveBeenCalledWith('/data/master_routes.optimized.json');
     });
 
     it('should find nearest stop', async () => {

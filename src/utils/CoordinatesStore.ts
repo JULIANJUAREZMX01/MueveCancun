@@ -121,7 +121,7 @@ export class CoordinatesStore {
             const d = getDistance(lat, lng, point.lat, point.lng);
             if (d < minDist) {
                 minDist = d;
-                nearest = name;
+                nearest = point.name;
             }
         }
 

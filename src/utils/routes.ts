@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { logger } from './logger';
 
 // Define Route Interface matching the JSON structure
 export interface Route {
@@ -53,11 +54,11 @@ export async function getAllRoutes(): Promise<Route[]> {
             allRoutes.push(routeData);
         }
       } catch (e) {
-        console.error(`Error parsing route file ${file}:`, e);
+        logger.error(`Error parsing route file ${file}:`, e);
       }
     }
   } catch {
-    console.warn("Routes directory not accessible or empty, falling back to master_routes.json");
+    logger.warn("Routes directory not accessible or empty, falling back to master_routes.json");
   }
 
   // Also try master_routes.json and merge unique IDs
