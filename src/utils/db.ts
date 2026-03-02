@@ -3,19 +3,25 @@ import { openDB, type IDBPDatabase } from 'idb';
 const DB_NAME = 'cancunmueve-db';
 const DB_VERSION = 3;
 
-// Crypto utilities for securing balance against client-side tampering (IDOR/DevTools modifications)
-const getCryptoKey = async (): Promise<CryptoKey> => {
-  const enc = new TextEncoder();
-  // Using a static salt/key derivation. For a purely static site without a backend,
-  // we cannot have a true "secret", but this prevents casual DevTools tampering.
-  const keyMaterial = enc.encode("cancunmueve_wallet_secure_salt_v1");
-  return await crypto.subtle.importKey(
-    "raw",
-    keyMaterial,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"]
-  );
+// Crypto utilities for securing balance against client-side tampering (DevTools modifications).
+// Note: The HMAC key is static and client-visible. This is a deterrent against casual/manual
+// edits, not a true cryptographic integrity guarantee against a determined attacker who can
+// recompute valid signatures using DevTools.
+let _cryptoKeyPromise: Promise<CryptoKey> | null = null;
+
+const getCryptoKey = (): Promise<CryptoKey> => {
+  if (!_cryptoKeyPromise) {
+    const enc = new TextEncoder();
+    const keyMaterial = enc.encode("cancunmueve_wallet_secure_salt_v1");
+    _cryptoKeyPromise = crypto.subtle.importKey(
+      "raw",
+      keyMaterial,
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign", "verify"]
+    );
+  }
+  return _cryptoKeyPromise;
 };
 
 const generateSignature = async (amount: number): Promise<string> => {
@@ -40,11 +46,12 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
 };
 
 /**
- * Migrate balance from localStorage to IndexedDB
+ * Migrate balance from localStorage to IndexedDB.
  * This consolidates the triple balance system (user_balance, muevecancun_balance, wallet-status)
  * into a single source: IndexedDB via this module.
+ * Accepts the already-open db instance to avoid circular recursion with initDB.
  */
-export const migrateBalanceFromLocalStorage = async (db: IDBPDatabase): Promise<void> => {
+export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
   try {
     // Check if migration already done
     const migrationDone = localStorage.getItem('balance_migration_done');
@@ -76,16 +83,21 @@ export const migrateBalanceFromLocalStorage = async (db: IDBPDatabase): Promise<
       }
     }
 
-    // Use the localStorage value if found, otherwise keep existing IndexedDB value
+    const existing = await store.get('current_balance');
+
     if (localBalance !== null && !isNaN(localBalance) && localBalance > 0) {
-      const existing = await store.get('current_balance');
       if (existing) {
-        // Preserve the higher balance from localStorage
         if (localBalance > existing.amount) {
+          // Preserve the higher balance from localStorage
           existing.amount = localBalance;
           existing.signature = await generateSignature(localBalance);
           await store.put(existing, 'current_balance');
           console.log(`[DB] Migrated balance from ${source}: ${localBalance}`);
+        } else if (!existing.signature) {
+          // Backfill signature for legacy records that have no higher localStorage value
+          existing.signature = await generateSignature(existing.amount);
+          await store.put(existing, 'current_balance');
+          console.log('[DB] Backfilled signature for existing legacy record');
         }
       } else {
         // Create new balance record
@@ -93,6 +105,11 @@ export const migrateBalanceFromLocalStorage = async (db: IDBPDatabase): Promise<
         await store.put({ id: 'current_balance', amount: localBalance, currency: 'MXN', signature }, 'current_balance');
         console.log(`[DB] Created balance from ${source}: ${localBalance}`);
       }
+    } else if (existing && !existing.signature) {
+      // No localStorage balance, but existing record has no signature - backfill it
+      existing.signature = await generateSignature(existing.amount);
+      await store.put(existing, 'current_balance');
+      console.log('[DB] Backfilled signature for existing legacy record');
     }
 
     // Mark migration as done
@@ -148,23 +165,33 @@ export const initDB = async (): Promise<IDBPDatabase> => {
     console.log('[DB] Initial wallet balance set to 180.00 MXN');
   }
 
-      return db;
-    } catch (e) {
-      dbPromise = null;
-      throw e;
-    }
-  })();
+  await tx.done;
+
+  // Run migration after DB initialization, passing db to avoid circular recursion
+  await migrateBalanceFromLocalStorage(db);
 
   return dbPromise;
 };
 
 export const getWalletBalance = async (): Promise<{ id: string; amount: number; currency: string; signature?: string } | undefined> => {
   const db = await initDB();
-  const tx = db.transaction('wallet-status', 'readwrite');
-  const store = tx.objectStore('wallet-status');
-  const balance = await store.get('current_balance');
+
+  // Use a readonly transaction for the normal, no-tampering path.
+  const readTx = db.transaction('wallet-status', 'readonly');
+  const balance = await readTx.objectStore('wallet-status').get('current_balance');
+  await readTx.done;
 
   if (balance) {
+    if (!balance.signature) {
+      // Legacy record without a signature: treat as a trusted state and backfill the signature.
+      console.log('[DB] Legacy record found without signature. Backfilling.');
+      balance.signature = await generateSignature(balance.amount);
+      const writeTx = db.transaction('wallet-status', 'readwrite');
+      await writeTx.objectStore('wallet-status').put(balance, 'current_balance');
+      await writeTx.done;
+      return balance;
+    }
+
     const isValid = await verifySignature(balance.amount, balance.signature);
     if (!isValid) {
       console.error('[SECURITY] Wallet balance signature verification failed. Possible tampering detected. Resetting to 0.00 MXN.');
@@ -172,13 +199,14 @@ export const getWalletBalance = async (): Promise<{ id: string; amount: number; 
       const resetAmount = 0.00;
       balance.amount = resetAmount;
       balance.signature = await generateSignature(resetAmount);
-      await store.put(balance, 'current_balance');
-      await tx.done;
+      // Escalate to readwrite only when a correction is required.
+      const writeTx = db.transaction('wallet-status', 'readwrite');
+      await writeTx.objectStore('wallet-status').put(balance, 'current_balance');
+      await writeTx.done;
       return balance;
     }
   }
 
-  await tx.done;
   return balance;
 };
 
