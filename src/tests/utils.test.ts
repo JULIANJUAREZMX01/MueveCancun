@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { escapeHtml, safeJsonStringify } from '../utils/utils';
+import { escapeHtml, safeJsonStringify, getDistance } from '../utils/utils';
 
 describe('escapeHtml Utility', () => {
   it('should escape HTML characters in strings', () => {
@@ -60,5 +60,55 @@ describe('safeJsonStringify Utility', () => {
     };
     const expected = '{"html":"\\u003cdiv class=\\"foo\\">\\u0027Bar\\u0027\\u003c/div>","arr":["\\u003cOne>","\\u0027Two\\u0027"]}';
     expect(safeJsonStringify(obj)).toBe(expected);
+  });
+});
+
+describe('getDistance Utility', () => {
+  it('should calculate distance between two identical points as 0', () => {
+    const lat = 48.8566;
+    const lon = 2.3522;
+    expect(getDistance(lat, lon, lat, lon)).toBe(0);
+  });
+
+  it('should calculate correct distance between known points', () => {
+    // Paris
+    const lat1 = 48.8566;
+    const lon1 = 2.3522;
+    // London
+    const lat2 = 51.5074;
+    const lon2 = -0.1278;
+
+    // The expected distance is around ~343-344 km
+    const distance = getDistance(lat1, lon1, lat2, lon2);
+    expect(distance).toBeGreaterThan(340);
+    expect(distance).toBeLessThan(345);
+  });
+
+  it('should calculate correct distance across the equator', () => {
+    // New York
+    const lat1 = 40.7128;
+    const lon1 = -74.0060;
+    // Buenos Aires
+    const lat2 = -34.6037;
+    const lon2 = -58.3816;
+
+    // Distance should be ~8500 km
+    const distance = getDistance(lat1, lon1, lat2, lon2);
+    expect(distance).toBeGreaterThan(8400);
+    expect(distance).toBeLessThan(8600);
+  });
+
+  it('should calculate correct distance across the prime meridian', () => {
+     // Madrid
+     const lat1 = 40.4168;
+     const lon1 = -3.7038;
+     // Barcelona
+     const lat2 = 41.3851;
+     const lon2 = 2.1734;
+
+     // Distance is roughly ~500 km
+     const distance = getDistance(lat1, lon1, lat2, lon2);
+     expect(distance).toBeGreaterThan(490);
+     expect(distance).toBeLessThan(515);
   });
 });
