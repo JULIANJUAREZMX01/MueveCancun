@@ -72,6 +72,44 @@ describe('CoordinatesStore', () => {
         expect(mockFetch).toHaveBeenCalledWith('/data/master_routes.optimized.json');
     });
 
+    it('should fall back to raw JSON when optimized fetch fails', async () => {
+        const fallbackData = {
+            version: '1.0',
+            rutas: [
+                {
+                    id: 'R2',
+                    nombre: 'Ruta 2',
+                    tarifa: 15,
+                    tipo: 'Bus',
+                    paradas: [
+                        { nombre: 'Stop Fallback', lat: 30, lng: 30, orden: 1 }
+                    ]
+                }
+            ]
+        };
+
+        // First call: optimized JSON fails (non-OK response)
+        mockFetch.mockResolvedValueOnce({
+            ok: false,
+            status: 500,
+            text: async () => ''
+        } as any);
+
+        // Second call: fallback raw JSON succeeds
+        mockFetch.mockResolvedValueOnce({
+            ok: true,
+            text: async () => JSON.stringify(fallbackData)
+        } as any);
+
+        const result = await store.init();
+
+        expect(result.data).toEqual(fallbackData);
+        expect(store.getDB()!['stop fallback']).toEqual([30, 30]);
+
+        expect(mockFetch).toHaveBeenNthCalledWith(1, '/data/master_routes.optimized.json');
+        expect(mockFetch).toHaveBeenNthCalledWith(2, '/data/master_routes.json');
+    });
+
     it('should find nearest stop', async () => {
         const mockData = {
             version: '1.0',
