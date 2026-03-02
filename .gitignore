@@ -18,12 +18,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
 # Dependencies
 node_modules
+package-lock.json
 .venv
-pip-wheel-metadata
 
 # Build Outputs
 dist
@@ -31,32 +30,35 @@ dist-ssr
 out
 target
 build
+.astro
 
-# Project Specific
-.codersinflow
+# AI Agent Directories
+.agent
+.agent_context
+.Jules
+.cursor
 .claude
 CLAUDE.md
 .codex
-*.vsix
-__pycache__
-*.pyc
-.next
+.codersinflow
 
 # Rust / WASM
 /rust-wasm/target
-/src/wasm/route_calculator/pkg
+Cargo.lock
+/src/wasm/
+public/wasm/engine/
+public/wasm/route-calculator/
+public/wasm/spatial-index/
 
 # Temporary files
 *.tmp
 tmp/
+__pycache__
+*.pyc
 
-# Frameworks / Tooling
-.astro
+# Testing Artifacts
 test-results
-node_modules/
-dist/
-.astro/
-Cargo.lock
-.git
-.github
-public/wasm/engine/
+*_snapshot.html
+*_content.md
+snapshot_*.png
+public/data/master_routes.optimized.json

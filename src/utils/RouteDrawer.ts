@@ -32,11 +32,6 @@ interface MarkerOptions {
     fillOpacity?: number;
 }
 
-interface Marker {
-    bindPopup(content: string): Marker;
-    addTo(group: LayerGroup): Marker;
-}
-
 // --- Data Types ---
 
 interface RouteStop {

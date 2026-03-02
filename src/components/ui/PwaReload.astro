@@ -1,0 +1,131 @@
+---
+---
+<div id="pwa-toast" popover="manual" class="pwa-popover">
+    <div class="glass-card p-4 flex items-center justify-between gap-4 bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 rounded-2xl">
+        <div>
+            <h4 class="font-bold text-sm" data-i18n="pwa.update">Actualización disponible</h4>
+            <p class="text-xs text-slate-500" data-i18n="pwa.new_version">Nueva versión lista.</p>
+        </div>
+        <button id="pwa-refresh-btn" class="bg-primary-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-600 transition-colors" data-i18n="pwa.refresh">
+            ACTUALIZAR
+        </button>
+    </div>
+</div>
+
+<style>
+    /*
+     * GRAFFITI WARRIOR: Native Popover API
+     * No z-index wars. No display:none toggling. Pure browser power.
+     */
+    .pwa-popover {
+        /* Position: Fixed at bottom, full width but constrained */
+        position: fixed;
+        bottom: 6rem; /* Above bottom nav */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 28rem; /* max-w-md */
+
+        /* Reset default popover styles */
+        border: none;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        overflow: visible;
+
+        /* Animation State: Open (Final) */
+        opacity: 1;
+        translate: 0 0;
+        transition:
+            opacity 0.4s ease-out,
+            translate 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+            display 0.4s allow-discrete,
+            overlay 0.4s allow-discrete;
+
+        /* Ensure it sits on top if supported, though Top Layer handles it */
+        z-index: 50;
+    }
+
+    /* Animation State: Closed (Starting Style for Entry) */
+    @starting-style {
+        .pwa-popover:popover-open {
+            opacity: 0;
+            translate: 0 2rem;
+        }
+    }
+
+    /* Animation State: Exiting */
+    .pwa-popover:not(:popover-open) {
+        opacity: 0;
+        translate: 0 2rem;
+        display: none;
+    }
+
+    /* Mobile adjustment */
+    @media (min-width: 768px) {
+        .pwa-popover {
+            bottom: 2rem;
+        }
+    }
+</style>
+
+<script>
+    // Service Worker Logic
+    // Robust for View Transitions and Idempotency
+    if ('serviceWorker' in navigator && !(window as any).pwa_initialized) {
+        (window as any).pwa_initialized = true;
+
+        const showToast = () => {
+            const toast = document.getElementById('pwa-toast');
+            if (toast && !toast.matches(':popover-open')) {
+                try {
+                    toast.showPopover();
+                } catch (e) {
+                    console.warn("Popover API fallback");
+                    toast.style.display = 'block';
+                }
+            }
+        };
+
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                if (reg.waiting) showToast();
+
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker?.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showToast();
+                        }
+                    });
+                });
+            });
+        });
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            window.location.reload();
+            refreshing = true;
+        });
+
+        // Re-attach listeners on every navigation (View Transitions)
+        document.addEventListener('astro:page-load', () => {
+            const refreshBtn = document.getElementById('pwa-refresh-btn');
+
+            refreshBtn?.addEventListener('click', () => {
+                navigator.serviceWorker.ready.then(reg => {
+                    if (reg.waiting) {
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                });
+            });
+
+            navigator.serviceWorker.getRegistration().then(reg => {
+                if (reg && reg.waiting) {
+                    showToast();
+                }
+            });
+        });
+    }
+</script>

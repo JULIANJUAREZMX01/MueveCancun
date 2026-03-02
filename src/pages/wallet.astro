@@ -117,6 +117,7 @@ import MainLayout from '../layouts/MainLayout.astro';
   </dialog>
 
   <script>
+  import { showToast } from '../utils/toast';
     import { getWalletBalance, setWalletBalance, updateWalletBalance } from '../utils/db';
 
     async function setupWallet() {
@@ -171,9 +172,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 
           dialog?.close();
 
-          if (window.showToast) {
-            window.showToast(`¡Recarga exitosa! +$${selectedAmount}`, "success");
-          }
+          showToast(`¡Recarga exitosa! +${selectedAmount}`, "success");
       });
     }
 

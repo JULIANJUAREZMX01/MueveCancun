@@ -1,4 +1,4 @@
-import { openDB } from 'idb';
+import { openDB, type IDBPDatabase } from 'idb';
 
 const DB_NAME = 'cancunmueve-db';
 const DB_VERSION = 3;
@@ -126,24 +126,37 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
   }
 };
 
-export const initDB = async () => {
-  const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion) {
-      if (oldVersion < 1) {
-        db.createObjectStore('routes');
-        db.createObjectStore('user-reports');
-      }
-      if (oldVersion < 2) {
-        db.createObjectStore('wallet-status');
-      }
-      // Version 3: Migration handled in code, no schema changes needed
-    },
-  });
+let dbPromise: Promise<IDBPDatabase> | null = null;
 
-  // Initialize test balance if empty (180 MXN for consistency with UI)
-  const tx = db.transaction('wallet-status', 'readwrite');
-  const store = tx.objectStore('wallet-status');
-  const balance = await store.get('current_balance');
+export const initDB = async (): Promise<IDBPDatabase> => {
+  if (dbPromise) return dbPromise;
+
+  dbPromise = (async () => {
+    try {
+      const db = await openDB(DB_NAME, DB_VERSION, {
+        upgrade(db, oldVersion) {
+          if (oldVersion < 1) {
+            db.createObjectStore('routes');
+            db.createObjectStore('user-reports');
+          }
+          if (oldVersion < 2) {
+            db.createObjectStore('wallet-status');
+          }
+          // Version 3: Migration handled in code, no schema changes needed
+        },
+      });
+
+      // Initialize test balance if empty (180 MXN for consistency with UI)
+      const tx = db.transaction('wallet-status', 'readwrite');
+      const store = tx.objectStore('wallet-status');
+      const balance = await store.get('current_balance');
+
+      if (balance === undefined) {
+        await store.put({ id: 'current_balance', amount: 180.00, currency: 'MXN' }, 'current_balance');
+        console.log('[DB] Initial wallet balance set to 180.00 MXN');
+      }
+
+      await tx.done;
 
   if (balance === undefined) {
     const defaultAmount = 180.00;
@@ -157,7 +170,7 @@ export const initDB = async () => {
   // Run migration after DB initialization, passing db to avoid circular recursion
   await migrateBalanceFromLocalStorage(db);
 
-  return db;
+  return dbPromise;
 };
 
 export const getWalletBalance = async (): Promise<{ id: string; amount: number; currency: string; signature?: string } | undefined> => {
