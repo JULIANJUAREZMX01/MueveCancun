@@ -2,8 +2,6 @@
 import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../utils/i18n';
 import { safeJsonStringify } from '../utils/utils';
 import Input from './ui/Input.astro';
-import Switch from './ui/Switch.astro';
-import PassengerSelector from './ui/PassengerSelector.astro';
 
 const currentLang = getLangFromUrl(Astro.url);
 const t = useTranslations(currentLang);
@@ -41,7 +39,7 @@ const ui = uiTranslations[currentLang];
         <div class="relative z-20">
           <Input
             id="origin-input"
-            variant="floating"
+            variant="default"
             label="Origin"
             icon="/icons/map-pin.svg"
             placeholder="From where?"
@@ -70,7 +68,7 @@ const ui = uiTranslations[currentLang];
         <div class="relative z-0">
           <Input
             id="destination-input"
-            variant="floating"
+            variant="default"
             label="Destination"
             icon="/icons/flag.svg"
             placeholder="Where to?"
@@ -108,15 +106,6 @@ const ui = uiTranslations[currentLang];
       </div>
 
 
-      <!-- Options Row — compact -->
-      <div class="flex items-center gap-3">
-        <div class="flex-1">
-          <PassengerSelector id="seats-input" />
-        </div>
-        <div class="flex items-center">
-          <Switch id="tourist-checkbox" label="Tourist" data-i18n-label="calc.tourist" />
-        </div>
-      </div>
 
       <button id="search-btn" class="btn-primary btn-lg w-full" disabled aria-label="Calculate route">
         <span id="btn-text" class="uppercase tracking-wider" data-i18n="calc.loading">Cargando rutas...</span>
