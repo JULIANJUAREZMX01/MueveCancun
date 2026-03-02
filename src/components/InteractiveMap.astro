@@ -34,6 +34,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 </div>
 
 <script>
+  import { showToast } from '../utils/toast';
 
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { drawRoute } from '../utils/RouteDrawer';
@@ -154,7 +155,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     const isPicker = urlParams.get('picker');
 
     if (isPicker) {
-        if (window.showToast) window.showToast("Toque el mapa para seleccionar una parada cercana", "info");
+        showToast("Toque el mapa para seleccionar una parada cercana", "info");
 
         // Add visual indicator
         const indicator = document.createElement('div');
@@ -197,7 +198,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
                 }, 100);
 
             } else {
-                 if (window.showToast) window.showToast("No hay paradas registradas cerca", "warning");
+                 showToast("No hay paradas registradas cerca", "warning");
             }
         });
 

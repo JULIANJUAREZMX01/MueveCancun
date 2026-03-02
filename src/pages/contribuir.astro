@@ -61,6 +61,8 @@ const reportOptions = [
   </div>
 
   <script>
+    import { showToast } from "../utils/toast";
+
     function setupForm() {
       const form = document.getElementById('contribution-form');
       const btn = document.getElementById('submit-btn');
@@ -88,9 +90,7 @@ const reportOptions = [
           await new Promise(resolve => setTimeout(resolve, 1500));
 
           // Success Logic
-          if (window.showToast) {
-            window.showToast("¡Gracias! Tu reporte ha sido enviado con éxito.", "success");
-          }
+          showToast("¡Gracias! Tu reporte ha sido enviado con éxito.", "success");
           
           form.reset();
           // Reset custom selector too (clean the text)
@@ -99,9 +99,7 @@ const reportOptions = [
 
         } catch (error) {
           console.error('Submission failed:', error);
-          if (window.showToast) {
-            window.showToast("Hubo un error al enviar el reporte. Revisa tu conexión.", "error");
-          }
+          showToast("Hubo un error al enviar el reporte. Revisa tu conexión.", "error");
         } finally {
           // 4. Reset State
           btn.disabled = false;
