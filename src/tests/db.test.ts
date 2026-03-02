@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+import { openDB } from 'idb';
 import { getWalletBalance, setWalletBalance, initDB, updateWalletBalance } from '../utils/db';
 
 // Mock the idb library
@@ -6,7 +7,7 @@ vi.mock('idb', () => {
   let store: any = {};
 
   const mockTx = {
-    objectStore: (name: string) => ({
+    objectStore: (_name: string) => ({
       get: async (key: string) => store[key],
       put: async (val: any, key: string) => { store[key] = val; },
     }),
@@ -14,9 +15,9 @@ vi.mock('idb', () => {
   };
 
   const mockDb = {
-    transaction: () => mockTx,
-    get: async (storeName: string, key: string) => store[key],
-    put: async (storeName: string, val: any, key: string) => { store[key] = val; },
+    transaction: (_storeName: string, _mode?: string) => mockTx,
+    get: async (_storeName: string, key: string) => store[key],
+    put: async (_storeName: string, val: any, key: string) => { store[key] = val; },
     // A helper method on the mock to let us bypass the SDK and directly tamper
     _tamperStore: (key: string, val: any) => { store[key] = val; },
     _clearStore: () => { store = {}; }
@@ -30,6 +31,7 @@ vi.mock('idb', () => {
 // Since we use Web Crypto API, we need to ensure it's available in the test environment.
 // Node 20+ has crypto.subtle on globalThis.
 import { webcrypto } from 'crypto';
+const originalLocalStorage = (globalThis as any).localStorage;
 if (!globalThis.crypto) {
   // @ts-ignore
   globalThis.crypto = webcrypto;
@@ -45,6 +47,13 @@ const localStorageMock = {
 };
 globalThis.localStorage = localStorageMock as any;
 
+afterAll(() => {
+  // Only restore localStorage, which we replaced with a mock.
+  // globalThis.crypto is not restored because we only polyfill it when absent;
+  // in Node 20+ it is already defined and read-only, so nothing was changed.
+  (globalThis as any).localStorage = originalLocalStorage;
+});
+
 describe('DB Security Checks', () => {
 
   beforeEach(async () => {
@@ -54,7 +63,7 @@ describe('DB Security Checks', () => {
     db._clearStore();
 
     // Simulate migration already done to prevent auto-signing loophole
-    globalThis.localStorage.getItem.mockImplementation((key) => {
+    localStorageMock.getItem.mockImplementation((key) => {
       if (key === 'balance_migration_done') return 'true';
       return null;
     });
@@ -92,21 +101,23 @@ describe('DB Security Checks', () => {
     expect(tamperedBalance?.amount).toBe(0.00); // Punished!
   });
 
-  it('should reset balance to 0 if signature is removed entirely', async () => {
+  it('should treat a missing signature as a legacy record and backfill it', async () => {
     await setWalletBalance(75.00);
 
     const db = await openDB('cancunmueve-db', 3);
     // @ts-ignore
     const existing = await db.get('wallet-status', 'current_balance');
 
-    // User deletes signature
+    // Simulate a legacy record: remove its signature
     delete existing.signature;
     // @ts-ignore
     db._tamperStore('current_balance', existing);
 
-    const tamperedBalance = await getWalletBalance();
+    const result = await getWalletBalance();
 
-    expect(tamperedBalance?.amount).toBe(0.00); // Punished!
+    // Balance should be preserved (treated as legacy state, not tampering)
+    expect(result?.amount).toBe(75.00);
+    expect(result?.signature).toBeDefined();
   });
 
   it('should correctly handle updates and sign the new balance', async () => {
@@ -116,5 +127,17 @@ describe('DB Security Checks', () => {
     const finalBalance = await getWalletBalance();
     expect(finalBalance?.amount).toBe(150.00);
     expect(finalBalance?.signature).toBeDefined();
+  });
+
+  it('should initialize a fresh profile with default 180.00 MXN balance and a valid signature', async () => {
+    // Simulate a fresh profile: no migration done and no localStorage values
+    localStorageMock.getItem.mockImplementation((_key) => null);
+
+    await initDB();
+
+    const balance = await getWalletBalance();
+    expect(balance).toBeDefined();
+    expect(balance?.amount).toBe(180.00);
+    expect(balance?.signature).toBeDefined();
   });
 });
