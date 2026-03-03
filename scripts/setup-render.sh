@@ -32,10 +32,14 @@ then
     rm install_wasm.sh
 fi
 
-# 3. Enable Corepack for pnpm support (Render Node >=16)
-echo "==> Enabling corepack for pnpm..."
-corepack enable
-corepack prepare pnpm@latest --activate
+# 3. Install pnpm if not present
+if ! command -v pnpm &> /dev/null
+then
+    echo "==> Installing pnpm via npm..."
+    npm install -g pnpm
+else
+    echo "==> pnpm already installed"
+fi
 
 # 4. Install Node dependencies
 echo "==> Installing dependencies..."
