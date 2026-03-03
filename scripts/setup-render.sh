@@ -13,7 +13,9 @@ then
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 fi
 
-source $HOME/.cargo/env
+if [ -f "$HOME/.cargo/env" ]; then
+    source $HOME/.cargo/env
+fi
 
 echo "==> Adding wasm32-unknown-unknown target..."
 rustup target add wasm32-unknown-unknown
