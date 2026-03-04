@@ -26,15 +26,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 echo "🎯 Adding wasm32-unknown-unknown target..."
 rustup target add wasm32-unknown-unknown
 
-# 3. Setup wasm-pack
-if ! command -v wasm-pack &> /dev/null; then
-    echo "📦 Installing wasm-pack..."
-    curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-else
-    echo "✅ wasm-pack is already installed."
-fi
-
-# 4. Build Project
+# 3. Build Project (wasm-pack is managed via package.json dependencies and npx)
 echo "🚀 Building Project..."
 pnpm install
 pnpm run build
