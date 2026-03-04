@@ -1,0 +1,56 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+
+interface Props {
+  name: string;
+  class?: string;
+  width?: string | number;
+  height?: string | number;
+  'aria-hidden'?: boolean | string;
+}
+
+const {
+  name,
+  class: className,
+  width,
+  height,
+  'aria-hidden': ariaHidden = 'true',
+} = Astro.props;
+
+// Read SVG content from public/icons folder at build time
+let svgContent = '';
+try {
+  // Strip starting slash and /icons/ if present, append .svg
+  const iconFileName = name.replace(/^\/?icons\//, '').replace(/\.svg$/, '') + '.svg';
+  const iconPath = path.join(process.cwd(), 'public', 'icons', iconFileName);
+
+  if (fs.existsSync(iconPath)) {
+    svgContent = fs.readFileSync(iconPath, 'utf-8');
+
+    // Inject props into the root <svg> tag
+    if (className) {
+      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg class="${className}" $1>`);
+    }
+    if (width) {
+      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg width="${width}" $1>`);
+    }
+    if (height) {
+      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg height="${height}" $1>`);
+    }
+    if (ariaHidden !== undefined) {
+      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg aria-hidden="${ariaHidden}" $1>`);
+    }
+  } else {
+    console.warn(`[Icon] SVG file not found: ${iconPath}`);
+  }
+} catch (e) {
+  console.error(`[Icon] Failed to load icon: ${name}`, e);
+}
+---
+
+{svgContent ? (
+  <Fragment set:html={svgContent} />
+) : (
+  <span class={`fallback-icon ${className || ''}`} aria-hidden={ariaHidden}></span>
+)}
