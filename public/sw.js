@@ -1,39 +1,25 @@
-const CACHE_VERSION = 'v3.0.2-ssg';
-const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v4.0.0-reparto';
+const CACHE_NAME = `mueve-reparto-${CACHE_VERSION}`;
 
-// Critical assets for offline-first PWA
+// Critical assets for offline-first PWA — Mueve Reparto
 const CRITICAL_ASSETS = [
   '/',
   '/home',
-  '/rutas',
-  '/mapa',
-  '/wallet',
-  '/community',
-  '/tracking',
-  '/contribuir',
+  '/pedidos',
+  '/reparto',
+  '/enviar',
+  '/metricas',
+  '/offline',
   '/wasm/route-calculator/route_calculator.js',
   '/wasm/route-calculator/route_calculator_bg.wasm',
-  '/wasm/spatial-index/spatial_index.js',
-  '/wasm/spatial-index/spatial_index_bg.wasm',
-  '/data/master_routes.json',
-  '/coordinates.json',
+  '/router.worker.js',
   '/manifest.json',
   '/logo.png',
   '/icons/pwa-192x192.png',
   '/icons/pwa-512x512.png',
-  '/icons/bus.svg',
-  '/icons/compass.svg',
   '/icons/map-pin.svg',
-  '/icons/credit-card.svg',
-  '/icons/alert.svg',
-  '/icons/flag.svg',
-  '/icons/swap.svg',
   '/icons/home.svg',
-  '/icons/briefcase.svg',
-  '/icons/plane.svg',
-  '/icons/palm-tree.svg',
   '/icons/loader.svg',
-  '/offline'
 ];
 
 // Regex for OSM tiles (Zoom 11-18)
@@ -42,7 +28,7 @@ const CARTO_TILES_PATTERN = /^https:\/\/[a-d]\.basemaps\.cartocdn\.com\/.*\.png$
 
 // Install: Cache critical assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing v3.0.0-ssg');
+  console.log('[SW] Installing v4.0.0-reparto');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -59,7 +45,7 @@ self.addEventListener('install', (event) => {
 
 // Activate: Clean old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v3.0.0-ssg');
+  console.log('[SW] Activating v4.0.0-reparto');
   event.waitUntil(
     caches.keys()
       .then(keys => {
@@ -103,13 +89,15 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Strategy selection
-  if (url.pathname.includes('/data/')) {
-    // Data files: Stale-While-Revalidate (best for dynamic data)
+  if (url.pathname.startsWith('/api/')) {
+    // API calls: Network-only (never cache, go through sync queue offline)
+    return;
+  } else if (url.pathname.includes('/data/')) {
+    // Data files: Stale-While-Revalidate
     event.respondWith(staleWhileRevalidate(request));
   } else if (
-    url.pathname.includes('/wasm/') || 
-    url.pathname.includes('/icons/') || 
-    url.pathname.endsWith('coordinates.json') ||
+    url.pathname.includes('/wasm/') ||
+    url.pathname.includes('/icons/') ||
     url.pathname.endsWith('.wasm') ||
     url.pathname.endsWith('.js') ||
     url.pathname.endsWith('.css')
@@ -117,13 +105,13 @@ self.addEventListener('fetch', (event) => {
     // Immutable assets: Cache-First
     event.respondWith(cacheFirst(request));
   } else if (OSM_TILES_PATTERN.test(request.url) || CARTO_TILES_PATTERN.test(request.url)) {
-    // Map tiles: Cache-First (they don't change)
+    // Map tiles: Cache-First
     event.respondWith(cacheFirst(request));
-  } else if (url.pathname.startsWith('/ruta/') || url.pathname === '/rutas' || url.pathname === '/mapa') {
-    // Static pages (SSG): Cache-First with network fallback
+  } else if (['/home', '/pedidos', '/reparto', '/enviar', '/metricas'].includes(url.pathname)) {
+    // Delivery app pages: Cache-First (PWA shell)
     event.respondWith(cacheFirst(request));
   } else {
-    // Default (HTML pages): Network-First with cache fallback
+    // Default: Network-First with cache fallback
     event.respondWith(networkFirst(request));
   }
 });
@@ -204,4 +192,54 @@ async function staleWhileRevalidate(request) {
   }).catch(() => cached);
 
   return cached || fetchPromise;
+}
+
+// Background Sync: procesar cola de peticiones pendientes
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-mr-data') {
+    event.waitUntil(flushSyncQueue());
+  }
+});
+
+async function flushSyncQueue() {
+  const db = await openSyncDB();
+  const entries = await getAllFromStore(db, 'sync_queue');
+  for (const entry of entries) {
+    try {
+      const res = await fetch(entry.url, {
+        method: entry.method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry.body),
+      });
+      if (res.ok) {
+        await deleteFromStore(db, 'sync_queue', entry.id);
+      }
+    } catch {
+      // Se reintentara en el proximo sync
+    }
+  }
+}
+
+function openSyncDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('MueveRepartoDB', 1);
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function getAllFromStore(db, store) {
+  return new Promise((resolve, reject) => {
+    const req = db.transaction([store], 'readonly').objectStore(store).getAll();
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function deleteFromStore(db, store, key) {
+  return new Promise((resolve, reject) => {
+    const req = db.transaction([store], 'readwrite').objectStore(store).delete(key);
+    req.onsuccess = () => resolve();
+    req.onerror = (e) => reject(e.target.error);
+  });
 }
