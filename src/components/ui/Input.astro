@@ -1,4 +1,6 @@
 ---
+import Icon from './Icon.astro';
+
 // ✅ TypeScript in Astro Frontmatter
 interface Props {
   type?: 'text' | 'email' | 'password' | 'number' | 'search' | 'textarea';
@@ -44,7 +46,7 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
 <div class={`graffiti-input-wrapper ${variant} ${className || ''}`}>
   {label && (
     <label for={id} class="graffiti-label">
-      {icon && <img src={icon} class="icon" alt="" />}
+      {icon && <Icon name={icon} class="icon" />}
       {label}
     </label>
   )}
