@@ -7,6 +7,7 @@ import BottomNav from '../components/BottomNav.astro';
 import ScrollToTop from '../components/ui/ScrollToTop.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import { ui as uiTranslations } from '../utils/i18n';
+import { safeJsonStringify } from '../utils/utils';
 
 interface Props {
   title: string;
@@ -283,7 +284,7 @@ const navItems = [
     <Toast />
     <PwaReload />
 
-    <div id="i18n-translations" data-translations={JSON.stringify(uiTranslations)} class="hidden"></div>
+    <div id="i18n-translations" data-translations={safeJsonStringify(uiTranslations)} class="hidden"></div>
 
     <script is:inline>
       function setupThemeToggle() {
