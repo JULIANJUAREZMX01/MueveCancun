@@ -1,0 +1,41 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+
+interface Props {
+  name: string;
+  class?: string;
+  alt?: string;
+}
+
+const { name, class: className = '', alt = '' } = Astro.props;
+
+// Read SVG file content from public/icons directory at build time
+let svgContent = '';
+try {
+  const filePath = path.join(process.cwd(), 'public', 'icons', `${name}.svg`);
+  svgContent = fs.readFileSync(filePath, 'utf-8');
+
+  // Inject class and aria attributes
+  if (className) {
+    if (/<svg[^>]*\bclass="/.test(svgContent)) {
+       svgContent = svgContent.replace(/(<svg[^>]*\bclass=")/, `$1${className} `);
+    } else {
+       svgContent = svgContent.replace(/<svg/, `<svg class="${className}"`);
+    }
+  }
+
+  if (alt) {
+     svgContent = svgContent.replace(/<svg/, `<svg aria-label="${alt}" role="img"`);
+  } else {
+     svgContent = svgContent.replace(/<svg/, `<svg aria-hidden="true"`);
+  }
+} catch (e: any) {
+  console.error(`[Icon Component] Error loading icon ${name}:`, e.message);
+}
+---
+{svgContent ? (
+  <Fragment set:html={svgContent} />
+) : (
+  <span class={`fallback-icon ${className}`} title={`Missing icon: ${name}`}></span>
+)}
