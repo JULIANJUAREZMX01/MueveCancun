@@ -803,16 +803,16 @@ const ui = uiTranslations[currentLang];
                  // Render Cards
                  if (bestResultArea) {
                      if (best.type === 'Transfer') {
-                         bestResultArea.innerHTML = renderTransferCardHtml(best, true, ui);
+                         bestResultArea.innerHTML = renderTransferCardHtml(best, ui, true);
                      } else {
-                         bestResultArea.innerHTML = renderBestResultHtml(best, true, ui);
+                         bestResultArea.innerHTML = renderBestResultHtml(best, ui, true);
                      }
                  }
 
                  if (others.length > 0 && resultsContainer) {
                      others.forEach(r => {
                          const div = document.createElement('div');
-                         div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r, false, ui) : renderBestResultHtml(r, false, ui);
+                         div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r, ui) : renderBestResultHtml(r, ui);
                          resultsContainer.appendChild(div.firstElementChild);
                      });
                  }
