@@ -152,23 +152,24 @@ export const initDB = async (): Promise<IDBPDatabase> => {
       const balance = await store.get('current_balance');
 
       if (balance === undefined) {
-        await store.put({ id: 'current_balance', amount: 180.00, currency: 'MXN' }, 'current_balance');
+        const defaultAmount = 180.00;
+        const signature = await generateSignature(defaultAmount);
+        await store.put({ id: 'current_balance', amount: defaultAmount, currency: 'MXN', signature }, 'current_balance');
         console.log('[DB] Initial wallet balance set to 180.00 MXN');
       }
 
       await tx.done;
 
-  if (balance === undefined) {
-    const defaultAmount = 180.00;
-    const signature = await generateSignature(defaultAmount);
-    await store.put({ id: 'current_balance', amount: defaultAmount, currency: 'MXN', signature }, 'current_balance');
-    console.log('[DB] Initial wallet balance set to 180.00 MXN');
-  }
+      // Run migration after DB initialization, passing db to avoid circular recursion
+      await migrateBalanceFromLocalStorage(db);
 
-  await tx.done;
-
-  // Run migration after DB initialization, passing db to avoid circular recursion
-  await migrateBalanceFromLocalStorage(db);
+      return db;
+    } catch (error) {
+      console.error('[DB] Initialization failed:', error);
+      dbPromise = null;
+      throw error;
+    }
+  })();
 
   return dbPromise;
 };
@@ -243,3 +244,6 @@ export const updateWalletBalance = async (amount: number) => {
     await tx.done;
   }
 };
+
+// Test util
+export const __resetDBPromise = () => { dbPromise = null; };

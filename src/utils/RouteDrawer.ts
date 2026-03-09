@@ -84,7 +84,7 @@ export function drawRoute(
     map: Map,
     data: RouteData,
     existingLayerGroup: LayerGroup | null | undefined,
-    coordinatesDB: Record<string, [number, number]>
+    coordinatesDB: Map<string, [number, number]>
 ): LayerGroup | undefined {
 
     // Access global L safely
@@ -146,8 +146,8 @@ export function drawRoute(
             // Legacy: Array of strings + coordinatesDB
             const stopNames: string[] = leg.stops || [];
             stopNames.forEach(name => {
-                if (coordinatesDB[name]) {
-                    const coords = coordinatesDB[name];
+                if (coordinatesDB.has(name)) {
+                    const coords = coordinatesDB.get(name)!;
                     routeCoords.push(coords);
                     validStops.push({ name: name, latlng: coords });
                     allBounds.push(coords);

@@ -24,6 +24,7 @@ export async function getStaticPaths() {
 }
 
 const { route } = Astro.props;
+const safeId = route.id.replace(/[^a-zA-Z0-9]/g, '');
 
 // --- SEO Logic ---
 const pageTitle = `Ruta ${route.nombre} | CancúnMueve`;
@@ -73,6 +74,9 @@ const schemaData = {
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
            <div class="space-y-1">
                 <div class="flex items-center gap-2 mb-2">
+                   <span class="px-2 py-0.5 rounded bg-primary-100 text-primary-700 text-[10px] font-bold border border-primary-200 uppercase tracking-tighter" style={`view-transition-name: route-badge-${safeId}`}>
+                      {route.id}
+                   </span>
                    <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-bold border border-orange-200 uppercase tracking-tighter">
                       {(route.tipo || 'Ruta').replace('_', ' ')}
                    </span>
@@ -82,7 +86,7 @@ const schemaData = {
                      </span>
                    )}
                 </div>
-                <h1 class="text-3xl md:text-4xl font-display font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                <h1 class="text-3xl md:text-4xl font-display font-black text-slate-900 dark:text-white tracking-tight leading-tight" style={`view-transition-name: route-title-${safeId}`}>
                   {route.nombre}
                 </h1>
               </div>
@@ -91,7 +95,7 @@ const schemaData = {
                    <svg class="w-5 h-5 star-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z"/></svg>
                    <span class="btn-text">Guardar</span>
                 </button>
-                <div class="text-3xl font-black text-emerald-600 font-mono">
+                <div class="text-3xl font-black text-emerald-600 font-mono" style={`view-transition-name: route-price-${safeId}`}>
                   ${route.tarifa || 15}<span class="text-sm">.00</span>
                 </div>
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Peso Mexicano (MXN)</div>

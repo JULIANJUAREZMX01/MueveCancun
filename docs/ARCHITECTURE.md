@@ -41,6 +41,39 @@ This document details the 4-layer architecture of the MueveCancun ecosystem.
 
 ## Data Flow Diagram
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend as Astro/UI
+    participant CS as CoordinatesStore
+    participant SH as SpatialHash
+    participant WASM as Rust Engine
+    participant DB as IndexedDB/Local
+
+    User->>Frontend: Loads Page
+    Frontend->>CS: init()
+    CS->>DB: Fetch master_routes.json
+    DB-->>CS: Returns JSON data
+    CS->>SH: Index coordinates (O(1))
+    Frontend->>WASM: load_catalog_core(json_string)
+    WASM-->>Frontend: Catalog Loaded
+
+    User->>Frontend: Search Route (Origin, Dest)
+    Frontend->>CS: Find nearest/exact match
+    CS->>SH: query(lat, lng)
+    SH-->>CS: candidates
+    CS-->>Frontend: Resolve stop name
+
+    Frontend->>WASM: find_route_rs(Origin, Dest)
+    WASM->>WASM: Calculate path (check DoS limit)
+    WASM-->>Frontend: Return best Journey(s)
+
+    Frontend->>User: Display Results
+    Frontend->>DB: Persist favorites / history
+```
+
+## Legacy Flow (High-Level)
+
 ```
 [src/data/routes.json]
        | (sync-routes.mjs)

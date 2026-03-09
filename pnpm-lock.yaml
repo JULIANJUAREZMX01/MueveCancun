@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  tar: ^7.5.3
+  tar: ^7.5.4
   axios: ^1.7.9
 
 importers:
@@ -63,6 +63,9 @@ importers:
       vite:
         specifier: ^6.3.1
         version: 6.4.1(@types/node@24.10.13)(jiti@1.21.7)(yaml@2.8.2)
+      wasm-pack:
+        specifier: ^0.14.0
+        version: 0.14.0
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.6
@@ -97,9 +100,6 @@ importers:
       vitest:
         specifier: ^4.0.1
         version: 4.0.18(@types/node@24.10.13)(jiti@1.21.7)(jsdom@27.4.0)(yaml@2.8.2)
-      wasm-pack:
-        specifier: ^0.14.0
-        version: 0.14.0
 
 packages:
 

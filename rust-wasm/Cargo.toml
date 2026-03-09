@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "route-calculator",
-    "spatial-index",
     "shared-types",
 ]
 resolver = "2"

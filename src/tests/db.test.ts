@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import { openDB } from 'idb';
-import { getWalletBalance, setWalletBalance, initDB, updateWalletBalance } from '../utils/db';
+import { getWalletBalance, __resetDBPromise, setWalletBalance, initDB, updateWalletBalance } from '../utils/db';
 
 // Mock the idb library
 vi.mock('idb', () => {
@@ -57,6 +57,7 @@ afterAll(() => {
 describe('DB Security Checks', () => {
 
   beforeEach(async () => {
+    __resetDBPromise();
     // We clear the mock store before each test
     const db = await openDB('cancunmueve-db', 3);
     // @ts-ignore
@@ -133,6 +134,7 @@ describe('DB Security Checks', () => {
     // Simulate a fresh profile: no migration done and no localStorage values
     localStorageMock.getItem.mockImplementation((_key) => null);
 
+    __resetDBPromise();
     await initDB();
 
     const balance = await getWalletBalance();
