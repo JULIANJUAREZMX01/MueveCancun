@@ -317,7 +317,6 @@ fn match_stop<'a>(
     query_norm: &str,
     route: &'a Route,
     cache: &mut HashMap<&'a str, f64>,
-    ops_count: &mut usize,
 ) -> Option<usize> {
     // 1. O(1) Exact Match lookup
     if let Some(&idx) = route.stop_name_to_index.get(query_norm) {
@@ -327,11 +326,6 @@ fn match_stop<'a>(
     let mut best_match: Option<(usize, f64)> = None;
 
     for (i, stop_lower) in route.stops_normalized.iter().enumerate() {
-        *ops_count += 1;
-        if *ops_count > MAX_OPS {
-            break;
-        }
-
         let score = *cache.entry(stop_lower.as_str()).or_insert_with(|| {
             let jaro_score = strsim::jaro_winkler(query_norm, stop_lower);
             if stop_lower.contains(query_norm) || query_norm.contains(stop_lower) {
@@ -470,18 +464,16 @@ fn find_transfer_routes(
                         continue;
                     }
 
-                    if let Some(stop) = route_a.stops.get(idx_a) {
-                        let stop_name = &stop.name;
-                        let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_name.contains(h));
+                    let stop_name = &route_a.stops[idx_a].name;
+                    let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_name.contains(h));
 
-                        match best_transfer {
-                            None => {
+                    match best_transfer {
+                        None => {
+                            best_transfer = Some((idx_a, is_preferred));
+                        }
+                        Some((_, current_is_preferred)) => {
+                            if is_preferred && !current_is_preferred {
                                 best_transfer = Some((idx_a, is_preferred));
-                            }
-                            Some((_, current_is_preferred)) => {
-                                if is_preferred && !current_is_preferred {
-                                    best_transfer = Some((idx_a, is_preferred));
-                                }
                             }
                         }
                     }
@@ -489,15 +481,13 @@ fn find_transfer_routes(
             }
 
             if let Some((idx_a, is_preferred)) = best_transfer {
-                if let Some(stop) = route_a.stops.get(idx_a) {
-                    candidates.push(TransferCandidate {
-                        route_a,
-                        route_b,
-                        transfer_name: stop.name.as_str(),
-                        price: route_a.price + route_b.price,
-                        is_preferred,
-                    });
-                }
+                candidates.push(TransferCandidate {
+                    route_a,
+                    route_b,
+                    transfer_name: route_a.stops[idx_a].name.as_str(),
+                    price: route_a.price + route_b.price,
+                    is_preferred,
+                });
             }
         }
     }
@@ -534,20 +524,18 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
     let mut dest_cache: HashMap<&str, f64> = HashMap::new();
 
     let mut route_matches = Vec::with_capacity(all_routes.len());
-    let mut ops_count = 0;
 
     for route in all_routes {
-        if ops_count > MAX_OPS {
-            break;
-        }
-        let origin_idx = match_stop(&origin_norm, route, &mut origin_cache, &mut ops_count);
-        let dest_idx = match_stop(&dest_norm, route, &mut dest_cache, &mut ops_count);
+        let origin_idx = match_stop(&origin_norm, route, &mut origin_cache);
+        let dest_idx = match_stop(&dest_norm, route, &mut dest_cache);
         route_matches.push(RouteMatch {
             route,
             origin_idx,
             dest_idx,
         });
     }
+
+    let ops_count = 0; // ops_count started here in original code before transfers
 
     let mut journeys = find_direct_routes(&route_matches);
 

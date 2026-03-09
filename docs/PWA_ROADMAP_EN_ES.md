@@ -78,8 +78,6 @@
 ---
 
 ## 🛠 Implementation Waves / Oleadas de Implementación
-- **Wave 1 (Now, 0-2 days):** Tasks 1-15 — unblock builds, offline readiness, balance gate, copy review with Languini.
-- **Wave 2 (Next, 3-7 days):** Tasks 16-35 — UX polish, feature flags, accessibility, spatial tuning, additional tests.
 - **Wave 1 (Now, 0-2 days):** Tasks 1-15 — unblock builds, offline readiness, balance gate, copy review with Languini.  
 - **Wave 2 (Next, 3-7 days):** Tasks 16-35 — UX polish, feature flags, accessibility, spatial tuning, additional tests.  
 - **Wave 3 (Later, 1-3 weeks):** Tasks 36-50 — growth features, analytics, deployment hardening, operational maturity.

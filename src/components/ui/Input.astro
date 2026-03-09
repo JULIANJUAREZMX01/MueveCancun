@@ -1,9 +1,5 @@
 ---
-import Icon from './Icon.astro';
-
 // ✅ TypeScript in Astro Frontmatter
-import Icon from "./Icon.astro";
-
 interface Props {
   type?: 'text' | 'email' | 'password' | 'number' | 'search' | 'textarea';
   id?: string;
@@ -43,19 +39,12 @@ const isFloating = variant === 'floating';
 // For floating labels, we need a placeholder to trigger :placeholder-shown.
 // If none provided, use a single space.
 const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
-
-const isLocalSvgIcon = icon && (!icon.includes('.') || (icon.startsWith('/icons/') && icon.endsWith('.svg')));
-const iconName = icon ? icon.replace(/^\/icons\//, '').replace(/\.svg$/, '') : '';
 ---
 
 <div class={`graffiti-input-wrapper ${variant} ${className || ''}`}>
   {label && (
     <label for={id} class="graffiti-label">
-      {icon && (
-         isLocalSvgIcon ?
-         <Icon name={iconName} class="icon" alt="" /> :
-         <img src={icon} class="icon" alt="" />
-      )}
+      {icon && <img src={icon} class="icon" alt="" />}
       {label}
     </label>
   )}
@@ -368,7 +357,7 @@ const iconName = icon ? icon.replace(/^\/icons\//, '').replace(/\.svg$/, '') : '
       &:has(.graffiti-input:not(:placeholder-shown)) {
         .graffiti-label {
           transform: translateY(-1.5rem) scale(0.85);
-          background: #f1f5f9;
+          background: var(--color-white);
           padding: 0 0.25rem;
           font-weight: 600;
         }
