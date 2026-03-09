@@ -1,4 +1,4 @@
-# Mueve Reparto — Gestión de Entregas para Repartidores Independientes
+# 🏛️ MueveCancun / MueveReparto: La Verdad de la Calle (Nexus Prime v3.2)
 
 > "Hecho para el repartidor que trabaja solo, sin flotas ni supervisores."
 
@@ -9,6 +9,8 @@
 ## El Problema
 
 Los repartidores independientes no tienen herramientas. Las apps empresariales (Rappi, UberEats) son para flotas controladas. WhatsApp y papel son el estándar real. Mueve Reparto llena ese vacío: una herramienta ligera, sin registro obligatorio, que funciona offline y vive en el teléfono como una app nativa.
+
+📌 **ROADMAP:** Consulta las fases del proyecto en el nuevo [ROADMAP.md](ROADMAP.md).
 
 ---
 
