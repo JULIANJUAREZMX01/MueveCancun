@@ -861,10 +861,8 @@ const ui = uiTranslations[currentLang];
                   throw new Error("WASM not ready or find_route not defined");
               }
 
-              console.log(`🔍 Searching: ${origin} -> ${dest}`);
               const results = find_route(origin, dest); // Pass strings directly
 
-              console.log("🔍 Raw Results:", results);
 
               if (!results || results.length === 0) {
                   renderEmptyState();
