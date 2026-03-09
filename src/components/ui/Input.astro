@@ -1,9 +1,6 @@
 ---
 import Icon from './Icon.astro';
 
-// ✅ TypeScript in Astro Frontmatter
-import Icon from "./Icon.astro";
-
 interface Props {
   type?: 'text' | 'email' | 'password' | 'number' | 'search' | 'textarea';
   id?: string;
@@ -13,7 +10,7 @@ interface Props {
   list?: string;
   class?: string;
   label?: string;
-  icon?: string; // URL to icon
+  icon?: string; // Icon name or URL
   'aria-controls'?: string;
   'aria-expanded'?: boolean | string;
   required?: boolean;
@@ -44,17 +41,18 @@ const isFloating = variant === 'floating';
 // If none provided, use a single space.
 const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
 
-const isLocalSvgIcon = icon && (!icon.includes('.') || (icon.startsWith('/icons/') && icon.endsWith('.svg')));
-const iconName = icon ? icon.replace(/^\/icons\//, '').replace(/\.svg$/, '') : '';
+// Logic to determine if it's a local icon name or an external URL
+const isExternal = icon && (icon.startsWith('http') || icon.startsWith('//'));
+const iconName = icon && !isExternal ? icon.replace(/^\/icons\//, '').replace(/\.svg$/, '') : '';
 ---
 
 <div class={`graffiti-input-wrapper ${variant} ${className || ''}`}>
   {label && (
     <label for={id} class="graffiti-label">
       {icon && (
-         isLocalSvgIcon ?
-         <Icon name={iconName} class="icon" alt="" /> :
-         <img src={icon} class="icon" alt="" />
+         isExternal ?
+         <img src={icon} class="icon" alt="" /> :
+         <Icon name={iconName} class="icon" alt="" />
       )}
       {label}
     </label>

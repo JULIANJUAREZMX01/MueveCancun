@@ -158,3 +158,42 @@ ls -la src/lib/
 _Lead Architect & Full Stack Data Engineer_
 
 > "La eficiencia no es un lujo técnico, es un imperativo moral."
+
+---
+
+## ⚡️ Zero JS Icon System (Speedy Gonzalez & GraffitiWarrior)
+
+As part of the v3.2 performance optimization, we have moved away from runtime icon loading.
+
+### 🛡️ Secure Build-Time Inlining
+The `Icon.astro` component now uses Vite's `import.meta.glob` to securely inline SVGs directly into the HTML at build time.
+- **Zero Network Requests**: Icons are part of the initial HTML payload.
+- **LFI Protection**: Path resolution is restricted to the `/public/icons/` directory via glob patterns.
+- **Accessibility First**: Automatically handles `aria-hidden` for decorative icons and `aria-label` for semantic ones.
+
+### 🎨 CSS-Driven Micro-UX
+We prioritize CSS5 features over JavaScript for interactive states:
+- **Native Popover API**: Used for dropdowns and search suggestions.
+- **Anchor Positioning**: Precise tooltip and dropdown placement without layout thrashing.
+- **Discrete Transitions**: Smooth entry/exit animations for top-layer elements using `@starting-style`.
+- **Has-Selector Logic**: Complex parent-child styling (like highlighting a label when an input is valid) is handled entirely in CSS.
+
+---
+
+## 🏗️ Project Structure & Specifications
+
+### 📂 Directory Map
+- `src/components/ui/`: Atomic, Zero-JS UI components (Icon, Input).
+- `src/lib/`: TypeScript singletons for WASM bridges and state stores.
+- `rust-wasm/`: High-performance route calculation and spatial indexing.
+- `public/data/`: Master route catalog and optimized JSON artifacts.
+
+### 📜 Performance Mandates
+1. **SSG over SSR**: All pages are pre-rendered at build time.
+2. **Zero JS by Default**: Components must function without hydration unless strictly necessary (Astro Islands).
+3. **Rust/WASM Core**: Heavy algorithmic work (Dijkstra, Spatial Search) is delegated to the Rust engine.
+
+### 🛠️ Build Pipeline
+1. **JSON Optimization**: Shrinks catalog size by ~40% before build.
+2. **WASM Compilation**: Generates optimized binaries with `wasm-pack`.
+3. **Astro Build**: Static site generation and asset bundling.
