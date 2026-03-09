@@ -464,16 +464,18 @@ fn find_transfer_routes(
                         continue;
                     }
 
-                    let stop_name = &route_a.stops[idx_a].name;
-                    let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_name.contains(h));
+                    if let Some(stop) = route_a.stops.get(idx_a) {
+                        let stop_name = &stop.name;
+                        let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_name.contains(h));
 
-                    match best_transfer {
-                        None => {
-                            best_transfer = Some((idx_a, is_preferred));
-                        }
-                        Some((_, current_is_preferred)) => {
-                            if is_preferred && !current_is_preferred {
+                        match best_transfer {
+                            None => {
                                 best_transfer = Some((idx_a, is_preferred));
+                            }
+                            Some((_, current_is_preferred)) => {
+                                if is_preferred && !current_is_preferred {
+                                    best_transfer = Some((idx_a, is_preferred));
+                                }
                             }
                         }
                     }
@@ -481,13 +483,15 @@ fn find_transfer_routes(
             }
 
             if let Some((idx_a, is_preferred)) = best_transfer {
-                candidates.push(TransferCandidate {
-                    route_a,
-                    route_b,
-                    transfer_name: route_a.stops[idx_a].name.as_str(),
-                    price: route_a.price + route_b.price,
-                    is_preferred,
-                });
+                if let Some(stop) = route_a.stops.get(idx_a) {
+                    candidates.push(TransferCandidate {
+                        route_a,
+                        route_b,
+                        transfer_name: stop.name.as_str(),
+                        price: route_a.price + route_b.price,
+                        is_preferred,
+                    });
+                }
             }
         }
     }
