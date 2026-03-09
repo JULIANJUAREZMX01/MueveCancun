@@ -1,68 +1,47 @@
-<div class="brand-tetris-container">
-  <span class="brand-text active">
-    Cancún<span class="highlight">Mueve</span>
-  </span>
-  <span class="brand-text">
-    <span class="highlight">Muévete</span> en Cancún
+<div class="brand-container">
+  <div class="brand-icon" aria-hidden="true">
+    <!-- Package/box icon in brand green -->
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L21 7V17L12 22L3 17V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M12 2L12 22" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+      <path d="M3 7L12 12L21 7" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
+    </svg>
+  </div>
+  <span class="brand-name">
+    Mueve<span class="brand-accent">Reparto</span>
   </span>
 </div>
 
 <style>
-  .brand-tetris-container {
-    position: relative;
-    display: inline-flex;
+  .brand-container {
+    display: flex;
     align-items: center;
-    justify-content: flex-start;
-    height: 1.5rem;
-    overflow: hidden;
-    font-family: var(--font-display, sans-serif);
-    font-weight: 900;
-    font-size: 1.125rem; /* text-lg */
-    letter-spacing: -0.025em;
-    color: var(--text-primary, #0f172a);
+    gap: 0.5rem;
+    text-decoration: none;
   }
 
-  /* Dark mode support via global class or CSS variable */
-  :global(.dark) .brand-tetris-container {
-    color: white;
+  .brand-icon {
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
 
-  .highlight {
-    color: var(--color-primary, #F97316);
-  }
-
-  .brand-text {
-    position: absolute;
-    left: 0;
+  .brand-name {
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 1.0625rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
     white-space: nowrap;
-    opacity: 0;
-    transform: translateY(100%);
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
   }
 
-  .brand-text.active {
-    opacity: 1;
-    transform: translateY(0);
+  .brand-accent {
+    color: var(--color-primary);
   }
 
-  /* Keyframe animation handled by JS for precise timing or pure CSS */
-  /* Pure CSS Loop */
-  .brand-text:nth-child(1) {
-    animation: slideUpOut 6s infinite;
-  }
-  .brand-text:nth-child(2) {
-    animation: slideUpIn 6s infinite;
-  }
-
-  @keyframes slideUpOut {
-    0%, 45% { opacity: 1; transform: translateY(0); }
-    50%, 95% { opacity: 0; transform: translateY(-100%); }
-    100% { opacity: 1; transform: translateY(0); } /* Reset */
-  }
-
-  @keyframes slideUpIn {
-    0%, 45% { opacity: 0; transform: translateY(100%); }
-    50%, 95% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(100%); } /* Reset */
+  :global(.dark) .brand-name {
+    color: #F0F6FC;
   }
 </style>

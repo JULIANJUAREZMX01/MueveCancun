@@ -2,43 +2,15 @@ import type { Site, Links } from "@types"
 
 // Global
 export const SITE: Site = {
-  TITLE: "CancúnMueve",
-  DESCRIPTION: "La guía definitiva de transporte público en Cancún. Rutas en tiempo real, mapas y tarifas.",
-  AUTHOR: "CancúnMueve Team",
+  TITLE: "Mueve Reparto",
+  DESCRIPTION: "Gestiona tus entregas del día: paradas, ruta óptima y notificaciones al cliente.",
+  AUTHOR: "Mueve Reparto Team",
 }
 
-// Navigation Links
+// Navigation Links (delivery app — 4 tabs)
 export const LINKS: Links = [
-  {
-    TEXT: "Inicio",
-    HREF: "/",
-  },
-  {
-    TEXT: "Mapa",
-    HREF: "/mapa",
-  },
-  {
-    TEXT: "Rutas",
-    HREF: "/rutas",
-  },
-  {
-    TEXT: "Nosotros",
-    HREF: "/about",
-  },
-  {
-    TEXT: "Comunidad",
-    HREF: "/community",
-  },
-  {
-    TEXT: "Wallet",
-    HREF: "/wallet",
-  },
-  {
-    TEXT: "Contribuir",
-    HREF: "/contribuir",
-  },
-  {
-    TEXT: "Tracking",
-    HREF: "/tracking",
-  },
+  { TEXT: "Inicio",   HREF: "/home" },
+  { TEXT: "Paradas",  HREF: "/pedidos" },
+  { TEXT: "Ruta",     HREF: "/reparto" },
+  { TEXT: "Metricas", HREF: "/metricas" },
 ]

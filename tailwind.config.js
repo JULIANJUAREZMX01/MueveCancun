@@ -9,35 +9,34 @@ export default {
         // Brand
         'deep-navy': '#0F172A',
 
-        // Primary (Sunset Orange — CTA, highlights) - RESTORED
+        // Primary (Verde Reparto)
         primary: {
-          50:  '#FFF7ED',
-          100: '#FFEDD5',
-          200: '#FED7AA',
-          300: '#FDBA74',
-          400: '#FB923C',
-          500: '#F97316',
-          600: '#EA580C',
-          700: '#C2410C',
-          800: '#9A3412',
-          900: '#7C2D12',
-          DEFAULT: '#F97316',
+          50:  '#ECFDF7',
+          100: '#D1FAF0',
+          200: '#A7F3E0',
+          300: '#6EE7C7',
+          400: '#34D3A9',
+          500: '#00E8A2',
+          600: '#00C98A',
+          700: '#009E6C',
+          800: '#007A54',
+          900: '#005C3F',
+          DEFAULT: '#00E8A2',
         },
 
-        // Accent (Caribbean Teal — alerts, secondary actions)
+        // Accent (Coral urgente)
         accent: {
-          50:  '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#14b8a6',
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
-          950: '#042f2e',
-          DEFAULT: '#0d9488',
+          50:  '#FFF1F2',
+          100: '#FFE4E5',
+          200: '#FECDD0',
+          300: '#FCA5A8',
+          400: '#F87175',
+          500: '#FF5A5F',
+          600: '#E84449',
+          700: '#C0303A',
+          800: '#9F1E28',
+          900: '#7F1523',
+          DEFAULT: '#FF5A5F',
         },
 
         // Success
@@ -83,7 +82,7 @@ export default {
         'card':     '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
         'card-hover': '0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05)',
         'btn':      '0 1px 2px rgba(0, 0, 0, 0.05)',
-        'btn-primary': '0 4px 14px -2px rgba(249, 115, 22, 0.35)', // Adjusted to Orange
+        'btn-primary': '0 4px 14px -2px rgba(0, 232, 162, 0.35)',
         'inner-glow': 'inset 0 1px 0 rgba(255, 255, 255, 0.1)',
       },
 

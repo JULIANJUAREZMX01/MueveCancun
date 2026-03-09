@@ -1,0 +1,558 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Ruta Activa">
+
+  <!-- Map container (full screen behind UI) -->
+  <div id="map-container" style="position:fixed;inset:0;z-index:0;" aria-label="Mapa de ruta"></div>
+
+  <!-- Main overlay UI -->
+  <div class="reparto-ui">
+
+    <!-- ── Status bar ── -->
+    <div id="route-status-bar" class="status-bar stagger-item" aria-live="polite">
+      <div class="status-content">
+        <div class="status-left">
+          <div id="gps-dot" class="gps-dot inactive" aria-hidden="true"></div>
+          <span id="status-text" style="font-size:0.8125rem;font-weight:700;color:var(--text-secondary);">
+            GPS inactivo
+          </span>
+        </div>
+        <div class="status-right">
+          <span id="stops-remaining" style="font-size:0.75rem;font-weight:700;color:var(--text-tertiary);">
+            — paradas
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Next stop panel (top) ── -->
+    <div id="next-panel" class="next-panel stagger-item" aria-label="Siguiente parada">
+      <div id="next-panel-content">
+        <p style="font-size:0.8125rem;color:var(--text-tertiary);text-align:center;padding:0.75rem 0;">
+          Sin ruta activa — agrega paradas primero
+        </p>
+      </div>
+    </div>
+
+    <!-- ── Route list (bottom sheet) ── -->
+    <div id="route-list-panel" class="route-list-panel">
+      <div class="sheet-handle" style="cursor:pointer;" id="toggle-list-handle"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+        <h2 style="font-size:0.9375rem;font-weight:800;color:var(--text-primary);margin:0;">
+          Paradas de hoy
+        </h2>
+        <div style="display:flex;gap:0.375rem;">
+          <button id="btn-optimize" class="btn-secondary btn-sm" aria-label="Optimizar orden de ruta">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3L13 9l4 4-6 6-4-4L1 21h22V3h-4zm-7.5 11.5l-4-4L13 5l4 4-5.5 5.5z"/></svg>
+            Optimizar
+          </button>
+        </div>
+      </div>
+
+      <div id="route-stops-list" style="display:flex;flex-direction:column;gap:0.375rem;max-height:220px;overflow-y:auto;" class="no-scrollbar">
+        <p style="font-size:0.8125rem;color:var(--text-tertiary);padding:0.5rem 0;">Cargando paradas...</p>
+      </div>
+    </div>
+
+    <!-- ── FAB: Start / Stop route ── -->
+    <div class="route-fab-area">
+      <button id="btn-toggle-route" class="route-fab" aria-label="Iniciar ruta" data-active="false">
+        <svg id="fab-icon-start" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        <svg id="fab-icon-stop" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none;">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</MainLayout>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+
+<script>
+  import { getStops, dbPut, STORES } from '../lib/idb';
+  import type { Stop } from '../lib/idb';
+
+  let map: any = null;
+  let userMarker: any = null;
+  let stopMarkers: any[] = [];
+  let routePolyline: any = null;
+  let watchId: number | null = null;
+  let isRouteActive = false;
+  let currentPosition: [number, number] | null = null;
+  const CANCUN_CENTER: [number, number] = [21.1619, -86.8515];
+
+  // ── Load Leaflet ──
+  async function loadLeaflet() {
+    if ((window as any).L) return (window as any).L;
+    return new Promise<any>((resolve) => {
+      const s = document.createElement('script');
+      s.src = '/vendor/leaflet/leaflet.js';
+      s.onload = () => resolve((window as any).L);
+      document.head.appendChild(s);
+    });
+  }
+
+  // ── Init map ──
+  async function initMap() {
+    const L = await loadLeaflet();
+    const container = document.getElementById('map-container');
+    if (!container || map) return;
+
+    map = L.map(container, {
+      center: CANCUN_CENTER,
+      zoom: 13,
+      zoomControl: false,
+      attributionControl: false,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; CartoDB',
+      subdomains: 'abcd',
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Custom attribution (small)
+    L.control.attribution({ position: 'bottomleft', prefix: '&copy; CartoDB' }).addTo(map);
+
+    await renderStopMarkers(L);
+  }
+
+  // ── Render stop markers ──
+  async function renderStopMarkers(L: any) {
+    // Remove old markers
+    stopMarkers.forEach(m => map.removeLayer(m));
+    stopMarkers = [];
+    if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
+
+    const stops = await getStops();
+    const pending = stops.filter(s => s.status !== 'completed' && s.lat && s.lng);
+
+    if (pending.length === 0) {
+      updateRouteList(stops);
+      return;
+    }
+
+    // Draw markers
+    pending.forEach((stop, i) => {
+      const color = stop.priority === 'urgent' ? '#FF5A5F' : '#00E8A2';
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="
+          width:32px;height:32px;border-radius:50%;
+          background:${color};
+          border:3px solid #060A0E;
+          display:flex;align-items:center;justify-content:center;
+          font-size:11px;font-weight:900;color:#060A0E;
+          box-shadow:0 2px 8px rgba(0,0,0,0.4);
+          cursor:pointer;">${stop.order + 1}</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+      const marker = L.marker([stop.lat!, stop.lng!], { icon })
+        .addTo(map)
+        .bindPopup(`<strong>${stop.address}</strong>${stop.note ? `<br/>${stop.note}` : ''}`, {
+          className: 'mr-popup',
+        });
+      stopMarkers.push(marker);
+    });
+
+    // Draw polyline route
+    if (pending.length > 1) {
+      const coords = pending.map(s => [s.lat!, s.lng!] as [number, number]);
+      routePolyline = L.polyline(coords, {
+        color: '#00E8A2',
+        weight: 3,
+        opacity: 0.7,
+        dashArray: '8, 6',
+      }).addTo(map);
+    }
+
+    // Fit bounds
+    if (pending.length > 0) {
+      const bounds = L.latLngBounds(pending.map(s => [s.lat!, s.lng!]));
+      map.fitBounds(bounds, { padding: [60, 60] });
+    }
+
+    updateRouteList(stops);
+    updateNextPanel(stops);
+  }
+
+  // ── Route list (bottom sheet) ──
+  function updateRouteList(stops: Stop[]) {
+    const el = document.getElementById('route-stops-list');
+    if (!el) return;
+
+    const remaining = document.getElementById('stops-remaining');
+    const pendingCount = stops.filter(s => s.status !== 'completed').length;
+    if (remaining) remaining.textContent = `${pendingCount} restantes`;
+
+    if (stops.length === 0) {
+      el.innerHTML = `<p style="font-size:0.8125rem;color:var(--text-tertiary);padding:0.5rem 0;text-align:center;">
+        Sin paradas — <a href="/pedidos" style="color:var(--color-primary);">agregar aquí</a></p>`;
+      return;
+    }
+
+    el.innerHTML = stops.map(s => `
+      <div class="route-stop-row ${s.status === 'completed' ? 'done' : ''}">
+        <div class="stop-number ${s.priority === 'urgent' ? 'urgent' : ''}" style="font-size:0.6875rem;width:1.5rem;height:1.5rem;">${s.order + 1}</div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:0.8125rem;font-weight:600;color:var(--text-primary);margin:0;
+            ${s.status === 'completed' ? 'text-decoration:line-through;color:var(--text-tertiary)' : ''};
+            overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.address}</p>
+        </div>
+        ${s.status === 'completed'
+          ? '<span class="badge badge-success" style="flex-shrink:0;">Listo</span>'
+          : `<button class="stop-action-btn complete-btn" data-id="${s.id}" style="flex-shrink:0;" aria-label="Completar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+             </button>`}
+      </div>`).join('');
+
+    el.querySelectorAll('.complete-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = (btn as HTMLElement).dataset.id!;
+        const stop = stops.find(s => s.id === id);
+        if (!stop) return;
+        await dbPut(STORES.STOPS, { ...stop, status: 'completed', completedAt: Date.now() });
+        const L = (window as any).L;
+        if (L) await renderStopMarkers(L);
+      });
+    });
+  }
+
+  // ── Next stop panel ──
+  function updateNextPanel(stops: Stop[]) {
+    const next = stops.find(s => s.status === 'pending' || s.status === 'in_transit');
+    const el = document.getElementById('next-panel-content');
+    if (!el) return;
+
+    if (!next) {
+      el.innerHTML = `<p style="font-size:0.875rem;font-weight:700;color:var(--color-primary);text-align:center;padding:0.5rem 0;">
+        ¡Ruta completada!</p>`;
+      return;
+    }
+
+    el.innerHTML = `
+      <div style="display:flex;align-items:flex-start;gap:0.625rem;">
+        <div class="stop-number ${next.priority === 'urgent' ? 'urgent' : ''}">${next.order + 1}</div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:0.0625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;
+            color:var(--text-tertiary);margin:0 0 0.125rem;">Siguiente parada</p>
+          <p style="font-size:0.9375rem;font-weight:700;color:var(--text-primary);margin:0;
+            overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${next.address}</p>
+          ${next.note ? `<p style="font-size:0.75rem;color:var(--text-secondary);margin:0.125rem 0 0;">${next.note}</p>` : ''}
+        </div>
+        ${next.lat && next.lng ? `
+          <a href="https://maps.google.com/maps?daddr=${next.lat},${next.lng}"
+             target="_blank" rel="noopener noreferrer"
+             class="btn-primary btn-sm" style="flex-shrink:0;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            Maps
+          </a>` : ''}
+      </div>`;
+  }
+
+  // ── GPS Tracking ──
+  function startTracking() {
+    if (!navigator.geolocation) return;
+    const L = (window as any).L;
+
+    const dot = document.getElementById('gps-dot');
+    const statusText = document.getElementById('status-text');
+
+    if (dot) dot.classList.replace('inactive', 'active');
+    if (statusText) statusText.textContent = 'GPS activo — rastreando';
+
+    window.dispatchEvent(new CustomEvent('mr:tracking-start'));
+
+    watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        currentPosition = [pos.coords.latitude, pos.coords.longitude];
+        if (!L || !map) return;
+
+        if (!userMarker) {
+          const icon = L.divIcon({
+            className: '',
+            html: `<div style="
+              width:20px;height:20px;border-radius:50%;
+              background:#00E8A2;border:3px solid white;
+              box-shadow:0 0 0 4px rgba(0,232,162,0.25),0 2px 8px rgba(0,0,0,0.4);">
+            </div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
+          });
+          userMarker = L.marker(currentPosition, { icon, zIndexOffset: 1000 }).addTo(map);
+        } else {
+          userMarker.setLatLng(currentPosition);
+        }
+
+        map.panTo(currentPosition, { animate: true });
+      },
+      (err) => console.warn('[Reparto] GPS error:', err),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+    );
+  }
+
+  function stopTracking() {
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+    const dot = document.getElementById('gps-dot');
+    const statusText = document.getElementById('status-text');
+    if (dot) dot.classList.replace('active', 'inactive');
+    if (statusText) statusText.textContent = 'GPS inactivo';
+    window.dispatchEvent(new CustomEvent('mr:tracking-stop'));
+  }
+
+  // ── Optimize route (nearest-neighbor greedy) ──
+  async function optimizeRoute() {
+    const stops = (await getStops()).filter(s => s.status !== 'completed');
+    if (stops.length < 2) return;
+
+    // Simple nearest-neighbor from current position or first stop
+    const start = currentPosition ??
+      (stops[0].lat && stops[0].lng ? [stops[0].lat, stops[0].lng] as [number, number] : null);
+
+    if (!start) {
+      alert('Activa el GPS o agrega coordenadas a las paradas para optimizar la ruta.');
+      return;
+    }
+
+    const unvisited = [...stops];
+    const ordered: Stop[] = [];
+    let current = start;
+
+    while (unvisited.length > 0) {
+      let nearest: Stop | null = null;
+      let minDist = Infinity;
+
+      for (const s of unvisited) {
+        if (!s.lat || !s.lng) continue;
+        const d = Math.hypot(s.lat - current[0], s.lng - current[1]);
+        if (d < minDist) { minDist = d; nearest = s; }
+      }
+
+      // Stops without coords go at the end
+      if (!nearest) {
+        unvisited.forEach(s => ordered.push(s));
+        break;
+      }
+
+      ordered.push(nearest);
+      current = [nearest.lat!, nearest.lng!];
+      unvisited.splice(unvisited.indexOf(nearest), 1);
+    }
+
+    // Save new order
+    for (let i = 0; i < ordered.length; i++) {
+      await dbPut(STORES.STOPS, { ...ordered[i], order: i });
+    }
+
+    const L = (window as any).L;
+    if (L) await renderStopMarkers(L);
+  }
+
+  // ── FAB toggle ──
+  function toggleRoute() {
+    const fab = document.getElementById('btn-toggle-route') as HTMLButtonElement;
+    const iconStart = document.getElementById('fab-icon-start')!;
+    const iconStop  = document.getElementById('fab-icon-stop')!;
+
+    isRouteActive = !isRouteActive;
+    fab.dataset.active = String(isRouteActive);
+    fab.setAttribute('aria-label', isRouteActive ? 'Detener ruta' : 'Iniciar ruta');
+
+    if (isRouteActive) {
+      iconStart.style.display = 'none';
+      iconStop.style.display  = 'block';
+      fab.style.background    = 'var(--gradient-urgent)';
+      fab.style.boxShadow     = '0 4px 20px rgba(255,90,95,0.4)';
+      startTracking();
+    } else {
+      iconStart.style.display = 'block';
+      iconStop.style.display  = 'none';
+      fab.style.background    = 'var(--gradient-primary)';
+      fab.style.boxShadow     = '0 4px 20px rgba(0,232,162,0.4)';
+      stopTracking();
+    }
+  }
+
+  // ── Toggle list handle ──
+  function setupListToggle() {
+    const panel = document.getElementById('route-list-panel')!;
+    const handle = document.getElementById('toggle-list-handle')!;
+    let expanded = true;
+
+    handle.addEventListener('click', () => {
+      expanded = !expanded;
+      panel.style.transform = expanded ? 'translateY(0)' : 'translateY(calc(100% - 60px))';
+    });
+  }
+
+  // ── Init ──
+  async function init() {
+    await initMap();
+    setupListToggle();
+
+    document.getElementById('btn-toggle-route')?.addEventListener('click', toggleRoute);
+    document.getElementById('btn-optimize')?.addEventListener('click', optimizeRoute);
+  }
+
+  document.addEventListener('astro:page-load', init);
+  if (document.readyState !== 'loading') init();
+</script>
+
+<style>
+  /* Full-screen layout: map behind, UI on top */
+  :global(main) {
+    max-width: 100% !important;
+    padding-top: 0 !important;
+  }
+
+  .reparto-ui {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Status bar */
+  .status-bar {
+    margin: calc(var(--header-h) + 0.5rem) 0.75rem 0;
+    pointer-events: auto;
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-full);
+    padding: 0.5rem 0.875rem;
+  }
+
+  .status-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .status-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .gps-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .gps-dot.inactive { background: var(--text-tertiary); }
+  .gps-dot.active   {
+    background: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(0,232,162,0.2);
+    animation: gps-blink 1.5s ease-in-out infinite;
+  }
+
+  @keyframes gps-blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  /* Next panel */
+  .next-panel {
+    margin: 0.5rem 0.75rem 0;
+    pointer-events: auto;
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    padding: 0.75rem 1rem;
+  }
+
+  /* Route list (bottom) */
+  .route-list-panel {
+    position: absolute;
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    pointer-events: auto;
+    background: var(--surface-elevated);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-top: 1px solid var(--border-light);
+    padding: 0 1rem 1rem;
+    max-width: 480px;
+    margin: 0 auto;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Route stop rows */
+  .route-stop-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .route-stop-row.done { opacity: 0.45; }
+
+  /* FAB */
+  .route-fab-area {
+    position: absolute;
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 18rem);
+    right: 1.25rem;
+    pointer-events: auto;
+  }
+
+  .route-fab {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #060A0E;
+    box-shadow: 0 4px 20px rgba(0,232,162,0.4);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .route-fab:active { transform: scale(0.9); }
+
+  .route-fab[data-active="true"] {
+    animation: fab-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes fab-pulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(255,90,95,0.4); }
+    50%       { box-shadow: 0 4px 30px rgba(255,90,95,0.7); }
+  }
+
+  /* Leaflet popup style */
+  :global(.mr-popup .leaflet-popup-content-wrapper) {
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    font-family: "Inter", sans-serif;
+    font-size: 0.875rem;
+    box-shadow: var(--glass-shadow);
+  }
+
+  :global(.mr-popup .leaflet-popup-tip) {
+    background: var(--surface-card);
+  }
+</style>

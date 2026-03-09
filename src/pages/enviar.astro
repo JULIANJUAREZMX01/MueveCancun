@@ -1,0 +1,389 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Notificar">
+  <div class="enviar-page px-4 pt-4">
+
+    <div class="stagger-item enviar-header">
+      <div>
+        <h1 class="page-title">Notificar</h1>
+        <p class="page-sub">Envía aviso al cliente de cada parada</p>
+      </div>
+    </div>
+
+    <!-- Message template selector -->
+    <div class="stagger-item template-section">
+      <p class="section-label">Plantilla de mensaje</p>
+      <div class="template-tabs">
+        <button class="tmpl-tab active" data-tmpl="on_way" aria-pressed="true">En camino</button>
+        <button class="tmpl-tab" data-tmpl="arrived"  aria-pressed="false">Llegué</button>
+        <button class="tmpl-tab" data-tmpl="delay"    aria-pressed="false">Demora</button>
+        <button class="tmpl-tab" data-tmpl="custom"   aria-pressed="false">Personalizado</button>
+      </div>
+
+      <!-- Message preview -->
+      <div class="message-preview" id="message-preview" aria-label="Vista previa del mensaje">
+        <p id="preview-text" style="font-size:0.9375rem;color:var(--text-primary);line-height:1.6;margin:0;white-space:pre-line;"></p>
+      </div>
+
+      <!-- Custom textarea (hidden unless custom selected) -->
+      <div id="custom-msg-wrap" style="display:none;margin-top:0.625rem;">
+        <textarea id="custom-msg-input" class="input" rows="3"
+                  placeholder="Escribe tu mensaje personalizado..."
+                  style="resize:none;border-radius:var(--radius-lg);"></textarea>
+      </div>
+    </div>
+
+    <!-- Stops list with send actions -->
+    <div class="stagger-item">
+      <p class="section-label">Paradas</p>
+      <div id="enviar-stops-list" style="display:flex;flex-direction:column;gap:0.625rem;">
+        <p style="font-size:0.8125rem;color:var(--text-tertiary);">Cargando paradas...</p>
+      </div>
+    </div>
+
+  </div>
+</MainLayout>
+
+<script>
+  import { getStops, dbPut, STORES } from '../lib/idb';
+  import type { Stop } from '../lib/idb';
+
+  const TEMPLATES: Record<string, (stop: Stop) => string> = {
+    on_way: (s) =>
+      `Hola${s.clientName ? ` ${s.clientName}` : ''}! 🚚 Tu pedido está en camino.\n` +
+      `Llegaré en breve a: ${s.address}\n` +
+      `¡Gracias por tu compra! 🙏`,
+
+    arrived: (s) =>
+      `Hola${s.clientName ? ` ${s.clientName}` : ''}! 📦 Ya llegué a entregar tu pedido.\n` +
+      `Estoy en: ${s.address}\n` +
+      `Por favor acércate a recibirlo. ✅`,
+
+    delay: (s) =>
+      `Hola${s.clientName ? ` ${s.clientName}` : ''}! ⏳ Hay una pequeña demora con tu entrega.\n` +
+      `Estaré en ${s.address} en unos minutos más.\n` +
+      `Disculpa las molestias 🙏`,
+
+    custom: () => '',
+  };
+
+  let currentTemplate = 'on_way';
+  let allStops: Stop[] = [];
+
+  function buildMessage(stop: Stop): string {
+    if (currentTemplate === 'custom') {
+      return (document.getElementById('custom-msg-input') as HTMLTextAreaElement).value.trim() ||
+        'Mensaje de tu pedido';
+    }
+    return TEMPLATES[currentTemplate](stop);
+  }
+
+  function updatePreview() {
+    const previewEl = document.getElementById('preview-text')!;
+    const sampleStop: Stop = {
+      id: 'demo', address: 'Av. Tulum #123, SM 5', priority: 'normal',
+      status: 'pending', order: 0, createdAt: Date.now(),
+      clientName: 'Cliente',
+    };
+    if (currentTemplate === 'custom') {
+      const customInput = document.getElementById('custom-msg-input') as HTMLTextAreaElement;
+      previewEl.textContent = customInput.value || '✏️ Escribe tu mensaje...';
+    } else {
+      previewEl.textContent = TEMPLATES[currentTemplate](sampleStop);
+    }
+  }
+
+  function renderStops() {
+    const list = document.getElementById('enviar-stops-list')!;
+
+    const pendingStops = allStops.filter(s => s.status !== 'completed');
+
+    if (pendingStops.length === 0 && allStops.length === 0) {
+      list.innerHTML = `
+        <div style="text-align:center;padding:2rem 1rem;color:var(--text-tertiary);">
+          <p style="font-size:0.875rem;font-weight:700;margin:0 0 0.5rem;">Sin paradas</p>
+          <a href="/pedidos" style="color:var(--color-primary);font-size:0.8125rem;font-weight:700;">
+            Agregar paradas
+          </a>
+        </div>`;
+      return;
+    }
+
+    const sections = [
+      { label: 'Pendientes', stops: pendingStops },
+      { label: 'Completadas', stops: allStops.filter(s => s.status === 'completed') },
+    ];
+
+    list.innerHTML = sections.map(sec => {
+      if (sec.stops.length === 0) return '';
+      return `
+        <div style="margin-bottom:0.375rem;">
+          <p class="section-label">${sec.label}</p>
+          ${sec.stops.map(stop => renderStopCard(stop)).join('')}
+        </div>`;
+    }).join('');
+
+    // Bind actions
+    list.querySelectorAll('[data-send-wa]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = (btn as HTMLElement).dataset.sendWa!;
+        sendWhatsApp(id);
+      });
+    });
+
+    list.querySelectorAll('[data-send-tg]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = (btn as HTMLElement).dataset.sendTg!;
+        sendTelegram(id);
+      });
+    });
+
+    list.querySelectorAll('[data-copy-msg]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = (btn as HTMLElement).dataset.copyMsg!;
+        copyMessage(id);
+      });
+    });
+  }
+
+  function renderStopCard(stop: Stop): string {
+    const isNotified = stop.notified;
+    return `
+      <div class="enviar-card ${stop.status === 'completed' ? 'done' : ''}">
+        <div style="display:flex;align-items:flex-start;gap:0.625rem;margin-bottom:0.75rem;">
+          <div class="stop-number ${stop.priority === 'urgent' ? 'urgent' : ''}" style="flex-shrink:0;">${stop.order + 1}</div>
+          <div style="flex:1;min-width:0;">
+            <p style="font-size:0.875rem;font-weight:700;color:var(--text-primary);margin:0;
+              overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${stop.address}</p>
+            ${stop.clientName
+              ? `<p style="font-size:0.75rem;color:var(--text-secondary);margin:0.125rem 0 0;">
+                  ${stop.clientName}${stop.clientPhone ? ` · ${stop.clientPhone}` : ''}</p>`
+              : ''}
+          </div>
+          ${isNotified
+            ? `<span class="badge badge-success" style="flex-shrink:0;">Enviado</span>`
+            : `<span class="badge badge-pending" style="flex-shrink:0;">Sin enviar</span>`}
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:flex;gap:0.375rem;flex-wrap:wrap;">
+          ${stop.clientPhone
+            ? `<button data-send-wa="${stop.id}" class="btn-whatsapp" style="flex:1;min-width:80px;" aria-label="Enviar por WhatsApp">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                WhatsApp
+              </button>`
+            : ''}
+          ${stop.clientPhone
+            ? `<button data-send-tg="${stop.id}" class="btn-telegram" style="flex:1;min-width:80px;" aria-label="Enviar por Telegram">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                </svg>
+                Telegram
+              </button>`
+            : ''}
+          <button data-copy-msg="${stop.id}" class="btn-secondary btn-sm" style="flex:1;min-width:60px;" aria-label="Copiar mensaje">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+            </svg>
+            Copiar
+          </button>
+        </div>
+      </div>`;
+  }
+
+  async function markNotified(id: string) {
+    const stop = allStops.find(s => s.id === id);
+    if (!stop) return;
+    await dbPut(STORES.STOPS, { ...stop, notified: true });
+    allStops = await getStops();
+    renderStops();
+  }
+
+  function sendWhatsApp(id: string) {
+    const stop = allStops.find(s => s.id === id);
+    if (!stop) return;
+    const msg = encodeURIComponent(buildMessage(stop));
+    const phone = stop.clientPhone?.replace(/\D/g, '') ?? '';
+    const url = phone
+      ? `https://wa.me/${phone}?text=${msg}`
+      : `https://wa.me/?text=${msg}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    markNotified(id);
+  }
+
+  function sendTelegram(id: string) {
+    const stop = allStops.find(s => s.id === id);
+    if (!stop) return;
+    const msg = encodeURIComponent(buildMessage(stop));
+    window.open(`https://t.me/share/url?url=&text=${msg}`, '_blank', 'noopener,noreferrer');
+    markNotified(id);
+  }
+
+  async function copyMessage(id: string) {
+    const stop = allStops.find(s => s.id === id);
+    if (!stop) return;
+    const msg = buildMessage(stop);
+    try {
+      await navigator.clipboard.writeText(msg);
+      // Flash feedback
+      const btn = document.querySelector(`[data-copy-msg="${id}"]`) as HTMLElement;
+      if (btn) {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Copiado';
+        setTimeout(() => { if (btn) btn.innerHTML = orig; }, 1500);
+      }
+    } catch {
+      alert(msg);
+    }
+    markNotified(id);
+  }
+
+  async function init() {
+    allStops = await getStops();
+
+    // Template tabs
+    document.querySelectorAll('.tmpl-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        currentTemplate = (tab as HTMLElement).dataset.tmpl!;
+        document.querySelectorAll('.tmpl-tab').forEach(t => {
+          t.classList.toggle('active', t === tab);
+          (t as HTMLElement).setAttribute('aria-pressed', String(t === tab));
+        });
+        const customWrap = document.getElementById('custom-msg-wrap')!;
+        customWrap.style.display = currentTemplate === 'custom' ? 'block' : 'none';
+        updatePreview();
+        renderStops();
+      });
+    });
+
+    // Custom textarea
+    document.getElementById('custom-msg-input')?.addEventListener('input', () => {
+      updatePreview();
+    });
+
+    // Handle ?id= param (deep link from home/pedidos)
+    const searchId = new URLSearchParams(window.location.search).get('id');
+    if (searchId) {
+      setTimeout(() => {
+        const card = document.querySelector(`[data-send-wa="${searchId}"]`);
+        card?.closest('.enviar-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    }
+
+    updatePreview();
+    renderStops();
+  }
+
+  document.addEventListener('astro:page-load', init);
+  if (document.readyState !== 'loading') init();
+</script>
+
+<style>
+  .enviar-page { max-width: 480px; margin: 0 auto; }
+
+  .enviar-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .page-title {
+    font-size: 1.375rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    margin: 0 0 0.125rem;
+  }
+
+  .page-sub {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .template-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .section-label {
+    font-size: 0.625rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.625rem;
+  }
+
+  .section-label::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: var(--border-light);
+  }
+
+  .template-tabs {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--surface-input);
+    border-radius: var(--radius-lg);
+    padding: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .tmpl-tab {
+    flex: 1;
+    padding: 0.4rem 0.25rem;
+    border-radius: var(--radius-md);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+  }
+
+  .tmpl-tab.active {
+    background: var(--surface-card);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+
+  .message-preview {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 0.875rem 1rem;
+    min-height: 60px;
+    position: relative;
+  }
+
+  .message-preview::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: #25D366;
+    border-radius: 3px 0 0 3px;
+  }
+
+  .enviar-card {
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 0.875rem;
+    transition: opacity var(--transition-fast);
+  }
+
+  .enviar-card.done {
+    opacity: 0.55;
+  }
+</style>

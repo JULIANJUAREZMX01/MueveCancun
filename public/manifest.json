@@ -1,13 +1,14 @@
 {
-  "name": "CancúnMueve",
-  "short_name": "CancúnMueve",
-  "description": "Tu guía de transporte público en Cancún y Riviera Maya",
-  "start_url": "/",
+  "name": "Mueve Reparto",
+  "short_name": "MuevReparto",
+  "description": "Gestiona tus entregas del día: paradas, ruta óptima y notificaciones al cliente",
+  "start_url": "/home",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0d9488",
+  "background_color": "#060A0E",
+  "theme_color": "#00E8A2",
   "orientation": "portrait",
+  "lang": "es",
   "icons": [
     {
       "src": "/icons/pwa-192x192.png",
@@ -22,18 +23,21 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["navigation", "travel", "utilities"],
+  "categories": ["productivity", "utilities", "business"],
   "shortcuts": [
     {
-      "name": "Ver Rutas",
-      "short_name": "Rutas",
-      "url": "/rutas",
-      "icons": [{ "src": "/icons/bus.svg", "sizes": "512x512" }]
+      "name": "Mis Paradas",
+      "short_name": "Paradas",
+      "url": "/pedidos",
+      "icons": [{ "src": "/icons/map-pin.svg", "sizes": "512x512" }]
     },
     {
-      "name": "Mi Tarjeta",
-      "url": "/wallet",
-      "icons": [{ "src": "/icons/credit-card.svg", "sizes": "512x512" }]
+      "name": "Iniciar Ruta",
+      "short_name": "Ruta",
+      "url": "/reparto",
+      "icons": [{ "src": "/icons/compass.svg", "sizes": "512x512" }]
     }
-  ]
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
 }

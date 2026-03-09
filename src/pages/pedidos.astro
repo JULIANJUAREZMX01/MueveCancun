@@ -1,0 +1,715 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Paradas">
+  <div class="pedidos-page px-4 pt-4">
+
+    <!-- Header + count -->
+    <div class="pedidos-header stagger-item">
+      <div>
+        <h1 class="page-title">Mis Paradas</h1>
+        <p class="page-sub" id="stops-count-label">Cargando...</p>
+      </div>
+      <button id="btn-add-stop" class="btn-primary btn-md" aria-label="Agregar parada">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Agregar
+      </button>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="filter-tabs stagger-item" role="tablist" aria-label="Filtrar paradas">
+      <button class="filter-tab active" data-filter="all"    role="tab" aria-selected="true">Todas</button>
+      <button class="filter-tab"        data-filter="pending"  role="tab" aria-selected="false">Pendientes</button>
+      <button class="filter-tab"        data-filter="urgent"   role="tab" aria-selected="false">Urgentes</button>
+      <button class="filter-tab"        data-filter="completed" role="tab" aria-selected="false">Completadas</button>
+    </div>
+
+    <!-- Stops list -->
+    <div id="stops-list" class="stops-list stagger-item">
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color:var(--text-tertiary)">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        </svg>
+        <p style="font-size:0.9375rem;font-weight:700;color:var(--text-secondary);margin:0;">Sin paradas</p>
+        <p style="font-size:0.8125rem;color:var(--text-tertiary);margin:0;">Agrega tu primera parada del día</p>
+        <button id="btn-add-first" class="btn-primary btn-md" style="margin-top:0.75rem;">
+          + Agregar parada
+        </button>
+      </div>
+    </div>
+
+  </div>
+</MainLayout>
+
+<!-- ───────────────────────────── -->
+<!-- Bottom Sheet: Agregar parada -->
+<!-- ───────────────────────────── -->
+<div id="add-overlay" class="bottom-sheet-overlay" aria-hidden="true"></div>
+<div id="add-sheet" class="bottom-sheet" role="dialog" aria-label="Agregar parada" aria-modal="true">
+  <div class="sheet-handle"></div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+    <h2 style="font-size:1.125rem;font-weight:800;color:var(--text-primary);margin:0;">Nueva parada</h2>
+    <button id="close-sheet" style="background:none;border:none;cursor:pointer;color:var(--text-tertiary);padding:0.25rem;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
+  </div>
+
+  <!-- Mode selector -->
+  <div class="mode-tabs" role="group" aria-label="Modo de captura">
+    <button class="mode-tab active" data-mode="text"   aria-pressed="true">Texto</button>
+    <button class="mode-tab"        data-mode="coords" aria-pressed="false">Coords</button>
+    <button class="mode-tab"        data-mode="link"   aria-pressed="false">Link</button>
+    <button class="mode-tab"        data-mode="qr"     aria-pressed="false">QR</button>
+  </div>
+
+  <!-- Text mode -->
+  <div id="mode-text" class="mode-panel active">
+    <label class="field-label">Dirección *</label>
+    <textarea id="input-address" class="input" rows="2"
+              placeholder="Av. Tulum #123, SM 5, Cancún..."
+              style="resize:none;border-radius:var(--radius-lg);"></textarea>
+  </div>
+
+  <!-- Coords mode -->
+  <div id="mode-coords" class="mode-panel" style="display:none;">
+    <label class="field-label">Latitud</label>
+    <input id="input-lat" type="number" step="any" class="input" placeholder="21.1619" />
+    <label class="field-label" style="margin-top:0.625rem;">Longitud</label>
+    <input id="input-lng" type="number" step="any" class="input" placeholder="-86.8515" />
+    <button id="btn-use-gps" class="btn-secondary btn-sm" style="margin-top:0.625rem;width:100%;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+      Usar mi ubicación
+    </button>
+    <input id="input-address-from-coords" type="hidden" />
+  </div>
+
+  <!-- Link mode -->
+  <div id="mode-link" class="mode-panel" style="display:none;">
+    <label class="field-label">Link de Google Maps / Waze</label>
+    <input id="input-link" type="url" class="input" placeholder="https://maps.google.com/..." />
+    <p style="font-size:0.75rem;color:var(--text-tertiary);margin-top:0.375rem;">
+      Pega el enlace compartido — extraeremos las coordenadas automáticamente
+    </p>
+  </div>
+
+  <!-- QR mode -->
+  <div id="mode-qr" class="mode-panel" style="display:none;">
+    <div style="background:var(--surface-elevated);border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:2rem;text-align:center;">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text-tertiary);margin:0 auto 0.5rem;display:block;">
+        <path d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm6.5-6.5v3h-3v-3h3M19 5h-6v6h6V5zm-6 8h1.5v1.5H13V13zm1.5 1.5H16V16h-1.5v-1.5zM16 13h1.5v1.5H16V13zm-3 3h1.5v1.5H13V16zm1.5 1.5H16V19h-1.5v-1.5zM16 16h1.5v1.5H16V16zm1.5-1.5H19V16h-1.5v-1.5zm0 3H19V19h-1.5v-1.5zM22 7h-2V4h-3V2h5v5zm0 15v-5h-2v3h-3v2h5zM2 22h5v-2H4v-3H2v5zM2 2v5h2V4h3V2H2z"/>
+      </svg>
+      <p style="font-size:0.875rem;font-weight:600;color:var(--text-secondary);">Escanear QR</p>
+      <p style="font-size:0.75rem;color:var(--text-tertiary);">Próximamente disponible</p>
+    </div>
+  </div>
+
+  <!-- Common fields -->
+  <div style="margin-top:0.875rem;display:flex;flex-direction:column;gap:0.625rem;">
+    <div style="display:flex;gap:0.5rem;">
+      <div style="flex:1;">
+        <label class="field-label">Nota (opcional)</label>
+        <input id="input-note" type="text" class="input" placeholder="Timbre 2, dejar en portería..." />
+      </div>
+      <div style="width:80px;">
+        <label class="field-label">Ingreso $</label>
+        <input id="input-income" type="number" min="0" class="input" placeholder="50" />
+      </div>
+    </div>
+
+    <div>
+      <label class="field-label" style="margin-bottom:0.375rem;">Prioridad</label>
+      <div style="display:flex;gap:0.5rem;">
+        <button class="priority-btn active" data-priority="normal" aria-pressed="true">
+          Normal
+        </button>
+        <button class="priority-btn" data-priority="urgent" aria-pressed="false">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          Urgente
+        </button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:0.5rem;">
+      <input id="input-client-name"  type="text" class="input" placeholder="Cliente (opcional)" />
+      <input id="input-client-phone" type="tel"  class="input" placeholder="Tel. (opcional)" style="max-width:140px;" />
+    </div>
+  </div>
+
+  <button id="btn-save-stop" class="btn-primary btn-lg" style="width:100%;margin-top:1rem;" disabled>
+    Guardar parada
+  </button>
+</div>
+
+<!-- ───────────────────────── -->
+<!-- Bottom Sheet: Stop detail -->
+<!-- ───────────────────────── -->
+<div id="detail-overlay" class="bottom-sheet-overlay" aria-hidden="true"></div>
+<div id="detail-sheet" class="bottom-sheet" role="dialog" aria-label="Detalle de parada" aria-modal="true">
+  <div class="sheet-handle"></div>
+  <div id="detail-content"></div>
+</div>
+
+<script>
+  import { dbPut, dbDelete, dbGetAll, getStops, completeStop, generateId, STORES } from '../lib/idb';
+  import type { Stop } from '../lib/idb';
+
+  let currentFilter = 'all';
+  let selectedPriority: 'normal' | 'urgent' = 'normal';
+  let currentMode = 'text';
+  let allStops: Stop[] = [];
+  let editingId: string | null = null;
+
+  // ── Render ──
+  async function renderStops() {
+    allStops = await getStops();
+    const filtered = filterStops(allStops, currentFilter);
+
+    const countLabel = document.getElementById('stops-count-label');
+    if (countLabel) {
+      const done = allStops.filter(s => s.status === 'completed').length;
+      countLabel.textContent = `${done}/${allStops.length} completadas`;
+    }
+
+    const listEl = document.getElementById('stops-list');
+    if (!listEl) return;
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color:var(--text-tertiary)">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+          <p style="font-size:0.875rem;font-weight:700;color:var(--text-secondary);margin:0;">
+            ${currentFilter === 'all' ? 'Sin paradas aún' : 'Sin paradas en este filtro'}
+          </p>
+          ${currentFilter === 'all' ? '<button id="btn-add-first" class="btn-primary btn-md" style="margin-top:0.625rem;">+ Agregar parada</button>' : ''}
+        </div>`;
+      document.getElementById('btn-add-first')?.addEventListener('click', openAddSheet);
+      return;
+    }
+
+    listEl.innerHTML = filtered.map((s, i) => `
+      <div class="stop-card ${s.status === 'completed' ? 'completed' : ''} ${s.priority === 'urgent' ? 'priority-urgent' : 'priority-normal'}"
+           data-id="${s.id}" role="button" tabindex="0" aria-label="Parada ${s.order + 1}: ${s.address}">
+
+        <!-- Drag handle -->
+        <div class="drag-handle" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text-tertiary)">
+            <path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+        </div>
+
+        <!-- Number -->
+        <div class="stop-number ${s.priority === 'urgent' ? 'urgent' : ''}">${s.order + 1}</div>
+
+        <!-- Content -->
+        <div style="flex:1;min-width:0;">
+          <p class="stop-address">${s.address}</p>
+          ${s.note ? `<p class="stop-meta">${s.note}</p>` : ''}
+          ${s.clientName ? `<p class="stop-meta">${s.clientName}${s.clientPhone ? ' · ' + s.clientPhone : ''}</p>` : ''}
+        </div>
+
+        <!-- Right side -->
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.375rem;flex-shrink:0;">
+          ${s.income ? `<span style="font-size:0.75rem;font-weight:800;color:var(--color-primary)">$${s.income}</span>` : ''}
+          <span class="badge ${s.status === 'completed' ? 'badge-success' : s.priority === 'urgent' ? 'badge-urgent' : 'badge-pending'}">
+            ${s.status === 'completed' ? 'Listo' : s.priority === 'urgent' ? 'Urgente' : 'Pend.'}
+          </span>
+        </div>
+
+        <!-- Swipe actions (shown on long press or hover) -->
+        <div class="stop-actions">
+          ${s.status !== 'completed' ? `
+            <button class="stop-action-btn complete-btn" data-id="${s.id}" aria-label="Completar parada" title="Completar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            </button>` : ''}
+          <button class="stop-action-btn delete-btn" data-id="${s.id}" aria-label="Eliminar parada" title="Eliminar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+          </button>
+        </div>
+      </div>`).join('');
+
+    // Bind events on stop cards
+    listEl.querySelectorAll('.stop-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('.stop-action-btn')) return;
+        const id = (card as HTMLElement).dataset.id!;
+        openDetail(id);
+      });
+    });
+
+    listEl.querySelectorAll('.complete-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = (btn as HTMLElement).dataset.id!;
+        await completeStop(id);
+        await renderStops();
+      });
+    });
+
+    listEl.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = (btn as HTMLElement).dataset.id!;
+        if (confirm('¿Eliminar esta parada?')) {
+          await dbDelete(STORES.STOPS, id);
+          await renderStops();
+        }
+      });
+    });
+  }
+
+  function filterStops(stops: Stop[], filter: string): Stop[] {
+    switch (filter) {
+      case 'pending':   return stops.filter(s => s.status === 'pending' || s.status === 'in_transit');
+      case 'urgent':    return stops.filter(s => s.priority === 'urgent' && s.status !== 'completed');
+      case 'completed': return stops.filter(s => s.status === 'completed');
+      default:          return stops;
+    }
+  }
+
+  // ── Add Sheet ──
+  function openAddSheet() {
+    editingId = null;
+    clearForm();
+    const overlay = document.getElementById('add-overlay')!;
+    const sheet   = document.getElementById('add-sheet')!;
+    overlay.classList.add('open');
+    sheet.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    (document.getElementById('input-address') as HTMLTextAreaElement)?.focus();
+  }
+
+  function closeAddSheet() {
+    document.getElementById('add-overlay')!.classList.remove('open');
+    document.getElementById('add-sheet')!.classList.remove('open');
+    document.getElementById('add-overlay')!.setAttribute('aria-hidden', 'true');
+  }
+
+  function clearForm() {
+    (document.getElementById('input-address') as HTMLTextAreaElement).value = '';
+    (document.getElementById('input-lat') as HTMLInputElement).value = '';
+    (document.getElementById('input-lng') as HTMLInputElement).value = '';
+    (document.getElementById('input-link') as HTMLInputElement).value = '';
+    (document.getElementById('input-note') as HTMLInputElement).value = '';
+    (document.getElementById('input-income') as HTMLInputElement).value = '';
+    (document.getElementById('input-client-name') as HTMLInputElement).value = '';
+    (document.getElementById('input-client-phone') as HTMLInputElement).value = '';
+    selectedPriority = 'normal';
+    updatePriorityBtns();
+    updateSaveBtn();
+  }
+
+  function getAddressValue(): string {
+    switch (currentMode) {
+      case 'text': return (document.getElementById('input-address') as HTMLTextAreaElement).value.trim();
+      case 'coords': {
+        const lat = (document.getElementById('input-lat') as HTMLInputElement).value.trim();
+        const lng = (document.getElementById('input-lng') as HTMLInputElement).value.trim();
+        return lat && lng ? `${lat}, ${lng}` : '';
+      }
+      case 'link': return (document.getElementById('input-link') as HTMLInputElement).value.trim();
+      default: return '';
+    }
+  }
+
+  function updateSaveBtn() {
+    const btn = document.getElementById('btn-save-stop') as HTMLButtonElement;
+    const addr = getAddressValue();
+    if (btn) btn.disabled = !addr;
+  }
+
+  // ── Save stop ──
+  async function saveStop() {
+    const address = getAddressValue();
+    if (!address) return;
+
+    const lat = (document.getElementById('input-lat') as HTMLInputElement).value;
+    const lng = (document.getElementById('input-lng') as HTMLInputElement).value;
+
+    const stop: import('../lib/idb').Stop = {
+      id:          editingId ?? generateId(),
+      address,
+      lat:         lat ? parseFloat(lat) : undefined,
+      lng:         lng ? parseFloat(lng) : undefined,
+      priority:    selectedPriority,
+      status:      'pending',
+      note:        (document.getElementById('input-note') as HTMLInputElement).value.trim() || undefined,
+      income:      parseFloat((document.getElementById('input-income') as HTMLInputElement).value) || undefined,
+      clientName:  (document.getElementById('input-client-name') as HTMLInputElement).value.trim() || undefined,
+      clientPhone: (document.getElementById('input-client-phone') as HTMLInputElement).value.trim() || undefined,
+      order:       editingId ? (allStops.find(s => s.id === editingId)?.order ?? allStops.length) : allStops.length,
+      createdAt:   Date.now(),
+    };
+
+    await dbPut(STORES.STOPS, stop);
+    closeAddSheet();
+    await renderStops();
+  }
+
+  // ── Detail Sheet ──
+  function openDetail(id: string) {
+    const stop = allStops.find(s => s.id === id);
+    if (!stop) return;
+
+    const overlay = document.getElementById('detail-overlay')!;
+    const sheet   = document.getElementById('detail-sheet')!;
+    const content = document.getElementById('detail-content')!;
+
+    content.innerHTML = `
+      <div style="display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:1rem;">
+        <div class="stop-number ${stop.priority === 'urgent' ? 'urgent' : ''}" style="font-size:1rem;width:2rem;height:2rem;">${stop.order + 1}</div>
+        <div style="flex:1;">
+          <p style="font-size:1rem;font-weight:700;color:var(--text-primary);margin:0 0 0.125rem;">${stop.address}</p>
+          ${stop.note ? `<p style="font-size:0.8125rem;color:var(--text-secondary);margin:0;">${stop.note}</p>` : ''}
+        </div>
+        <button id="detail-close" style="background:none;border:none;cursor:pointer;color:var(--text-tertiary);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.25rem;">
+        ${stop.clientName ? `<div class="detail-row"><span>Cliente</span><strong>${stop.clientName}</strong></div>` : ''}
+        ${stop.clientPhone ? `<div class="detail-row"><span>Teléfono</span><a href="tel:${stop.clientPhone}" style="color:var(--color-primary);font-weight:700;">${stop.clientPhone}</a></div>` : ''}
+        ${stop.income ? `<div class="detail-row"><span>Ingreso</span><strong style="color:var(--color-primary)">$${stop.income}</strong></div>` : ''}
+        <div class="detail-row"><span>Estado</span>
+          <span class="badge ${stop.status === 'completed' ? 'badge-success' : stop.priority === 'urgent' ? 'badge-urgent' : 'badge-pending'}">
+            ${stop.status === 'completed' ? 'Completada' : stop.priority === 'urgent' ? 'Urgente' : 'Pendiente'}
+          </span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        ${stop.status !== 'completed' ? `
+          <button id="detail-complete" data-id="${stop.id}" class="btn-primary btn-lg" style="width:100%;">
+            Marcar como entregada
+          </button>` : ''}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+          ${stop.clientPhone ? `
+            <a href="https://wa.me/${stop.clientPhone.replace(/\D/g,'')}?text=Tu+pedido+est%C3%A1+en+camino+🚚"
+               target="_blank" rel="noopener noreferrer" class="btn-whatsapp" style="justify-content:center;">
+              WhatsApp
+            </a>` : `<div></div>`}
+          <a href="/enviar?id=${stop.id}" class="btn-secondary btn-md" style="text-align:center;">
+            Notificar
+          </a>
+        </div>
+        <button id="detail-delete" data-id="${stop.id}" class="btn-danger btn-md" style="width:100%;">
+          Eliminar parada
+        </button>
+      </div>`;
+
+    overlay.classList.add('open');
+    sheet.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+
+    document.getElementById('detail-close')?.addEventListener('click', closeDetail);
+    document.getElementById('detail-complete')?.addEventListener('click', async () => {
+      await completeStop(stop.id);
+      closeDetail();
+      await renderStops();
+    });
+    document.getElementById('detail-delete')?.addEventListener('click', async () => {
+      if (confirm('¿Eliminar esta parada?')) {
+        await dbDelete(STORES.STOPS, stop.id);
+        closeDetail();
+        await renderStops();
+      }
+    });
+  }
+
+  function closeDetail() {
+    document.getElementById('detail-overlay')!.classList.remove('open');
+    document.getElementById('detail-sheet')!.classList.remove('open');
+    document.getElementById('detail-overlay')!.setAttribute('aria-hidden', 'true');
+  }
+
+  // ── Priority buttons ──
+  function updatePriorityBtns() {
+    document.querySelectorAll('.priority-btn').forEach(btn => {
+      const p = (btn as HTMLElement).dataset.priority;
+      btn.classList.toggle('active', p === selectedPriority);
+      (btn as HTMLButtonElement).setAttribute('aria-pressed', String(p === selectedPriority));
+    });
+  }
+
+  // ── Mode tabs ──
+  function switchMode(mode: string) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-tab').forEach(t => {
+      t.classList.toggle('active', (t as HTMLElement).dataset.mode === mode);
+      (t as HTMLButtonElement).setAttribute('aria-pressed', String((t as HTMLElement).dataset.mode === mode));
+    });
+    ['text','coords','link','qr'].forEach(m => {
+      const panel = document.getElementById(`mode-${m}`)!;
+      panel.style.display = m === mode ? 'block' : 'none';
+    });
+    updateSaveBtn();
+  }
+
+  // ── Init ──
+  function init() {
+    document.getElementById('btn-add-stop')?.addEventListener('click', openAddSheet);
+    document.getElementById('btn-add-first')?.addEventListener('click', openAddSheet);
+    document.getElementById('close-sheet')?.addEventListener('click', closeAddSheet);
+    document.getElementById('add-overlay')?.addEventListener('click', closeAddSheet);
+    document.getElementById('detail-overlay')?.addEventListener('click', closeDetail);
+
+    document.getElementById('btn-save-stop')?.addEventListener('click', saveStop);
+
+    // Filter tabs
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', async () => {
+        currentFilter = (tab as HTMLElement).dataset.filter!;
+        document.querySelectorAll('.filter-tab').forEach(t => {
+          t.classList.toggle('active', t === tab);
+          (t as HTMLElement).setAttribute('aria-selected', String(t === tab));
+        });
+        await renderStops();
+      });
+    });
+
+    // Mode tabs
+    document.querySelectorAll('.mode-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchMode((tab as HTMLElement).dataset.mode!));
+    });
+
+    // Priority buttons
+    document.querySelectorAll('.priority-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedPriority = (btn as HTMLElement).dataset.priority as 'normal' | 'urgent';
+        updatePriorityBtns();
+      });
+    });
+
+    // Address input → enable save
+    document.getElementById('input-address')?.addEventListener('input', updateSaveBtn);
+    document.getElementById('input-lat')?.addEventListener('input', updateSaveBtn);
+    document.getElementById('input-lng')?.addEventListener('input', updateSaveBtn);
+    document.getElementById('input-link')?.addEventListener('input', updateSaveBtn);
+
+    // GPS button
+    document.getElementById('btn-use-gps')?.addEventListener('click', () => {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(pos => {
+        (document.getElementById('input-lat') as HTMLInputElement).value = pos.coords.latitude.toFixed(6);
+        (document.getElementById('input-lng') as HTMLInputElement).value = pos.coords.longitude.toFixed(6);
+        updateSaveBtn();
+      });
+    });
+
+    renderStops();
+  }
+
+  document.addEventListener('astro:page-load', init);
+  if (document.readyState !== 'loading') init();
+</script>
+
+<style>
+  .pedidos-page { max-width: 480px; margin: 0 auto; }
+
+  .pedidos-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .page-title {
+    font-size: 1.375rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    margin: 0 0 0.125rem;
+  }
+
+  .page-sub {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    margin: 0;
+  }
+
+  /* Filter tabs */
+  .filter-tabs {
+    display: flex;
+    gap: 0.375rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.125rem;
+  }
+
+  .filter-tab {
+    flex-shrink: 0;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid var(--border-light);
+    background: var(--surface-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .filter-tab.active {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+    color: var(--text-brand);
+  }
+
+  /* Stops list */
+  .stops-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 3rem 1rem;
+    text-align: center;
+  }
+
+  /* Stop card */
+  .stop-card {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 0.875rem 0.75rem 0.625rem;
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+  }
+
+  .stop-card:active { transform: scale(0.99); }
+
+  .stop-card.completed {
+    opacity: 0.5;
+  }
+
+  .stop-card.completed .stop-address {
+    text-decoration: line-through;
+    color: var(--text-tertiary);
+  }
+
+  .drag-handle {
+    cursor: grab;
+    padding: 0.25rem;
+    flex-shrink: 0;
+    opacity: 0.4;
+  }
+
+  .stop-actions {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .stop-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+    background: var(--surface-elevated);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .complete-btn { color: var(--color-success); }
+  .complete-btn:hover { background: rgba(16,185,129,0.12); border-color: var(--color-success); }
+
+  .delete-btn { color: var(--color-accent); }
+  .delete-btn:hover { background: rgba(255,90,95,0.12); border-color: var(--color-accent); }
+
+  /* Mode tabs */
+  .mode-tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 0.875rem;
+    background: var(--surface-input);
+    border-radius: var(--radius-lg);
+    padding: 0.25rem;
+  }
+
+  .mode-tab {
+    flex: 1;
+    padding: 0.375rem;
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .mode-tab.active {
+    background: var(--surface-card);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 0.375rem;
+  }
+
+  .priority-btn {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    border: 1px solid var(--border-light);
+    background: var(--surface-input);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+  }
+
+  .priority-btn.active[data-priority="normal"] {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+    color: var(--text-brand);
+  }
+
+  .priority-btn.active[data-priority="urgent"] {
+    border-color: var(--color-accent);
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+  }
+
+  .detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.375rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+</style>

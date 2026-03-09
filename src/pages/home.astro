@@ -1,212 +1,486 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import InteractiveMap from '../components/InteractiveMap.astro';
-import RouteCalculator from '../components/RouteCalculator.astro';
-
-const title = "Inicio";
 ---
 
-<MainLayout title={title}>
-    <!-- Full-screen Background Map -->
-    <div class="fixed inset-0 z-0 h-full w-full">
-        <InteractiveMap center={[21.1619, -86.8515]} zoom={13} />
+<MainLayout title="Inicio">
+  <div class="dash px-4 pt-4 pb-2">
+
+    <!-- ── Greeting ── -->
+    <div class="stagger-item dash-greeting">
+      <div>
+        <p class="greeting-sub" id="greeting-date">Hoy, cargando...</p>
+        <h1 class="greeting-title" id="greeting-text">Buen día</h1>
+      </div>
+      <div class="dash-date-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="color:var(--color-primary)">
+          <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>
+        </svg>
+        <span id="today-date-badge">—</span>
+      </div>
     </div>
 
-    <!-- Dashboard Overlay -->
-	<div class="dashboard-container pointer-events-none">
-		<div class="glass-panel-wrapper animate-fade-in-up pointer-events-auto flex flex-col items-center">
+    <!-- ── Progress + Metrics ── -->
+    <div class="stagger-item dash-hero">
 
-            <!-- Hero Headline — compact, doesn't overlap header -->
-            <div class="hero-headline mb-4 text-center px-2">
-                <h1 class="hero-title font-display font-black text-2xl sm:text-3xl md:text-4xl tracking-tight leading-tight">
-                    ¿Qué Ruta Me Lleva?
-                </h1>
-                <p class="hero-destination font-display font-bold text-base sm:text-lg mt-1">
-                    en <span id="destination-cycle" class="destination-text">Cancún</span>
-                </p>
-            </div>
+      <!-- Progress Ring -->
+      <div class="progress-section">
+        <svg class="progress-svg" viewBox="0 0 120 120" aria-hidden="true">
+          <!-- Track -->
+          <circle cx="60" cy="60" r="48"
+                  fill="none" stroke="var(--border-light)"
+                  stroke-width="7" />
+          <!-- Fill -->
+          <circle cx="60" cy="60" r="48"
+                  id="progress-ring"
+                  fill="none"
+                  class="progress-ring-fill"
+                  stroke="var(--color-primary)"
+                  stroke-width="7"
+                  stroke-linecap="round"
+                  stroke-dasharray="301.59"
+                  stroke-dashoffset="301.59"
+                  transform="rotate(-90 60 60)" />
+        </svg>
+        <div class="progress-center">
+          <span class="progress-num" id="progress-done">0</span>
+          <span class="progress-sep">/</span>
+          <span class="progress-total" id="progress-total">0</span>
+          <span class="progress-unit">paradas</span>
+        </div>
+      </div>
 
-			<RouteCalculator />
-		</div>
+      <!-- Metrics row -->
+      <div class="metrics-col">
+        <!-- Completadas -->
+        <div class="metric-card stagger-item">
+          <div class="metric-icon" style="background:rgba(0,232,162,0.1);color:var(--color-primary)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+          <span class="metric-value" id="m-done">0</span>
+          <span class="metric-label">Entregadas</span>
+        </div>
+        <!-- Urgentes -->
+        <div class="metric-card stagger-item">
+          <div class="metric-icon" style="background:rgba(255,90,95,0.1);color:var(--color-accent)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          </div>
+          <span class="metric-value" id="m-urgent" style="color:var(--color-accent)">0</span>
+          <span class="metric-label">Urgentes</span>
+        </div>
+        <!-- Ingreso -->
+        <div class="metric-card stagger-item">
+          <div class="metric-icon" style="background:rgba(59,130,246,0.1);color:#3B82F6">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+          </div>
+          <span class="metric-value" id="m-income">$0</span>
+          <span class="metric-label">Estimado</span>
+        </div>
+      </div>
     </div>
 
+    <!-- ── Siguiente parada ── -->
+    <div class="stagger-item section-block">
+      <p class="section-label">Siguiente parada</p>
+      <div id="next-stop-card" class="next-stop-card delivery-card">
+        <div class="next-stop-empty">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-tertiary)">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+          <span style="font-size:0.875rem;color:var(--text-tertiary);font-weight:600;">Sin paradas pendientes</span>
+          <a href="/pedidos" class="btn-primary btn-sm" style="margin-top:0.5rem;">Agregar parada</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Acciones rápidas ── -->
+    <div class="stagger-item section-block">
+      <p class="section-label">Acciones</p>
+      <div class="quick-actions">
+        <a href="/pedidos" class="quick-btn">
+          <div class="quick-btn-icon" style="background:rgba(0,232,162,0.1);color:var(--color-primary)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          </div>
+          <span>Paradas</span>
+        </a>
+        <a href="/reparto" class="quick-btn">
+          <div class="quick-btn-icon" style="background:rgba(59,130,246,0.1);color:#3B82F6">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.56 3.91c.39.39.39 1.02 0 1.41l-4.83 4.83-2.37-2.37 1.42-1.42c.39-.39 1.02-.39 1.41 0l.71.71 3.25-3.16c.39-.39 1.02-.39 1.41 0zM4 17.5V21h3.5l10.31-10.32-3.5-3.5L4 17.5z"/></svg>
+          </div>
+          <span>Iniciar Ruta</span>
+        </a>
+        <a href="/enviar" class="quick-btn">
+          <div class="quick-btn-icon" style="background:rgba(37,211,102,0.1);color:#25D366">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </div>
+          <span>Notificar</span>
+        </a>
+        <a href="/metricas" class="quick-btn">
+          <div class="quick-btn-icon" style="background:rgba(245,158,11,0.1);color:#F59E0B">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+          </div>
+          <span>Métricas</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ── Entregas del día (lista) ── -->
+    <div class="stagger-item section-block">
+      <p class="section-label">Paradas de hoy</p>
+      <div id="stops-list" class="stops-preview">
+        <div class="stops-empty-hint" style="font-size:0.8125rem;color:var(--text-tertiary);text-align:center;padding:1.5rem 0;">
+          Aún no hay paradas para hoy
+        </div>
+      </div>
+    </div>
+
+  </div>
 </MainLayout>
 
 <script>
-    // Animated destination cycling
-    const destinations = ['Cancún', 'Puerto Morelos', 'Isla Mujeres', 'Playa del Carmen', 'Zona Hotelera'];
-    let currentIndex = 0;
-    const cycleEl = document.getElementById('destination-cycle');
-    if (cycleEl) {
-        setInterval(() => {
-            cycleEl.classList.add('destination-exit');
-            setTimeout(() => {
-                currentIndex = (currentIndex + 1) % destinations.length;
-                cycleEl.textContent = destinations[currentIndex];
-                cycleEl.classList.remove('destination-exit');
-                cycleEl.classList.add('destination-enter');
-                setTimeout(() => cycleEl.classList.remove('destination-enter'), 400);
-            }, 300);
-        }, 3000);
+  import { getTodayStats, getStops, getNextStop } from '../lib/idb';
+  import type { Stop } from '../lib/idb';
+
+  async function loadDashboard() {
+    // ── Greeting ──
+    const now = new Date();
+    const hour = now.getHours();
+    const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+    const repartidorName = localStorage.getItem('mr-repartidor-name') || '';
+
+    const greetEl = document.getElementById('greeting-text');
+    if (greetEl) greetEl.textContent = repartidorName ? `${greeting}, ${repartidorName}` : greeting;
+
+    const dateEl = document.getElementById('greeting-date');
+    const badgeEl = document.getElementById('today-date-badge');
+    const dateStr = now.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+    const shortDate = now.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+    if (dateEl) dateEl.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+    if (badgeEl) badgeEl.textContent = shortDate;
+
+    // ── Stats ──
+    const stats = await getTodayStats();
+    const { completed, total, income, urgent } = stats;
+
+    document.getElementById('m-done')!.textContent   = String(completed);
+    document.getElementById('m-urgent')!.textContent = String(urgent);
+    document.getElementById('m-income')!.textContent = `$${income.toFixed(0)}`;
+    document.getElementById('progress-done')!.textContent  = String(completed);
+    document.getElementById('progress-total')!.textContent = String(total);
+
+    // Progress ring
+    const circumference = 301.59;
+    const pct = total > 0 ? completed / total : 0;
+    const offset = circumference * (1 - pct);
+    const ring = document.getElementById('progress-ring');
+    if (ring) ring.setAttribute('stroke-dashoffset', String(offset));
+
+    // ── Next stop ──
+    const nextStop = await getNextStop();
+    const card = document.getElementById('next-stop-card');
+    if (card) {
+      if (nextStop) {
+        card.innerHTML = `
+          <div class="next-stop-content ${nextStop.priority === 'urgent' ? 'priority-urgent' : 'priority-normal'}">
+            <div style="display:flex;align-items:flex-start;gap:0.75rem;">
+              <div class="stop-number ${nextStop.priority === 'urgent' ? 'urgent' : ''}">${nextStop.order + 1}</div>
+              <div style="flex:1;min-width:0;">
+                <p class="stop-address">${nextStop.address}</p>
+                ${nextStop.note ? `<p class="stop-meta">${nextStop.note}</p>` : ''}
+                ${nextStop.clientName ? `<p class="stop-meta">${nextStop.clientName}${nextStop.clientPhone ? ' · ' + nextStop.clientPhone : ''}</p>` : ''}
+              </div>
+              ${nextStop.priority === 'urgent' ? '<span class="badge badge-urgent">Urgente</span>' : ''}
+            </div>
+            <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+              <a href="/reparto" class="btn-primary btn-sm" style="flex:1;text-align:center;">
+                Navegar
+              </a>
+              <a href="/enviar?id=${nextStop.id}" class="btn-secondary btn-sm" style="flex:1;text-align:center;">
+                Notificar
+              </a>
+            </div>
+          </div>`;
+      }
     }
 
-    // Handle View Switching (Minimize/Maximize UI)
-    window.addEventListener('VIEW_STATE_CHANGE', (e) => {
-        const state = (e as CustomEvent).detail;
-        const container = document.querySelector('.dashboard-container');
-        if (!container) return;
+    // ── Stops preview list ──
+    const stops = await getStops();
+    const listEl = document.getElementById('stops-list');
+    if (listEl && stops.length > 0) {
+      listEl.innerHTML = stops.slice(0, 5).map((s: Stop) => `
+        <div class="stop-preview-row ${s.status === 'completed' ? 'done' : ''}">
+          <div class="stop-number ${s.priority === 'urgent' ? 'urgent' : ''}" style="font-size:0.6875rem;">${s.order + 1}</div>
+          <div style="flex:1;min-width:0;">
+            <p class="stop-address" style="font-size:0.875rem;">${s.address}</p>
+          </div>
+          <span class="badge ${s.status === 'completed' ? 'badge-success' : s.priority === 'urgent' ? 'badge-urgent' : 'badge-pending'}">
+            ${s.status === 'completed' ? 'Listo' : s.priority === 'urgent' ? 'Urgente' : 'Pendiente'}
+          </span>
+        </div>`).join('') +
+        (stops.length > 5 ? `<a href="/pedidos" style="display:block;text-align:center;font-size:0.8125rem;color:var(--color-primary);font-weight:700;padding:0.75rem 0;">Ver todas (${stops.length})</a>` : '');
+    }
+  }
 
-        container.classList.remove('map-mode', 'map-maximized');
-
-        if (state === 'MAP_ACTIVE' || state === 'map') {
-            container.classList.add('map-mode');
-        } else if (state === 'MAP_MAXIMIZED') {
-            container.classList.add('map-maximized');
-        }
-    });
+  // Load on every page visit
+  document.addEventListener('astro:page-load', loadDashboard);
+  if (document.readyState !== 'loading') loadDashboard();
 </script>
 
 <style>
-/* Dashboard Shell */
-.dashboard-container {
-    position: fixed;
+  .dash { max-width: 480px; margin: 0 auto; }
+
+  /* Greeting */
+  .dash-greeting {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .greeting-sub {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    text-transform: capitalize;
+    margin: 0 0 0.125rem;
+  }
+
+  .greeting-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .dash-date-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.625rem;
+    border-radius: var(--radius-full);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+  }
+
+  /* Hero: ring + metrics */
+  .dash-hero {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    padding: 1.125rem;
+    margin-bottom: 1.25rem;
+  }
+
+  /* Progress Ring */
+  .progress-section {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .progress-svg {
+    width: 110px;
+    height: 110px;
+    display: block;
+  }
+
+  .progress-center {
+    position: absolute;
     inset: 0;
-    z-index: 10;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 0.75rem;
-    padding-top: calc(var(--header-h) + 0.5rem);
-    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 0.5rem);
-    pointer-events: none;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
 
-.glass-panel-wrapper {
-    width: 100%;
-    max-width: 440px;
-    margin: auto auto 0;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: auto;
-}
+  .progress-num {
+    font-size: 1.625rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: var(--text-primary);
+    line-height: 1;
+  }
 
-/* Hero Headline Styles */
-.hero-headline {
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
+  .progress-sep {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+    line-height: 1;
+    margin: 0 1px;
+  }
 
-.hero-title {
-    color: #F97316;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.15);
-    animation: hero-bounce-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
+  .progress-total {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    line-height: 1;
+  }
 
-.hero-destination {
+  .progress-unit {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+
+  /* Metrics column */
+  .metrics-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .metric-card {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .metric-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .metric-value {
+    font-size: 1.0625rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  .metric-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+  }
+
+  /* Section block */
+  .section-block {
+    margin-bottom: 1.25rem;
+  }
+
+  .section-label {
+    font-size: 0.625rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.625rem;
+  }
+
+  .section-label::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: var(--border-light);
+  }
+
+  /* Next stop card */
+  .next-stop-card {
+    border-radius: var(--radius-lg);
+  }
+
+  .next-stop-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+  }
+
+  .next-stop-content {
+    padding: 0 0 0 0.75rem;
+  }
+
+  /* Quick actions */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  .quick-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.75rem 0.25rem;
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
     color: var(--text-secondary);
-    text-shadow: 0 1px 6px rgba(255, 255, 255, 0.6);
-}
+    font-size: 0.6875rem;
+    font-weight: 700;
+    transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+  }
 
-.dark .hero-destination {
-    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
-}
+  .quick-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--text-primary);
+  }
 
-.destination-text {
-    display: inline-block;
-    color: #0d9488;
-    font-weight: 800;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
+  .quick-btn:active { transform: scale(0.94); }
 
-.destination-exit {
-    opacity: 0;
-    transform: translateY(-8px);
-}
+  .quick-btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.destination-enter {
-    animation: destination-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
+  /* Stops preview */
+  .stops-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 
-@keyframes destination-pop {
-    0%   { opacity: 0; transform: translateY(8px); }
-    100% { opacity: 1; transform: translateY(0); }
-}
+  .stop-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 0.75rem;
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+  }
 
-@keyframes hero-bounce-in {
-    0%   { opacity: 0; transform: scale(0.9) translateY(12px); }
-    60%  { transform: scale(1.02) translateY(-2px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
-}
+  .stop-preview-row.done {
+    opacity: 0.5;
+  }
 
-/* Map Mode Adjustments */
-.dashboard-container.map-mode .hero-headline {
-    opacity: 0;
-    transform: translateY(-20px);
-    pointer-events: none;
-    height: 0;
-    margin: 0;
-    overflow: hidden;
-}
-
-.dashboard-container.map-mode .glass-panel-wrapper {
-    transform: translateY(10%) scale(0.95);
-    opacity: 0.95;
-}
-
-.dashboard-container.map-maximized .glass-panel-wrapper {
-    transform: translateY(40%) scale(0.9);
-    opacity: 0.8;
-}
-
-@media (min-width: 768px) {
-    .dashboard-container {
-        justify-content: center;
-        align-items: flex-start;
-        padding: 2rem;
-        padding-top: calc(var(--header-h) + 2rem);
-        padding-bottom: 2rem;
-        overflow-y: auto;
-    }
-
-    .glass-panel-wrapper {
-        margin: auto 0 auto 2rem;
-        max-width: 420px;
-    }
-}
-
-@media (min-width: 1280px) {
-    .dashboard-container {
-        padding-left: 4rem;
-    }
-
-    .glass-panel-wrapper {
-        margin-left: 3rem;
-    }
-}
-
-/* Animations */
-@keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in-up {
-    animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Search card subtle scale entrance */
-.search-card {
-    animation: card-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
-}
-
-@keyframes card-enter {
-    from {
-        opacity: 0;
-        transform: scale(0.96) translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
+  .stop-preview-row.done .stop-address {
+    text-decoration: line-through;
+  }
 </style>

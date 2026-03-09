@@ -2,232 +2,203 @@
 import MainLayout from '../layouts/MainLayout.astro';
 ---
 
-<MainLayout title="CancúnMueve" hideNav={true}>
-	<div class="splash-container">
-		<div class="grid-overlay">
-			<svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg">
-				<defs>
-					<pattern height="40" id="grid" patternUnits="userSpaceOnUse" width="40">
-						<path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"></path>
-					</pattern>
-				</defs>
-				<rect fill="url(#grid)" height="100%" width="100%"></rect>
-			</svg>
-		</div>
+<MainLayout title="Cargando" hideNav={true}>
+  <div class="splash">
+    <!-- Animated grid background -->
+    <div class="splash-grid" aria-hidden="true">
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="1" fill="rgba(0,232,162,0.12)"/>
+          </pattern>
+        </defs>
+        <rect fill="url(#dots)" width="100%" height="100%"/>
+      </svg>
+    </div>
 
-		<div class="top-spacer"></div>
+    <!-- Glow orb -->
+    <div class="splash-orb" aria-hidden="true"></div>
 
-		<div class="brand-section animate-float">
-			<div class="brand-logo-container">
-				<div class="brand-icon">
-					<svg class="icon-bus-svg" width="60" height="60" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
-				</div>
-				<h1 class="brand-title">
-					Cancún<span class="brand-title-light">Mueve</span>
-				</h1>
-			</div>
-			<p class="brand-tagline">
-				La ciudad en tu mano
-			</p>
-		</div>
+    <!-- Main content -->
+    <div class="splash-content">
+      <!-- Logo icon -->
+      <div class="splash-icon-wrap" aria-hidden="true">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L21 7V17L12 22L3 17V7L12 2Z"
+                stroke="#00E8A2" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M12 2L12 22" stroke="#00E8A2" stroke-width="1.2" opacity="0.45"/>
+          <path d="M3 7L12 12L21 7" stroke="#00E8A2" stroke-width="1.5" opacity="0.6"/>
+        </svg>
+      </div>
 
-		<div class="status-section">
-			<div class="connecting-status">
-				<span class="status-text animate-pulse">Connecting to Engine...</span>
-				<div class="location-pulse-container">
-					<div class="pulse-ring animate-ping"></div>
-					<div class="location-icon-circle animate-pulse-slow">
-						<svg width="30" height="30" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-					</div>
-				</div>
-			</div>
-			<div class="version-tag">
-				<span class="version-text">v1.0.5</span>
-			</div>
-		</div>
+      <!-- Brand -->
+      <h1 class="splash-title">
+        Mueve<span class="splash-accent">Reparto</span>
+      </h1>
+      <p class="splash-tagline">Tu jornada. Optimizada.</p>
 
-		<div class="bottom-bar"></div>
-	</div>
+      <!-- Loader -->
+      <div class="splash-loader" aria-label="Cargando..." role="status">
+        <div class="loader-track">
+          <div class="loader-bar"></div>
+        </div>
+        <span class="loader-text">Iniciando...</span>
+      </div>
+    </div>
 
-	<script>
-		import { navigate } from 'astro:transitions/client';
-
-		// Simulate splash delay then redirect to home
-		setTimeout(() => {
-			const currentUrl = new URL(window.location.href);
-			const targetUrl = new URL('/home', window.location.origin);
-			targetUrl.search = currentUrl.search;
-			navigate(targetUrl.toString());
-		}, 3000);
-	</script>
+    <!-- Version -->
+    <span class="splash-version">v2.0.0</span>
+  </div>
 </MainLayout>
 
+<script>
+  import { navigate } from 'astro:transitions/client';
+
+  // Splash: 2s then go to /home
+  setTimeout(() => {
+    navigate('/home');
+  }, 2000);
+</script>
+
 <style>
-	.splash-container {
-		position: relative;
-		width: 100%;
-		height: 100vh;
-		background: linear-gradient(175deg, #0d9488 0%, #14b8a6 45%, #ccfbf1 75%, #f0fdfa 100%);
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: space-between;
-		padding: 4rem 2rem;
-		overflow: hidden;
-		color: white;
-	}
+  .splash {
+    position: fixed;
+    inset: 0;
+    background: #060A0E;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
 
-	.grid-overlay {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		opacity: 0.1;
-		mix-blend-mode: overlay;
-		overflow: hidden;
-	}
+  .splash-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.7;
+  }
 
-	.h-full { height: 100%; }
-	.w-full { width: 100%; }
+  /* Radial glow in brand green */
+  .splash-orb {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 232, 162, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+    animation: orb-pulse 3s ease-in-out infinite;
+  }
 
-	.top-spacer { height: 2.5rem; width: 100%; }
+  @keyframes orb-pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1);   opacity: 0.8; }
+    50%       { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+  }
 
-	/* Brand Section */
-	.brand-section {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-	}
+  .splash-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    animation: content-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 
-	.brand-logo-container {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		margin-bottom: 1.5rem;
-	}
+  @keyframes content-in {
+    from { opacity: 0; transform: translateY(24px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
 
-	.brand-icon {
-		background-color: white;
-		border-radius: 1.5rem;
-		padding: 1rem;
-		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
+  .splash-icon-wrap {
+    width: 88px;
+    height: 88px;
+    border-radius: 22px;
+    background: rgba(0, 232, 162, 0.08);
+    border: 1px solid rgba(0, 232, 162, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    animation: icon-bounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+    box-shadow: 0 0 40px rgba(0, 232, 162, 0.15);
+  }
 
-	.icon-bus-svg {
-		color: #0d9488;
-	}
+  @keyframes icon-bounce {
+    from { opacity: 0; transform: scale(0.6); }
+    to   { opacity: 1; transform: scale(1); }
+  }
 
-	.brand-title {
-		color: white;
-		font-size: 3.75rem;
-		font-weight: 800;
-		letter-spacing: -0.025em;
-		margin: 0;
-		line-height: 1;
-	}
+  .splash-title {
+    font-family: "Inter", sans-serif;
+    font-size: 2.25rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: #F0F6FC;
+    margin: 0;
+    line-height: 1;
+  }
 
-	.brand-title-light { font-weight: 300; }
+  .splash-accent {
+    color: #00E8A2;
+  }
 
-	.brand-tagline {
-		color: white;
-		font-size: 1.25rem;
-		font-weight: 500;
-		text-transform: uppercase;
-		letter-spacing: 0.25em;
-		opacity: 0.9;
-		margin-top: 1rem;
-	}
+  .splash-tagline {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: rgba(240, 246, 252, 0.45);
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
 
-	/* Status Section */
-	.status-section {
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		position: relative;
-	}
+  .splash-loader {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 160px;
+  }
 
-	.connecting-status {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-		margin-bottom: 3rem;
-		position: relative;
-		z-index: 10;
-	}
+  .loader-track {
+    width: 100%;
+    height: 3px;
+    background: rgba(0, 232, 162, 0.12);
+    border-radius: 2px;
+    overflow: hidden;
+  }
 
-	.status-text {
-		color: rgba(255, 255, 255, 0.9);
-		font-size: 0.875rem;
-		font-weight: 500;
-		letter-spacing: 0.05em;
-	}
+  .loader-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #00E8A2, #00C98A);
+    border-radius: 2px;
+    animation: loader-fill 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
 
-	.location-pulse-container { position: relative; }
+  @keyframes loader-fill {
+    from { width: 0%; }
+    to   { width: 100%; }
+  }
 
-	.pulse-ring {
-		position: absolute;
-		inset: 0;
-		background-color: rgba(255, 255, 255, 0.3);
-		border-radius: 9999px;
-		transform: scale(1.5);
-	}
+  .loader-text {
+    font-size: 0.6875rem;
+    color: rgba(240, 246, 252, 0.35);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
 
-	.location-icon-circle {
-		position: relative;
-		background-color: rgba(255, 255, 255, 0.2);
-		backdrop-filter: blur(4px);
-		padding: 1rem;
-		border-radius: 9999px;
-		border: 1px solid rgba(255, 255, 255, 0.3);
-	}
-
-	/* icon-location removed - using inline SVG */
-
-	.version-tag {
-		position: absolute;
-		bottom: 0;
-		right: 0;
-	}
-
-	.version-text {
-		color: rgba(255, 255, 255, 0.6);
-		font-size: 10px;
-		font-family: monospace;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-	}
-
-	.bottom-bar {
-		position: absolute;
-		bottom: 0.5rem;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 8rem;
-		height: 0.375rem;
-		background-color: rgba(255, 255, 255, 0.2);
-		border-radius: 9999px;
-	}
-
-	/* Animations */
-	@keyframes float {
-		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-10px); }
-	}
-	.animate-float { animation: float 3s ease-in-out infinite; }
-
-	@keyframes ping {
-		75%, 100% { transform: scale(2); opacity: 0; }
-	}
-	.animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
-
-	@keyframes pulse { 50% { opacity: .5; } }
-	.animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-
-	@keyframes pulse-slow { 50% { opacity: .5; } }
-	.animate-pulse-slow { animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  .splash-version {
+    position: absolute;
+    bottom: max(env(safe-area-inset-bottom), 1.5rem);
+    font-size: 0.625rem;
+    font-family: monospace;
+    letter-spacing: 0.12em;
+    color: rgba(240, 246, 252, 0.2);
+    text-transform: uppercase;
+  }
 </style>
