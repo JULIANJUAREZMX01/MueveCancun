@@ -203,5 +203,6 @@ describe('CoordinateFinder', () => {
              expect(emptyFinder.find('Plaza Las Américas')).toBeNull();
              expect(emptyFinder.findBestMatch('Plaza Las Américas')).toBeNull();
              expect(emptyFinder.search('Plaza Las Américas')).toEqual([]);
-        });    });
+        });
+    });
 });

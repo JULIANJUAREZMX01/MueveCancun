@@ -22,7 +22,14 @@ const title = "Inicio";
                     ¿Qué Ruta Me Lleva?
                 </h1>
                 <p class="hero-destination font-display font-bold text-base sm:text-lg mt-1">
-                    en <span id="destination-cycle" class="destination-text">Cancún</span>
+                    en <span class="sr-only">varios destinos</span>
+                    <span id="destination-cycle" class="destination-text" aria-hidden="true">
+                        <span class="cycler-item">Cancún</span>
+                        <span class="cycler-item" style="animation-delay: 3s;">Puerto Morelos</span>
+                        <span class="cycler-item" style="animation-delay: 6s;">Isla Mujeres</span>
+                        <span class="cycler-item" style="animation-delay: 9s;">Playa del Carmen</span>
+                        <span class="cycler-item" style="animation-delay: 12s;">Zona Hotelera</span>
+                    </span>
                 </p>
             </div>
 
@@ -33,23 +40,6 @@ const title = "Inicio";
 </MainLayout>
 
 <script>
-    // Animated destination cycling
-    const destinations = ['Cancún', 'Puerto Morelos', 'Isla Mujeres', 'Playa del Carmen', 'Zona Hotelera'];
-    let currentIndex = 0;
-    const cycleEl = document.getElementById('destination-cycle');
-    if (cycleEl) {
-        setInterval(() => {
-            cycleEl.classList.add('destination-exit');
-            setTimeout(() => {
-                currentIndex = (currentIndex + 1) % destinations.length;
-                cycleEl.textContent = destinations[currentIndex];
-                cycleEl.classList.remove('destination-exit');
-                cycleEl.classList.add('destination-enter');
-                setTimeout(() => cycleEl.classList.remove('destination-enter'), 400);
-            }, 300);
-        }, 3000);
-    }
-
     // Handle View Switching (Minimize/Maximize UI)
     window.addEventListener('VIEW_STATE_CHANGE', (e) => {
         const state = (e as CustomEvent).detail;
@@ -112,24 +102,21 @@ const title = "Inicio";
 }
 
 .destination-text {
-    display: inline-block;
+    display: inline-grid;
+    grid-template-areas: 'cycler';
     color: #0d9488;
     font-weight: 800;
-    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.destination-exit {
+.cycler-item {
+    grid-area: cycler;
     opacity: 0;
-    transform: translateY(-8px);
+    animation: cycle-words 15s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
 }
 
-.destination-enter {
-    animation: destination-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-@keyframes destination-pop {
-    0%   { opacity: 0; transform: translateY(8px); }
-    100% { opacity: 1; transform: translateY(0); }
+@keyframes cycle-words {
+    0%, 20% { opacity: 0; transform: translateY(8px); }
+    1%, 19% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes hero-bounce-in {
