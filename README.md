@@ -1,4 +1,4 @@
-# 🏛️ MueveCancun: La Verdad de la Calle (Nexus Prime v3.2)
+# 🏛️ MueveCancun / MueveReparto: La Verdad de la Calle (Nexus Prime v3.2)
 
 > "MueveCancun no nació en una oficina, nació en la parada del camión."
 
@@ -7,6 +7,8 @@
 En nuestra ciudad, el transporte público es un organismo vivo que cambia más rápido que los algoritmos de las grandes plataformas. Un aviso en Facebook, un bloqueo repentino o una nueva ruta informal son la **"verdad de la calle"** que Google Maps ignora.
 
 MueveCancun es simple: **Funciona sin internet**, es ultrarrápida y está diseñada para que cualquier persona sepa exactamente qué ruta la lleva a su destino.
+
+📌 **ROADMAP:** Consulta las fases del proyecto en el nuevo [ROADMAP.md](ROADMAP.md).
 
 ---
 

@@ -40,7 +40,7 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
   try {
     const expectedSignature = await generateSignature(amount);
     return expectedSignature === signatureHex;
-  } catch (e) {
+  } catch {
     return false;
   }
 };
@@ -121,7 +121,7 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
 
     await tx.done;
     console.log('[DB] Balance migration completed successfully');
-  } catch (e) {
+  } catch {
     console.error('[DB] Balance migration failed:', e);
   }
 };

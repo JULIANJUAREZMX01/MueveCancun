@@ -11,9 +11,9 @@ projects:
       repo: https://github.com/JULIANJUAREZMX01/MueveCancun
       envVars:
       - key: NODE_VERSION
-        sync: false
+        value: "20"
       - key: ENABLE_PNPM
-        sync: false
+        value: "true"
       buildCommand: bash scripts/setup-render.sh
       staticPublishPath: dist
       autoDeployTrigger: checksPass
