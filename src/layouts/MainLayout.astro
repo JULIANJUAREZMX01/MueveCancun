@@ -34,7 +34,7 @@ const {
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         img-src 'self' data: blob: https://*.cartocdn.com https://*.openstreetmap.org https://*.tile.openstreetmap.org;
         font-src 'self' https://fonts.gstatic.com;
-        connect-src 'self' https://*.cartocdn.com https://*.openstreetmap.org https://nominatim.openstreetmap.org;
+        connect-src 'self' https://*.cartocdn.com https://*.openstreetmap.org https://nominatim.openstreetmap.org https://mueve-reparto-api.onrender.com;
         worker-src 'self' blob:;
         object-src 'none';
         base-uri 'self';
@@ -88,6 +88,12 @@ const {
 
     <ClientRouter />
   </head>
+
+  <!-- Sync manager: IDB → API cuando hay conexión. No-op si PUBLIC_API_URL no está configurado -->
+  <script>
+    import { initSyncManager } from '@lib/sync'
+    document.addEventListener('astro:page-load', initSyncManager, { once: true })
+  </script>
 
   <body id="top" class="min-h-screen antialiased" style="background: var(--surface-bg); color: var(--text-primary);">
 
