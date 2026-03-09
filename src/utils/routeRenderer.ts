@@ -1,7 +1,7 @@
 import { escapeHtml, safeJsonStringify } from './utils';
 import { getTransportLabel } from './transport';
 
-export function renderBestResultHtml(journey: any, isBest: boolean = false, ui: any): string {
+export function renderBestResultHtml(journey: any, ui: any, isBest: boolean = false): string {
     const route = journey.legs[0];
     const badgesHtml = route.badges ? route.badges.map((b: string) => `<span class="badge-primary" style="font-size: 0.5625rem;">${escapeHtml(b)}</span>`).join('') : '';
 
@@ -47,7 +47,7 @@ export function renderBestResultHtml(journey: any, isBest: boolean = false, ui: 
     `;
 }
 
-export function renderTransferCardHtml(journey: any, isBest: boolean = false, ui: any): string {
+export function renderTransferCardHtml(journey: any, ui: any, isBest: boolean = false): string {
     const leg1 = journey.legs[0];
     const leg2 = journey.legs[1];
     const transferPoint = journey.transfer_point;
