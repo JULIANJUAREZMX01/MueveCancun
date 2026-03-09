@@ -48,15 +48,24 @@ export interface DailyStats {
   durationMin?: number;
 }
 
+export interface GeoCache {
+  key: string;      // dirección normalizada (trim + lowercase)
+  lat: number;
+  lng: number;
+  displayName: string;
+  timestamp: number; // Date.now()
+}
+
 export const STORES = {
   STOPS:    'stops',
   SYNC:     'sync_queue',
   TRACKING: 'tracking_points',
   STATS:    'daily_stats',
+  GEO:      'geocache',
 } as const;
 
 const DB_NAME    = 'mueve-reparto-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let _db: IDBDatabase | null = null;
 
@@ -68,6 +77,7 @@ function openDB(): Promise<IDBDatabase> {
 
     req.onupgradeneeded = (e) => {
       const db = (e.target as IDBOpenDBRequest).result;
+      const oldVersion = e.oldVersion;
 
       if (!db.objectStoreNames.contains(STORES.STOPS)) {
         const stops = db.createObjectStore(STORES.STOPS, { keyPath: 'id' });
@@ -87,6 +97,10 @@ function openDB(): Promise<IDBDatabase> {
 
       if (!db.objectStoreNames.contains(STORES.STATS)) {
         db.createObjectStore(STORES.STATS, { keyPath: 'date' });
+      }
+
+      if (oldVersion < 2 && !db.objectStoreNames.contains(STORES.GEO)) {
+        db.createObjectStore(STORES.GEO, { keyPath: 'key' });
       }
     };
 
@@ -184,4 +198,61 @@ export async function completeStop(id: string): Promise<void> {
 
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+let _lastNominatimCall = 0;
+
+export async function geocodeAddress(address: string): Promise<{ lat: number; lng: number; displayName: string } | null> {
+  const key = address.trim().toLowerCase();
+  if (!key || key.length < 5) return null;
+
+  // 1. Buscar en caché IDB
+  const cached = await dbGet<GeoCache>(STORES.GEO, key);
+  if (cached) {
+    const AGE_30_DAYS = 30 * 24 * 60 * 60 * 1000;
+    if (Date.now() - cached.timestamp < AGE_30_DAYS) {
+      return { lat: cached.lat, lng: cached.lng, displayName: cached.displayName };
+    }
+    // Caché expirada, continuar
+  }
+
+  // 2. Rate limit: esperar si la última llamada fue hace < 1 segundo
+  const elapsed = Date.now() - _lastNominatimCall;
+  if (elapsed < 1000) {
+    await new Promise(r => setTimeout(r, 1000 - elapsed));
+  }
+  _lastNominatimCall = Date.now();
+
+  // 3. Llamar a Nominatim
+  try {
+    const q = encodeURIComponent(`${address}, Cancún, Quintana Roo, México`);
+    const url = `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&countrycodes=mx`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'MueveReparto/1.0 (https://mueverepartoencancun.onrender.com)' },
+      signal: AbortSignal.timeout(5000),  // 5 segundos máximo
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data?.length) return null;
+
+    const result = {
+      lat: parseFloat(data[0].lat),
+      lng: parseFloat(data[0].lon),
+      displayName: data[0].display_name,
+    };
+
+    // 4. Guardar en caché
+    await dbPut<GeoCache>(STORES.GEO, {
+      key,
+      lat: result.lat,
+      lng: result.lng,
+      displayName: result.displayName,
+      timestamp: Date.now(),
+    });
+
+    return result;
+  } catch {
+    return null;  // Timeout, sin red, error Nominatim — fallback gracioso
+  }
 }
