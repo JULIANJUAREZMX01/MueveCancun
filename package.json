@@ -16,6 +16,7 @@
     "dev": "astro dev",
     "dev:network": "astro dev --host",
     "build": "astro build",
+    "start": "HOST=0.0.0.0 node dist/server/entry.mjs",
     "astro": "astro",
     "lint": "eslint .",
     "preview": "astro preview",
