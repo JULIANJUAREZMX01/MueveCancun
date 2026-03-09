@@ -44,18 +44,18 @@
 
 ---
 
-## P3 — Backend Rust + PostgreSQL ⏳
+## P3 — Backend Rust + PostgreSQL ✅
 
-**Estado:** Pendiente
+**Estado:** Completado
 **Objetivo:** Sincronización de paradas entre dispositivos del mismo repartidor
 
 ### Entregables planificados
-- [ ] API REST en Rust (Axum framework)
-- [ ] PostgreSQL en Render (managed database)
-- [ ] Endpoints: `GET /stops`, `POST /stops`, `PATCH /stops/:id/complete`, `GET /stats`
-- [ ] Sync desde `syncQueue` de IDB al backend
-- [ ] Proceso de sync automático al recuperar conexión (`window.online` event)
-- [ ] `docs/BACKEND.md` — documentación de la API
+- [x] API REST en Rust (Axum framework)
+- [x] PostgreSQL en Render (managed database)
+- [x] Endpoints: `GET /stops`, `POST /stops`, `PATCH /stops/:id/complete`, `GET /stats`
+- [x] Sync desde `syncQueue` de IDB al backend
+- [x] Proceso de sync automático al recuperar conexión (`window.online` event)
+- [x] `docs/BACKEND.md` — documentación de la API
 
 ### Criterios de aceptación
 - El repartidor puede ver sus paradas en dos dispositivos distintos
