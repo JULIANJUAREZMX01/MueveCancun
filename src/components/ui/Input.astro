@@ -160,6 +160,7 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
   .graffiti-input-wrapper {
     width: 100%;
     position: relative;
+    --input-bg: #f1f5f9; /* default: slate-100 */
 
     /* Label Styling */
     .graffiti-label {
@@ -332,6 +333,11 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
     &.floating {
       margin-top: 0.5rem;
 
+      /* Update token when the input is focused */
+      &:has(.graffiti-input:focus-visible) {
+        --input-bg: var(--color-white);
+      }
+
       .graffiti-label {
         position: absolute;
         left: 1rem;
@@ -357,15 +363,10 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
       &:has(.graffiti-input:not(:placeholder-shown)) {
         .graffiti-label {
           transform: translateY(-1.5rem) scale(0.85);
-          background: var(--color-white);
+          background: var(--input-bg);
           padding: 0 0.25rem;
           font-weight: 600;
         }
-      }
-
-      /* When focused, label bg should match focused input bg */
-      &:has(.graffiti-input:focus-visible) .graffiti-label {
-        background: var(--color-white);
       }
     }
   }
