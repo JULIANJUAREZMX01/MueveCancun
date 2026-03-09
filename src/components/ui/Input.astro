@@ -190,8 +190,8 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
       padding: 0.75rem 1rem;
       padding-right: 3rem; /* pr-12 for action slot space */
 
-      background-color: #f1f5f9; /* slate-100 — subtle gray pill bg */
-      border: 2px solid transparent;
+      background-color: var(--surface-elevated);
+      border: 2.5px solid var(--border-light);
       border-radius: var(--radius-full); /* pill-shaped */
 
       font-size: 1rem;
@@ -211,8 +211,8 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
       &:focus-visible {
         outline: none;
         border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
-        background-color: var(--color-white);
+        box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.18);
+        background-color: var(--surface-bg);
       }
 
       &.textarea {

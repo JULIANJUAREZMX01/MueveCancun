@@ -344,11 +344,16 @@
   padding: 0.75rem 1rem;
   border-radius: var(--radius-full);
   font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  background: #f1f5f9;
-  border: 1.5px solid transparent;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--surface-elevated);
+  border: 1.5px solid var(--border-light);
   color: var(--text-primary);
+}
+
+.dark .input {
+  background: rgba(30, 41, 59, 0.5);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .input::placeholder {
@@ -357,7 +362,8 @@
 
 .input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+  background: var(--surface-bg);
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.15);
   outline: none;
 }
 
@@ -370,7 +376,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--text-tertiary);
+  color: var(--color-primary);
+  opacity: 0.8;
 }
 
 .section-label::after {
