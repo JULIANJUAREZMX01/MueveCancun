@@ -52,77 +52,14 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
  * Accepts the already-open db instance to avoid circular recursion with initDB.
  */
 export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
+  // Migration from localStorage to IndexedDB is complete.
+  // This function is kept for backwards compatibility but now only marks it as done.
   try {
-    // Check if migration already done
-    const migrationDone = localStorage.getItem('balance_migration_done');
-    if (migrationDone === 'true') {
-      console.log('[DB] Balance migration already completed');
-      return;
-    }
-
-    const tx = db.transaction('wallet-status', 'readwrite');
-    const store = tx.objectStore('wallet-status');
-
-    // Priority: muevecancun_balance (wallet.astro) > user_balance (RouteCalculator.astro)
-    let localBalance: number | null = null;
-    let source = '';
-
-    // Try muevecancun_balance first (wallet page)
-    const muevecancunBalance = localStorage.getItem('muevecancun_balance');
-    if (muevecancunBalance !== null) {
-      localBalance = parseFloat(muevecancunBalance);
-      source = 'muevecancun_balance';
-    }
-
-    // Try user_balance if muevecancun_balance not found
-    if (localBalance === null || isNaN(localBalance)) {
-      const userBalance = localStorage.getItem('user_balance');
-      if (userBalance !== null) {
-        localBalance = parseFloat(userBalance);
-        source = 'user_balance';
-      }
-    }
-
-    const existing = await store.get('current_balance');
-
-    if (localBalance !== null && !isNaN(localBalance) && localBalance > 0) {
-      if (existing) {
-        if (localBalance > existing.amount) {
-          // Preserve the higher balance from localStorage
-          existing.amount = localBalance;
-          existing.signature = await generateSignature(localBalance);
-          await store.put(existing, 'current_balance');
-          console.log(`[DB] Migrated balance from ${source}: ${localBalance}`);
-        } else if (!existing.signature) {
-          // Backfill signature for legacy records that have no higher localStorage value
-          existing.signature = await generateSignature(existing.amount);
-          await store.put(existing, 'current_balance');
-          console.log('[DB] Backfilled signature for existing legacy record');
-        }
-      } else {
-        // Create new balance record
-        const signature = await generateSignature(localBalance);
-        await store.put({ id: 'current_balance', amount: localBalance, currency: 'MXN', signature }, 'current_balance');
-        console.log(`[DB] Created balance from ${source}: ${localBalance}`);
-      }
-    } else if (existing && !existing.signature) {
-      // No localStorage balance, but existing record has no signature - backfill it
-      existing.signature = await generateSignature(existing.amount);
-      await store.put(existing, 'current_balance');
-      console.log('[DB] Backfilled signature for existing legacy record');
-    }
-
-    // Mark migration as done
-    localStorage.setItem('balance_migration_done', 'true');
-
-    // Clean up localStorage
-    localStorage.removeItem('muevecancun_balance');
-    localStorage.removeItem('user_balance');
-
-    await tx.done;
-    console.log('[DB] Balance migration completed successfully');
+      localStorage.setItem('balance_migration_done', 'true');
+      localStorage.removeItem('muevecancun_balance');
+      localStorage.removeItem('user_balance');
   } catch (e) {
-    console.error('[DB] Balance migration failed:', e);
+      // Ignore errors if localStorage is not available (e.g. SSR)
   }
 };
 

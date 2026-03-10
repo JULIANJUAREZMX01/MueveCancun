@@ -4,6 +4,7 @@ import { safeJsonStringify } from '../utils/utils';
 import Input from './ui/Input.astro';
 import Switch from './ui/Switch.astro';
 import PassengerSelector from './ui/PassengerSelector.astro';
+import Icon from './ui/Icon.astro';
 
 const currentLang = getLangFromUrl(Astro.url);
 const t = useTranslations(currentLang);
@@ -41,7 +42,7 @@ const ui = uiTranslations[currentLang];
         <div class="relative z-20">
           <Input
             id="origin-input"
-            variant="floating"
+            variant="default"
             label="Origin"
             icon="/icons/map-pin.svg"
             placeholder="From where?"
@@ -70,7 +71,7 @@ const ui = uiTranslations[currentLang];
         <div class="relative z-0">
           <Input
             id="destination-input"
-            variant="floating"
+            variant="default"
             label="Destination"
             icon="/icons/flag.svg"
             placeholder="Where to?"
@@ -110,15 +111,6 @@ const ui = uiTranslations[currentLang];
       </div>
 
 
-      <!-- Options Row — compact -->
-      <div class="flex items-center gap-3">
-        <div class="flex-1">
-          <PassengerSelector id="seats-input" />
-        </div>
-        <div class="flex items-center">
-          <Switch id="tourist-checkbox" label="Tourist" data-i18n-label="calc.tourist" />
-        </div>
-      </div>
 
       <button id="search-btn" class="btn-primary btn-lg w-full" disabled aria-label="Calculate route">
         <span id="btn-text" class="uppercase tracking-wider" data-i18n="calc.loading">Cargando rutas...</span>
@@ -145,10 +137,12 @@ const ui = uiTranslations[currentLang];
                 <span class="badge-success font-mono" id="results-time-badge" aria-live="polite"></span>
             </div>
             
-            <button id="toggle-list-btn" class="chip" aria-label="Toggle results list">
-                <span class="text-xs font-bold" id="toggle-list-text" data-i18n="calc.toggle.hide">Hide</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" id="toggle-list-icon" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
-            </button>
+            <label for="results-toggle" class="chip cursor-pointer" aria-label="Toggle results list">
+                <input type="checkbox" id="results-toggle" class="sr-only" checked />
+                <span class="text-xs font-bold toggle-hide-text" data-i18n="calc.toggle.hide">Hide</span>
+                <span class="text-xs font-bold toggle-show-text hidden" data-i18n="calc.toggle.show">Show</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="toggle-icon transition-transform duration-300" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+            </label>
         </div>
     </div>
     <div id="best-result-area" class="mb-6 space-y-4 empty:hidden">
@@ -182,6 +176,8 @@ const ui = uiTranslations[currentLang];
   import { CoordinateFinder } from '../utils/CoordinateFinder';
   import { escapeHtml, safeJsonStringify } from '../utils/utils';
   import { getWalletBalance, setWalletBalance } from '../utils/db';
+  import { getTransportLabel } from '../utils/transport';
+  import { WasmLoader } from '../utils/WasmLoader';
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
@@ -191,9 +187,6 @@ const ui = uiTranslations[currentLang];
   const balanceBadge = document.getElementById('balance-badge');
   const searchBtn = document.getElementById('search-btn'); // Renamed from btn for clarity, but keeping logic
   const resultsContainer = document.getElementById('results-container');
-
-
-  // Helpers
 
 
   // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
@@ -239,22 +232,34 @@ const ui = uiTranslations[currentLang];
       return {
           ...journey,
           total_price: journey.total_price ?? 0,
-          duration_minutes: journey.duration_minutes ?? 0,
+          duration_minutes: (journey.duration_minutes ?? (journey.legs || []).reduce((acc, l) => acc + (l.duration_minutes || 0), 0)) || 0,
           legs: (journey.legs || []).map(leg => {
               const paradas = leg.paradas || [];
               const firstStop = paradas.length > 0 ? paradas[0] : null;
               const lastStop = paradas.length > 0 ? paradas[paradas.length - 1] : null;
+              // Normalize paradas to always have a `name` field (WASM uses `nombre`)
+              // Explicitly map known fields to avoid propagating unexpected data
+              const normalizedParadas = paradas.map(p => ({
+                  nombre: p.nombre || p.name || '',
+                  name: p.nombre || p.name || '',
+                  lat: p.lat ?? 0,
+                  lng: p.lng ?? 0,
+                  orden: p.orden ?? 0,
+              }));
               return {
                   ...leg,
                   name: leg.name || leg.nombre || '',
                   transport_type: leg.transport_type || leg.tipo || 'Bus_Urbano',
                   operator: leg.operator || leg.operador || '',
                   frequency: leg.frequency || (leg.frecuencia_minutos ? `${leg.frecuencia_minutos} min` : ''),
-                  duration: leg.duration || '',
+                  duration_minutes: leg.duration_minutes || leg.frecuencia_minutos || 0,
+                  duration: leg.duration || (leg.frecuencia_minutos ? `${leg.frecuencia_minutos} min` : ""),
                   badges: leg.badges || [],
                   origin_hub: leg.origin_hub || firstStop?.nombre || '',
                   dest_hub: leg.dest_hub || lastStop?.nombre || '',
-                  stops: leg.stops || (paradas.length > 0 ? paradas.map(p => p.nombre) : []),
+                  // Keep stops as objects with `name` field for stopsPreview and map rendering
+                  stops: normalizedParadas.length > 0 ? normalizedParadas : (leg.stops || []),
+                  paradas: normalizedParadas,
               };
           })
       };
@@ -307,6 +312,30 @@ const ui = uiTranslations[currentLang];
       updateBalance();
   });
 
+  // Listen for map stop selections (from InteractiveMap popup buttons)
+  // Note: registered once at top level; handler is idempotent so duplicates are safe.
+  // The guard is on the window flag to avoid duplicate registration across view transitions.
+  if (!(window as any).__mapSetStopListenerAttached) {
+      (window as any).__mapSetStopListenerAttached = true;
+      window.addEventListener('MAP_SET_STOP', (event: any) => {
+          const { type, name } = event.detail || {};
+          if (!name) return;
+          if (type === 'origin') {
+              const originInput = document.getElementById('origin-input') as HTMLInputElement;
+              if (originInput) {
+                  originInput.value = name;
+                  originInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+          } else if (type === 'dest') {
+              const destInput = document.getElementById('destination-input') as HTMLInputElement;
+              if (destInput) {
+                  destInput.value = name;
+                  destInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+          }
+      });
+  }
+
 
 
   async function start() {
@@ -319,18 +348,15 @@ const ui = uiTranslations[currentLang];
 
     try {
       console.log("Initializing WASM...");
-      const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
+
 
       // 1. Load WASM Module with Timeout
-      const modulePromise = (async () => {
-          const mod = await import(/* @vite-ignore */ wasmPath);
-          await mod.default();
-          return mod;
-      })();
+      const modulePromise = WasmLoader.getModule();
 
       const module = await Promise.race([modulePromise, timeoutPromise]);
 
       find_route = module.find_route;
+      window.find_route = find_route; // Expose for debugging/testing
       validate_operator_funds = module.validate_operator_funds;
       load_catalog = module.load_catalog;
 
@@ -366,7 +392,7 @@ const ui = uiTranslations[currentLang];
 
               // 2. Normalize Routes
               if (normalized.rutas) {
-                  normalized.rutas = normalized.rutas.map((r: any) => {
+                  normalized.rutas = normalized.rutas.map((r: RouteData) => {
                       const route = { ...r };
                       // Convert string horario to Schedule object
                       if (typeof route.horario === 'string') {
@@ -388,6 +414,39 @@ const ui = uiTranslations[currentLang];
               payload = JSON.stringify(normalized);
           }
 
+          // ⚡ Autonomy: merge user-created routes from routes-index.json (non-blocking)
+          try {
+              const indexResp = await fetch('/data/routes-index.json');
+              if (indexResp.ok) {
+                  const index = await indexResp.json();
+                  const parsedPayload = JSON.parse(payload);
+                  const existingIds = new Set((parsedPayload.rutas || []).map((r: any) => r.id));
+                  let merged = 0;
+                  for (const entry of (index.files || [])) {
+                      try {
+                          const rResp = await fetch(`/data/${entry.file}`);
+                          if (!rResp.ok) continue;
+                          const routeData = await rResp.json();
+                          const routes: any[] = Array.isArray(routeData) ? routeData
+                              : (routeData.rutas ? routeData.rutas : (routeData.id ? [routeData] : []));
+                          for (const r of routes) {
+                              if (r?.id && !existingIds.has(r.id) && (r.paradas || r.stops || []).length > 0) {
+                                  parsedPayload.rutas.push(r);
+                                  existingIds.add(r.id);
+                                  merged++;
+                              }
+                          }
+                          // Tell SW to cache this route file for offline use
+                          navigator.serviceWorker?.controller?.postMessage({ type: 'CACHE_USER_ROUTE', url: `/data/${entry.file}` });
+                      } catch { /* skip individual file errors silently */ }
+                  }
+                  if (merged > 0) {
+                      payload = JSON.stringify(parsedPayload);
+                      console.log(`⚡ [RouteCalculator] Merged ${merged} user routes from routes-index`);
+                  }
+              }
+          } catch { /* routes-index.json may not exist yet (first build) — silently skip */ }
+
           // Sentinel: Enforce 10MB limit
           if (payload.length > 10 * 1024 * 1024) {
              throw new Error("Catalog too large (DoS protection)");
@@ -395,7 +454,8 @@ const ui = uiTranslations[currentLang];
 
           load_catalog(payload);
           console.timeEnd("WASM Load");
-          console.log("✅ Catalog loaded into WASM:", jsonData?.rutas?.length || 0, "routes");
+          const _routeCount = (() => { try { return JSON.parse(payload)?.rutas?.length || 0; } catch { return 0; } })();
+          console.log("✅ Catalog loaded into WASM:", _routeCount, "routes");
 
           // UI Ready State
           const searchBtn = document.getElementById("search-btn");
@@ -454,7 +514,7 @@ const ui = uiTranslations[currentLang];
         const db = coordinatesStore.getDB();
         
         if (db) {
-            finder = new CoordinateFinder(db);
+            finder = new CoordinateFinder(db, coordinatesStore.getOriginalNames());
             console.log("Coordinate Finder Ready");
 
             // Setup Autocomplete
@@ -479,6 +539,7 @@ const ui = uiTranslations[currentLang];
       const list = document.createElement('ul');
       list.className = 'graffiti-dropdown divide-y divide-slate-50';
       list.id = `${inputId}-suggestions`;
+      list.style.pointerEvents = 'auto'; // Ensure clicks are captured
 
       // GraffitiWarrior: Native Popover API
       try {
@@ -559,13 +620,16 @@ const ui = uiTranslations[currentLang];
                  const { latitude, longitude } = pos.coords;
                  const originInput = document.getElementById('origin-input');
                  if (originInput && finder) {
-                     // Reverse Geocode or Find Nearest Stop
-                     const nearest = coordinatesStore.findNearest(latitude, longitude);
-                     if (nearest) {
-                         originInput.value = nearest;
-                         showToast(`GPS: ${nearest}`, 'success');
+                     // Reverse Geocode: resolve GPS coords to nearest registered stop
+                     const gpsResult = coordinatesStore.findNearestWithDistance(latitude, longitude);
+                     if (gpsResult && gpsResult.distanceKm < 1.0) {
+                         originInput.value = gpsResult.name;
+                         const meters = Math.round(gpsResult.distanceKm * 1000);
+                         showToast(`GPS: ${gpsResult.name} (${meters} m)`, 'success');
                      } else {
-                         originInput.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                         // No registered stop within 1 km — ask user to search manually
+                         showToast('No hay paradas registradas cerca. Escribe tu ubicación manualmente.', 'warning');
+                         originInput.focus();
                      }
                  }
                  gpsBtn.classList.remove('animate-pulse');
@@ -725,15 +789,15 @@ const ui = uiTranslations[currentLang];
   function renderEmptyState() {
       if (!resultsContainer) return;
       resultsContainer.innerHTML = `
-          <div class="glass-card text-center animate-slide-up py-8">
-              <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg class="w-8 h-8 text-slate-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.71 5.71L18.29 2.29a1 1 0 00-1.41 0l-.71.71L12 7.17l-1.29-1.29a1 1 0 00-1.42 0L2.29 12.88a1 1 0 000 1.41l3.42 3.42a1 1 0 001.41 0l.71-.71L12 12.83l1.29 1.29a1 1 0 001.42 0l7-7a1 1 0 000-1.41z"/></svg>
+          <div class="glass-card text-center animate-slide-up py-10 px-6">
+              <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                  <svg class="w-10 h-10 text-slate-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.71 5.71L18.29 2.29a1 1 0 00-1.41 0l-.71.71L12 7.17l-1.29-1.29a1 1 0 00-1.42 0L2.29 12.88a1 1 0 000 1.41l3.42 3.42a1 1 0 001.41 0l.71-.71L12 12.83l1.29 1.29a1 1 0 001.42 0l7-7a1 1 0 000-1.41z"/></svg>
               </div>
-              <h3 class="font-display font-black text-lg mb-2" style="color: var(--text-primary);" data-i18n="calc.no_route">${ui['calc.no_route'] || 'No routes found'}</h3>
-              <p class="text-sm mb-6 max-w-[200px] mx-auto" style="color: var(--text-secondary);" data-i18n="calc.no_route_msg">
+              <h3 class="font-display font-black text-xl mb-3" style="color: var(--text-primary);" data-i18n="calc.no_route">${ui['calc.no_route'] || 'No routes found'}</h3>
+              <p class="text-sm mb-8 max-w-[260px] mx-auto leading-relaxed" style="color: var(--text-secondary);" data-i18n="calc.no_route_msg">
                   ${ui['calc.no_route_msg'] || 'Try changing your origin or destination, or walking to a main avenue.'}
               </p>
-               <button class="btn-secondary btn-sm js-retry-search-btn" data-i18n="calc.retry">
+               <button class="btn-primary btn-md w-full js-retry-search-btn uppercase tracking-widest" data-i18n="calc.retry">
                   ${ui['calc.retry'] || 'Try Again'}
               </button>
           </div>
@@ -784,29 +848,6 @@ const ui = uiTranslations[currentLang];
           });
       });
 
-      // Toggle Results List
-      const toggleBtn = document.getElementById('toggle-list-btn');
-      if (toggleBtn) {
-          toggleBtn.addEventListener('click', () => {
-              const resultsContainer = document.getElementById('results-container');
-              const bestResultArea = document.getElementById('best-result-area');
-              const toggleText = document.getElementById('toggle-list-text');
-              const toggleIcon = document.getElementById('toggle-list-icon');
-              const isHidden = resultsContainer?.classList.contains('hidden');
-
-              if (isHidden) {
-                  resultsContainer?.classList.remove('hidden');
-                  bestResultArea?.classList.remove('hidden');
-                  if (toggleText) toggleText.textContent = ui['calc.toggle.hide'] || 'Hide';
-                  if (toggleIcon) toggleIcon.style.transform = '';
-              } else {
-                  resultsContainer?.classList.add('hidden');
-                  bestResultArea?.classList.add('hidden');
-                  if (toggleText) toggleText.textContent = ui['calc.toggle.show'] || 'Show';
-                  if (toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
-              }
-          });
-      }
 
       // Map Picker Button
       const mapPickerBtn = document.getElementById('map-picker-btn');
@@ -901,14 +942,19 @@ const ui = uiTranslations[currentLang];
                  const countLabel = document.getElementById('results-count-label');
                  const timeBadge = document.getElementById('results-time-badge');
                  
-                 if (countLabel) countLabel.textContent = countText;
+                 if (countLabel) {
+                     countLabel.textContent = countText;
+                     countLabel.classList.remove('hidden');
+                 }
                  
                  if (timeBadge) {
                      timeBadge.textContent = timeText;
                      if (showTimeBadge) {
                          timeBadge.classList.remove('hidden');
+                         timeBadge.style.display = 'inline-flex';
                      } else {
                          timeBadge.classList.add('hidden');
+                         timeBadge.style.display = 'none';
                      }
                  }
 
@@ -917,18 +963,14 @@ const ui = uiTranslations[currentLang];
 
                  // Render Cards
                  if (bestResultArea) {
-                     if (best.type === 'Transfer') {
-                         bestResultArea.innerHTML = renderTransferCardHtml(best, true);
-                     } else {
-                         bestResultArea.innerHTML = renderBestResultHtml(best, true);
-                     }
+                     bestResultArea.innerHTML = best.type === 'Transfer' ? renderTransferCardHtml(best, true) : renderBestResultHtml(best, true);
                  }
 
                  if (others.length > 0 && resultsContainer) {
                      others.forEach(r => {
                          const div = document.createElement('div');
                          div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r);
-                         resultsContainer.appendChild(div.firstElementChild);
+                         if (div.firstElementChild) resultsContainer.appendChild(div.firstElementChild);
                      });
                  }
                  
@@ -1116,6 +1158,24 @@ const ui = uiTranslations[currentLang];
   @keyframes gw-fade-out {
     from { opacity: 1; }
     to { opacity: 0; }
+  }
+
+  /* GraffitiWarrior: Native CSS Toggle Logic */
+  .calculator-wrapper:has(#results-toggle:not(:checked)) #best-result-area,
+  .calculator-wrapper:has(#results-toggle:not(:checked)) #results-container {
+      display: none;
+  }
+
+  .calculator-wrapper:has(#results-toggle:not(:checked)) .toggle-hide-text {
+      display: none;
+  }
+
+  .calculator-wrapper:has(#results-toggle:not(:checked)) .toggle-show-text {
+      display: inline;
+  }
+
+  .calculator-wrapper:has(#results-toggle:not(:checked)) .toggle-icon {
+      transform: rotate(180deg);
   }
 </style>
 
