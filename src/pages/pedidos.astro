@@ -72,11 +72,9 @@ import MainLayout from '../layouts/MainLayout.astro';
     <div style="position:relative;">
       <textarea id="input-address" class="input" rows="2"
                 placeholder="Av. Tulum #123, SM 5, Cancún..."
-                style="resize:none;border-radius:var(--radius-lg);"></textarea>
+                style="resize:none;border-radius:var(--radius-lg);" aria-describedby="address-warning"></textarea>
       <div id="address-suggestions" class="suggestions-dropdown" style="display:none;" role="listbox"></div>
-      <p id="address-warning" style="display:none;color:var(--color-accent);font-size:0.75rem;margin-top:0.375rem;font-weight:600;">
-        ⚠️ Dirección no encontrada. Se guardará sin mapa.
-      </p>
+      <p id="address-warning" role="status" aria-live="polite" style="display:none;color:var(--color-accent);font-size:0.75rem;margin-top:0.375rem;font-weight:600;"></p>
     </div>
   </div>
 
@@ -173,8 +171,10 @@ import MainLayout from '../layouts/MainLayout.astro';
   // -- Address Autocomplete State --
   let currentCoords: { lat: number, lng: number } | null = null;
   let autocompleteTimeout: number | undefined;
+  let searchToken = 0;
 
-  async function geocodeAddress(query: string) {
+  // Returns Nominatim results array, { serviceUnavailable: true } on 429/503, or [] on other errors.
+  async function geocodeAddress(query: string): Promise<any[] | { serviceUnavailable: true }> {
     try {
       // Add Cancun to query if not present to improve local results
       const q = query.toLowerCase().includes('cancun') || query.toLowerCase().includes('cancún')
@@ -185,6 +185,9 @@ import MainLayout from '../layouts/MainLayout.astro';
       const res = await fetch(url, {
         headers: { 'Accept-Language': 'es' }
       });
+      if (res.status === 429 || res.status === 503) {
+        return { serviceUnavailable: true };
+      }
       if (!res.ok) throw new Error('Network response was not ok');
       return await res.json();
     } catch (err) {
@@ -193,22 +196,31 @@ import MainLayout from '../layouts/MainLayout.astro';
     }
   }
 
-  function renderSuggestions(results: any[]) {
+  function renderSuggestions(results: any[] | { serviceUnavailable: true }) {
     const container = document.getElementById('address-suggestions');
     const warning = document.getElementById('address-warning');
     if (!container || !warning) return;
 
     container.innerHTML = '';
 
-    if (results.length === 0) {
+    if (!Array.isArray(results) && (results as any).serviceUnavailable) {
       container.style.display = 'none';
+      warning.textContent = '⚠️ Servicio de geocodificación no disponible. Inténtalo de nuevo más tarde.';
+      warning.style.display = 'block';
+      return;
+    }
+
+    const arr = results as any[];
+    if (arr.length === 0) {
+      container.style.display = 'none';
+      warning.textContent = '⚠️ Dirección no encontrada. Se guardará sin mapa.';
       warning.style.display = 'block';
       return;
     }
 
     warning.style.display = 'none';
 
-    results.forEach(res => {
+    arr.forEach(res => {
       const div = document.createElement('div');
       div.className = 'suggestion-item';
       div.setAttribute('role', 'option');
@@ -255,16 +267,19 @@ import MainLayout from '../layouts/MainLayout.astro';
     // Reset coords when typing manually
     currentCoords = null;
 
-    if (!val) {
+    if (!val || val.length < 3) {
       if (container) container.style.display = 'none';
       if (warning) warning.style.display = 'none';
+      clearTimeout(autocompleteTimeout);
       return;
     }
 
     clearTimeout(autocompleteTimeout);
     autocompleteTimeout = window.setTimeout(async () => {
-      if (val.length < 3) return;
+      const token = ++searchToken;
       const results = await geocodeAddress(val);
+      // Discard stale responses
+      if (token !== searchToken) return;
       renderSuggestions(results);
     }, 500);
   }
@@ -447,7 +462,7 @@ import MainLayout from '../layouts/MainLayout.astro';
     if (currentMode === 'text' && currentCoords) {
       finalLat = currentCoords.lat;
       finalLng = currentCoords.lng;
-    } else {
+    } else if (currentMode === 'coords') {
       const latStr = (document.getElementById('input-lat') as HTMLInputElement).value;
       const lngStr = (document.getElementById('input-lng') as HTMLInputElement).value;
       if (latStr) finalLat = parseFloat(latStr);
@@ -616,13 +631,13 @@ import MainLayout from '../layouts/MainLayout.astro';
     });
 
     // Close suggestions when clicking outside
-    document.addEventListener('click', (e) => {
+    document.onclick = (e) => {
       const container = document.getElementById('address-suggestions');
       const input = document.getElementById('input-address');
       if (container && input && e.target !== input && !container.contains(e.target as Node)) {
         container.style.display = 'none';
       }
-    });
+    };
     document.getElementById('input-lat')?.addEventListener('input', updateSaveBtn);
     document.getElementById('input-lng')?.addEventListener('input', updateSaveBtn);
     document.getElementById('input-link')?.addEventListener('input', updateSaveBtn);
