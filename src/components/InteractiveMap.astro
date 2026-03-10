@@ -143,9 +143,10 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     // Load coordinates DB via Store (Optimized)
     try {
         await coordinatesStore.init();
-        coordinatesDB = coordinatesStore.getDB() || {};
+        coordinatesDB = coordinatesStore.getDB() || new Map();
     } catch (e) {
         console.warn("Failed to load coordinates via Store", e);
+        coordinatesDB = new Map();
     }
 
     // Map loading complete
@@ -170,9 +171,11 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
             const nearest = coordinatesStore.findNearest(lat, lng);
             let minDist = Infinity;
 
-            if (nearest && coordinatesDB[nearest]) {
-                 const coords = coordinatesDB[nearest];
-                 minDist = e.latlng.distanceTo(window.L.latLng(coords[0], coords[1]));
+            if (nearest && coordinatesDB instanceof Map && coordinatesDB.has(nearest)) {
+                 const coords = coordinatesDB.get(nearest);
+                 if (coords) {
+                     minDist = e.latlng.distanceTo(window.L.latLng(coords[0], coords[1]));
+                 }
             }
 
             // Threshold: 1000 meters
@@ -211,7 +214,9 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     if (pendingRoute) {
         try {
             const data = JSON.parse(pendingRoute);
-            const newLg = drawRoute(map, data, layerGroup, coordinatesDB); if(newLg) layerGroup = newLg;
+            if (coordinatesDB instanceof Map) {
+                const newLg = drawRoute(map, data, layerGroup, coordinatesDB); if(newLg) layerGroup = newLg;
+            }
             localStorage.removeItem('pending_route');
         } catch (e) {
             console.error("Error parsing pending route", e);
@@ -220,32 +225,30 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
 
     // Draw all points from DB as refined markers
-    if (!pendingRoute) {
+    if (!pendingRoute && coordinatesDB instanceof Map) {
         const newLayers = [];
-        const allStops = Object.entries(coordinatesDB);
+        const allStops = Array.from(coordinatesDB.entries());
 
         // 🛡️ SECURITY: Prevent Client-Side DoS
-        // Rendering 1000+ markers crashes the browser. Only render if count is low (< 100).
-        if (allStops.length > 100) {
+        if (allStops.length > 150) {
                 console.warn(`[Map] Too many stops (${allStops.length}) to render safely. Showing optimized view.`);
-                if (window.showToast) window.showToast("Zoom to explore area", "info");
         } else {
             allStops.forEach(([name, coords]) => {
-                const isRoute = name.startsWith('RUTA') || name.startsWith('Ruta');
+                const isRoute = name.toLowerCase().includes('ruta');
 
                 // Premium Marker Styling
                 const marker = window.L.circleMarker(coords, {
-                    radius: isRoute ? 8 : 5,
-                    fillColor: isRoute ? '#F97316' : '#3B82F6',
+                    radius: isRoute ? 7 : 5,
+                    fillColor: isRoute ? '#F97316' : '#0EA5E9',
                     color: '#FFFFFF',
                     weight: 2,
                     opacity: 1,
                     fillOpacity: 0.9
                 }).bindPopup(`
                     <div class="p-1">
-                        <p class="font-bold text-gray-900">${escapeHtml(name)}</p>
-                        <p class="text-xs text-gray-500">${isRoute ? '🚌 Ruta Detectada' : '📍 Punto de Interés'}</p>
-                        <button data-stop-name="${escapeHtml(name)}" class="js-view-details-btn mt-2 w-full text-xs bg-primary-600 text-white rounded py-1 font-bold">Ver Detalles</button>
+                        <p class="font-black text-slate-900">${escapeHtml(name)}</p>
+                        <p class="text-xxs font-bold text-slate-500 uppercase tracking-widest">${isRoute ? '🚌 Ruta de Transporte' : '📍 Parada / Punto'}</p>
+                        <button data-stop-name="${escapeHtml(name)}" class="js-view-details-btn mt-2 w-full text-xxs bg-slate-900 text-white rounded-lg py-1.5 font-black uppercase">Ver Rutas</button>
                     </div>
                 `);
                 newLayers.push(marker);
@@ -254,10 +257,9 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         
         if (newLayers.length > 0) {
             layerGroup = window.L.layerGroup(newLayers).addTo(map);
-            // Optionally fit bounds to all points if database is not empty
-            const allCoords = Object.values(coordinatesDB);
+            const allCoords = Array.from(coordinatesDB.values());
             if (allCoords.length > 0) {
-                map.fitBounds(allCoords, { padding: [40, 40], maxZoom: 15 });
+                map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 14 });
             }
         }
     }
@@ -270,7 +272,9 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
   window.addEventListener('SHOW_ROUTE_ON_MAP', (event) => {
       const { journey } = event.detail;
-      const newLg = drawRoute(map, journey, layerGroup, coordinatesDB); if(newLg) layerGroup = newLg;
+      if (coordinatesDB instanceof Map) {
+          const newLg = drawRoute(map, journey, layerGroup, coordinatesDB); if(newLg) layerGroup = newLg;
+      }
   });
 
   // Cleanup on page swap (Astro)
