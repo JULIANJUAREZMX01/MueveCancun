@@ -113,30 +113,25 @@ export async function dbPutMany<T>(store: string, values: T[]): Promise<void> {
   if (values.length === 0) return;
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(store, 'readwrite');
+    let settled = false;
+    const settle = (fn: () => void) => { if (!settled) { settled = true; fn(); } };
+
+    // durability:'relaxed' skips the OS-level fsync on each write,
+    // significantly improving throughput for bulk inserts/updates.
+    const tx = db.transaction(store, 'readwrite', { durability: 'relaxed' });
     const os = tx.objectStore(store);
-    values.forEach(v => os.put(v));
-    tx.oncomplete = () => resolve();
-    tx.onerror    = () => reject(tx.error);
-    tx.onabort    = () => {
-      if (tx.error) {
-        reject(tx.error);
-      } else {
-        reject(new Error('IndexedDB transaction aborted'));
-      }
-    };
+
+    tx.oncomplete = () => settle(resolve);
+    tx.onerror    = () => settle(() => reject(tx.error));
+    tx.onabort    = () => settle(() => reject(tx.error ?? new Error('IndexedDB transaction aborted')));
 
     try {
       for (const v of values) {
         os.put(v);
       }
     } catch (err) {
-      try {
-        tx.abort();
-      } catch {
-        // Ignore abort errors; the original error is more relevant
-      }
-      reject(err);
+      try { tx.abort(); } catch { /* ignore */ }
+      settle(() => reject(err as Error));
     }
   });
 }
