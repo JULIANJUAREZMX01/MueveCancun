@@ -310,6 +310,25 @@ const ui = uiTranslations[currentLang];
       updateBalance();
   });
 
+  // Listen for map stop selections (from InteractiveMap popup buttons)
+  window.addEventListener('MAP_SET_STOP', (event: any) => {
+      const { type, name } = event.detail || {};
+      if (!name) return;
+      if (type === 'origin') {
+          const originInput = document.getElementById('origin-input') as HTMLInputElement;
+          if (originInput) {
+              originInput.value = name;
+              originInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+      } else if (type === 'dest') {
+          const destInput = document.getElementById('destination-input') as HTMLInputElement;
+          if (destInput) {
+              destInput.value = name;
+              destInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+      }
+  });
+
 
 
   async function start() {
@@ -560,13 +579,16 @@ const ui = uiTranslations[currentLang];
                  const { latitude, longitude } = pos.coords;
                  const originInput = document.getElementById('origin-input');
                  if (originInput && finder) {
-                     // Reverse Geocode or Find Nearest Stop
-                     const nearest = coordinatesStore.findNearest(latitude, longitude);
-                     if (nearest) {
-                         originInput.value = nearest;
-                         showToast(`GPS: ${nearest}`, 'success');
+                     // Reverse Geocode: resolve GPS coords to nearest registered stop
+                     const gpsResult = coordinatesStore.findNearestWithDistance(latitude, longitude);
+                     if (gpsResult && gpsResult.distanceKm < 1.0) {
+                         originInput.value = gpsResult.name;
+                         const meters = Math.round(gpsResult.distanceKm * 1000);
+                         showToast(`GPS: ${gpsResult.name} (${meters} m)`, 'success');
                      } else {
-                         originInput.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                         // No registered stop within 1 km — ask user to search manually
+                         showToast('No hay paradas registradas cerca. Escribe tu ubicación manualmente.', 'warning');
+                         originInput.focus();
                      }
                  }
                  gpsBtn.classList.remove('animate-pulse');

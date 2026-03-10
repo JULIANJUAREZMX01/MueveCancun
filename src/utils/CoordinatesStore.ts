@@ -108,37 +108,41 @@ export class CoordinatesStore {
     }
 
     findNearest(lat: number, lng: number): string | null {
+        return this.findNearestWithDistance(lat, lng)?.name ?? null;
+    }
+
+    /** Returns the nearest stop with its distance in km.  Returns null if no stops are indexed. */
+    findNearestWithDistance(lat: number, lng: number): { name: string; distanceKm: number } | null {
         if (!this.db) return null;
 
         let minDist = Infinity;
-        let nearest: string | null = null;
+        let nearestKey: string | null = null;
 
-        // Try O(1) Spatial Hash first
+        // O(1) Spatial Hash first
         if (this.spatialIndex) {
             const candidates = this.spatialIndex.query(lat, lng);
-            if (candidates.length > 0) {
-                for (const point of candidates) {
-                    const d = getDistance(lat, lng, point.lat, point.lng);
-                    if (d < minDist) {
-                        minDist = d;
-                        nearest = point.data;
-                    }
+            for (const point of candidates) {
+                const d = getDistance(lat, lng, point.lat, point.lng);
+                if (d < minDist) {
+                    minDist = d;
+                    nearestKey = point.data;
                 }
             }
         }
 
-        // 2. Global Search (O(N)) - Verifies against all points using minDist from spatial index
-        // Using array iteration is faster than Object.entries
+        // O(N) global search to verify / find if spatial hash returned nothing
         for (const point of this.allPoints) {
             const d = getDistance(lat, lng, point.lat, point.lng);
             if (d < minDist) {
                 minDist = d;
-                nearest = point.name;
+                nearestKey = point.name;
             }
         }
 
-        // Return original-cased name for display (nearest is a lowercase key)
-        return nearest ? (this.originalNames.get(nearest) || nearest) : null;
+        if (!nearestKey) return null;
+
+        const name = this.originalNames.get(nearestKey) || nearestKey;
+        return { name, distanceKm: minDist };
     }
 }
 
