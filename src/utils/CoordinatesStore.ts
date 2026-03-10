@@ -130,12 +130,14 @@ export class CoordinatesStore {
             }
         }
 
-        // O(N) global search to verify / find if spatial hash returned nothing
-        for (const point of this.allPoints) {
-            const d = getDistance(lat, lng, point.lat, point.lng);
-            if (d < minDist) {
-                minDist = d;
-                nearestKey = point.name;
+        // O(N) global search only when spatial hash returned no candidates
+        if (minDist === Infinity) {
+            for (const point of this.allPoints) {
+                const d = getDistance(lat, lng, point.lat, point.lng);
+                if (d < minDist) {
+                    minDist = d;
+                    nearestKey = point.name;
+                }
             }
         }
 

@@ -176,7 +176,8 @@ async function networkFirstWithCache(request) {
     }
     return response;
   } catch {
-    return caches.match(request) || new Response('{}', { status: 503, headers: { 'Content-Type': 'application/json' } });
+    const cached = await caches.match(request);
+    return cached || new Response('{}', { status: 503, headers: { 'Content-Type': 'application/json' } });
   }
 }
 

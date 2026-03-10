@@ -311,23 +311,28 @@ const ui = uiTranslations[currentLang];
   });
 
   // Listen for map stop selections (from InteractiveMap popup buttons)
-  window.addEventListener('MAP_SET_STOP', (event: any) => {
-      const { type, name } = event.detail || {};
-      if (!name) return;
-      if (type === 'origin') {
-          const originInput = document.getElementById('origin-input') as HTMLInputElement;
-          if (originInput) {
-              originInput.value = name;
-              originInput.dispatchEvent(new Event('input', { bubbles: true }));
+  // Note: registered once at top level; handler is idempotent so duplicates are safe.
+  // The guard is on the window flag to avoid duplicate registration across view transitions.
+  if (!(window as any).__mapSetStopListenerAttached) {
+      (window as any).__mapSetStopListenerAttached = true;
+      window.addEventListener('MAP_SET_STOP', (event: any) => {
+          const { type, name } = event.detail || {};
+          if (!name) return;
+          if (type === 'origin') {
+              const originInput = document.getElementById('origin-input') as HTMLInputElement;
+              if (originInput) {
+                  originInput.value = name;
+                  originInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+          } else if (type === 'dest') {
+              const destInput = document.getElementById('destination-input') as HTMLInputElement;
+              if (destInput) {
+                  destInput.value = name;
+                  destInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
           }
-      } else if (type === 'dest') {
-          const destInput = document.getElementById('destination-input') as HTMLInputElement;
-          if (destInput) {
-              destInput.value = name;
-              destInput.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-      }
-  });
+      });
+  }
 
 
 
