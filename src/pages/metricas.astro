@@ -159,7 +159,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 
 <script>
   import { getStops, dbGetAll, STORES } from '../lib/idb';
-  import type { Stop } from '../lib/idb';
+  import type { Stop, DailyStats } from '../lib/idb';
 
   const WEEK_GOAL_KEY  = 'mr-week-goal';
   const WEEK_GOAL_DEFAULT = 2000;
@@ -257,9 +257,31 @@ import MainLayout from '../layouts/MainLayout.astro';
         ? `$${bestIncome} (${dayNames[dayCounts.indexOf(bestIncomeDay!)]})`
         : '$—';
 
-    // ROI change (compare to prev week placeholder)
-    // TODO: implement with STORES.STATS once backend is live
-    document.getElementById('roi-change')!.textContent = weekIncome > 0 ? '+—%' : '—';
+    // ROI change (compare to prev week)
+    const prevWeekDaysKeys = weekDays.map(d => {
+      const prev = new Date(d);
+      prev.setDate(prev.getDate() - 7);
+      return dateKey(prev);
+    });
+
+    const stats = await dbGetAll<DailyStats>(STORES.STATS);
+    const prevWeekIncome = stats
+      .filter(s => prevWeekDaysKeys.includes(s.date))
+      .reduce((sum, s) => sum + (s.income ?? 0), 0);
+
+    const roiChangeEl = document.getElementById('roi-change')!;
+    if (prevWeekIncome > 0) {
+      const pct = ((weekIncome - prevWeekIncome) / prevWeekIncome) * 100;
+      const sign = pct > 0 ? '+' : '';
+      roiChangeEl.textContent = `${sign}${pct.toFixed(0)}%`;
+      roiChangeEl.style.color = pct >= 0 ? 'var(--color-primary)' : 'var(--color-accent)';
+    } else if (weekIncome > 0) {
+      roiChangeEl.textContent = '+100%';
+      roiChangeEl.style.color = 'var(--color-primary)';
+    } else {
+      roiChangeEl.textContent = '—';
+      roiChangeEl.style.color = 'var(--text-tertiary)';
+    }
   }
 
   function buildExportMessage(): string {

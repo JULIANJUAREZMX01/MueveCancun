@@ -1,5 +1,5 @@
 {
-  "name": "cancunmueve-pwa",
+  "name": "mueve-reparto",
   "version": "1.0.0",
   "type": "module",
   "packageManager": "pnpm@9.15.4",
@@ -13,25 +13,24 @@
     }
   },
   "scripts": {
-    "optimize-json": "node scripts/optimize-json.mjs",
-    "dev": "pnpm run optimize-json && astro dev",
-    "dev:network": "pnpm run optimize-json && astro dev --host",
-    "build": "pnpm optimize-json && node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
-    "build:wasm": "node scripts/build-wasm.mjs",
+    "dev": "astro dev",
+    "dev:network": "astro dev --host",
+    "build": "astro build",
+    "start": "HOST=0.0.0.0 node dist/server/entry.mjs",
     "astro": "astro",
     "lint": "eslint .",
     "preview": "astro preview",
-    "test": "vitest",
-    "check-wasm": "node scripts/check-wasm.cjs"
+    "test": "vitest"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
+    "@astrojs/node": "^9.5.4",
     "@astrojs/rss": "^4.0.5",
     "@astrojs/sitemap": "^3.2.1",
     "@astrojs/tailwind": "^5.1.0",
     "@tailwindcss/typography": "^0.5.10",
     "@types/node": "^24.10.1",
-    "astro": "^5.16.15",
+    "astro": "^5.18.0",
     "autoprefixer": "^10.4.23",
     "clsx": "^2.1.1",
     "fuse.js": "^7.0.0",

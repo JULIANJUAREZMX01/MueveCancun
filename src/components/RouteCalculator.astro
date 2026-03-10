@@ -192,6 +192,20 @@ const ui = uiTranslations[currentLang];
 
 
   // Helpers
+  function updateResultsHeader(countText, timeText = '', showTimeBadge = false) {
+      const countLabel = document.getElementById('results-count-label');
+      const timeBadge = document.getElementById('results-time-badge');
+
+      if (countLabel) countLabel.textContent = countText;
+      if (timeBadge) {
+          timeBadge.textContent = timeText;
+          if (showTimeBadge) {
+              timeBadge.classList.remove('hidden');
+          } else {
+              timeBadge.classList.add('hidden');
+          }
+      }
+  }
 
 
   // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
@@ -207,7 +221,7 @@ const ui = uiTranslations[currentLang];
                   if (raw) {
                       const journey = JSON.parse(raw);
                       window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey } }));
-                      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_ACTIVE' }));
+                      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
                   }
               } catch (err) {
                   console.error("Invalid journey data", err);
@@ -215,8 +229,15 @@ const ui = uiTranslations[currentLang];
           }
 
           // Sentinel Security Fix: Retry Button Delegation
-          if (target.closest('.js-retry-search-btn')) {
-              setTimeout(() => document.getElementById('origin-input')?.focus(), 50);
+          const retryBtn = target.closest('.js-retry-search-btn');
+          if (retryBtn) {
+              e.preventDefault();
+              setTimeout(() => {
+                  const originInput = document.getElementById('origin-input');
+                  if (originInput) {
+                      originInput.focus();
+                  }
+              }, 50);
           }
       });
   }
@@ -845,10 +866,7 @@ const ui = uiTranslations[currentLang];
           btnText?.classList.add('hidden');
           
           // Clear previous results badges
-          const countLabel = document.getElementById('results-count-label');
-          if (countLabel) countLabel.textContent = '';
-          const timeBadge = document.getElementById('results-time-badge');
-          if (timeBadge) timeBadge.textContent = '';
+          updateResultsHeader('', '', false);
 
 
           if (resultsContainer) resultsContainer.innerHTML = '';
@@ -861,10 +879,8 @@ const ui = uiTranslations[currentLang];
                   throw new Error("WASM not ready or find_route not defined");
               }
 
-              console.log(`🔍 Searching: ${origin} -> ${dest}`);
               const results = find_route(origin, dest); // Pass strings directly
 
-              console.log("🔍 Raw Results:", results);
 
               if (!results || results.length === 0) {
                   renderEmptyState();
@@ -885,30 +901,19 @@ const ui = uiTranslations[currentLang];
                   // Prepare UI Data
                  const optionsLabel = ui['calc.results.options'] || 'OPCIONES';
                  const fastestLabel = ui['calc.results.fastest'] || 'MÁS RÁPIDA';
+
                  const countText = `${normalized.length} ${optionsLabel}`;
                  let timeText = '';
                  let showTimeBadge = false;
 
                  if (best) {
-                     let duration = best.duration_minutes || 0;
+                     const duration = best.duration_minutes ?? 0;
                      timeText = `${fastestLabel}: ${duration}min`;
                      showTimeBadge = true;
                  }
 
                  // ATOMIC DOM UPDATE
-                 const countLabel = document.getElementById('results-count-label');
-                 const timeBadge = document.getElementById('results-time-badge');
-                 
-                 if (countLabel) countLabel.textContent = countText;
-                 
-                 if (timeBadge) {
-                     timeBadge.textContent = timeText;
-                     if (showTimeBadge) {
-                         timeBadge.classList.remove('hidden');
-                     } else {
-                         timeBadge.classList.add('hidden');
-                     }
-                 }
+                 updateResultsHeader(countText, timeText, showTimeBadge);
 
                  // Show Info Bar NOW
                  document.getElementById('results-info')?.classList.remove('hidden');
@@ -930,21 +935,7 @@ const ui = uiTranslations[currentLang];
                      });
                  }
                  
-                 // Re-attach map buttons
-                 document.querySelectorAll('.view-map-btn').forEach(btn => {
-                     btn.addEventListener('click', (e) => {
-                         try {
-                             const journeyData = JSON.parse(btn.dataset.journey);
-                             window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', {
-                                detail: { journey: journeyData }
-                             }));
-                             // Also trigger view state change to map
-                             window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
-                         } catch (err) {
-                             console.error("Error parsing journey data for map:", err);
-                         }
-                     });
-                 });
+
               }
 
           } catch (e) {

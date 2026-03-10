@@ -64,12 +64,18 @@ import MainLayout from '../layouts/MainLayout.astro';
     <button class="mode-tab"        data-mode="qr"     aria-pressed="false">QR</button>
   </div>
 
+
+
   <!-- Text mode -->
   <div id="mode-text" class="mode-panel active">
     <label class="field-label">Dirección *</label>
-    <textarea id="input-address" class="input" rows="2"
-              placeholder="Av. Tulum #123, SM 5, Cancún..."
-              style="resize:none;border-radius:var(--radius-lg);"></textarea>
+    <div style="position:relative;">
+      <textarea id="input-address" class="input" rows="2"
+                placeholder="Av. Tulum #123, SM 5, Cancún..."
+                style="resize:none;border-radius:var(--radius-lg);" aria-describedby="address-warning"></textarea>
+      <div id="address-suggestions" class="suggestions-dropdown" style="display:none;" role="listbox"></div>
+      <p id="address-warning" role="status" aria-live="polite" style="display:none;color:var(--color-accent);font-size:0.75rem;margin-top:0.375rem;font-weight:600;"></p>
+    </div>
   </div>
 
   <!-- Coords mode -->
@@ -155,11 +161,129 @@ import MainLayout from '../layouts/MainLayout.astro';
   import { dbPut, dbDelete, dbGetAll, getStops, completeStop, generateId, STORES } from '../lib/idb';
   import type { Stop } from '../lib/idb';
 
+
   let currentFilter = 'all';
   let selectedPriority: 'normal' | 'urgent' = 'normal';
   let currentMode = 'text';
   let allStops: Stop[] = [];
   let editingId: string | null = null;
+
+  // -- Address Autocomplete State --
+  let currentCoords: { lat: number, lng: number } | null = null;
+  let autocompleteTimeout: number | undefined;
+  let searchToken = 0;
+
+  // Returns Nominatim results array, { serviceUnavailable: true } on 429/503, or [] on other errors.
+  async function geocodeAddress(query: string): Promise<any[] | { serviceUnavailable: true }> {
+    try {
+      // Add Cancun to query if not present to improve local results
+      const q = query.toLowerCase().includes('cancun') || query.toLowerCase().includes('cancún')
+        ? query
+        : `${query}, Cancún`;
+
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=5`;
+      const res = await fetch(url, {
+        headers: { 'Accept-Language': 'es' }
+      });
+      if (res.status === 429 || res.status === 503) {
+        return { serviceUnavailable: true };
+      }
+      if (!res.ok) throw new Error('Network response was not ok');
+      return await res.json();
+    } catch (err) {
+      console.error('Geocoding error:', err);
+      return [];
+    }
+  }
+
+  function renderSuggestions(results: any[] | { serviceUnavailable: true }) {
+    const container = document.getElementById('address-suggestions');
+    const warning = document.getElementById('address-warning');
+    if (!container || !warning) return;
+
+    container.innerHTML = '';
+
+    if (!Array.isArray(results) && (results as any).serviceUnavailable) {
+      container.style.display = 'none';
+      warning.textContent = '⚠️ Servicio de geocodificación no disponible. Inténtalo de nuevo más tarde.';
+      warning.style.display = 'block';
+      return;
+    }
+
+    const arr = results as any[];
+    if (arr.length === 0) {
+      container.style.display = 'none';
+      warning.textContent = '⚠️ Dirección no encontrada. Se guardará sin mapa.';
+      warning.style.display = 'block';
+      return;
+    }
+
+    warning.style.display = 'none';
+
+    arr.forEach(res => {
+      const div = document.createElement('div');
+      div.className = 'suggestion-item';
+      div.setAttribute('role', 'option');
+      div.tabIndex = 0;
+
+      const primary = document.createElement('div');
+      primary.className = 'suggestion-primary';
+      const name = res.address?.road ? `${res.address.road}${res.address.house_number ? ' ' + res.address.house_number : ''}` : res.name;
+      primary.textContent = name || res.display_name.split(',')[0];
+
+      const secondary = document.createElement('div');
+      secondary.className = 'suggestion-secondary';
+      secondary.textContent = res.display_name;
+
+      div.appendChild(primary);
+      div.appendChild(secondary);
+
+      div.addEventListener('click', () => {
+        const input = document.getElementById('input-address') as HTMLTextAreaElement;
+        input.value = res.display_name;
+        currentCoords = { lat: parseFloat(res.lat), lng: parseFloat(res.lon) };
+        container.style.display = 'none';
+        updateSaveBtn();
+      });
+
+      // Also handle enter key for accessibility
+      div.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          div.click();
+        }
+      });
+
+      container.appendChild(div);
+    });
+
+    container.style.display = 'block';
+  }
+
+  function handleAddressInput(e: Event) {
+    const val = (e.target as HTMLTextAreaElement).value.trim();
+    const container = document.getElementById('address-suggestions');
+    const warning = document.getElementById('address-warning');
+
+    // Reset coords when typing manually
+    currentCoords = null;
+
+    if (!val || val.length < 3) {
+      if (container) container.style.display = 'none';
+      if (warning) warning.style.display = 'none';
+      clearTimeout(autocompleteTimeout);
+      return;
+    }
+
+    clearTimeout(autocompleteTimeout);
+    autocompleteTimeout = window.setTimeout(async () => {
+      const token = ++searchToken;
+      const results = await geocodeAddress(val);
+      // Discard stale responses
+      if (token !== searchToken) return;
+      renderSuggestions(results);
+    }, 500);
+  }
+
 
   // ── Render ──
   async function renderStops() {
@@ -192,7 +316,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 
     listEl.innerHTML = filtered.map((s, i) => `
       <div class="stop-card ${s.status === 'completed' ? 'completed' : ''} ${s.priority === 'urgent' ? 'priority-urgent' : 'priority-normal'}"
-           data-id="${s.id}" role="button" tabindex="0" aria-label="Parada ${s.order + 1}: ${s.address}">
+           data-id="${s.id}" role="button" tabindex="0" aria-label="Parada ${s.order + 1}: ${escapeHtml(s.address)}">
 
         <!-- Drag handle -->
         <div class="drag-handle" aria-hidden="true">
@@ -213,7 +337,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 
         <!-- Right side -->
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.375rem;flex-shrink:0;">
-          ${s.income ? `<span style="font-size:0.75rem;font-weight:800;color:var(--color-primary)">$${s.income}</span>` : ''}
+          ${s.income ? `<span style="font-size:0.75rem;font-weight:800;color:var(--color-primary)">$${escapeHtml(s.income)}</span>` : ''}
           <span class="badge ${s.status === 'completed' ? 'badge-success' : s.priority === 'urgent' ? 'badge-urgent' : 'badge-pending'}">
             ${s.status === 'completed' ? 'Listo' : s.priority === 'urgent' ? 'Urgente' : 'Pend.'}
           </span>
@@ -299,6 +423,11 @@ import MainLayout from '../layouts/MainLayout.astro';
     (document.getElementById('input-client-name') as HTMLInputElement).value = '';
     (document.getElementById('input-client-phone') as HTMLInputElement).value = '';
     selectedPriority = 'normal';
+    currentCoords = null;
+    const suggestions = document.getElementById('address-suggestions');
+    if (suggestions) suggestions.style.display = 'none';
+    const warning = document.getElementById('address-warning');
+    if (warning) warning.style.display = 'none';
     updatePriorityBtns();
     updateSaveBtn();
   }
@@ -327,14 +456,24 @@ import MainLayout from '../layouts/MainLayout.astro';
     const address = getAddressValue();
     if (!address) return;
 
-    const lat = (document.getElementById('input-lat') as HTMLInputElement).value;
-    const lng = (document.getElementById('input-lng') as HTMLInputElement).value;
+    let finalLat: number | undefined;
+    let finalLng: number | undefined;
+
+    if (currentMode === 'text' && currentCoords) {
+      finalLat = currentCoords.lat;
+      finalLng = currentCoords.lng;
+    } else if (currentMode === 'coords') {
+      const latStr = (document.getElementById('input-lat') as HTMLInputElement).value;
+      const lngStr = (document.getElementById('input-lng') as HTMLInputElement).value;
+      if (latStr) finalLat = parseFloat(latStr);
+      if (lngStr) finalLng = parseFloat(lngStr);
+    }
 
     const stop: import('../lib/idb').Stop = {
       id:          editingId ?? generateId(),
       address,
-      lat:         lat ? parseFloat(lat) : undefined,
-      lng:         lng ? parseFloat(lng) : undefined,
+      lat:         finalLat,
+      lng:         finalLng,
       priority:    selectedPriority,
       status:      'pending',
       note:        (document.getElementById('input-note') as HTMLInputElement).value.trim() || undefined,
@@ -363,8 +502,8 @@ import MainLayout from '../layouts/MainLayout.astro';
       <div style="display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:1rem;">
         <div class="stop-number ${stop.priority === 'urgent' ? 'urgent' : ''}" style="font-size:1rem;width:2rem;height:2rem;">${stop.order + 1}</div>
         <div style="flex:1;">
-          <p style="font-size:1rem;font-weight:700;color:var(--text-primary);margin:0 0 0.125rem;">${stop.address}</p>
-          ${stop.note ? `<p style="font-size:0.8125rem;color:var(--text-secondary);margin:0;">${stop.note}</p>` : ''}
+          <p style="font-size:1rem;font-weight:700;color:var(--text-primary);margin:0 0 0.125rem;">${escapeHtml(stop.address)}</p>
+          ${stop.note ? `<p style="font-size:0.8125rem;color:var(--text-secondary);margin:0;">${escapeHtml(stop.note)}</p>` : ''}
         </div>
         <button id="detail-close" style="background:none;border:none;cursor:pointer;color:var(--text-tertiary);">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -372,9 +511,9 @@ import MainLayout from '../layouts/MainLayout.astro';
       </div>
 
       <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.25rem;">
-        ${stop.clientName ? `<div class="detail-row"><span>Cliente</span><strong>${stop.clientName}</strong></div>` : ''}
-        ${stop.clientPhone ? `<div class="detail-row"><span>Teléfono</span><a href="tel:${stop.clientPhone}" style="color:var(--color-primary);font-weight:700;">${stop.clientPhone}</a></div>` : ''}
-        ${stop.income ? `<div class="detail-row"><span>Ingreso</span><strong style="color:var(--color-primary)">$${stop.income}</strong></div>` : ''}
+        ${stop.clientName ? `<div class="detail-row"><span>Cliente</span><strong>${escapeHtml(stop.clientName)}</strong></div>` : ''}
+        ${stop.clientPhone ? `<div class="detail-row"><span>Teléfono</span><a href="tel:${escapeHtml(stop.clientPhone)}" style="color:var(--color-primary);font-weight:700;">${escapeHtml(stop.clientPhone)}</a></div>` : ''}
+        ${stop.income ? `<div class="detail-row"><span>Ingreso</span><strong style="color:var(--color-primary)">$${escapeHtml(stop.income)}</strong></div>` : ''}
         <div class="detail-row"><span>Estado</span>
           <span class="badge ${stop.status === 'completed' ? 'badge-success' : stop.priority === 'urgent' ? 'badge-urgent' : 'badge-pending'}">
             ${stop.status === 'completed' ? 'Completada' : stop.priority === 'urgent' ? 'Urgente' : 'Pendiente'}
@@ -486,7 +625,19 @@ import MainLayout from '../layouts/MainLayout.astro';
     });
 
     // Address input → enable save
-    document.getElementById('input-address')?.addEventListener('input', updateSaveBtn);
+    document.getElementById('input-address')?.addEventListener('input', (e) => {
+      updateSaveBtn();
+      handleAddressInput(e);
+    });
+
+    // Close suggestions when clicking outside
+    document.onclick = (e) => {
+      const container = document.getElementById('address-suggestions');
+      const input = document.getElementById('input-address');
+      if (container && input && e.target !== input && !container.contains(e.target as Node)) {
+        container.style.display = 'none';
+      }
+    };
     document.getElementById('input-lat')?.addEventListener('input', updateSaveBtn);
     document.getElementById('input-lng')?.addEventListener('input', updateSaveBtn);
     document.getElementById('input-link')?.addEventListener('input', updateSaveBtn);
@@ -703,6 +854,8 @@ import MainLayout from '../layouts/MainLayout.astro';
     color: var(--color-accent);
   }
 
+
+
   .detail-row {
     display: flex;
     align-items: center;
@@ -711,5 +864,50 @@ import MainLayout from '../layouts/MainLayout.astro';
     border-bottom: 1px solid var(--border-subtle);
     font-size: 0.875rem;
     color: var(--text-secondary);
+  }
+
+  /* Address Suggestions */
+  .suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 100;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 0.25rem;
+  }
+  .suggestion-item {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+  }
+  .suggestion-item:last-child {
+    border-bottom: none;
+  }
+  .suggestion-item:hover, .suggestion-item:focus {
+    background: var(--surface-elevated);
+    outline: none;
+  }
+  .suggestion-primary {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.125rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .suggestion-secondary {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 </style>

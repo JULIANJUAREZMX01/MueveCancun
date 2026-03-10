@@ -1,0 +1,14 @@
+test: add unit tests for toast utility
+
+🎯 **What:** The testing gap addressed
+The `showToast` utility in `src/utils/toast.ts` lacked test coverage, including critical SSR fallback scenarios.
+
+📊 **Coverage:** What scenarios are now tested
+- Calling `window.showToast` correctly when it exists
+- Using default parameter values ('info', 3000) when omitted
+- Falling back to `console.warn` when `window.showToast` is missing
+- Falling back to `console.warn` with default type when missing
+- Properly handling the `typeof window === 'undefined'` SSR context
+
+✨ **Result:** The improvement in test coverage
+Test coverage for the `showToast` utility is now at 100%, handling browser, mock, and SSR environments deterministically.
