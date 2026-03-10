@@ -323,25 +323,11 @@ const navItems = [
        * No JS required.
        */
       .app-header {
-        background: transparent;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        border-bottom: 1px solid transparent;
-
-        /* Animation Logic */
-        animation: header-scroll linear forwards;
-        animation-timeline: scroll();
-        animation-range: 0px 50px;
-      }
-
-      @keyframes header-scroll {
-        to {
-          background: var(--surface-card);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border-bottom: 1px solid var(--border-light);
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
+        background: var(--surface-card);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border-light);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
     </style>
   </body>
