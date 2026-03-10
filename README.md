@@ -2,6 +2,18 @@
 
 > "MueveCancun no nació en una oficina, nació en la parada del camión."
 
+## 🔗 Links
+
+| Recurso | URL |
+| :--- | :--- |
+| 🚌 App en producción | [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com) |
+| 📦 Repositorio principal | [github.com/JULIANJUAREZMX01/MueveCancun](https://github.com/JULIANJUAREZMX01/MueveCancun) |
+| 🚚 MueveRepartoEnCancún (app) | [mueverepartoencancun.onrender.com](https://mueverepartoencancun.onrender.com) |
+| 📦 MueveRepartoEnCancún (repo) | [github.com/JULIANJUAREZMX01/MueveRepartoEnCancun-](https://github.com/JULIANJUAREZMX01/MueveRepartoEnCancun-) |
+| 👤 Portfolio del autor | [portfolio-jaja-dev.onrender.com/portfolio](https://portfolio-jaja-dev.onrender.com/portfolio) |
+
+---
+
 ## 📍 El Problema: Google Maps no entiende a Cancún
 
 En nuestra ciudad, el transporte público es un organismo vivo que cambia más rápido que los algoritmos de las grandes plataformas. Un aviso en Facebook, un bloqueo repentino o una nueva ruta informal son la **"verdad de la calle"** que Google Maps ignora.
