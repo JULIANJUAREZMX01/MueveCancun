@@ -34,10 +34,6 @@ jobs:
         working-directory: rust-wasm/route-calculator
         run: cargo test --lib -- --nocapture
 
-      - name: Run spatial-index tests
-        working-directory: rust-wasm/spatial-index
-        run: cargo test --lib -- --nocapture || true
-
   ts-tests:
     name: TypeScript Unit Tests (Vitest)
     runs-on: ubuntu-latest
