@@ -209,13 +209,13 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         if (newLayers.length > 0) {
             stopMarkersLayer = (window as any).L.layerGroup(newLayers).addTo(map);
             const allCoords = allStops.map(([, c]) => c);
-            map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 14 });
+            setTimeout(() => map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 14 }), 100);
         }
     } else if (allStops.length > 200) {
         console.warn(`[Map] ${allStops.length} stops — using cluster-free optimized view (zoom to see stops)`);
         // Still fit bounds without individual markers
         const allCoords = allStops.map(([, c]) => c);
-        map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 13 });
+        setTimeout(() => map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 13 }), 100);
     }
 
     // --- Map click (normal mode): tap anywhere to find nearest stop ---
