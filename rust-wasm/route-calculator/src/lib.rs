@@ -472,11 +472,11 @@ fn find_transfer_routes(
 
                         match best_transfer {
                             None => {
-                                best_transfer = Some((idx_a, is_preferred));
+                                best_transfer = Some((idx_a, is_preferred, false));
                             }
-                            Some((_, current_is_preferred)) => {
+                            Some((_, current_is_preferred, _)) => {
                                 if is_preferred && !current_is_preferred {
-                                    best_transfer = Some((idx_a, is_preferred));
+                                    best_transfer = Some((idx_a, is_preferred, false));
                                 }
                             }
                         }
@@ -484,14 +484,15 @@ fn find_transfer_routes(
                 }
             }
 
-            if let Some((idx_a, is_preferred)) = best_transfer {
+            if let Some((idx_a, is_preferred, geo_transfer)) = best_transfer {
                 if let Some(stop) = route_a.stops.get(idx_a) {
                     candidates.push(TransferCandidate {
                         route_a,
                         route_b,
-                        transfer_name: stop.name.as_str(),
+                        transfer_name: stop.name.clone(),
                         price: route_a.price + route_b.price,
                         is_preferred,
+                        geo_transfer,
                     });
                 }
             }
