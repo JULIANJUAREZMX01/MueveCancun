@@ -591,7 +591,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 
     listEl.innerHTML = filtered.map((s, i) => `
       <div class="stop-card ${s.status === 'completed' ? 'completed' : ''} ${s.priority === 'urgent' ? 'priority-urgent' : 'priority-normal'}"
-           data-id="${s.id}" role="button" tabindex="0" aria-label="Parada ${s.order + 1}: ${escapeHtml(s.address)}">
+           data-id="${s.id}" data-order="${s.order}" draggable="true" role="button" tabindex="0" aria-label="Parada ${s.order + 1}: ${escapeHtml(s.address)}">
 
         <!-- Drag handle -->
         <div class="drag-handle" aria-hidden="true">
@@ -665,6 +665,61 @@ import MainLayout from '../layouts/MainLayout.astro';
         }
       });
     });
+
+    // ── Drag-and-drop reordering ──
+    let dragSrcId: string | null = null;
+
+    listEl.querySelectorAll<HTMLElement>('.stop-card').forEach(card => {
+      card.addEventListener('dragstart', (e) => {
+        dragSrcId = card.dataset.id!;
+        card.classList.add('dragging');
+        e.dataTransfer!.effectAllowed = 'move';
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        listEl.querySelectorAll('.stop-card').forEach(c => c.classList.remove('drag-over'));
+      });
+
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer!.dropEffect = 'move';
+        listEl.querySelectorAll('.stop-card').forEach(c => c.classList.remove('drag-over'));
+        card.classList.add('drag-over');
+      });
+
+      card.addEventListener('dragleave', () => {
+        card.classList.remove('drag-over');
+      });
+
+      card.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const dropId = card.dataset.id!;
+        if (!dragSrcId || dragSrcId === dropId) return;
+
+        // Reordenar: intercambiar los valores de `order`
+        const allCurrent = await getStops();
+        const src  = allCurrent.find(s => s.id === dragSrcId);
+        const dest = allCurrent.find(s => s.id === dropId);
+        if (!src || !dest) return;
+
+        const srcOrder  = src.order;
+        const destOrder = dest.order;
+
+        // Shift stops entre src y dest
+        const updated: import('../lib/idb').Stop[] = allCurrent.map(s => {
+          if (s.id === dragSrcId) return { ...s, order: destOrder };
+          if (srcOrder < destOrder && s.order > srcOrder && s.order <= destOrder) return { ...s, order: s.order - 1 };
+          if (srcOrder > destOrder && s.order >= destOrder && s.order < srcOrder) return { ...s, order: s.order + 1 };
+          return s;
+        });
+
+        await Promise.all(updated.map(s => dbPut(STORES.STOPS, s)));
+        dragSrcId = null;
+        await renderStops();
+      });
+    });
   }
 
   function filterStops(stops: Stop[], filter: string): Stop[] {
@@ -731,6 +786,7 @@ import MainLayout from '../layouts/MainLayout.astro';
     (document.getElementById('input-client-phone') as HTMLInputElement).value = '';
     selectedPriority = 'normal';
     currentCoords = null;
+    linkCoords = null;
     const suggestions = document.getElementById('address-suggestions');
     if (suggestions) suggestions.style.display = 'none';
     const warning = document.getElementById('address-warning');
@@ -738,6 +794,34 @@ import MainLayout from '../layouts/MainLayout.astro';
     updatePriorityBtns();
     updateSaveBtn();
   }
+
+  // Extrae { lat, lng } de URLs de Google Maps, Waze, Apple Maps, etc.
+  function parseCoordsFromMapUrl(url: string): { lat: number; lng: number } | null {
+    const patterns = [
+      // Google Maps: /maps/@LAT,LNG o /@LAT,LNG,zoom o ?q=LAT,LNG o &ll=LAT,LNG
+      /[/@?&](-?\d+\.?\d*),(-?\d+\.?\d*)/,
+      // Waze: ?ll=LAT,LNG o &ll=LAT,LNG
+      /[?&]ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+      // Apple Maps: ?ll=LAT,LNG
+      /\?ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+      // Genérico: lat=LAT&lng=LNG o lat=LAT&lon=LNG
+      /lat=(-?\d+\.?\d*)&lon[g]?=(-?\d+\.?\d*)/i,
+    ];
+    for (const re of patterns) {
+      const m = url.match(re);
+      if (m) {
+        const lat = parseFloat(m[1]);
+        const lng = parseFloat(m[2]);
+        // Validar rangos
+        if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+          return { lat, lng };
+        }
+      }
+    }
+    return null;
+  }
+
+  let linkCoords: { lat: number; lng: number } | null = null;
 
   function getAddressValue(): string {
     switch (currentMode) {
@@ -747,7 +831,11 @@ import MainLayout from '../layouts/MainLayout.astro';
         const lng = (document.getElementById('input-lng') as HTMLInputElement).value.trim();
         return lat && lng ? `${lat}, ${lng}` : '';
       }
-      case 'link': return (document.getElementById('input-link') as HTMLInputElement).value.trim();
+      case 'link': {
+        const raw = (document.getElementById('input-link') as HTMLInputElement).value.trim();
+        linkCoords = parseCoordsFromMapUrl(raw);
+        return raw;
+      }
       case 'qr': return scannedData.address || '';
       default: return '';
     }
@@ -776,6 +864,9 @@ import MainLayout from '../layouts/MainLayout.astro';
     if (currentMode === 'text' && currentCoords) {
       finalLat = currentCoords.lat;
       finalLng = currentCoords.lng;
+    } else if (currentMode === 'link' && linkCoords) {
+      finalLat = linkCoords.lat;
+      finalLng = linkCoords.lng;
     } else {
       const latStr = (document.getElementById('input-lat') as HTMLInputElement).value;
       const lngStr = (document.getElementById('input-lng') as HTMLInputElement).value;
@@ -1189,6 +1280,17 @@ import MainLayout from '../layouts/MainLayout.astro';
   }
 
   .stop-card:active { transform: scale(0.99); }
+
+  .stop-card.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+  }
+
+  .stop-card.drag-over {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(0, 232, 162, 0.25);
+    transform: scale(1.01);
+  }
 
   .stop-card.completed {
     opacity: 0.5;

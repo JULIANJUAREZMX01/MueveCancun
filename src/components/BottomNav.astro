@@ -26,6 +26,12 @@ const navItems = [
     activePattern: /^\/metricas/,
     icon: 'chart',
   },
+  {
+    href: '/auth',
+    label: 'Cuenta',
+    activePattern: /^\/(auth|suscripcion)/,
+    icon: 'account',
+  },
 ];
 ---
 
@@ -55,6 +61,9 @@ const navItems = [
               )}
               {item.icon === 'chart' && (
                 <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/>
+              )}
+              {item.icon === 'account' && (
+                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
               )}
             </svg>
           </div>
@@ -86,7 +95,7 @@ const navItems = [
 
   .mr-nav-inner {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     height: var(--bottom-nav-h);
     max-width: 28rem;
     margin: 0 auto;
