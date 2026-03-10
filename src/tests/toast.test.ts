@@ -1,23 +1,20 @@
-/**
- * @vitest-environment jsdom
- */
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { showToast } from '../utils/toast';
 
 describe('showToast Utility', () => {
-  const originalWindowShowToast = window.showToast;
-  const originalConsoleWarn = console.warn;
+  let consoleWarnSpy: ReturnType<typeof vi.spyOn> | undefined;
 
   beforeEach(() => {
-    // Reset window.showToast and console.warn mock before each test
-    delete window.showToast;
-    console.warn = vi.fn();
+    // Stub global showToast and spy on console.warn before each test
+    vi.stubGlobal('showToast', undefined);
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    // Restore original functions
-    window.showToast = originalWindowShowToast;
-    console.warn = originalConsoleWarn;
+    // Restore original functions and globals
+    consoleWarnSpy?.mockRestore();
+    vi.unstubAllGlobals();
   });
 
   it('should call window.showToast when it is defined', () => {
@@ -31,7 +28,7 @@ describe('showToast Utility', () => {
     showToast(message, type, duration);
 
     expect(mockShowToast).toHaveBeenCalledWith(message, type, duration);
-    expect(console.warn).not.toHaveBeenCalled();
+    expect(consoleWarnSpy).not.toHaveBeenCalled();
   });
 
   it('should call console.warn when window.showToast is not defined', () => {
@@ -40,7 +37,7 @@ describe('showToast Utility', () => {
 
     showToast(message, type);
 
-    expect(console.warn).toHaveBeenCalledWith(`[Toast ${type}]: ${message}`);
+    expect(consoleWarnSpy).toHaveBeenCalledWith(`[Toast ${type}]: ${message}`);
   });
 
   it('should use default values for type and duration', () => {

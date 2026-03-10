@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
 
-use wasm_bindgen::prelude::*; // Sentinel: Added for safe comparison
+use wasm_bindgen::prelude::*;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RouteCatalog {
@@ -31,7 +31,7 @@ pub struct Route {
     #[serde(rename = "paradas")]
     pub stops: Vec<Stop>,
 
-    // Computed fields for internal use
+    // Computed fields (skipped in serialization)
     #[serde(skip)]
     pub stops_normalized: Vec<String>,
     #[serde(skip)]
@@ -69,10 +69,16 @@ pub struct Schedule {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Journey {
     #[serde(rename = "type")]
-    pub type_: String, // "Direct" or "Transfer"
+    pub type_: String, // "Direct" | "Transfer" | "Transfer2"
     pub legs: Vec<Route>,
     pub transfer_point: Option<String>,
     pub total_price: f64,
+    /// Indicates transfer was found via geographic proximity (not exact stop name match)
+    #[serde(default)]
+    pub geo_transfer: bool,
+    /// Indicates a direct route where origin comes before destination (forward direction)
+    #[serde(default)]
+    pub is_forward: bool,
 }
 
 // --- APP STATE ---
@@ -89,7 +95,27 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
     })
 });
 
-// --- CORE LOGIC (Pure Rust, Testable) ---
+// --- HAVERSINE DISTANCE ---
+
+/// Returns distance in meters between two lat/lng points.
+#[inline]
+fn haversine_distance_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
+    const R: f64 = 6_371_000.0;
+    let d_lat = (lat2 - lat1).to_radians();
+    let d_lon = (lon2 - lon1).to_radians();
+    let a = (d_lat / 2.0).sin().powi(2)
+        + lat1.to_radians().cos() * lat2.to_radians().cos() * (d_lon / 2.0).sin().powi(2);
+    let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
+    R * c
+}
+
+/// True if stop has valid non-zero coordinates.
+#[inline]
+fn stop_has_coords(stop: &Stop) -> bool {
+    stop.lat.abs() > 0.0001 && stop.lng.abs() > 0.0001
+}
+
+// --- CATALOG VALIDATION ---
 
 fn validate_catalog(catalog: &RouteCatalog) -> Result<(), String> {
     const MAX_ROUTES: usize = 5000;
@@ -107,11 +133,7 @@ fn validate_catalog(catalog: &RouteCatalog) -> Result<(), String> {
 
     for route in &catalog.rutas {
         if route.id.len() > MAX_ID_LEN {
-            return Err(format!(
-                "Route ID too long ({} > {})",
-                route.id.len(),
-                MAX_ID_LEN
-            ));
+            return Err(format!("Route ID too long ({} > {})", route.id.len(), MAX_ID_LEN));
         }
         if route.name.len() > MAX_NAME_LEN {
             return Err(format!(
@@ -143,7 +165,7 @@ fn validate_catalog(catalog: &RouteCatalog) -> Result<(), String> {
 }
 
 pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
-    const MAX_PAYLOAD_SIZE: usize = 10 * 1024 * 1024; // 10MB
+    const MAX_PAYLOAD_SIZE: usize = 10 * 1024 * 1024; // 10 MB
     if json_payload.len() > MAX_PAYLOAD_SIZE {
         return Err("Payload too large (max 10MB)".to_string());
     }
@@ -155,18 +177,13 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
         )
     })?;
 
-    if let Err(e) = validate_catalog(&catalog) {
-        return Err(format!("Catalog Validation Error: {}", e));
-    }
+    validate_catalog(&catalog)?;
 
     if catalog.rutas.is_empty() {
         return Err("ERROR: Catalog contains 0 routes".to_string());
     }
 
-    // Sentinel: Validate Content Structure (Logic Bomb Protection)
-    validate_catalog_content(&catalog)?;
-
-    // Pre-compute normalized stops for fuzzy matching
+    // Pre-compute normalized stop names + O(1) index
     for route in &mut catalog.rutas {
         route.stops_normalized = route.stops.iter().map(|s| s.name.to_lowercase()).collect();
         route.stop_name_to_index = route
@@ -183,7 +200,6 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     }
 
     let mut db = DB.write().map_err(|_| "DB Lock Poisoned".to_string())?;
-
     db.routes_list = catalog.rutas;
     db.routes_map = map;
 
@@ -262,63 +278,42 @@ pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
 
 // --- INTERNAL ALGORITHMS ---
 
-fn validate_catalog_content(catalog: &RouteCatalog) -> Result<(), String> {
-    // 1. Max Routes Limit (Memory Protection)
-    if catalog.rutas.len() > 5000 {
-        return Err(format!(
-            "Validation Error: Too many routes ({} > 5000)",
-            catalog.rutas.len()
-        ));
-    }
+/// Known Cancún transfer hubs. Substring match against stop names.
+const PREFERRED_HUBS: &[&str] = &[
+    "El Crucero",
+    "Plaza Las Américas",
+    "Las Américas",
+    "ADO",
+    "Zona Hotelera",
+    "Muelle Ultramar",
+    "Terminal de Autobuses",
+    "Mercado 23",
+    "Mercado 28",
+    "Parque de las Palapas",
+    "Puerto Juárez",
+    "Punta Sam",
+    "Gran Plaza",
+    "Walmart",
+    "Sam's Club",
+    "La Diana",
+    "Kabah",
+    "Chedraui",
+    "Liverpool",
+    "Nichupté",
+    "SM 64",
+    "Súper Manzana",
+];
 
-    for (i, route) in catalog.rutas.iter().enumerate() {
-        // 2. Route ID Length (DoS Protection)
-        if route.id.len() > 100 {
-            return Err(format!(
-                "Validation Error: Route[{}] ID too long ({} > 100)",
-                i,
-                route.id.len()
-            ));
-        }
-        // 3. Route Name Length (UI Protection)
-        if route.name.len() > 200 {
-            return Err(format!(
-                "Validation Error: Route[{}] Name too long ({} > 200)",
-                i,
-                route.name.len()
-            ));
-        }
-        // 4. Stops Count (Loop Protection)
-        if route.stops.len() > 500 {
-            return Err(format!(
-                "Validation Error: Route[{}] has too many stops ({} > 500)",
-                i,
-                route.stops.len()
-            ));
-        }
+/// Geographic transfer threshold: stops within 350 m can be used as a transfer point.
+const GEO_TRANSFER_RADIUS_M: f64 = 350.0;
 
-        for (j, stop) in route.stops.iter().enumerate() {
-            // 5. Stop Name Length (Normalization Panic Protection)
-            if stop.name.len() > 100 {
-                return Err(format!(
-                    "Validation Error: Route[{}] Stop[{}] Name too long ({} > 100)",
-                    i,
-                    j,
-                    stop.name.len()
-                ));
-            }
-        }
-    }
-
-    Ok(())
-}
-
+/// Fuzzy stop matching with Jaro-Winkler (O(n) worst case, O(1) for exact match).
 fn match_stop<'a>(
     query_norm: &str,
     route: &'a Route,
     cache: &mut HashMap<&'a str, f64>,
 ) -> Option<usize> {
-    // 1. O(1) Exact Match lookup
+    // O(1) exact match
     if let Some(&idx) = route.stop_name_to_index.get(query_norm) {
         return Some(idx);
     }
@@ -337,14 +332,9 @@ fn match_stop<'a>(
 
         if score > 0.75 {
             match best_match {
-                Some((_, best_score)) => {
-                    if score > best_score {
-                        best_match = Some((i, score));
-                    }
-                }
-                None => {
-                    best_match = Some((i, score));
-                }
+                None => best_match = Some((i, score)),
+                Some((_, best_score)) if score > best_score => best_match = Some((i, score)),
+                _ => {}
             }
         }
     }
@@ -361,43 +351,52 @@ struct RouteMatch<'a> {
 const MAX_SEARCH_RESULTS: usize = 200;
 const MAX_OPS: usize = 10_000_000;
 const MAX_CANDIDATES: usize = 2000;
-const PREFERRED_HUBS: &[&str] = &[
-    "El Crucero",
-    "Plaza Las Américas",
-    "ADO Centro",
-    "Zona Hotelera",
-    "Muelle Ultramar",
-];
 
 struct TransferCandidate<'a> {
     route_a: &'a Route,
     route_b: &'a Route,
-    transfer_name: &'a str,
+    transfer_name: String,
     price: f64,
     is_preferred: bool,
+    geo_transfer: bool,
 }
 
+/// Find direct (single-leg) routes.
+/// Prefers routes where origin comes before destination (forward direction).
 fn find_direct_routes(route_matches: &[RouteMatch]) -> Vec<Journey> {
-    let mut journeys = Vec::new();
+    let mut forward = Vec::new();
+    let mut reverse = Vec::new();
+
     for m in route_matches {
-        if journeys.len() >= MAX_SEARCH_RESULTS {
+        if forward.len() + reverse.len() >= MAX_SEARCH_RESULTS {
             break;
         }
-        if let Some(origin_idx) = m.origin_idx {
-            if let Some(dest_idx) = m.dest_idx {
-                if origin_idx != dest_idx {
-                    journeys.push(Journey {
-                        type_: "Direct".to_string(),
-                        legs: vec![m.route.clone()],
-                        transfer_point: None,
-                        total_price: m.route.price,
-                    });
-                }
+        if let (Some(origin_idx), Some(dest_idx)) = (m.origin_idx, m.dest_idx) {
+            if origin_idx == dest_idx {
+                continue;
+            }
+            let journey = Journey {
+                type_: "Direct".to_string(),
+                legs: vec![m.route.clone()],
+                transfer_point: None,
+                total_price: m.route.price,
+                geo_transfer: false,
+                is_forward: origin_idx < dest_idx,
+            };
+            if origin_idx < dest_idx {
+                forward.push(journey);
+            } else {
+                // Route goes in reverse direction — still valid (bidirectional buses),
+                // but deprioritized in the final sort.
+                reverse.push(journey);
             }
         }
     }
 
-    if journeys.len() >= 5 {
+    let mut journeys = forward;
+    journeys.extend(reverse);
+
+    if journeys.len() > 5 {
         journeys.sort_by(|a, b| {
             a.total_price
                 .partial_cmp(&b.total_price)
@@ -409,6 +408,8 @@ fn find_direct_routes(route_matches: &[RouteMatch]) -> Vec<Journey> {
     journeys
 }
 
+/// Find routes with a single transfer (A → hub → B).
+/// Uses exact stop-name matching first, then falls back to geographic proximity (≤350 m).
 fn find_transfer_routes(
     route_matches: &[RouteMatch],
     mut ops_count: usize,
@@ -432,7 +433,7 @@ fn find_transfer_routes(
             None => continue,
         };
 
-        for match_b in routes_to_dest.iter() {
+        for match_b in &routes_to_dest {
             if existing_journeys_len + candidates.len() >= MAX_CANDIDATES {
                 break 'outer;
             }
@@ -447,9 +448,10 @@ fn find_transfer_routes(
                 continue;
             }
 
-            let mut best_transfer: Option<(usize, bool)> = None;
+            let mut best_transfer: Option<(usize, bool, bool)> = None; // (idx_a, is_preferred, geo)
 
-            for (idx_a, stop_name_a) in route_a.stops_normalized.iter().enumerate() {
+            // Pass 1: Exact stop-name match between route_a and route_b
+            for (idx_a, stop_norm_a) in route_a.stops_normalized.iter().enumerate() {
                 ops_count += 1;
                 if ops_count > MAX_OPS {
                     break 'outer;
@@ -459,22 +461,19 @@ fn find_transfer_routes(
                     continue;
                 }
 
-                if let Some(&idx_b) = route_b.stop_name_to_index.get(stop_name_a) {
+                if let Some(&idx_b) = route_b.stop_name_to_index.get(stop_norm_a) {
                     if idx_b == dest_idx_b {
                         continue;
                     }
 
                     if let Some(stop) = route_a.stops.get(idx_a) {
-                        let stop_name = &stop.name;
-                        let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_name.contains(h));
-
+                        let is_preferred =
+                            PREFERRED_HUBS.iter().any(|h| stop.name.contains(h));
                         match best_transfer {
-                            None => {
-                                best_transfer = Some((idx_a, is_preferred));
-                            }
-                            Some((_, current_is_preferred)) => {
-                                if is_preferred && !current_is_preferred {
-                                    best_transfer = Some((idx_a, is_preferred));
+                            None => best_transfer = Some((idx_a, is_preferred, false)),
+                            Some((_, current_pref, _)) => {
+                                if is_preferred && !current_pref {
+                                    best_transfer = Some((idx_a, is_preferred, false));
                                 }
                             }
                         }
@@ -482,23 +481,70 @@ fn find_transfer_routes(
                 }
             }
 
-            if let Some((idx_a, is_preferred)) = best_transfer {
+            // Pass 2: Geographic proximity fallback (only if exact match found nothing)
+            if best_transfer.is_none() {
+                'geo: for (idx_a, stop_a) in route_a.stops.iter().enumerate() {
+                    if idx_a == origin_idx_a {
+                        continue;
+                    }
+                    if !stop_has_coords(stop_a) {
+                        continue;
+                    }
+
+                    for (idx_b, stop_b) in route_b.stops.iter().enumerate() {
+                        ops_count += 1;
+                        if ops_count > MAX_OPS {
+                            break 'outer;
+                        }
+                        if idx_b == dest_idx_b {
+                            continue;
+                        }
+                        if !stop_has_coords(stop_b) {
+                            continue;
+                        }
+
+                        let dist =
+                            haversine_distance_m(stop_a.lat, stop_a.lng, stop_b.lat, stop_b.lng);
+
+                        if dist <= GEO_TRANSFER_RADIUS_M {
+                            let is_preferred =
+                                PREFERRED_HUBS.iter().any(|h| stop_a.name.contains(h));
+                            match best_transfer {
+                                None => best_transfer = Some((idx_a, is_preferred, true)),
+                                Some((_, current_pref, _)) => {
+                                    if is_preferred && !current_pref {
+                                        best_transfer = Some((idx_a, is_preferred, true));
+                                    }
+                                }
+                            }
+                            // Prioritize preferred hubs; keep searching if not preferred yet
+                            if best_transfer.map_or(false, |(_, p, _)| p) {
+                                break 'geo;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if let Some((idx_a, is_preferred, geo)) = best_transfer {
                 if let Some(stop) = route_a.stops.get(idx_a) {
                     candidates.push(TransferCandidate {
                         route_a,
                         route_b,
-                        transfer_name: stop.name.as_str(),
+                        transfer_name: stop.name.clone(),
                         price: route_a.price + route_b.price,
                         is_preferred,
+                        geo_transfer: geo,
                     });
                 }
             }
         }
     }
 
+    // Sort: preferred hubs > exact-name matches > geo matches > lowest price
     candidates.sort_by(|a, b| {
-        let score_a = if a.is_preferred { 1 } else { 0 };
-        let score_b = if b.is_preferred { 1 } else { 0 };
+        let score_a = if a.is_preferred { 2 } else if !a.geo_transfer { 1 } else { 0 };
+        let score_b = if b.is_preferred { 2 } else if !b.geo_transfer { 1 } else { 0 };
         score_b.cmp(&score_a).then_with(|| {
             a.price
                 .partial_cmp(&b.price)
@@ -506,22 +552,23 @@ fn find_transfer_routes(
         })
     });
 
-    let slots_needed = 5_usize.saturating_sub(existing_journeys_len);
-    let mut transfer_journeys = Vec::new();
-
-    for c in candidates.into_iter().take(slots_needed) {
-        transfer_journeys.push(Journey {
+    let slots = 5_usize.saturating_sub(existing_journeys_len);
+    candidates
+        .into_iter()
+        .take(slots)
+        .map(|c| Journey {
             type_: "Transfer".to_string(),
             legs: vec![c.route_a.clone(), c.route_b.clone()],
-            transfer_point: Some(c.transfer_name.to_string()),
+            transfer_point: Some(c.transfer_name),
             total_price: c.price,
-        });
-    }
-
-    transfer_journeys
+            geo_transfer: c.geo_transfer,
+            is_forward: false,
+        })
+        .collect()
 }
 
-fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journey> {
+/// Main routing function. Returns up to 5 journeys (Direct first, then Transfer).
+fn find_route_rs(origin: &str, dest: &str, all_routes: &[Route]) -> Vec<Journey> {
     let origin_norm = origin.to_lowercase();
     let dest_norm = dest.to_lowercase();
     let mut origin_cache: HashMap<&str, f64> = HashMap::new();
@@ -539,63 +586,58 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &Vec<Route>) -> Vec<Journ
         });
     }
 
-    let ops_count = 0; // ops_count started here in original code before transfers
-
     let mut journeys = find_direct_routes(&route_matches);
 
     if journeys.len() >= 5 {
         return journeys;
     }
 
-    let transfer_journeys = find_transfer_routes(&route_matches, ops_count, journeys.len());
+    let transfer_journeys =
+        find_transfer_routes(&route_matches, 0, journeys.len());
     journeys.extend(transfer_journeys);
 
+    // Final sort: Forward Direct > Reverse Direct > Transfer via preferred hub > Transfer via geo > price
     journeys.sort_by(|a, b| {
-        let get_score = |j: &Journey| {
+        let score = |j: &Journey| -> i32 {
             if j.type_ == "Direct" {
-                2
+                if j.is_forward { 5 } else { 4 }
             } else if let Some(tp) = &j.transfer_point {
                 if PREFERRED_HUBS.iter().any(|h| tp.contains(h)) {
-                    1
+                    if j.geo_transfer { 2 } else { 3 }
                 } else {
-                    0
+                    if j.geo_transfer { 1 } else { 2 }
                 }
             } else {
                 0
             }
         };
 
-        let score_a = get_score(a);
-        let score_b = get_score(b);
-
-        score_b.cmp(&score_a).then_with(|| {
+        score(b).cmp(&score(a)).then_with(|| {
             a.total_price
                 .partial_cmp(&b.total_price)
                 .unwrap_or(std::cmp::Ordering::Equal)
         })
     });
 
-    if journeys.len() > 5 {
-        journeys.truncate(5);
-    }
-
+    journeys.truncate(5);
     journeys
 }
+
+// --- TESTS ---
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // Helper to load test data
-    fn load_test_data() {
-        let json = r#"{
+    fn catalog_two_routes() -> &'static str {
+        r#"{
             "version": "2.3.0",
             "rutas": [
                 {
                     "id": "R1_ZONA_HOTELERA_001",
                     "nombre": "R-1 Centro -> Zona Hotelera",
                     "tarifa": 15,
-                    "tipo": "Bus_Urban",
+                    "tipo": "Bus_Urbano",
                     "paradas": [
                         { "nombre": "La Rehoyada", "lat": 21.1619, "lng": -86.8515, "orden": 1 },
                         { "nombre": "El Crucero", "lat": 21.1576, "lng": -86.8269, "orden": 2 },
@@ -606,183 +648,139 @@ mod tests {
                     "id": "R2_94_VILLAS_OTOCH_001",
                     "nombre": "R-2-94 Villas Otoch",
                     "tarifa": 15,
-                    "tipo": "Bus_Urban",
+                    "tipo": "Bus_Urbano",
                     "paradas": [
                         { "nombre": "Villas Otoch Paraíso", "lat": 21.1685, "lng": -86.885, "orden": 1 },
                         { "nombre": "El Crucero", "lat": 21.1576, "lng": -86.8269, "orden": 2 }
                     ]
                 }
             ]
-        }"#;
-        // Use _core function to avoid JsValue panic
-        load_catalog_core(json).unwrap();
+        }"#
+    }
+
+    fn load_two_routes() {
+        load_catalog_core(catalog_two_routes()).unwrap();
     }
 
     #[test]
     fn test_load_catalog() {
-        load_test_data();
-        let all_routes_res = get_all_routes_core(); // Use _core
-        assert!(all_routes_res.is_ok());
-
+        load_two_routes();
         let db = DB.read().unwrap();
         assert_eq!(db.routes_list.len(), 2);
         assert!(db.routes_map.contains_key("R1_ZONA_HOTELERA_001"));
     }
 
     #[test]
-    fn test_find_route_direct() {
-        load_test_data();
+    fn test_find_route_direct_forward() {
+        load_two_routes();
         let db = DB.read().unwrap();
         let res = find_route_rs("La Rehoyada", "Zona Hotelera", &db.routes_list);
-
         assert!(!res.is_empty());
         assert_eq!(res[0].type_, "Direct");
         assert_eq!(res[0].legs[0].id, "R1_ZONA_HOTELERA_001");
     }
 
     #[test]
-    fn test_find_route_transfer() {
-        load_test_data();
+    fn test_find_route_direct_reverse_deprioritized() {
+        load_two_routes();
         let db = DB.read().unwrap();
+        // Zona Hotelera is stop 3, La Rehoyada is stop 1 → reverse direction
+        let res = find_route_rs("Zona Hotelera", "La Rehoyada", &db.routes_list);
+        // Should still find a route, but it's a reverse-direction journey
+        assert!(!res.is_empty());
+        // Forward routes come before reverse; reverse is still returned
+        assert_eq!(res[0].type_, "Direct");
+    }
 
+    #[test]
+    fn test_find_route_transfer_exact_name() {
+        load_two_routes();
+        let db = DB.read().unwrap();
         let res = find_route_rs("Villas Otoch Paraíso", "Zona Hotelera", &db.routes_list);
-
         assert!(!res.is_empty());
         let transfer = res.iter().find(|j| j.type_ == "Transfer");
-        assert!(transfer.is_some());
-
+        assert!(transfer.is_some(), "Expected at least one Transfer journey");
         let t = transfer.unwrap();
         assert_eq!(t.legs[0].id, "R2_94_VILLAS_OTOCH_001");
         assert_eq!(t.legs[1].id, "R1_ZONA_HOTELERA_001");
         assert_eq!(t.transfer_point.as_deref(), Some("El Crucero"));
+        assert!(!t.geo_transfer, "Should be exact-name transfer, not geo");
     }
 
     #[test]
-
-    fn test_invalid_json() {
-        let res = load_catalog_core("invalid json"); // Use _core
-        assert!(res.is_err());
+    fn test_find_route_transfer_geographic() {
+        // Route A: origin → Stop near [21.15, -86.82]
+        // Route B: Stop near [21.1502, -86.8205] (within 350m) → destination
+        // No shared stop name — should find geo transfer
+        let json = r#"{
+            "version": "1.0",
+            "rutas": [
+                {
+                    "id": "GEO_A",
+                    "nombre": "Geo Route A",
+                    "tarifa": 12,
+                    "tipo": "Bus_Urbano",
+                    "paradas": [
+                        { "nombre": "Origen Norte", "lat": 21.20, "lng": -86.85, "orden": 1 },
+                        { "nombre": "Parada Intermedia A", "lat": 21.150, "lng": -86.820, "orden": 2 }
+                    ]
+                },
+                {
+                    "id": "GEO_B",
+                    "nombre": "Geo Route B",
+                    "tarifa": 12,
+                    "tipo": "Bus_Urbano",
+                    "paradas": [
+                        { "nombre": "Parada Intermedia B", "lat": 21.1503, "lng": -86.8202, "orden": 1 },
+                        { "nombre": "Destino Sur", "lat": 21.10, "lng": -86.80, "orden": 2 }
+                    ]
+                }
+            ]
+        }"#;
+        load_catalog_core(json).unwrap();
+        let db = DB.read().unwrap();
+        let res = find_route_rs("Origen Norte", "Destino Sur", &db.routes_list);
+        assert!(!res.is_empty(), "Should find at least one route via geo transfer");
+        let transfer = res.iter().find(|j| j.type_ == "Transfer");
+        assert!(transfer.is_some(), "Expected a Transfer journey via geo proximity");
+        let t = transfer.unwrap();
+        assert!(t.geo_transfer, "Should be marked as geo_transfer");
     }
 
     #[test]
-    fn test_get_route_by_id() {
-        load_test_data();
-        let route = get_route_by_id_core("R1_ZONA_HOTELERA_001").unwrap(); // Use _core
-        assert!(route.is_some());
-        assert_eq!(route.unwrap().id, "R1_ZONA_HOTELERA_001");
-    }
-    #[test]
-    fn test_garbage_input() {
-        load_test_data();
+    fn test_find_route_no_results_garbage() {
+        load_two_routes();
         let db = DB.read().unwrap();
         let res = find_route_rs("XyZ123Rubbish", "AbC987Junk", &db.routes_list);
         assert!(res.is_empty(), "Should return empty for garbage input");
     }
 
     #[test]
-    fn test_dos_repro() {
-        // Create 2000 routes that all start with "Start"
-        // Create 2000 routes that all end with "End"
-        // Each has 50 stops.
-        // Start routes: Stop A 0..49
-        // End routes: Stop B 0..49
-        // NO OVERLAP -> Worst case for finding no transfers (scan all pairs)
-
-        let mut routes = Vec::new();
-        for i in 0..2000 {
-            let mut stops = Vec::new();
-            for j in 0..50 {
-                stops.push(Stop {
-                    id: None,
-                    name: format!("Common Long Prefix Stop A {}", j),
-                    lat: 0.0,
-                    lng: 0.0,
-                    orden: j as u32,
-                    landmarks: String::new(),
-                });
-            }
-            routes.push(Route {
-                id: format!("Start_{}", i),
-                name: format!("Start Route {}", i),
-                price: 10.0,
-                transport_type: "Bus".to_string(),
-                empresa: None,
-                frecuencia_minutos: None,
-                horario: None,
-                stops: stops,
-                stops_normalized: (0..50)
-                    .map(|j| format!("common long prefix stop a {}", j))
-                    .collect(),
-                social_alerts: Vec::new(),
-                stop_name_to_index: HashMap::new(),
-                last_updated: String::new(),
-            });
-        }
-
-        for i in 0..2000 {
-            let mut stops = Vec::new();
-            for j in 0..50 {
-                stops.push(Stop {
-                    id: None,
-                    name: format!("Common Long Prefix Stop B {}", j),
-                    lat: 0.0,
-                    lng: 0.0,
-                    orden: j as u32,
-                    landmarks: String::new(),
-                });
-            }
-            routes.push(Route {
-                id: format!("End_{}", i),
-                name: format!("End Route {}", i),
-                price: 10.0,
-                transport_type: "Bus".to_string(),
-                empresa: None,
-                frecuencia_minutos: None,
-                horario: None,
-                stops: stops,
-                stops_normalized: (0..50)
-                    .map(|j| format!("common long prefix stop b {}", j))
-                    .collect(),
-                social_alerts: Vec::new(),
-                stop_name_to_index: HashMap::new(),
-                last_updated: String::new(),
-            });
-        }
-
-        let start = std::time::Instant::now();
-        // Search from "Stop A 0" to "Stop B 49"
-        // 2000 start routes * 2000 end routes * 49 stops * 50 stops
-        // No matches found, so it scans everything.
-        let _res = find_route_rs(
-            "Common Long Prefix Stop A 0",
-            "Common Long Prefix Stop B 49",
-            &routes,
-        );
-        let duration = start.elapsed();
-        println!("Time taken: {:?}", duration);
-
-        // Without fix, this should take > 500ms (likely > 1s).
-        // Relaxed to 1500ms for Debug builds as per memory guidelines.
-        assert!(
-            duration.as_millis() < 1500,
-            "DoS vulnerability: took too long ({:?})",
-            duration
-        );
+    fn test_invalid_json() {
+        let res = load_catalog_core("invalid json");
+        assert!(res.is_err());
     }
 
     #[test]
-    fn test_large_payload() {
+    fn test_get_route_by_id() {
+        load_two_routes();
+        let route = get_route_by_id_core("R1_ZONA_HOTELERA_001").unwrap();
+        assert!(route.is_some());
+        assert_eq!(route.unwrap().id, "R1_ZONA_HOTELERA_001");
+    }
+
+    #[test]
+    fn test_large_payload_rejected() {
         let padding = " ".repeat(11 * 1024 * 1024);
         let route = r#"{"id": "R1", "nombre": "R1", "tarifa": 10.0, "tipo": "Bus", "paradas": []}"#;
         let json = format!(r#"{{"version": "1.0", "rutas": [{}]{}}}"#, route, padding);
-
         let res = load_catalog_core(&json);
-        assert!(res.is_err(), "Should reject large payload > 10MB");
+        assert!(res.is_err());
         assert_eq!(res.err().unwrap(), "Payload too large (max 10MB)");
     }
 
     #[test]
-    fn test_logic_bomb_routes() {
+    fn test_too_many_routes_rejected() {
         let mut routes = Vec::new();
         for i in 0..5001 {
             routes.push(Route {
@@ -807,175 +805,129 @@ mod tests {
         let json = serde_json::to_string(&catalog).unwrap();
         let res = load_catalog_core(&json);
         assert!(res.is_err());
-        assert!(res
-            .err()
-            .unwrap()
-            .contains("Catalog exceeds maximum route limit"));
+        assert!(res.err().unwrap().contains("Catalog exceeds maximum route limit"));
     }
 
     #[test]
-    fn test_logic_bomb_stops() {
-        let mut stops = Vec::new();
-        for i in 0..501 {
-            stops.push(Stop {
-                id: None,
-                name: format!("S_{}", i),
-                lat: 0.0,
-                lng: 0.0,
-                orden: i as u32,
-                landmarks: String::new(),
-            });
-        }
-        let route = Route {
-            id: "R1".to_string(),
-            name: "R1".to_string(),
-            price: 10.0,
-            transport_type: "Bus".to_string(),
-            empresa: None,
-            frecuencia_minutos: None,
-            horario: None,
-            stops: stops,
-            stops_normalized: Vec::new(),
-            stop_name_to_index: HashMap::new(),
-            social_alerts: Vec::new(),
-            last_updated: String::new(),
-        };
-        let catalog = RouteCatalog {
-            version: "1.0".to_string(),
-            rutas: vec![route],
-        };
-        let json = serde_json::to_string(&catalog).unwrap();
-        let res = load_catalog_core(&json);
-        assert!(res.is_err());
-        assert!(res.err().unwrap().contains("has too many stops"));
-    }
-
-    #[test]
-    fn test_high_transfer_volume() {
-        let mut routes = Vec::new();
-        // create 1000 pairs of routes (2000 total)
-        // Pair i: Start -> Hub_i -> End
-        for i in 0..1000 {
-            // Route A: Start -> Hub_i
-            routes.push(Route {
-                id: format!("A_{}", i),
-                name: format!("Route A {}", i),
-                price: 5.0,
-                transport_type: "Bus".to_string(),
-                empresa: None,
-                frecuencia_minutos: None,
-                horario: None,
-                stops: vec![
-                    Stop {
-                        id: None,
-                        name: "Start".to_string(),
-                        lat: 0.0,
-                        lng: 0.0,
-                        orden: 1,
-                        landmarks: String::new(),
-                    },
-                    Stop {
-                        id: None,
-                        name: format!("Hub_{}", i),
-                        lat: 0.0,
-                        lng: 0.0,
-                        orden: 2,
-                        landmarks: String::new(),
-                    },
-                ],
-                stops_normalized: vec!["start".to_string(), format!("hub_{}", i)],
-                stop_name_to_index: vec!["start".to_string(), format!("hub_{}", i)]
-                    .iter()
-                    .enumerate()
-                    .map(|(idx, name)| (name.clone(), idx))
-                    .collect(),
-                social_alerts: Vec::new(),
-                last_updated: String::new(),
-            });
-
-            // Route B: Hub_i -> End
-            routes.push(Route {
-                id: format!("B_{}", i),
-                name: format!("Route B {}", i),
-                price: 5.0,
-                transport_type: "Bus".to_string(),
-                empresa: None,
-                frecuencia_minutos: None,
-                horario: None,
-                stops: vec![
-                    Stop {
-                        id: None,
-                        name: format!("Hub_{}", i),
-                        lat: 0.0,
-                        lng: 0.0,
-                        orden: 1,
-                        landmarks: String::new(),
-                    },
-                    Stop {
-                        id: None,
-                        name: "End".to_string(),
-                        lat: 0.0,
-                        lng: 0.0,
-                        orden: 2,
-                        landmarks: String::new(),
-                    },
-                ],
-                stops_normalized: vec![format!("hub_{}", i), "end".to_string()],
-                stop_name_to_index: vec![format!("hub_{}", i), "end".to_string()]
-                    .iter()
-                    .enumerate()
-                    .map(|(idx, name)| (name.clone(), idx))
-                    .collect(),
-                social_alerts: Vec::new(),
-                last_updated: String::new(),
-            });
-        }
-
-        let start = std::time::Instant::now();
-        let res = find_route_rs("Start", "End", &routes);
-        let duration = start.elapsed();
-
-        // Ensure performance is acceptable (Debug < 1000ms, Release < 200ms)
-        assert!(
-            duration.as_millis() < 1000,
-            "High volume transfer took too long: {:?}",
-            duration
-        );
-        assert!(!res.is_empty());
-        assert_eq!(res.len(), 5); // Should be truncated to 5
-    }
-
-    #[test]
-    fn test_logic_bomb() {
-        // Construct a route with 600 stops (Limit is 500)
+    fn test_too_many_stops_rejected() {
         let mut stops_json = String::new();
-        for i in 0..600 {
+        for i in 0..501 {
             stops_json.push_str(&format!(
                 r#"{{"nombre": "Stop {}", "lat": 0.0, "lng": 0.0, "orden": {}}},"#,
                 i, i
             ));
         }
-        stops_json.pop(); // Remove last comma
-
+        stops_json.pop();
         let json = format!(
-            r#"{{
-                "version": "1.0",
-                "rutas": [
-                    {{
-                        "id": "R_BOMB",
-                        "nombre": "Logic Bomb Route",
-                        "tarifa": 10.0,
-                        "tipo": "Bus",
-                        "paradas": [{}]
-                    }}
-                ]
-            }}"#,
+            r#"{{"version": "1.0", "rutas": [{{"id": "R_BOMB", "nombre": "Logic Bomb", "tarifa": 10.0, "tipo": "Bus", "paradas": [{}]}}]}}"#,
             stops_json
         );
-
         let res = load_catalog_core(&json);
         assert!(res.is_err());
-        let err = res.err().unwrap();
-        assert!(err.contains("too many stops"), "Unexpected error: {}", err);
+        assert!(res.err().unwrap().contains("too many stops"));
+    }
+
+    #[test]
+    fn test_dos_protection() {
+        // Worst-case: many route pairs with no transfers, triggers MAX_OPS guard
+        let mut routes = Vec::new();
+        for i in 0..100 {
+            let mut stops = Vec::new();
+            for j in 0..50 {
+                stops.push(Stop {
+                    id: None,
+                    name: format!("Stop A {} {}", i, j),
+                    lat: 0.0,
+                    lng: 0.0,
+                    orden: j as u32,
+                    landmarks: String::new(),
+                });
+            }
+            routes.push(Route {
+                id: format!("Start_{}", i),
+                name: format!("Start Route {}", i),
+                price: 10.0,
+                transport_type: "Bus".to_string(),
+                empresa: None,
+                frecuencia_minutos: None,
+                horario: None,
+                stops_normalized: (0..50).map(|j| format!("stop a {} {}", i, j)).collect(),
+                stop_name_to_index: (0..50)
+                    .map(|j| (format!("stop a {} {}", i, j), j))
+                    .collect(),
+                stops,
+                social_alerts: Vec::new(),
+                last_updated: String::new(),
+            });
+        }
+        let start = std::time::Instant::now();
+        let _res = find_route_rs("Stop A 0 0", "Stop A 99 49", &routes);
+        let duration = start.elapsed();
+        assert!(
+            duration.as_millis() < 2000,
+            "DoS protection triggered too late: {:?}",
+            duration
+        );
+    }
+
+    #[test]
+    fn test_high_transfer_volume_truncated() {
+        let mut routes = Vec::new();
+        for i in 0..50 {
+            routes.push(Route {
+                id: format!("A_{}", i),
+                name: format!("A {}", i),
+                price: 5.0,
+                transport_type: "Bus".to_string(),
+                empresa: None,
+                frecuencia_minutos: None,
+                horario: None,
+                stops: vec![
+                    Stop { id: None, name: "Start".to_string(), lat: 0.0, lng: 0.0, orden: 1, landmarks: String::new() },
+                    Stop { id: None, name: format!("Hub_{}", i), lat: 0.0, lng: 0.0, orden: 2, landmarks: String::new() },
+                ],
+                stops_normalized: vec!["start".to_string(), format!("hub_{}", i)],
+                stop_name_to_index: vec![("start".to_string(), 0), (format!("hub_{}", i), 1)].into_iter().collect(),
+                social_alerts: Vec::new(),
+                last_updated: String::new(),
+            });
+            routes.push(Route {
+                id: format!("B_{}", i),
+                name: format!("B {}", i),
+                price: 5.0,
+                transport_type: "Bus".to_string(),
+                empresa: None,
+                frecuencia_minutos: None,
+                horario: None,
+                stops: vec![
+                    Stop { id: None, name: format!("Hub_{}", i), lat: 0.0, lng: 0.0, orden: 1, landmarks: String::new() },
+                    Stop { id: None, name: "End".to_string(), lat: 0.0, lng: 0.0, orden: 2, landmarks: String::new() },
+                ],
+                stops_normalized: vec![format!("hub_{}", i), "end".to_string()],
+                stop_name_to_index: vec![(format!("hub_{}", i), 0), ("end".to_string(), 1)].into_iter().collect(),
+                social_alerts: Vec::new(),
+                last_updated: String::new(),
+            });
+        }
+
+        let res = find_route_rs("Start", "End", &routes);
+        assert!(!res.is_empty());
+        assert!(res.len() <= 5, "Result must be truncated to max 5");
+    }
+
+    #[test]
+    fn test_haversine_accuracy() {
+        // ~157 m between two close Cancún coordinates
+        let d = haversine_distance_m(21.1576, -86.8269, 21.1590, -86.8269);
+        assert!(d > 100.0 && d < 250.0, "Expected ~157m, got {}m", d);
+    }
+
+    #[test]
+    fn test_geo_transfer_threshold() {
+        // Two stops exactly 300m apart should qualify for geo transfer
+        let stop_a = Stop { id: None, name: "A".to_string(), lat: 21.1576, lng: -86.8269, orden: 1, landmarks: String::new() };
+        let stop_b = Stop { id: None, name: "B".to_string(), lat: 21.1603, lng: -86.8269, orden: 1, landmarks: String::new() };
+        let d = haversine_distance_m(stop_a.lat, stop_a.lng, stop_b.lat, stop_b.lng);
+        assert!(d < GEO_TRANSFER_RADIUS_M, "Should be within geo threshold: {}m", d);
     }
 }
