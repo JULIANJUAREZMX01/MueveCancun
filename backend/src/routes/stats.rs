@@ -14,7 +14,9 @@ pub struct StatsQuery {
     pub days: i32,
 }
 
-fn default_days() -> i32 { 7 }
+fn default_days() -> i32 {
+    7
+}
 
 /// GET /stats?days=7 — Estadísticas de los últimos N días (máx 90)
 pub async fn get_stats(
@@ -24,8 +26,7 @@ pub async fn get_stats(
 ) -> Result<Json<Vec<DailyStats>>, StatusCode> {
     let days = q.days.clamp(1, 90);
 
-    sqlx::query_as!(
-        DailyStats,
+    sqlx::query_as::<_, DailyStats>(
         r#"
         SELECT id, device_id, stat_date, completed, total,
                income, distance_km, duration_min
@@ -34,9 +35,9 @@ pub async fn get_stats(
           AND stat_date >= CURRENT_DATE - ($2::integer * INTERVAL '1 day')
         ORDER BY stat_date DESC
         "#,
-        device_id,
-        days,
     )
+    .bind(&device_id)
+    .bind(days)
     .fetch_all(&pool)
     .await
     .map(Json)
@@ -53,8 +54,7 @@ pub async fn upsert_stats(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    sqlx::query_as!(
-        DailyStats,
+    sqlx::query_as::<_, DailyStats>(
         r#"
         INSERT INTO daily_stats
             (device_id, stat_date, completed, total, income, distance_km, duration_min)
@@ -68,9 +68,14 @@ pub async fn upsert_stats(
         RETURNING id, device_id, stat_date, completed, total,
                   income, distance_km, duration_min
         "#,
-        device_id, body.stat_date, body.completed, body.total,
-        body.income, body.distance_km, body.duration_min,
     )
+    .bind(&device_id)
+    .bind(body.stat_date)
+    .bind(body.completed)
+    .bind(body.total)
+    .bind(body.income)
+    .bind(body.distance_km)
+    .bind(body.duration_min)
     .fetch_one(&pool)
     .await
     .map(Json)
