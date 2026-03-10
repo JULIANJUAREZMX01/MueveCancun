@@ -235,7 +235,6 @@ export async function geocodeAddress(address: string): Promise<{ lat: number; ln
     const q = encodeURIComponent(`${address}, Cancún, Quintana Roo, México`);
     const url = `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&countrycodes=mx`;
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'MueveReparto/1.0 (https://mueverepartoencancun.onrender.com)' },
       signal: AbortSignal.timeout(5000),  // 5 segundos máximo
     });
 
