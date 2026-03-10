@@ -15,9 +15,13 @@ export class WasmLoader {
     if (this.loading) return this.loading;
 
     this.loading = this.loadWasm();
-    this.wasmModule = await this.loading;
-    this.loading = null;
-    return this.wasmModule;
+    try {
+      const module = await this.loading;
+      this.wasmModule = module;
+      return this.wasmModule;
+    } finally {
+      this.loading = null;
+    }
   }
 
   private async loadWasm() {
