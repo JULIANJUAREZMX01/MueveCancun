@@ -1,0 +1,35 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+
+export interface Props {
+  name: string;
+  class?: string;
+  'aria-hidden'?: string | boolean;
+}
+
+const { name, class: className, 'aria-hidden': ariaHidden } = Astro.props;
+
+// Parse the name. It could be a path like "/icons/map-plus.svg" or just "map-plus".
+const iconName = name.replace('/icons/', '').replace('.svg', '');
+const filepath = path.join(process.cwd(), 'public', 'icons', `${iconName}.svg`);
+
+let svgContent = '';
+
+try {
+  svgContent = fs.readFileSync(filepath, 'utf-8');
+
+  if (className) {
+    // Basic injection of class attribute into the SVG
+    svgContent = svgContent.replace('<svg', `<svg class="${className}"`);
+  }
+
+  if (ariaHidden !== undefined) {
+    svgContent = svgContent.replace('<svg', `<svg aria-hidden="${ariaHidden}"`);
+  }
+} catch (error) {
+  console.warn(`[Icon] Could not read SVG file: ${filepath}`);
+}
+---
+
+<Fragment set:html={svgContent} />

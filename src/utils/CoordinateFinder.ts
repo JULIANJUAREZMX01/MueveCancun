@@ -13,11 +13,14 @@ export class CoordinateFinder {
     private tokenIndex: Map<string, string[]> = new Map();
     private keys: string[];
     private lowerKeys: string[];
+    // Preserves original-cased stop names: lowercase key → original name
+    private originalNames: Map<string, string>;
 
-    constructor(db: Map<string, [number, number]>) {
+    constructor(db: Map<string, [number, number]>, originalNames?: Map<string, string>) {
         this.db = db;
         this.keys = Array.from(db.keys());
         this.lowerKeys = this.keys.map(k => k.toLowerCase());
+        this.originalNames = originalNames ?? new Map();
         this.buildIndex();
     }
 
@@ -76,14 +79,15 @@ export class CoordinateFinder {
         const coords = this.find(query);
         if (coords) {
              // Find original key for coords
-             let foundName = query;
+             let foundKey = query;
              for (const [k, v] of this.db.entries()) {
                  if (v[0] === coords[0] && v[1] === coords[1]) {
-                     foundName = k;
+                     foundKey = k;
                      break;
                  }
              }
-             return { name: foundName, coords };
+             const displayName = this.originalNames.get(foundKey) || foundKey;
+             return { name: displayName, coords };
         }
         return null;
     }
@@ -129,7 +133,8 @@ export class CoordinateFinder {
             })
             .slice(0, limit)
             .map(name => ({
-                name,
+                // Return original-cased name for display; key is lowercase
+                name: this.originalNames.get(name) || name,
                 coords: this.db.get(name)!
             }));
     }
