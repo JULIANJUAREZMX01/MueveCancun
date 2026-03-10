@@ -269,6 +269,8 @@ import MainLayout from '../layouts/MainLayout.astro';
 </div>
 
 <script>
+  import { escapeHtml } from '../utils/utils';
+  import { dbPut, dbDelete, dbGetAll, getStops, completeStop, generateId, STORES } from '../lib/idb';
   import { dbPut, dbDelete, dbGetAll, getStops, completeStop, generateId, STORES, geocodeAddress } from '../lib/idb';
   import type { Stop } from '../lib/idb';
 
@@ -616,7 +618,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 
     listEl.innerHTML = filtered.map((s, i) => `
       <div class="stop-card ${s.status === 'completed' ? 'completed' : ''} ${s.priority === 'urgent' ? 'priority-urgent' : 'priority-normal'}"
-           data-id="${s.id}" role="button" tabindex="0" aria-label="Parada ${s.order + 1}: ${s.address}">
+           data-id="${s.id}" role="button" tabindex="0" aria-label="Parada ${s.order + 1}: ${escapeHtml(s.address)}">
 
         <!-- Drag handle -->
         <div class="drag-handle" aria-hidden="true">
@@ -629,6 +631,9 @@ import MainLayout from '../layouts/MainLayout.astro';
         <div class="stop-number ${s.priority === 'urgent' ? 'urgent' : ''}">${s.order + 1}</div>
         <!-- Content -->
         <div style="flex:1;min-width:0;">
+          <p class="stop-address">${escapeHtml(s.address)}</p>
+          ${s.note ? `<p class="stop-meta">${escapeHtml(s.note)}</p>` : ''}
+          ${s.clientName ? `<p class="stop-meta">${escapeHtml(s.clientName)}${s.clientPhone ? ' · ' + escapeHtml(s.clientPhone) : ''}</p>` : ''}
           <div style="display:flex;flex-direction:column;gap:0.125rem;">
               <p class="stop-address">${s.address}</p>
               <span id="geo-${s.id}" class="geo-indicator" style="display:none;align-items:center;gap:0.375rem;font-size:0.6875rem;color:var(--text-tertiary);font-weight:600;">
@@ -649,7 +654,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 
         <!-- Right side -->
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.375rem;flex-shrink:0;">
-          ${s.income ? `<span style="font-size:0.75rem;font-weight:800;color:var(--color-primary)">$${s.income}</span>` : ''}
+          ${s.income ? `<span style="font-size:0.75rem;font-weight:800;color:var(--color-primary)">$${escapeHtml(s.income)}</span>` : ''}
           <span class="badge ${s.status === 'completed' ? 'badge-success' : s.priority === 'urgent' ? 'badge-urgent' : 'badge-pending'}">
             ${s.status === 'completed' ? 'Listo' : s.priority === 'urgent' ? 'Urgente' : 'Pend.'}
           </span>
@@ -835,8 +840,8 @@ import MainLayout from '../layouts/MainLayout.astro';
       <div style="display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:1rem;">
         <div class="stop-number ${stop.priority === 'urgent' ? 'urgent' : ''}" style="font-size:1rem;width:2rem;height:2rem;">${stop.order + 1}</div>
         <div style="flex:1;">
-          <p style="font-size:1rem;font-weight:700;color:var(--text-primary);margin:0 0 0.125rem;">${stop.address}</p>
-          ${stop.note ? `<p style="font-size:0.8125rem;color:var(--text-secondary);margin:0;">${stop.note}</p>` : ''}
+          <p style="font-size:1rem;font-weight:700;color:var(--text-primary);margin:0 0 0.125rem;">${escapeHtml(stop.address)}</p>
+          ${stop.note ? `<p style="font-size:0.8125rem;color:var(--text-secondary);margin:0;">${escapeHtml(stop.note)}</p>` : ''}
         </div>
         <button id="detail-close" style="background:none;border:none;cursor:pointer;color:var(--text-tertiary);">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -844,9 +849,9 @@ import MainLayout from '../layouts/MainLayout.astro';
       </div>
 
       <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.25rem;">
-        ${stop.clientName ? `<div class="detail-row"><span>Cliente</span><strong>${stop.clientName}</strong></div>` : ''}
-        ${stop.clientPhone ? `<div class="detail-row"><span>Teléfono</span><a href="tel:${stop.clientPhone}" style="color:var(--color-primary);font-weight:700;">${stop.clientPhone}</a></div>` : ''}
-        ${stop.income ? `<div class="detail-row"><span>Ingreso</span><strong style="color:var(--color-primary)">$${stop.income}</strong></div>` : ''}
+        ${stop.clientName ? `<div class="detail-row"><span>Cliente</span><strong>${escapeHtml(stop.clientName)}</strong></div>` : ''}
+        ${stop.clientPhone ? `<div class="detail-row"><span>Teléfono</span><a href="tel:${escapeHtml(stop.clientPhone)}" style="color:var(--color-primary);font-weight:700;">${escapeHtml(stop.clientPhone)}</a></div>` : ''}
+        ${stop.income ? `<div class="detail-row"><span>Ingreso</span><strong style="color:var(--color-primary)">$${escapeHtml(stop.income)}</strong></div>` : ''}
         <div class="detail-row"><span>Estado</span>
           <span class="badge ${stop.status === 'completed' ? 'badge-success' : stop.priority === 'urgent' ? 'badge-urgent' : 'badge-pending'}">
             ${stop.status === 'completed' ? 'Completada' : stop.priority === 'urgent' ? 'Urgente' : 'Pendiente'}
