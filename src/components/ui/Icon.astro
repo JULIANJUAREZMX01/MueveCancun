@@ -1,34 +1,46 @@
 ---
-import fs from 'node:fs';
-import path from 'node:path';
-
-export interface Props {
+interface Props {
   name: string;
   class?: string;
   'aria-hidden'?: string | boolean;
 }
 
-const { name, class: className, 'aria-hidden': ariaHidden } = Astro.props;
+const { name, class: className = '', alt } = Astro.props;
 
-// Parse the name. It could be a path like "/icons/map-plus.svg" or just "map-plus".
-const iconName = name.replace('/icons/', '').replace('.svg', '');
-const filepath = path.join(process.cwd(), 'public', 'icons', `${iconName}.svg`);
+// Use Vite's import.meta.glob to load SVGs raw at build time.
+// This is secure and optimized for Vite/Astro environments.
+const svgFiles = import.meta.glob('/public/icons/**/*.svg', { query: '?raw', import: 'default' });
+
+// Construct the expected path for the glob
+const iconPath = `/public/icons/${name}.svg`;
 
 let svgContent = '';
 
-try {
-  svgContent = fs.readFileSync(filepath, 'utf-8');
+if (svgFiles[iconPath]) {
+  try {
+    const rawSvg = await svgFiles[iconPath]() as string;
 
-  if (className) {
-    // Basic injection of class attribute into the SVG
-    svgContent = svgContent.replace('<svg', `<svg class="${className}"`);
-  }
+    // Clean up XML/DOCTYPE and inject classes/aria attributes
+    const ariaHidden = alt ? 'false' : 'true';
+    const ariaLabelAttr = alt ? ` aria-label="${alt}" role="img"` : '';
 
-  if (ariaHidden !== undefined) {
-    svgContent = svgContent.replace('<svg', `<svg aria-hidden="${ariaHidden}"`);
+    svgContent = rawSvg
+      .replace(/^<\?xml.*?\?>\s*/i, '')
+      .replace(/^<!DOCTYPE.*?>\s*/i, '')
+      .replace(
+        /<svg([^>]*)>/i,
+        `<svg$1 class="${className}" aria-hidden="${ariaHidden}"${ariaLabelAttr}>`
+      );
+  } catch (e) {
+    console.error(`[Icon Component] Error parsing icon ${name}:`, e);
   }
-} catch (error) {
-  console.warn(`[Icon] Could not read SVG file: ${filepath}`);
+} else {
+  console.error(`[Icon Component] Icon not found: ${iconPath}`);
+}
+
+// Fallback icon if loading fails
+if (!svgContent) {
+   svgContent = `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
 }
 ---
 
