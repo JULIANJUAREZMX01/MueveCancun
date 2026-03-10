@@ -45,12 +45,53 @@ const {
     <meta name="generator" content={Astro.generator} />
     <title>{title} | Mueve Reparto</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#00E8A2" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0F172A" media="(prefers-color-scheme: dark)" />
+
+    <!-- Geo Tags (Cancún) -->
+    <meta name="geo.region" content="MX-ROO" />
+    <meta name="geo.placename" content="Cancún" />
+    <meta name="geo.position" content="21.1619;-86.8515" />
+    <meta name="ICBM" content="21.1619, -86.8515" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url} />
     <meta property="og:title" content={`${title} | Mueve Reparto`} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={image} />
+    <meta property="og:image" content={new URL(image, Astro.site || Astro.url)} />
+    <meta property="og:site_name" content="Mueve Reparto" />
+    <meta property="og:locale" content="es_MX" />
+
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={Astro.url} />
+    <meta name="twitter:title" content={`${title} | Mueve Reparto`} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(image, Astro.site || Astro.url)} />
+
+    <!-- Schema.org SoftwareApplication -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Mueve Reparto",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Any",
+      "description": description,
+      "url": Astro.url.href,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "MXN"
+      },
+      "areaServed": {
+        "@type": "City",
+        "name": "Cancún",
+        "addressRegion": "Quintana Roo",
+        "addressCountry": "MX"
+      }
+    })} />
+
+    <meta name="theme-color" content="#00E8A2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F172A" media="(prefers-color-scheme: dark)" />
 
     <!-- PWA -->
     <meta name="theme-color" content="#00E8A2" />
