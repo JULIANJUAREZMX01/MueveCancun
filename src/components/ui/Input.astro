@@ -1,6 +1,9 @@
 ---
 import Icon from './Icon.astro';
 
+// ✅ TypeScript in Astro Frontmatter
+import Icon from './Icon.astro';
+
 interface Props {
   type?: 'text' | 'email' | 'password' | 'number' | 'search' | 'textarea';
   id?: string;
@@ -49,11 +52,7 @@ const iconName = icon && !isExternal ? icon.replace(/^\/icons\//, '').replace(/\
 <div class={`graffiti-input-wrapper ${variant} ${className || ''}`}>
   {label && (
     <label for={id} class="graffiti-label">
-      {icon && (
-         isExternal ?
-         <img src={icon} class="icon" alt="" /> :
-         <Icon name={iconName} class="icon" alt="" />
-      )}
+      {icon && <Icon name={icon} class="icon" aria-hidden="true" />}
       {label}
     </label>
   )}

@@ -1,47 +1,56 @@
 ---
+import fs from 'node:fs';
+import path from 'node:path';
+
 interface Props {
   name: string;
   class?: string;
-  'aria-hidden'?: string | boolean;
+  width?: string | number;
+  height?: string | number;
+  'aria-hidden'?: boolean | string;
 }
 
-const { name, class: className = '', alt } = Astro.props;
+const {
+  name,
+  class: className,
+  width,
+  height,
+  'aria-hidden': ariaHidden = 'true',
+} = Astro.props;
 
-// Use Vite's import.meta.glob to load SVGs raw at build time.
-// This is secure and optimized for Vite/Astro environments.
-const svgFiles = import.meta.glob('/public/icons/**/*.svg', { query: '?raw', import: 'default' });
-
-// Construct the expected path for the glob
-const iconPath = `/public/icons/${name}.svg`;
-
+// Read SVG content from public/icons folder at build time
 let svgContent = '';
+try {
+  // Strip starting slash and /icons/ if present, append .svg
+  const iconFileName = name.replace(/^\/?icons\//, '').replace(/\.svg$/, '') + '.svg';
+  const iconPath = path.join(process.cwd(), 'public', 'icons', iconFileName);
 
-if (svgFiles[iconPath]) {
-  try {
-    const rawSvg = await svgFiles[iconPath]() as string;
+  if (fs.existsSync(iconPath)) {
+    svgContent = fs.readFileSync(iconPath, 'utf-8');
 
-    // Clean up XML/DOCTYPE and inject classes/aria attributes
-    const ariaHidden = alt ? 'false' : 'true';
-    const ariaLabelAttr = alt ? ` aria-label="${alt}" role="img"` : '';
-
-    svgContent = rawSvg
-      .replace(/^<\?xml.*?\?>\s*/i, '')
-      .replace(/^<!DOCTYPE.*?>\s*/i, '')
-      .replace(
-        /<svg([^>]*)>/i,
-        `<svg$1 class="${className}" aria-hidden="${ariaHidden}"${ariaLabelAttr}>`
-      );
-  } catch (e) {
-    console.error(`[Icon Component] Error parsing icon ${name}:`, e);
+    // Inject props into the root <svg> tag
+    if (className) {
+      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg class="${className}" $1>`);
+    }
+    if (width) {
+      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg width="${width}" $1>`);
+    }
+    if (height) {
+      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg height="${height}" $1>`);
+    }
+    if (ariaHidden !== undefined) {
+      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg aria-hidden="${ariaHidden}" $1>`);
+    }
+  } else {
+    console.warn(`[Icon] SVG file not found: ${iconPath}`);
   }
-} else {
-  console.error(`[Icon Component] Icon not found: ${iconPath}`);
-}
-
-// Fallback icon if loading fails
-if (!svgContent) {
-   svgContent = `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+} catch (e) {
+  console.error(`[Icon] Failed to load icon: ${name}`, e);
 }
 ---
 
-<Fragment set:html={svgContent} />
+{svgContent ? (
+  <Fragment set:html={svgContent} />
+) : (
+  <span class={`fallback-icon ${className || ''}`} aria-hidden={ariaHidden}></span>
+)}
