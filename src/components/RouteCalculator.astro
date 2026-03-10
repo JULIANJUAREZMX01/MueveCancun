@@ -169,6 +169,7 @@ const ui = uiTranslations[currentLang];
   import { CoordinateFinder } from '../utils/CoordinateFinder';
   import { escapeHtml, safeJsonStringify } from '../utils/utils';
   import { getWalletBalance, setWalletBalance } from '../utils/db';
+  import { getTransportLabel } from '../utils/transport';
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
