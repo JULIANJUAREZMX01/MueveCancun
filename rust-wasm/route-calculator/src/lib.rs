@@ -467,13 +467,16 @@ fn find_transfer_routes(
                     }
 
                     if let Some(stop) = route_a.stops.get(idx_a) {
-                        let is_preferred =
-                            PREFERRED_HUBS.iter().any(|h| stop.name.contains(h));
+                        let stop_name = &stop.name;
+                        let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_name.contains(h));
+
                         match best_transfer {
-                            None => best_transfer = Some((idx_a, is_preferred, false)),
-                            Some((_, current_pref, _)) => {
-                                if is_preferred && !current_pref {
-                                    best_transfer = Some((idx_a, is_preferred, false));
+                            None => {
+                                best_transfer = Some((idx_a, is_preferred));
+                            }
+                            Some((_, current_is_preferred)) => {
+                                if is_preferred && !current_is_preferred {
+                                    best_transfer = Some((idx_a, is_preferred));
                                 }
                             }
                         }
@@ -481,60 +484,14 @@ fn find_transfer_routes(
                 }
             }
 
-            // Pass 2: Geographic proximity fallback (only if exact match found nothing)
-            if best_transfer.is_none() {
-                'geo: for (idx_a, stop_a) in route_a.stops.iter().enumerate() {
-                    if idx_a == origin_idx_a {
-                        continue;
-                    }
-                    if !stop_has_coords(stop_a) {
-                        continue;
-                    }
-
-                    for (idx_b, stop_b) in route_b.stops.iter().enumerate() {
-                        ops_count += 1;
-                        if ops_count > MAX_OPS {
-                            break 'outer;
-                        }
-                        if idx_b == dest_idx_b {
-                            continue;
-                        }
-                        if !stop_has_coords(stop_b) {
-                            continue;
-                        }
-
-                        let dist =
-                            haversine_distance_m(stop_a.lat, stop_a.lng, stop_b.lat, stop_b.lng);
-
-                        if dist <= GEO_TRANSFER_RADIUS_M {
-                            let is_preferred =
-                                PREFERRED_HUBS.iter().any(|h| stop_a.name.contains(h));
-                            match best_transfer {
-                                None => best_transfer = Some((idx_a, is_preferred, true)),
-                                Some((_, current_pref, _)) => {
-                                    if is_preferred && !current_pref {
-                                        best_transfer = Some((idx_a, is_preferred, true));
-                                    }
-                                }
-                            }
-                            // Prioritize preferred hubs; keep searching if not preferred yet
-                            if best_transfer.map_or(false, |(_, p, _)| p) {
-                                break 'geo;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if let Some((idx_a, is_preferred, geo)) = best_transfer {
+            if let Some((idx_a, is_preferred)) = best_transfer {
                 if let Some(stop) = route_a.stops.get(idx_a) {
                     candidates.push(TransferCandidate {
                         route_a,
                         route_b,
-                        transfer_name: stop.name.clone(),
+                        transfer_name: stop.name.as_str(),
                         price: route_a.price + route_b.price,
                         is_preferred,
-                        geo_transfer: geo,
                     });
                 }
             }
