@@ -42,7 +42,9 @@ export function truncateText(str: string, maxLength: number): string {
  * @returns The escaped JSON string.
  */
 export function safeJsonStringify(obj: unknown): string {
-    return JSON.stringify(obj)
+    const json = JSON.stringify(obj);
+    const safe = json === undefined ? 'null' : json;
+    return safe
         .replace(/</g, '\\u003c')
         .replace(/'/g, "\\u0027");
 }

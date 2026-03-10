@@ -14,17 +14,13 @@ export class WasmLoader {
     if (this.wasmModule) return this.wasmModule;
     if (this.loading) return this.loading;
 
-    const loadingPromise = this.loadWasm();
-    this.loading = loadingPromise;
+    this.loading = this.loadWasm();
     try {
-      const module = await loadingPromise;
+      const module = await this.loading;
       this.wasmModule = module;
-      return module;
+      return this.wasmModule;
     } finally {
-      // Allow retries after failures (and avoid leaking a rejected promise).
-      if (this.loading === loadingPromise) {
-        this.loading = null;
-      }
+      this.loading = null;
     }
   }
 

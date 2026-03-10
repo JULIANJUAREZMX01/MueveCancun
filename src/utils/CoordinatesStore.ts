@@ -59,9 +59,13 @@ export class CoordinatesStore {
                 if (data.rutas) {
                     data.rutas.forEach((route: RouteData) => {
                         route.paradas.forEach(stop => {
+                            // Resolve lat/lng from whichever property is present, skipping stops with no coords
+                            const lat = stop.lat ?? stop.latitude;
+                            const lng = stop.lng ?? stop.longitude ?? stop.lon;
+                            if (lat == null || lng == null || typeof lat !== 'number' || typeof lng !== 'number') return;
                             // Normalize Key (lowercase for case-insensitive lookup)
                             const key = stop.nombre.toLowerCase().trim();
-                            if (this.db) this.db.set(key, [stop.lat, stop.lng]);
+                            if (this.db) this.db.set(key, [lat, lng]);
                             // Preserve original casing for display
                             this.originalNames.set(key, stop.nombre.trim());
                         });
@@ -130,12 +134,14 @@ export class CoordinatesStore {
             }
         }
 
-        // O(N) global search to verify / find if spatial hash returned nothing
-        for (const point of this.allPoints) {
-            const d = getDistance(lat, lng, point.lat, point.lng);
-            if (d < minDist) {
-                minDist = d;
-                nearestKey = point.name;
+        // O(N) global search only when spatial hash returned no candidates
+        if (minDist === Infinity) {
+            for (const point of this.allPoints) {
+                const d = getDistance(lat, lng, point.lat, point.lng);
+                if (d < minDist) {
+                    minDist = d;
+                    nearestKey = point.name;
+                }
             }
         }
 

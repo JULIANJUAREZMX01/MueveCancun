@@ -82,8 +82,10 @@ const ui = uiTranslations[currentLang];
             data-i18n-placeholder="calc.placeholder.dest"
             maxlength={100}
           >
-            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip">
-              <Icon name="map-plus" class="w-5 h-5" alt="Map Picker" />
+            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip" aria-label="Select on map">
+              <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+              </svg>
             </button>
             <div slot="action" id="map-tooltip" class="graffiti-tooltip top" style="position-anchor: --map-btn" data-i18n="calc.map">Select on map</div>
           </Input>
@@ -311,23 +313,28 @@ const ui = uiTranslations[currentLang];
   });
 
   // Listen for map stop selections (from InteractiveMap popup buttons)
-  window.addEventListener('MAP_SET_STOP', (event: any) => {
-      const { type, name } = event.detail || {};
-      if (!name) return;
-      if (type === 'origin') {
-          const originInput = document.getElementById('origin-input') as HTMLInputElement;
-          if (originInput) {
-              originInput.value = name;
-              originInput.dispatchEvent(new Event('input', { bubbles: true }));
+  // Note: registered once at top level; handler is idempotent so duplicates are safe.
+  // The guard is on the window flag to avoid duplicate registration across view transitions.
+  if (!(window as any).__mapSetStopListenerAttached) {
+      (window as any).__mapSetStopListenerAttached = true;
+      window.addEventListener('MAP_SET_STOP', (event: any) => {
+          const { type, name } = event.detail || {};
+          if (!name) return;
+          if (type === 'origin') {
+              const originInput = document.getElementById('origin-input') as HTMLInputElement;
+              if (originInput) {
+                  originInput.value = name;
+                  originInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+          } else if (type === 'dest') {
+              const destInput = document.getElementById('destination-input') as HTMLInputElement;
+              if (destInput) {
+                  destInput.value = name;
+                  destInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
           }
-      } else if (type === 'dest') {
-          const destInput = document.getElementById('destination-input') as HTMLInputElement;
-          if (destInput) {
-              destInput.value = name;
-              destInput.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-      }
-  });
+      });
+  }
 
 
 
@@ -385,7 +392,7 @@ const ui = uiTranslations[currentLang];
 
               // 2. Normalize Routes
               if (normalized.rutas) {
-                  normalized.rutas = normalized.rutas.map((r: RouteData) => {
+                  normalized.rutas = normalized.rutas.map((r) => {
                       const route = { ...r };
                       // Convert string horario to Schedule object
                       if (typeof route.horario === 'string') {

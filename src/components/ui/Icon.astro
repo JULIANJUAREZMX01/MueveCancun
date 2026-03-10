@@ -2,47 +2,50 @@
 interface Props {
   name: string;
   class?: string;
-  alt?: string;
+  width?: string | number;
+  height?: string | number;
+  'aria-hidden'?: boolean | string;
 }
 
-const { name, class: className, alt } = Astro.props;
+const {
+  name,
+  class: className,
+  width,
+  height,
+  'aria-hidden': ariaHidden = 'true',
+} = Astro.props;
 
-let cleanName = name;
-if (cleanName.startsWith("/icons/")) {
-  cleanName = cleanName.replace("/icons/", "");
-}
-if (cleanName.endsWith(".svg")) {
-  cleanName = cleanName.replace(".svg", "");
-}
+// Strip any prefixes/extensions to get a clean key
+const iconKey = name.replace(/^\/?icons\//, '').replace(/\.svg$/, '');
 
-let svgContent = "";
-try {
-  // Vite raw import for files in public directory
-  // Since we are in src/components/ui, public is at ../../../public
-  const modules = import.meta.glob('../../../public/icons/*.svg', { query: '?raw', import: 'default' });
-  const path = `../../../public/icons/${cleanName}.svg`;
+// Use Vite's glob import for security and bundler optimization
+// This ensures only SVGs in the /public/icons folder can be included
+const svgFiles = import.meta.glob('/public/icons/**/*.svg', { query: '?raw', import: 'default' });
 
-  if (modules[path]) {
-    svgContent = await modules[path]();
-    if (className) {
-      // Safely handle existing classes or add new ones
-      if (svgContent.includes('class="')) {
-         svgContent = svgContent.replace('class="', `class="${className} `);
-      } else {
-         svgContent = svgContent.replace("<svg ", `<svg class="${className}" `);
-      }
-    }
-    if (alt) {
-        svgContent = svgContent.replace("<svg ", `<svg aria-label="${alt}" role="img" `);
-    } else {
-        svgContent = svgContent.replace("<svg ", `<svg aria-hidden="true" `);
-    }
-  } else {
-     console.warn(`[Icon] Icon not found in glob: ${cleanName}`);
+// Match the specific file (handling potential subdirectories if needed, though usually flat)
+const matchingFile = Object.keys(svgFiles).find(path => path.endsWith(`/${iconKey}.svg`));
+
+let svgContent = '';
+if (matchingFile) {
+  try {
+      const rawSvg = await svgFiles[matchingFile]();
+      svgContent = String(rawSvg);
+
+      // Inject props
+      if (className) svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg class="${className}" $1>`);
+      if (width) svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg width="${width}" $1>`);
+      if (height) svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg height="${height}" $1>`);
+      if (ariaHidden !== undefined) svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg aria-hidden="${ariaHidden}" $1>`);
+  } catch (e) {
+      console.error(`[Icon] Error processing: ${name}`, e);
   }
-} catch (error) {
-  console.warn(`[Icon] Could not load icon: ${cleanName}`, error);
+} else {
+  console.warn(`[Icon] Not found in bundle: ${iconKey}`);
 }
 ---
 
-<Fragment set:html={svgContent} />
+{svgContent ? (
+  <Fragment set:html={svgContent} />
+) : (
+  <span class={`fallback-icon ${className || ''}`} aria-hidden={ariaHidden}></span>
+)}

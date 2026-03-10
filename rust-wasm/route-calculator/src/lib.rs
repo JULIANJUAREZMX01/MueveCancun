@@ -76,6 +76,9 @@ pub struct Journey {
     /// Indicates transfer was found via geographic proximity (not exact stop name match)
     #[serde(default)]
     pub geo_transfer: bool,
+    /// Indicates a direct route where origin comes before destination (forward direction)
+    #[serde(default)]
+    pub is_forward: bool,
 }
 
 // --- APP STATE ---
@@ -109,7 +112,7 @@ fn haversine_distance_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
 /// True if stop has valid non-zero coordinates.
 #[inline]
 fn stop_has_coords(stop: &Stop) -> bool {
-    stop.lat.abs() > 0.0001 || stop.lng.abs() > 0.0001
+    stop.lat.abs() > 0.0001 && stop.lng.abs() > 0.0001
 }
 
 // --- CATALOG VALIDATION ---
@@ -378,6 +381,7 @@ fn find_direct_routes(route_matches: &[RouteMatch]) -> Vec<Journey> {
                 transfer_point: None,
                 total_price: m.route.price,
                 geo_transfer: false,
+                is_forward: origin_idx < dest_idx,
             };
             if origin_idx < dest_idx {
                 forward.push(journey);
@@ -463,12 +467,15 @@ fn find_transfer_routes(
                     }
 
                     if let Some(stop) = route_a.stops.get(idx_a) {
-                        let is_preferred =
-                            PREFERRED_HUBS.iter().any(|h| stop.name.contains(h));
+                        let stop_name = &stop.name;
+                        let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_name.contains(h));
+
                         match best_transfer {
-                            None => best_transfer = Some((idx_a, is_preferred, false)),
-                            Some((_, current_pref, _)) => {
-                                if is_preferred && !current_pref {
+                            None => {
+                                best_transfer = Some((idx_a, is_preferred, false));
+                            }
+                            Some((_, current_is_preferred, _)) => {
+                                if is_preferred && !current_is_preferred {
                                     best_transfer = Some((idx_a, is_preferred, false));
                                 }
                             }
@@ -476,6 +483,7 @@ fn find_transfer_routes(
                     }
                 }
             }
+
 
             // Pass 2: Geographic proximity fallback (only if exact match found nothing)
             if best_transfer.is_none() {
@@ -558,6 +566,7 @@ fn find_transfer_routes(
             transfer_point: Some(c.transfer_name),
             total_price: c.price,
             geo_transfer: c.geo_transfer,
+            is_forward: false,
         })
         .collect()
 }
@@ -591,12 +600,11 @@ fn find_route_rs(origin: &str, dest: &str, all_routes: &[Route]) -> Vec<Journey>
         find_transfer_routes(&route_matches, 0, journeys.len());
     journeys.extend(transfer_journeys);
 
-    // Final sort: Direct > Transfer via preferred hub > Transfer via geo > price
+    // Final sort: Forward Direct > Reverse Direct > Transfer via preferred hub > Transfer via geo > price
     journeys.sort_by(|a, b| {
         let score = |j: &Journey| -> i32 {
             if j.type_ == "Direct" {
-                // Forward direction (already sorted into 'forward' slice) scores higher
-                4
+                if j.is_forward { 5 } else { 4 }
             } else if let Some(tp) = &j.transfer_point {
                 if PREFERRED_HUBS.iter().any(|h| tp.contains(h)) {
                     if j.geo_transfer { 2 } else { 3 }
