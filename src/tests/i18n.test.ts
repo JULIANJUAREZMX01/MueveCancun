@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest';
 import { getLangFromUrl, useTranslations, ui, defaultLang } from '../utils/i18n';
 

@@ -64,22 +64,18 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
 
     // Priority: muevecancun_balance (wallet.astro) > user_balance (RouteCalculator.astro)
     let localBalance: number | null = null;
-    let source = '';
-
     // Try muevecancun_balance first (wallet page)
     const muevecancunBalance = localStorage.getItem('muevecancun_balance');
     if (muevecancunBalance !== null) {
       localBalance = parseFloat(muevecancunBalance);
-      source = 'muevecancun_balance';
-    }
+      }
 
     // Try user_balance if muevecancun_balance not found
     if (localBalance === null || isNaN(localBalance)) {
       const userBalance = localStorage.getItem('user_balance');
       if (userBalance !== null) {
         localBalance = parseFloat(userBalance);
-        source = 'user_balance';
-      }
+        }
     }
 
     const existing = await store.get('current_balance');

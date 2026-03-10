@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { escapeHtml } from './utils';
 
 // --- Minimal Leaflet Types ---

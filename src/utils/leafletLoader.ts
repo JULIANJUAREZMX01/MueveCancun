@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 let loadPromise: Promise<void> | null = null;
 

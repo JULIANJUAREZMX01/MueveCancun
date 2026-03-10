@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { bench, describe, beforeAll } from 'vitest';
 import { CoordinatesStore } from '../../utils/CoordinatesStore';
 

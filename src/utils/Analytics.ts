@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * MueveCancun Telemetry Service
  * Offline-ready analytics that queues events in localStorage and syncs when online.
