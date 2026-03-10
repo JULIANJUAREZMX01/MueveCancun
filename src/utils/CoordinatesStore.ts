@@ -1,18 +1,10 @@
-import { getDistance } from "./utils";
+import { getDistance } from "./geometry";
+import type { RoutesCatalog, RouteData } from "../types";
 import { SpatialHash } from "./SpatialHash";
 
 // Define Types
 type Coordinate = { name: string; lat: number; lng: number };
 
-type RouteData = {
-    id: string;
-    nombre: string;
-    paradas: {
-        lat: number;
-        lng: number;
-        nombre: string;
-    }[];
-};
 
 export class CoordinatesStore {
     // 🛡️ SECURITY FIX (Prototype Pollution Prevention)
@@ -24,12 +16,12 @@ export class CoordinatesStore {
     // Maps lowercase key → original-cased stop name for display
     private originalNames: Map<string, string> = new Map();
     private spatialIndex: SpatialHash<string> | null = null;
-    private loadingPromise: Promise<{ text: string, data: any }> | null = null;
+    private loadingPromise: Promise<{ text: string, data: RoutesCatalog | Partial<RoutesCatalog> }> | null = null;
     private allPoints: Coordinate[] = [];
 
     static instance = new CoordinatesStore();
 
-    async init(initialData?: any): Promise<{ text: string, data: any }> {
+    async init(initialData?: RoutesCatalog): Promise<{ text: string, data: RoutesCatalog | Partial<RoutesCatalog> }> {
         if (this.loadingPromise && !initialData) return this.loadingPromise;
 
         this.loadingPromise = (async () => {
