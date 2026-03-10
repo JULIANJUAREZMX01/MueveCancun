@@ -131,7 +131,7 @@ const ui = uiTranslations[currentLang];
                 <span class="text-xxs font-black uppercase tracking-widest mb-0.5" style="color: var(--text-tertiary);" id="results-count-label" aria-live="polite"></span>
                 <span class="badge-success font-mono" id="results-time-badge" aria-live="polite"></span>
             </div>
-            
+
             <button id="toggle-list-btn" class="chip" aria-label="Toggle results list">
                 <span class="text-xs font-bold" id="toggle-list-text" data-i18n="calc.toggle.hide">Hide</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" id="toggle-list-icon" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
@@ -169,7 +169,6 @@ const ui = uiTranslations[currentLang];
   import { CoordinateFinder } from '../utils/CoordinateFinder';
   import { escapeHtml, safeJsonStringify } from '../utils/utils';
   import { getWalletBalance, setWalletBalance } from '../utils/db';
-  import { getTransportLabel } from '../utils/transport';
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
@@ -227,7 +226,7 @@ const ui = uiTranslations[currentLang];
       return {
           ...journey,
           total_price: journey.total_price ?? 0,
-          duration_minutes: (journey.duration_minutes ?? (journey.legs || []).reduce((acc, l) => acc + (l.duration_minutes || 0), 0)) || 0,
+          duration_minutes: journey.duration_minutes ?? 0,
           legs: (journey.legs || []).map(leg => {
               const paradas = leg.paradas || [];
               const firstStop = paradas.length > 0 ? paradas[0] : null;
@@ -238,13 +237,11 @@ const ui = uiTranslations[currentLang];
                   transport_type: leg.transport_type || leg.tipo || 'Bus_Urbano',
                   operator: leg.operator || leg.operador || '',
                   frequency: leg.frequency || (leg.frecuencia_minutos ? `${leg.frecuencia_minutos} min` : ''),
-                  duration_minutes: leg.duration_minutes || leg.frecuencia_minutos || 0,
-                  duration: leg.duration || (leg.frecuencia_minutos ? `${leg.frecuencia_minutos} min` : ""),
+                  duration: leg.duration || '',
                   badges: leg.badges || [],
                   origin_hub: leg.origin_hub || firstStop?.nombre || '',
                   dest_hub: leg.dest_hub || lastStop?.nombre || '',
-                  stops: leg.stops || (paradas.length > 0 ? paradas.map(p => p.nombre || p.name) : []),
-                  paradas: paradas,
+                  stops: leg.stops || (paradas.length > 0 ? paradas.map(p => p.nombre) : []),
               };
           })
       };
@@ -321,7 +318,6 @@ const ui = uiTranslations[currentLang];
       const module = await Promise.race([modulePromise, timeoutPromise]);
 
       find_route = module.find_route;
-      window.find_route = find_route; // Expose for debugging/testing
       validate_operator_funds = module.validate_operator_funds;
       load_catalog = module.load_catalog;
 
@@ -392,7 +388,7 @@ const ui = uiTranslations[currentLang];
           const searchBtn = document.getElementById("search-btn");
           const spinner = document.getElementById("btn-spinner");
           const txt = document.getElementById("btn-text");
-          
+
           if (searchBtn) searchBtn.disabled = false;
           if (spinner) spinner.classList.add("hidden");
           if (txt) {
@@ -430,7 +426,7 @@ const ui = uiTranslations[currentLang];
           if (destInput) {
               destInput.value = selectedStop;
               destInput.dispatchEvent(new Event('input', { bubbles: true }));
-              
+
               const originInput = document.getElementById('origin-input');
               if (originInput) originInput.focus();
           }
@@ -443,7 +439,7 @@ const ui = uiTranslations[currentLang];
       try {
         await coordinatesStore.init(jsonData);
         const db = coordinatesStore.getDB();
-        
+
         if (db) {
             finder = new CoordinateFinder(db);
             console.log("Coordinate Finder Ready");
@@ -470,7 +466,6 @@ const ui = uiTranslations[currentLang];
       const list = document.createElement('ul');
       list.className = 'graffiti-dropdown divide-y divide-slate-50';
       list.id = `${inputId}-suggestions`;
-      list.style.pointerEvents = 'auto'; // Ensure clicks are captured
 
       // GraffitiWarrior: Native Popover API
       try {
@@ -494,7 +489,7 @@ const ui = uiTranslations[currentLang];
           }
 
           const results = finder.search(val, 6); // Limit to 6 suggestions
-          
+
           if (results.length > 0) {
               list.innerHTML = '';
               results.forEach(res => {
@@ -717,15 +712,15 @@ const ui = uiTranslations[currentLang];
   function renderEmptyState() {
       if (!resultsContainer) return;
       resultsContainer.innerHTML = `
-          <div class="glass-card text-center animate-slide-up py-10 px-6">
-              <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                  <svg class="w-10 h-10 text-slate-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.71 5.71L18.29 2.29a1 1 0 00-1.41 0l-.71.71L12 7.17l-1.29-1.29a1 1 0 00-1.42 0L2.29 12.88a1 1 0 000 1.41l3.42 3.42a1 1 0 001.41 0l.71-.71L12 12.83l1.29 1.29a1 1 0 001.42 0l7-7a1 1 0 000-1.41z"/></svg>
+          <div class="glass-card text-center animate-slide-up py-8">
+              <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg class="w-8 h-8 text-slate-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.71 5.71L18.29 2.29a1 1 0 00-1.41 0l-.71.71L12 7.17l-1.29-1.29a1 1 0 00-1.42 0L2.29 12.88a1 1 0 000 1.41l3.42 3.42a1 1 0 001.41 0l.71-.71L12 12.83l1.29 1.29a1 1 0 001.42 0l7-7a1 1 0 000-1.41z"/></svg>
               </div>
-              <h3 class="font-display font-black text-xl mb-3" style="color: var(--text-primary);" data-i18n="calc.no_route">${ui['calc.no_route'] || 'No routes found'}</h3>
-              <p class="text-sm mb-8 max-w-[260px] mx-auto leading-relaxed" style="color: var(--text-secondary);" data-i18n="calc.no_route_msg">
+              <h3 class="font-display font-black text-lg mb-2" style="color: var(--text-primary);" data-i18n="calc.no_route">${ui['calc.no_route'] || 'No routes found'}</h3>
+              <p class="text-sm mb-6 max-w-[200px] mx-auto" style="color: var(--text-secondary);" data-i18n="calc.no_route_msg">
                   ${ui['calc.no_route_msg'] || 'Try changing your origin or destination, or walking to a main avenue.'}
               </p>
-               <button class="btn-primary btn-md w-full js-retry-search-btn uppercase tracking-widest" data-i18n="calc.retry">
+               <button class="btn-secondary btn-sm js-retry-search-btn" data-i18n="calc.retry">
                   ${ui['calc.retry'] || 'Try Again'}
               </button>
           </div>
@@ -809,13 +804,13 @@ const ui = uiTranslations[currentLang];
       }
 
       const btn = document.getElementById('search-btn');
-      
+
       // Remove existing listener to prevent duplicates if any
       const newBtn = btn?.cloneNode(true);
       if (btn && newBtn) {
           btn.parentNode.replaceChild(newBtn, btn);
       }
-      
+
       const searchButton = document.getElementById('search-btn');
 
       searchButton?.addEventListener('click', async () => {
@@ -823,7 +818,7 @@ const ui = uiTranslations[currentLang];
           const destInput = document.getElementById('destination-input');
           const origin = originInput?.value;
           const dest = destInput?.value;
-          
+
           if (!origin || !dest) {
               renderError(ui?.['calc.error.empty'] || "Please fill in both fields");
               return;
@@ -837,7 +832,7 @@ const ui = uiTranslations[currentLang];
           spinner?.classList.remove('hidden');
 
           btnText?.classList.add('hidden');
-          
+
           // Clear previous results badges
           const countLabel = document.getElementById('results-count-label');
           if (countLabel) countLabel.textContent = '';
@@ -892,20 +887,15 @@ const ui = uiTranslations[currentLang];
                  // ATOMIC DOM UPDATE
                  const countLabel = document.getElementById('results-count-label');
                  const timeBadge = document.getElementById('results-time-badge');
-                 
-                 if (countLabel) {
-                     countLabel.textContent = countText;
-                     countLabel.classList.remove('hidden');
-                 }
-                 
+
+                 if (countLabel) countLabel.textContent = countText;
+
                  if (timeBadge) {
                      timeBadge.textContent = timeText;
                      if (showTimeBadge) {
                          timeBadge.classList.remove('hidden');
-                         timeBadge.style.display = 'inline-flex';
                      } else {
                          timeBadge.classList.add('hidden');
-                         timeBadge.style.display = 'none';
                      }
                  }
 
@@ -914,17 +904,21 @@ const ui = uiTranslations[currentLang];
 
                  // Render Cards
                  if (bestResultArea) {
-                     bestResultArea.innerHTML = best.type === 'Transfer' ? renderTransferCardHtml(best, true) : renderBestResultHtml(best, true);
+                     if (best.type === 'Transfer') {
+                         bestResultArea.innerHTML = renderTransferCardHtml(best, true);
+                     } else {
+                         bestResultArea.innerHTML = renderBestResultHtml(best, true);
+                     }
                  }
 
                  if (others.length > 0 && resultsContainer) {
                      others.forEach(r => {
                          const div = document.createElement('div');
                          div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r);
-                         if (div.firstElementChild) resultsContainer.appendChild(div.firstElementChild);
+                         resultsContainer.appendChild(div.firstElementChild);
                      });
                  }
-                 
+
                  // Re-attach map buttons
                  document.querySelectorAll('.view-map-btn').forEach(btn => {
                      btn.addEventListener('click', (e) => {

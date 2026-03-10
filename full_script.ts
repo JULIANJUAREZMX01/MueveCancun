@@ -1,175 +1,9 @@
----
-import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../utils/i18n';
-import { safeJsonStringify } from '../utils/utils';
-import Input from './ui/Input.astro';
-
-const currentLang = getLangFromUrl(Astro.url);
-const t = useTranslations(currentLang);
-const ui = uiTranslations[currentLang];
----
-
-<div class="calculator-wrapper">
-
-  <!-- Search Card -->
-  <div class="glass-card search-card" id="search-card">
-
-    <!-- Summary Bar (Hidden by default) -->
-    <div id="summary-bar" class="summary-bar hidden">
-       <div class="summary-info">
-          <div class="summary-route">
-              <div class="summary-point">
-                  <div class="dot origin"></div>
-                  <span id="summary-origin" class="summary-text">Origin</span>
-              </div>
-              <div class="connector"></div>
-              <div class="summary-point">
-                  <div class="dot dest"></div>
-                  <span id="summary-dest" class="summary-text">Destination</span>
-              </div>
-          </div>
-       </div>
-       <button id="edit-search-btn" class="btn-edit" data-i18n="calc.edit" aria-label="Edit search">EDIT</button>
-    </div>
-
-    <!-- Form Area -->
-    <div id="search-form" class="search-form">
-
-      <!-- Inputs -->
-      <div class="inputs-group">
-        <div class="relative z-20">
-          <Input
-            id="origin-input"
-            variant="default"
-            label="Origin"
-            icon="/icons/map-pin.svg"
-            placeholder="From where?"
-            list="locations"
-            aria-controls="locations"
-            aria-expanded="false"
-            data-i18n-label="calc.origin"
-            data-i18n-placeholder="calc.placeholder.origin"
-            maxlength={100}
-          >
-            <!-- GPS Button inside Input -->
-            <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip" aria-label="Use my location">
-               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-            </button>
-            <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn" data-i18n="calc.gps">Use my location</div>
-          </Input>
-        </div>
-
-        <!-- Swap Button -->
-        <div class="swap-btn-container">
-          <button id="swap-btn" class="swap-btn" type="button" aria-label="Intercambiar origen y destino">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
-          </button>
-        </div>
-
-        <div class="relative z-0">
-          <Input
-            id="destination-input"
-            variant="default"
-            label="Destination"
-            icon="/icons/flag.svg"
-            placeholder="Where to?"
-            list="locations"
-            aria-controls="locations"
-            aria-expanded="false"
-            data-i18n-label="calc.dest"
-            data-i18n-placeholder="calc.placeholder.dest"
-            maxlength={100}
-          >
-            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip">
-              <img src="/icons/map-plus.svg" class="w-5 h-5" alt="Map Picker" />
-            </button>
-            <div slot="action" id="map-tooltip" class="graffiti-tooltip top" style="position-anchor: --map-btn" data-i18n="calc.map">Select on map</div>
-          </Input>
-        </div>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="quick-actions-wrapper">
-        <div class="quick-actions-list flex gap-2 overflow-x-auto pb-1 no-scrollbar snap-x">
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Walmart" data-i18n-html="calc.home" aria-label="Navigate home">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Home
-          </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Plaza Las Américas" data-i18n-html="calc.work" aria-label="Navigate to work">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg> Work
-          </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Aeropuerto Terminal 2" data-i18n-html="calc.airport" aria-label="Navigate to airport">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg> Airport
-          </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Playa Delfines (El Mirador)" data-i18n-html="calc.beach" aria-label="Navigate to beach">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.127 14.56l1.43-1.43 6.44 6.443L19.57 21zm.68-6.2C14.9 9.46 16.34 10 18 10c.43 0 .84-.04 1.24-.11C18.77 8.61 17.47 7.74 16 7.24l-2.19 1.12zm-1.78 1.78l-2.12-2.12c-.56-.56-1.47-.56-2.03 0l-.71.71 2.83 2.83.71-.71c.55-.57.55-1.49.01-2.04l1.31.33zM2 20l3-3h9l-1.5-1.5-5.36-5.36-.71.71c-.56.56-1.47.56-2.03 0L2.58 9.03c-.56-.56-.56-1.47 0-2.03l.71-.71c.56-.56 1.47-.56 2.03 0l1.83 1.83 2.19-1.12C8.75 5.32 8.37 3.76 8.35 2H10c.16 1.97.79 3.71 1.82 5.12l2.12 2.12 6.36 6.36c.56.56.56 1.47 0 2.03l-.71.71c-.56.56-1.47.56-2.03 0l-1.83-1.83L13 20H2z"/></svg> Beach
-          </button>
-        </div>
-      </div>
-
-
-
-      <button id="search-btn" class="btn-primary btn-lg w-full" disabled aria-label="Calculate route">
-        <span id="btn-text" class="uppercase tracking-wider" data-i18n="calc.loading">Cargando rutas...</span>
-        <span class="spinner" id="btn-spinner" aria-hidden="true"></span>
-      </button>
-
-    </div>
-
-    <!-- Loading State (Skeleton Screens) -->
-    <div id="calculation-loader" class="hidden p-5 space-y-3" style="border-top: 1px solid var(--border-light); background: var(--surface-bg);" aria-label="Loading results" role="status">
-        <div class="skeleton h-6 w-2/3 rounded-lg"></div>
-        <div class="skeleton h-24 rounded-xl"></div>
-        <div class="skeleton h-12 rounded-xl"></div>
-        <div class="skeleton h-12 rounded-xl"></div>
-    </div>
-
-  </div>
-
-    <!-- Results Area -->
-    <div id="results-info" class="mb-4 hidden animate-fade-in group" aria-live="polite">
-        <div class="glass-card flex items-center justify-between px-4 py-3">
-            <div class="flex flex-col">
-                <span class="text-xxs font-black uppercase tracking-widest mb-0.5" style="color: var(--text-tertiary);" id="results-count-label" aria-live="polite"></span>
-                <span class="badge-success font-mono" id="results-time-badge" aria-live="polite"></span>
-            </div>
-            
-            <button id="toggle-list-btn" class="chip" aria-label="Toggle results list">
-                <span class="text-xs font-bold" id="toggle-list-text" data-i18n="calc.toggle.hide">Hide</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" id="toggle-list-icon" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
-            </button>
-        </div>
-    </div>
-    <div id="best-result-area" class="mb-6 space-y-4 empty:hidden">
-        <!-- Best match card injected here -->
-    </div>
-
-    <div id="results-container" class="space-y-4 empty:hidden transition-all duration-500 origin-top">
-        <!-- Other results injected here -->
-    </div>
-
-  <datalist id="locations">
-    <option value="El Crucero Hub"></option>
-    <option value="ADO Centro / Terminal"></option>
-    <option value="Plaza Las Américas"></option>
-    <option value="Aeropuerto Terminal 2"></option>
-    <option value="Aeropuerto Terminal 4"></option>
-    <option value="Muelle Ultramar (Puerto Juárez)"></option>
-    <option value="Playa Delfines (El Mirador)"></option>
-    <option value="Playa del Carmen Centro"></option>
-    <option value="Walmart"></option>
-    <option value="Villas Otoch Paraíso"></option>
-    <option value="Hospital General (Av. Kabah)"></option>
-  </datalist>
-
-</div>
-
-<div id="i18n-data" data-ui={safeJsonStringify(ui)} class="hidden"></div>
 <script>
   import { showToast } from '../utils/toast';
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { CoordinateFinder } from '../utils/CoordinateFinder';
   import { escapeHtml, safeJsonStringify } from '../utils/utils';
   import { getWalletBalance, setWalletBalance } from '../utils/db';
-  import { getTransportLabel } from '../utils/transport';
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
@@ -227,7 +61,7 @@ const ui = uiTranslations[currentLang];
       return {
           ...journey,
           total_price: journey.total_price ?? 0,
-          duration_minutes: (journey.duration_minutes ?? (journey.legs || []).reduce((acc, l) => acc + (l.duration_minutes || 0), 0)) || 0,
+          duration_minutes: journey.duration_minutes ?? 0,
           legs: (journey.legs || []).map(leg => {
               const paradas = leg.paradas || [];
               const firstStop = paradas.length > 0 ? paradas[0] : null;
@@ -238,13 +72,11 @@ const ui = uiTranslations[currentLang];
                   transport_type: leg.transport_type || leg.tipo || 'Bus_Urbano',
                   operator: leg.operator || leg.operador || '',
                   frequency: leg.frequency || (leg.frecuencia_minutos ? `${leg.frecuencia_minutos} min` : ''),
-                  duration_minutes: leg.duration_minutes || leg.frecuencia_minutos || 0,
-                  duration: leg.duration || (leg.frecuencia_minutos ? `${leg.frecuencia_minutos} min` : ""),
+                  duration: leg.duration || '',
                   badges: leg.badges || [],
                   origin_hub: leg.origin_hub || firstStop?.nombre || '',
                   dest_hub: leg.dest_hub || lastStop?.nombre || '',
-                  stops: leg.stops || (paradas.length > 0 ? paradas.map(p => p.nombre || p.name) : []),
-                  paradas: paradas,
+                  stops: leg.stops || (paradas.length > 0 ? paradas.map(p => p.nombre) : []),
               };
           })
       };
@@ -321,7 +153,6 @@ const ui = uiTranslations[currentLang];
       const module = await Promise.race([modulePromise, timeoutPromise]);
 
       find_route = module.find_route;
-      window.find_route = find_route; // Expose for debugging/testing
       validate_operator_funds = module.validate_operator_funds;
       load_catalog = module.load_catalog;
 
@@ -392,7 +223,7 @@ const ui = uiTranslations[currentLang];
           const searchBtn = document.getElementById("search-btn");
           const spinner = document.getElementById("btn-spinner");
           const txt = document.getElementById("btn-text");
-          
+
           if (searchBtn) searchBtn.disabled = false;
           if (spinner) spinner.classList.add("hidden");
           if (txt) {
@@ -430,7 +261,7 @@ const ui = uiTranslations[currentLang];
           if (destInput) {
               destInput.value = selectedStop;
               destInput.dispatchEvent(new Event('input', { bubbles: true }));
-              
+
               const originInput = document.getElementById('origin-input');
               if (originInput) originInput.focus();
           }
@@ -443,7 +274,7 @@ const ui = uiTranslations[currentLang];
       try {
         await coordinatesStore.init(jsonData);
         const db = coordinatesStore.getDB();
-        
+
         if (db) {
             finder = new CoordinateFinder(db);
             console.log("Coordinate Finder Ready");
@@ -470,7 +301,6 @@ const ui = uiTranslations[currentLang];
       const list = document.createElement('ul');
       list.className = 'graffiti-dropdown divide-y divide-slate-50';
       list.id = `${inputId}-suggestions`;
-      list.style.pointerEvents = 'auto'; // Ensure clicks are captured
 
       // GraffitiWarrior: Native Popover API
       try {
@@ -494,7 +324,7 @@ const ui = uiTranslations[currentLang];
           }
 
           const results = finder.search(val, 6); // Limit to 6 suggestions
-          
+
           if (results.length > 0) {
               list.innerHTML = '';
               results.forEach(res => {
@@ -717,15 +547,15 @@ const ui = uiTranslations[currentLang];
   function renderEmptyState() {
       if (!resultsContainer) return;
       resultsContainer.innerHTML = `
-          <div class="glass-card text-center animate-slide-up py-10 px-6">
-              <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                  <svg class="w-10 h-10 text-slate-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.71 5.71L18.29 2.29a1 1 0 00-1.41 0l-.71.71L12 7.17l-1.29-1.29a1 1 0 00-1.42 0L2.29 12.88a1 1 0 000 1.41l3.42 3.42a1 1 0 001.41 0l.71-.71L12 12.83l1.29 1.29a1 1 0 001.42 0l7-7a1 1 0 000-1.41z"/></svg>
+          <div class="glass-card text-center animate-slide-up py-8">
+              <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg class="w-8 h-8 text-slate-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.71 5.71L18.29 2.29a1 1 0 00-1.41 0l-.71.71L12 7.17l-1.29-1.29a1 1 0 00-1.42 0L2.29 12.88a1 1 0 000 1.41l3.42 3.42a1 1 0 001.41 0l.71-.71L12 12.83l1.29 1.29a1 1 0 001.42 0l7-7a1 1 0 000-1.41z"/></svg>
               </div>
-              <h3 class="font-display font-black text-xl mb-3" style="color: var(--text-primary);" data-i18n="calc.no_route">${ui['calc.no_route'] || 'No routes found'}</h3>
-              <p class="text-sm mb-8 max-w-[260px] mx-auto leading-relaxed" style="color: var(--text-secondary);" data-i18n="calc.no_route_msg">
+              <h3 class="font-display font-black text-lg mb-2" style="color: var(--text-primary);" data-i18n="calc.no_route">${ui['calc.no_route'] || 'No routes found'}</h3>
+              <p class="text-sm mb-6 max-w-[200px] mx-auto" style="color: var(--text-secondary);" data-i18n="calc.no_route_msg">
                   ${ui['calc.no_route_msg'] || 'Try changing your origin or destination, or walking to a main avenue.'}
               </p>
-               <button class="btn-primary btn-md w-full js-retry-search-btn uppercase tracking-widest" data-i18n="calc.retry">
+               <button class="btn-secondary btn-sm js-retry-search-btn" data-i18n="calc.retry">
                   ${ui['calc.retry'] || 'Try Again'}
               </button>
           </div>
@@ -809,13 +639,13 @@ const ui = uiTranslations[currentLang];
       }
 
       const btn = document.getElementById('search-btn');
-      
+
       // Remove existing listener to prevent duplicates if any
       const newBtn = btn?.cloneNode(true);
       if (btn && newBtn) {
           btn.parentNode.replaceChild(newBtn, btn);
       }
-      
+
       const searchButton = document.getElementById('search-btn');
 
       searchButton?.addEventListener('click', async () => {
@@ -823,7 +653,7 @@ const ui = uiTranslations[currentLang];
           const destInput = document.getElementById('destination-input');
           const origin = originInput?.value;
           const dest = destInput?.value;
-          
+
           if (!origin || !dest) {
               renderError(ui?.['calc.error.empty'] || "Please fill in both fields");
               return;
@@ -837,7 +667,7 @@ const ui = uiTranslations[currentLang];
           spinner?.classList.remove('hidden');
 
           btnText?.classList.add('hidden');
-          
+
           // Clear previous results badges
           const countLabel = document.getElementById('results-count-label');
           if (countLabel) countLabel.textContent = '';
@@ -892,20 +722,15 @@ const ui = uiTranslations[currentLang];
                  // ATOMIC DOM UPDATE
                  const countLabel = document.getElementById('results-count-label');
                  const timeBadge = document.getElementById('results-time-badge');
-                 
-                 if (countLabel) {
-                     countLabel.textContent = countText;
-                     countLabel.classList.remove('hidden');
-                 }
-                 
+
+                 if (countLabel) countLabel.textContent = countText;
+
                  if (timeBadge) {
                      timeBadge.textContent = timeText;
                      if (showTimeBadge) {
                          timeBadge.classList.remove('hidden');
-                         timeBadge.style.display = 'inline-flex';
                      } else {
                          timeBadge.classList.add('hidden');
-                         timeBadge.style.display = 'none';
                      }
                  }
 
@@ -914,17 +739,21 @@ const ui = uiTranslations[currentLang];
 
                  // Render Cards
                  if (bestResultArea) {
-                     bestResultArea.innerHTML = best.type === 'Transfer' ? renderTransferCardHtml(best, true) : renderBestResultHtml(best, true);
+                     if (best.type === 'Transfer') {
+                         bestResultArea.innerHTML = renderTransferCardHtml(best, true);
+                     } else {
+                         bestResultArea.innerHTML = renderBestResultHtml(best, true);
+                     }
                  }
 
                  if (others.length > 0 && resultsContainer) {
                      others.forEach(r => {
                          const div = document.createElement('div');
                          div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r);
-                         if (div.firstElementChild) resultsContainer.appendChild(div.firstElementChild);
+                         resultsContainer.appendChild(div.firstElementChild);
                      });
                  }
-                 
+
                  // Re-attach map buttons
                  document.querySelectorAll('.view-map-btn').forEach(btn => {
                      btn.addEventListener('click', (e) => {
@@ -956,211 +785,3 @@ const ui = uiTranslations[currentLang];
   document.addEventListener('astro:page-load', start);
 
 </script>
-
-<style>
-  /* GraffitiWarrior: CSS Anchor Positioning Tooltips */
-  .graffiti-tooltip {
-    position: absolute;
-    background: #1e293b; /* slate-800 */
-    color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 700;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), translate 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 50;
-    white-space: nowrap;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  }
-
-  /* Position Logic */
-  .graffiti-tooltip.bottom {
-    top: anchor(bottom);
-    right: anchor(right); /* Align right edges to prevent clipping */
-    translate: 0 10px;
-  }
-
-  .graffiti-tooltip.top {
-    bottom: anchor(top);
-    right: anchor(right); /* Align right edges to prevent clipping */
-    translate: 0 -10px;
-  }
-
-  /* Reveal Logic - Sibling Selector inside Slot */
-  button:hover + .graffiti-tooltip,
-  button:focus-visible + .graffiti-tooltip {
-    opacity: 1;
-    translate: 0 6px; /* Offset for bottom */
-  }
-
-  button:hover + .graffiti-tooltip.top,
-  button:focus-visible + .graffiti-tooltip.top {
-    translate: 0 -6px; /* Offset for top */
-  }
-
-  /* Swap Button Logic */
-  .inputs-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    position: relative;
-    isolation: isolate;
-  }
-
-  .swap-btn-container {
-    position: absolute;
-    inset-inline-end: 1rem;
-    top: 50%;
-    translate: 0 -50%;
-    z-index: 30;
-    pointer-events: none;
-  }
-
-  .swap-btn {
-    pointer-events: auto;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 50%;
-    background: var(--surface-elevated);
-    border: 1px solid var(--border-light);
-    box-shadow: var(--glass-shadow);
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, color 0.2s;
-  }
-
-  .swap-btn:hover {
-    background-color: var(--surface-card);
-    color: var(--color-primary);
-    transform: scale(1.15);
-    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
-  }
-
-  .swap-btn:active {
-    transform: scale(0.9);
-  }
-
-  .swap-btn.rotated {
-    transform: rotate(180deg);
-  }
-
-  /* GraffitiWarrior: Scroll-Driven Shadows for Quick Actions */
-  /* Disable shadow pseudo-elements by default to avoid non-functional overlays */
-  .quick-actions-wrapper::before,
-  .quick-actions-wrapper::after {
-    content: none;
-  }
-
-  @supports (scroll-timeline: --scroll-x inline) and (animation-timeline: auto) {
-    .quick-actions-wrapper {
-      position: relative;
-      /* Allows ::before/::after to respond to child's scroll */
-      timeline-scope: --scroll-x;
-    }
-
-    .quick-actions-list {
-      scroll-timeline: --scroll-x inline;
-    }
-
-    /* Shadow Masks */
-    .quick-actions-wrapper::before,
-    .quick-actions-wrapper::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 40px;
-      z-index: 10;
-      pointer-events: none;
-      opacity: 0;
-      /* Use 'auto' duration for scroll-driven animations */
-      animation-duration: auto;
-      animation-fill-mode: both;
-      animation-timeline: --scroll-x;
-    }
-
-    /* Left Shadow: Appears when scrolled right */
-    .quick-actions-wrapper::before {
-      left: 0;
-      background: linear-gradient(to right, var(--surface-bg, #f8fafc), transparent);
-      animation-name: gw-fade-in;
-      animation-range: 0px 20px;
-    }
-
-    /* Right Shadow: Disappears when scrolled to end */
-    .quick-actions-wrapper::after {
-      right: 0;
-      background: linear-gradient(to left, var(--surface-bg, #f8fafc), transparent);
-      animation-name: gw-fade-out;
-      animation-range: calc(100% - 20px) 100%;
-    }
-  }
-
-  @keyframes gw-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes gw-fade-out {
-    from { opacity: 1; }
-    to { opacity: 0; }
-  }
-</style>
-
-<style is:global>
-  /*
-   * GRAFFITI WARRIOR: Native Popover Dropdown
-   * No Z-Index. No JS Positioning. Pure CSS5 Magic.
-   */
-  .graffiti-dropdown {
-    /* Popover Reset */
-    position: fixed; /* Explicit for anchor positioning */
-    margin: 0;
-    padding: 0;
-    border: none;
-    inset: auto; /* Reset default inset */
-
-    /* Box Model */
-    background: white;
-    border: 1px solid #cbd5e1; /* slate-200 */
-    border-radius: 0.75rem; /* rounded-xl */
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    max-height: 15rem;
-    overflow-y: auto;
-    z-index: 50; /* Fallback */
-
-    /* Anchor Positioning Logic */
-    top: anchor(bottom);
-    left: anchor(left);
-    width: anchor-size(width);
-    translate: 0 0.5rem; /* mt-2 equivalent */
-
-    /* Animation: Entry */
-    opacity: 0;
-    transform: translateY(-0.5rem);
-    transition:
-      opacity 0.2s ease-out,
-      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-      display 0.2s allow-discrete,
-      overlay 0.2s allow-discrete;
-
-    &:popover-open {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    @starting-style {
-      &:popover-open {
-        opacity: 0;
-        transform: translateY(-0.5rem);
-      }
-    }
-  }
-
-  /* Dark mode support if needed, but we stick to light for now as per design */
-</style>
