@@ -22,12 +22,12 @@ const title = "Inicio";
                     ¿Qué Ruta Me Lleva?
                 </h1>
                 <p class="hero-destination font-display font-bold text-base sm:text-lg mt-1">
-                    en <span class="destination-text graffiti-cycler" aria-label="Cancún y Riviera Maya">
-                        <span aria-hidden="true">Cancún</span>
-                        <span aria-hidden="true">Puerto Morelos</span>
-                        <span aria-hidden="true">Isla Mujeres</span>
-                        <span aria-hidden="true">Playa del Carmen</span>
-                        <span aria-hidden="true">Zona Hotelera</span>
+                    en <span class="destination-cycler">
+                        <span class="destination-text" style="--cycle-index: 0;">Cancún</span>
+                        <span class="destination-text" style="--cycle-index: 1;">Puerto Morelos</span>
+                        <span class="destination-text" style="--cycle-index: 2;">Isla Mujeres</span>
+                        <span class="destination-text" style="--cycle-index: 3;">Playa del Carmen</span>
+                        <span class="destination-text" style="--cycle-index: 4;">Zona Hotelera</span>
                     </span>
                 </p>
             </div>
@@ -103,53 +103,26 @@ const title = "Inicio";
 .destination-cycler {
     display: inline-grid;
     grid-template-areas: 'cycler';
+    text-align: left;
+    white-space: nowrap;
+}
+
+.destination-text {
+    grid-area: cycler;
     color: #0d9488;
     font-weight: 800;
-}
-
-/* GraffitiWarrior: Pure CSS Logic Animation */
-.graffiti-cycler {
-    display: inline-grid;
-    grid-template-areas: "cycler";
-    justify-items: start;
-    align-items: center;
-}
-
-.graffiti-cycler > span {
-    grid-area: cycler;
     opacity: 0;
-    transform: translateY(8px);
-    /* 5 items * 3s = 15s total duration */
+    /* 5 items * 3s = 15s total cycle */
     animation: cycle-destinations 15s infinite;
+    animation-delay: calc(var(--cycle-index) * 3s);
 }
-
-.graffiti-cycler > span:nth-child(1) { animation-delay: 0s; }
-.graffiti-cycler > span:nth-child(2) { animation-delay: 3s; }
-.graffiti-cycler > span:nth-child(3) { animation-delay: 6s; }
-.graffiti-cycler > span:nth-child(4) { animation-delay: 9s; }
-.graffiti-cycler > span:nth-child(5) { animation-delay: 12s; }
 
 @keyframes cycle-destinations {
-    0% {
-        opacity: 0;
-        transform: translateY(8px);
-        /* destination-pop effect applied at start */
-        animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    1% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    17% {
-        opacity: 1;
-        transform: translateY(0);
-        /* begin exit */
-        animation-timing-function: ease;
-    }
-    20%, 100% {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
+    0% { opacity: 0; transform: translateY(8px); }
+    2% { opacity: 1; transform: translateY(0); }
+    18% { opacity: 1; transform: translateY(0); }
+    20% { opacity: 0; transform: translateY(-8px); }
+    100% { opacity: 0; transform: translateY(-8px); }
 }
 
 @keyframes hero-bounce-in {
