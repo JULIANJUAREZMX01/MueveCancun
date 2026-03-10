@@ -3864,7 +3864,6 @@ snapshots:
       fast-xml-parser: 5.5.1
       piccolore: 0.1.3
 
-<<<<<<< dependabot/npm_and_yarn/npm_and_yarn-fe2923fa61
   '@astrojs/sitemap@3.7.0':
     dependencies:
       sitemap: 8.0.2
@@ -3872,9 +3871,8 @@ snapshots:
       zod: 3.25.76
 
   '@astrojs/tailwind@5.1.5(astro@5.17.2(@types/node@24.10.13)(jiti@1.21.7)(rollup@4.59.0)(typescript@5.9.3)(yaml@2.8.2))(tailwindcss@3.4.19(yaml@2.8.2))':
-=======
   '@astrojs/tailwind@5.1.5(astro@5.17.2(@types/node@24.10.13)(jiti@1.21.7)(rollup@4.57.1)(typescript@5.9.3)(yaml@2.8.2))(tailwindcss@3.4.19(yaml@2.8.2))':
->>>>>>> main
+
     dependencies:
       astro: 5.17.2(@types/node@24.10.13)(jiti@1.21.7)(rollup@4.59.0)(typescript@5.9.3)(yaml@2.8.2)
       autoprefixer: 10.4.24(postcss@8.5.6)
@@ -7230,7 +7228,6 @@ snapshots:
 
   sisteransi@1.0.5: {}
 
-<<<<<<< dependabot/npm_and_yarn/npm_and_yarn-fe2923fa61
   sitemap@8.0.2:
     dependencies:
       '@types/node': 17.0.45
@@ -7238,8 +7235,7 @@ snapshots:
       arg: 5.0.2
       sax: 1.5.0
 
-=======
->>>>>>> main
+
   smol-toml@1.6.0: {}
 
   source-map-js@1.2.1: {}
