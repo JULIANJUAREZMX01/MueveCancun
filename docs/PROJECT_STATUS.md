@@ -32,7 +32,7 @@ persistencia funciona sobre IndexedDB sin necesidad de backend.
 ```
 MueveCancun/
 ├── .github/workflows/           # CI/CD (test, build-wasm, validate-data, autocurative, codeql)
-├── docs/                        # 18 archivos de documentación
+├── docs/                        # Documentación del proyecto
 ├── public/
 │   ├── data/
 │   │   ├── master_routes.json           # Catálogo principal de rutas
