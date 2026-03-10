@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       instructions:
-        description: "Context or tasks to delegate (leave blank to let Claude plan)."
+        description: "Tarea o contexto para delegar a Claude (dejar vacío para que Claude planifique)."
         required: false
         type: string
 
@@ -14,8 +14,9 @@ concurrency:
 
 jobs:
   claude-delegation:
-    name: Send unplanned work to Claude
+    name: Enviar trabajo no planeado a Claude
     runs-on: ubuntu-latest
+    # Solo en ramas de trabajo, nunca en main
     if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
     permissions:
       contents: write
@@ -24,12 +25,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare delegation instructions
+      - name: Preparar instrucciones
         id: prepare
         run: |
           INPUT="${{ github.event.inputs.instructions }}"
           if [ -z "$INPUT" ]; then
-            INPUT="No user input provided. Generate a minimal plan, then propose changes via PR against the current branch. Do not push directly to protected branches."
+            INPUT="No se proporcionó input. Genera un plan mínimo para Mueve Reparto y propón cambios vía PR contra la rama actual. No hacer push directo a ramas protegidas. Lee CLAUDE.md y AGENTS.md para contexto del proyecto."
           fi
           INPUT=$(printf "%s" "$INPUT" | tr -d '\r')
           if [ ${#INPUT} -gt 4000 ]; then
@@ -39,10 +40,13 @@ jobs:
           echo "$INPUT" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
-      - name: Claude Code Base Action (plan and apply)
+      - name: Claude Code — Planificar y aplicar cambios
         uses: anthropics/claude-code-base-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           instructions: |
-            Perform planning and application in one run. Outline steps, assumptions, and ambiguities, then apply or propose changes via a branch/PR—not direct pushes to protected branches.
-            User input: ${{ steps.prepare.outputs.prepared_instructions }}
+            Proyecto: Mueve Reparto (PWA delivery para repartidores independientes en Cancún).
+            Lee CLAUDE.md y AGENTS.md para contexto completo antes de actuar.
+            Planifica los cambios, luego apllícalos o propón via PR — nunca push directo a ramas protegidas.
+
+            Tarea del usuario: ${{ steps.prepare.outputs.prepared_instructions }}

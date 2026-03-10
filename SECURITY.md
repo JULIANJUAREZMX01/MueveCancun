@@ -1,21 +1,57 @@
-# Security Policy
+# Security Policy — Mueve Reparto
 
-## Supported Versions
+## Versiones con soporte activo
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+| Versión | Soporte |
+|---------|---------|
+| `main` (latest) | Activo |
+| Ramas `claude/*` | Solo durante desarrollo |
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+---
 
-## Reporting a Vulnerability
+## Alcance de seguridad
 
-Use this section to tell people how to report a vulnerability.
+Mueve Reparto es una PWA client-side con almacenamiento local (IndexedDB). No hay backend en el MVP.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+### Áreas relevantes
+
+| Área | Detalles |
+|------|---------|
+| **IndexedDB** | Datos del repartidor almacenados localmente en el dispositivo |
+| **Service Worker** | Caché de recursos estáticos para uso offline |
+| **Deep links externos** | Links a WhatsApp/Telegram (no se envían datos sensibles) |
+| **Geolocalización** | GPS solo cuando el usuario inicia el modo reparto; no se almacena en servidor |
+| **WASM** | Binario compilado de Rust (`public/wasm/`) — no ejecuta código arbitrario |
+
+### Fuera de alcance (MVP)
+
+- Autenticación / sesiones de usuario (no implementado hasta P5)
+- Base de datos remota (no implementado hasta P3)
+- Pagos o datos financieros reales
+
+---
+
+## Reportar una vulnerabilidad
+
+Si encuentras una vulnerabilidad de seguridad:
+
+1. **NO abrir un issue público** con detalles de la vulnerabilidad
+2. Enviar un reporte privado mediante [GitHub Security Advisories](https://github.com/sistemascancunjefe-ai/MueveRepartoEnCancun-/security/advisories/new)
+3. Incluir:
+   - Descripción del problema
+   - Pasos para reproducirlo
+   - Impacto potencial
+   - Sugerencia de solución (opcional)
+
+**Tiempo de respuesta esperado:** 72 horas para acuse de recibo, 14 días para resolución.
+
+---
+
+## Prácticas de seguridad del proyecto
+
+- No se almacenan claves de API en el código fuente
+- Variables de entorno documentadas en `.env.example` (sin valores reales)
+- Dependencias auditadas con `pnpm audit` en CI
+- CodeQL activo en GitHub Actions (`.github/workflows/codeql.yml`)
+- Sin eval(), sin innerHTML con datos de usuario sin sanitizar
+- Content Security Policy (CSP) configurada en el servidor Astro

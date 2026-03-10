@@ -34,7 +34,7 @@ const {
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         img-src 'self' data: blob: https://*.cartocdn.com https://*.openstreetmap.org https://*.tile.openstreetmap.org;
         font-src 'self' https://fonts.gstatic.com;
-        connect-src 'self' https://*.cartocdn.com https://*.openstreetmap.org https://nominatim.openstreetmap.org;
+        connect-src 'self' https://*.cartocdn.com https://*.openstreetmap.org https://nominatim.openstreetmap.org https://mueve-reparto-api.onrender.com;
         worker-src 'self' blob:;
         object-src 'none';
         base-uri 'self';
@@ -45,6 +45,8 @@ const {
     <meta name="generator" content={Astro.generator} />
     <title>{title} | Mueve Reparto</title>
     <meta name="description" content={description} />
+    <meta name="theme-color" content="#00E8A2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F172A" media="(prefers-color-scheme: dark)" />
     <meta property="og:title" content={`${title} | Mueve Reparto`} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={image} />
@@ -86,6 +88,12 @@ const {
 
     <ClientRouter />
   </head>
+
+  <!-- Sync manager: IDB → API cuando hay conexión. No-op si PUBLIC_API_URL no está configurado -->
+  <script>
+    import { initSyncManager } from '@lib/sync'
+    document.addEventListener('astro:page-load', initSyncManager, { once: true })
+  </script>
 
   <body id="top" class="min-h-screen antialiased" style="background: var(--surface-bg); color: var(--text-primary);">
 
@@ -167,19 +175,18 @@ const {
       </div>
     </div>
 
-    <script is:inline>
-      // Theme toggle
-      function setupTheme() {
-        document.querySelectorAll('.theme-toggle').forEach(btn => {
-          const fresh = btn.cloneNode(true);
-          btn.parentNode.replaceChild(fresh, btn);
-          fresh.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('mr-theme', isDark ? 'dark' : 'light');
-          });
-        });
-      }
+    <script>
+      import { setupTheme } from '@utils/theme';
 
+      document.addEventListener('astro:page-load', setupTheme);
+
+      if (document.readyState !== 'loading') {
+        setupTheme();
+      } else {
+        window.addEventListener('DOMContentLoaded', setupTheme);
+      }
+    </script>
+    <script is:inline>
       // Repartidor name
       function setupRepartidorName() {
         const name = localStorage.getItem('mr-repartidor-name') || 'Repartidor';
@@ -237,16 +244,13 @@ const {
       });
 
       document.addEventListener('astro:page-load', () => {
-        setupTheme();
         setupRepartidorName();
       });
 
       if (document.readyState !== 'loading') {
-        setupTheme();
         setupRepartidorName();
       } else {
         window.addEventListener('DOMContentLoaded', () => {
-          setupTheme();
           setupRepartidorName();
         });
       }
