@@ -361,16 +361,21 @@ import MainLayout from '../layouts/MainLayout.astro';
     listEl.querySelectorAll('.stop-card').forEach(card => {
       // Drag and Drop
       card.addEventListener('dragstart', (e: any) => {
-        const target = e.target as HTMLElement;
-        const index = target.getAttribute('data-index');
+        const target = e.currentTarget as HTMLElement;
+        const index = target.dataset.index;
+        if (index === null || index === undefined) return;
         e.dataTransfer.setData('text/plain', index);
         e.dataTransfer.effectAllowed = 'move';
         target.classList.add('dragging');
       });
 
       card.addEventListener('dragend', (e: any) => {
-        const target = e.target as HTMLElement;
+        const target = e.currentTarget as HTMLElement;
         target.classList.remove('dragging');
+        // Clear any lingering drag-over states (e.g. cancelled drag)
+        listEl.querySelectorAll('.stop-card.drag-over').forEach((el: Element) => {
+          el.classList.remove('drag-over');
+        });
       });
 
       card.addEventListener('dragover', (e: any) => {
@@ -399,8 +404,10 @@ import MainLayout from '../layouts/MainLayout.astro';
         const targetId = filtered[dropIndex].id;
 
         // Reorder logic en filtered
+        // When dragging downward the splice shifts indices, so adjust insertion point
         const item = filtered.splice(dragIndex, 1)[0];
-        filtered.splice(dropIndex, 0, item);
+        const insertAt = dragIndex < dropIndex ? dropIndex - 1 : dropIndex;
+        filtered.splice(insertAt, 0, item);
 
         // Update orders to match new positions
         if (currentFilter === 'all') {
@@ -416,8 +423,9 @@ import MainLayout from '../layouts/MainLayout.astro';
 
           if (allStopsItemIndex > -1 && allStopsTargetIndex > -1) {
             const removedItem = allStops.splice(allStopsItemIndex, 1)[0];
-            // Insertar en la nueva posición
-            allStops.splice(allStopsTargetIndex, 0, removedItem);
+            // Adjust for direction shift, mirroring the filtered reorder adjustment
+            const allInsertAt = allStopsItemIndex < allStopsTargetIndex ? allStopsTargetIndex - 1 : allStopsTargetIndex;
+            allStops.splice(allInsertAt, 0, removedItem);
 
             const promises = allStops.map((stop, idx) => {
               stop.order = idx;
@@ -522,11 +530,11 @@ import MainLayout from '../layouts/MainLayout.astro';
         let lng: number | null = null;
 
         // google.com/maps/@LAT,LNG
-        const googleRegex1 = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+        const googleRegex1 = /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/;
         // maps.google.com/?q=LAT,LNG
-        const googleRegex2 = /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/;
+        const googleRegex2 = /[?&]q=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/;
         // maps.apple.com/?ll=LAT,LNG o waze.com/ul?ll=LAT,LNG
-        const llRegex = /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/;
+        const llRegex = /[?&]ll=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/;
 
         let match = link.match(googleRegex1);
         if (match) {
