@@ -1,7 +1,9 @@
-🎯 **What:** Removed development `console.log` statements from `src/components/RouteCalculator.astro`.
+🎯 **What:** Added missing unit tests for `getAllRoutes` data-loading logic in `src/utils/routes.ts`.
 
-💡 **Why:** This improves the maintainability and cleanliness of the codebase by removing unnecessary debugging lines that pollute the console output in production.
+📊 **Coverage:** The new test suite (`src/tests/routes.test.ts`) covers multiple scenarios using `node:fs/promises` mocking:
+* Fallback to master routes on an empty directory
+* Loading of single objects, arrays, and structured (`.rutas`) JSON layouts.
+* Graceful handling of invalid JSON data.
+* Proper deduplicated merging of `master_routes.json` files and individual fragments.
 
-✅ **Verification:** Verified the code changes locally using `pnpm build`. No functionality is affected as these were strictly logging statements.
-
-✨ **Result:** A cleaner production build and improved codebase readability without any behavior changes.
+✨ **Result:** Improved reliability through higher unit test coverage on core routing configuration logic. Fixed a minor syntax error in `src/tests/utils.test.ts` discovered during suite execution.
