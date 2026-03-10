@@ -15,7 +15,7 @@ The `AGENTS.md` file serves as a comprehensive communication log and architectur
 - **Logs**: It details completed tasks (e.g., Astro 5.0 migration, WASM infrastructure setup, Dijkstra implementation).
 - **Architecture (Nexus Protocol)**: It describes a 4-layer architecture:
   1.  **Data Layer**: `public/data/master_routes.json` containing route info and "social signals" (e.g., traffic alerts).
-  2.  **Processing Layer**: Rust/WASM engine (`rust-wasm/route-calculator/src/lib.rs`) handling routing logic using SpatialHash and Dijkstra's algorithm. Compiled to `/wasm/route-calculator/route_calculator.js`.
+  2.  **Processing Layer**: Rust/WASM engine (`rust-wasm/route-calculator/src/lib.rs`) handling routing logic via direct-route lookup and single-transfer matching. Compiled to `/wasm/route-calculator/route_calculator.js`.
   3.  **Presentation Layer**: Astro SSG components (Vanilla JS) with offline PWA support.
   4.  **Persistence Layer**: IndexedDB for user wallet balance and route caching.
 - **Troubleshooting**: Provides layer-by-layer troubleshooting steps and development commands.
@@ -24,9 +24,9 @@ The `AGENTS.md` file serves as a comprehensive communication log and architectur
 
 The core routing intelligence is built in Rust and compiled to WebAssembly (WASM) for high-performance, offline-capable execution in the browser.
 
-- **Rust Engine**: Located in `rust-wasm/route-calculator/`. It implements Dijkstra's algorithm with transfer support and dynamic financial logic (2026 model based on zones/tourist status).
-- **WASM Bridge**: `docs/BRIDGE_WASM.md` details the API exposed by WASM to the frontend (e.g., `calculate_route`, `calculate_trip_cost`).
-- **Compilation**: The WASM binaries are built using `node scripts/build-wasm.mjs`, which utilizes `wasm-pack` and `binaryen` for optimization. The compiled binaries and JS bindings are output directly to `public/wasm/route-calculator/` and `public/wasm/spatial-index/` so they can be served as static assets by Astro.
+- **Rust Engine**: Located in `rust-wasm/route-calculator/`. It implements direct-route lookup and single-transfer matching to find journeys between stops.
+- **WASM Bridge**: `docs/BRIDGE_WASM.md` describes the WASM → frontend API. The current Rust exports in `rust-wasm/route-calculator/src/lib.rs` are `load_catalog`, `find_route`, `get_all_routes`, `get_route_by_id`, and `validate_operator_funds`. Any references there to older APIs like `calculate_route` / `calculate_trip_cost` are outdated examples from a previous iteration of the bridge.
+- **Compilation**: The WASM binaries are built using `node scripts/build-wasm.mjs`, which leverages `wasm-pack` to compile the Rust routing engine. The compiled binaries and JS bindings are output directly to `public/wasm/route-calculator/` so they can be served as static assets by Astro.
 - **Previous Issues (`docs/ANALISIS_COMPLETO.md`)**: A previous analysis identified and fixed an issue where WASM binaries were duplicated in both `/src/wasm/` and `/public/wasm/`. The `/src/wasm/` directory was removed, and the build script was updated to only output to `/public/wasm/`.
 - **Data Ingestion (`docs/INSTRUCTIONS_FOR_JULES.md`)**: A recent instruction mandates using `public/coordinates.json` as the source of truth for legacy routes, directly transforming it into `rust-wasm/route-calculator/src/rust_data/embedded_routes.json` rather than scraping HTML files.
 
