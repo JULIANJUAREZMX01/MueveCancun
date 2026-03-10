@@ -23,13 +23,13 @@ const title = "Inicio";
                 </h1>
                 <p class="hero-destination font-display font-bold text-base sm:text-lg mt-1">
                     en
-                    <span class="sr-only">Cancún, Puerto Morelos, Isla Mujeres, Playa del Carmen, Zona Hotelera</span>
-                    <span class="destination-cycler" aria-hidden="true">
-                        <span>Cancún</span>
-                        <span>Puerto Morelos</span>
-                        <span>Isla Mujeres</span>
-                        <span>Playa del Carmen</span>
-                        <span>Zona Hotelera</span>
+                    <span class="sr-only">varios destinos como Cancún, Puerto Morelos, Isla Mujeres, Playa del Carmen, Zona Hotelera</span>
+                    <span aria-hidden="true" class="destination-cycler">
+                        <span class="cycle-item" style="animation-delay: 0s;">Cancún</span>
+                        <span class="cycle-item" style="animation-delay: 3s;">Puerto Morelos</span>
+                        <span class="cycle-item" style="animation-delay: 6s;">Isla Mujeres</span>
+                        <span class="cycle-item" style="animation-delay: 9s;">Playa del Carmen</span>
+                        <span class="cycle-item" style="animation-delay: 12s;">Zona Hotelera</span>
                     </span>
                 </p>
             </div>
@@ -102,7 +102,6 @@ const title = "Inicio";
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
 }
 
-/* Destination Text Cycler (GraffitiWarrior CSS5 Logic) */
 .destination-cycler {
     display: inline-grid;
     grid-template-areas: 'cycler';
@@ -110,20 +109,13 @@ const title = "Inicio";
     font-weight: 800;
 }
 
-.destination-cycler > span {
+.cycle-item {
     grid-area: cycler;
     opacity: 0;
-    transform: translateY(8px);
-    animation: cycle-text 15s linear infinite;
+    animation: cycle-animation 15s infinite;
 }
 
-.destination-cycler > span:nth-child(1) { animation-delay: 0s; }
-.destination-cycler > span:nth-child(2) { animation-delay: 3s; }
-.destination-cycler > span:nth-child(3) { animation-delay: 6s; }
-.destination-cycler > span:nth-child(4) { animation-delay: 9s; }
-.destination-cycler > span:nth-child(5) { animation-delay: 12s; }
-
-@keyframes cycle-text {
+@keyframes cycle-animation {
     0%   { opacity: 0; transform: translateY(8px); }
     2%   { opacity: 1; transform: translateY(0); }
     18%  { opacity: 1; transform: translateY(0); }
