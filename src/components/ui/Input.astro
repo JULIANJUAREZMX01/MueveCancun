@@ -46,7 +46,7 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
 <div class={`graffiti-input-wrapper ${variant} ${className || ''}`}>
   {label && (
     <label for={id} class="graffiti-label">
-      {icon && <Icon name={icon} class="icon" />}
+      {icon && <Icon name={icon} class="icon" aria-hidden="true" />}
       {label}
     </label>
   )}

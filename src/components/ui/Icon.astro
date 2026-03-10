@@ -1,47 +1,34 @@
 ---
-interface Props {
+import fs from 'node:fs';
+import path from 'node:path';
+
+export interface Props {
   name: string;
   class?: string;
-  alt?: string;
+  'aria-hidden'?: string | boolean;
 }
 
-const { name, class: className, alt } = Astro.props;
+const { name, class: className, 'aria-hidden': ariaHidden } = Astro.props;
 
-let cleanName = name;
-if (cleanName.startsWith("/icons/")) {
-  cleanName = cleanName.replace("/icons/", "");
-}
-if (cleanName.endsWith(".svg")) {
-  cleanName = cleanName.replace(".svg", "");
-}
+// Parse the name. It could be a path like "/icons/map-plus.svg" or just "map-plus".
+const iconName = name.replace('/icons/', '').replace('.svg', '');
+const filepath = path.join(process.cwd(), 'public', 'icons', `${iconName}.svg`);
 
-let svgContent = "";
+let svgContent = '';
+
 try {
-  // Vite raw import for files in public directory
-  // Since we are in src/components/ui, public is at ../../../public
-  const modules = import.meta.glob('../../../public/icons/*.svg', { query: '?raw', import: 'default' });
-  const path = `../../../public/icons/${cleanName}.svg`;
+  svgContent = fs.readFileSync(filepath, 'utf-8');
 
-  if (modules[path]) {
-    svgContent = await modules[path]();
-    if (className) {
-      // Safely handle existing classes or add new ones
-      if (svgContent.includes('class="')) {
-         svgContent = svgContent.replace('class="', `class="${className} `);
-      } else {
-         svgContent = svgContent.replace("<svg ", `<svg class="${className}" `);
-      }
-    }
-    if (alt) {
-        svgContent = svgContent.replace("<svg ", `<svg aria-label="${alt}" role="img" `);
-    } else {
-        svgContent = svgContent.replace("<svg ", `<svg aria-hidden="true" `);
-    }
-  } else {
-     console.warn(`[Icon] Icon not found in glob: ${cleanName}`);
+  if (className) {
+    // Basic injection of class attribute into the SVG
+    svgContent = svgContent.replace('<svg', `<svg class="${className}"`);
+  }
+
+  if (ariaHidden !== undefined) {
+    svgContent = svgContent.replace('<svg', `<svg aria-hidden="${ariaHidden}"`);
   }
 } catch (error) {
-  console.warn(`[Icon] Could not load icon: ${cleanName}`, error);
+  console.warn(`[Icon] Could not read SVG file: ${filepath}`);
 }
 ---
 
