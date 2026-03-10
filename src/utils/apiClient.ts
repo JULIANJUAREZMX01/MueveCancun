@@ -10,7 +10,7 @@ export class ApiClient {
 
   private static getHeaders(customHeaders: HeadersInit = {}): HeadersInit {
     // Inject auth token if available (Phase 3/4)
-    const token = typeof window !== 'undefined' ? localStorage.getItem('mc_token') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('mr-auth-token') : null;
     return {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -37,10 +37,16 @@ export class ApiClient {
 
   private static async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
+      if (response.status === 401 && typeof window !== 'undefined') {
+        localStorage.removeItem('mr-auth-token');
+        localStorage.removeItem('mr-plan');
+        window.location.href = '/auth';
+      }
+
       let errorMessage = 'An error occurred';
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorMessage;
+        errorMessage = errorData.message || errorData.error || errorMessage;
       } catch {
         // Fallback if not JSON
         errorMessage = response.statusText;
