@@ -20,8 +20,12 @@ tracing         = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 dotenvy         = "0.15"
 anyhow          = "1"
+jsonwebtoken    = "9"
 
 [profile.release]
 opt-level      = 3
 lto            = true
 codegen-units  = 1
+[dependencies.axum-extra]
+version = "0.9"
+features = ["typed-header"]

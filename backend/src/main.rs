@@ -1,7 +1,7 @@
 use axum::{
     Router,
     http::{HeaderName, HeaderValue, Method},
-    routing::{delete, get, patch, post},
+    routing::{get, post},
 };
 use std::{env, net::SocketAddr};
 use tower_http::{
@@ -29,7 +29,6 @@ async fn main() -> anyhow::Result<()> {
 
     let pool = db::create_pool().await?;
 
-    // CORS: solo el origen del frontend configurado; nunca Any en producción
     let allowed_origin = env::var("ALLOWED_ORIGINS")
         .unwrap_or_else(|_| "http://localhost:4321".to_string());
 
@@ -38,21 +37,17 @@ async fn main() -> anyhow::Result<()> {
         .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
         .allow_headers([
             HeaderName::from_static("content-type"),
+            HeaderName::from_static("authorization"),
             HeaderName::from_static("x-device-id"),
         ]);
 
     let app = Router::new()
-        // Health check (sin auth, para Render health checks)
         .route("/health", get(|| async { "OK" }))
-        // Stops
-        .route("/stops",      get(routes::stops::list_stops))
-        .route("/stops",      post(routes::stops::create_stop))
-        .route("/stops/sync", post(routes::stops::sync_stops))
-        .route("/stops/:id",  patch(routes::stops::update_stop))
-        .route("/stops/:id",  delete(routes::stops::delete_stop))
-        // Stats
-        .route("/stats",      get(routes::stats::get_stats))
-        .route("/stats",      post(routes::stats::upsert_stats))
+        .route("/api/auth/otp/request", post(routes::auth::request_otp))
+        .route("/api/auth/otp/verify", post(routes::auth::verify_otp))
+        .route("/api/stops", get(routes::stops::list_stops))
+        .route("/api/stops/sync", post(routes::stops::sync_stops))
+        .route("/api/stats/daily", get(routes::stats::get_daily_stats))
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .with_state(pool);
