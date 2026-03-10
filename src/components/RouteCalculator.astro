@@ -499,19 +499,7 @@ const ui = uiTranslations[currentLang];
 
       container.appendChild(list);
 
-      function handleSuggestionClick(e) {
-          const li = e.target.closest('li[data-name]');
-          if (!li) return;
-
-          input.value = li.getAttribute('data-name') || '';
-          try { list.hidePopover(); } catch(err) { list.style.display = 'none'; }
-          // Trigger any blur/update logic
-          input.dispatchEvent(new Event('blur'));
-      }
-
-      list.addEventListener('click', handleSuggestionClick);
-
-      function updateList() {
+      const updateList = () => {
           const val = input.value;
           if (!finder || val.length < 2) {
               try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
@@ -525,7 +513,6 @@ const ui = uiTranslations[currentLang];
               results.forEach(res => {
                   const li = document.createElement('li');
                   li.className = 'px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors flex items-center gap-3 group';
-                  li.setAttribute('data-name', res.name);
                   li.innerHTML = `
                       <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-500 transition-colors">
                           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
@@ -535,6 +522,12 @@ const ui = uiTranslations[currentLang];
                           <p class="text-[10px] text-slate-500 font-mono">COORD: ${res.coords[0].toFixed(4)}, ${res.coords[1].toFixed(4)}</p>
                       </div>
                   `;
+                  li.addEventListener('click', () => {
+                      input.value = res.name;
+                      try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
+                      // Trigger any blur/update logic
+                      input.dispatchEvent(new Event('blur'));
+                  });
                   list.appendChild(li);
               });
 
@@ -546,7 +539,7 @@ const ui = uiTranslations[currentLang];
           } else {
               try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
           }
-      }
+      };
 
       // Input Handler
       input.addEventListener('input', updateList);

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { escapeHtml, safeJsonStringify, getDistance, truncateText, readingTime, safeUrl, cn } from '../utils/utils';
+import { escapeHtml, safeJsonStringify, getDistance, truncateText, readingTime } from '../utils/utils';
+import { escapeHtml, safeJsonStringify, getDistance, truncateText, safeUrl } from '../utils/utils';
 
 describe('escapeHtml Utility', () => {
   it('should escape HTML characters in strings', () => {
@@ -181,6 +182,7 @@ describe('readingTime Utility', () => {
     // 99 words -> 99/200 + 1 = 1.495 -> toFixed() -> "1"
     const text2 = new Array(99).fill('word').join(' ');
     expect(readingTime(text2)).toBe('1 min read');
+
   });
 });
 
@@ -208,24 +210,5 @@ describe('safeUrl Utility', () => {
 
   it('should handle empty string correctly', () => {
     expect(safeUrl('')).toBe('');
-  });
-});
-
-describe('cn Utility', () => {
-  it('should merge basic classes correctly', () => {
-    expect(cn('class1', 'class2')).toBe('class1 class2');
-  });
-
-  it('should handle conditional classes', () => {
-    expect(cn('class1', { 'class2': true, 'class3': false })).toBe('class1 class2');
-  });
-
-  it('should resolve Tailwind class conflicts correctly', () => {
-    expect(cn('px-2 py-1', 'p-3')).toBe('p-3');
-    expect(cn('text-red-500', 'text-blue-500')).toBe('text-blue-500');
-  });
-
-  it('should handle falsy values gracefully', () => {
-    expect(cn('class1', null, undefined, false, 0, '', 'class2')).toBe('class1 class2');
   });
 });

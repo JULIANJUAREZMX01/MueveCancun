@@ -201,18 +201,12 @@ import MainLayout from '../layouts/MainLayout.astro';
     }
 
     // Per-day counts for this week
-    const completedStops = stops.filter(s => s.status === 'completed' && s.completedAt);
-    const dayCounts = weekDays.map(day => {
-      let count = 0;
-      let income = 0;
-      for (const s of completedStops) {
-        if (isSameDay(day, s.completedAt!)) {
-          count++;
-          income += s.income ?? 0;
-        }
-      }
-      return { day, count, income };
-    });
+    const dayCounts = weekDays.map(day => ({
+      day,
+      count:  stops.filter(s => s.status === 'completed' && s.completedAt && isSameDay(day, s.completedAt)).length,
+      income: stops.filter(s => s.status === 'completed' && s.completedAt && isSameDay(day, s.completedAt))
+                   .reduce((sum, s) => sum + (s.income ?? 0), 0),
+    }));
 
     // Bar chart
     const maxCount = Math.max(...dayCounts.map(d => d.count), 1);
