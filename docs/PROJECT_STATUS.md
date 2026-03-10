@@ -39,7 +39,7 @@ MueveCancun/
 │   │   ├── master_routes.optimized.json # Versión pre-optimizada (~40 % menor)
 │   │   ├── routes-index.json            # Índice de búsqueda
 │   │   └── routes/                      # 10 archivos de rutas individuales
-│   ├── icons/                   # 17 SVG icons
+│   ├── icons/                   # Iconos de la PWA (SVG/PNG)
 │   ├── sw.js                    # Service Worker PWA
 │   ├── manifest.json            # PWA manifest
 │   └── vendor/leaflet/          # Librería de mapas (bundled)
