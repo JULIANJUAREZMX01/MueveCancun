@@ -1,0 +1,13 @@
+<<<<<<< SEARCH
+            <button id="toggle-list-btn" class="chip" aria-label="Toggle results list">
+                <span class="text-xs font-bold" id="toggle-list-text" data-i18n="calc.toggle.hide">Hide</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" id="toggle-list-icon" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+            </button>
+=======
+            <label for="results-toggle" class="chip cursor-pointer" aria-label="Toggle results list">
+                <input type="checkbox" id="results-toggle" class="sr-only" checked />
+                <span class="text-xs font-bold toggle-hide-text" data-i18n="calc.toggle.hide">Hide</span>
+                <span class="text-xs font-bold toggle-show-text hidden" data-i18n="calc.toggle.show">Show</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="toggle-icon transition-transform duration-300" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+            </label>
+>>>>>>> REPLACE

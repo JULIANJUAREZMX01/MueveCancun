@@ -84,7 +84,7 @@ export function drawRoute(
     map: Map,
     data: RouteData,
     existingLayerGroup: LayerGroup | null | undefined,
-    coordinatesDB: Map<string, [number, number]>
+    coordinatesDB: any
 ): LayerGroup | undefined {
 
     // Access global L safely
@@ -126,13 +126,12 @@ export function drawRoute(
         if (stopsSource.length > 0 && typeof stopsSource[0] === 'object') {
             // New Format: [{ lat, lng, nombre }, ...]
             stopsSource.forEach((stop: RouteStop) => {
-                if (stop.lat && (stop.lng !== undefined || stop.lon !== undefined)) {
-                    const lat = parseFloat(String(stop.lat));
-                    const lngRaw = stop.lng !== undefined ? stop.lng : stop.lon;
-                    const lng = parseFloat(String(lngRaw));
+                const latVal = stop.lat || (stop as any).latitude;
+                const lngVal = stop.lng || stop.lon || (stop as any).longitude;
 
-                    // Check logic:
-                    // Sometimes JSON has "lon" instead of "lng"
+                if (latVal !== undefined && lngVal !== undefined) {
+                    const lat = parseFloat(String(latVal));
+                    const lng = parseFloat(String(lngVal));
 
                     if (!isNaN(lat) && !isNaN(lng)) {
                         const coords: LatLngExpression = [lat, lng];
@@ -142,12 +141,21 @@ export function drawRoute(
                     }
                 }
             });
-        } else {
+        }
+
+        // Fallback or Addition: Use 'stops' array of names
+        if (routeCoords.length === 0) {
             // Legacy: Array of strings + coordinatesDB
             const stopNames: string[] = leg.stops || [];
             stopNames.forEach(name => {
-                if (coordinatesDB.has(name)) {
-                    const coords = coordinatesDB.get(name)!;
+                let coords: [number, number] | undefined;
+                if (coordinatesDB instanceof Map) {
+                    coords = coordinatesDB.get(name);
+                } else if (coordinatesDB && typeof coordinatesDB === 'object') {
+                    coords = coordinatesDB[name];
+                }
+
+                if (coords) {
                     routeCoords.push(coords);
                     validStops.push({ name: name, latlng: coords });
                     allBounds.push(coords);
