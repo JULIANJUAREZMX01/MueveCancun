@@ -53,76 +53,36 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
  */
 export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
   try {
-    // Check if migration already done
-    const migrationDone = localStorage.getItem('balance_migration_done');
-    if (migrationDone === 'true') {
-      console.log('[DB] Balance migration already completed');
-      return;
-    }
+    // Skip if migration was already performed.
+    if (localStorage.getItem('balance_migration_done') === 'true') return;
 
-    const tx = db.transaction('wallet-status', 'readwrite');
-    const store = tx.objectStore('wallet-status');
+    // Read legacy balance values; prefer 'muevecancun_balance' over 'user_balance'.
+    const rawBalance =
+      localStorage.getItem('muevecancun_balance') ??
+      localStorage.getItem('user_balance');
 
-    // Priority: muevecancun_balance (wallet.astro) > user_balance (RouteCalculator.astro)
-    let localBalance: number | null = null;
-    let source = '';
-
-    // Try muevecancun_balance first (wallet page)
-    const muevecancunBalance = localStorage.getItem('muevecancun_balance');
-    if (muevecancunBalance !== null) {
-      localBalance = parseFloat(muevecancunBalance);
-      source = 'muevecancun_balance';
-    }
-
-    // Try user_balance if muevecancun_balance not found
-    if (localBalance === null || isNaN(localBalance)) {
-      const userBalance = localStorage.getItem('user_balance');
-      if (userBalance !== null) {
-        localBalance = parseFloat(userBalance);
-        source = 'user_balance';
-      }
-    }
-
-    const existing = await store.get('current_balance');
-
-    if (localBalance !== null && !isNaN(localBalance) && localBalance > 0) {
-      if (existing) {
-        if (localBalance > existing.amount) {
-          // Preserve the higher balance from localStorage
-          existing.amount = localBalance;
-          existing.signature = await generateSignature(localBalance);
-          await store.put(existing, 'current_balance');
-          console.log(`[DB] Migrated balance from ${source}: ${localBalance}`);
-        } else if (!existing.signature) {
-          // Backfill signature for legacy records that have no higher localStorage value
-          existing.signature = await generateSignature(existing.amount);
-          await store.put(existing, 'current_balance');
-          console.log('[DB] Backfilled signature for existing legacy record');
+    if (rawBalance !== null) {
+      const parsed = parseFloat(rawBalance);
+      if (!isNaN(parsed) && parsed > 0) {
+        // Only migrate if no current balance exists in IndexedDB.
+        const existing = await db.get('wallet-status', 'current_balance');
+        if (existing === undefined) {
+          const signature = await generateSignature(parsed);
+          await db.put(
+            'wallet-status',
+            { id: 'current_balance', amount: parsed, currency: 'MXN', signature },
+            'current_balance'
+          );
+          console.log(`[DB] Migrated legacy localStorage balance: ${parsed} MXN`);
         }
-      } else {
-        // Create new balance record
-        const signature = await generateSignature(localBalance);
-        await store.put({ id: 'current_balance', amount: localBalance, currency: 'MXN', signature }, 'current_balance');
-        console.log(`[DB] Created balance from ${source}: ${localBalance}`);
       }
-    } else if (existing && !existing.signature) {
-      // No localStorage balance, but existing record has no signature - backfill it
-      existing.signature = await generateSignature(existing.amount);
-      await store.put(existing, 'current_balance');
-      console.log('[DB] Backfilled signature for existing legacy record');
     }
 
-    // Mark migration as done
     localStorage.setItem('balance_migration_done', 'true');
-
-    // Clean up localStorage
     localStorage.removeItem('muevecancun_balance');
     localStorage.removeItem('user_balance');
-
-    await tx.done;
-    console.log('[DB] Balance migration completed successfully');
   } catch (e) {
-    console.error('[DB] Balance migration failed:', e);
+    // Ignore errors if localStorage is not available (e.g. SSR)
   }
 };
 
