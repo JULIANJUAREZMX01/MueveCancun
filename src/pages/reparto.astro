@@ -326,11 +326,11 @@ import MainLayout from '../layouts/MainLayout.astro';
       return;
     }
 
-    const unvisited = [...stops];
+    const unvisited = new Set(stops);
     const ordered: Stop[] = [];
     let current = start;
 
-    while (unvisited.length > 0) {
+    while (unvisited.size > 0) {
       let nearest: Stop | null = null;
       let minDist = Infinity;
 
@@ -348,7 +348,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 
       ordered.push(nearest);
       current = [nearest.lat!, nearest.lng!];
-      unvisited.splice(unvisited.indexOf(nearest), 1);
+      unvisited.delete(nearest);
     }
 
     // Save new order

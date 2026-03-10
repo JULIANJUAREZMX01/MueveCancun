@@ -56,7 +56,6 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
     // Check if migration already done
     const migrationDone = localStorage.getItem('balance_migration_done');
     if (migrationDone === 'true') {
-      console.log('[DB] Balance migration already completed');
       return;
     }
 
@@ -92,24 +91,20 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
           existing.amount = localBalance;
           existing.signature = await generateSignature(localBalance);
           await store.put(existing, 'current_balance');
-          console.log(`[DB] Migrated balance from ${source}: ${localBalance}`);
         } else if (!existing.signature) {
           // Backfill signature for legacy records that have no higher localStorage value
           existing.signature = await generateSignature(existing.amount);
           await store.put(existing, 'current_balance');
-          console.log('[DB] Backfilled signature for existing legacy record');
         }
       } else {
         // Create new balance record
         const signature = await generateSignature(localBalance);
         await store.put({ id: 'current_balance', amount: localBalance, currency: 'MXN', signature }, 'current_balance');
-        console.log(`[DB] Created balance from ${source}: ${localBalance}`);
       }
     } else if (existing && !existing.signature) {
       // No localStorage balance, but existing record has no signature - backfill it
       existing.signature = await generateSignature(existing.amount);
       await store.put(existing, 'current_balance');
-      console.log('[DB] Backfilled signature for existing legacy record');
     }
 
     // Mark migration as done
@@ -121,7 +116,7 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
 
     await tx.done;
     console.log('[DB] Balance migration completed successfully');
-  } catch {
+  } catch (e) {
     console.error('[DB] Balance migration failed:', e);
   }
 };
@@ -155,7 +150,6 @@ export const initDB = async (): Promise<IDBPDatabase> => {
         const defaultAmount = 180.00;
         const signature = await generateSignature(defaultAmount);
         await store.put({ id: 'current_balance', amount: defaultAmount, currency: 'MXN', signature }, 'current_balance');
-        console.log('[DB] Initial wallet balance set to 180.00 MXN');
       }
 
       await tx.done;
@@ -185,7 +179,6 @@ export const getWalletBalance = async (): Promise<{ id: string; amount: number; 
   if (balance) {
     if (!balance.signature) {
       // Legacy record without a signature: treat as a trusted state and backfill the signature.
-      console.log('[DB] Legacy record found without signature. Backfilling.');
       balance.signature = await generateSignature(balance.amount);
       const writeTx = db.transaction('wallet-status', 'readwrite');
       await writeTx.objectStore('wallet-status').put(balance, 'current_balance');

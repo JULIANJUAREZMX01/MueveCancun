@@ -39,22 +39,28 @@ export async function getAllRoutes(): Promise<Route[]> {
     const files = await fs.readdir(routesDir);
     const jsonFiles = files.filter(file => file.endsWith('.json'));
 
-    for (const file of jsonFiles) {
+    const readPromises = jsonFiles.map(async (file) => {
       try {
         const filePath = path.join(routesDir, file);
         const content = await fs.readFile(filePath, 'utf-8');
         const routeData = JSON.parse(content);
 
         if (routeData.rutas && Array.isArray(routeData.rutas)) {
-            allRoutes.push(...routeData.rutas);
+            return routeData.rutas;
         } else if (Array.isArray(routeData)) {
-            allRoutes.push(...routeData);
+            return routeData;
         } else {
-            allRoutes.push(routeData);
+            return [routeData];
         }
       } catch (e) {
         console.error(`Error parsing route file ${file}:`, e);
+        return [];
       }
+    });
+
+    const parsedRoutesArray = await Promise.all(readPromises);
+    for (const parsedRoutes of parsedRoutesArray) {
+      allRoutes.push(...parsedRoutes);
     }
   } catch {
     console.warn("Routes directory not accessible or empty, falling back to master_routes.json");
