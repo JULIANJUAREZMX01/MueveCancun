@@ -52,14 +52,37 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
  * Accepts the already-open db instance to avoid circular recursion with initDB.
  */
 export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
-  // Migration from localStorage to IndexedDB is complete.
-  // This function is kept for backwards compatibility but now only marks it as done.
   try {
-      localStorage.setItem('balance_migration_done', 'true');
-      localStorage.removeItem('muevecancun_balance');
-      localStorage.removeItem('user_balance');
+    // Skip if migration was already performed.
+    if (localStorage.getItem('balance_migration_done') === 'true') return;
+
+    // Read legacy balance values; prefer 'muevecancun_balance' over 'user_balance'.
+    const rawBalance =
+      localStorage.getItem('muevecancun_balance') ??
+      localStorage.getItem('user_balance');
+
+    if (rawBalance !== null) {
+      const parsed = parseFloat(rawBalance);
+      if (!isNaN(parsed) && parsed > 0) {
+        // Only migrate if no current balance exists in IndexedDB.
+        const existing = await db.get('wallet-status', 'current_balance');
+        if (existing === undefined) {
+          const signature = await generateSignature(parsed);
+          await db.put(
+            'wallet-status',
+            { id: 'current_balance', amount: parsed, currency: 'MXN', signature },
+            'current_balance'
+          );
+          console.log(`[DB] Migrated legacy localStorage balance: ${parsed} MXN`);
+        }
+      }
+    }
+
+    localStorage.setItem('balance_migration_done', 'true');
+    localStorage.removeItem('muevecancun_balance');
+    localStorage.removeItem('user_balance');
   } catch (e) {
-      // Ignore errors if localStorage is not available (e.g. SSR)
+    // Ignore errors if localStorage is not available (e.g. SSR)
   }
 };
 
