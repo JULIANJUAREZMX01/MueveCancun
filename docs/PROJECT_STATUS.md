@@ -173,7 +173,7 @@ GPS (lat, lng)
 
 ## 🐛 Deuda Técnica Activa
 
-Ver [`TECH_DEBT.md`](../TECH_DEBT.md) para el inventario completo.
+Ver [`TECH_DEBT.md`](./TECH_DEBT.md) para el inventario completo.
 
 Resumen priorizado:
 
