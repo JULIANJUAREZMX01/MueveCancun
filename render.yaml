@@ -13,7 +13,10 @@ services:
       - key: NODE_ENV
         value: production
       - key: PUBLIC_API_URL
-        value: https://mueve-reparto-api.onrender.com
+        fromService:
+          name: mueve-reparto-api
+          type: web
+          property: host
     autoDeploy: true
 
   - type: web
@@ -34,7 +37,7 @@ services:
       - key: RUST_LOG
         value: info
       - key: ALLOWED_ORIGINS
-        value: https://mueve-reparto-frontend.onrender.com
+        value: https://mueverepartoencancun.onrender.com
     autoDeploy: true
 
 databases:

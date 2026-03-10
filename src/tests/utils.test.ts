@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { escapeHtml, safeJsonStringify, getDistance, truncateText, readingTime } from '../utils/utils';
+import { escapeHtml, safeJsonStringify, getDistance, truncateText, safeUrl } from '../utils/utils';
 
 describe('escapeHtml Utility', () => {
   it('should escape HTML characters in strings', () => {
@@ -145,6 +146,7 @@ describe('truncateText Utility', () => {
   });
 });
 
+ jules/test-readingTime-14993745733534279164
 
 describe('readingTime Utility', () => {
   it('should calculate 1 min read for empty string', () => {
@@ -180,5 +182,31 @@ describe('readingTime Utility', () => {
     // 99 words -> 99/200 + 1 = 1.495 -> toFixed() -> "1"
     const text2 = new Array(99).fill('word').join(' ');
     expect(readingTime(text2)).toBe('1 min read');
+
+describe('safeUrl Utility', () => {
+  it('should encode string parameters', () => {
+    expect(safeUrl('hello world')).toBe('hello%20world');
+    expect(safeUrl('a&b=c')).toBe('a%26b%3Dc');
+  });
+
+  it('should replace single quotes with %27', () => {
+    // encodeURIComponent replaces ' with ' or leaves it unescaped depending on implementation
+    // our function explicitly replaces it with %27
+    expect(safeUrl("it's a test")).toBe('it%27s%20a%20test');
+    expect(safeUrl("'quoted'")).toBe('%27quoted%27');
+  });
+
+  it('should return empty string for non-string inputs', () => {
+    expect(safeUrl(null)).toBe('');
+    expect(safeUrl(undefined)).toBe('');
+    expect(safeUrl(123)).toBe('');
+    expect(safeUrl(true)).toBe('');
+    expect(safeUrl({})).toBe('');
+    expect(safeUrl([])).toBe('');
+  });
+
+  it('should handle empty string correctly', () => {
+    expect(safeUrl('')).toBe('');
+main
   });
 });

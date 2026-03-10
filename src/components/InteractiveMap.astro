@@ -183,26 +183,20 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
                     .setContent(`
                         <div class="text-center">
                             <p class="font-bold mb-2">¿Seleccionar "${escapeHtml(nearest)}"?</p>
-                            <button id="confirm-pick-btn" class="bg-primary-500 text-white px-3 py-1 rounded text-xs font-bold">
+                            <button id="confirm-pick-btn" data-nearest="${escapeHtml(nearest)}" class="bg-primary-500 text-white px-3 py-1 rounded text-xs font-bold">
                                 ✅ Confirmar
                             </button>
                         </div>
                     `)
                     .openOn(map);
 
-                // Bind click to button (need delay for DOM)
-                setTimeout(() => {
-                    document.getElementById('confirm-pick-btn')?.addEventListener('click', () => {
-                         window.location.href = `/?selected_stop=${encodeURIComponent(nearest)}`;
-                    });
-                }, 100);
+
 
             } else {
                  showToast("No hay paradas registradas cerca", "warning");
             }
         });
 
-        // Return early to avoid drawing routes or default markers that might confuse
         return;
     }
 
@@ -323,6 +317,13 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         if (btn && btn.dataset.stopName) {
             const name = btn.dataset.stopName;
             window.location.href = `/rutas?search=${safeUrl(name)}`;
+        }
+
+        // @ts-ignore
+        const confirmBtn = e.target?.closest('#confirm-pick-btn');
+        if (confirmBtn && confirmBtn.dataset.nearest) {
+            const nearestName = confirmBtn.dataset.nearest;
+            window.location.href = `/?selected_stop=${encodeURIComponent(nearestName)}`;
         }
     });
   }

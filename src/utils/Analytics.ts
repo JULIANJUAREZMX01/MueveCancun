@@ -10,7 +10,8 @@ type EventName =
   | 'language_change' 
   | 'gps_center'
   | 'pwa_install_prompt'
-  | 'error_wasm';
+  | 'error_wasm'
+  | 'report_submitted';
 
 interface TelemetryEvent {
   name: EventName;
