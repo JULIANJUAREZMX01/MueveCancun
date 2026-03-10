@@ -1,24 +1,24 @@
 # 🚀 MueveCancún PWA – Bilingual Execution Plan (English / Español)
-**Date:** 2026-02-19  
-**Scope:** Offline-first PWA, WASM routing, Map UX, IndexedDB wallet, crowdsourcing.  
+**Date:** 2026-02-19
+**Scope:** Offline-first PWA, WASM routing, Map UX, IndexedDB wallet, crowdsourcing.
 **Note:** A parallel agent is already handling language copy via **Languini**; this plan keeps i18n tasks minimal and coordination-focused.
 
 ---
 
 ## 🎯 Guiding Principles / Principios
-- **Lowest disruption first / Mínima disrupción:** prefer configuration and guard-rail fixes before refactors.  
-- **Offline-first always / Siempre offline-first:** service worker, IndexedDB, and WASM must remain functional without network.  
-- **Safety gates / Barreras de seguridad:** feature flags and staged rollouts for risky changes.  
+- **Lowest disruption first / Mínima disrupción:** prefer configuration and guard-rail fixes before refactors.
+- **Offline-first always / Siempre offline-first:** service worker, IndexedDB, and WASM must remain functional without network.
+- **Safety gates / Barreras de seguridad:** feature flags and staged rollouts for risky changes.
 - **Shared ownership / Propiedad compartida:** each task lists a suggested sub-agent/owner to parallelize delivery.
 
 ---
 
 ## 👥 Suggested Sub-Agents / Subagentes Sugeridos
-- **Gemini (Rust-WASM):** routing engine, spatial index, binary size.  
-- **Jules (PWA/DevOps):** service worker, caching, CI, deployment.  
-- **Languini (i18n):** bilingual copy review, translations, locale QA.  
-- **Antigravity (UX/Islands):** Astro islands, UI polish, accessibility.  
-- **QA Bot:** scripted regression, Lighthouse/Playwright smoke.  
+- **Gemini (Rust-WASM):** routing engine, spatial index, binary size.
+- **Jules (PWA/DevOps):** service worker, caching, CI, deployment.
+- **Languini (i18n):** bilingual copy review, translations, locale QA.
+- **Antigravity (UX/Islands):** Astro islands, UI polish, accessibility.
+- **QA Bot:** scripted regression, Lighthouse/Playwright smoke.
 - **Data Curator:** routes/master data validation, legacy ingestion.
 
 ---
@@ -85,15 +85,15 @@
 ---
 
 ## ✅ Success Criteria / Criterios de Éxito
-- **Build stability:** WASM builds succeed even when wasm-opt download is unavailable.  
-- **Offline reliability:** /offline works, /wasm cached, searches runnable without network.  
-- **Safety:** Balance gate enforced, .env guarded, feature flags for new surfaces.  
-- **Quality:** 0 console errors in smoke tests; Playwright/Lighthouse informational checks passing.  
+- **Build stability:** WASM builds succeed even when wasm-opt download is unavailable.
+- **Offline reliability:** /offline works, /wasm cached, searches runnable without network.
+- **Safety:** Balance gate enforced, .env guarded, feature flags for new surfaces.
+- **Quality:** 0 console errors in smoke tests; Playwright/Lighthouse informational checks passing.
 - **Bilingual parity:** Critical flows copy reviewed by Languini; EN/ES remain aligned.
 
 ---
 
 ## 🤝 Coordination Notes / Notas de Coordinación
-- Keep Languini as the source of truth for translations; avoid hardcoding copy changes without its review.  
-- Gemini focuses on Rust/WASM and data contracts; Jules on SW/DevOps; Antigravity on UX; QA Bot schedules smokes post-Wave 1 and Wave 2.  
+- Keep Languini as the source of truth for translations; avoid hardcoding copy changes without its review.
+- Gemini focuses on Rust/WASM and data contracts; Jules on SW/DevOps; Antigravity on UX; QA Bot schedules smokes post-Wave 1 and Wave 2.
 - Data Curator to gate any master_routes.json changes to prevent schema drift before WASM ingestion.

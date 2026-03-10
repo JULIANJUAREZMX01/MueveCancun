@@ -1,0 +1,48 @@
+---
+interface Props {
+  name: string;
+  class?: string;
+  alt?: string;
+}
+
+const { name, class: className, alt } = Astro.props;
+
+let cleanName = name;
+if (cleanName.startsWith("/icons/")) {
+  cleanName = cleanName.replace("/icons/", "");
+}
+if (cleanName.endsWith(".svg")) {
+  cleanName = cleanName.replace(".svg", "");
+}
+
+let svgContent = "";
+try {
+  // Vite raw import for files in public directory
+  // Since we are in src/components/ui, public is at ../../../public
+  const modules = import.meta.glob('../../../public/icons/*.svg', { query: '?raw', import: 'default' });
+  const path = `../../../public/icons/${cleanName}.svg`;
+
+  if (modules[path]) {
+    svgContent = await modules[path]();
+    if (className) {
+      // Safely handle existing classes or add new ones
+      if (svgContent.includes('class="')) {
+         svgContent = svgContent.replace('class="', `class="${className} `);
+      } else {
+         svgContent = svgContent.replace("<svg ", `<svg class="${className}" `);
+      }
+    }
+    if (alt) {
+        svgContent = svgContent.replace("<svg ", `<svg aria-label="${alt}" role="img" `);
+    } else {
+        svgContent = svgContent.replace("<svg ", `<svg aria-hidden="true" `);
+    }
+  } else {
+     console.warn(`[Icon] Icon not found in glob: ${cleanName}`);
+  }
+} catch (error) {
+  console.warn(`[Icon] Could not load icon: ${cleanName}`, error);
+}
+---
+
+<Fragment set:html={svgContent} />
