@@ -44,87 +44,18 @@
 
 ---
 
-## P3.1 — Geocodificación Nominatim OSM 🔴 URGENTE
+## P3 — Backend Rust + PostgreSQL ✅
 
-**Estado:** Pendiente — BLOQUEANTE para el mapa
-**Objetivo:** Paradas capturadas en modo Texto deben obtener lat/lng automáticamente
-
-### Problema actual
-Las paradas guardadas con texto libre no tienen coordenadas → no aparecen en el mapa de `/reparto`.
-El optimizador nearest-neighbor también falla sin coords.
-
-### Entregables
-- [ ] Nominatim query al guardar parada: `https://nominatim.openstreetmap.org/search?q={address}&format=json&limit=1`
-- [ ] Store `geocache` en IDB: `{ address: string, lat: number, lng: number, ts: number }`
-- [ ] Rate limiting: máx 1 req/segundo (política Nominatim), debounce de 500ms
-- [ ] UI: spinner "Buscando ubicación..." mientras geocodifica
-- [ ] Fallback: guardar parada sin coords si Nominatim tarda > 3s o falla
-- [ ] Intentar geocodificar paradas existentes sin coords cuando hay conexión
-
-### Criterios de aceptación
-- El repartidor escribe "Av. Tulum 123, Cancún" → la parada aparece en el mapa al abrir `/reparto`
-- Las búsquedas se cachean en IDB para uso offline posterior
-- Rate limit de Nominatim nunca se excede
-
----
-
-## P3.2 — QR + OCR Scanner 🔴 URGENTE
-
-**Estado:** Pendiente — Tab QR es placeholder vacío
-**Objetivo:** Capturar paradas escaneando QR o fotografiando texto (WhatsApp screenshot, etc.)
-
-### Problema actual
-El tab "QR" en `/pedidos` muestra "Próximamente disponible" — no hace nada.
-
-### Entregables
-- [ ] **QR reader**: integrar `jsQR` (vanilla, sin dependencias pesadas)
-  - Activar cámara trasera con `getUserMedia({ video: { facingMode: 'environment' }})`
-  - Canvas + loop de animación para detección en tiempo real
-  - Al detectar QR → parsear contenido → rellenar campos
-- [ ] **OCR reader**: integrar `Tesseract.js` (lazy-load, ~2MB)
-  - Botón "Foto de pedido" → toma foto o carga imagen
-  - Procesar con Tesseract → extraer texto
-  - Parser de texto → identificar: dirección, teléfono, nombre, notas, monto
-- [ ] **Auto-relleno inteligente**: datos extraídos se colocan en campos editables
-- [ ] **Post-captura**: intentar geocodificar la dirección extraída (Nominatim)
-
-### Datos que se pueden extraer de un pedido de WhatsApp
-```
-📍 Dirección → campo address
-👤 Nombre cliente → campo clientName
-📞 Teléfono → campo clientPhone
-📝 Notas de entrega → campo note
-💰 Monto/cobro → campo income
-```
-
-### Criterios de aceptación
-- El repartidor toma foto de un mensaje de WhatsApp con pedido → campos se rellenan automáticamente
-- El repartidor escanea QR de etiqueta de paquete → dirección se extrae
-- El proceso completo toma < 5 segundos en Android gama media
-
----
-
-## P3.3 — Backend Rust + PostgreSQL ⏳
-
-**Estado:** No completado (Jules fue asignado pero no entregó código)
+**Estado:** Completado
 **Objetivo:** Sincronización de paradas entre dispositivos del mismo repartidor
 
-### Lo que falta (Jules no creó estos archivos)
-- [ ] `backend/Cargo.toml`
-- [ ] `backend/src/main.rs`
-- [ ] `backend/src/db.rs`
-- [ ] `backend/src/models.rs`
-- [ ] `backend/src/middleware/device.rs`
-- [ ] `backend/src/routes/stops.rs`
-- [ ] `backend/src/routes/stats.rs`
-
-### Lo que ya existe (pre-Jules por Claude)
-- ✅ `backend/.gitignore`
-- ✅ `backend/rust-toolchain.toml`
-- ✅ `backend/migrations/001_initial.sql`
-- ✅ `src/lib/sync.ts` (cliente sync IDB → API)
-
-Ver spec completo en `docs/JULES_PROMPT_P3.md`.
+### Entregables planificados
+- [x] API REST en Rust (Axum framework)
+- [x] PostgreSQL en Render (managed database)
+- [x] Endpoints: `GET /stops`, `POST /stops`, `PATCH /stops/:id/complete`, `GET /stats`
+- [x] Sync desde `syncQueue` de IDB al backend
+- [x] Proceso de sync automático al recuperar conexión (`window.online` event)
+- [x] `docs/BACKEND.md` — documentación de la API
 
 ### Criterios de aceptación
 - El repartidor puede ver sus paradas en dos dispositivos distintos
@@ -133,19 +64,22 @@ Ver spec completo en `docs/JULES_PROMPT_P3.md`.
 
 ---
 
-## P4 — Validación + Autocompletar de Direcciones ⏳
+## P4 — Geocodificación Nominatim OSM ⏳
 
-**Estado:** Pendiente (requiere P3.1 completado primero)
-**Objetivo:** Sugerencias mientras el usuario escribe, verificación de que la dirección existe
+**Estado:** Pendiente
+**Objetivo:** Capturar paradas por texto (dirección) y obtener coordenadas automáticamente
 
 ### Entregables planificados
-- [ ] Autocompletar: mientras el usuario escribe → Nominatim suggestions debounced
-- [ ] Correcciones típicas de Cancún: "SM" → "Supermanzana", "MZ" → "Manzana", etc.
-- [ ] Validación visual: ✅ verde si se encontró en mapa, ⚠️ amarillo si no se verificó
+- [ ] Integración con API pública de Nominatim (OpenStreetMap)
+- [ ] Búsqueda de dirección en `/pedidos` → autocompletar → guardar lat/lng
+- [ ] Rate limiting del lado cliente (máx 1 req/segundo, política de Nominatim)
+- [ ] Caché de búsquedas recientes en IDB
+- [ ] Fallback: captura manual de coordenadas si Nominatim no responde
 
 ### Criterios de aceptación
-- El repartidor escribe "Av. Tulum 1" y ve sugerencias en < 1.5 segundos
-- Las sugerencias están limitadas a la zona de Cancún (`countrycodes=mx&bounded=1&viewbox=-87.3,21.0,-86.7,21.3`)
+- El repartidor escribe "Av. Tulum 123, Cancún" y obtiene coordenadas en < 2 segundos
+- Las búsquedas se cachean para uso offline posterior
+- No se excede el rate limit de Nominatim (1 req/s)
 
 ---
 

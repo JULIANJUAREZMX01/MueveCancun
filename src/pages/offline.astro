@@ -40,11 +40,23 @@ import MainLayout from '../layouts/MainLayout.astro';
       </a>
     </div>
 
-    <button onclick="window.location.reload()" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-4 rounded-2xl shadow-xl active:scale-95 transition-all">
+    <button id="retry-connection-btn" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-4 rounded-2xl shadow-xl active:scale-95 transition-all">
       REINTENTAR CONEXIÓN
     </button>
   </div>
 </MainLayout>
+
+
+<script>
+  if (typeof document !== 'undefined') {
+    const retryBtn = document.getElementById('retry-connection-btn');
+    if (retryBtn) {
+      retryBtn.addEventListener('click', () => {
+        window.location.reload();
+      });
+    }
+  }
+</script>
 
 <style>
   @keyframes fade-in {

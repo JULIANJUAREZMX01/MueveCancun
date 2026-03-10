@@ -19,22 +19,11 @@ Este archivo es leído por agentes de IA (Claude Code, Jules, Gemini, Copilot, e
 ### Completado
 - [x] **P1** — Rebrand completo: identidad visual, layout dark, 6 páginas delivery
 - [x] **P2** — Limpieza legacy (páginas de transporte eliminadas), documentación completa
-- [x] **P2.5** — Deploy en Render funcional: `https://mueverepartoencancun.onrender.com`
 
-### En progreso / Siguiente (orden de prioridad)
-- [ ] **P3.1** — Geocodificación Nominatim OSM (URGENTE: el mapa no funciona sin esto)
-- [ ] **P3.2** — QR + OCR Scanner (jsQR + Tesseract.js — tab QR es placeholder)
-- [ ] **P3.3** — Backend Rust/PostgreSQL (Jules no completó — spec en `docs/JULES_PROMPT_P3.md`)
-- [ ] **P4** — Validación y autocompletar direcciones
+### En progreso / Siguiente
+- [ ] **P3** — Backend Rust/PostgreSQL en Render
+- [ ] **P4** — Geocodificación Nominatim OSM
 - [ ] **P5** — Auth OTP + monetización
-
-### Problemas críticos conocidos
-1. Paradas capturadas en modo Texto no tienen lat/lng → NO aparecen en el mapa
-2. Tab QR muestra "Próximamente disponible" — completamente no funcional
-3. Backend Rust no existe (directorios vacíos en `backend/src/`)
-4. Modo "Link" guarda el URL completo como dirección en vez de extraer coordenadas
-
-Ver `docs/STATUS.md` para análisis completo.
 
 ---
 
