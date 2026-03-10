@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3.0.2-ssg';
+const CACHE_VERSION = 'v3.1.0-ssg';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 
 // Critical assets for offline-first PWA
@@ -36,79 +36,79 @@ const CRITICAL_ASSETS = [
   '/offline'
 ];
 
-// Regex for OSM tiles (Zoom 11-18)
 const OSM_TILES_PATTERN = /^https:\/\/[a-c]\.tile\.openstreetmap\.org\/(1[1-8])\/.*\.png$/;
 const CARTO_TILES_PATTERN = /^https:\/\/[a-d]\.basemaps\.cartocdn\.com\/.*\.png$/;
 
-// Install: Cache critical assets
+// User-created routes pattern (dynamic ruta_*.json files)
+const USER_ROUTE_PATTERN = /\/data\/routes\/ruta_\d+\.json$/;
+
+// --- Install ---
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing v3.0.0-ssg');
+  console.log(`[SW] Installing ${CACHE_VERSION}`);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('[SW] Caching critical assets');
-        return cache.addAll(CRITICAL_ASSETS);
+        // Use individual puts to avoid one bad URL killing the whole install
+        return Promise.allSettled(
+          CRITICAL_ASSETS.map(url => cache.add(url).catch(e => console.warn(`[SW] Failed to cache ${url}:`, e)))
+        );
       })
-      .then(() => {
-        console.log('[SW] Skip waiting');
-        return self.skipWaiting();
-      })
+      .then(() => self.skipWaiting())
       .catch(err => console.error('[SW] Install failed:', err))
   );
 });
 
-// Activate: Clean old caches
+// --- Activate ---
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v3.0.0-ssg');
+  console.log(`[SW] Activating ${CACHE_VERSION}`);
   event.waitUntil(
     caches.keys()
-      .then(keys => {
-        console.log('[SW] Cleaning old caches:', keys);
-        return Promise.all(
-          keys.filter(key => key !== CACHE_NAME)
+      .then(keys => Promise.all(
+        keys.filter(key => key !== CACHE_NAME)
             .map(key => {
-              console.log('[SW] Deleting cache:', key);
+              console.log('[SW] Deleting old cache:', key);
               return caches.delete(key);
             })
-        );
-      })
-      .then(() => {
-        console.log('[SW] Claiming clients');
-        return self.clients.claim();
-      })
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-// Message: Handle Skip Waiting
+// --- Message ---
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('[SW] Received SKIP_WAITING message');
+  if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  // On-demand: cache a user-created route file
+  if (event.data?.type === 'CACHE_USER_ROUTE' && event.data.url) {
+    const url = event.data.url;
+    if (USER_ROUTE_PATTERN.test(url)) {
+      caches.open(CACHE_NAME).then(cache => cache.add(url)).catch(() => {});
+    }
   }
 });
 
-// Fetch: Optimized strategies for SSG + PWA
+// --- Fetch ---
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
+  if (request.method !== 'GET') return;
+  if (!url.protocol.startsWith('http')) return;
+
+  // User-created routes: Network-First (they may be updated), then cache
+  if (USER_ROUTE_PATTERN.test(url.pathname)) {
+    event.respondWith(networkFirstWithCache(request));
     return;
   }
 
-  // Skip chrome-extension and other non-http(s) requests
-  if (!url.protocol.startsWith('http')) {
-    return;
-  }
-
-  // Strategy selection
   if (url.pathname.includes('/data/')) {
-    // Data files: Stale-While-Revalidate (best for dynamic data)
+    // Data files: Stale-While-Revalidate
     event.respondWith(staleWhileRevalidate(request));
   } else if (
-    url.pathname.includes('/wasm/') || 
-    url.pathname.includes('/icons/') || 
+    url.pathname.includes('/wasm/') ||
+    url.pathname.includes('/icons/') ||
     url.pathname.endsWith('coordinates.json') ||
     url.pathname.endsWith('.wasm') ||
     url.pathname.endsWith('.js') ||
@@ -117,91 +117,77 @@ self.addEventListener('fetch', (event) => {
     // Immutable assets: Cache-First
     event.respondWith(cacheFirst(request));
   } else if (OSM_TILES_PATTERN.test(request.url) || CARTO_TILES_PATTERN.test(request.url)) {
-    // Map tiles: Cache-First (they don't change)
+    // Map tiles: Cache-First
     event.respondWith(cacheFirst(request));
   } else if (url.pathname.startsWith('/ruta/') || url.pathname === '/rutas' || url.pathname === '/mapa') {
-    // Static pages (SSG): Cache-First with network fallback
     event.respondWith(cacheFirst(request));
   } else {
-    // Default (HTML pages): Network-First with cache fallback
+    // HTML pages: Network-First
     event.respondWith(networkFirst(request));
   }
 });
 
-// Cache Strategies
+// --- Cache Strategies ---
 
-// Cache-First: Best for immutable assets
 async function cacheFirst(request) {
   try {
     const cached = await caches.match(request);
-    if (cached) {
-      return cached;
-    }
-
+    if (cached) return cached;
     const response = await fetch(request);
-    if (response && response.status === 200) {
+    if (response?.status === 200) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone());
     }
     return response;
-  } catch (error) {
+  } catch {
     const cached = await caches.match(request);
-    if (cached) {
-      return cached;
-    }
-    // Return offline page or placeholder
+    if (cached) return cached;
     if (request.mode === 'navigate') {
-      const offlineCache = await caches.open(CACHE_NAME);
-      return await offlineCache.match('/offline');
+      return (await caches.open(CACHE_NAME)).match('/offline');
     }
-
-    return new Response('Offline', { 
-      status: 503, 
-      statusText: 'Service Unavailable',
-      headers: { 'Content-Type': 'text/plain' }
-    });
+    return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
   }
 }
 
-// Network-First: Best for dynamic content
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
-    if (response && response.status === 200) {
+    if (response?.status === 200) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone());
     }
     return response;
-  } catch (error) {
+  } catch {
     const cached = await caches.match(request);
-    if (cached) {
-      return cached;
-    }
-    // Return offline fallback
+    if (cached) return cached;
     if (request.mode === 'navigate') {
-        const offlineCache = await caches.open(CACHE_NAME);
-        return await offlineCache.match('/offline');
+      return (await caches.open(CACHE_NAME)).match('/offline');
     }
-
-    return new Response('Offline', { 
-      status: 503, 
-      statusText: 'Service Unavailable',
-      headers: { 'Content-Type': 'text/plain' }
-    });
+    return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
   }
 }
 
-// Stale-While-Revalidate: Best for data that changes but we want instant response
+async function networkFirstWithCache(request) {
+  try {
+    const response = await fetch(request);
+    if (response?.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    return cached || new Response('{}', { status: 503, headers: { 'Content-Type': 'application/json' } });
+  }
+}
+
 async function staleWhileRevalidate(request) {
   const cached = await caches.match(request);
-  
   const fetchPromise = fetch(request).then(response => {
-    if (response && response.status === 200) {
-      const cache = caches.open(CACHE_NAME);
-      cache.then(c => c.put(request, response.clone()));
+    if (response?.status === 200) {
+      caches.open(CACHE_NAME).then(c => c.put(request, response.clone()));
     }
     return response;
   }).catch(() => cached);
-
   return cached || fetchPromise;
 }

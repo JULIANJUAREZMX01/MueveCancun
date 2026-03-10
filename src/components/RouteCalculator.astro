@@ -82,8 +82,10 @@ const ui = uiTranslations[currentLang];
             data-i18n-placeholder="calc.placeholder.dest"
             maxlength={100}
           >
-            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip">
-              <Icon name="map-plus" class="w-5 h-5" alt="Map Picker" />
+            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip" aria-label="Select on map">
+              <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+              </svg>
             </button>
             <div slot="action" id="map-tooltip" class="graffiti-tooltip top" style="position-anchor: --map-btn" data-i18n="calc.map">Select on map</div>
           </Input>
@@ -310,6 +312,30 @@ const ui = uiTranslations[currentLang];
       updateBalance();
   });
 
+  // Listen for map stop selections (from InteractiveMap popup buttons)
+  // Note: registered once at top level; handler is idempotent so duplicates are safe.
+  // The guard is on the window flag to avoid duplicate registration across view transitions.
+  if (!(window as any).__mapSetStopListenerAttached) {
+      (window as any).__mapSetStopListenerAttached = true;
+      window.addEventListener('MAP_SET_STOP', (event: any) => {
+          const { type, name } = event.detail || {};
+          if (!name) return;
+          if (type === 'origin') {
+              const originInput = document.getElementById('origin-input') as HTMLInputElement;
+              if (originInput) {
+                  originInput.value = name;
+                  originInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+          } else if (type === 'dest') {
+              const destInput = document.getElementById('destination-input') as HTMLInputElement;
+              if (destInput) {
+                  destInput.value = name;
+                  destInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+          }
+      });
+  }
+
 
 
   async function start() {
@@ -388,6 +414,39 @@ const ui = uiTranslations[currentLang];
               payload = JSON.stringify(normalized);
           }
 
+          // ⚡ Autonomy: merge user-created routes from routes-index.json (non-blocking)
+          try {
+              const indexResp = await fetch('/data/routes-index.json');
+              if (indexResp.ok) {
+                  const index = await indexResp.json();
+                  const parsedPayload = JSON.parse(payload);
+                  const existingIds = new Set((parsedPayload.rutas || []).map((r: any) => r.id));
+                  let merged = 0;
+                  for (const entry of (index.files || [])) {
+                      try {
+                          const rResp = await fetch(`/data/${entry.file}`);
+                          if (!rResp.ok) continue;
+                          const routeData = await rResp.json();
+                          const routes: any[] = Array.isArray(routeData) ? routeData
+                              : (routeData.rutas ? routeData.rutas : (routeData.id ? [routeData] : []));
+                          for (const r of routes) {
+                              if (r?.id && !existingIds.has(r.id) && (r.paradas || r.stops || []).length > 0) {
+                                  parsedPayload.rutas.push(r);
+                                  existingIds.add(r.id);
+                                  merged++;
+                              }
+                          }
+                          // Tell SW to cache this route file for offline use
+                          navigator.serviceWorker?.controller?.postMessage({ type: 'CACHE_USER_ROUTE', url: `/data/${entry.file}` });
+                      } catch { /* skip individual file errors silently */ }
+                  }
+                  if (merged > 0) {
+                      payload = JSON.stringify(parsedPayload);
+                      console.log(`⚡ [RouteCalculator] Merged ${merged} user routes from routes-index`);
+                  }
+              }
+          } catch { /* routes-index.json may not exist yet (first build) — silently skip */ }
+
           // Sentinel: Enforce 10MB limit
           if (payload.length > 10 * 1024 * 1024) {
              throw new Error("Catalog too large (DoS protection)");
@@ -395,7 +454,8 @@ const ui = uiTranslations[currentLang];
 
           load_catalog(payload);
           console.timeEnd("WASM Load");
-          console.log("✅ Catalog loaded into WASM:", jsonData?.rutas?.length || 0, "routes");
+          const _routeCount = (() => { try { return JSON.parse(payload)?.rutas?.length || 0; } catch { return 0; } })();
+          console.log("✅ Catalog loaded into WASM:", _routeCount, "routes");
 
           // UI Ready State
           const searchBtn = document.getElementById("search-btn");
@@ -560,13 +620,16 @@ const ui = uiTranslations[currentLang];
                  const { latitude, longitude } = pos.coords;
                  const originInput = document.getElementById('origin-input');
                  if (originInput && finder) {
-                     // Reverse Geocode or Find Nearest Stop
-                     const nearest = coordinatesStore.findNearest(latitude, longitude);
-                     if (nearest) {
-                         originInput.value = nearest;
-                         showToast(`GPS: ${nearest}`, 'success');
+                     // Reverse Geocode: resolve GPS coords to nearest registered stop
+                     const gpsResult = coordinatesStore.findNearestWithDistance(latitude, longitude);
+                     if (gpsResult && gpsResult.distanceKm < 1.0) {
+                         originInput.value = gpsResult.name;
+                         const meters = Math.round(gpsResult.distanceKm * 1000);
+                         showToast(`GPS: ${gpsResult.name} (${meters} m)`, 'success');
                      } else {
-                         originInput.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                         // No registered stop within 1 km — ask user to search manually
+                         showToast('No hay paradas registradas cerca. Escribe tu ubicación manualmente.', 'warning');
+                         originInput.focus();
                      }
                  }
                  gpsBtn.classList.remove('animate-pulse');

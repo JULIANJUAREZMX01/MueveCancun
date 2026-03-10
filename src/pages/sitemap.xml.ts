@@ -1,12 +1,13 @@
 import type { APIRoute } from 'astro';
 
-const siteUrl = 'https://querutamellevacancun.onrender.com';
+export const prerender = true;
+
+const siteUrl = (import.meta.env.SITE ?? 'https://querutamellevacancun.onrender.com').replace(/\/$/, '');
 
 const pages = [
   { url: '/', priority: 1.0, changefreq: 'daily' },
   { url: '/home', priority: 0.9, changefreq: 'daily' },
-  { url: '/mapa', priority: 0.9, changefreq: 'hourly' }, // Map updates frequently
-  { url: '/rutas', priority: 0.9, changefreq: 'hourly' }, // Route updates frequently
+  { url: '/rutas', priority: 0.9, changefreq: 'hourly' },
   { url: '/community', priority: 0.7, changefreq: 'weekly' },
   { url: '/wallet', priority: 0.6, changefreq: 'monthly' },
   { url: '/about', priority: 0.5, changefreq: 'monthly' },
