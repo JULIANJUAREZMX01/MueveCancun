@@ -2,7 +2,7 @@
 interface Props {
   name: string;
   class?: string;
-  alt?: string;
+  'aria-hidden'?: string | boolean;
 }
 
 const { name, class: className = '', alt } = Astro.props;

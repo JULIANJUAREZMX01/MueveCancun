@@ -1,45 +1,70 @@
-name: Build and Deploy WASM Modules
+name: Build WASM Modules
 
 on:
   push:
     branches: [main, develop]
     paths:
-      - 'rust-wasm/**'
+      - "rust-wasm/**"
   pull_request:
     branches: [main]
+    paths:
+      - "rust-wasm/**"
 
 jobs:
-  build-wasm:
+  test-and-build:
+    name: Test → Build → Commit WASM
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust-wasm
 
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - name: Build route-calculator
+      # Run tests BEFORE building — fail fast if tests break
+      - name: Run route-calculator unit tests
+        working-directory: rust-wasm/route-calculator
+        run: cargo test --lib -- --nocapture
+
+      - name: Run spatial-index unit tests
+        working-directory: rust-wasm/spatial-index
+        run: cargo test --lib || true  # spatial-index tests are optional
+
+      # Build WASM
+      - name: Build route-calculator WASM
         run: |
           cd rust-wasm/route-calculator
           wasm-pack build --target web --out-dir ../../public/wasm/route-calculator
+          rm -f ../../public/wasm/route-calculator/.gitignore
 
-      - name: Check bundle sizes
+      - name: Report bundle sizes
         run: |
-          echo "route-calculator size:"
-          du -h public/wasm/route-calculator/route_calculator_bg.wasm
+          echo "=== WASM Bundle Sizes ==="
+          ls -lh public/wasm/route-calculator/
+          echo "route_calculator_bg.wasm: $(du -h public/wasm/route-calculator/route_calculator_bg.wasm | cut -f1)"
 
-      - name: Commit built files
+      # Verify binary is sane (>0 bytes, loads as binary)
+      - name: Verify WASM binary
+        run: node scripts/check-wasm.cjs
+
+      # Auto-commit built artifacts (only on push to real branches, not PRs)
+      - name: Commit WASM artifacts
         if: github.event_name == 'push'
-        run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-          git add public/wasm/
-          git diff --quiet && git diff --staged --quiet || git commit -m "chore: auto-build WASM modules [skip ci]"
-          git push origin HEAD:${{ github.ref_name }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(wasm): auto-build route-calculator WASM [skip ci]"
+          file_pattern: "public/wasm/route-calculator/*"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"

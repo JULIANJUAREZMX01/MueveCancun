@@ -38,7 +38,7 @@ build
 .Jules
 .cursor
 .claude
-CLAUDE.md
+# CLAUDE.md is tracked intentionally (AI agent instructions for this repo)
 .codex
 .codersinflow
 

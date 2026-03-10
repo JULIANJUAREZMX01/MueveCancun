@@ -1,6 +1,18 @@
-# 🏛️ MueveCancun: La Verdad de la Calle (Nexus Prime v3.2)
+# 🏛️ MueveCancun: La Verdad de la Calle (Nexus Prime v3.3)
 
 > "MueveCancun no nació en una oficina, nació en la parada del camión."
+
+## 🔗 Links
+
+| Recurso | URL |
+| :--- | :--- |
+| 🚌 App en producción | [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com) |
+| 📦 Repositorio principal | [github.com/JULIANJUAREZMX01/MueveCancun](https://github.com/JULIANJUAREZMX01/MueveCancun) |
+| 🚚 MueveRepartoEnCancún (app) | [mueverepartoencancun.onrender.com](https://mueverepartoencancun.onrender.com) |
+| 📦 MueveRepartoEnCancún (repo) | [github.com/JULIANJUAREZMX01/MueveRepartoEnCancun-](https://github.com/JULIANJUAREZMX01/MueveRepartoEnCancun-) |
+| 👤 Portfolio del autor | [portfolio-jaja-dev.onrender.com/portfolio](https://portfolio-jaja-dev.onrender.com/portfolio) |
+
+---
 
 ## 📍 El Problema: Google Maps no entiende a Cancún
 
@@ -87,8 +99,26 @@ Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales 
 
 ## 🤖 CI / Automatización
 
-- El flujo manual `Delegate to Claude (unscoped tasks)` requiere el secreto `ANTHROPIC_API_KEY`.
-- Ejecútalo sólo en ramas no protegidas; las acciones deben crear cambios vía rama/PR, no push directo a `main`.
+| Workflow | Trigger | Propósito |
+|----------|---------|-----------|
+| `test.yml` | Push/PR | Tests Rust + Vitest + validación de datos + build check |
+| `validate-data.yml` | Push a `public/data/**` | Valida JSON de rutas con cobertura de coordenadas |
+| `autocurative.yml` | Lunes 06:00 UTC | Auto-sanador: rebuild WASM, validates data, auto-commit |
+| `build-wasm.yml` | Push a `rust-wasm/**` | Compila y commitea binario WASM |
+| `claude-delegation.yml` | Manual | Delega tareas a Claude Code con `ANTHROPIC_API_KEY` |
+
+- Nunca hacer push directo a `main`; siempre rama + PR.
+- Secreto requerido: `ANTHROPIC_API_KEY` para `claude-delegation`.
+
+## 🗺️ Novedades v3.3 (Nexus Transfer Engine)
+
+- **Fix crítico**: transbordos ahora detectados por **proximidad geográfica** (≤350 m) además de nombre exacto.
+- **Fix GPS**: coordenadas GPS se resuelven a nombre de parada más cercana (no se insertan como texto crudo).
+- **Mapa interactivo**: toca cualquier parada en el mapa → popup con "Salgo de aquí" / "Voy aquí".
+- **Dirección de ruta**: rutas en sentido contrario depriorizadas (no descartadas).
+- **SW actualizado**: rutas de usuario (`ruta_*.json`) se cachean dinámicamente.
+- **Hubs expandidos**: 14 hubs de transbordo conocidos de Cancún reconocidos por el motor.
+- **Tests nuevos**: geo-transfer, dirección de ruta, Haversine accuracy.
 
 ---
 
@@ -132,23 +162,26 @@ ls -la src/lib/
 
 ## 📦 Comandos de Desarrollo
 
-1. **Instalar dependencias**:
-   ```bash
-   pnpm install
-   ```
+```bash
+pnpm install                       # Instalar dependencias
 
-2. **Datos Maestros**:
-   Los datos se encuentran en `public/data/master_routes.json` y se pueden modificar directamente.
+# Desarrollo
+pnpm run dev                       # Dev server local
 
-3. **Compilar Motor WASM**:
-   ```bash
-   node scripts/build-wasm.mjs
-   ```
+# Motor WASM
+node scripts/build-wasm.mjs        # Compilar Rust → WASM
+cd rust-wasm/route-calculator && cargo test --lib  # Tests Rust
 
-4. **Iniciar Servidor Local**:
-   ```bash
-   pnpm run dev
-   ```
+# Datos
+node scripts/validate-routes.mjs   # Validar todos los JSON de rutas
+node scripts/optimize-json.mjs     # Pre-optimizar catálogo para WASM
+
+# Tests
+pnpm test                          # Tests Vitest (TypeScript)
+
+# Build completo
+pnpm build                         # Build Astro SSG (incluye optimize-json)
+```
 
 ---
 
