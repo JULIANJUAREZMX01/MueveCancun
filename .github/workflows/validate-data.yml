@@ -1,5 +1,8 @@
 name: Validate Route Data
 
+permissions:
+  contents: read
+
 on:
   push:
     paths:
