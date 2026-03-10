@@ -20,6 +20,11 @@ tracing         = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 dotenvy         = "0.15"
 anyhow          = "1"
+jsonwebtoken    = "9"
+sha2            = "0.10"
+rand            = "0.8"
+hex             = "0.4"
+reqwest         = { version = "0.12", features = ["json"] }
 
 [profile.release]
 opt-level      = 3

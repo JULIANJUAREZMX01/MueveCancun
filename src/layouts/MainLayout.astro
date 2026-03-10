@@ -116,6 +116,14 @@ const {
           GPS
         </div>
 
+        <!-- Plan badge (visible cuando hay sesión activa) -->
+        <a id="plan-badge-btn" href="/suscripcion"
+           class="hidden items-center px-2 py-1 rounded-full text-xs font-bold no-underline"
+           style="color: var(--text-secondary); border: 1px solid var(--border-light); background: var(--surface-elevated);"
+           aria-label="Mi plan">
+          <span id="plan-badge-text">Free</span>
+        </a>
+
         <!-- Repartidor name badge -->
         <button id="repartidor-btn"
                 class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all"
@@ -234,6 +242,29 @@ const {
         }
       }
 
+      // Plan badge
+      function setupPlanBadge() {
+        const token = localStorage.getItem('mr-auth-token');
+        const plan  = localStorage.getItem('mr-plan');
+        const badge = document.getElementById('plan-badge-btn');
+        const text  = document.getElementById('plan-badge-text');
+        if (!badge || !text) return;
+        if (token && plan) {
+          badge.classList.replace('hidden', 'flex');
+          if (plan === 'pro') {
+            text.textContent = 'Pro';
+            badge.style.background = 'rgba(0,232,162,0.12)';
+            badge.style.color      = 'var(--color-primary)';
+            badge.style.border     = '1px solid rgba(0,232,162,0.3)';
+          } else {
+            text.textContent = 'Free';
+            badge.style.background = 'var(--surface-elevated)';
+            badge.style.color      = 'var(--text-tertiary)';
+            badge.style.border     = '1px solid var(--border-light)';
+          }
+        }
+      }
+
       // GPS indicator
       window.addEventListener('mr:tracking-start', () => {
         const el = document.getElementById('gps-indicator');
@@ -247,15 +278,18 @@ const {
       document.addEventListener('astro:page-load', () => {
         setupTheme();
         setupRepartidorName();
+        setupPlanBadge();
       });
 
       if (document.readyState !== 'loading') {
         setupTheme();
         setupRepartidorName();
+        setupPlanBadge();
       } else {
         window.addEventListener('DOMContentLoaded', () => {
           setupTheme();
           setupRepartidorName();
+          setupPlanBadge();
         });
       }
     </script>

@@ -4,9 +4,10 @@ use axum::{
     Json,
 };
 use sqlx::PgPool;
+use std::env;
 use uuid::Uuid;
 
-use crate::{middleware::device::DeviceId, models::*};
+use crate::{middleware::{auth::MaybeAuthUser, device::DeviceId}, models::*};
 
 /// GET /stops — Lista paradas del dispositivo ordenadas por stop_order
 pub async fn list_stops(
@@ -33,12 +34,37 @@ pub async fn list_stops(
 /// POST /stops — Crear parada nueva
 pub async fn create_stop(
     DeviceId(device_id): DeviceId,
+    MaybeAuthUser(auth): MaybeAuthUser,
     State(pool): State<PgPool>,
     Json(body): Json<CreateStop>,
 ) -> Result<(StatusCode, Json<Stop>), StatusCode> {
     crate::db::upsert_device(&pool, &device_id)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    // Paywall: usuarios free tienen límite de paradas diarias activas
+    let plan = auth.as_ref().map(|c| c.plan.as_str()).unwrap_or("free");
+    if plan != "pro" {
+        let free_limit: i64 = env::var("FREE_DAILY_STOP_LIMIT")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(20);
+
+        let active_today: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM stops
+             WHERE device_id = $1
+               AND status NOT IN ('completed', 'failed')
+               AND created_at >= CURRENT_DATE",
+        )
+        .bind(&device_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap_or(0);
+
+        if active_today >= free_limit {
+            return Err(StatusCode::PAYMENT_REQUIRED); // 402
+        }
+    }
 
     sqlx::query_as::<_, Stop>(
         r#"

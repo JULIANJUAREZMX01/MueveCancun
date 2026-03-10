@@ -17,6 +17,10 @@ services:
           name: mueve-reparto-api
           type: web
           property: host
+      - key: PUBLIC_PLAN_FREE_LIMIT
+        value: "20"
+      - key: PUBLIC_PRO_PRICE_MXN
+        value: "99"
     autoDeploy: true
 
   - type: web
@@ -38,6 +42,17 @@ services:
         value: info
       - key: ALLOWED_ORIGINS
         value: https://mueverepartoencancun.onrender.com
+      # Auth P5 — configurar en dashboard de Render con valores reales
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_VERIFY_SERVICE_SID
+        sync: false
+      - key: FREE_DAILY_STOP_LIMIT
+        value: "20"
     autoDeploy: true
 
 databases:

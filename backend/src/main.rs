@@ -41,15 +41,22 @@ async fn main() -> anyhow::Result<()> {
         .allow_headers([
             HeaderName::from_static("content-type"),
             HeaderName::from_static("x-device-id"),
+            HeaderName::from_static("authorization"),
         ]);
 
     let app = Router::new()
         .route("/health", get(|| async { "OK" }))
+        // Auth P5
+        .route("/auth/send-otp",    post(routes::auth::send_otp))
+        .route("/auth/verify-otp",  post(routes::auth::verify_otp))
+        .route("/auth/me",          get(routes::auth::me))
+        // Stops
         .route("/stops", get(routes::stops::list_stops))
         .route("/stops", post(routes::stops::create_stop))
         .route("/stops/sync", post(routes::stops::sync_stops))
         .route("/stops/:id", patch(routes::stops::update_stop))
         .route("/stops/:id", delete(routes::stops::delete_stop))
+        // Stats
         .route("/stats", get(routes::stats::get_stats))
         .route("/stats", post(routes::stats::upsert_stats))
         .layer(cors)

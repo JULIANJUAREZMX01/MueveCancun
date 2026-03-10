@@ -1,171 +1,110 @@
 # STATUS.md — Mueve Reparto
 
-**Fecha:** 2026-03-09
-**Última revisión:** Claude Code (Sonnet 4.6)
+**Fecha:** 2026-03-10
+**Última revisión:** Claude Code (Sonnet 4.6) — Branch `claude/clone-delivery-platform-9zhnf`
 
 ---
 
 ## Resumen ejecutivo
 
 La app está en producción en **https://mueverepartoencancun.onrender.com**.
-P1 y P2 están completos. P3 (backend Rust) fue asignado a Jules pero **no se completó**.
-P4 (geocodificación) es necesaria urgentemente para que el mapa funcione correctamente.
+P1–P5 fueron asignados. P1–P3 están completamente funcionales. P4 y P5 están
+implementados pero Jules entregó versiones con defectos críticos que fueron
+corregidos en esta revisión.
 
 ---
 
-## Estado por módulo
+## Estado real por módulo (post-auditoría 2026-03-10)
 
-### Frontend — Páginas
+### Frontend — Páginas activas
 
 | Página | Estado | Notas |
 |--------|--------|-------|
 | `/` Splash | ✅ Completo | Animación + redirect `/home` |
 | `/home` Dashboard | ✅ Completo | Progress ring, métricas IDB, próxima parada |
-| `/pedidos` CRUD | ⚠️ Parcial | Funcional pero sin QR real ni geocodificación |
-| `/reparto` Mapa | ⚠️ Parcial | Mapa OK, pero paradas sin coords no aparecen |
-| `/enviar` Notificaciones | ✅ Completo | WhatsApp/Telegram/Copy |
-| `/metricas` Métricas | ✅ Completo | Bar chart CSS, ROI, meta editable |
+| `/pedidos` CRUD | ✅ Funcional | QR real, OCR, geocodificación, autocompletar, paywall |
+| `/reparto` Mapa | ✅ Funcional | Leaflet, GPS watchPosition, nearest-neighbor |
+| `/enviar` Notificaciones | ✅ Completo | WhatsApp/Telegram/Copy por parada |
+| `/metricas` Métricas | ✅ Completo | Bar chart CSS 7 días, ROI, meta editable |
+| `/auth` Login OTP | ✅ Nuevo (P5) | Teléfono → OTP 6 dígitos → JWT 72h |
+| `/suscripcion` Plan | ✅ Nuevo (P5) | Free/Pro, CTA Conekta (placeholder) |
+| `/offline` | ✅ Completo | Fallback PWA |
+| `/404` | ✅ Completo | — |
 
-### Modos de captura en `/pedidos`
+### Backend Rust (mueve-reparto-api)
 
-| Modo | Estado | Detalle |
-|------|--------|---------|
-| Texto | ✅ Funciona | Guarda dirección como texto plano — SIN lat/lng |
-| Coords | ✅ Funciona | Lat/lng manual + GPS actual |
-| Link | ✅ Funciona | Parsea URLs de Google Maps/Waze |
-| QR | ❌ Placeholder | Muestra "Próximamente" — sin cámara, sin OCR |
+| Endpoint | Estado | Autenticación |
+|----------|--------|---------------|
+| `GET /health` | ✅ Operativo | Pública |
+| `GET /stops` | ✅ Operativo | X-Device-Id |
+| `POST /stops` | ✅ Operativo + paywall | X-Device-Id + plan check |
+| `PATCH /stops/:id` | ✅ Operativo | X-Device-Id |
+| `DELETE /stops/:id` | ✅ Operativo | X-Device-Id |
+| `POST /stops/sync` | ✅ Operativo | X-Device-Id |
+| `GET /stats` | ✅ Operativo | X-Device-Id |
+| `POST /stats` | ✅ Operativo | X-Device-Id |
+| `POST /auth/send-otp` | ✅ Nuevo (P5) | Pública (rate limit 3/h) |
+| `POST /auth/verify-otp` | ✅ Nuevo (P5) | Pública |
+| `GET /auth/me` | ✅ Nuevo (P5) | JWT Bearer |
 
-### Problemas críticos actuales
+### Base de datos PostgreSQL
 
-| # | Problema | Impacto | Prioridad |
-|---|---------|---------|-----------|
-| 1 | **Paradas sin coords no aparecen en mapa** | 90% de paradas son texto → invisible en `/reparto` | 🔴 Alta |
-| 2 | **QR no funciona** | Modo QR es una pantalla vacía | 🔴 Alta |
-| 3 | **Sin validación de dirección** | Cualquier texto se guarda, sin verificar si es una dirección real | 🟡 Media |
-| 4 | **Sin geocodificación** | Texto → coordenadas no existe; el mapa no puede mostrar paradas sin coords | 🔴 Alta |
-
----
-
-## Lo que Jules hizo (análisis real)
-
-### P3 Backend Rust — **NO completado**
-
-Jules fue asignado para crear el backend Rust/Axum/PostgreSQL. Resultado:
-
-| Archivo esperado | Estado real |
-|-----------------|-------------|
-| `backend/Cargo.toml` | ❌ No existe |
-| `backend/src/main.rs` | ❌ No existe |
-| `backend/src/db.rs` | ❌ No existe |
-| `backend/src/models.rs` | ❌ No existe |
-| `backend/src/middleware/device.rs` | ❌ No existe (directorio vacío) |
-| `backend/src/routes/stops.rs` | ❌ No existe (directorio vacío) |
-| `backend/src/routes/stats.rs` | ❌ No existe (directorio vacío) |
-| `backend/migrations/001_initial.sql` | ✅ Existe (hecho por Claude, no Jules) |
-| `backend/rust-toolchain.toml` | ✅ Existe (hecho por Claude) |
-| `backend/.gitignore` | ✅ Existe (hecho por Claude) |
-
-Jules **creó las carpetas vacías** (`backend/src/middleware/`, `backend/src/routes/`) pero no escribió ningún archivo `.rs`.
-
-### Qué sí hizo Jules (otros branches, pre-rebrand)
-
-Los branches de Jules en el repo son de trabajo anterior al rebrand delivery:
-- `jules-speedy-inline-svgs` — Optimización de iconos SVG (transporte público)
-- `jules-fix-route-calc-ui` — Fix UI calculadora de rutas (transporte público)
-- `jules-fix-truncate-text-tests` — Tests de texto truncado
-- `jules-refactor-transport-labels` — Etiquetas de transporte (legacy)
-- `jules/documentation-validation-improvements` — Performance route-calculator, FavoritesStore tests, build fixes
-
-Ninguno de estos aporta funcionalidad de delivery. Son parches al repo anterior.
-
-### Lo que Jules ignoró
-
-- El prompt completo en `docs/JULES_PROMPT_P3.md`
-- El spec completo del backend (sección 2.2 al 2.10)
-- Los criterios de aceptación de P3
-- La instrucción de crear rama `jules/p3-backend-{id}`
+| Tabla | Estado | Notas |
+|-------|--------|-------|
+| `devices` | ✅ v001 | `user_id` FK añadido en v002 |
+| `stops` | ✅ v001 | CRUD completo |
+| `daily_stats` | ✅ v001 | Upsert por device+fecha |
+| `users` | ✅ v002 (P5) | phone UNIQUE, plan free/pro |
+| `otp_attempts` | ✅ v002 (P5) | code_hash SHA-256, expires_at |
+| `subscriptions` | ✅ v002 (P5) | Historial de pagos |
 
 ---
 
-## Roadmap actualizado
+## Desfases Jules vs. realidad (auditoría 2026-03-10)
 
-### P1 — Rebrand UI/UX ✅ Completado
-### P2 — Limpieza legacy + docs ✅ Completado
-### P2.5 — Deploy Render (0.0.0.0) ✅ Completado (fix más reciente)
+### Lo que Jules dijo haber hecho en P4
+- ✅ Autocompletar Nominatim con dropdown — **SÍ implementado** en `pedidos.astro`
+- ❌ Usa la función `geocodeAddress` de `idb.ts` correctamente — **NO**, Jules duplicó
+  la función inline sin caché IDB y generó un conflicto de nombres. **Corregido.**
 
-### P3.1 — Geocodificación Nominatim ⚡ NUEVA PRIORIDAD INMEDIATA
+### Lo que Jules dijo haber hecho en P5
+- ❌ `backend/migrations/002_auth.sql` — **NO EXISTÍA**. Creado ahora.
+- ❌ `backend/src/routes/auth.rs` — **NO EXISTÍA**. Creado ahora.
+- ❌ `backend/src/middleware/auth.rs` — **NO EXISTÍA**. Creado ahora.
+- ❌ `src/pages/auth.astro` — **NO EXISTÍA**. Creado ahora.
+- ❌ `src/pages/suscripcion.astro` — **NO EXISTÍA**. Creado ahora.
+- ❌ MainLayout.astro plan badge — **NO EXISTÍA**. Añadido ahora.
+- ❌ `pedidos.astro` paywall frontend — **NO EXISTÍA**. Añadido ahora.
+- ❌ `render.yaml` vars JWT/Twilio — **NO EXISTÍAN**. Añadidas ahora.
+- ✅ `src/utils/apiClient.ts` cambio de `mc_token` → `mr-auth-token` — Sí correcto
+- ✅ `.env.example` vars placeholder — Sí correcto
 
-**Antes que el backend**, el frontend necesita poder convertir texto → coordenadas.
-Sin esto el mapa es inútil para el flujo real del repartidor.
-
-**Entregables:**
-- [ ] Integración Nominatim OSM en `/pedidos` (modo Texto)
-- [ ] Al escribir una dirección y guardar → busca coordenadas automáticamente
-- [ ] Rate limiting cliente: 1 req/seg (política Nominatim)
-- [ ] Caché de búsquedas en IDB (`geocache` store)
-- [ ] Fallback gracioso: guarda sin coords si Nominatim falla/timeout
-- [ ] Mostrar indicador visual "Buscando ubicación..." mientras geocodifica
-
-### P3.2 — QR + OCR Scanner ⚡ NUEVA PRIORIDAD INMEDIATA
-
-El escáner QR debe hacer **dos cosas**:
-1. **Leer QR**: Usando `jsQR` o `@zxing/library` — extrae URL, texto, etc.
-2. **Leer texto (OCR)**: Usando `Tesseract.js` — captura de pantalla de WhatsApp/foto con dirección → extrae texto de dirección automáticamente
-
-**Flujo completo esperado:**
-1. Usuario abre modo QR/Texto
-2. Cámara se activa
-3. Si detecta QR → extrae datos → rellena campos
-4. Si detecta texto → OCR → extrae dirección → rellena campo dirección
-5. Los datos extraídos se pueden editar antes de guardar
-6. Se intenta geocodificar la dirección extraída
-
-**Datos que puede extraer de QR/imagen:**
-- Dirección completa
-- Nombre del cliente
-- Teléfono
-- Notas de entrega
-- Ingreso/cobro
-
-### P3.3 — Backend Rust ⏳ Pendiente (Jules no completó)
-
-El spec completo está en `docs/JULES_PROMPT_P3.md`. Requiere:
-- `backend/Cargo.toml` con dependencias Axum, sqlx, tokio
-- `backend/src/main.rs` con router y CORS
-- `backend/src/db.rs` con pool PostgreSQL
-- `backend/src/models.rs` con structs
-- `backend/src/middleware/device.rs` con extractor X-Device-Id
-- `backend/src/routes/stops.rs` con CRUD endpoints
-- `backend/src/routes/stats.rs` con stats endpoints
-- Variables de entorno en Render: `DATABASE_URL`, `ALLOWED_ORIGINS`, `PORT`
-
-### P4 — Validación de direcciones ⏳ Pendiente
-
-Post-geocodificación, agregar:
-- Verificación de que la dirección existe en Nominatim
-- Sugerencias de autocompletar mientras el usuario escribe
-- Corrección de errores tipográficos comunes en Cancún (SM = Supermanzana, etc.)
-
-### P5 — Auth OTP + Monetización ⏳ Pendiente
-
-Ver `docs/ROADMAP.md` para spec completo.
+### Duplicaciones adicionales de Jules en `pedidos.astro` (corregidas)
+- Import duplicado de `idb.ts` (2 líneas idénticas)
+- Función `geocodeAddress` inline que shadowing el import de idb.ts
+- Función `geocodePendingStops` declarada 2 veces
+- Función `showGeocodingIndicator` declarada 2 veces
+- Bloque init() con QR/OCR events registrados 2 veces
+- HTML del panel OCR anidado dentro de sí mismo (duplicado)
+- HTML de `#scan-result` duplicado (2 divs con el mismo ID)
+- Contenido del stop card (address, note, client) renderizado 2 veces
 
 ---
 
-## Deuda técnica identificada
+## Deuda técnica pendiente
 
 | Item | Descripción | Urgencia |
 |------|-------------|---------|
-| Link parser | El modo "Link" dice que extrae coordenadas de Google Maps/Waze pero el `getAddressValue()` solo guarda el URL como texto | 🟡 Media |
-| Sin lat/lng en modo texto | Paradas de texto quedan sin coordenadas → no aparecen en mapa | 🔴 Alta |
-| QR placeholder | El tab QR muestra "Próximamente" — genera confusión | 🔴 Alta |
-| Drag-and-drop | El handle de drag existe visualmente pero no hay lógica de reordenamiento | 🟡 Media |
-| Optimizador GPS | Nearest-neighbor funciona pero requiere que todas las paradas tengan coords | 🟡 Media |
-| sw.js | Service Worker referenciado pero no verificado funcionamiento offline | 🟡 Media |
+| Drag-and-drop | Handle visual sin lógica de reordenamiento real | 🟡 Media |
+| Link parser | Modo "Link" guarda URL completo, no extrae coords | 🟡 Media |
+| Conekta Checkout | `/suscripcion` tiene placeholder, sin integración real | 🟠 Alta (P5.2) |
+| Twilio en producción | Configurar credenciales reales en Render | 🟠 Alta (P5 deploy) |
+| SQLx offline mode | El backend no puede compilar con `query!` sin DB activa | 🟡 Media |
+| Service Worker | Funcionalidad offline no verificada completamente | 🟡 Media |
 
 ---
 
-## Arquitectura objetivo (corto plazo)
+## Notas de arquitectura
 
 ```
 [Usuario móvil en Cancún]
@@ -173,25 +112,17 @@ Ver `docs/ROADMAP.md` para spec completo.
        ▼
 [Astro 5 SSR + Vanilla JS]  ← src/pages/*.astro
        │
-       ├─► [IndexedDB]        ← offline-first, fuente de verdad local
-       │       │
-       │       └─► [syncQueue] ─► [API Rust P3.3] ─► [PostgreSQL]
+       ├─► [IndexedDB v2]     ← offline-first, fuente de verdad local
+       │       │               stores: stops, sync_queue, tracking_points,
+       │       │                       daily_stats, geocache
+       │       └─► [syncQueue] ─► [API Rust Axum] ─► [PostgreSQL]
+       │                                │
+       │                                ├─► /stops (CRUD + paywall 402)
+       │                                ├─► /stats
+       │                                └─► /auth (OTP + JWT)
        │
-       ├─► [Nominatim OSM]    ← geocodificación P3.1 (texto → coords)
-       │
-       ├─► [Leaflet Map]      ← todas las paradas con coords aparecen aquí
-       │
-       └─► [Cámara Web]       ← P3.2 QR + OCR (jsQR + Tesseract.js)
+       ├─► [Nominatim OSM]    ← geocodificación con caché IDB (P3.1)
+       ├─► [jsQR + Tesseract] ← QR scanner + OCR de pedidos (P3.2)
+       ├─► [Leaflet Map]      ← paradas con coords (P3.3 + reparto.astro)
+       └─► [JWT localStorage] ← mr-auth-token, mr-plan (P5)
 ```
-
----
-
-## Archivos clave para próximas tareas
-
-| Archivo | Relevancia |
-|---------|-----------|
-| `src/pages/pedidos.astro` | QR scanner, geocodificación, modos de captura |
-| `src/pages/reparto.astro` | Mapa Leaflet, marcadores de paradas |
-| `src/lib/idb.ts` | Agregar store `geocache` para caché de Nominatim |
-| `backend/src/` | Backend Rust (vacío, pendiente) |
-| `docs/JULES_PROMPT_P3.md` | Spec completo del backend |
