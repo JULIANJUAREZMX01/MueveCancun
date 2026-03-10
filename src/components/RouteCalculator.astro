@@ -4,6 +4,7 @@ import { safeJsonStringify } from '../utils/utils';
 import Input from './ui/Input.astro';
 import Switch from './ui/Switch.astro';
 import PassengerSelector from './ui/PassengerSelector.astro';
+import Icon from './ui/Icon.astro';
 
 const currentLang = getLangFromUrl(Astro.url);
 const t = useTranslations(currentLang);
@@ -81,8 +82,8 @@ const ui = uiTranslations[currentLang];
             data-i18n-placeholder="calc.placeholder.dest"
             maxlength={100}
           >
-            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip">
-              <img src="/icons/map-plus.svg" class="w-5 h-5" alt="Map Picker" />
+            <button slot="action" id="map-picker-btn" aria-label="Map Picker" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip">
+              <Icon name="map-plus" class="w-5 h-5" aria-hidden="true" />
             </button>
             <div slot="action" id="map-tooltip" class="graffiti-tooltip top" style="position-anchor: --map-btn" data-i18n="calc.map">Select on map</div>
           </Input>
