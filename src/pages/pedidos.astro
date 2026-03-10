@@ -271,7 +271,6 @@ import MainLayout from '../layouts/MainLayout.astro';
 <script>
   import { escapeHtml } from '../utils/utils';
   import { dbPut, dbDelete, dbGetAll, getStops, completeStop, generateId, STORES } from '../lib/idb';
-  import { dbPut, dbDelete, dbGetAll, getStops, completeStop, generateId, STORES, geocodeAddress } from '../lib/idb';
   import type { Stop } from '../lib/idb';
 
 
@@ -771,10 +770,6 @@ import MainLayout from '../layouts/MainLayout.astro';
   }
 
 
-  function showGeocodingIndicator(id: string, show: boolean) {
-    const el = document.getElementById(`geo-${id}`);
-    if (el) el.style.display = show ? 'flex' : 'none';
-  }
 
   // ── Save stop ──
   async function saveStop() {
@@ -933,20 +928,6 @@ import MainLayout from '../layouts/MainLayout.astro';
   }
 
 
-  async function geocodePendingStops() {
-    if (!navigator.onLine) return;
-    const stops = await getStops();
-    const pending = stops.filter(s => !s.lat && !s.lng && s.status !== 'completed');
-    for (const stop of pending) {
-      const coords = await geocodeAddress(stop.address);
-      if (coords) {
-        await dbPut(STORES.STOPS, { ...stop, lat: coords.lat, lng: coords.lng });
-      }
-    }
-    if (pending.length > 0) {
-      await renderStops();
-    }
-  }
 
   // ── Init ──
   async function geocodePendingStops() {

@@ -175,19 +175,18 @@ const {
       </div>
     </div>
 
-    <script is:inline>
-      // Theme toggle
-      function setupTheme() {
-        document.querySelectorAll('.theme-toggle').forEach(btn => {
-          const fresh = btn.cloneNode(true);
-          btn.parentNode.replaceChild(fresh, btn);
-          fresh.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('mr-theme', isDark ? 'dark' : 'light');
-          });
-        });
-      }
+    <script>
+      import { setupTheme } from '@utils/theme';
 
+      document.addEventListener('astro:page-load', setupTheme);
+
+      if (document.readyState !== 'loading') {
+        setupTheme();
+      } else {
+        window.addEventListener('DOMContentLoaded', setupTheme);
+      }
+    </script>
+    <script is:inline>
       // Repartidor name
       function setupRepartidorName() {
         const name = localStorage.getItem('mr-repartidor-name') || 'Repartidor';
@@ -245,16 +244,13 @@ const {
       });
 
       document.addEventListener('astro:page-load', () => {
-        setupTheme();
         setupRepartidorName();
       });
 
       if (document.readyState !== 'loading') {
-        setupTheme();
         setupRepartidorName();
       } else {
         window.addEventListener('DOMContentLoaded', () => {
-          setupTheme();
           setupRepartidorName();
         });
       }

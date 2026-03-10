@@ -146,7 +146,7 @@ describe('truncateText Utility', () => {
   });
 });
 
- jules/test-readingTime-14993745733534279164
+
 
 describe('readingTime Utility', () => {
   it('should calculate 1 min read for empty string', () => {
@@ -183,6 +183,9 @@ describe('readingTime Utility', () => {
     const text2 = new Array(99).fill('word').join(' ');
     expect(readingTime(text2)).toBe('1 min read');
 
+  });
+});
+
 describe('safeUrl Utility', () => {
   it('should encode string parameters', () => {
     expect(safeUrl('hello world')).toBe('hello%20world');
@@ -207,6 +210,5 @@ describe('safeUrl Utility', () => {
 
   it('should handle empty string correctly', () => {
     expect(safeUrl('')).toBe('');
-main
   });
 });
