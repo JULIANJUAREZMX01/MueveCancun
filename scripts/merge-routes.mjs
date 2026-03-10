@@ -122,6 +122,12 @@ for (const file of routeFiles) {
       delete route.stops;
     }
 
+    // Normalize frecuencia_minutos to an integer
+    if (typeof route.frecuencia_minutos === 'string') {
+      const parsed = parseInt(route.frecuencia_minutos.replace(/\D/g, ''), 10);
+      route.frecuencia_minutos = isNaN(parsed) ? 10 : parsed;
+    }
+
     if (masterMap.has(route.id)) {
       info(`Updated: ${route.id} (from ${file.name})`);
       updated++;
