@@ -56,7 +56,7 @@ export const STORES = {
 } as const;
 
 const DB_NAME    = 'mueve-reparto-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let _db: IDBDatabase | null = null;
 

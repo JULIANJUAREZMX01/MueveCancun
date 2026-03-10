@@ -160,6 +160,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 <script>
   import { dbPut, dbDelete, dbGetAll, getStops, completeStop, generateId, STORES } from '../lib/idb';
   import type { Stop } from '../lib/idb';
+  import { escapeHtml } from '../utils/utils';
 
 
   let currentFilter = 'all';
@@ -330,9 +331,9 @@ import MainLayout from '../layouts/MainLayout.astro';
 
         <!-- Content -->
         <div style="flex:1;min-width:0;">
-          <p class="stop-address">${s.address}</p>
-          ${s.note ? `<p class="stop-meta">${s.note}</p>` : ''}
-          ${s.clientName ? `<p class="stop-meta">${s.clientName}${s.clientPhone ? ' · ' + s.clientPhone : ''}</p>` : ''}
+          <p class="stop-address">${escapeHtml(s.address)}</p>
+          ${s.note ? `<p class="stop-meta">${escapeHtml(s.note)}</p>` : ''}
+          ${s.clientName ? `<p class="stop-meta">${escapeHtml(s.clientName)}${s.clientPhone ? ' · ' + escapeHtml(s.clientPhone) : ''}</p>` : ''}
         </div>
 
         <!-- Right side -->
@@ -631,13 +632,13 @@ import MainLayout from '../layouts/MainLayout.astro';
     });
 
     // Close suggestions when clicking outside
-    document.onclick = (e) => {
+    document.addEventListener('click', (e) => {
       const container = document.getElementById('address-suggestions');
       const input = document.getElementById('input-address');
       if (container && input && e.target !== input && !container.contains(e.target as Node)) {
         container.style.display = 'none';
       }
-    };
+    });
     document.getElementById('input-lat')?.addEventListener('input', updateSaveBtn);
     document.getElementById('input-lng')?.addEventListener('input', updateSaveBtn);
     document.getElementById('input-link')?.addEventListener('input', updateSaveBtn);
