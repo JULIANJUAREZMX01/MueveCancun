@@ -37,4 +37,5 @@ fi
 # 4. Build Project
 echo "🚀 Building Project..."
 pnpm install
+pnpm run test
 pnpm run build

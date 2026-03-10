@@ -1,21 +1,47 @@
-# Exported from Render on 2026-02-18T03:54:09Z
 version: "1"
-projects:
-- name: QUINTANAROO_CREATIONS
-  environments:
-  - name: CANCUNMUEVE
-    services:
-    - type: web
-      name: QueRutaMeLLevaCancun
-      runtime: static
-      repo: https://github.com/JULIANJUAREZMX01/MueveCancun
-      envVars:
+services:
+  - type: web
+    name: mueve-reparto-frontend
+    runtime: node
+    repo: https://github.com/sistemascancunjefe-ai/MueveRepartoEnCancun-
+    branch: main
+    buildCommand: pnpm install --frozen-lockfile && pnpm run build
+    startCommand: node ./dist/server/entry.mjs
+    envVars:
       - key: NODE_VERSION
-        sync: false
-      - key: ENABLE_PNPM
-        sync: false
-      buildCommand: bash scripts/setup-render.sh
-      staticPublishPath: dist
-      autoDeployTrigger: checksPass
-      previews:
-        generation: automatic
+        value: "20.10.0"
+      - key: NODE_ENV
+        value: production
+      - key: PUBLIC_API_URL
+        fromService:
+          name: mueve-reparto-api
+          type: web
+          property: host
+    autoDeploy: true
+
+  - type: web
+    name: mueve-reparto-api
+    runtime: rust
+    repo: https://github.com/sistemascancunjefe-ai/MueveRepartoEnCancun-
+    branch: main
+    rootDir: backend
+    buildCommand: cargo build --release
+    startCommand: ./target/release/mueve-reparto-api
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mueve-reparto-db
+          property: connectionString
+      - key: PORT
+        value: "8080"
+      - key: RUST_LOG
+        value: info
+      - key: ALLOWED_ORIGINS
+        value: https://mueverepartoencancun.onrender.com
+    autoDeploy: true
+
+databases:
+  - name: mueve-reparto-db
+    databaseName: mueve_reparto
+    user: reparto_user
+    plan: free

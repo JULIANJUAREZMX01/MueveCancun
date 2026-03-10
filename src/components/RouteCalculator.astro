@@ -215,8 +215,15 @@ const ui = uiTranslations[currentLang];
           }
 
           // Sentinel Security Fix: Retry Button Delegation
-          if (target.closest('.js-retry-search-btn')) {
-              setTimeout(() => document.getElementById('origin-input')?.focus(), 50);
+          const retryBtn = target.closest('.js-retry-search-btn');
+          if (retryBtn) {
+              e.preventDefault();
+              setTimeout(() => {
+                  const originInput = document.getElementById('origin-input');
+                  if (originInput) {
+                      originInput.focus();
+                  }
+              }, 50);
           }
       });
   }

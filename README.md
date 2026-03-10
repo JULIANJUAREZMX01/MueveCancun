@@ -1,160 +1,139 @@
-# 🏛️ MueveCancun: La Verdad de la Calle (Nexus Prime v3.2)
+# 🏛️ MueveCancun / MueveReparto: La Verdad de la Calle (Nexus Prime v3.2)
 
-> "MueveCancun no nació en una oficina, nació en la parada del camión."
+> "Hecho para el repartidor que trabaja solo, sin flotas ni supervisores."
 
-## 📍 El Problema: Google Maps no entiende a Cancún
-
-En nuestra ciudad, el transporte público es un organismo vivo que cambia más rápido que los algoritmos de las grandes plataformas. Un aviso en Facebook, un bloqueo repentino o una nueva ruta informal son la **"verdad de la calle"** que Google Maps ignora.
-
-MueveCancun es simple: **Funciona sin internet**, es ultrarrápida y está diseñada para que cualquier persona sepa exactamente qué ruta la lleva a su destino.
+**Mueve Reparto** es una PWA offline-first diseñada para repartidores independientes en Cancún y zonas similares. Organiza paradas, traza rutas, notifica clientes por WhatsApp/Telegram y mide tu productividad diaria — todo sin depender de internet.
 
 ---
 
-## 🏛️ La Arquitectura: El Protocolo Nexus (4 Capas)
+## El Problema
 
-Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales que trabajan en conjunto para ofrecer una aplicación offline-first ultrarrápida.
+Los repartidores independientes no tienen herramientas. Las apps empresariales (Rappi, UberEats) son para flotas controladas. WhatsApp y papel son el estándar real. Mueve Reparto llena ese vacío: una herramienta ligera, sin registro obligatorio, que funciona offline y vive en el teléfono como una app nativa.
 
-### 1. Capa de Datos: Origen de Rutas
-- **Función**: Catálogo base que contiene "Señales Sociales" (alertas de tráfico, bloqueos, avisos de madrugada) y la información de todas las rutas.
-- **Ubicación**: `public/data/master_routes.json` con estructura validada para el motor WASM.
+📌 **ROADMAP:** Consulta las fases del proyecto en el nuevo [ROADMAP.md](ROADMAP.md).
 
-**Esquema JSON de master_routes.json:**
-```json
-{
-  "metadata": {
-    "last_updated": "ISO 8601 timestamp",
-    "source": "Nexus Listener v1.0",
-    "version": "3.2.0"
-  },
-  "social_alerts": ["Alerta global 1", "Alerta global 2"],
-  "routes": [
-    {
-      "id": "R2_94_VILLAS_OTOCH_001",
-      "nombre": "R-2-94 Villas Otoch (Eje Kabah - ZH)",
-      "tarifa": 15,
-      "moneda": "MXN",
-      "hub_conexion": "Plaza Las Américas / Chedraui Lakin",
-      "frecuencia_minutos": 10,
-      "horario": {
-        "inicio_oficial": "05:00",
-        "fin_oficial": "22:30",
-        "guardia_nocturna": "03:00 - 05:00"
-      },
-      "social_alerts": ["Aviso de madrugada", "Información de campo"],
-      "paradas": [
-        {
-          "nombre": "OXXO Villas Otoch",
-          "lat": 21.1685,
-          "lng": -86.885,
-          "orden": 1,
-          "tipo": "origen_madrugada",
-          "horario_salida_primer_turno": "03:55",
-          "advertencia": "Punto de agrupación"
-        }
-      ],
-      "tipo": "Bus_Urbano_Isla"
-    }
-  ]
-}
+---
+
+## Funcionalidades principales
+
+| Pantalla | Función |
+|----------|---------|
+| `/home` | Dashboard: paradas del día, progress ring, próxima entrega |
+| `/pedidos` | CRUD de paradas — 4 modos de captura, filtros, complete/delete |
+| `/reparto` | Mapa Leaflet + GPS + optimizador nearest-neighbor de ruta |
+| `/enviar` | Notificaciones por WhatsApp/Telegram con plantillas de mensaje |
+| `/metricas` | Bar chart semanal, ROI por día, meta editable |
+
+---
+
+## Stack técnico
+
+```
+Frontend:    Astro 5 (SSR) + Vanilla JS + Tailwind CSS v3
+Maps:        Leaflet (dark tiles — OpenStreetMap)
+Storage:     IndexedDB (idb 8) — offline-first, sin backend
+PWA:         Service Worker + Web App Manifest (installable)
+Routing:     Nearest-neighbor greedy (JS puro)
+Build:       pnpm + Vite 6
+Deploy:      Render (Node.js Web Service)
 ```
 
-**Señales Sociales**: El sistema captura información de campo que Google Maps no ofrece: tarifas de madrugada, puntos de Guardia Nocturna, advertencias de letreros obligatorios, y estados actuales del tráfico.
+---
 
-### 2. Capa de Procesamiento: Motor Rust/WASM
-- **Core**: `rust-wasm/route-calculator/src/lib.rs`
-- **Compilación**: `scripts/build-wasm.mjs` (usa wasm-pack + binaryen para optimización).
-- **SpatialHash**: Estructura de índice espacial para búsquedas O(1) de rutas cercanas.
-- **RouteCalculator**: Algoritmo que encuentra la mejor ruta considerando distancia, frecuencia y transbordos.
-- **Ruta Crítica**: El binario WASM se sirve desde `/wasm/route-calculator/route_calculator.js`.
-- **Seguridad**: Hardening contra DoS con Circuit Breaker de 2M ops máximo por request.
+## Design tokens
 
-### 3. Capa de Presentación: Astro SSG
-- **UI**: Componentes `.astro` sin framework JS pesado (Vanilla JS para interactividad).
-- **Estilos**: `src/styles/global.css` y `src/index.css` con CSS Variables + Grid + Flexbox.
-- **Diseño Responsive**: Optimizado para Dark/Light mode y navegación inferior fija (mobile-first).
-- **PWA Offline**: Service Worker para funcionamiento sin conexión.
-- **defaultLang**: 'es' (español) como idioma predeterminado.
-
-### 4. Capa de Persistencia: IndexedDB
-- **db.ts**: Gestiona el balance de usuario en IndexedDB (migración automática desde localStorage).
-- **Stores en src/lib/**:
-  - `SpatialHash.ts`: Índice espacial para rutas
-  - `FavoritesStore.ts`: Rutas favoritas persistidas
-  - `CoordinatesStore.ts`: Coordenadas del usuario
-- **Estrategia**: Offline-first con sincronización cuando hay conexión.
+```css
+--color-bg:        #060A0E   /* fondo principal dark */
+--color-surface:   #0D1117   /* cards / paneles */
+--color-primary:   #00E8A2   /* verde Mueve Reparto */
+--color-urgent:    #FF5A5F   /* coral urgente */
+--color-text:      #E2E8F0
+--color-muted:     #64748B
+```
 
 ---
 
-## 🤖 CI / Automatización
+## Estructura del proyecto
 
-- El flujo manual `Delegate to Claude (unscoped tasks)` requiere el secreto `ANTHROPIC_API_KEY`.
-- Ejecútalo sólo en ramas no protegidas; las acciones deben crear cambios vía rama/PR, no push directo a `main`.
+```
+src/
+├── pages/
+│   ├── index.astro       — Splash + redirect /home
+│   ├── home.astro        — Dashboard diario
+│   ├── pedidos.astro     — CRUD de paradas
+│   ├── reparto.astro     — Mapa + GPS + optimizador
+│   ├── enviar.astro      — Notificaciones cliente
+│   ├── metricas.astro    — Métricas y ROI
+│   ├── 404.astro
+│   └── offline.astro
+├── components/
+│   ├── BottomNav.astro   — Navegación inferior (4 tabs)
+│   ├── InteractiveMap.astro
+│   └── ui/               — Componentes base (Button, Card, Toast…)
+├── layouts/
+│   └── MainLayout.astro  — Layout con header dark + BottomNav
+└── lib/
+    └── idb.ts            — IndexedDB helper tipado
+public/
+├── manifest.json
+├── favicon.svg
+└── robots.txt
+```
 
 ---
 
-## 🛠️ Troubleshooting & Interconexión
+## Comandos de desarrollo
 
-Si el sistema falla, sigue esta guía de diagnóstico por capas (Protocolo Nexus):
-
-### 🔴 Capa 1: Error en los Datos Base
-1. **Schema Check**: Confirma que `public/data/master_routes.json` tenga las claves `routes`, `social_alerts` y `metadata`.
-2. **Validar JSON**: Asegúrate de que el archivo no tenga errores de sintaxis.
-
-### 🟡 Capa 2: Error en Motor WASM (Procesamiento)
-1. **Verificar WASM**: Revisa que `public/wasm/route-calculator/route_calculator_bg.wasm` exista y tenga tamaño >0.
-2. **Path Audit**: Confirma que `RouteCalculator.astro` importa desde `/wasm/...`.
-3. **Recompilar**: Ejecuta `node scripts/build-wasm.mjs`.
-4. **Logs del navegador**: Revisa la consola para errores de WebAssembly.
-
-### 🔵 Capa 3: Error en Frontend (Presentación)
-1. **CSS Audit**: Revisa que los componentes usen clases compatibles con Dark Mode (ej. `dark:text-slate-100`).
-2. **Z-Index**: La barra de navegación (`z-50`) no debe cubrir el contenido (`pb-24` en `MainLayout`).
-3. **PWA**: Verifica que el Service Worker esté registrado en `src/pages/_offline.astro`.
-
-### 🟢 Capa 4: Error en IndexedDB (Persistencia)
-1. **Console DB**: Revisa errores en la consola del navegador relacionados con `db.ts`.
-2. **Migración localStorage**: Verifica que la migración automática desde localStorage funcione.
-3. **Storage quota**: Asegúrate de que el navegador tenga espacio disponible para IndexedDB.
-
-### ⚡ Comandos de Diagnóstico Rápido
 ```bash
-# Verificar estructura de datos
-python3 -c "import json; print(json.load(open('public/data/master_routes.json')).keys())"
-
-# Verificar compilación WASM
-ls -la public/wasm/route-calculator/
-
-# Verificar stores de persistencia
-ls -la src/lib/
+pnpm install          # Instalar dependencias
+pnpm dev              # Servidor local (localhost:4321)
+pnpm build            # Build de producción
+pnpm preview          # Preview del build
+pnpm lint             # ESLint
+pnpm test             # Vitest
 ```
 
 ---
 
-## 📦 Comandos de Desarrollo
+## Variables de entorno
 
-1. **Instalar dependencias**:
-   ```bash
-   pnpm install
-   ```
+Copia `.env.example` a `.env` y ajusta:
 
-2. **Datos Maestros**:
-   Los datos se encuentran en `public/data/master_routes.json` y se pueden modificar directamente.
+```bash
+cp .env.example .env
+```
 
-3. **Compilar Motor WASM**:
-   ```bash
-   node scripts/build-wasm.mjs
-   ```
+| Variable | Descripción | Requerida |
+|----------|-------------|-----------|
+| `NODE_VERSION` | Versión de Node para Render (`20.10.0`) | Sí |
 
-4. **Iniciar Servidor Local**:
-   ```bash
-   pnpm run dev
-   ```
+No hay claves de API requeridas para desarrollo local.
 
 ---
 
-## 👤 Créditos
+## Despliegue en Render
 
-**Julián Alexander Juárez Alvarado**
-_Lead Architect & Full Stack Data Engineer_
+Ver [`DEPLOY.md`](./DEPLOY.md) para instrucciones completas.
 
-> "La eficiencia no es un lujo técnico, es un imperativo moral."
+TL;DR:
+1. Crear **Web Service** en Render (NO Static Site)
+2. Build command: `pnpm run build`
+3. Start command: `node ./dist/server/entry.mjs`
+4. `NODE_VERSION=20.10.0`
+
+---
+
+## Hoja de ruta
+
+- [x] **P1** — Rebrand + UI/UX completo (6 páginas delivery)
+- [x] **P2** — Limpieza legacy + documentación
+- [ ] **P3** — Backend Rust/PostgreSQL en Render (sync de paradas)
+- [ ] **P4** — Geocodificación Nominatim OSM (captura por texto)
+- [ ] **P5** — Auth OTP + monetización (plan pro)
+
+---
+
+## Autor
+
+**Sistemas Cancún Jefe AI**
+Fork productivo de [MueveCancun](https://github.com/JULIANJUAREZMX01/MueveCancun), reorientado a repartidores independientes de Cancún y zona metropolitana.
