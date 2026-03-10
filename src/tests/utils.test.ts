@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { escapeHtml, safeJsonStringify, getDistance, truncateText, readingTime } from '../utils/utils';
-import { escapeHtml, safeJsonStringify, getDistance, truncateText, safeUrl } from '../utils/utils';
+import { escapeHtml, safeJsonStringify, getDistance, truncateText, readingTime, safeUrl, cn } from '../utils/utils';
 
 describe('escapeHtml Utility', () => {
   it('should escape HTML characters in strings', () => {
@@ -182,6 +181,8 @@ describe('readingTime Utility', () => {
     // 99 words -> 99/200 + 1 = 1.495 -> toFixed() -> "1"
     const text2 = new Array(99).fill('word').join(' ');
     expect(readingTime(text2)).toBe('1 min read');
+  });
+});
 
   });
 });
