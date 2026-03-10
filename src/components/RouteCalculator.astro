@@ -192,6 +192,20 @@ const ui = uiTranslations[currentLang];
 
 
   // Helpers
+  function updateResultsHeader(countText, timeText = '', showTimeBadge = false) {
+      const countLabel = document.getElementById('results-count-label');
+      const timeBadge = document.getElementById('results-time-badge');
+
+      if (countLabel) countLabel.textContent = countText;
+      if (timeBadge) {
+          timeBadge.textContent = timeText;
+          if (showTimeBadge) {
+              timeBadge.classList.remove('hidden');
+          } else {
+              timeBadge.classList.add('hidden');
+          }
+      }
+  }
 
 
   // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
@@ -852,10 +866,7 @@ const ui = uiTranslations[currentLang];
           btnText?.classList.add('hidden');
           
           // Clear previous results badges
-          const countLabel = document.getElementById('results-count-label');
-          if (countLabel) countLabel.textContent = '';
-          const timeBadge = document.getElementById('results-time-badge');
-          if (timeBadge) timeBadge.textContent = '';
+          updateResultsHeader('', '', false);
 
 
           if (resultsContainer) resultsContainer.innerHTML = '';
@@ -890,30 +901,19 @@ const ui = uiTranslations[currentLang];
                   // Prepare UI Data
                  const optionsLabel = ui['calc.results.options'] || 'OPCIONES';
                  const fastestLabel = ui['calc.results.fastest'] || 'MÁS RÁPIDA';
+
                  const countText = `${normalized.length} ${optionsLabel}`;
                  let timeText = '';
                  let showTimeBadge = false;
 
                  if (best) {
-                     let duration = best.duration_minutes || 0;
+                     const duration = best.duration_minutes ?? 0;
                      timeText = `${fastestLabel}: ${duration}min`;
                      showTimeBadge = true;
                  }
 
                  // ATOMIC DOM UPDATE
-                 const countLabel = document.getElementById('results-count-label');
-                 const timeBadge = document.getElementById('results-time-badge');
-                 
-                 if (countLabel) countLabel.textContent = countText;
-                 
-                 if (timeBadge) {
-                     timeBadge.textContent = timeText;
-                     if (showTimeBadge) {
-                         timeBadge.classList.remove('hidden');
-                     } else {
-                         timeBadge.classList.add('hidden');
-                     }
-                 }
+                 updateResultsHeader(countText, timeText, showTimeBadge);
 
                  // Show Info Bar NOW
                  document.getElementById('results-info')?.classList.remove('hidden');
