@@ -13,10 +13,15 @@
     }
   },
   "scripts": {
+    "merge-routes": "node scripts/merge-routes.mjs",
     "optimize-json": "node scripts/optimize-json.mjs",
-    "dev": "pnpm run optimize-json && astro dev",
-    "dev:network": "pnpm run optimize-json && astro dev --host",
-    "build": "pnpm optimize-json && node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
+    "validate-routes": "node scripts/validate-routes.mjs",
+    "geocode-stops": "node scripts/geocode-stops.mjs --dry-run",
+    "geocode-stops:run": "node scripts/geocode-stops.mjs",
+    "prepare-data": "node scripts/merge-routes.mjs && node scripts/optimize-json.mjs",
+    "dev": "pnpm run prepare-data && astro dev",
+    "dev:network": "pnpm run prepare-data && astro dev --host",
+    "build": "pnpm prepare-data && node scripts/validate-routes.mjs && node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
     "build:wasm": "node scripts/build-wasm.mjs",
     "astro": "astro",
     "lint": "eslint .",
@@ -27,7 +32,6 @@
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
     "@astrojs/rss": "^4.0.5",
-    "@astrojs/sitemap": "^3.2.1",
     "@astrojs/tailwind": "^5.1.0",
     "@tailwindcss/typography": "^0.5.10",
     "@types/node": "^24.10.1",
