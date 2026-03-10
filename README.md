@@ -8,6 +8,8 @@
 | :--- | :--- |
 | 🚌 App en producción | [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com) |
 | 📦 Repositorio principal | [github.com/JULIANJUAREZMX01/MueveCancun](https://github.com/JULIANJUAREZMX01/MueveCancun) |
+| 🗺️ Roadmap | [ROADMAP.md](./ROADMAP.md) |
+| 📊 Estado del proyecto | [docs/PROJECT_STATUS.md](./docs/PROJECT_STATUS.md) |
 | 🚚 MueveRepartoEnCancún (app) | [mueverepartoencancun.onrender.com](https://mueverepartoencancun.onrender.com) |
 | 📦 MueveRepartoEnCancún (repo) | [github.com/JULIANJUAREZMX01/MueveRepartoEnCancun-](https://github.com/JULIANJUAREZMX01/MueveRepartoEnCancun-) |
 | 👤 Portfolio del autor | [portfolio-jaja-dev.onrender.com/portfolio](https://portfolio-jaja-dev.onrender.com/portfolio) |
