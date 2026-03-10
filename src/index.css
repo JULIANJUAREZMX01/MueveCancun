@@ -505,6 +505,10 @@
 }
 
 /* ── CSS Spinner ── */
+.spinner.hidden {
+  display: none;
+}
+
 .spinner {
   display: inline-block;
   width: 1.25rem;
