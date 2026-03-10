@@ -234,6 +234,15 @@ const ui = uiTranslations[currentLang];
               const paradas = leg.paradas || [];
               const firstStop = paradas.length > 0 ? paradas[0] : null;
               const lastStop = paradas.length > 0 ? paradas[paradas.length - 1] : null;
+              // Normalize paradas to always have a `name` field (WASM uses `nombre`)
+              // Explicitly map known fields to avoid propagating unexpected data
+              const normalizedParadas = paradas.map(p => ({
+                  nombre: p.nombre || p.name || '',
+                  name: p.nombre || p.name || '',
+                  lat: p.lat ?? 0,
+                  lng: p.lng ?? 0,
+                  orden: p.orden ?? 0,
+              }));
               return {
                   ...leg,
                   name: leg.name || leg.nombre || '',
@@ -245,8 +254,9 @@ const ui = uiTranslations[currentLang];
                   badges: leg.badges || [],
                   origin_hub: leg.origin_hub || firstStop?.nombre || '',
                   dest_hub: leg.dest_hub || lastStop?.nombre || '',
-                  stops: leg.stops || (paradas.length > 0 ? paradas.map(p => p.nombre || p.name) : []),
-                  paradas: paradas,
+                  // Keep stops as objects with `name` field for stopsPreview and map rendering
+                  stops: normalizedParadas.length > 0 ? normalizedParadas : (leg.stops || []),
+                  paradas: normalizedParadas,
               };
           })
       };
@@ -447,7 +457,7 @@ const ui = uiTranslations[currentLang];
         const db = coordinatesStore.getDB();
         
         if (db) {
-            finder = new CoordinateFinder(db);
+            finder = new CoordinateFinder(db, coordinatesStore.getOriginalNames());
             console.log("Coordinate Finder Ready");
 
             // Setup Autocomplete

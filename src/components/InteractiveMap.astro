@@ -169,12 +169,14 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         map.on('click', (e) => {
             const { lat, lng } = e.latlng;
 
-            // Use Store for Spatial Search
+            // Use Store for Spatial Search (returns original-cased name)
             const nearest = coordinatesStore.findNearest(lat, lng);
             let minDist = Infinity;
 
-            if (nearest && coordinatesDB instanceof Map && coordinatesDB.has(nearest)) {
-                 const coords = coordinatesDB.get(nearest);
+            if (nearest && coordinatesDB instanceof Map) {
+                 // coordinatesDB keys are lowercase; normalize to match
+                 const nearestKey = nearest.toLowerCase().trim();
+                 const coords = coordinatesDB.get(nearestKey);
                  if (coords) {
                      minDist = e.latlng.distanceTo(window.L.latLng(coords[0], coords[1]));
                  }
@@ -235,8 +237,10 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         if (allStops.length > 150) {
                 console.warn(`[Map] Too many stops (${allStops.length}) to render safely. Showing optimized view.`);
         } else {
-            allStops.forEach(([name, coords]) => {
-                const isRoute = name.toLowerCase().includes('ruta');
+            allStops.forEach(([key, coords]) => {
+                // Use original-cased name for display; key is lowercase
+                const displayName = coordinatesStore.getOriginalName(key) || key;
+                const isRoute = displayName.toLowerCase().includes('ruta');
 
                 // Premium Marker Styling
                 const marker = window.L.circleMarker(coords, {
@@ -248,9 +252,9 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
                     fillOpacity: 0.9
                 }).bindPopup(`
                     <div class="p-1">
-                        <p class="font-black text-slate-900">${escapeHtml(name)}</p>
+                        <p class="font-black text-slate-900">${escapeHtml(displayName)}</p>
                         <p class="text-xxs font-bold text-slate-500 uppercase tracking-widest">${isRoute ? '🚌 Ruta de Transporte' : '📍 Parada / Punto'}</p>
-                        <button data-stop-name="${escapeHtml(name)}" class="js-view-details-btn mt-2 w-full text-xxs bg-slate-900 text-white rounded-lg py-1.5 font-black uppercase">Ver Rutas</button>
+                        <button data-stop-name="${escapeHtml(displayName)}" class="js-view-details-btn mt-2 w-full text-xxs bg-slate-900 text-white rounded-lg py-1.5 font-black uppercase">Ver Rutas</button>
                     </div>
                 `);
                 newLayers.push(marker);

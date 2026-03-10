@@ -150,7 +150,8 @@ export function drawRoute(
             stopNames.forEach(name => {
                 let coords: [number, number] | undefined;
                 if (coordinatesDB instanceof Map) {
-                    coords = coordinatesDB.get(name);
+                    // Try exact key first, then lowercase key (coordinatesDB keys are lowercase)
+                    coords = coordinatesDB.get(name) ?? coordinatesDB.get(name.toLowerCase().trim());
                 } else if (coordinatesDB && typeof coordinatesDB === 'object') {
                     coords = coordinatesDB[name];
                 }
