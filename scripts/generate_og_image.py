@@ -20,7 +20,7 @@ for _ in range(15):
 # Draw text
 try:
     font = ImageFont.truetype("arial.ttf", 60)
-except IOError:
+except:
     font = ImageFont.load_default()
 
 text = "MueveCancún"
