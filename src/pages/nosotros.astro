@@ -1,0 +1,276 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Nosotros">
+  <div class="nosotros-container">
+    <header class="nosotros-header">
+      <h1 class="nosotros-title">Mueve<span class="text-primary">Reparto</span></h1>
+      <p class="nosotros-subtitle">La Verdad de la Calle</p>
+    </header>
+
+    <div class="nosotros-content">
+      <section class="nosotros-section">
+        <h2>¿Qué es Mueve Reparto?</h2>
+        <p>
+          <strong>Mueve Reparto</strong> es una PWA (Progressive Web App) offline-first diseñada específicamente para repartidores independientes en Cancún y zonas metropolitanas similares. Es una herramienta ligera, rápida y que vive en tu teléfono como una aplicación nativa, pero sin depender de una conexión a internet activa para funcionar.
+        </p>
+      </section>
+
+      <section class="nosotros-section">
+        <h2>El Problema y Nuestro Propósito</h2>
+        <p>
+          Las aplicaciones empresariales modernas (como Rappi, UberEats, o plataformas logísticas corporativas) están construidas para flotas controladas. Tienen supervisores, asignaciones obligatorias y rastreo continuo.
+        </p>
+        <p>
+          ¿Pero qué hay del repartidor independiente? Aquel que trabaja por su cuenta, que organiza sus propios paquetes y no tiene un "jefe" monitoreándolo en un mapa. Este sector ha sido olvidado. Su estándar tecnológico sigue siendo <strong>papel, pluma y mensajes de WhatsApp</strong>.
+        </p>
+        <p>
+          <strong>¿Por qué y para qué?</strong> Mueve Reparto nace para llenar ese vacío. Le da poder tecnológico al repartidor independiente. Permite organizar paradas, trazar rutas óptimas, notificar a los clientes y medir la productividad diaria, todo desde una interfaz diseñada para ser usada con una sola mano, bajo el sol, en medio del tráfico.
+        </p>
+      </section>
+
+      <section class="nosotros-section">
+        <h2>Historia y Creación</h2>
+        <p>
+          Mueve Reparto es la evolución natural y un <em>fork</em> productivo del proyecto original <a href="https://github.com/JULIANJUAREZMX01/MueveCancun" target="_blank" rel="noopener noreferrer">MueveCancun</a> (enfocado originalmente en transporte público, ahora disponible en <a href="https://querutamellevacancun.onrender.com/home" target="_blank" rel="noopener noreferrer">QueRutaMeLlevaCancun</a>).
+        </p>
+        <p>
+          Al observar cómo los usuarios de MueveCancun utilizaban la herramienta para la logística diaria en la ciudad, el equipo de <strong>Sistemas Cancún Jefe AI</strong> decidió crear una variante especializada: <strong>Nexus Prime v3.2</strong>, bautizada como Mueve Reparto.
+        </p>
+      </section>
+
+      <section class="nosotros-section">
+        <h2>Filosofía</h2>
+        <ul class="nosotros-list">
+          <li><strong>Hecho para el que trabaja solo:</strong> Sin flotillas, sin supervisores.</li>
+          <li><strong>Offline-First:</strong> La calle no tiene Wi-Fi confiable. Mueve Reparto guarda todo en tu teléfono (IndexedDB) y funciona sin internet.</li>
+          <li><strong>Privacidad Total:</strong> Tus paradas, tus clientes y tus rutas se quedan en tu dispositivo. No hay bases de datos corporativas espiando tu día a día.</li>
+          <li><strong>Fricción Cero:</strong> Sin registros engorrosos, sin tutoriales interminables. Entras y empiezas a repartir.</li>
+        </ul>
+      </section>
+
+      <section class="nosotros-section">
+        <h2>¿Cómo Funciona?</h2>
+        <ol class="nosotros-list-numbered">
+          <li><strong>Captura:</strong> Agregas tus paradas del día.</li>
+          <li><strong>Optimización:</strong> El motor integrado calcula la ruta más corta (Nearest-Neighbor).</li>
+          <li><strong>Navegación:</strong> Abres la ruta en mapas con modo oscuro (Leaflet + OpenStreetMap) con GPS activo.</li>
+          <li><strong>Notificación:</strong> Con un tap, envías un mensaje pre-armado por WhatsApp o Telegram al cliente avisando que estás en camino.</li>
+          <li><strong>Análisis:</strong> Terminas tu día y revisas tu ROI (Retorno de Inversión) y productividad en la pestaña de métricas.</li>
+        </ol>
+      </section>
+
+      <section class="nosotros-section">
+        <h2>Stack Tecnológico</h2>
+        <p>Mueve Reparto es una bestia de rendimiento construida con tecnologías de punta:</p>
+        <ul class="nosotros-list tech-list">
+          <li><span class="tech-badge">Astro 5 (SSR)</span> Framework principal para velocidad extrema.</li>
+          <li><span class="tech-badge">Tailwind CSS v4</span> Para un diseño responsivo, <em>Sunny Mode</em> y <em>Dark Mode</em> nativo.</li>
+          <li><span class="tech-badge">IndexedDB (idb)</span> Base de datos en el navegador para persistencia offline.</li>
+          <li><span class="tech-badge">Rust + WebAssembly</span> Para cálculos matemáticos pesados (optimización de rutas) de forma local.</li>
+          <li><span class="tech-badge">Leaflet + Mapbox/OSM</span> Mapas interactivos optimizados para bajo consumo de batería.</li>
+          <li><span class="tech-badge">Render</span> Despliegue en la nube con Node.js.</li>
+        </ul>
+      </section>
+
+      <section class="nosotros-section links-section">
+        <h2>Enlaces de Interés</h2>
+        <div class="links-grid">
+          <a href="https://mueverepartoencancun.onrender.com/home" target="_blank" rel="noopener noreferrer" class="link-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="link-icon"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            <span>Mueve Reparto (App)</span>
+          </a>
+          <a href="https://querutamellevacancun.onrender.com/home" target="_blank" rel="noopener noreferrer" class="link-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="link-icon"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            <span>Mueve Cancun (Rutas)</span>
+          </a>
+          <a href="https://github.com/sistemascancunjefe-ai/MueveRepartoEnCancun-" target="_blank" rel="noopener noreferrer" class="link-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="link-icon"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            <span>GitHub Mueve Reparto</span>
+          </a>
+          <a href="https://github.com/JULIANJUAREZMX01/MueveCancun" target="_blank" rel="noopener noreferrer" class="link-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="link-icon"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            <span>GitHub Mueve Cancun</span>
+          </a>
+        </div>
+      </section>
+
+      <div class="back-btn-container">
+        <a href="/home" class="btn-primary w-full text-center" style="display:block; padding: 0.875rem;">
+          Volver al Inicio
+        </a>
+      </div>
+    </div>
+  </div>
+</MainLayout>
+
+<style>
+  .nosotros-container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .nosotros-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .nosotros-title {
+    font-size: 2.25rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin: 0 0 0.5rem;
+  }
+
+  .text-primary {
+    color: var(--color-primary);
+  }
+
+  .nosotros-subtitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0;
+  }
+
+  .nosotros-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .nosotros-section h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.75rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nosotros-section h2::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 18px;
+    background: var(--color-primary);
+    border-radius: 2px;
+  }
+
+  .nosotros-section p {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0 0 1rem;
+  }
+
+  .nosotros-section p:last-child {
+    margin-bottom: 0;
+  }
+
+  .nosotros-section a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .nosotros-section strong {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+
+  .nosotros-list, .nosotros-list-numbered {
+    margin: 0;
+    padding-left: 1.25rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  .nosotros-list li, .nosotros-list-numbered li {
+    margin-bottom: 0.75rem;
+  }
+
+  .nosotros-list li:last-child, .nosotros-list-numbered li:last-child {
+    margin-bottom: 0;
+  }
+
+  .nosotros-list li::marker {
+    color: var(--color-primary);
+  }
+
+  .tech-list {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .tech-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-direction: column;
+  }
+
+  .tech-badge {
+    display: inline-block;
+    background: rgba(0, 232, 162, 0.12);
+    color: var(--color-primary);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid rgba(0, 232, 162, 0.2);
+  }
+
+  .links-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .link-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    text-decoration: none !important;
+    color: var(--text-primary) !important;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    transition: all var(--transition-fast);
+  }
+
+  .link-card:hover {
+    border-color: var(--color-primary);
+    background: var(--surface-elevated);
+  }
+
+  .link-card:active {
+    transform: scale(0.98);
+  }
+
+  .link-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--color-primary);
+  }
+
+  .back-btn-container {
+    margin-top: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-light);
+  }
+</style>
