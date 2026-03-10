@@ -44,7 +44,7 @@ MueveCancun/
 │   ├── manifest.json            # PWA manifest
 │   └── vendor/leaflet/          # Librería de mapas (bundled)
 ├── rust-wasm/
-│   ├── route-calculator/src/lib.rs  # Motor de ruteo WASM (~1 200 LOC)
+│   ├── route-calculator/src/lib.rs  # Motor de ruteo WASM (~900 LOC)
 │   └── shared-types/src/lib.rs      # Tipos compartidos Rust
 ├── scripts/                     # 11 scripts de build y validación
 ├── src/
