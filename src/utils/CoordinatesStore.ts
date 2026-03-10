@@ -21,6 +21,8 @@ export class CoordinatesStore {
     // or "constructor" could overwrite JS prototype chain methods,
     // potentially leading to DoS or bypassing logic checks.
     private db: Map<string, [number, number]> | null = null;
+    // Maps lowercase key → original-cased stop name for display
+    private originalNames: Map<string, string> = new Map();
     private spatialIndex: SpatialHash<string> | null = null;
     private loadingPromise: Promise<{ text: string, data: any }> | null = null;
     private allPoints: Coordinate[] = [];
@@ -58,15 +60,18 @@ export class CoordinatesStore {
                 }
 
                 this.db = new Map<string, [number, number]>();
+                this.originalNames = new Map<string, string>();
                 this.spatialIndex = new SpatialHash<string>(); // Initialize SpatialHash
                 this.allPoints = []; // Clear on re-init to prevent duplicates
                 
                 if (data.rutas) {
                     data.rutas.forEach((route: RouteData) => {
                         route.paradas.forEach(stop => {
-                            // Normalize Key
+                            // Normalize Key (lowercase for case-insensitive lookup)
                             const key = stop.nombre.toLowerCase().trim();
                             if (this.db) this.db.set(key, [stop.lat, stop.lng]);
+                            // Preserve original casing for display
+                            this.originalNames.set(key, stop.nombre.trim());
                         });
                     });
                 }
@@ -100,6 +105,16 @@ export class CoordinatesStore {
         return this.db;
     }
 
+    /** Returns the original-cased stop name for a given key (lowercase lookup). */
+    getOriginalName(key: string): string | undefined {
+        return this.originalNames.get(key.toLowerCase().trim());
+    }
+
+    /** Returns the full map of lowercase key → original-cased name. */
+    getOriginalNames(): Map<string, string> {
+        return this.originalNames;
+    }
+
     findNearest(lat: number, lng: number): string | null {
         if (!this.db) return null;
 
@@ -130,7 +145,8 @@ export class CoordinatesStore {
             }
         }
 
-        return nearest;
+        // Return original-cased name for display (nearest is a lowercase key)
+        return nearest ? (this.originalNames.get(nearest) || nearest) : null;
     }
 }
 
