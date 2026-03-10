@@ -132,10 +132,12 @@ const ui = uiTranslations[currentLang];
                 <span class="badge-success font-mono" id="results-time-badge" aria-live="polite"></span>
             </div>
             
-            <button id="toggle-list-btn" class="chip" aria-label="Toggle results list">
-                <span class="text-xs font-bold" id="toggle-list-text" data-i18n="calc.toggle.hide">Hide</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" id="toggle-list-icon" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
-            </button>
+            <label for="results-toggle" class="chip cursor-pointer" aria-label="Toggle results list">
+                <input type="checkbox" id="results-toggle" class="sr-only" checked />
+                <span class="text-xs font-bold toggle-hide-text" data-i18n="calc.toggle.hide">Hide</span>
+                <span class="text-xs font-bold toggle-show-text hidden" data-i18n="calc.toggle.show">Show</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="toggle-icon transition-transform duration-300" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+            </label>
         </div>
     </div>
     <div id="best-result-area" class="mb-6 space-y-4 empty:hidden">
@@ -182,7 +184,18 @@ const ui = uiTranslations[currentLang];
 
 
   // Helpers
-
+  function getTransportLabel(type) {
+      if (typeof ui !== 'undefined' && ui[`transport.${type}`]) {
+          return ui[`transport.${type}`];
+      }
+      const labels = {
+          'Bus_Urbano': 'Bus',
+          'Colectivo': 'Colectivo',
+          'Ferry': 'Ferry',
+          'Autobus_Foraneo': 'ADO'
+      };
+      return labels[type] || type || 'Transport';
+  }
 
   // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
   if (typeof document !== 'undefined') {
@@ -776,29 +789,6 @@ const ui = uiTranslations[currentLang];
           });
       });
 
-      // Toggle Results List
-      const toggleBtn = document.getElementById('toggle-list-btn');
-      if (toggleBtn) {
-          toggleBtn.addEventListener('click', () => {
-              const resultsContainer = document.getElementById('results-container');
-              const bestResultArea = document.getElementById('best-result-area');
-              const toggleText = document.getElementById('toggle-list-text');
-              const toggleIcon = document.getElementById('toggle-list-icon');
-              const isHidden = resultsContainer?.classList.contains('hidden');
-
-              if (isHidden) {
-                  resultsContainer?.classList.remove('hidden');
-                  bestResultArea?.classList.remove('hidden');
-                  if (toggleText) toggleText.textContent = ui['calc.toggle.hide'] || 'Hide';
-                  if (toggleIcon) toggleIcon.style.transform = '';
-              } else {
-                  resultsContainer?.classList.add('hidden');
-                  bestResultArea?.classList.add('hidden');
-                  if (toggleText) toggleText.textContent = ui['calc.toggle.show'] || 'Show';
-                  if (toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
-              }
-          });
-      }
 
       // Map Picker Button
       const mapPickerBtn = document.getElementById('map-picker-btn');
@@ -1109,6 +1099,24 @@ const ui = uiTranslations[currentLang];
   @keyframes gw-fade-out {
     from { opacity: 1; }
     to { opacity: 0; }
+  }
+
+  /* GraffitiWarrior: Native CSS Toggle Logic */
+  .calculator-wrapper:has(#results-toggle:not(:checked)) #best-result-area,
+  .calculator-wrapper:has(#results-toggle:not(:checked)) #results-container {
+      display: none;
+  }
+
+  .calculator-wrapper:has(#results-toggle:not(:checked)) .toggle-hide-text {
+      display: none;
+  }
+
+  .calculator-wrapper:has(#results-toggle:not(:checked)) .toggle-show-text {
+      display: inline;
+  }
+
+  .calculator-wrapper:has(#results-toggle:not(:checked)) .toggle-icon {
+      transform: rotate(180deg);
   }
 </style>
 
