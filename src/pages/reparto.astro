@@ -76,7 +76,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
 
 <script>
-  import { getStops, dbPut, STORES } from '../lib/idb';
+  import { getStops, dbPut, dbPutMany, STORES } from '../lib/idb';
   import type { Stop } from '../lib/idb';
 
   let map: any = null;
@@ -351,10 +351,8 @@ import MainLayout from '../layouts/MainLayout.astro';
       unvisited.splice(unvisited.indexOf(nearest), 1);
     }
 
-    // Save new order
-    for (let i = 0; i < ordered.length; i++) {
-      await dbPut(STORES.STOPS, { ...ordered[i], order: i });
-    }
+    // Save new order in batch
+    await dbPutMany(STORES.STOPS, ordered.map((s, i) => ({ ...s, order: i })));
 
     const L = (window as any).L;
     if (L) await renderStopMarkers(L);

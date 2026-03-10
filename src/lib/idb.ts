@@ -109,6 +109,18 @@ export async function dbPut<T>(store: string, value: T): Promise<void> {
   });
 }
 
+export async function dbPutMany<T>(store: string, values: T[]): Promise<void> {
+  if (values.length === 0) return;
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    const os = tx.objectStore(store);
+    values.forEach(v => os.put(v));
+    tx.oncomplete = () => resolve();
+    tx.onerror    = () => reject(tx.error);
+  });
+}
+
 export async function dbGet<T>(store: string, key: string): Promise<T | undefined> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
