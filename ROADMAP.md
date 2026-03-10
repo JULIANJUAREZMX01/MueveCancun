@@ -24,7 +24,7 @@ El núcleo funcional está terminado y desplegado:
 **Estimado:** 2–3 semanas
 
 ### Tareas
-- [ ] Poblar `public/data/master_routes.json` con rutas reales de Cancún (actualmente vacío).
+- [ ] Completar y depurar `public/data/master_routes.json` con rutas reales de Cancún (actualmente contiene un catálogo parcial en la clave `rutas`, con datos incompletos).
 - [ ] Agregar coordenadas (`lat`/`lng`) a todas las paradas del catálogo.
 - [ ] Ejecutar `node scripts/validate-routes.mjs` y corregir todos los errores.
 - [ ] Ejecutar `node scripts/optimize-json.mjs` para regenerar la versión optimizada.
