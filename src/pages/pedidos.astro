@@ -60,6 +60,7 @@ import MainLayout from '../layouts/MainLayout.astro';
   <div class="mode-tabs" role="group" aria-label="Modo de captura">
     <button class="mode-tab active" data-mode="text"   aria-pressed="true">Texto</button>
     <button class="mode-tab"        data-mode="coords" aria-pressed="false">Coords</button>
+    <button class="mode-tab"        data-mode="ocr"    aria-pressed="false">OCR</button>
     <button class="mode-tab"        data-mode="link"   aria-pressed="false">Link</button>
     <button class="mode-tab"        data-mode="qr"     aria-pressed="false">QR</button>
   </div>
@@ -89,6 +90,48 @@ import MainLayout from '../layouts/MainLayout.astro';
       Usar mi ubicación
     </button>
     <input id="input-address-from-coords" type="hidden" />
+  </div>
+
+  <!-- OCR mode -->
+  <div id="mode-ocr" class="mode-panel" style="display:none;">
+    <div style="background:var(--surface-elevated);border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:1rem;text-align:center;">
+      <p style="font-size:0.875rem;font-weight:600;color:var(--text-secondary);margin-bottom:0.5rem;">Escanear Captura de Pantalla</p>
+
+      <div style="margin-bottom:1rem;">
+        <input type="file" id="ocr-input-file" accept="image/*" capture="environment" style="display:none;" />
+        <button id="btn-ocr-take-photo" class="btn-secondary btn-md" style="margin:0 auto; display:flex; gap:0.5rem; align-items:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h3l2-2h6l2 2h3c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm8 3c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z"/></svg>
+          Seleccionar o Tomar Foto
+        </button>
+      </div>
+
+      <div id="ocr-preview-container" style="display:none; margin-bottom:1rem;">
+        <img id="ocr-preview-img" src="" alt="Preview" style="max-width:100%; max-height:200px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);" />
+      </div>
+
+      <button id="btn-ocr-extract" class="btn-primary btn-sm" style="margin:0 auto; display:none;">
+        Extraer dirección
+      </button>
+
+      <div id="ocr-progress-container" style="display:none; margin-top:1rem;">
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.25rem;">
+          <span id="ocr-progress-status">Inicializando...</span>
+          <span id="ocr-progress-percentage">0%</span>
+        </div>
+        <div style="width:100%; background:var(--surface-input); height:6px; border-radius:3px; overflow:hidden;">
+          <div id="ocr-progress-bar" style="width:0%; height:100%; background:var(--color-primary); transition:width 0.2s;"></div>
+        </div>
+      </div>
+
+      <div id="ocr-result-container" style="display:none; margin-top:1rem; text-align:left;">
+        <label class="field-label">Texto Extraído</label>
+        <textarea id="ocr-textarea-result" class="input" rows="3" style="resize:vertical; border-radius:var(--radius-md); font-size:0.8125rem; font-family:monospace; margin-bottom:0.5rem;"></textarea>
+        <button id="btn-ocr-use-address" class="btn-secondary btn-sm" style="width:100%;">
+          Usar esta dirección
+        </button>
+      </div>
+
+    </div>
   </div>
 
   <!-- Link mode -->
@@ -161,7 +204,7 @@ import MainLayout from '../layouts/MainLayout.astro';
   import { dbPut, dbDelete, dbGetAll, getStops, completeStop, generateId, STORES } from '../lib/idb';
   import { escapeHtml } from '../utils/utils';
   import type { Stop } from '../lib/idb';
-  import { escapeHtml } from '../utils/utils';
+
 
 
   let currentFilter = 'all';
@@ -480,6 +523,10 @@ import MainLayout from '../layouts/MainLayout.astro';
   }
 
   function closeAddSheet() {
+
+    if (currentMode === 'ocr') {
+      cleanupOcr();
+    }
     document.getElementById('add-overlay')!.classList.remove('open');
     document.getElementById('add-sheet')!.classList.remove('open');
     document.getElementById('add-overlay')!.setAttribute('aria-hidden', 'true');
@@ -689,17 +736,116 @@ import MainLayout from '../layouts/MainLayout.astro';
 
   // ── Mode tabs ──
   function switchMode(mode: string) {
+
+    if (currentMode === 'ocr' && mode !== 'ocr') {
+      cleanupOcr();
+    }
     currentMode = mode;
     document.querySelectorAll('.mode-tab').forEach(t => {
       t.classList.toggle('active', (t as HTMLElement).dataset.mode === mode);
       (t as HTMLButtonElement).setAttribute('aria-pressed', String((t as HTMLElement).dataset.mode === mode));
     });
-    ['text','coords','link','qr'].forEach(m => {
+    ['text','coords','ocr','link','qr'].forEach(m => {
       const panel = document.getElementById(`mode-${m}`)!;
       panel.style.display = m === mode ? 'block' : 'none';
     });
     updateSaveBtn();
   }
+
+
+  // ── OCR Logic ──
+  let tesseractWorker: any = null;
+
+  async function destroyOcrWorker() {
+    if (tesseractWorker) {
+      await tesseractWorker.terminate();
+      tesseractWorker = null;
+    }
+  }
+
+  async function extractOcrText() {
+    const fileInput = document.getElementById('ocr-input-file') as HTMLInputElement;
+    const file = fileInput?.files?.[0];
+    if (!file) return;
+
+    const btnExtract = document.getElementById('btn-ocr-extract') as HTMLButtonElement;
+    const progressContainer = document.getElementById('ocr-progress-container')!;
+    const statusText = document.getElementById('ocr-progress-status')!;
+    const percentageText = document.getElementById('ocr-progress-percentage')!;
+    const progressBar = document.getElementById('ocr-progress-bar')!;
+    const resultContainer = document.getElementById('ocr-result-container')!;
+    const textareaResult = document.getElementById('ocr-textarea-result') as HTMLTextAreaElement;
+
+    // UI state
+    btnExtract.disabled = true;
+    progressContainer.style.display = 'block';
+    resultContainer.style.display = 'none';
+    progressBar.style.width = '0%';
+    statusText.textContent = 'Cargando motor OCR...';
+    percentageText.textContent = '0%';
+
+    try {
+      // Lazy load tesseract.js to avoid main bundle bloat
+      const Tesseract = await import('tesseract.js');
+
+      statusText.textContent = 'Inicializando...';
+
+      tesseractWorker = await Tesseract.createWorker('spa', 1, {
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            statusText.textContent = 'Analizando imagen...';
+            const pct = Math.round(m.progress * 100);
+            percentageText.textContent = `${pct}%`;
+            progressBar.style.width = `${pct}%`;
+          } else if (m.status === 'loading language traineddata') {
+             statusText.textContent = 'Cargando datos de idioma...';
+             const pct = Math.round(m.progress * 100);
+             percentageText.textContent = `${pct}%`;
+             progressBar.style.width = `${pct}%`;
+          } else if (m.status === 'initializing api') {
+             statusText.textContent = 'Inicializando API...';
+          } else {
+             statusText.textContent = m.status;
+          }
+        }
+      });
+
+      const { data: { text } } = await tesseractWorker.recognize(file);
+
+      await destroyOcrWorker();
+
+      textareaResult.value = text.trim();
+      progressContainer.style.display = 'none';
+      resultContainer.style.display = 'block';
+
+    } catch (err) {
+      console.error('OCR Error:', err);
+      statusText.textContent = 'Error al extraer texto';
+      progressBar.style.background = 'var(--color-accent)';
+      await destroyOcrWorker();
+
+      // Try fallback to 'eng' if 'spa' fails? Usually 'spa' is fine for this context.
+    } finally {
+      btnExtract.disabled = false;
+    }
+  }
+
+
+  // Worker Cleanup Helper
+  function cleanupOcr() {
+    destroyOcrWorker();
+    const ocrInputFile = document.getElementById('ocr-input-file') as HTMLInputElement;
+    if (ocrInputFile) ocrInputFile.value = '';
+    const previewContainer = document.getElementById('ocr-preview-container');
+    if (previewContainer) previewContainer.style.display = 'none';
+    const btnExtract = document.getElementById('btn-ocr-extract');
+    if (btnExtract) btnExtract.style.display = 'none';
+    const progressContainer = document.getElementById('ocr-progress-container');
+    if (progressContainer) progressContainer.style.display = 'none';
+    const resultContainer = document.getElementById('ocr-result-container');
+    if (resultContainer) resultContainer.style.display = 'none';
+  }
+
 
   // ── Init ──
   function init() {
@@ -763,6 +909,114 @@ import MainLayout from '../layouts/MainLayout.astro';
         updateSaveBtn();
       });
     });
+
+
+    // OCR tab events
+    const ocrInputFile = document.getElementById('ocr-input-file') as HTMLInputElement;
+    const btnTakePhoto = document.getElementById('btn-ocr-take-photo');
+    const previewContainer = document.getElementById('ocr-preview-container');
+    const previewImg = document.getElementById('ocr-preview-img') as HTMLImageElement;
+    const btnExtract = document.getElementById('btn-ocr-extract');
+    const progressContainer = document.getElementById('ocr-progress-container');
+    const resultContainer = document.getElementById('ocr-result-container');
+
+    if (btnTakePhoto) {
+      btnTakePhoto.addEventListener('click', () => {
+        ocrInputFile?.click();
+      });
+    }
+
+    if (ocrInputFile) {
+      ocrInputFile.addEventListener('change', (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          if (previewImg) previewImg.src = url;
+
+          // Revoke object URL after image is loaded to avoid memory leak
+          if (previewImg) {
+              previewImg.onload = () => {
+                  URL.revokeObjectURL(previewImg.src);
+              };
+          }
+          if (previewContainer) previewContainer.style.display = 'block';
+          if (btnExtract) btnExtract.style.display = 'block';
+          if (progressContainer) progressContainer.style.display = 'none';
+          if (resultContainer) resultContainer.style.display = 'none';
+        }
+      });
+    }
+
+    if (btnExtract) {
+      btnExtract.addEventListener('click', () => {
+        extractOcrText();
+      });
+    }
+
+    const btnUseAddress = document.getElementById('btn-ocr-use-address');
+    if (btnUseAddress) {
+      btnUseAddress.addEventListener('click', () => {
+        const text = (document.getElementById('ocr-textarea-result') as HTMLTextAreaElement).value;
+        if (!text) return;
+
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+        // Extract phone number (e.g., 10 digits)
+        const phoneRegex = /(?:\+?52)?(?:\s*-)?(?:\d[\s-]?){10}/;
+        const phoneMatch = text.match(phoneRegex);
+        if (phoneMatch) {
+            const inputPhone = document.getElementById('input-client-phone') as HTMLInputElement;
+            if (inputPhone) inputPhone.value = phoneMatch[0].replace(/[\s-]/g, '').slice(-10);
+        }
+
+        // Try to identify Name and Address heuristically
+        // E.g., if line 1 has no numbers it might be the name.
+        // If line 2 has numbers and street names (Calle, Av, SM, Mz, Lt), it's the address.
+        let potentialAddress = "";
+        let potentialName = "";
+        let notes = "";
+
+        for (const line of lines) {
+           const lower = line.toLowerCase();
+           if (lower.includes('calle') || lower.includes('av') || lower.includes('sm') || lower.includes('mz') || lower.includes('lt') || lower.includes('mza') || lower.includes('lote') || lower.includes('c.')) {
+              if (potentialAddress.length > 0) potentialAddress += " " + line;
+              else potentialAddress = line;
+           } else if (line.length > 2 && line.length < 40 && !line.match(/\d{10}/) && potentialName === "") {
+              // Could be name if no address keywords and no phone number
+              potentialName = line;
+           } else {
+              if (!line.match(phoneRegex)) {
+                  notes += line + " ";
+              }
+           }
+        }
+
+        if (!potentialAddress) {
+            // If heuristics fail, just use the first non-phone line as address
+            potentialAddress = lines.find(l => !l.match(phoneRegex) && l !== potentialName) || text;
+        }
+
+        const inputAddress = document.getElementById('input-address') as HTMLTextAreaElement;
+        if (inputAddress) {
+            inputAddress.value = potentialAddress.trim();
+            // Trigger input event for validation
+            inputAddress.dispatchEvent(new Event('input'));
+        }
+
+        const inputName = document.getElementById('input-client-name') as HTMLInputElement;
+        if (inputName && potentialName) {
+            inputName.value = potentialName.trim();
+        }
+
+        const inputNote = document.getElementById('input-note') as HTMLInputElement;
+        if (inputNote && notes.trim().length > 0) {
+            inputNote.value = notes.trim().substring(0, 100);
+        }
+
+        switchMode('text');
+      });
+    }
+
 
     renderStops();
   }
