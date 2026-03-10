@@ -22,7 +22,7 @@ persistencia funciona sobre IndexedDB sin necesidad de backend.
 | PWA offline (Service Worker) | ✅ Activo |
 | Mapa interactivo Leaflet | ✅ Con popups de parada |
 | i18n Español / Inglés | ✅ Middleware Astro |
-| CI/CD (6 workflows) | ✅ test, build-wasm, validate-data, autocurative, codeql |
+| CI/CD (6 workflows) | ✅ test, build-wasm, validate-data, autocurative, claude-delegation, codeql |
 | Seguridad XSS / DoS / Prototype Pollution | ✅ Implementado |
 
 ---
