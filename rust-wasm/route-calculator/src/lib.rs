@@ -472,11 +472,11 @@ fn find_transfer_routes(
 
                         match best_transfer {
                             None => {
-                                best_transfer = Some((idx_a, is_preferred));
+                                best_transfer = Some((idx_a, is_preferred, false));
                             }
-                            Some((_, current_is_preferred)) => {
+                            Some((_, current_is_preferred, _)) => {
                                 if is_preferred && !current_is_preferred {
-                                    best_transfer = Some((idx_a, is_preferred));
+                                    best_transfer = Some((idx_a, is_preferred, false));
                                 }
                             }
                         }
@@ -484,14 +484,33 @@ fn find_transfer_routes(
                 }
             }
 
-            if let Some((idx_a, is_preferred)) = best_transfer {
+            // Pass 2: Geographic match between route_a and route_b (if no exact match found)
+            if best_transfer.is_none() {
+                'geo: for (idx_a, stop_a) in route_a.stops.iter().enumerate() {
+                    if idx_a == origin_idx_a || !stop_has_coords(stop_a) {
+                        continue;
+                    }
+                    for (idx_b, stop_b) in route_b.stops.iter().enumerate() {
+                        if idx_b == dest_idx_b || !stop_has_coords(stop_b) {
+                            continue;
+                        }
+                        if haversine_distance_m(stop_a.lat, stop_a.lng, stop_b.lat, stop_b.lng) <= GEO_TRANSFER_RADIUS_M {
+                            best_transfer = Some((idx_a, false, true));
+                            break 'geo;
+                        }
+                    }
+                }
+            }
+
+            if let Some((idx_a, is_preferred, geo_transfer)) = best_transfer {
                 if let Some(stop) = route_a.stops.get(idx_a) {
                     candidates.push(TransferCandidate {
                         route_a,
                         route_b,
-                        transfer_name: stop.name.as_str(),
+                        transfer_name: stop.name.clone(),
                         price: route_a.price + route_b.price,
                         is_preferred,
+                        geo_transfer,
                     });
                 }
             }
