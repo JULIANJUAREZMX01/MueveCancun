@@ -183,20 +183,6 @@ const ui = uiTranslations[currentLang];
   const resultsContainer = document.getElementById('results-container');
 
 
-  // Helpers
-  function getTransportLabel(type) {
-      if (typeof ui !== 'undefined' && ui[`transport.${type}`]) {
-          return ui[`transport.${type}`];
-      }
-      const labels = {
-          'Bus_Urbano': 'Bus',
-          'Colectivo': 'Colectivo',
-          'Ferry': 'Ferry',
-          'Autobus_Foraneo': 'ADO'
-      };
-      return labels[type] || type || 'Transport';
-  }
-
   // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
   if (typeof document !== 'undefined') {
       document.addEventListener('click', (e) => {
