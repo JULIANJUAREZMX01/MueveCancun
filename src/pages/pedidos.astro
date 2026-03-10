@@ -645,6 +645,8 @@ import MainLayout from '../layouts/MainLayout.astro';
 
   // ── OCR Logic ──
   let tesseractWorker: any = null;
+  let currentPreviewUrl: string | null = null;
+  let ocrRunId = 0;
 
   async function destroyOcrWorker() {
     if (tesseractWorker) {
@@ -667,10 +669,12 @@ import MainLayout from '../layouts/MainLayout.astro';
     const textareaResult = document.getElementById('ocr-textarea-result') as HTMLTextAreaElement;
 
     // UI state
+    const runId = ++ocrRunId;
     btnExtract.disabled = true;
     progressContainer.style.display = 'block';
     resultContainer.style.display = 'none';
     progressBar.style.width = '0%';
+    progressBar.style.background = '';
     statusText.textContent = 'Cargando motor OCR...';
     percentageText.textContent = '0%';
 
@@ -704,11 +708,15 @@ import MainLayout from '../layouts/MainLayout.astro';
 
       await destroyOcrWorker();
 
+      // Guard: bail out if mode was switched or cleanup ran while we were awaiting
+      if (runId !== ocrRunId) return;
+
       textareaResult.value = text.trim();
       progressContainer.style.display = 'none';
       resultContainer.style.display = 'block';
 
     } catch (err) {
+      if (runId !== ocrRunId) return;
       console.error('OCR Error:', err);
       statusText.textContent = 'Error al extraer texto';
       progressBar.style.background = 'var(--color-accent)';
@@ -723,7 +731,14 @@ import MainLayout from '../layouts/MainLayout.astro';
 
   // Worker Cleanup Helper
   function cleanupOcr() {
-    destroyOcrWorker();
+    ocrRunId++;
+    void destroyOcrWorker().catch((err) => {
+      console.error('Failed to destroy OCR worker:', err);
+    });
+    if (currentPreviewUrl) {
+      URL.revokeObjectURL(currentPreviewUrl);
+      currentPreviewUrl = null;
+    }
     const ocrInputFile = document.getElementById('ocr-input-file') as HTMLInputElement;
     if (ocrInputFile) ocrInputFile.value = '';
     const previewContainer = document.getElementById('ocr-preview-container');
@@ -732,6 +747,8 @@ import MainLayout from '../layouts/MainLayout.astro';
     if (btnExtract) btnExtract.style.display = 'none';
     const progressContainer = document.getElementById('ocr-progress-container');
     if (progressContainer) progressContainer.style.display = 'none';
+    const progressBar = document.getElementById('ocr-progress-bar');
+    if (progressBar) (progressBar as HTMLElement).style.background = '';
     const resultContainer = document.getElementById('ocr-result-container');
     if (resultContainer) resultContainer.style.display = 'none';
   }
@@ -820,14 +837,22 @@ import MainLayout from '../layouts/MainLayout.astro';
       ocrInputFile.addEventListener('change', (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
         if (file) {
+          // Revoke any previously tracked blob URL before creating a new one
+          if (currentPreviewUrl) {
+            URL.revokeObjectURL(currentPreviewUrl);
+          }
           const url = URL.createObjectURL(file);
-          if (previewImg) previewImg.src = url;
-
-          // Revoke object URL after image is loaded to avoid memory leak
+          currentPreviewUrl = url;
           if (previewImg) {
-              previewImg.onload = () => {
-                  URL.revokeObjectURL(previewImg.src);
-              };
+            previewImg.src = url;
+            previewImg.onload = () => {
+              URL.revokeObjectURL(url);
+              if (currentPreviewUrl === url) currentPreviewUrl = null;
+            };
+            previewImg.onerror = () => {
+              URL.revokeObjectURL(url);
+              if (currentPreviewUrl === url) currentPreviewUrl = null;
+            };
           }
           if (previewContainer) previewContainer.style.display = 'block';
           if (btnExtract) btnExtract.style.display = 'block';
@@ -871,7 +896,7 @@ import MainLayout from '../layouts/MainLayout.astro';
            if (lower.includes('calle') || lower.includes('av') || lower.includes('sm') || lower.includes('mz') || lower.includes('lt') || lower.includes('mza') || lower.includes('lote') || lower.includes('c.')) {
               if (potentialAddress.length > 0) potentialAddress += " " + line;
               else potentialAddress = line;
-           } else if (line.length > 2 && line.length < 40 && !line.match(/\d{10}/) && potentialName === "") {
+           } else if (line.length > 2 && line.length < 40 && !phoneRegex.test(line) && potentialName === "") {
               // Could be name if no address keywords and no phone number
               potentialName = line;
            } else {
