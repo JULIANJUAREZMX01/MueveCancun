@@ -6,6 +6,9 @@ permissions:
 permissions:
   contents: read
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main, "claude/**"]
