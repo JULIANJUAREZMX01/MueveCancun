@@ -1,0 +1,60 @@
+name: Validate Route Data
+
+on:
+  push:
+    paths:
+      - "public/data/**"
+      - "scripts/validate-routes.mjs"
+  pull_request:
+    paths:
+      - "public/data/**"
+
+jobs:
+  validate:
+    name: Validate Route JSON Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate all route data
+        run: node scripts/validate-routes.mjs
+
+      - name: Check route coordinate coverage
+        run: |
+          node -e "
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('public/data/master_routes.json', 'utf8'));
+          const routes = data.rutas || [];
+          let total = 0, missing = 0;
+          for (const r of routes) {
+            for (const s of r.paradas || []) {
+              total++;
+              if (!s.lat || !s.lng || (s.lat === 0 && s.lng === 0)) {
+                missing++;
+                console.warn('Missing coords:', r.id, s.nombre);
+              }
+            }
+          }
+          const pct = ((total - missing) / total * 100).toFixed(1);
+          console.log(\`Coordinate coverage: \${pct}% (\${total - missing}/\${total} stops)\`);
+          if (missing > total * 0.3) {
+            console.error('ERROR: More than 30% of stops are missing coordinates');
+            process.exit(1);
+          }
+          "
+
+      - name: Report route stats
+        run: |
+          node -e "
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('public/data/master_routes.json', 'utf8'));
+          const routes = data.rutas || [];
+          console.log('Total routes:', routes.length);
+          console.log('Total stops:', routes.reduce((a, r) => a + (r.paradas?.length || 0), 0));
+          console.log('Version:', data.metadata?.version || data.version || 'unknown');
+          "

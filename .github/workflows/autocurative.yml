@@ -1,0 +1,116 @@
+name: Auto-Curative (Self-Healing)
+
+on:
+  schedule:
+    # Run at 06:00 UTC every Monday — weekly health check
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for manual trigger"
+        required: false
+        default: "Manual health check"
+
+jobs:
+  health-check:
+    name: System Health Check
+    runs-on: ubuntu-latest
+    outputs:
+      wasm_ok: ${{ steps.wasm.outputs.ok }}
+      data_ok: ${{ steps.data.outputs.ok }}
+      tests_ok: ${{ steps.tests.outputs.ok }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust-wasm
+
+      - name: Install Node deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Check WASM binary
+        id: wasm
+        run: |
+          if node scripts/check-wasm.cjs; then
+            echo "ok=true" >> $GITHUB_OUTPUT
+            echo "WASM OK"
+          else
+            echo "ok=false" >> $GITHUB_OUTPUT
+            echo "WASM MISSING — will rebuild"
+          fi
+
+      - name: Rebuild WASM if needed
+        if: steps.wasm.outputs.ok == 'false'
+        run: node scripts/build-wasm.mjs
+
+      - name: Validate route data
+        id: data
+        run: |
+          if node scripts/validate-routes.mjs 2>/dev/null; then
+            echo "ok=true" >> $GITHUB_OUTPUT
+          else
+            echo "ok=false" >> $GITHUB_OUTPUT
+            echo "Route data validation FAILED"
+          fi
+
+      - name: Run Rust tests
+        id: tests
+        working-directory: rust-wasm/route-calculator
+        run: |
+          if cargo test --lib 2>/dev/null; then
+            echo "ok=true" >> $GITHUB_OUTPUT
+          else
+            echo "ok=false" >> $GITHUB_OUTPUT
+            echo "Rust tests FAILED"
+          fi
+
+      - name: Run TS tests
+        run: pnpm test -- --reporter=verbose || true
+
+      - name: Optimize JSON
+        run: node scripts/optimize-json.mjs || true
+
+      - name: Commit any auto-fixed artifacts
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(autocurative): auto-heal WASM artifacts and optimized JSON [skip ci]"
+          file_pattern: "public/wasm/** public/data/master_routes.optimized.json"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+
+  report:
+    name: Health Report
+    runs-on: ubuntu-latest
+    needs: health-check
+    if: always()
+    steps:
+      - name: Print health summary
+        run: |
+          echo "=== MueveCancun Health Report ==="
+          echo "WASM: ${{ needs.health-check.outputs.wasm_ok }}"
+          echo "Data: ${{ needs.health-check.outputs.data_ok }}"
+          echo "Tests: ${{ needs.health-check.outputs.tests_ok }}"
+          if [[ "${{ needs.health-check.outputs.wasm_ok }}" == "false" || \
+                "${{ needs.health-check.outputs.data_ok }}" == "false" || \
+                "${{ needs.health-check.outputs.tests_ok }}" == "false" ]]; then
+            echo "ACTION REQUIRED: Some checks failed"
+            exit 1
+          else
+            echo "All systems healthy ✓"
+          fi
