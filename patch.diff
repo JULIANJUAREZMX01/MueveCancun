@@ -1,34 +1,13 @@
---- rust-wasm/route-calculator/src/lib.rs
-+++ rust-wasm/route-calculator/src/lib.rs
-@@ -472,12 +472,12 @@
-
-                         match best_transfer {
-                             None => {
--                                best_transfer = Some((idx_a, is_preferred));
-+                                best_transfer = Some((idx_a, is_preferred, false));
-                             }
--                            Some((_, current_is_preferred)) => {
-+                            Some((_, current_is_preferred, _)) => {
-                                 if is_preferred && !current_is_preferred {
--                                    best_transfer = Some((idx_a, is_preferred));
-+                                    best_transfer = Some((idx_a, is_preferred, false));
-                                 }
-                             }
-                         }
-@@ -485,14 +485,15 @@
-                 }
-             }
-
--            if let Some((idx_a, is_preferred)) = best_transfer {
-+            if let Some((idx_a, is_preferred, geo_transfer)) = best_transfer {
-                 if let Some(stop) = route_a.stops.get(idx_a) {
-                     candidates.push(TransferCandidate {
-                         route_a,
-                         route_b,
-                         transfer_name: stop.name.as_str(),
-                         price: route_a.price + route_b.price,
-                         is_preferred,
-+                        geo_transfer,
-                     });
-                 }
-             }
+<<<<<<< SEARCH
+            <button id="toggle-list-btn" class="chip" aria-label="Toggle results list">
+                <span class="text-xs font-bold" id="toggle-list-text" data-i18n="calc.toggle.hide">Hide</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" id="toggle-list-icon" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+            </button>
+=======
+            <label for="results-toggle" class="chip cursor-pointer" aria-label="Toggle results list">
+                <input type="checkbox" id="results-toggle" class="sr-only" checked />
+                <span class="text-xs font-bold toggle-hide-text" data-i18n="calc.toggle.hide">Hide</span>
+                <span class="text-xs font-bold toggle-show-text hidden" data-i18n="calc.toggle.show">Show</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="toggle-icon transition-transform duration-300" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+            </label>
+>>>>>>> REPLACE

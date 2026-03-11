@@ -60,6 +60,12 @@ jobs:
       - name: Verify WASM binary
         run: node scripts/check-wasm.cjs
 
+      - name: Cache WASM binary
+        uses: actions/cache@v4
+        with:
+          path: public/wasm/route-calculator
+          key: wasm-build-${{ github.sha }}
+
       # Auto-commit built artifacts (only on push to real branches, not PRs)
       - name: Commit WASM artifacts
         if: github.event_name == 'push'
