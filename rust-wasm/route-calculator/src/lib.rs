@@ -491,6 +491,10 @@ fn find_transfer_routes(
                         continue;
                     }
                     for (idx_b, stop_b) in route_b.stops.iter().enumerate() {
+                        ops_count += 1;
+                        if ops_count > MAX_OPS {
+                            break 'outer;
+                        }
                         if idx_b == dest_idx_b || !stop_has_coords(stop_b) {
                             continue;
                         }
