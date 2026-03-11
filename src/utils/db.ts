@@ -52,14 +52,40 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
  * Accepts the already-open db instance to avoid circular recursion with initDB.
  */
 export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
-  // Migration from localStorage to IndexedDB is complete.
-  // This function is kept for backwards compatibility but now only marks it as done.
   try {
-      localStorage.setItem('balance_migration_done', 'true');
-      localStorage.removeItem('muevecancun_balance');
-      localStorage.removeItem('user_balance');
+    // Check if migration has already been completed
+    const alreadyMigrated = localStorage.getItem('balance_migration_done') === 'true';
+    if (alreadyMigrated) return;
+
+    // Attempt to read legacy balances from localStorage
+    const legacyBalance = localStorage.getItem('muevecancun_balance') ?? localStorage.getItem('user_balance');
+    const legacyAmount = legacyBalance !== null ? parseFloat(legacyBalance) : NaN;
+
+    if (!isNaN(legacyAmount) && legacyAmount > 0) {
+      // Only migrate if the current IndexedDB balance is still at the default (180 MXN)
+      // or unset — to avoid overwriting a balance the user already updated via IndexedDB.
+      const tx = db.transaction('wallet-status', 'readwrite');
+      const store = tx.objectStore('wallet-status');
+      const current = await store.get('current_balance');
+      const isDefaultOrMissing = !current || Math.abs(current.amount - 180.00) < 0.01;
+      if (isDefaultOrMissing) {
+        const signature = await generateSignature(legacyAmount);
+        await store.put({ id: 'current_balance', amount: legacyAmount, currency: 'MXN', signature }, 'current_balance');
+        console.log(`[DB] Migrated legacy balance ${legacyAmount} MXN from localStorage to IndexedDB`);
+      }
+      await tx.done;
+    }
+
+    // Mark migration as done and clean up legacy keys
+    localStorage.setItem('balance_migration_done', 'true');
+    localStorage.removeItem('muevecancun_balance');
+    localStorage.removeItem('user_balance');
   } catch (e) {
-      // Ignore errors if localStorage is not available (e.g. SSR)
+    // Ignore errors if localStorage is not available (e.g. SSR).
+    // Log a warning in case of unexpected failures to aid debugging.
+    if (e instanceof Error && e.name !== 'SecurityError') {
+      console.warn('[DB] Balance migration from localStorage failed:', e);
+    }
   }
 };
 
