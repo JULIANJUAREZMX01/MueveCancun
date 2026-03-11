@@ -4,6 +4,7 @@ import type { TrackingPoint } from './types';
 let watchId: number | null = null;
 
 export function startTracking(): void {
+  if (typeof navigator === 'undefined' || typeof window === 'undefined') return;
   if (watchId !== null) return;
   if (!navigator.geolocation) return;
   watchId = navigator.geolocation.watchPosition(
@@ -12,8 +13,12 @@ export function startTracking(): void {
         lat: pos.coords.latitude, lng: pos.coords.longitude,
         accuracy: pos.coords.accuracy, timestamp: pos.timestamp
       };
-      await put('tracking', { ...point, id: String(point.timestamp) });
-      window.dispatchEvent(new CustomEvent('mc:position', { detail: point }));
+      try {
+        await put('tracking', { ...point, id: String(point.timestamp) });
+        window.dispatchEvent(new CustomEvent('mc:position', { detail: point }));
+      } catch (err) {
+        console.error('Failed to store tracking point:', err);
+      }
     },
     (err) => console.warn('GPS error:', err),
     { enableHighAccuracy: true, maximumAge: 5000 }
@@ -21,6 +26,7 @@ export function startTracking(): void {
 }
 
 export function stopTracking(): void {
+  if (typeof navigator === 'undefined') return;
   if (watchId === null) return;
   navigator.geolocation.clearWatch(watchId);
   watchId = null;
