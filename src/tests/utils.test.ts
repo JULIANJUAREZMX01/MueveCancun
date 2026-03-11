@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDistance } from "../utils/geometry";
-import { escapeHtml, safeJsonStringify, truncateText } from "../utils/utils";
+import { escapeHtml, safeJsonStringify, getDistance, truncateText } from '../utils/utils';
 
 describe('escapeHtml Utility', () => {
   it('should escape HTML characters in strings', () => {
@@ -63,7 +62,6 @@ describe('safeJsonStringify Utility', () => {
     expect(safeJsonStringify(obj)).toBe(expected);
   });
 });
-
 
 describe('getDistance Utility', () => {
   it('should calculate distance between two identical points as 0', () => {
