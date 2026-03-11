@@ -62,3 +62,10 @@ test-results
 *_content.md
 snapshot_*.png
 public/data/master_routes.optimized.json
+
+# Archivos de sesión y debugging — nunca al repo
+*_snapshot.html
+*_snapshot.png
+server_log.txt
+preview_output.txt
+commit_msg.txt
