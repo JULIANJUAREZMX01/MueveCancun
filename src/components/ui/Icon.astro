@@ -18,34 +18,32 @@ const {
   'aria-hidden': ariaHidden = 'true',
 } = Astro.props;
 
-// Read SVG content from public/icons folder at build time
+// Strip any prefixes/extensions to get a clean key
+const iconKey = name.replace(/^\/?icons\//, '').replace(/\.svg$/, '');
+
+// Use Vite's glob import for security and bundler optimization
+// This ensures only SVGs in the /public/icons folder can be included
+const svgFiles = import.meta.glob('/public/icons/**/*.svg', { query: '?raw', import: 'default' });
+
+// Match the specific file (handling potential subdirectories if needed, though usually flat)
+const matchingFile = Object.keys(svgFiles).find(path => path.endsWith(`/${iconKey}.svg`));
+
 let svgContent = '';
-try {
-  // Strip starting slash and /icons/ if present, append .svg
-  const iconFileName = name.replace(/^\/?icons\//, '').replace(/\.svg$/, '') + '.svg';
-  const iconPath = path.join(process.cwd(), 'public', 'icons', iconFileName);
+if (matchingFile) {
+  try {
+      const rawSvg = await svgFiles[matchingFile]();
+      svgContent = String(rawSvg);
 
-  if (fs.existsSync(iconPath)) {
-    svgContent = fs.readFileSync(iconPath, 'utf-8');
-
-    // Inject props into the root <svg> tag
-    if (className) {
-      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg class="${className}" $1>`);
-    }
-    if (width) {
-      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg width="${width}" $1>`);
-    }
-    if (height) {
-      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg height="${height}" $1>`);
-    }
-    if (ariaHidden !== undefined) {
-      svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg aria-hidden="${ariaHidden}" $1>`);
-    }
-  } else {
-    console.warn(`[Icon] SVG file not found: ${iconPath}`);
+      // Inject props
+      if (className) svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg class="${className}" $1>`);
+      if (width) svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg width="${width}" $1>`);
+      if (height) svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg height="${height}" $1>`);
+      if (ariaHidden !== undefined) svgContent = svgContent.replace(/<svg\s([^>]*)>/, `<svg aria-hidden="${ariaHidden}" $1>`);
+  } catch (e) {
+      console.error(`[Icon] Error processing: ${name}`, e);
   }
-} catch (e) {
-  console.error(`[Icon] Failed to load icon: ${name}`, e);
+} else {
+  console.warn(`[Icon] Not found in bundle: ${iconKey}`);
 }
 ---
 

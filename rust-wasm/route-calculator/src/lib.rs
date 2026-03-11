@@ -487,7 +487,8 @@ fn find_transfer_routes(
                 }
             }
 
-            // Pass 2: Geographic proximity match (only if no exact match found)
+
+            // Pass 2: Geographic proximity fallback (only if exact match found nothing)
             if best_transfer.is_none() {
                 'geo_search: for (idx_a, stop_a) in route_a.stops.iter().enumerate() {
                     if idx_a == origin_idx_a {
