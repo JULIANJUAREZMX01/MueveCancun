@@ -488,72 +488,25 @@ fn find_transfer_routes(
                 }
             }
 
-            // Pass 2: Geographic proximity match (only if no exact match found)
+            // Pass 2: Geographic match between route_a and route_b (if no exact match found)
             if best_transfer.is_none() {
-                'geo_search: for (idx_a, stop_a) in route_a.stops.iter().enumerate() {
-                    if idx_a == origin_idx_a {
+                'geo: for (idx_a, stop_a) in route_a.stops.iter().enumerate() {
+                    if idx_a == origin_idx_a || !stop_has_coords(stop_a) {
                         continue;
                     }
-
-                    // Skip stops without valid coordinates
-                    if stop_a.lat == 0.0 || stop_a.lng == 0.0 {
-                        continue;
-                    }
-
                     for (idx_b, stop_b) in route_b.stops.iter().enumerate() {
-                        if idx_b == dest_idx_b {
+                        ops_count += 1;
+                        if ops_count > MAX_OPS {
+                            break 'outer;
+                        }
+                        if idx_b == dest_idx_b || !stop_has_coords(stop_b) {
                             continue;
                         }
-
-                        if stop_b.lat == 0.0 || stop_b.lng == 0.0 {
-                            continue;
-                        }
-
-                        // Check bounding box first for fast rejection (roughly 400m)
-                        if (stop_a.lat - stop_b.lat).abs() > 0.004 ||
-                           (stop_a.lng - stop_b.lng).abs() > 0.004 {
-                            continue;
-                        }
-
-                        let dist = haversine_distance_m(stop_a.lat, stop_a.lng, stop_b.lat, stop_b.lng);
-                        if dist <= GEO_TRANSFER_RADIUS_M {
-                            let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_a.name.contains(h));
+                        if haversine_distance_m(stop_a.lat, stop_a.lng, stop_b.lat, stop_b.lng) <= GEO_TRANSFER_RADIUS_M {
+                            let stop_name = &stop_a.name;
+                            let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_name.contains(h));
                             best_transfer = Some((idx_a, is_preferred, true));
-                            break 'geo_search; // Found a valid geo transfer, stop searching
-                        }
-                    }
-                }
-            }
-            // Pass 2: Geographic proximity match
-            if best_transfer.is_none() {
-                'geo_search: for (idx_a, stop_a) in route_a.stops.iter().enumerate() {
-                    if idx_a == origin_idx_a {
-                        continue;
-                    }
-
-                    if stop_a.lat == 0.0 || stop_a.lng == 0.0 {
-                        continue;
-                    }
-
-                    for (idx_b, stop_b) in route_b.stops.iter().enumerate() {
-                        if idx_b == dest_idx_b {
-                            continue;
-                        }
-
-                        if stop_b.lat == 0.0 || stop_b.lng == 0.0 {
-                            continue;
-                        }
-
-                        if (stop_a.lat - stop_b.lat).abs() > 0.004 ||
-                           (stop_a.lng - stop_b.lng).abs() > 0.004 {
-                            continue;
-                        }
-
-                        let dist = haversine_distance_m(stop_a.lat, stop_a.lng, stop_b.lat, stop_b.lng);
-                        if dist <= GEO_TRANSFER_RADIUS_M {
-                            let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_a.name.contains(*h));
-                            best_transfer = Some((idx_a, is_preferred, true));
-                            break 'geo_search;
+                            break 'geo;
                         }
                     }
                 }
