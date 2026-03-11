@@ -202,7 +202,7 @@ As part of the v3.2 performance optimization, we have moved away from runtime ic
 The `Icon.astro` component now uses Vite's `import.meta.glob` to securely inline SVGs directly into the HTML at build time.
 - **Zero Network Requests**: Icons are part of the initial HTML payload.
 - **LFI Protection**: Path resolution is restricted to the `/public/icons/` directory via glob patterns.
-- **Accessibility First**: Automatically handles `aria-hidden` for decorative icons and `aria-label` for semantic ones.
+- **Accessibility First**: Icons are inlined as decorative elements with `aria-hidden="true"`. For semantic icons, provide accessible labels via surrounding text or wrapper components.
 
 ### 🎨 CSS-Driven Micro-UX
 We prioritize CSS5 features over JavaScript for interactive states:
