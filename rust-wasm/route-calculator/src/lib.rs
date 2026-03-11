@@ -209,6 +209,7 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
 }
 
 pub fn get_route_by_id_core(id: &str) -> Result<Option<Route>, String> {
+    // Sentinel: DoS Protection - Limit ID length to prevent hash collision attacks or massive allocation
     if id.len() > 100 {
         return Ok(None);
     }
