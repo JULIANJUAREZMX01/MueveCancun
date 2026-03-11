@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import '../styles/tokens.css';
 import '../index.css';
 import Toast from '../components/ui/Toast.astro';
 import PwaReload from '../components/ui/PwaReload.astro';
@@ -7,6 +8,7 @@ import BottomNav from '../components/BottomNav.astro';
 import ScrollToTop from '../components/ui/ScrollToTop.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import { ui as uiTranslations } from '../utils/i18n';
+import { safeJsonStringify } from '../utils/utils';
 
 interface Props {
   title: string;
@@ -23,11 +25,14 @@ const {
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
+const siteBase = Astro.site?.href?.replace(/\/$/, '') ?? '';
+const canonicalUrl = siteBase + pathname;
+const ogImage = image.startsWith('http') ? image : `${siteBase}${image}`;
+const ga4Id = import.meta.env.PUBLIC_GA4_ID;
 
 const navItems = [
   { href: '/home', label: 'Inicio', icon: 'explore', activePattern: /^\/home/ },
   { href: '/rutas', label: 'Rutas', icon: 'route', activePattern: /^\/rutas/ },
-  { href: '/mapa', label: 'Mapa', icon: 'map', activePattern: /^\/mapa/ },
   { href: '/community', label: 'Foro', icon: 'forum', activePattern: /^\/community/ },
   { href: '/wallet', label: 'Wallet', icon: 'account_balance_wallet', activePattern: /^\/wallet/ },
   { href: '/about', label: 'Nosotros', icon: 'info', activePattern: /^\/about/ },
@@ -43,11 +48,11 @@ const navItems = [
     <!-- 🛡️ Sentinel: Strict CSP -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://*.cartocdn.com;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://*.cartocdn.com https://www.googletagmanager.com https://www.google-analytics.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        img-src 'self' data: https://*.cartocdn.com https://*.openstreetmap.org;
+        img-src 'self' data: https://*.cartocdn.com https://*.openstreetmap.org https://www.google-analytics.com;
         font-src 'self' https://fonts.gstatic.com;
-        connect-src 'self' https://*.cartocdn.com;
+        connect-src 'self' https://*.cartocdn.com https://www.google-analytics.com;
         worker-src 'self' blob:;
         object-src 'none';
         base-uri 'self';
@@ -56,13 +61,61 @@ const navItems = [
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>{title} | CancúnMueve</title>
-    <meta name="description" content={description} />
-    <meta property="og:image" content={image} />
 
-    <!-- PWA -->
-    <meta name="theme-color" content="#0d9488" />
+    <!-- Primary Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Geo-tags: Cancún, Quintana Roo -->
+    <meta name="geo.region" content="MX-ROO" />
+    <meta name="geo.placename" content="Cancún" />
+    <meta name="geo.position" content="21.161908;-86.851528" />
+    <meta name="ICBM" content="21.161908, -86.851528" />
+
+    <!-- PWA Manifest & Theme -->
     <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#00B4D8" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "MueveCancún",
+      "url": "https://querutamellevacancun.onrender.com",
+      "description": "Aplicación web offline-first para transporte público en Cancún con cálculo de rutas por WebAssembly.",
+      "applicationCategory": "TravelApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "MXN"
+      },
+      "featureList": "Offline Routing, Cancún Public Transit, Zero Data Cost, PWA",
+      "author": {
+        "@type": "Organization",
+        "name": "MueveCancún Engineering"
+      }
+    }
+    </script>
     <link rel="apple-touch-icon" href="/icons/pwa-192x192.png" />
 
     <!-- Fonts -->
@@ -205,6 +258,49 @@ const navItems = [
           updateTranslations(e.detail);
       });
     </script>
+    {ga4Id && (
+    <>
+    <!-- Google Analytics 4 -->
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
+    <script define:vars={{ ga4Id }} is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', ga4Id);
+
+      // Global Event Dispatchers
+      window.mueveTrackers = {
+        routeSearch: (origin, destination, isOffline) => {
+          gtag('event', 'route_search', {
+            event_category: 'Routing_WASM',
+            origin: origin,
+            destination: destination,
+            network_status: isOffline ? 'offline' : 'online'
+          });
+          console.log('[Analytics] route_search dispatched');
+        },
+        offlineUsage: () => {
+          gtag('event', 'offline_usage', {
+            event_category: 'PWA_ServiceWorker',
+            action: 'served_from_cache'
+          });
+          console.log('[Analytics] offline_usage dispatched');
+        },
+        pwaInstall: () => {
+          gtag('event', 'pwa_install', {
+            event_category: 'PWA_Lifecycle',
+            action: 'accepted_prompt'
+          });
+          console.log('[Analytics] pwa_install dispatched');
+        }
+      };
+
+      window.addEventListener('appinstalled', () => {
+        window.mueveTrackers.pwaInstall();
+      });
+    </script>
+    </>
+    )}
     <ClientRouter />
   </head>
   <body id="top" class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
@@ -227,7 +323,6 @@ const navItems = [
           let i18nKey = '';
           if (item.href === '/home') i18nKey = 'nav.home';
           else if (item.href === '/rutas') i18nKey = 'nav.routes';
-          else if (item.href === '/mapa') i18nKey = 'nav.map';
           else if (item.href === '/community') i18nKey = 'nav.community';
           else if (item.href === '/wallet') i18nKey = 'nav.wallet';
           else if (item.href === '/about') i18nKey = 'nav.about';
@@ -283,7 +378,7 @@ const navItems = [
     <Toast />
     <PwaReload />
 
-    <div id="i18n-translations" data-translations={JSON.stringify(uiTranslations)} class="hidden"></div>
+    <div id="i18n-translations" data-translations={safeJsonStringify(uiTranslations)} class="hidden"></div>
 
     <script is:inline>
       function setupThemeToggle() {
@@ -318,30 +413,15 @@ const navItems = [
 
     <style>
       /*
-       * GRAFFITI WARRIOR: CSS5 Scroll-Driven Animations
-       * Header becomes opaque when scrolling down.
-       * No JS required.
+       * Header is permanently visible with a glassy background,
+       * blur, and shadow for consistent legibility.
        */
       .app-header {
-        background: transparent;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        border-bottom: 1px solid transparent;
-
-        /* Animation Logic */
-        animation: header-scroll linear forwards;
-        animation-timeline: scroll();
-        animation-range: 0px 50px;
-      }
-
-      @keyframes header-scroll {
-        to {
-          background: var(--surface-card);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border-bottom: 1px solid var(--border-light);
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
+        background: var(--surface-card);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border-light);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
     </style>
   </body>

@@ -4,19 +4,68 @@ interface Props {
   class?: string;
 }
 
-const { variant = 'default', class: className, ...rest } = Astro.props;
-
-const variants = {
-  default: "bg-slate-100 text-slate-600",
-  success: "bg-green-100 text-green-700",
-  warning: "bg-amber-100 text-amber-700",
-  danger: "bg-red-100 text-red-700",
-  info: "bg-sky-100 text-sky-700"
-};
-
-const styles = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide ${variants[variant]} ${className || ''}`;
+const { variant = 'default', class: className = '', ...rest } = Astro.props;
 ---
 
-<span class={styles} {...rest}>
+<span class={`graffiti-badge ${className}`} data-variant={variant} {...rest}>
   <slot />
 </span>
+
+<style>
+  /*
+   * GRAFFITI WARRIOR: CSS5 LOGIC
+   * Pure CSS Variables with Global Tropical Tokens.
+   * No Tailwind here, puras vibras chidas.
+   */
+  .graffiti-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.125rem 0.625rem; /* py-0.5 px-2.5 */
+    border-radius: 9999px; /* rounded-full */
+    font-size: 0.75rem; /* text-xs */
+    font-weight: 700; /* font-bold */
+    text-transform: uppercase;
+    letter-spacing: 0.025em; /* tracking-wide */
+
+    /* Default Variables (fallback if variant not matched) */
+    --badge-bg: var(--surface-hover, #f1f5f9); /* slate-100 */
+    --badge-text: var(--text-secondary, #475569); /* slate-600 */
+
+    background-color: var(--badge-bg);
+    color: var(--badge-text);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* --- VARIANTS --- */
+    &[data-variant="default"] {
+      --badge-bg: var(--surface-hover, #f1f5f9);
+      --badge-text: var(--text-secondary, #475569);
+    }
+
+    &[data-variant="success"] {
+      --badge-bg: color-mix(in srgb, var(--color-success, #10b981) 15%, transparent); /* green-100 equivalent */
+      --badge-text: var(--color-success, #15803d); /* green-700 equivalent */
+    }
+
+    &[data-variant="warning"] {
+      --badge-bg: color-mix(in srgb, var(--color-warning, #f59e0b) 20%, transparent); /* amber-100 equivalent */
+      --badge-text: color-mix(in srgb, var(--color-warning, #b45309) 80%, black); /* amber-700 equivalent */
+    }
+
+    &[data-variant="danger"] {
+      --badge-bg: color-mix(in srgb, var(--color-coral, #ef4444) 15%, transparent); /* red-100 equivalent */
+      --badge-text: var(--color-coral, #b91c1c); /* red-700 equivalent */
+    }
+
+    &[data-variant="info"] {
+      --badge-bg: color-mix(in srgb, var(--color-turquoise, #0ea5e9) 15%, transparent); /* sky-100 equivalent */
+      --badge-text: color-mix(in srgb, var(--color-turquoise, #0369a1) 80%, black); /* sky-700 equivalent */
+    }
+
+    /* Subtle hover effect */
+    &:hover {
+      filter: brightness(0.95);
+      transform: translateY(-0.5px);
+    }
+  }
+</style>
