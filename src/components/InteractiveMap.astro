@@ -298,12 +298,12 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
   // Cleanup on Astro page swap
   document.addEventListener('astro:before-swap', () => {
       if (map) { map.remove(); map = null; }
-      const mapEl = document.getElementById('map');
+      const mapEl = document.getElementById('map-container');
       if (mapEl) delete mapEl.dataset.initialized;
   });
 
   function scheduleInit() {
-      const mapEl = document.getElementById('map');
+      const mapEl = document.getElementById('map-container');
       if (!mapEl || mapEl.dataset.initialized) return;
       mapEl.dataset.initialized = 'true';
       if ('requestIdleCallback' in window) {
