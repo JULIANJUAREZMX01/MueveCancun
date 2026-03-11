@@ -76,7 +76,7 @@ pub struct Journey {
     /// Indicates transfer was found via geographic proximity (not exact stop name match)
     #[serde(default)]
     pub geo_transfer: bool,
-    /// Indicates a direct route where origin comes before destination (forward direction)
+    /// True if origin stop comes before destination in the route (forward direction)
     #[serde(default)]
     pub is_forward: bool,
 }
@@ -378,15 +378,16 @@ fn find_direct_routes(route_matches: &[RouteMatch]) -> Vec<Journey> {
             if origin_idx == dest_idx {
                 continue;
             }
+            let is_fwd = origin_idx < dest_idx;
             let journey = Journey {
                 type_: "Direct".to_string(),
                 legs: vec![m.route.clone()],
                 transfer_point: None,
                 total_price: m.route.price,
                 geo_transfer: false,
-                is_forward: origin_idx < dest_idx,
+                is_forward: is_fwd,
             };
-            if origin_idx < dest_idx {
+            if is_fwd {
                 forward.push(journey);
             } else {
                 // Route goes in reverse direction — still valid (bidirectional buses),
