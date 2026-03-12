@@ -1,5 +1,12 @@
 ---
-import MainLayout from '../layouts/MainLayout.astro';
+export function getStaticPaths() {
+  return [
+    { params: { lang: "es" } },
+    { params: { lang: "en" } },
+  ];
+}
+
+import MainLayout from '../../layouts/MainLayout.astro';
 ---
 
 <MainLayout title="Tracking - CancúnMueve">
