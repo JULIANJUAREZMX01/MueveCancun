@@ -1,5 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+export const prerender = true;
 ---
 
 <MainLayout title="CancúnMueve" hideNav={true}>
@@ -42,7 +43,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 				</div>
 			</div>
 			<div class="version-tag">
-				<span class="version-text">v1.0.5</span>
+				<span class="version-text">v2.0.0</span>
 			</div>
 		</div>
 
@@ -52,13 +53,19 @@ import MainLayout from '../layouts/MainLayout.astro';
 	<script>
 		import { navigate } from 'astro:transitions/client';
 
-		// Simulate splash delay then redirect to home
 		setTimeout(() => {
 			const currentUrl = new URL(window.location.href);
-			const targetUrl = new URL('/home', window.location.origin);
+			const saved = document.cookie.match(/locale=([^;]+)/)?.[1];
+			const userLang = navigator.language.toLowerCase().startsWith('en') ? 'en' : 'es';
+			const lang = saved || userLang;
+
+            // Ensure lang is valid
+            const targetLang = ['es', 'en'].includes(lang) ? lang : 'es';
+
+			const targetUrl = new URL(`/${targetLang}/home`, window.location.origin);
 			targetUrl.search = currentUrl.search;
 			navigate(targetUrl.toString());
-		}, 3000);
+		}, 2500);
 	</script>
 </MainLayout>
 

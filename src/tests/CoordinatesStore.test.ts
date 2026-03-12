@@ -42,7 +42,7 @@ describe('CoordinatesStore', () => {
         const result = await store.init(mockData);
         expect(result.data).toEqual(mockData);
         // utils/CoordinatesStore stores as [lat, lng] tuples with lowercase keys
-        expect(store.getDB()!.get('stop a')).toEqual([10, 10]);
+        expect(store.getDB()!['stop a']).toEqual([10, 10]);
     });
 
     it('should fetch data if not injected', async () => {
@@ -68,7 +68,7 @@ describe('CoordinatesStore', () => {
 
         const result = await store.init();
         expect(result.data).toEqual(mockData);
-        expect(store.getDB()!.get('stop b')).toEqual([20, 20]);
+        expect(store.getDB()!['stop b']).toEqual([20, 20]);
         expect(mockFetch).toHaveBeenCalledWith('/data/master_routes.optimized.json');
     });
 
@@ -93,7 +93,7 @@ describe('CoordinatesStore', () => {
 
         // Point close to 10,10 (within SpatialHash grid of ~1km)
         const nearest = store.findNearest(10.005, 10.005);
-        expect(nearest).toBe('Stop Close');
+        expect(nearest).toBe('stop close');
     });
 
     it('should return correct nearest when spatial index has candidates in same cell', async () => {
@@ -118,7 +118,7 @@ describe('CoordinatesStore', () => {
 
         // Query point exactly at 10,10 — "Stop Nearer" is closer
         const nearest = store.findNearest(10.0, 10.0);
-        expect(nearest).toBe('Stop Nearer');
+        expect(nearest).toBe('stop nearer');
     });
 
     it('should return correct nearest when candidate is in a neighboring cell', async () => {
@@ -144,7 +144,7 @@ describe('CoordinatesStore', () => {
         await store.init(mockData);
 
         const nearest = store.findNearest(10.0, 10.0);
-        expect(nearest).toBe('Adjacent Cell Stop');
+        expect(nearest).toBe('adjacent cell stop');
     });
 
     it('should return correct nearest when no stops are in spatial index neighborhood', async () => {
@@ -171,7 +171,7 @@ describe('CoordinatesStore', () => {
         // Query at 0,0 — neither stop is in the spatial index's 3x3 neighborhood
         // Global fallback should find "Distant Stop A" as nearer
         const nearest = store.findNearest(0.0, 0.0);
-        expect(nearest).toBe('Distant Stop A');
+        expect(nearest).toBe('distant stop a');
     });
 });
 
@@ -209,7 +209,7 @@ describe('CoordinatesStore.findNearest - spatial index fast path', () => {
             { nombre: 'Stop Far Away', lat: 30.0, lng: 30.0 },
         ]));
         const nearest = store.findNearest(10.0, 10.0);
-        expect(nearest).toBe('Stop Same Cell');
+        expect(nearest).toBe('stop same cell');
     });
 
     it('finds nearest stop via spatial index when stop is in a neighboring cell', async () => {
@@ -220,7 +220,7 @@ describe('CoordinatesStore.findNearest - spatial index fast path', () => {
             { nombre: 'Stop Far Away', lat: 30.0, lng: 30.0 },
         ]));
         const nearest = store.findNearest(10.0, 10.0);
-        expect(nearest).toBe('Stop Neighbor Cell');
+        expect(nearest).toBe('stop neighbor cell');
     });
 
     it('returns the closest stop when multiple candidates are returned by the spatial index', async () => {
@@ -230,7 +230,7 @@ describe('CoordinatesStore.findNearest - spatial index fast path', () => {
             { nombre: 'Stop Mid',  lat: 10.006, lng: 10.0 },
         ]));
         const nearest = store.findNearest(10.0, 10.0);
-        expect(nearest).toBe('Stop Near');
+        expect(nearest).toBe('stop near');
     });
 
     it('invokes spatialIndex.query and returns a non-empty candidate list on a spatial-index hit', async () => {
@@ -243,7 +243,7 @@ describe('CoordinatesStore.findNearest - spatial index fast path', () => {
 
         const nearest = store.findNearest(10.0, 10.0);
 
-        expect(nearest).toBe('Stop Alpha');
+        expect(nearest).toBe('stop alpha');
         expect(querySpy).toHaveBeenCalledOnce();
         // Verify the spatial index actually returned candidates (fast path was exercised)
         const candidates = querySpy.mock.results[0].value as unknown[];
@@ -257,6 +257,6 @@ describe('CoordinatesStore.findNearest - spatial index fast path', () => {
             { nombre: 'Stop Beyond Threshold', lat: 10.011, lng: 10.0 },
         ]));
         const nearest = store.findNearest(10.0, 10.0);
-        expect(nearest).toBe('Stop Beyond Threshold');
+        expect(nearest).toBe('stop beyond threshold');
     });
 });
