@@ -1,45 +1,42 @@
 import { bench, describe, beforeAll } from 'vitest';
 import { CoordinatesStore } from '../../utils/CoordinatesStore';
 
-// Generate 5000 random points in a 10x10 degree area (approx 1100km x 1100km)
-const stops: any[] = [];
-for (let i = 0; i < 5000; i++) {
+// Use a fresh CoordinatesStore instance for benchmarking to avoid interference from the shared singleton.
+// The module exports both the CoordinatesStore class and a singleton `coordinatesStore`; here we use a separate instance.
+const store = new CoordinatesStore();
+
+// Generate 10,000 random stops
+const stops: { lat: number, lng: number, nombre: string }[] = [];
+for (let i = 0; i < 10000; i++) {
     stops.push({
-        nombre: `Stop ${i}`,
-        lat: Math.random() * 10,
-        lng: Math.random() * 10,
-        orden: 1
+        lat: 21.0 + Math.random(), // 21.0 to 22.0
+        lng: -87.0 + Math.random(), // -87.0 to -86.0
+        nombre: `Stop-${i}`
     });
 }
 
+// Mock Data Structure
 const mockData = {
-    version: '1.0',
     rutas: [
         {
-            id: 'R1',
-            nombre: 'Ruta Test',
+            id: 'bench-route',
+            nombre: 'Benchmark Route',
             paradas: stops
         }
     ]
 };
 
-describe('CoordinatesStore Performance', () => {
-    const store = new CoordinatesStore();
+// Initialize Store
+await store.init(mockData);
 
-    beforeAll(async () => {
-        await store.init(mockData);
+describe('CoordinatesStore.findNearest', () => {
+    bench('findNearest (dense area)', () => {
+        // Search near center
+        store.findNearest(21.5, -86.5);
     });
 
-    bench('findNearest (random)', () => {
-        const lat = Math.random() * 10;
-        const lng = Math.random() * 10;
-        store.findNearest(lat, lng);
-    });
-
-    bench('findNearest (close proximity)', () => {
-        // Pick a known location from the dataset to ensure hit
-        const stop = stops[2500];
-        // Slight offset (approx 10m)
-        store.findNearest(stop.lat + 0.0001, stop.lng + 0.0001);
+    bench('findNearest (edge case)', () => {
+        // Search at edge
+        store.findNearest(21.0, -87.0);
     });
 });

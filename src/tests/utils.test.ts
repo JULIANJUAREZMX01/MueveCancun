@@ -63,6 +63,8 @@ describe('safeJsonStringify Utility', () => {
   });
 });
 
+
+
 describe('getDistance Utility', () => {
   it('should calculate distance between two identical points as 0', () => {
     const lat = 48.8566;
