@@ -27,7 +27,9 @@
     "lint": "eslint .",
     "preview": "astro preview",
     "test": "vitest",
-    "check-wasm": "node scripts/check-wasm.cjs"
+    "check-wasm": "node scripts/check-wasm.cjs",
+    "validate-catalog": "node scripts/validate-catalog.mjs",
+    "bench": "vitest bench"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
