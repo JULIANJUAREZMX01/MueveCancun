@@ -94,6 +94,15 @@ modules.forEach(mod => {
             buildSuccess = true;
         } catch (e) {
             console.error(`❌ Failed to build ${mod} with ${wasmPackCmd}.`);
+        }
+    }
+
+    // Verify artifacts exist (either from build or fallback)
+    const requiredFiles = [`${mod.replace(/-/g, '_')}_bg.wasm`, `${mod.replace(/-/g, '_')}.js`];
+    const missingFiles = requiredFiles.filter(f => !fs.existsSync(path.join(publicOutDir, f)));
+
+    if (missingFiles.length > 0) {
+        console.error(`❌ Missing required artifacts for ${mod}: ${missingFiles.join(', ')}`);
         process.exit(1);
     }
 
