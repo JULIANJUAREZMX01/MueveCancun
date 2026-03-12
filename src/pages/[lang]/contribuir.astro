@@ -1,7 +1,14 @@
 ---
-import MainLayout from '../layouts/MainLayout.astro';
-import ReportTypeSelector from '../components/ui/ReportTypeSelector.astro';
-import Input from '../components/ui/Input.astro';
+export function getStaticPaths() {
+  return [
+    { params: { lang: "es" } },
+    { params: { lang: "en" } },
+  ];
+}
+
+import MainLayout from '../../layouts/MainLayout.astro';
+import ReportTypeSelector from '../../components/ui/ReportTypeSelector.astro';
+import Input from '../../components/ui/Input.astro';
 
 const reportOptions = [
   { value: 'new_route', label: 'Ruta Nueva', icon: '🗺️' },
