@@ -84,7 +84,7 @@ export function drawRoute(
     map: Map,
     data: RouteData,
     existingLayerGroup: LayerGroup | null | undefined,
-    coordinatesDB: any
+    coordinatesDB: Map<string, [number, number]> | any
 ): LayerGroup | undefined {
 
     // Access global L safely
@@ -150,7 +150,6 @@ export function drawRoute(
             stopNames.forEach(name => {
                 let coords: [number, number] | undefined;
                 if (coordinatesDB instanceof Map) {
-                    // Try exact key first, then lowercase key (coordinatesDB keys are lowercase)
                     coords = coordinatesDB.get(name) ?? coordinatesDB.get(name.toLowerCase().trim());
                 } else if (coordinatesDB && typeof coordinatesDB === 'object') {
                     coords = coordinatesDB[name];

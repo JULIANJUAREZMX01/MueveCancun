@@ -42,3 +42,4 @@ El mapa carga y muestra rutas basadas en `src/data/master_routes.json`.
 
 - El proyecto está configurado como **Estático** (`output: 'static'`).
 - El script `scripts/build-wasm.mjs` maneja la ausencia de `wasm-pack` en producción copiando binarios pre-compilados. **No eliminar esta lógica** a menos que el entorno de CI/CD soporte Rust toolchain.
+- Balance warning movida al Wallet (Sprint 1)

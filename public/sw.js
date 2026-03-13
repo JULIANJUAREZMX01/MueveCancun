@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3.1.0-ssg';
+const CACHE_VERSION = 'v3.2.0-ssg';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 
 // Critical assets for offline-first PWA
@@ -11,6 +11,8 @@ const CRITICAL_ASSETS = [
   '/community',
   '/tracking',
   '/contribuir',
+  '/vendor/leaflet/leaflet.js',
+  '/vendor/leaflet/leaflet.css',
   '/wasm/route-calculator/route_calculator.js',
   '/wasm/route-calculator/route_calculator_bg.wasm',
   '/wasm/spatial-index/spatial_index.js',

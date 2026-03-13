@@ -52,7 +52,7 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
 
   // ⚡ Lazy Load Leaflet to unblock Critical Rendering Path
   async function _loadLeaflet() {
-      if (window.L) return;
+      if ((window as any).L) return;
 
       if (!document.querySelector('link[href*="leaflet.css"]')) {
           const link = document.createElement('link');
@@ -61,23 +61,31 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
           document.head.appendChild(link);
       }
 
-      if (!document.querySelector('script[src*="leaflet.js"]')) {
+      const existingScript = document.querySelector('script[src*="leaflet.js"]');
+      if (!existingScript) {
           await new Promise<void>((resolve, reject) => {
               const script = document.createElement('script');
               script.src = '/vendor/leaflet/leaflet.js';
-              script.defer = true;
               script.onload = () => resolve();
-              script.onerror = reject;
+              script.onerror = () => reject(new Error('Leaflet script load failed'));
               document.head.appendChild(script);
           });
+      } else {
+          // Script tag exists but L may not be set yet — wait for it
+          let retries = 0;
+          while (!(window as any).L && retries < 100) {
+              await new Promise(r => setTimeout(r, 50));
+              retries++;
+          }
       }
 
+      // Final check after script load
       let retries = 0;
-      while (!(window as any).L && retries < 50) {
+      while (!(window as any).L && retries < 20) {
           await new Promise(r => setTimeout(r, 50));
           retries++;
       }
-      if (!(window as any).L) throw new Error("Leaflet failed to load");
+      if (!(window as any).L) throw new Error("Leaflet failed to initialize");
   }
 
   async function initMap() {
@@ -307,7 +315,8 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
       if (!mapEl || mapEl.dataset.initialized) return;
       mapEl.dataset.initialized = 'true';
       if ('requestIdleCallback' in window) {
-          (window as any).requestIdleCallback(() => { initMap(); setupGPS(); });
+          // timeout: 2000 ensures map loads even if browser never reaches idle
+          (window as any).requestIdleCallback(() => { initMap(); setupGPS(); }, { timeout: 2000 });
       } else {
           setTimeout(() => { initMap(); setupGPS(); }, 200);
       }
