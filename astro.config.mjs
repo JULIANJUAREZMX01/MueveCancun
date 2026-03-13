@@ -1,6 +1,7 @@
 import { defineConfig } from "astro/config"
 import mdx from "@astrojs/mdx"
 import tailwind from "@astrojs/tailwind"
+import lit from "@astrojs/lit"
 import path from "path"
 import { fileURLToPath } from "url"
 
@@ -12,7 +13,8 @@ export default defineConfig({
   output: 'static',
   integrations: [
     mdx(),
-    tailwind({ applyBaseStyles: false })
+    tailwind({ applyBaseStyles: false }),
+    lit()
   ],
   vite: {
     build: {
