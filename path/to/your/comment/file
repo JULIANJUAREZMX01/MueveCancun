@@ -1,0 +1,8 @@
+@jules
+
+### Audit Feedback Items:
+1. The PR description claims tailwind removal and lit/postcss additions but the PR file list shown does not include package.json/astro config/postcss config/src/index.css; please ensure those changes are included or update description.
+2. Separate regenerated route JSON data files from architectural changes to reduce review noise.
+3. WASM API breaking changes: removed analyze_gap/calculate_route/calculate_trip_cost/find_nearest_stop/load_stops_data; added get_route_by_id and load_catalog; ensure all TS/JS call sites updated and add integration tests.
+4. Committed wasm binary changes should be reproducible—document build steps and consider CI check to verify wasm artifacts.
+5. Ensure imports fixes are consistent and no dead paths remain (lib/i18n vs utils/i18n).
