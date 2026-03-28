@@ -1,3 +1,7 @@
+/// <reference lib="webworker" />
+
+declare const self: ServiceWorkerGlobalScope;
+
 const CACHE_VERSION = 'v3.2.0-ssg';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 
@@ -45,7 +49,7 @@ const CARTO_TILES_PATTERN = /^https:\/\/[a-d]\.basemaps\.cartocdn\.com\/.*\.png$
 const USER_ROUTE_PATTERN = /\/data\/routes\/ruta_\d+\.json$/;
 
 // --- Install ---
-self.addEventListener('install', (event) => {
+self.addEventListener('install', (event: ExtendableEvent) => {
   console.log(`[SW] Installing ${CACHE_VERSION}`);
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -62,7 +66,7 @@ self.addEventListener('install', (event) => {
 });
 
 // --- Activate ---
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', (event: ExtendableEvent) => {
   console.log(`[SW] Activating ${CACHE_VERSION}`);
   event.waitUntil(
     caches.keys()
@@ -78,7 +82,7 @@ self.addEventListener('activate', (event) => {
 });
 
 // --- Message ---
-self.addEventListener('message', (event) => {
+self.addEventListener('message', (event: ExtendableMessageEvent) => {
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
@@ -92,7 +96,7 @@ self.addEventListener('message', (event) => {
 });
 
 // --- Fetch ---
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', (event: FetchEvent) => {
   const { request } = event;
   const url = new URL(request.url);
 
@@ -131,7 +135,7 @@ self.addEventListener('fetch', (event) => {
 
 // --- Cache Strategies ---
 
-async function cacheFirst(request) {
+async function cacheFirst(request: Request): Promise<Response> {
   try {
     const cached = await caches.match(request);
     if (cached) return cached;
@@ -145,13 +149,14 @@ async function cacheFirst(request) {
     const cached = await caches.match(request);
     if (cached) return cached;
     if (request.mode === 'navigate') {
-      return (await caches.open(CACHE_NAME)).match('/offline');
+      const offlineResponse = await caches.match('/offline');
+      return offlineResponse || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
     }
     return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
   }
 }
 
-async function networkFirst(request) {
+async function networkFirst(request: Request): Promise<Response> {
   try {
     const response = await fetch(request);
     if (response?.status === 200) {
@@ -163,13 +168,14 @@ async function networkFirst(request) {
     const cached = await caches.match(request);
     if (cached) return cached;
     if (request.mode === 'navigate') {
-      return (await caches.open(CACHE_NAME)).match('/offline');
+      const offlineResponse = await caches.match('/offline');
+      return offlineResponse || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
     }
     return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
   }
 }
 
-async function networkFirstWithCache(request) {
+async function networkFirstWithCache(request: Request): Promise<Response> {
   try {
     const response = await fetch(request);
     if (response?.status === 200) {
@@ -183,13 +189,13 @@ async function networkFirstWithCache(request) {
   }
 }
 
-async function staleWhileRevalidate(request) {
+async function staleWhileRevalidate(request: Request): Promise<Response> {
   const cached = await caches.match(request);
   const fetchPromise = fetch(request).then(response => {
     if (response?.status === 200) {
       caches.open(CACHE_NAME).then(c => c.put(request, response.clone()));
     }
     return response;
-  }).catch(() => cached);
+  }).catch(() => cached as Response);
   return cached || fetchPromise;
 }

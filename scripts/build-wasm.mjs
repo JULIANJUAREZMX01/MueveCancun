@@ -17,7 +17,6 @@ const error = (msg) => console.error(`\x1b[1;31m[ERROR]\x1b[0m ${msg}`);
 log("Iniciando forja de modulos WASM...");
 
 // 1. Verificacion de Toolchain
-let wasmPackCmd = 'wasm-pack';
 let useNpx = false;
 
 try {
@@ -25,7 +24,6 @@ try {
 } catch (e) {
     try {
         execSync('npx wasm-pack --version', { stdio: 'ignore' });
-        wasmPackCmd = 'npx';
         useNpx = true;
     } catch (e2) {
         // Fallback check for artifacts
