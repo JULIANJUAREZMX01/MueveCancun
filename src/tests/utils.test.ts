@@ -1,6 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import { escapeHtml, safeJsonStringify, truncateText } from '../utils/utils';
+import { escapeHtml, safeJsonStringify, truncateText, formatDate } from '../utils/utils';
 import { getDistance } from '../utils/geometry';
+
+describe('formatDate Utility', () => {
+  it('should format dates correctly for en-US', () => {
+    const date = new Date(2024, 0, 1); // Jan 1, 2024
+    expect(formatDate(date)).toBe('Jan 01, 2024');
+  });
+
+  it('should format other dates correctly', () => {
+    const date = new Date(2024, 11, 25); // Dec 25, 2024
+    expect(formatDate(date)).toBe('Dec 25, 2024');
+  });
+
+  it('should handle single digit days with leading zero', () => {
+    const date = new Date(2024, 4, 5); // May 5, 2024
+    expect(formatDate(date)).toBe('May 05, 2024');
+  });
+});
 
 describe('escapeHtml Utility', () => {
   it('should escape HTML characters in strings', () => {
