@@ -2,7 +2,7 @@
   "rutas": [
     {
       "id": "R1",
-      "nombre": "Crucero - Zona Hotelera",
+      "nombre": "Crucero - Zona Hotelera", "tipo": "Bus_Urbano",
       "color": "#FF6B6B",
       "tarifa": 15.0,
       "paradas": [

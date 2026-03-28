@@ -2,7 +2,7 @@
   "rutas": [
     {
       "id": "R2",
-      "nombre": "Walmart - Puerto Juárez",
+      "nombre": "Walmart - Puerto Juárez", "tipo": "Bus_Urbano",
       "color": "#4ECDC4",
       "tarifa": 15.0,
       "paradas": [
