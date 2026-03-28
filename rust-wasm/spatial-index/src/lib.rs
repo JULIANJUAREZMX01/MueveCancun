@@ -104,10 +104,8 @@ pub fn find_nearest_stop_native(user_lat: f64, user_lng: f64, stops: &[Stop]) ->
 
     // Cache the built tree for future use
     if let Ok(mut index_guard) = SPATIAL_INDEX.write() {
-        // Re-calculate hash to ensure no race condition during write lock acquisition
-        let final_hash = calculate_stops_hash(stops);
         *index_guard = Some(CachedIndex {
-            hash: final_hash,
+            hash: current_hash,
             rtree,
         });
     }
