@@ -25,15 +25,17 @@ export class CoordinateFinder {
     }
 
     private buildIndex() {
-        for (const key of this.keys) {
+        for (let i = 0; i < this.lowerKeys.length; i++) {
+            const lowerKey = this.lowerKeys[i];
+            const originalKey = this.keys[i];
             // Tokenize: split by non-alphanumeric (including Spanish accents)
-            const tokens = key.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
+            const tokens = lowerKey.split(/[^a-z0-9\u00C0-\u017F]+/);
             for (const token of tokens) {
                 if (token.length < 3) continue;
                 if (!this.tokenIndex.has(token)) {
                     this.tokenIndex.set(token, []);
                 }
-                this.tokenIndex.get(token)!.push(key);
+                this.tokenIndex.get(token)!.push(originalKey);
             }
         }
     }
