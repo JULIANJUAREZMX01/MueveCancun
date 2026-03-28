@@ -491,17 +491,11 @@ fn find_transfer_routes(
                         continue;
                     }
                     for (idx_b, stop_b) in route_b.stops.iter().enumerate() {
-                        ops_count += 1;
-                        if ops_count > MAX_OPS {
-                            break 'outer;
-                        }
                         if idx_b == dest_idx_b || !stop_has_coords(stop_b) {
                             continue;
                         }
                         if haversine_distance_m(stop_a.lat, stop_a.lng, stop_b.lat, stop_b.lng) <= GEO_TRANSFER_RADIUS_M {
-                            let stop_name = &stop_a.name;
-                            let is_preferred = PREFERRED_HUBS.iter().any(|h| stop_name.contains(h));
-                            best_transfer = Some((idx_a, is_preferred, true));
+                            best_transfer = Some((idx_a, false, true));
                             break 'geo;
                         }
                     }
