@@ -9,56 +9,30 @@ const rootDir = path.resolve(__dirname, '..');
 
 const modules = ['route-calculator', 'spatial-index'];
 
-console.log('[NEXUS_LOG] Iniciando proceso de compilacion WASM...');
+// Nexus Signaling Functions
+const log = (msg) => console.log(`\x1b[1;34m[NEXUS_LOG]\x1b[0m ${msg}`);
+const success = (msg) => console.log(`\x1b[1;32m[SUCCESS]\x1b[0m ${msg}`);
+const error = (msg) => console.error(`\x1b[1;31m[ERROR]\x1b[0m ${msg}`);
 
-// 1. Verificacion de herramientas (Fuera del loop)
+log("Iniciando forja de modulos WASM...");
+
+// 1. Verificacion de Toolchain
 let wasmPackCmd = 'wasm-pack';
-const hasWasmPack = (() => {
+try {
+    execSync('wasm-pack --version', { stdio: 'ignore' });
+} catch (e) {
     try {
-        execSync('wasm-pack --version', { stdio: 'ignore' });
-        return true;
-    } catch (e) {
-        try {
-            execSync('npx wasm-pack --version', { stdio: 'ignore' });
-            wasmPackCmd = 'npx wasm-pack';
-            return true;
-        } catch (e2) {
-            return false;
-        }
-    }
-})();
-
-const hasCargo = (() => {
-    try {
-        execSync('cargo --version', { stdio: 'ignore' });
-        return true;
-    } catch (e) {
-        return false;
-    }
-})();
-
-// 2. Fallback de artefactos
-const artifactsExist = modules.every(mod => {
-    const wasmPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}_bg.wasm`);
-    const jsPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}.js`);
-    return fs.existsSync(wasmPath) && fs.existsSync(jsPath);
-});
-
-if (!hasWasmPack || !hasCargo) {
-    if (artifactsExist) {
-        console.warn('[WARNING] Herramientas Rust/WASM no detectadas. Usando artefactos pre-existentes.');
-        process.exit(0);
-    } else {
-        console.error('[ERROR] No hay herramientas ni artefactos previos. Abortando build.');
+        execSync('npx wasm-pack --version', { stdio: 'ignore' });
+        wasmPackCmd = 'npx wasm-pack';
+    } catch (e2) {
+        error("wasm-pack no detectado en el entorno.");
         process.exit(1);
     }
 }
 
-console.log(`[NEXUS_LOG] Toolchain verificada (${wasmPackCmd}). Compilando modulos...`);
-
-// 3. Iteracion de modulos con manejo de errores limpio
+// 2. Proceso de Compilacion
 modules.forEach(mod => {
-    console.log(`[NEXUS_LOG] Procesando: ${mod}...`);
+    log(`Procesando modulo: ${mod}...`);
     const sourceDir = path.join(rootDir, 'rust-wasm', mod);
     const publicOutDir = path.join(rootDir, 'public', 'wasm', mod);
 
@@ -73,17 +47,14 @@ modules.forEach(mod => {
             stdio: 'inherit'
         });
 
-        // Post-build: Limpieza de .gitignore generado por wasm-pack
         const gitignorePath = path.join(publicOutDir, '.gitignore');
-        if (fs.existsSync(gitignorePath)) {
-            fs.unlinkSync(gitignorePath);
-        }
+        if (fs.existsSync(gitignorePath)) fs.unlinkSync(gitignorePath);
 
-        console.log(`[SUCCESS] Modulo ${mod} listo en public/wasm/${mod}/`);
+        success(`Modulo ${mod} forjado correctamente.`);
     } catch (e) {
-        console.error(`[ERROR] Fallo critico en la compilacion de ${mod}.`);
+        error(`Fallo en la compilacion de ${mod}. Abortando.`);
         process.exit(1);
     }
 });
 
-console.log('[NEXUS_LOG] Secuencia WASM completada.');
+success("SECUENCIA WASM FINALIZADA.");
