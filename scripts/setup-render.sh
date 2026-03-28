@@ -34,7 +34,7 @@ fi
 log "Configurando target wasm32-unknown-unknown..."
 rustup target add wasm32-unknown-unknown
 
-# 3. WASM Pack Check (Pinned version check)
+# 3. WASM Pack Check (Security-first verification)
 log "Verificando wasm-pack (usando herramienta fijada en package.json)..."
 if command -v pnpm >/dev/null 2>&1; then
     if ! pnpm exec wasm-pack --version >/dev/null 2>&1; then

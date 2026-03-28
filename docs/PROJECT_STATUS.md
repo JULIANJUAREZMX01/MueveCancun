@@ -1,5 +1,5 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
-**Fecha:** 2026-03-28  
+**Fecha:** 2026-03-10
 **Versión:** 1.0.0 (Nexus Prime v3.3)  
 **Estado General:** 🟢 ESTABLE — Motor WASM operativo, PWA desplegada en producción
 
@@ -24,11 +24,6 @@ persistencia funciona sobre IndexedDB sin necesidad de backend.
 | i18n Español / Inglés | ✅ Middleware Astro |
 | CI/CD (6 workflows) | ✅ test, build-wasm, validate-data, autocurative, claude-delegation, codeql |
 | Seguridad XSS / DoS / Prototype Pollution | ✅ Implementado |
-| ARCH_MANIFEST.md (topología del sistema) | ✅ Creado en raíz del repo |
-| docs/adr/ (4 ADRs de decisiones arquitectónicas) | ✅ ADR-001 a ADR-004 creados |
-| Limpieza de artefactos de desarrollo en raíz | ✅ fix_*.js, patch*.diff, test_browser*.js, script_block.js, full_script.ts eliminados |
-| .gitignore actualizado con patrones de artefactos | ✅ Patrones añadidos para prevenir reincidencia |
-| Documentación de deuda técnica actualizada | ✅ PROJECT_STATUS y ROADMAP sincronizados |
 
 ---
 
@@ -184,7 +179,7 @@ Resumen priorizado:
 
 | Prioridad | Ítem |
 |-----------|------|
-| ~~🔴 Alta~~ | ~~Archivos de desarrollo en raíz (`full_script.ts`, `patch*.diff`, `*.bak`) — limpiar o mover a `/tmp`~~ ✅ Resuelto 2026-03-28 |
+| 🔴 Alta | Archivos de desarrollo en raíz (`full_script.ts`, `patch*.diff`, `*.bak`) — limpiar o mover a `/tmp` |
 | 🔴 Alta | `master_routes.json` usa `"rutas"` con múltiples entradas; aún hay datos/coords placeholder y registros incompletos que no son aptos para producción |
 | 🟡 Media | `RouteCalculator.astro.bak` / `.new` — artefactos de edición sin eliminar |
 | 🟡 Media | `Analytics.ts` es un stub sin proveedor real |
@@ -206,5 +201,5 @@ Ver [`ROADMAP.md`](../ROADMAP.md) para el plan completo.
 
 ---
 
-**Última actualización:** 2026-03-28  
+**Última actualización:** 2026-03-10
 **Próxima revisión:** Al completar sprint v3.4
