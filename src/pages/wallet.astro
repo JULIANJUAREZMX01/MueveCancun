@@ -256,7 +256,7 @@ import MainLayout from '../layouts/MainLayout.astro';
     async function setupWallet() {
       const balanceAmount = document.getElementById('balance-amount');
       const confirmBtn = document.getElementById('confirm-recharge');
-      const popover = document.getElementById('recharge-popover');
+      const popover = document.getElementById('recharge-popover') as HTMLElement | null;
 
       async function updateBalanceUI() {
           // Use IndexedDB as single source of truth
@@ -289,7 +289,6 @@ import MainLayout from '../layouts/MainLayout.astro';
 
           // Native Popover Hide
           if (popover && popover.matches(':popover-open')) {
-            // @ts-ignore
             popover.hidePopover();
           }
 
