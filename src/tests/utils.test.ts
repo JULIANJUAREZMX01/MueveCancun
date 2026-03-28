@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { escapeHtml, safeJsonStringify, truncateText } from '../utils/utils';
+import { escapeHtml, safeJsonStringify, truncateText, safeUrl } from '../utils/utils';
 import { getDistance } from '../utils/geometry';
 
 describe('escapeHtml Utility', () => {
@@ -144,5 +144,34 @@ describe('truncateText Utility', () => {
     // Cutoff = 1 - 1 = 0
     expect(truncateText('A', 1)).toBe('A');
     expect(truncateText('AB', 1)).toBe('…'); // slice(0, 0) + '…'
+  });
+});
+
+describe('safeUrl Utility', () => {
+  it('should encode standard strings', () => {
+    expect(safeUrl('hello')).toBe('hello');
+    expect(safeUrl('Cancún')).toBe('Canc%C3%BAn');
+  });
+
+  it('should encode special characters', () => {
+    expect(safeUrl('hello world')).toBe('hello%20world');
+    expect(safeUrl('foo&bar=baz')).toBe('foo%26bar%3Dbaz');
+  });
+
+  it('should specifically handle single quotes by escaping them', () => {
+    expect(safeUrl("it's a trap")).toBe('it%27s%20a%20trap');
+    expect(safeUrl("'")).toBe('%27');
+  });
+
+  it('should return empty string for non-string inputs', () => {
+    expect(safeUrl(null as any)).toBe('');
+    expect(safeUrl(undefined as any)).toBe('');
+    expect(safeUrl(123 as any)).toBe('');
+    expect(safeUrl({} as any)).toBe('');
+    expect(safeUrl(true as any)).toBe('');
+  });
+
+  it('should handle empty strings', () => {
+    expect(safeUrl('')).toBe('');
   });
 });
