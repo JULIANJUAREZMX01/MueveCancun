@@ -17,13 +17,13 @@ const error = (msg) => console.error(`\x1b[1;31m[ERROR]\x1b[0m ${msg}`);
 log("Iniciando forja de modulos WASM...");
 
 // 1. Verificacion de Toolchain
-let wasmPackCmd = 'wasm-pack';
+let wasmPackCmd = { command: 'wasm-pack', prefixArgs: [] };
 try {
     execSync('wasm-pack --version', { stdio: 'ignore' });
 } catch (e) {
     try {
         execSync('npx wasm-pack --version', { stdio: 'ignore' });
-        wasmPackCmd = 'npx wasm-pack';
+        wasmPackCmd = { command: 'npx', prefixArgs: ['wasm-pack'] };
     } catch (e2) {
         error("wasm-pack no detectado en el entorno.");
         process.exit(1);
@@ -42,9 +42,19 @@ modules.forEach(mod => {
     fs.mkdirSync(publicOutDir, { recursive: true });
 
     try {
-        execSync(`${wasmPackCmd} build --target web --out-dir ${publicOutDir}`, {
+        const args = [
+            ...wasmPackCmd.prefixArgs,
+            'build',
+            '--target',
+            'web',
+            '--out-dir',
+            publicOutDir
+        ];
+        execSync(wasmPackCmd.command, {
             cwd: sourceDir,
-            stdio: 'inherit'
+            stdio: 'inherit',
+            shell: false,
+            args
         });
 
         const gitignorePath = path.join(publicOutDir, '.gitignore');
