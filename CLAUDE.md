@@ -1,5 +1,30 @@
 # CLAUDE.md — MueveCancun AI Agent Instructions
 
+<!--
+  OBJETO DE ESTUDIO — CLAUDE (claude-code)
+  =========================================
+  Agente principal de desarrollo. Opera en ramas claude/* y copilot/*.
+  Nunca hace push directo a main.
+
+  CONTEXTO ACTUAL (actualizado: 2026-03-28):
+  - Versión: 1.0.0 (Nexus Prime v3.3+)
+  - PR #365 merged (Jules): Hardening estricto de tipos TS/WASM, migración de sw.js → src/sw.ts,
+    migración de public/js/*.js → src/scripts/*.ts. Elimina src/lib/CoordinatesStore.ts duplicado.
+  - Post-PR #365: Los artefactos WASM (public/wasm/route-calculator/*.js/.d.ts/.wasm) están en
+    .gitignore y NO se deben commitear. Solo se generan en build/CI.
+  - Service Worker: Ahora vive en src/sw.ts (TypeScript), NO en public/sw.js.
+  - Scripts cliente: Ahora viven en src/scripts/*.ts, NO en public/js/*.
+
+  ORDEN DE SEGUIMIENTO (historial de ramas claude/*):
+  - copilot/fix-pr-365-conflicts: Resolución de 9 conflictos del merge de PR #365.
+  - docs/agent-context-tracking: Documentación de contexto y tracking multi-agente (este PR).
+
+  REFERENCIA CRUZADA:
+  → AGENTS.md para protocolo de comunicación entre agentes.
+  → docs/AGENT_TRACKING.md para historial completo de PRs.
+  → ARCH_MANIFEST.md para decisiones de arquitectura vigentes.
+-->
+
 ## Proyecto
 
 **MueveCancun** es una PWA offline-first para transporte público en Cancún y la Riviera Maya.
@@ -46,14 +71,18 @@ node scripts/validate-routes.mjs  # Validar JSON de rutas
 
 ## Archivos Críticos — Leer ANTES de Modificar
 
+<!-- Post-PR #365: sw.js migrado a src/sw.ts; public/js/*.js migrados a src/scripts/*.ts -->
+
 | Archivo | Propósito | Riesgo |
 |---------|-----------|--------|
 | `rust-wasm/route-calculator/src/lib.rs` | Motor de ruteo WASM | Alto — cambios requieren recompilación |
 | `public/data/master_routes.json` | Catálogo de rutas | Alto — mal JSON rompe el motor |
 | `src/components/RouteCalculator.astro` | UI principal (~60KB) | Medio — leer antes de editar |
 | `src/components/InteractiveMap.astro` | Mapa Leaflet | Medio |
-| `public/sw.js` | Service Worker PWA | Medio — afecta caché offline |
+| `src/sw.ts` | Service Worker PWA (TypeScript) | Medio — afecta caché offline |
 | `src/utils/CoordinatesStore.ts` | Base de datos de coordenadas | Bajo |
+| `src/utils/WasmLoader.ts` | FFI TypeScript↔WASM (tipado estricto) | Medio — ver ADR 003 |
+| `src/types.ts` | Tipos consolidados (Journey, RouteLeg, RouteStop) | Bajo — fuente de verdad de tipos |
 
 ---
 
@@ -137,10 +166,13 @@ git push -u origin claude/descripcion-breve-XXXXX
 
 ## Diagnóstico Rápido de Fallos
 
+<!-- Nota: public/sw.js ya NO existe. El Service Worker vive en src/sw.ts desde PR #365. -->
+
 | Síntoma | Causa probable | Fix |
 |---------|---------------|-----|
 | "Catalog not loaded" en consola | WASM no compilado o JSON inválido | `node scripts/build-wasm.mjs && node scripts/validate-routes.mjs` |
 | GPS no funciona | `findNearestWithDistance` falla | Verificar que `coordinatesStore.init()` se llamó antes |
 | Transbordos no aparecen | Nombres de paradas sin match | Verificar nombres en catálogo; agregar hub alias |
 | Mapa no dibuja ruta | Coordenadas faltantes en paradas | Agregar `lat`/`lng` en `master_routes.json` |
-| SW muestra contenido antiguo | Cache version no bumpeada | Incrementar `CACHE_VERSION` en `public/sw.js` |
+| SW muestra contenido antiguo | Cache version no bumpeada | Incrementar `CACHE_VERSION` en `src/sw.ts` |
+| Error de tipo en WasmLoader | FFI sin tipar | Ver `src/types.ts` y `docs/adr/003-typescript-strict-ffi.md` |
