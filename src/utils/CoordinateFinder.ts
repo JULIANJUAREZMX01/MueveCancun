@@ -64,10 +64,17 @@ export class CoordinateFinder {
         if (candidates.size > 0) {
              // Prefer candidates that are substrings or contain the query
              const lowerQ = q.toLowerCase();
-             bestKey = Array.from(candidates).find(k => {
+             for (const k of candidates) {
                  const lowerK = k.toLowerCase();
-                 return lowerQ.includes(lowerK) || lowerK.includes(lowerQ);
-             }) || Array.from(candidates)[0];
+                 if (lowerQ.includes(lowerK) || lowerK.includes(lowerQ)) {
+                     bestKey = k;
+                     break;
+                 }
+             }
+             // Fallback to the first candidate if no substring match
+             if (!bestKey) {
+                 bestKey = candidates.values().next().value || null;
+             }
         }
 
         const result = bestKey ? (this.db.get(bestKey) || null) : null;
