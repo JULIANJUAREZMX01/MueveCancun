@@ -29,6 +29,8 @@ const siteBase = Astro.site?.href?.replace(/\/$/, '') ?? '';
 const canonicalUrl = siteBase + pathname;
 const ogImage = image.startsWith('http') ? image : `${siteBase}${image}`;
 const ga4Id = import.meta.env.PUBLIC_GA4_ID;
+const googleVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
+const bingVerification = import.meta.env.PUBLIC_BING_SITE_VERIFICATION;
 
 const navItems = [
   { href: '/home', label: 'Inicio', icon: 'explore', activePattern: /^\/home/ },
@@ -67,6 +69,9 @@ const navItems = [
     <meta name="title" content={title} />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
+    <!-- Search Engine Verification -->
+    {googleVerification && <meta name="google-site-verification" content={googleVerification} />}
+    {bingVerification && <meta name="msvalidate.01" content={bingVerification} />}
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
