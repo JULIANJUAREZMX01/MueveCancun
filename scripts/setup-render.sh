@@ -28,5 +28,5 @@ rustup target add wasm32-unknown-unknown
 
 # 3. Build Project (wasm-pack is managed via package.json dependencies and npx)
 echo "🚀 Building Project..."
-pnpm install
+pnpm install --frozen-lockfile
 pnpm run build
