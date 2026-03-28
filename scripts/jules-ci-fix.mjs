@@ -7,6 +7,7 @@
  *   JULES_API_KEY      — Clave de API Jules
  *   FAILED_JOB_NAME    — Nombre del job fallido
  *   FAILED_LOG         — Logs del job fallido (truncados a 8KB)
+ *   GIT_DIFF           — Diff del commit fallido obtenido vía GitHub API (texto plano, truncado a 12KB)
  *   WORKFLOW_NAME      — Nombre del workflow
  *   HEAD_BRANCH        — Rama donde falló el CI
  *   HEAD_SHA           — SHA del commit fallido
@@ -17,6 +18,7 @@ import { createJulesSession } from './jules-api.mjs';
 
 const failedJobName = process.env.FAILED_JOB_NAME || 'unknown job';
 const failedLog = (process.env.FAILED_LOG || '').slice(0, 8192);
+const gitDiff = (process.env.GIT_DIFF || '').slice(0, 12288);
 const workflowName = process.env.WORKFLOW_NAME || 'CI';
 const headBranch = process.env.HEAD_BRANCH || 'main';
 const headSha = process.env.HEAD_SHA || '';
@@ -49,6 +51,11 @@ Analyze the failing CI job logs below and apply the minimal code fix required to
 \`\`\`
 ${failedLog || '(no logs provided)'}
 \`\`\`
+
+### Commit Diff (fetched via GitHub API — read-only, not executed)
+\`\`\`diff
+${gitDiff || '(diff not available)'}
+\`\`\`
 `.trim();
 
 console.log('Creating Jules CI fix session...');
@@ -74,6 +81,7 @@ try {
       failedJobName,
       headSha,
       runUrl,
+      gitDiff: gitDiff || undefined,
     },
   });
 

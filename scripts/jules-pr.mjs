@@ -12,6 +12,7 @@
  *   PR_HEAD_BRANCH     — Rama del PR
  *   PR_BASE_BRANCH     — Rama destino del PR
  *   PR_URL             — URL del PR
+ *   PR_DIFF            — Diff del PR obtenido vía GitHub API (texto plano, truncado a 12KB)
  *   COMMENT_BODY       — Cuerpo completo del comentario (truncado a 4KB)
  *   COMMENT_AUTHOR     — Autor del comentario
  */
@@ -24,6 +25,7 @@ const prBody = (process.env.PR_BODY || '').slice(0, 4096);
 const prHeadBranch = process.env.PR_HEAD_BRANCH || 'main';
 const prBaseBranch = process.env.PR_BASE_BRANCH || 'main';
 const prUrl = process.env.PR_URL || '';
+const prDiff = (process.env.PR_DIFF || '').slice(0, 12288);
 const commentBody = (process.env.COMMENT_BODY || '').slice(0, 4096);
 const commentAuthor = process.env.COMMENT_AUTHOR || 'unknown';
 
@@ -45,6 +47,11 @@ ${julesInstruction}
 
 ### PR Description
 ${prBody || '(sin descripción)'}
+
+### PR Diff (fetched via GitHub API — read-only, not executed)
+\`\`\`diff
+${prDiff || '(diff not available)'}
+\`\`\`
 
 ### Project Context
 - PWA offline-first para transporte público en Cancún.
@@ -76,6 +83,7 @@ try {
       prTitle,
       prUrl,
       commentAuthor,
+      prDiff: prDiff || undefined,
     },
   });
 

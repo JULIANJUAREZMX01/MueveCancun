@@ -59,12 +59,45 @@ jobs:
     needs: detect-failure
     if: needs.detect-failure.outputs.should_fix == 'true'
     steps:
+      # Checkout the default branch only — trusted code.
+      # The untrusted head SHA is never checked out; its diff is fetched via API below.
       - uses: actions/checkout@v4
 
       - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      # Fetch the git diff of the failing commit via GitHub REST API (no code execution).
+      # The diff is passed as plain text to Jules so it has full context of the changes.
+      - name: Fetch commit diff via GitHub API
+        id: fetch-diff
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const headSha = '${{ needs.detect-failure.outputs.head_sha }}';
+            if (!headSha) {
+              core.setOutput('git_diff', '(no SHA available)');
+              return;
+            }
+            try {
+              // GET /repos/{owner}/{repo}/commits/{ref} returns per-file patches
+              const commit = await github.rest.repos.getCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: headSha,
+              });
+              const files = commit.data.files || [];
+              const diffLines = files.map(f => [
+                `--- a/${f.filename}`,
+                `+++ b/${f.filename}`,
+                f.patch || '(binary or no patch available)',
+              ].join('\n')).join('\n\n');
+              // Truncate to 12 KB to stay within env-var limits
+              core.setOutput('git_diff', diffLines.slice(0, 12288));
+            } catch (err) {
+              core.setOutput('git_diff', `(diff unavailable: ${err.message})`);
+            }
 
       - name: Fetch failed job logs
         id: fetch-logs
@@ -110,6 +143,7 @@ jobs:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
           FAILED_JOB_NAME: ${{ steps.fetch-logs.outputs.failed_job_name }}
           FAILED_LOG: ${{ steps.fetch-logs.outputs.failed_log }}
+          GIT_DIFF: ${{ steps.fetch-diff.outputs.git_diff }}
           WORKFLOW_NAME: ${{ needs.detect-failure.outputs.workflow_name }}
           HEAD_BRANCH: ${{ needs.detect-failure.outputs.head_branch }}
           HEAD_SHA: ${{ needs.detect-failure.outputs.head_sha }}

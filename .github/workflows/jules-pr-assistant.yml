@@ -43,12 +43,40 @@ jobs:
             core.setOutput('body', (pr.data.body || '').slice(0, 4096));
             core.setOutput('url', pr.data.html_url);
 
+      # Checkout the default branch only — trusted code.
+      # The untrusted PR branch is never checked out; its diff is fetched via API below.
       - uses: actions/checkout@v4
 
       - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      # Fetch PR file changes via GitHub REST API (no code execution).
+      # The diff text is passed to Jules as data so it has full context of the changes.
+      - name: Fetch PR diff via GitHub API
+        id: fetch-pr-diff
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: ${{ github.event.issue.number }},
+                per_page: 100,
+              });
+              const diffLines = files.map(f => [
+                `--- a/${f.filename}`,
+                `+++ b/${f.filename}`,
+                `@@ status: ${f.status}, +${f.additions}/-${f.deletions} @@`,
+                f.patch || '(binary or no patch available)',
+              ].join('\n')).join('\n\n');
+              // Truncate to 12 KB to stay within env-var limits
+              core.setOutput('pr_diff', diffLines.slice(0, 12288));
+            } catch (err) {
+              core.setOutput('pr_diff', `(diff unavailable: ${err.message})`);
+            }
 
       - name: React to comment (acknowledge)
         uses: actions/github-script@v7
@@ -70,6 +98,7 @@ jobs:
           PR_HEAD_BRANCH: ${{ steps.pr-details.outputs.head_branch }}
           PR_BASE_BRANCH: ${{ steps.pr-details.outputs.base_branch }}
           PR_URL: ${{ steps.pr-details.outputs.url }}
+          PR_DIFF: ${{ steps.fetch-pr-diff.outputs.pr_diff }}
           COMMENT_BODY: ${{ github.event.comment.body }}
           COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
         run: node scripts/jules-pr.mjs
