@@ -21,7 +21,9 @@ function getStats() {
         const commitCount = execSync('git rev-list --count HEAD').toString().trim();
         const rustLines = countRustLines('rust-wasm');
 
-        // Ensure we show at least the baseline from the report if git count is low in this environment
+        // Baseline values from the initial SEO audit (2026-03-28): 851 commits, 1,206 Rust LOC.
+        // In shallow-clone environments (e.g. CI), git rev-list may return a lower count;
+        // use the baseline as floor so the README never shows an artificially low number.
         const finalCommits = parseInt(commitCount) < 851 ? '851+' : commitCount;
         const finalLines = rustLines < 1206 ? '1,206' : rustLines.toLocaleString();
 
