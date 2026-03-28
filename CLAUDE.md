@@ -1,5 +1,16 @@
 # CLAUDE.md — MueveCancun AI Agent Instructions
 
+<!--
+  OBJETO DE ESTUDIO:
+  Guía operativa para el agente Claude (y cualquier agente compatible) que trabaje
+  sobre MueveCancun. Cubre arquitectura, comandos, reglas de datos, seguridad y
+  flujo de trabajo Git.
+
+  Este archivo se actualiza cada vez que hay un cambio estructural en el proyecto.
+  Ver también: AGENTS.md (protocolo multi-agente) y docs/SEGUIMIENTO_AGENTES.md
+  (bitácora detallada de cambios por PR).
+-->
+
 ## Proyecto
 
 **MueveCancun** es una PWA offline-first para transporte público en Cancún y la Riviera Maya.
@@ -40,6 +51,10 @@ pnpm build                      # Build Astro SSG completo
 # Validación rápida
 node scripts/check-wasm.cjs    # Verificar binario WASM existe
 node scripts/validate-routes.mjs  # Validar JSON de rutas
+
+# SEO / Activos estáticos (scripts agregados en PR #367, 2026-03-28)
+node scripts/generate_og_image.mjs  # Regenera public/og-image.png (1200×630px vía Sharp)
+node scripts/update-stats.mjs       # Actualiza estadísticas en README.md
 ```
 
 ---
@@ -105,6 +120,22 @@ El `RouteCalculator.astro` escucha ese evento y actualiza los inputs.
 - **Prototype Pollution**: Usar `Map` en lugar de objetos planos para datos del catálogo.
 - **DoS WASM**: El motor tiene límite de 10M ops y 10MB de payload — no aumentar.
 - **HMAC Wallet**: `src/utils/db.ts` — la firma HMAC es un deterrente; no remover.
+<!-- También: scripts/update-stats.mjs usa traversal puro de Node.js (no shell expansion)
+     para evitar inyección de comandos. Mantener ese patrón. -->
+
+---
+
+## SEO y Metadatos (Agregado PR #367, 2026-03-28)
+
+<!-- Contexto: auditoría SEO detectó OG image de 157 bytes (placeholder), sitemap sin
+     páginas localizadas/rutas, y sin soporte de verificación de Search Console. -->
+
+- **OG Image**: `public/og-image.png` — 1200×630px, regenerar con `node scripts/generate_og_image.mjs`.
+- **Sitemap dinámico**: `src/pages/sitemap.xml.ts` — incluye `/es/`, `/en/` y todas las rutas (`/es/ruta/:id`).
+- **Verification tags** (condicionales en `MainLayout.astro`):
+  - `PUBLIC_GOOGLE_SITE_VERIFICATION` → `<meta name="google-site-verification" />`
+  - `PUBLIC_BING_SITE_VERIFICATION` → `<meta name="msvalidate.01" />`
+- **Stats README**: `node scripts/update-stats.mjs` — actualiza commit count y líneas Rust.
 
 ---
 
