@@ -66,8 +66,8 @@ try {
             const previousRaw = fs.readFileSync(outputPath, 'utf-8');
             const previousData = JSON.parse(previousRaw);
 
-            const currentCopy = JSON.parse(JSON.stringify(data));
-            const previousCopy = JSON.parse(JSON.stringify(previousData));
+            const currentCopy = structuredClone(data);
+            const previousCopy = structuredClone(previousData);
 
             if (currentCopy.metadata) delete currentCopy.metadata.last_optimized;
             if (previousCopy.metadata) delete previousCopy.metadata.last_optimized;
