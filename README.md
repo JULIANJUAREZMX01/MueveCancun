@@ -8,6 +8,8 @@
 | :--- | :--- |
 | 🚌 App en producción | [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com) |
 | 📦 Repositorio principal | [github.com/JULIANJUAREZMX01/MueveCancun](https://github.com/JULIANJUAREZMX01/MueveCancun) |
+| 🗺️ Roadmap | [ROADMAP.md](./ROADMAP.md) |
+| 📊 Estado del proyecto | [docs/PROJECT_STATUS.md](./docs/PROJECT_STATUS.md) |
 | 🚚 MueveRepartoEnCancún (app) | [mueverepartoencancun.onrender.com](https://mueverepartoencancun.onrender.com) |
 | 📦 MueveRepartoEnCancún (repo) | [github.com/JULIANJUAREZMX01/MueveRepartoEnCancun-](https://github.com/JULIANJUAREZMX01/MueveRepartoEnCancun-) |
 | 👤 Portfolio del autor | [portfolio-jaja-dev.onrender.com/portfolio](https://portfolio-jaja-dev.onrender.com/portfolio) |
@@ -202,7 +204,7 @@ As part of the v3.2 performance optimization, we have moved away from runtime ic
 The `Icon.astro` component now uses Vite's `import.meta.glob` to securely inline SVGs directly into the HTML at build time.
 - **Zero Network Requests**: Icons are part of the initial HTML payload.
 - **LFI Protection**: Path resolution is restricted to the `/public/icons/` directory via glob patterns.
-- **Accessibility First**: Icons are inlined as decorative elements with `aria-hidden="true"`. For semantic icons, provide accessible labels via surrounding text or wrapper components.
+- **Accessibility First**: Automatically handles `aria-hidden` for decorative icons and `aria-label` for semantic ones.
 
 ### 🎨 CSS-Driven Micro-UX
 We prioritize CSS5 features over JavaScript for interactive states:

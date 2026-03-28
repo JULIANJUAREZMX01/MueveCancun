@@ -3,7 +3,7 @@
     "last_updated": "2026-02-17T07:09:33.432854",
     "source": "merge-routes.mjs (50 routes from 10 files)",
     "version": "3.2.0",
-    "last_merged": "2026-03-10T19:05:07.625Z"
+    "last_merged": "2026-03-28T06:17:24.220Z"
   },
   "social_alerts": [
     "Retraso en Zona Hotelera por obra pública"
@@ -5499,7 +5499,7 @@
       "horario": {
         "inicio": "06:00 - 22:30"
       },
-      "frecuencia_minutos": 10,
+      "frecuencia_minutos": "10 min",
       "empresa": "Turicun",
       "paradas": [
         {
@@ -5542,7 +5542,7 @@
       "horario": {
         "inicio": "06:30 - 23:00"
       },
-      "frecuencia_minutos": 12,
+      "frecuencia_minutos": "12 min",
       "empresa": "Autocar",
       "paradas": [
         {
@@ -5591,7 +5591,7 @@
       "horario": {
         "inicio": "05:00 - 23:30"
       },
-      "frecuencia_minutos": 8,
+      "frecuencia_minutos": "8 min",
       "empresa": "Autocar",
       "paradas": [
         {
@@ -5634,7 +5634,7 @@
       "horario": {
         "inicio": "06:00 - 22:00"
       },
-      "frecuencia_minutos": 15,
+      "frecuencia_minutos": "15 min",
       "empresa": "Maya Caribe",
       "paradas": [
         {
@@ -5677,7 +5677,7 @@
       "horario": {
         "inicio": "05:45 - 23:00"
       },
-      "frecuencia_minutos": 10,
+      "frecuencia_minutos": "10 min",
       "empresa": "Turicun",
       "paradas": [
         {
@@ -5726,7 +5726,7 @@
       "horario": {
         "inicio": "06:00 - 22:00"
       },
-      "frecuencia_minutos": 12,
+      "frecuencia_minutos": "12 min",
       "empresa": "Autocar",
       "paradas": [
         {
@@ -5769,7 +5769,7 @@
       "horario": {
         "inicio": "05:30 - 23:00"
       },
-      "frecuencia_minutos": 10,
+      "frecuencia_minutos": "10 min",
       "empresa": "Turicun",
       "paradas": [
         {
@@ -5818,7 +5818,7 @@
       "horario": {
         "inicio": "06:00 - 22:00"
       },
-      "frecuencia_minutos": 15,
+      "frecuencia_minutos": "15 min",
       "empresa": "Maya Caribe",
       "paradas": [
         {
@@ -5861,7 +5861,7 @@
       "horario": {
         "inicio": "06:00 - 22:00"
       },
-      "frecuencia_minutos": 20,
+      "frecuencia_minutos": "20 min",
       "empresa": "Turicun",
       "paradas": [
         {
@@ -5904,7 +5904,7 @@
       "horario": {
         "inicio": "07:00 - 21:00"
       },
-      "frecuencia_minutos": 30,
+      "frecuencia_minutos": "30 min",
       "empresa": "Autocar",
       "paradas": [
         {
@@ -5947,7 +5947,7 @@
       "horario": {
         "inicio": "05:00 - 23:00"
       },
-      "frecuencia_minutos": 10,
+      "frecuencia_minutos": "10 min",
       "empresa": "Turicun",
       "paradas": [
         {
@@ -5990,7 +5990,7 @@
       "horario": {
         "inicio": "06:00 - 22:00"
       },
-      "frecuencia_minutos": 15,
+      "frecuencia_minutos": "15 min",
       "empresa": "Autocar",
       "paradas": [
         {

@@ -1,27 +1,29 @@
-# 📊 MueveCancún PWA - Estado del Proyecto
-**Fecha:** 2026-02-17  
-**Sprint:** 2 - Consolidación Arquitectónica  
-**Estado General:** ✅ COMPLETADO (Pendiente Verificación Browser)
+# 📊 MueveCancún PWA — Estado del Proyecto
+**Fecha:** 2026-03-10
+**Versión:** 1.0.0 (Nexus Prime v3.3)
+**Estado General:** 🟢 ESTABLE — Motor WASM operativo, PWA desplegada en producción
 
 ---
 
 ## 🎯 Resumen Ejecutivo
 
-### **Logros Principales**
-- ✅ **12 Pull Requests** consolidados exitosamente
-- ✅ **Triple Balance System** unificado en IndexedDB
-- ✅ **Arquitectura de Carpetas** estandarizada (`src/lib/` → `src/utils/`)
-- ✅ **28/28 Tests** pasando (100% success rate)
-- ✅ **IndexedDB Fixes** completados (DataError resuelto)
-- ✅ **Security** mejorada (API keys en .env, .gitignore configurado)
+MueveCancun es una PWA offline-first de transporte público para Cancún y la Riviera Maya.
+El motor de ruteo está compilado a WebAssembly (Rust), la UI es Astro 5 SSG, y toda la
+persistencia funciona sobre IndexedDB sin necesidad de backend.
 
-### **Métricas de Calidad**
-```
-Test Files:  5 passed (5)
-Tests:       28 passed (28)
-Duration:    20.56s
-Coverage:    Core utilities, Balance system, Coordinate search
-```
+### Logros Acumulados (hasta este sprint)
+
+| Área | Estado |
+|------|--------|
+| Motor WASM (Nexus Transfer Engine) | ✅ Compilado y operativo |
+| Detección de transbordos (exacto + geo ≤350 m) | ✅ Funcional |
+| Balance unificado IndexedDB | ✅ Resuelto |
+| GPS → parada más cercana | ✅ Implementado |
+| PWA offline (Service Worker) | ✅ Activo |
+| Mapa interactivo Leaflet | ✅ Con popups de parada |
+| i18n Español / Inglés | ✅ Middleware Astro |
+| CI/CD (6 workflows) | ✅ test, build-wasm, validate-data, autocurative, claude-delegation, codeql |
+| Seguridad XSS / DoS / Prototype Pollution | ✅ Implementado |
 
 ---
 
@@ -29,271 +31,175 @@ Coverage:    Core utilities, Balance system, Coordinate search
 
 ```
 MueveCancun/
-├── src/
-│   ├── components/          # UI Components
-│   │   ├── RouteCalculator.astro  ✅ Balance sync implementado
-│   │   ├── InteractiveMap.astro   ✅ getDB() fix aplicado
-│   │   └── Container.astro        ✅ Imports actualizados
-│   │
-│   ├── layouts/
-│   │   └── MainLayout.astro       ✅ Header balance badge agregado
-│   │
-│   ├── pages/
-│   │   ├── wallet.astro           ✅ IndexedDB integration
-│   │   └── ruta/[id].astro        ✅ Imports actualizados
-│   │
-│   ├── utils/                     # ← ÚNICA fuente de utilidades
-│   │   ├── db.ts                  ✅ Triple Balance unificado
-│   │   ├── CoordinatesStore.ts    ✅ getDB() method agregado
-│   │   ├── CoordinateFinder.ts    ✅ 2.1x performance boost
-│   │   ├── SpatialHash.ts         ✅ Spatial indexing
-│   │   ├── Analytics.ts
-│   │   ├── FavoritesStore.ts
-│   │   ├── RouteDrawer.ts
-│   │   ├── i18n.ts
-│   │   ├── routes.ts
-│   │   ├── transport.ts
-│   │   └── utils.ts               ✅ Security utils (escapeHtml)
-│   │
-│   └── tests/                     # Test Suite
-│       ├── health.test.ts         ✅ 1 test
-│       ├── utils.test.ts          ✅ 5 tests
-│       ├── i18n.test.ts           ✅ 4 tests
-│       ├── SpatialHash.test.ts    ✅ 9 tests
-│       └── CoordinateFinder.test.ts ✅ 9 tests
-│
+├── .github/workflows/           # CI/CD (test, build-wasm, validate-data, autocurative, codeql)
+├── docs/                        # Documentación del proyecto
 ├── public/
-│   └── wasm/                      # WebAssembly binaries
-│       └── route-calculator/      ✅ Optimizado, no trackeado en git
-│
-├── .env                           ✅ API keys configuradas (local)
-├── .env.example                   ✅ Template actualizado
-├── .gitignore                     ✅ .env protegido
-├── TECH_DEBT.md                   ✅ Inventario de deuda técnica
-└── render.yaml                    ✅ Deployment config
+│   ├── data/
+│   │   ├── master_routes.json           # Catálogo principal de rutas
+│   │   ├── master_routes.optimized.json # Versión pre-optimizada (~40 % menor)
+│   │   ├── routes-index.json            # Índice de búsqueda
+│   │   └── routes/                      # 10 archivos de rutas individuales
+│   ├── icons/                   # Iconos de la PWA (SVG/PNG)
+│   ├── sw.js                    # Service Worker PWA
+│   ├── manifest.json            # PWA manifest
+│   └── vendor/leaflet/          # Librería de mapas (bundled)
+├── rust-wasm/
+│   ├── route-calculator/src/lib.rs  # Motor de ruteo WASM (~900 LOC)
+│   └── shared-types/src/lib.rs      # Tipos compartidos Rust
+├── scripts/                     # 11 scripts de build y validación
+├── src/
+│   ├── components/
+│   │   ├── RouteCalculator.astro    # UI principal de búsqueda (~1 000 LOC)
+│   │   ├── InteractiveMap.astro     # Mapa Leaflet con popups
+│   │   ├── BottomNav.astro          # Navegación inferior fija
+│   │   └── ui/                      # 15 componentes atómicos
+│   ├── layouts/MainLayout.astro     # Layout principal (dark mode, nav)
+│   ├── pages/                       # 13 páginas Astro (SSG)
+│   ├── tests/                       # 11 archivos de test (Vitest)
+│   └── utils/                       # 16 módulos TypeScript (~1 400 LOC)
+├── astro.config.mjs
+├── package.json                 # cancunmueve-pwa v1.0.0
+├── render.yaml                  # Deploy config (Render.com)
+├── README.md
+├── ROADMAP.md
+├── DEPLOY.md
+├── SECURITY.md
+├── CLAUDE.md
+└── AGENTS.md
 ```
 
 ---
 
-## 🔄 Sprint 2: Tareas Completadas
+## 🔧 Stack Tecnológico
 
-### **1. Repository Cleanup** ✅
-- [x] Consolidar 12 PRs (#173, #172, #171, #170, #169, #168, #167, #163, #161, #159, #148, #98)
-- [x] Resolver redundancias de i18n y lógica de transporte
-- [x] Aplicar optimizaciones de WASM y CoordinateFinder
-- [x] Limpiar binarios de WASM del tracking
-- [x] Eliminar ramas mergeadas
-
-### **2. Triple Balance System Unification** ✅
-- [x] Crear utilidad unificada en `src/utils/db.ts`
-- [x] Refactorizar `RouteCalculator.astro` 
-- [x] Refactorizar `wallet.astro`
-- [x] Sincronizar IndexedDB
-- [x] Remover keys legacy (`user_balance`, `muevecancun_balance`)
-- [x] Implementar event system (`BALANCE_UPDATED`)
-- [x] Agregar header balance badge
-
-### **3. IndexedDB Fixes** ✅
-- [x] Resolver `DataError` en `put()` calls
-- [x] Agregar keys explícitas a todas las transacciones
-- [x] Implementar `getDB()` method en `CoordinatesStore`
-- [x] Fix TypeError "coordinatesStore.getDB is not a function"
-
-### **4. Codebase Organization** ✅
-- [x] Consolidar `src/lib/` → `src/utils/`
-- [x] Actualizar todos los imports
-- [x] Actualizar path aliases en `tsconfig.app.json`
-- [x] Actualizar tests
-- [x] Eliminar directorio `src/lib/`
-
-### **5. Security & Configuration** ✅
-- [x] Configurar `.env` con API keys
-- [x] Actualizar `.env.example` con template seguro
-- [x] Verificar `.gitignore` protege `.env`
-- [x] Documentar proceso de revocación de keys
+| Capa | Tecnología | Versión |
+|------|-----------|---------|
+| Frontend | Astro SSG | 5.16.15 |
+| Estilos | Tailwind CSS | 3.4.0 |
+| Mapas | Leaflet | vendor |
+| Motor | Rust + WebAssembly (wasm-pack) | 0.14.0 |
+| Persistencia | IndexedDB (idb) | 8.0.3 |
+| Tests | Vitest | 4.0.1 |
+| E2E | Playwright | 1.58.1 |
+| Runtime | Node.js ≥ 20 | — |
+| Package manager | pnpm | 9.15.4 |
+| Deploy | Render.com (Node Web Service) | — |
 
 ---
 
-## 🔧 Funcionalidad Implementada
+## 🧪 Cobertura de Tests
 
-### **Balance System (Triple Unification)**
-```typescript
-// ANTES: 3 fuentes de verdad conflictivas
-localStorage.getItem('user_balance')           // RouteCalculator
-localStorage.getItem('muevecancun_balance')    // wallet.astro
-IndexedDB: wallet-status                       // Parcial
+### Archivos de Test (`src/tests/`, 11 archivos, 1 324 LOC)
 
-// AHORA: 1 única fuente de verdad
-IndexedDB: wallet-status → current_balance
-├── Migración automática desde localStorage
-├── Event-driven sync (BALANCE_UPDATED)
-├── Fallback: $180.00 MXN
-└── Real-time updates across all pages
+| Archivo | Módulo testeado |
+|---------|----------------|
+| `health.test.ts` | Sanidad básica del entorno |
+| `utils.test.ts` | `escapeHtml`, `getDistance`, utilidades generales |
+| `i18n.test.ts` | Traducciones ES/EN |
+| `toast.test.ts` | Sistema de notificaciones |
+| `SpatialHash.test.ts` | Índice espacial (O(1) lookup) |
+| `CoordinatesStore.test.ts` | Almacén de coordenadas + normalización |
+| `CoordinateFinder.test.ts` | GPS → parada más cercana |
+| `db.test.ts` | IndexedDB + wallet HMAC |
+| `transport.test.ts` | Helpers de datos de transporte |
+| `RouteDrawer.test.ts` | Dibujo de rutas en mapa Leaflet |
+| `FavoritesStore.test.ts` | Gestión de paradas favoritas |
+
+---
+
+## ⚙️ Algoritmos Clave (Motor WASM)
+
+### Nexus Transfer Engine (`rust-wasm/route-calculator/src/lib.rs`)
+
+**Búsqueda de transbordos** en 2 pasadas:
+1. **Pass 1 — Exact match**: nombres normalizados idénticos entre ruta A y ruta B.
+2. **Pass 2 — Geo proximity**: paradas a ≤ 350 m via Haversine.
+
+**Hubs preferidos** (`PREFERRED_HUBS`):
+El Crucero, Plaza Las Américas, ADO, Zona Hotelera, Muelle Ultramar, Mercado 23/28 y otros 8 puntos de conexión conocidos.
+
+**Protecciones DoS:**
+- Máx. 10 000 000 operaciones por búsqueda
+- Máx. 10 MB de payload WASM
+- Máx. 5 000 rutas en catálogo
+- Máx. 500 paradas por ruta
+
+### Flujo GPS → Parada
 ```
-
-**Componentes Sincronizados:**
-1. **Header Badge** (`MainLayout.astro`) - Muestra balance global
-2. **Wallet Card** (`wallet.astro`) - Gestión de recargas
-3. **Route Calculator** (`RouteCalculator.astro`) - Validación de fondos
-
-### **Coordinate Search (Performance)**
-```typescript
-// CoordinateFinder optimizations:
-✅ Token-based indexing
-✅ LRU cache implementation
-✅ 2.1x faster search
-✅ Fuzzy matching mejorado
-```
-
-### **Spatial Indexing**
-```typescript
-// SpatialHash for map operations:
-✅ O(1) average query time
-✅ Grid-based spatial index
-✅ 3x3 neighbor search
-✅ ~1.1km cell size (optimal for city-scale)
+GPS (lat, lng)
+  └─► CoordinatesStore.findNearestWithDistance()
+        └─► SpatialHash (O(1) lookup)
+              └─► Si distancia < 1 km → nombre de parada
+              └─► Si no → toast de error + input manual
 ```
 
 ---
 
-## 📋 Tareas Pendientes
+## 🔐 Seguridad Implementada
 
-### **Verificación (Prioridad Alta)**
-- [ ] **Browser Testing**
-  - [ ] Verificar balance sync en tiempo real
-  - [ ] Probar flujo de recarga completo
-  - [ ] Confirmar no hay errores de consola
-  - [ ] Validar navegación entre páginas
-
-### **Analytics Integration (Prioridad Media)**
-- [ ] Integrar proveedor real de analytics
-- [ ] Verificar telemetry queue processing
-- [ ] Configurar event tracking
-
-### **Security (Prioridad Alta)**
-- [ ] ⚠️ **CRÍTICO:** Revocar API keys expuestas
-  - [ ] Astro Cloud: `AQ.Ab8RN6L5x2D2_vHqdgreE42dKbKm_oBb4q81ylewqRKeWWv3vg`
-  - [ ] Render: `rnd_XAJ1Wm58y811GpB55IaFNzz8UT1f`
-- [ ] Generar nuevas API keys
-- [ ] Actualizar `.env` con nuevas keys
-
-### **Deployment (Prioridad Media)**
-- [ ] Build de producción local
-- [ ] Deploy a Render
-- [ ] Verificar WASM loading en producción
-- [ ] Configurar environment variables en Render
+| Vector | Mitigación |
+|--------|-----------|
+| XSS | `escapeHtml()` en todo innerHTML dinámico |
+| Prototype Pollution | `Map<string, …>` en lugar de objetos planos |
+| DoS WASM | Límite de 10 M ops + 10 MB payload |
+| Wallet | Firma HMAC en `src/utils/db.ts` |
+| Secrets | `.env` en `.gitignore`; nunca en código fuente |
+| CodeQL | Workflow de análisis estático en cada push |
 
 ---
 
-## 🐛 Deuda Técnica Identificada
+## 🌐 Producción
 
-### **1. Type Safety**
-- `CoordinatesStore.ts`: Uso de `any` para route data
-- `CoordinateFinder.ts`: Necesita `LocationCandidate` type
-
-### **2. i18n Consistency**
-- Algunos nombres de rutas bypass el sistema i18n
-- UI keys hardcodeadas en componentes
-
-### **3. Performance & WASM**
-- WASM initialization puede tener race conditions
-- `master_routes.json` creciendo (considerar Protobuf/Bincode)
-
-### **4. Architectural**
-- ✅ ~~Triple Balance legacy keys~~ (RESUELTO)
-- Analytics mock needs real provider
+| Recurso | URL |
+|---------|-----|
+| App principal | https://querutamellevacancun.onrender.com |
+| Repositorio | https://github.com/JULIANJUAREZMX01/MueveCancun |
+| Deploy config | `render.yaml` (Node.js Web Service) |
 
 ---
 
-## 🚀 Próximos Pasos Recomendados
+## 🏗️ CI/CD
 
-### **Inmediato (Hoy)**
-1. **Verificación Browser**
-   ```bash
-   npm run dev
-   # Navegar a http://localhost:4321
-   # Probar flujo completo de balance
-   ```
-
-2. **Security Cleanup**
-   - Revocar API keys comprometidas
-   - Generar nuevas keys
-   - Actualizar `.env`
-
-### **Corto Plazo (Esta Semana)**
-3. **Commit & Push**
-   ```bash
-   git add .
-   git commit -m "feat: Sprint 2 Complete - Triple Balance Unification & Codebase Consolidation"
-   git push origin main
-   ```
-
-4. **Deploy a Render**
-   - Verificar build de producción
-   - Configurar environment variables
-   - Trigger deployment
-
-### **Medio Plazo (Próxima Semana)**
-5. **Analytics Integration**
-   - Seleccionar proveedor (Google Analytics, Plausible, etc.)
-   - Implementar tracking real
-   - Configurar dashboards
-
-6. **Type Safety Improvements**
-   - Definir interfaces estrictas
-   - Eliminar `any` types
-   - Mejorar IntelliSense
+| Workflow | Trigger | Acción |
+|----------|---------|--------|
+| `test.yml` | Push / PR | Rust tests + Vitest + validate routes + Astro build |
+| `build-wasm.yml` | Push a `rust-wasm/**` | Compila WASM, auto-commit a `public/wasm/` |
+| `validate-data.yml` | Push a `public/data/**` | Valida esquema JSON del catálogo |
+| `autocurative.yml` | Lunes 06:00 UTC | Health check semanal + auto-fix |
+| `codeql.yml` | Push | Análisis estático de seguridad |
+| `claude-delegation.yml` | Manual | Tareas de largo plazo vía IA |
 
 ---
 
-## 📊 Métricas de Progreso
+## 🐛 Deuda Técnica Activa
 
-### **Sprint 2 Completion**
-```
-Repository Cleanup:        ████████████████████ 100%
-Balance Unification:       ████████████████████ 100%
-IndexedDB Fixes:           ████████████████████ 100%
-Codebase Organization:     ████████████████████ 100%
-Security Configuration:    ████████████████████ 100%
-Browser Verification:      ░░░░░░░░░░░░░░░░░░░░   0%
-Analytics Integration:     ░░░░░░░░░░░░░░░░░░░░   0%
-```
+Ver [`TECH_DEBT.md`](./TECH_DEBT.md) para el inventario completo.
 
-### **Overall Project Health**
-```
-Tests Passing:             ████████████████████ 100% (28/28)
-Code Coverage:             ███████████████░░░░░  75% (estimated)
-Type Safety:               ████████████░░░░░░░░  60% (needs improvement)
-Documentation:             ████████████████░░░░  80%
-Security:                  ███████████████░░░░░  75% (pending key rotation)
-```
+Resumen priorizado:
+
+| Prioridad | Ítem |
+|-----------|------|
+| 🔴 Alta | Archivos de desarrollo en raíz (`full_script.ts`, `patch*.diff`, `*.bak`) — limpiar o mover a `/tmp` |
+| 🔴 Alta | `master_routes.json` usa `"rutas"` con múltiples entradas; aún hay datos/coords placeholder y registros incompletos que no son aptos para producción |
+| 🟡 Media | `RouteCalculator.astro.bak` / `.new` — artefactos de edición sin eliminar |
+| 🟡 Media | `Analytics.ts` es un stub sin proveedor real |
+| 🟢 Baja | Cobertura de tipos TypeScript — algunos `any` restantes |
+| 🟢 Baja | i18n incompleto — strings hardcodeados en algunos componentes |
 
 ---
 
-## 🔗 Enlaces Útiles
+## 📈 Próximos Sprints
 
-- **GitHub Repo:** https://github.com/JULIANJUAREZMX01/MueveCancun
-- **Render Dashboard:** https://dashboard.render.com/
-- **Astro Cloud:** https://astro.build/dashboard
-- **Tech Debt:** [TECH_DEBT.md](file:///c:/Users/QUINTANA/Desktop/MueveCancun/MueveCancun/TECH_DEBT.md)
+Ver [`ROADMAP.md`](../ROADMAP.md) para el plan completo.
 
----
-
-## 📝 Notas Adicionales
-
-### **Cambios Arquitectónicos Importantes**
-1. **src/lib/ eliminado** - Todo consolidado en `src/utils/`
-2. **Balance system** - Ahora 100% IndexedDB
-3. **Event-driven sync** - `BALANCE_UPDATED` event para comunicación global
-4. **Security first** - API keys en `.env`, nunca en código
-
-### **Lecciones Aprendidas**
-- ✅ Consolidación de PRs mejora la mantenibilidad
-- ✅ IndexedDB requiere keys explícitas en `put()` calls
-- ✅ Event-driven architecture facilita sincronización
-- ⚠️ API keys nunca deben exponerse públicamente
+| Sprint | Foco | Estado |
+|--------|------|--------|
+| v3.3 (actual) | Nexus Transfer Engine, GPS, mapa interactivo | ✅ Completado |
+| v3.4 | Catálogo de rutas completo + validación de datos | 🔲 Planificado |
+| v3.5 | Crowdsourcing, formularios offline, background sync | 🔲 Planificado |
+| v4.0 | Multi-ciudad (Cancún / Playa / Tulum), analytics real | 🔲 Planificado |
 
 ---
 
-**Última Actualización:** 2026-02-17 17:31:55  
-**Próxima Revisión:** Después de verificación browser
+**Última actualización:** 2026-03-10
+**Próxima revisión:** Al completar sprint v3.4

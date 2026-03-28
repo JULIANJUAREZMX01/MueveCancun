@@ -41,7 +41,7 @@ describe('CoordinatesStore', () => {
 
         const result = await store.init(mockData);
         expect(result.data).toEqual(mockData);
-        // utils/CoordinatesStore stores as [lat, lng] tuples with lowercase keys
+        // utils/CoordinatesStore stores as [lat, lng] tuples in a Map with lowercase keys
         expect(store.getDB()!.get('stop a')).toEqual([10, 10]);
     });
 

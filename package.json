@@ -27,12 +27,15 @@
     "lint": "eslint .",
     "preview": "astro preview",
     "test": "vitest",
-    "check-wasm": "node scripts/check-wasm.cjs"
+    "check-wasm": "node scripts/check-wasm.cjs",
+    "validate-catalog": "node scripts/validate-catalog.mjs",
+    "bench": "vitest bench"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
     "@astrojs/rss": "^4.0.5",
     "@astrojs/tailwind": "^5.1.0",
+    "@rollup/rollup-linux-x64-gnu": "^4.57.1",
     "@tailwindcss/typography": "^0.5.10",
     "@types/node": "^24.10.1",
     "astro": "^5.16.15",

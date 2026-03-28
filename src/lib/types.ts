@@ -1,4 +1,4 @@
-export interface Route {
+export interface JourneyRoute {
   id: string;
   name: string;
   waypoints: Waypoint[];
