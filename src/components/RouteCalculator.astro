@@ -190,19 +190,24 @@ const ui = uiTranslations[currentLang];
 
 
   // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
-  if (typeof document !== 'undefined') {
+  if (typeof document !== 'undefined' && !(window as any).__RouteCalculatorDelegationAttached) {
+      (window as any).__RouteCalculatorDelegationAttached = true;
       document.addEventListener('click', (e) => {
-          const target = e.target;
+          if (!e.isTrusted) return; // Security: Ensure event is user-generated
+
+          const target = e.target as HTMLElement;
           if (!target || !target.closest) return;
 
-          const btn = target.closest('.view-map-btn');
+          const btn = target.closest('.view-map-btn') as HTMLElement;
           if (btn) {
+              e.preventDefault();
+              e.stopPropagation();
               try {
                   const raw = btn.dataset.journey;
                   if (raw) {
                       const journey = JSON.parse(raw);
                       window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey } }));
-                      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_ACTIVE' }));
+                      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
                   }
               } catch (err) {
                   console.error("Invalid journey data", err);
@@ -211,6 +216,8 @@ const ui = uiTranslations[currentLang];
 
           // Sentinel Security Fix: Retry Button Delegation
           if (target.closest('.js-retry-search-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
               setTimeout(() => document.getElementById('origin-input')?.focus(), 50);
           }
       });
@@ -974,21 +981,6 @@ const ui = uiTranslations[currentLang];
                      });
                  }
                  
-                 // Re-attach map buttons
-                 document.querySelectorAll('.view-map-btn').forEach(btn => {
-                     btn.addEventListener('click', (e) => {
-                         try {
-                             const journeyData = JSON.parse(btn.dataset.journey);
-                             window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', {
-                                detail: { journey: journeyData }
-                             }));
-                             // Also trigger view state change to map
-                             window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
-                         } catch (err) {
-                             console.error("Error parsing journey data for map:", err);
-                         }
-                     });
-                 });
               }
 
           } catch (e) {
