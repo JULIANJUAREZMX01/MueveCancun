@@ -1,5 +1,33 @@
 # AGENTS.md — Sistema Multi-Agente de MueveCancun
 
+<!--
+  OBJETO DE ESTUDIO
+  =================
+  Este proyecto es el laboratorio de aprendizaje de Julián Alexander Juárez Alvarado.
+  Objetivo: dominar el ciclo completo de desarrollo de software moderno —
+  Rust/WASM, TypeScript, Astro SSG, PWA, CI/CD — construyendo una app real
+  con impacto social para la ciudad de Cancún.
+
+  SEGUIMIENTO DE AGENTES (ordenado cronológico)
+  =============================================
+  | Fecha      | Agente            | Acción principal                                  | PR/Commit   |
+  |------------|-------------------|---------------------------------------------------|-------------|
+  | 2025-03-02 | speedy            | Optimización O(1) match_stop en WASM (36480x)     | —           |
+  | 2026-02-18 | claude-code       | Análisis completo + limpieza 40+ archivos         | —           |
+  | 2026-03-02 | speedy            | Deduplicación O(N²)→O(1) con Set                  | —           |
+  | 2026-03-04 | speedy            | Inline SVGs via Icon.astro                        | —           |
+  | 2026-03-10 | claude-code       | Nexus Prime v3.3 — PWA producción estable         | v1.0.0      |
+  | 2026-03-28 | claude-code       | Fix revisiones Copilot + merge PR #366            | 1deb594     |
+  | 2026-03-28 | claude-code       | Documentación objetos de estudio en MDs agentes   | este PR     |
+
+  LECCIONES CLAVE APRENDIDAS POR AGENTE
+  ======================================
+  - claude-code: Nunca pushear a main; siempre rama claude/* + PR.
+  - speedy:      Medir antes de optimizar; O(1) HashMap vs O(N) fuzzy scan.
+  - autocurative: Health-check semanal previene regresiones silenciosas.
+  - verificación: No commitear binarios WASM si la tarea solo toca JS/TS.
+-->
+
 **Misión**: PWA offline-first de transporte público en Cancún. Motor de ruteo en WebAssembly (Rust), sin backend.
 
 ---
@@ -102,3 +130,18 @@ rama claude/* → tests pasan → PR a main → CI verde → merge
 ```
 
 Cada PR debe incluir: descripción del problema, fix implementado, tests que lo prueban.
+
+---
+
+## Historial de PRs por Área
+
+<!-- TRACKING: registro de merges para trazabilidad y aprendizaje -->
+| Área           | Descripción breve                             | Estado   |
+|----------------|-----------------------------------------------|----------|
+| WASM / Routing | Motor de transbordos exacto + geo ≤350 m      | ✅ Merged |
+| GPS            | `findNearestWithDistance` reemplaza texto lat/lng | ✅ Merged |
+| Seguridad      | XSS `escapeHtml()`, DoS circuit-breaker, HMAC wallet | ✅ Merged |
+| CI/CD          | 6 workflows: tests, WASM, validate-data, CodeQL, autocurative | ✅ Merged |
+| i18n           | Middleware Astro ES/EN; helpers en `src/utils/i18n.ts` | ✅ Merged |
+| PWA            | Service Worker offline-first, cache OpenStreetMap | ✅ Merged |
+| Documentación  | Objetos de estudio y seguimiento en MDs agentes | ✅ Este PR |
