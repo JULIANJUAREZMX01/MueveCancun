@@ -1,4 +1,4 @@
-function animate() {
+export function animate() {
   const animateElements = document.querySelectorAll('.animate')
 
   animateElements.forEach((element, index) => {

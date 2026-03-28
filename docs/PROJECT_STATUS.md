@@ -183,7 +183,7 @@ Resumen priorizado:
 | 🔴 Alta | `master_routes.json` usa `"rutas"` con múltiples entradas; aún hay datos/coords placeholder y registros incompletos que no son aptos para producción |
 | 🟡 Media | `RouteCalculator.astro.bak` / `.new` — artefactos de edición sin eliminar |
 | 🟡 Media | `Analytics.ts` es un stub sin proveedor real |
-| 🟢 Baja | Cobertura de tipos TypeScript — algunos `any` restantes |
+| ✅ Done | Cobertura de tipos TypeScript — Migración completa a TypeScript estricto |
 | 🟢 Baja | i18n incompleto — strings hardcodeados en algunos componentes |
 
 ---

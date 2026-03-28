@@ -1,4 +1,4 @@
-function changeTheme() {
+export function changeTheme() {
   const element = document.documentElement
   const theme = element.classList.contains("dark") ? "light" : "dark"
 
@@ -23,14 +23,15 @@ function changeTheme() {
     element.classList.remove("dark")
   }
 
+  // Force reflow
   window.getComputedStyle(css).opacity
   document.head.removeChild(css)
-  localStorage.theme = theme
+  localStorage.setItem("theme", theme)
 }
 
-function preloadTheme() {
+export function preloadTheme() {
   const theme = (() => {
-    const userTheme = localStorage.theme
+    const userTheme = localStorage.getItem("theme")
 
     if (userTheme === "light" || userTheme === "dark") {
       return userTheme
@@ -47,21 +48,23 @@ function preloadTheme() {
     element.classList.remove("dark")
   }
 
-  localStorage.theme = theme
+  localStorage.setItem("theme", theme)
 }
 
-window.onload = () => {
-  function initializeThemeButtons() {
-    const headerThemeButton = document.getElementById("header-theme-button")
-    const drawerThemeButton = document.getElementById("drawer-theme-button")
-    headerThemeButton?.addEventListener("click", changeTheme)
-    drawerThemeButton?.addEventListener("click", changeTheme)
-  }
-
-  document.addEventListener("astro:after-swap", initializeThemeButtons)
-  initializeThemeButtons()
+function initializeThemeButtons() {
+  const headerThemeButton = document.getElementById("header-theme-button")
+  const drawerThemeButton = document.getElementById("drawer-theme-button")
+  headerThemeButton?.addEventListener("click", changeTheme)
+  drawerThemeButton?.addEventListener("click", changeTheme)
 }
 
-document.addEventListener("astro:after-swap", preloadTheme)
+document.addEventListener("DOMContentLoaded", () => {
+    initializeThemeButtons();
+});
 
-preloadTheme()
+document.addEventListener("astro:after-swap", () => {
+    preloadTheme();
+    initializeThemeButtons();
+});
+
+preloadTheme();

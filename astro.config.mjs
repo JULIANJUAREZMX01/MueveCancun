@@ -17,6 +17,15 @@ export default defineConfig({
   vite: {
     build: {
       rollupOptions: {
+        input: {
+          main: path.resolve(__dirname, "index.html"),
+          sw: path.resolve(__dirname, "src/sw.ts")
+        },
+        output: {
+          entryFileNames: (assetInfo) => {
+            return assetInfo.name === 'sw' ? 'sw.js' : '_astro/[name].[hash].js';
+          }
+        },
         external: [
           "/wasm/route-calculator/route_calculator.js",
           "/wasm/spatial-index/spatial_index.js"
