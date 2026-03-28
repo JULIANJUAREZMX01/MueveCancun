@@ -1,0 +1,18 @@
+[package]
+name = "spatial-index"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+rstar = "0.11"
+shared-types = { path = "../shared-types" }
+once_cell = "1.18"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"

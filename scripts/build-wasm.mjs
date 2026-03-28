@@ -7,43 +7,45 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
-const modules = ['route-calculator'];
+const modules = ['route-calculator', 'spatial-index'];
 
 console.log('🏗️  Starting WASM build process...');
 
 // Check for required tools
 let wasmPackCmd = 'wasm-pack';
-const hasWasmPack = (() => {
+let hasWasmPack = false;
+try {
+    execSync('wasm-pack --version', { stdio: 'ignore' });
+    hasWasmPack = true;
+} catch (e) {
+    console.warn('⚠️ Global wasm-pack not found. Trying npx...');
     try {
-        execSync('wasm-pack --version', { stdio: 'ignore' });
-        return true;
-    } catch (e) {
-        console.warn('⚠️ Global wasm-pack not found. Trying npx...');
-        try {
-            execSync('npx wasm-pack --version', { stdio: 'ignore' });
-            wasmPackCmd = 'npx wasm-pack';
-            return true;
-        } catch (e2) {
-            return false;
-        }
+        execSync('npx wasm-pack --version', { stdio: 'ignore' });
+        wasmPackCmd = 'npx wasm-pack';
+        hasWasmPack = true;
+    } catch (e2) {
+        hasWasmPack = false;
     }
-})();
+}
 
-const hasCargo = (() => {
-    try {
-        execSync('cargo --version', { stdio: 'ignore' });
-        return true;
-    } catch (e) {
-        return false;
-    }
-})();
+let hasCargo = false;
+try {
+    execSync('cargo --version', { stdio: 'ignore' });
+    hasCargo = true;
+} catch (e) {
+    hasCargo = false;
+}
 
 // Check for existing artifacts
-const artifactsExist = modules.every(mod => {
+let artifactsExist = true;
+for (const mod of modules) {
     const wasmPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}_bg.wasm`);
     const jsPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}.js`);
-    return fs.existsSync(wasmPath) && fs.existsSync(jsPath);
-});
+    if (!fs.existsSync(wasmPath) || !fs.existsSync(jsPath)) {
+        artifactsExist = false;
+        break;
+    }
+}
 
 if (!hasWasmPack || !hasCargo) {
     if (artifactsExist) {
@@ -59,16 +61,7 @@ if (!hasWasmPack || !hasCargo) {
 
 console.log(`✅ Build tools found using: ${wasmPackCmd}. Proceeding with compilation...`);
 
-try {
-    // Check for both wasm-pack and cargo (Rust toolchain)
-    execSync('wasm-pack --version', { stdio: 'ignore' });
-    execSync('cargo --version', { stdio: 'ignore' });
-} catch (e) {
-    console.warn("⚠️  wasm-pack or cargo (Rust) not found. Skipping WASM build and using pre-built binaries.");
-    process.exit(0);
-}
-
-modules.forEach(mod => {
+for (const mod of modules) {
     console.log(`📦 Processing ${mod}...`);
     const sourceDir = path.join(rootDir, 'rust-wasm', mod);
     const publicOutDir = path.join(rootDir, 'public', 'wasm', mod);
@@ -80,8 +73,6 @@ modules.forEach(mod => {
     }
     fs.mkdirSync(publicOutDir, { recursive: true });
 
-    let buildSuccess = false;
-
     if (hasWasmPack) {
         try {
             // Build with wasm-pack
@@ -91,7 +82,6 @@ modules.forEach(mod => {
                 stdio: 'inherit'
             });
 
-            buildSuccess = true;
         } catch (e) {
             console.error(`❌ Failed to build ${mod} with ${wasmPackCmd}.`);
             process.exit(1);
@@ -105,6 +95,6 @@ modules.forEach(mod => {
     }
 
     console.log(`✅ ${mod} built successfully to public/wasm/${mod}/`);
-});
+}
 
 console.log('🎉 WASM setup complete.');
