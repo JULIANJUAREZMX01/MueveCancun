@@ -8,55 +8,57 @@ error() { echo -e "\033[1;31m[ERROR]\033[0m $1"; }
 
 log "INICIANDO SECUENCIA MAESTRA (SYNC + BUILD)..."
 
-# 1. Python Check
+# 1. Python Check (Optional)
 log "Verificando inteligencia social (Python)..."
 if command -v python3 >/dev/null 2>&1; then
     PY_VER=$(python3 --version)
     success "Python detectado: $PY_VER"
 else
-    error "Python3 no encontrado."
+    log "⚠️ Python3 no encontrado (Opcional)."
 fi
 
-# 2. Rust Check
+# 2. Rust Check & Setup
 log "Verificando entorno Rust..."
-if [ -f "$HOME/.cargo/env" ]; then
-    . "$HOME/.cargo/env"
-fi
+# Cargar entorno si existe
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
 if ! command -v cargo >/dev/null 2>&1; then
-    log "Instalando Rust..."
+    log "Instalando Rust vía rustup..."
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
-    . "$HOME/.cargo/env"
+    [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 else
-    log "Rust ya esta instalado."
+    log "Cargo ya detectado."
 fi
 
-log "Configurando target wasm32-unknown-unknown..."
-rustup target add wasm32-unknown-unknown
+# Asegurar exportación del PATH para procesos hijos (como Node)
+export PATH="$HOME/.cargo/bin:$PATH"
+log "PATH actualizado con cargo/bin: $PATH"
 
-# 3. WASM Pack Check (Security-first verification)
-log "Verificando wasm-pack (usando herramienta fijada en package.json)..."
-if command -v pnpm >/dev/null 2>&1; then
-    if ! pnpm exec wasm-pack --version >/dev/null 2>&1; then
-        log "wasm-pack no está disponible aún; se utilizará la versión fijada vía pnpm/npx durante el build."
-    else
-        success "wasm-pack detectado vía pnpm exec."
-    fi
+if ! command -v rustup >/dev/null 2>&1; then
+    log "⚠️ rustup no encontrado. Se intentará continuar con cargo directo."
 else
-    if ! command -v npx >/dev/null 2>&1; then
-        log "npx no está disponible; asegúrate de que wasm-pack pueda ser resuelto por el proceso de build."
-    else
-        if ! npx wasm-pack --version >/dev/null 2>&1; then
-            log "wasm-pack no se pudo resolver vía npx; scripts/build-wasm.mjs podrá intentar obtenerlo en tiempo de build."
-        else
-            success "wasm-pack detectado vía npx."
-        fi
-    fi
+    log "Configurando target wasm32-unknown-unknown..."
+    rustup target add wasm32-unknown-unknown || log "⚠️ Target add falló (puede que ya exista)."
+fi
+
+# 3. WASM Pack Check
+log "Verificando disponibilidad de wasm-pack..."
+if command -v wasm-pack >/dev/null 2>&1; then
+    success "wasm-pack global detectado: $(wasm-pack --version)"
+else
+    log "wasm-pack no está en el PATH global."
 fi
 
 # 4. PNPM & Build Sequence
-log "Instalando dependencias y generando sitio..."
+log "Instalando dependencias (pnpm)..."
+if ! command -v pnpm >/dev/null 2>&1; then
+    log "Instalando pnpm local..."
+    npm install -g pnpm
+fi
+
 pnpm install --frozen-lockfile
+
+log "Lanzando pnpm run build..."
 pnpm run build
 
 success "SECUENCIA MAESTRA COMPLETADA - LISTO PARA DEPLOY"
