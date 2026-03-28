@@ -1,64 +1,63 @@
 #!/bin/bash
 set -e
 
-# Helpers for logging
-log() { echo -e "\033[1;34m[NEXUS_LOG]\033[0m $1"; }
-success() { echo -e "\033[1;32m[SUCCESS]\033[0m $1"; }
-error() { echo -e "\033[1;31m[ERROR]\033[0m $1"; }
+# Nexus Prime Setup Script
+# Philosophy: Extreme Resilience, Zero Accents, ASCII Only
 
-log "INICIANDO SECUENCIA MAESTRA (SYNC + BUILD)..."
+log() { echo "[NEXUS_LOG] $1"; }
+success() { echo "[SUCCESS] $1"; }
+error() { echo "[ERROR] $1"; }
 
-# 1. Python Check (Optional)
-log "Verificando inteligencia social (Python)..."
+log "Starting Master Sequence (SYNC + BUILD)..."
+
+# 1. Environment Verification
 if command -v python3 >/dev/null 2>&1; then
     PY_VER=$(python3 --version)
-    success "Python detectado: $PY_VER"
-else
-    log "⚠️ Python3 no encontrado (Opcional)."
+    success "Python detected: $PY_VER"
 fi
 
-# 2. Rust Check & Setup
-log "Verificando entorno Rust..."
-# Cargar entorno si existe
-[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+# 2. Rust Environment
+log "Checking Rust environment..."
+if [ -f "$HOME/.cargo/env" ]; then
+    source "$HOME/.cargo/env"
+fi
 
 if ! command -v cargo >/dev/null 2>&1; then
-    log "Instalando Rust vía rustup..."
+    log "Installing Rust via rustup.rs..."
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
-    [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+    source "$HOME/.cargo/env"
 else
-    log "Cargo ya detectado."
+    success "Cargo already in PATH."
 fi
 
-# Asegurar exportación del PATH para procesos hijos (como Node)
+# Explicit PATH export for child processes
 export PATH="$HOME/.cargo/bin:$PATH"
-log "PATH actualizado con cargo/bin: $PATH"
+log "PATH updated: $PATH"
 
-if ! command -v rustup >/dev/null 2>&1; then
-    log "⚠️ rustup no encontrado. Se intentará continuar con cargo directo."
-else
-    log "Configurando target wasm32-unknown-unknown..."
-    rustup target add wasm32-unknown-unknown || log "⚠️ Target add falló (puede que ya exista)."
+if command -v rustup >/dev/null 2>&1; then
+    log "Adding wasm32-unknown-unknown target..."
+    rustup target add wasm32-unknown-unknown || log "Target already exists or failed."
 fi
 
-# 3. WASM Pack Check
-log "Verificando disponibilidad de wasm-pack..."
+# 3. WASM Toolchain
+log "Checking for wasm-pack..."
 if command -v wasm-pack >/dev/null 2>&1; then
-    success "wasm-pack global detectado: $(wasm-pack --version)"
-else
-    log "wasm-pack no está en el PATH global."
+    success "wasm-pack found: $(wasm-pack --version)"
 fi
 
-# 4. PNPM & Build Sequence
-log "Instalando dependencias (pnpm)..."
+# 4. PNPM and Build
+log "Installing dependencies (pnpm)..."
+# Check for pnpm, if not found, use npm to install it locally if possible
 if ! command -v pnpm >/dev/null 2>&1; then
-    log "Instalando pnpm local..."
-    npm install -g pnpm
+    log "pnpm not found. Using npx pnpm..."
+    export PNPM_CMD="npx pnpm"
+else
+    export PNPM_CMD="pnpm"
 fi
 
-pnpm install --frozen-lockfile
+$PNPM_CMD install --frozen-lockfile
 
-log "Lanzando pnpm run build..."
-pnpm run build
+log "Executing pnpm run build..."
+$PNPM_CMD run build
 
-success "SECUENCIA MAESTRA COMPLETADA - LISTO PARA DEPLOY"
+success "MASTER SEQUENCE COMPLETED - READY FOR DEPLOY"
