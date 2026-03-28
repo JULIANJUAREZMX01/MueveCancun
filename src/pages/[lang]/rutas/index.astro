@@ -6,9 +6,9 @@ export function getStaticPaths() {
   ];
 }
 
-import MainLayout from '../../layouts/MainLayout.astro';
-import { getAllRoutes } from '../../utils/routes';
-import { getTransportLabel } from '../../utils/transport';
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { getAllRoutes } from '../../../utils/routes';
+import { getTransportLabel } from '../../../utils/transport';
 
 const rawRoutes = await getAllRoutes();
 
