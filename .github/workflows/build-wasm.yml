@@ -44,6 +44,9 @@ jobs:
         run: cargo test --lib || true  # spatial-index tests are optional
 
       # Build WASM
+      # NOTE: Only route-calculator is built and committed here.
+      # spatial-index is a workspace member but its wasm-pack JS glue has not
+      # been committed yet; it will be added to this step once the JS glue is ready.
       - name: Build route-calculator WASM
         run: |
           cd rust-wasm/route-calculator

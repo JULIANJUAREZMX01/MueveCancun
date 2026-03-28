@@ -7,7 +7,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
-const modules = ['route-calculator', 'spatial-index'];
+const modules = ['route-calculator'];
+// NOTE: 'spatial-index' is a workspace member but its wasm-pack JS glue has not
+// been generated yet and the frontend does not yet import it. It will be added
+// back to this list once the JS glue (spatial_index.js) is committed and the
+// frontend wires up the Rust spatial-index crate.
 
 console.log('🏗️  Starting WASM build process...');
 

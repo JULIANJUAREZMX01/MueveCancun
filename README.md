@@ -33,7 +33,7 @@ Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales 
 - **UI Components**: Web Components / Lit.
 - **Lógica Intensiva**: Rust / WebAssembly (WASM).
 - **Estilos**: CSS purista + PostCSS / Houdini.
-- **Dependencias Eliminadas**: React, Tailwind, Bootstrap.
+- **Dependencias en proceso de migración**: Tailwind CSS (activo, fase de salida); React y Bootstrap (eliminados).
 - **Documentación de la Decisión**: [ADR-2026-002](docs/adr/ADR-2026-002.md).
 
 
