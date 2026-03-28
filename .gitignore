@@ -55,6 +55,15 @@ public/wasm/spatial-index/
 tmp/
 __pycache__
 *.pyc
+fix_*.js
+patch_*.js
+patch_*.diff
+test_browser*.js
+script_block.js
+full_script.ts
+*.diff
+*.bak
+*.new
 
 # Testing Artifacts
 test-results

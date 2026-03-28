@@ -1,6 +1,6 @@
 # 🗺️ MueveCancún — Roadmap
 
-> Última actualización: 2026-03-10 · Versión actual: **1.0.0 (Nexus Prime v3.3)**  
+> Última actualización: 2026-03-28 · Versión actual: **1.0.0 (Nexus Prime v3.3)**  
 > App en producción: [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com)
 
 ---
@@ -84,7 +84,7 @@ Estas tareas están identificadas pero aún no tienen sprint asignado. Se irán 
 
 | Prioridad | Tarea |
 |-----------|-------|
-| 🔴 | Limpiar artefactos de desarrollo de la raíz (`full_script.ts`, `patch*.diff`, `*.bak`, `*.new`) |
+| ✅ | Limpiar artefactos de desarrollo de la raíz (`full_script.ts`, `patch*.diff`, `*.bak`, `*.new`) — completado 2026-03-28 |
 | 🔴 | Cachear artefactos `wasm-bindgen` / `binaryen` en CI para builds rápidos |
 | 🟡 | Política stale-while-revalidate en Service Worker para `/data/**` |
 | 🟡 | Carga progresiva del catálogo (chunks) en lugar de un JSON único |
