@@ -69,3 +69,18 @@ public/data/master_routes.optimized.json
 server_log.txt
 preview_output.txt
 commit_msg.txt
+
+# Artefactos de desarrollo de agentes — scripts temporales de fix/patch
+fix-*.py
+fix_*.py
+fix_*.js
+fix-*.js
+patch_*.js
+patch_*.diff
+patch*.diff
+script_block.js
+full_script.ts
+test_browser*.js
+*.astro.bak
+*.astro.new
+path/
