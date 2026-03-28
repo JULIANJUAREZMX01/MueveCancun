@@ -96,6 +96,7 @@ modules.forEach(mod => {
             console.error(`❌ Failed to build ${mod} with ${wasmPackCmd}.`);
         process.exit(1);
     }
+    }
 
     // Clean up .gitignore in output dir
     const gitignorePath = path.join(publicOutDir, '.gitignore');
