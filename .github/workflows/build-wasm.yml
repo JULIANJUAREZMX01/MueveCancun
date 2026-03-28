@@ -37,7 +37,7 @@ jobs:
       # Run tests BEFORE building — fail fast if tests break
       - name: Run route-calculator unit tests
         working-directory: rust-wasm/route-calculator
-        run: cargo test --lib -- --nocapture
+        run: cargo test --lib -- --nocapture --test-threads=1
 
       - name: Run spatial-index unit tests
         working-directory: rust-wasm/spatial-index

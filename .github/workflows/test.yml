@@ -32,7 +32,7 @@ jobs:
 
       - name: Run route-calculator tests
         working-directory: rust-wasm/route-calculator
-        run: cargo test --lib -- --nocapture
+        run: cargo test --lib -- --nocapture --test-threads=1
 
   ts-tests:
     name: TypeScript Unit Tests (Vitest)
