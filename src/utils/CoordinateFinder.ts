@@ -5,15 +5,11 @@ export interface StopMatch {
 
 export class CoordinateFinder {
     // 🛡️ SECURITY FIX (Prototype Pollution Prevention)
-    // We migrated this class to accept and manage a Map instead of a plain Object.
-    // Plain objects are vulnerable to prototype pollution if an attacker can control
-    // the keys (e.g. "__proto__"). Map methods like .get() and .has() are immune.
     private db: Map<string, [number, number]>;
     private cache: Map<string, [number, number]> = new Map();
     private tokenIndex: Map<string, string[]> = new Map();
     private keys: string[];
     private lowerKeys: string[];
-    // Preserves original-cased stop names: lowercase key → original name
     private originalNames: Map<string, string>;
 
     constructor(db: Map<string, [number, number]>, originalNames?: Map<string, string>) {
@@ -26,10 +22,9 @@ export class CoordinateFinder {
 
     private buildIndex() {
         for (const key of this.keys) {
-            // Tokenize: split by non-alphanumeric (including Spanish accents)
             const tokens = key.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
             for (const token of tokens) {
-                if (token.length < 3) continue;
+                if (token.length < 2) continue;
                 if (!this.tokenIndex.has(token)) {
                     this.tokenIndex.set(token, []);
                 }
@@ -41,14 +36,9 @@ export class CoordinateFinder {
     public find(stopName: string): [number, number] | null {
         if (!stopName) return null;
         const q = stopName.trim();
-
-        // 1. Exact match
         if (this.db.has(q)) return this.db.get(q)!;
-
-        // 2. Cache check
         if (this.cache.has(q)) return this.cache.get(q)!;
 
-        // 3. Fuzzy Search
         const searchTokens = q.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
         const candidates = new Set<string>();
 
@@ -62,7 +52,6 @@ export class CoordinateFinder {
 
         let bestKey: string | null = null;
         if (candidates.size > 0) {
-             // Prefer candidates that are substrings or contain the query
              const lowerQ = q.toLowerCase();
              bestKey = Array.from(candidates).find(k => {
                  const lowerK = k.toLowerCase();
@@ -78,7 +67,6 @@ export class CoordinateFinder {
     public findBestMatch(query: string): StopMatch | null {
         const coords = this.find(query);
         if (coords) {
-             // Find original key for coords
              let foundKey = query;
              for (const [k, v] of this.db.entries()) {
                  if (v[0] === coords[0] && v[1] === coords[1]) {
@@ -97,14 +85,12 @@ export class CoordinateFinder {
         const q = query.toLowerCase().trim();
         const candidates = new Set<string>();
 
-        // 1. Direct includes (high priority)
         for (let i = 0; i < this.lowerKeys.length; i++) {
             if (this.lowerKeys[i].includes(q)) {
                 candidates.add(this.keys[i]);
             }
         }
 
-        // 2. Token based (medium priority)
         const searchTokens = q.split(/[^a-z0-9\u00C0-\u017F]+/);
         for (const token of searchTokens) {
             if (token.length < 2) continue;
@@ -114,26 +100,18 @@ export class CoordinateFinder {
             }
         }
 
-        // Convert to array and sort by relevance
         return Array.from(candidates)
             .sort((a, b) => {
                 const aLower = a.toLowerCase();
                 const bLower = b.toLowerCase();
-                
-                // Exact match first
                 if (aLower === q) return -1;
                 if (bLower === q) return 1;
-
-                // Starts with query second
                 if (aLower.startsWith(q) && !bLower.startsWith(q)) return -1;
                 if (!aLower.startsWith(q) && bLower.startsWith(q)) return 1;
-
-                // Length (shorter is usually better match)
                 return a.length - b.length;
             })
             .slice(0, limit)
             .map(name => ({
-                // Return original-cased name for display; key is lowercase
                 name: this.originalNames.get(name) || name,
                 coords: this.db.get(name)!
             }));

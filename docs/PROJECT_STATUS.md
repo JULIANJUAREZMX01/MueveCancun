@@ -203,3 +203,10 @@ Ver [`ROADMAP.md`](../ROADMAP.md) para el plan completo.
 
 **Última actualización:** 2026-03-10  
 **Próxima revisión:** Al completar sprint v3.4
+
+### Mejoras Recientes (Marzo 2026 - Sprint UI/Data Hardening)
+- **Hardening CSS**: Implementado `box-sizing: border-box` y `max-width: 100vw` global para eliminar desbordamientos en móviles.
+- **Dynamic Viewport**: Uso de `100dvh` para corregir problemas de superposición del teclado en dispositivos Android/iOS.
+- **Actualización de Tarifas**: Precios actualizados a $10.00 (Urbano) y $12.00 (Zona Hotelera) según realidad operativa 2026.
+- **R-10 Clarification**: Renombrado a "Aeropuerto (TRABAJADORES)" con advertencias sociales sobre acceso restringido.
+- **Fuzzy Search Pro**: Mejora en `CoordinateFinder` para búsquedas de términos cortos (tokens min-length 2).

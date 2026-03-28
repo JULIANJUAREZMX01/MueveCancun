@@ -59,15 +59,6 @@ if (!hasWasmPack || !hasCargo) {
 
 console.log(`✅ Build tools found using: ${wasmPackCmd}. Proceeding with compilation...`);
 
-try {
-    // Check for both wasm-pack and cargo (Rust toolchain)
-    execSync('wasm-pack --version', { stdio: 'ignore' });
-    execSync('cargo --version', { stdio: 'ignore' });
-} catch (e) {
-    console.warn("⚠️  wasm-pack or cargo (Rust) not found. Skipping WASM build and using pre-built binaries.");
-    process.exit(0);
-}
-
 modules.forEach(mod => {
     console.log(`📦 Processing ${mod}...`);
     const sourceDir = path.join(rootDir, 'rust-wasm', mod);
@@ -80,30 +71,25 @@ modules.forEach(mod => {
     }
     fs.mkdirSync(publicOutDir, { recursive: true });
 
-    let buildSuccess = false;
+    try {
+        // Build with wasm-pack
+        console.log(`🚀 Building ${mod} with ${wasmPackCmd}...`);
+        execSync(`${wasmPackCmd} build --target web --out-dir ${publicOutDir}`, {
+            cwd: sourceDir,
+            stdio: 'inherit'
+        });
 
-    if (hasWasmPack) {
-        try {
-            // Build with wasm-pack
-            console.log(`🚀 Building ${mod} with ${wasmPackCmd}...`);
-            execSync(`${wasmPackCmd} build --target web --out-dir ${publicOutDir}`, {
-                cwd: sourceDir,
-                stdio: 'inherit'
-            });
+        // Clean up .gitignore in output dir
+        const gitignorePath = path.join(publicOutDir, '.gitignore');
+        if (fs.existsSync(gitignorePath)) {
+            fs.unlinkSync(gitignorePath);
+        }
 
-            buildSuccess = true;
-        } catch (e) {
-            console.error(`❌ Failed to build ${mod} with ${wasmPackCmd}.`);
+        console.log(`✅ ${mod} built successfully to public/wasm/${mod}/`);
+    } catch (e) {
+        console.error(`❌ Failed to build ${mod} with ${wasmPackCmd}.`, e);
         process.exit(1);
     }
-
-    // Clean up .gitignore in output dir
-    const gitignorePath = path.join(publicOutDir, '.gitignore');
-    if (fs.existsSync(gitignorePath)) {
-        fs.unlinkSync(gitignorePath);
-    }
-
-    console.log(`✅ ${mod} built successfully to public/wasm/${mod}/`);
 });
 
 console.log('🎉 WASM setup complete.');

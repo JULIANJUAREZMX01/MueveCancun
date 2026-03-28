@@ -3,7 +3,7 @@
     "last_updated": "2026-02-17T07:09:33.432854",
     "source": "merge-routes.mjs (50 routes from 10 files)",
     "version": "3.2.0",
-    "last_merged": "2026-03-11T19:05:11.156Z"
+    "last_merged": "2026-03-28T21:10:53.588Z"
   },
   "social_alerts": [
     "Retraso en Zona Hotelera por obra pública"
@@ -553,7 +553,7 @@
       "id": "ruta_1753802299281",
       "nombre": "RUTA 81",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 10,
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -5424,7 +5424,7 @@
       "id": "R10_AEROPUERTO",
       "nombre": "R-10 Las Américas - Aeropuerto (Trabajadores)",
       "tipo": "Bus_Urban",
-      "tarifa": 15,
+      "tarifa": 10,
       "horario": {
         "inicio": "04:00-23:00"
       },
@@ -5495,7 +5495,7 @@
       "id": "R6_WALMART_001",
       "nombre": "R-6 Santa Fe - Walmart A.Q. Roo",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 10,
       "horario": {
         "inicio": "06:00 - 22:30"
       },
@@ -5538,7 +5538,7 @@
       "id": "R29_OUTLET_001",
       "nombre": "R-29 ADO - Plaza Outlet",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 10,
       "horario": {
         "inicio": "06:30 - 23:00"
       },
@@ -5587,7 +5587,7 @@
       "id": "R17_LAKIN_001",
       "nombre": "R-17 Tierra Maya - Lak'in",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 10,
       "horario": {
         "inicio": "05:00 - 23:30"
       },
@@ -5630,7 +5630,7 @@
       "id": "R21_AMERICAS_001",
       "nombre": "R-21 Las Américas - Kabah",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 10,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
@@ -5673,7 +5673,7 @@
       "id": "R44_CENTRO_001",
       "nombre": "R-44 Centro - Plaza Las Américas",
       "tipo": "Bus_Urban",
-      "tarifa": 13,
+      "tarifa": 10,
       "horario": {
         "inicio": "05:45 - 23:00"
       },
@@ -5722,7 +5722,7 @@
       "id": "R5_HEROES_001",
       "nombre": "R-5 Los Héroes - Crucero",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 10,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
@@ -5765,7 +5765,7 @@
       "id": "R27_TIERRA_MAYA_001",
       "nombre": "R-27 Tierra Maya - Zona Hotelera",
       "tipo": "Bus_Urban",
-      "tarifa": 15,
+      "tarifa": 10,
       "horario": {
         "inicio": "05:30 - 23:00"
       },
@@ -5814,7 +5814,7 @@
       "id": "R237_RANCHO_001",
       "nombre": "R-237 Rancho Viejo - Crucero",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 10,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
@@ -5857,7 +5857,7 @@
       "id": "R71_RESIDENCIAL_001",
       "nombre": "R-71 Polígono Sur - Centro",
       "tipo": "Bus_Urban",
-      "tarifa": 13,
+      "tarifa": 10,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
@@ -5900,7 +5900,7 @@
       "id": "R31_UNIVERSIDAD_001",
       "nombre": "R-31 Universidad del Caribe - Centro",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 10,
       "horario": {
         "inicio": "07:00 - 21:00"
       },
@@ -5943,7 +5943,7 @@
       "id": "R30_REG103_001",
       "nombre": "R-30 Región 103 - Zona Hotelera",
       "tipo": "Bus_Urban",
-      "tarifa": 15,
+      "tarifa": 10,
       "horario": {
         "inicio": "05:00 - 23:00"
       },
@@ -5986,7 +5986,7 @@
       "id": "R33_REG102_001",
       "nombre": "R-33 Región 102 - Plaza Las Américas",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 10,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
