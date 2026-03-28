@@ -232,3 +232,8 @@ We prioritize CSS5 features over JavaScript for interactive states:
 1. **JSON Optimization**: Shrinks catalog size by ~40% before build.
 2. **WASM Compilation**: Generates optimized binaries with `wasm-pack`.
 3. **Astro Build**: Static site generation and asset bundling.
+
+
+## 📊 Estadísticas
+- 🔢 1045 commits
+- 🦀 1,206 líneas de Rust/WASM
