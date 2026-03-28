@@ -9,6 +9,9 @@ const rootDir = path.resolve(__dirname, '..');
 
 const modules = ['route-calculator', 'spatial-index'];
 
+/** Convert a kebab-case module name to the snake_case used by wasm-pack output files. */
+const wasmModuleName = (mod) => mod.replace(/-/g, '_');
+
 console.log('🏗️  Starting WASM build process...');
 
 // Check for required tools
@@ -38,20 +41,21 @@ const hasCargo = (() => {
     }
 })();
 
-// Check for existing artifacts
-const artifactsExist = modules.every(mod => {
-    const wasmPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}_bg.wasm`);
-    const jsPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}.js`);
-    return fs.existsSync(wasmPath) && fs.existsSync(jsPath);
+// Check per-module whether pre-built artifacts exist
+const moduleArtifacts = modules.map(mod => {
+    const wasmPath = path.join(rootDir, 'public', 'wasm', mod, `${wasmModuleName(mod)}_bg.wasm`);
+    const jsPath = path.join(rootDir, 'public', 'wasm', mod, `${wasmModuleName(mod)}.js`);
+    return { mod, hasArtifacts: fs.existsSync(wasmPath) && fs.existsSync(jsPath) };
 });
 
 if (!hasWasmPack || !hasCargo) {
-    if (artifactsExist) {
+    const missing = moduleArtifacts.filter(m => !m.hasArtifacts).map(m => m.mod);
+    if (missing.length === 0) {
         console.warn('⚠️  WASM build tools (wasm-pack/cargo) missing or failed.');
-        console.warn('✅ Pre-built WASM artifacts found. Skipping build and using existing files.');
+        console.warn('✅ Pre-built WASM artifacts found for all modules. Skipping build and using existing files.');
         process.exit(0);
     } else {
-        console.error('❌ WASM build tools missing AND artifacts missing.');
+        console.error(`❌ WASM build tools missing AND artifacts missing for: ${missing.join(', ')}.`);
         console.error('   Please install Rust and wasm-pack to build the project.');
         process.exit(1);
     }

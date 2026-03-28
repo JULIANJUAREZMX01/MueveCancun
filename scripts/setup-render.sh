@@ -34,15 +34,27 @@ fi
 log "Configurando target wasm32-unknown-unknown..."
 rustup target add wasm32-unknown-unknown
 
-# 3. WASM Pack Check
-if ! command -v wasm-pack >/dev/null 2>&1; then
-    log "Instalando wasm-pack..."
-    curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+# 3. WASM Pack Check (use pinned version from package.json via pnpm/npx — avoid curl | sh)
+log "Verificando wasm-pack (usando herramienta fijada en package.json)..."
+if command -v pnpm >/dev/null 2>&1; then
+    if pnpm exec wasm-pack --version >/dev/null 2>&1; then
+        success "wasm-pack detectado vía pnpm exec."
+    else
+        log "wasm-pack no está disponible aún; se utilizará la versión fijada vía pnpm durante el build."
+    fi
+elif command -v npx >/dev/null 2>&1; then
+    if npx wasm-pack --version >/dev/null 2>&1; then
+        success "wasm-pack detectado vía npx."
+    else
+        log "wasm-pack no se pudo resolver vía npx; scripts/build-wasm.mjs podrá intentar obtenerlo en tiempo de build."
+    fi
+else
+    log "npx/pnpm no está disponible; asegúrate de que wasm-pack pueda ser resuelto por el proceso de build."
 fi
 
 # 4. PNPM & Build Sequence
-log "Instalando dependncias y generando sitio..."
-pnpm install
+log "Instalando dependencias y generando sitio..."
+pnpm install --frozen-lockfile
 pnpm run build
 
 success "SECUENCIA MAESTRA COMPLETADA - LISTO PARA DEPLOY"
