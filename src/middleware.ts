@@ -28,14 +28,22 @@ export const onRequest = defineMiddleware(({ request, redirect, cookies, url }, 
   // 2. Unlocalized top-level paths (e.g., /home -> /es/home)
   if (parts.length === 1 && UNLOCALIZED_PATHS.includes(parts[0])) {
     const saved = cookies.get('locale')?.value as Locale;
-    const locale = (saved && SUPPORTED_LOCALES.includes(saved)) ? saved : 'es';
+    if (saved && SUPPORTED_LOCALES.includes(saved)) {
+      return redirect(`/${saved}/${parts[0]}`, 302);
+    }
+    const lang = request.headers.get('accept-language') ?? '';
+    const locale: Locale = lang.toLowerCase().startsWith('en') ? 'en' : 'es';
     return redirect(`/${locale}/${parts[0]}`, 302);
   }
 
   // 3. Handle /ruta/[id] -> /es/ruta/[id]
   if (parts.length === 2 && parts[0] === 'ruta') {
     const saved = cookies.get('locale')?.value as Locale;
-    const locale = (saved && SUPPORTED_LOCALES.includes(saved)) ? saved : 'es';
+    if (saved && SUPPORTED_LOCALES.includes(saved)) {
+      return redirect(`/${saved}/ruta/${parts[1]}`, 302);
+    }
+    const lang = request.headers.get('accept-language') ?? '';
+    const locale: Locale = lang.toLowerCase().startsWith('en') ? 'en' : 'es';
     return redirect(`/${locale}/ruta/${parts[1]}`, 302);
   }
 
