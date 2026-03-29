@@ -14,10 +14,31 @@
  *   RUN_URL            — URL del run de GitHub Actions
  */
 
-import { createJulesSession } from './jules-api.mjs';
+import { createJulesSession, isDailyCapReached } from './jules-api.mjs';
+
+// ── Token scrubbing ────────────────────────────────────────────────────────────
+// Patterns that may appear in CI logs if a secret was accidentally echoed.
+// Replace any such matches with a placeholder before sending to the external API.
+const TOKEN_PATTERNS = [
+  /ghp_[A-Za-z0-9]{36}/g,           // GitHub classic PATs (ghp_ + 36 chars)
+  /ghs_[A-Za-z0-9]{36}/g,           // GitHub Actions tokens (ghs_ + 36 chars)
+  /github_pat_[A-Za-z0-9_]{82}/g,   // Fine-grained PATs (github_pat_ + 82 chars)
+  /Bearer\s+[A-Za-z0-9\-._~+/]+=*/g, // Bearer auth headers
+  /token\s+[A-Za-z0-9\-._~+/]+=*/gi, // Generic "token …" lines
+  /JULES_API_KEY\s*[:=]\s*\S+/gi,    // Jules key if somehow echoed
+];
+
+function scrubSecrets(text) {
+  let result = text;
+  for (const pattern of TOKEN_PATTERNS) {
+    result = result.replace(pattern, '[REDACTED]');
+  }
+  return result;
+}
+// ──────────────────────────────────────────────────────────────────────────────
 
 const failedJobName = process.env.FAILED_JOB_NAME || 'unknown job';
-const failedLog = (process.env.FAILED_LOG || '').slice(0, 8192);
+const failedLog = scrubSecrets((process.env.FAILED_LOG || '').slice(0, 8192));
 const gitDiff = (process.env.GIT_DIFF || '').slice(0, 12288);
 const workflowName = process.env.WORKFLOW_NAME || 'CI';
 const headBranch = process.env.HEAD_BRANCH || 'main';
@@ -45,6 +66,7 @@ Analyze the failing CI job logs below and apply the minimal code fix required to
 - After applying the fix, run the appropriate test command to confirm it passes.
 - Open a Pull Request targeting branch \`${headBranch}\` with the fix.
 - If the failing branch is \`main\`, create a new branch \`jules/fix-ci-${headSha.slice(0, 7)}\` and open the PR against \`main\`.
+- **Always include \`[jules]\` in every commit message** so the CI loop-prevention guard can skip these commits.
 - Use author mode CO_AUTHORED.
 
 ### Failing Job Logs
@@ -61,6 +83,16 @@ ${gitDiff || '(diff not available)'}
 console.log('Creating Jules CI fix session...');
 console.log(`Branch: ${headBranch}`);
 console.log(`Failed job: ${failedJobName}`);
+
+// Daily rate-limit: skip if ≥ 3 auto-repair sessions were already created today
+// for the same workflow + branch to prevent runaway repair loops.
+const capReached = await isDailyCapReached({ workflowName, branch: headBranch, cap: 3 });
+if (capReached) {
+  console.warn(
+    `⚠️ Daily repair cap (3) reached for workflow "${workflowName}" on branch "${headBranch}". Skipping Jules session.`
+  );
+  process.exit(0);
+}
 
 try {
   const session = await createJulesSession({
@@ -79,6 +111,7 @@ try {
       triggerType: 'ci_failure',
       workflowName,
       failedJobName,
+      headBranch,
       headSha,
       runUrl,
       gitDiff: gitDiff || undefined,

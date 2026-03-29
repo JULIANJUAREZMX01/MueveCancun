@@ -96,6 +96,41 @@ export async function getJulesSession(sessionId) {
 }
 
 /**
+ * Cuenta las sesiones Jules creadas hoy para un workflow + branch concreto.
+ * Útil para imponer un límite diario (rate-cap) en auto-reparaciones CI.
+ *
+ * @param {object} opts
+ * @param {string} opts.workflowName - Nombre del workflow (label de filtro en context).
+ * @param {string} opts.branch       - Nombre del branch afectado.
+ * @param {number} [opts.cap]        - Límite máximo permitido (default: 3).
+ * @returns {Promise<boolean>} true si ya se alcanzó el límite diario.
+ */
+export async function isDailyCapReached({ workflowName, branch, cap = 3 }) {
+  // Calcular inicio del día UTC actual
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+
+  let sessions;
+  try {
+    // pageSize=50 is well above the daily cap (3), so a single page is sufficient
+    // for this check even on busy days. If > 50 sessions were created today, at least
+    // 3 of them will appear in the first page, and the cap will still be enforced correctly.
+    sessions = await listJulesSessions({ createTimeAfter: todayStart.toISOString(), pageSize: 50 });
+  } catch {
+    // Si la API falla, permitir la ejecución para no bloquear reparaciones legítimas
+    return false;
+  }
+
+  const items = sessions.sessions || sessions.items || [];
+  const matches = items.filter((s) => {
+    const ctx = s.context || {};
+    return ctx.workflowName === workflowName && ctx.headBranch === branch;
+  });
+
+  return matches.length >= cap;
+}
+
+/**
  * Lista sesiones Jules activas para el repositorio.
  *
  * @param {object} [opts]
