@@ -410,6 +410,13 @@ export const prerender = true;
 		function finishTutorial(lang) {
 			// Set cookie for 1 year
 			document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
+			// Persist chosen language for middleware and UI i18n
+			try {
+				window.localStorage.setItem('lang', lang);
+			} catch {
+				// localStorage may be unavailable (e.g., privacy mode); ignore failures
+			}
+			document.cookie = `locale=${encodeURIComponent(lang)}; path=/; max-age=31536000; SameSite=Lax`;
 			// Use the selected language for redirection
 			window.location.href = `/${lang}/home`;
 		}
