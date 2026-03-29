@@ -17,7 +17,7 @@ try {
     // 1. Promote Version
     if (data.metadata && data.metadata.version) {
         data.version = data.metadata.version;
-    } else {
+    } else if (!data.version) {
         data.version = "1.0.0";
     }
 
@@ -32,7 +32,6 @@ try {
                     fin: parts[1]?.trim() || ''
                 };
             } else if (route.horario && typeof route.horario === 'object') {
-                // Normalize legacy fields
                 if (!route.horario.inicio && route.horario.inicio_oficial) {
                     route.horario = {
                         inicio: route.horario.inicio_oficial,
@@ -46,8 +45,15 @@ try {
                 route.tipo = 'Bus_Urbano';
             }
 
-            // Remove potentially heavy unused fields if any (optional, but good for optimization)
-            // For now, we keep everything else.
+            // Normalize frecuencia_minutos to Number (WASM expectations u32)
+            if (route.frecuencia_minutos !== undefined && route.frecuencia_minutos !== null) {
+                const val = parseInt(route.frecuencia_minutos);
+                if (!isNaN(val)) {
+                    route.frecuencia_minutos = val;
+                } else {
+                    delete route.frecuencia_minutos;
+                }
+            }
 
             return route;
         });
@@ -57,12 +63,8 @@ try {
     if (!data.metadata) data.metadata = {};
     data.metadata.optimized = true;
 
-    // 3a. Only write the output when route content actually changed.
-    //     Volatile metadata fields (last_optimized, last_merged) are excluded
-    //     from the comparison so that timestamp-only changes don't dirty the file
-    //     and break CI agents that expect a clean working tree.
     function stripVolatileMeta(obj) {
-        const c = structuredClone(obj);
+        const c = JSON.parse(JSON.stringify(obj));
         if (c.metadata) {
             delete c.metadata.last_optimized;
             delete c.metadata.last_merged;
@@ -80,24 +82,17 @@ try {
             if (JSON.stringify(stripVolatileMeta(data)) === JSON.stringify(stripVolatileMeta(previousData)) &&
                 previousData.metadata &&
                 typeof previousData.metadata.last_optimized === 'string') {
-                // Route data unchanged — preserve existing file as-is (incl. last_optimized)
                 needsWrite = false;
             }
-        } catch (e) {
-            // Fall back to writing a fresh output below.
-        }
+        } catch (e) { }
     }
 
     if (!needsWrite) {
         console.log(`✅ JSON Optimized! (content unchanged — not rewritten)`);
     } else {
         data.metadata.last_optimized = new Date().toISOString();
-
-        // 4. Write Minified JSON
-        fs.writeFileSync(outputPath, JSON.stringify(data)); // No pretty print for optimization
-
+        fs.writeFileSync(outputPath, JSON.stringify(data));
         console.log(`✅ JSON Optimized! Saved to ${outputPath}`);
-        console.log(`📉 Size reduced from ${(rawData.length / 1024).toFixed(2)}KB to ${(fs.statSync(outputPath).size / 1024).toFixed(2)}KB`);
     }
 
 } catch (err) {
