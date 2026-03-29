@@ -1,5 +1,5 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
-**Fecha:** 2026-03-10  
+**Fecha:** 2026-03-10
 **Versión:** 1.0.0 (Nexus Prime v3.3)  
 **Estado General:** 🟢 ESTABLE — Motor WASM operativo, PWA desplegada en producción
 
@@ -201,5 +201,5 @@ Ver [`ROADMAP.md`](../ROADMAP.md) para el plan completo.
 
 ---
 
-**Última actualización:** 2026-03-10  
+**Última actualización:** 2026-03-10
 **Próxima revisión:** Al completar sprint v3.4

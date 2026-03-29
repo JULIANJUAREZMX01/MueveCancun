@@ -1,6 +1,6 @@
 # 🗺️ MueveCancún — Roadmap
 
-> Última actualización: 2026-03-10 · Versión actual: **1.0.0 (Nexus Prime v3.3)**  
+> Última actualización: 2026-03-10 · Versión actual: **1.0.0 (Nexus Prime v3.3)**
 > App en producción: [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com)
 
 ---
