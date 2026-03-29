@@ -61,7 +61,9 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     } catch (e) {
         console.error("Failed to load map engine", e);
         if (loader) {
-            loader.innerHTML = '<div class="text-red-500 font-bold p-4 text-center">Error al cargar el mapa. Por favor, recarga la página.</div>';
+            // Use textContent to avoid any HTML injection risk
+            loader.textContent = 'Error al cargar el mapa. Por favor, recarga la página.';
+            loader.classList.add('text-red-500', 'font-bold', 'text-center', 'flex', 'items-center', 'justify-center');
         }
         return;
     }

@@ -104,7 +104,9 @@ export function drawRoute(
     if (data.legs && Array.isArray(data.legs)) {
         legs = data.legs;
     } else if ((data.paradas && Array.isArray(data.paradas)) || (data.stops && Array.isArray(data.stops))) {
-        // Single route or legacy format treated as one leg
+        // Single-route object (direct WASM output or legacy format): wrap it as a
+        // one-element legs array.  Both `paradas` and `stops` are preserved so
+        // downstream coordinate-resolution code can find whichever field is present.
         legs = [{
             paradas: data.paradas,
             stops: data.stops,

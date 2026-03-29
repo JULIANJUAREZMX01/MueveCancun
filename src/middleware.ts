@@ -3,7 +3,12 @@ import { defineMiddleware } from 'astro:middleware';
 const SUPPORTED_LOCALES = ['es', 'en'] as const;
 type Locale = typeof SUPPORTED_LOCALES[number];
 
-const UNLOCALIZED_PATHS = ['home', 'rutas', 'mapa', 'wallet', 'community', 'tracking', 'contribuir', 'about'];
+/**
+ * Top-level page slugs that exist without a language prefix.
+ * A request to `/{slug}` is redirected to `/{locale}/{slug}` using the
+ * visitor's stored locale cookie (default: 'es').
+ */
+const UNLOCALIZED_PATHS = ['home', 'rutas', 'mapa', 'wallet', 'community', 'tracking', 'contribuir', 'about', 'guess'];
 
 export const onRequest = defineMiddleware(({ request, redirect, cookies, url }, next) => {
   const path = url.pathname;

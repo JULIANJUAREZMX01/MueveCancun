@@ -91,10 +91,21 @@ export function normalizeString(str: string): string {
 }
 
 /**
- * Returns the Haversine distance in meters between two lat/lng points.
+ * Returns the Haversine great-circle distance in **meters** between two
+ * geographic coordinates.
+ *
+ * @param lat1 - Latitude of the first point in decimal degrees.
+ * @param lon1 - Longitude of the first point in decimal degrees.
+ * @param lat2 - Latitude of the second point in decimal degrees.
+ * @param lon2 - Longitude of the second point in decimal degrees.
+ * @returns Distance in meters (R = 6 371 km).
+ *
+ * @example
+ * // Distance between two Cancún landmarks (~7.5 km)
+ * haversineDistance(21.1619, -86.8515, 21.0821, -86.8770);
  */
 export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371e3;
+    const R = 6371e3; // Earth mean radius in meters
     const φ1 = lat1 * Math.PI / 180;
     const φ2 = lat2 * Math.PI / 180;
     const Δφ = (lat2 - lat1) * Math.PI / 180;
@@ -106,7 +117,13 @@ export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2
 }
 
 /**
- * Finds the closest transit stop/landmark to the given coordinates using the route catalog.
+ * Finds the nearest transit stop to the given coordinates by scanning the
+ * full route catalog.  Uses `haversineDistance` for accuracy.
+ *
+ * @param lat - User latitude in decimal degrees.
+ * @param lng - User longitude in decimal degrees.
+ * @returns The nearest stop object (`{ nombre, lat, lng, ... }`) from
+ *   `master_routes.json`, or `null` if the catalog is unavailable or empty.
  */
 export async function getClosestLandmark(lat: number, lng: number) {
     try {

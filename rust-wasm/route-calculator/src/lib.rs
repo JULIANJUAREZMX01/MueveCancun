@@ -281,11 +281,15 @@ pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
 
 // --- INTERNAL ALGORITHMS ---
 
+/// Normalises a stop-name string for accent-insensitive, case-insensitive
+/// comparisons.  Trims whitespace, lowercases, and replaces the most common
+/// Spanish diacritics so that, e.g., "Aeropuerto" and "aeropuerto" and
+/// "Aeropuerto" all hash to the same key.
+///
+/// Must stay in sync with `normalizeString()` in `src/utils/utils.ts`.
 fn normalize_str(s: &str) -> String {
     s.trim()
         .to_lowercase()
-        .chars()
-        .collect::<String>()
         .replace("á", "a")
         .replace("é", "e")
         .replace("í", "i")

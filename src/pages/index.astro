@@ -1,8 +1,10 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 
-// El tutorial solo se muestra si no se ha completado.
-// El middleware maneja la redirección si ya existe la cookie.
+// This page is the one-time onboarding tutorial.
+// Once the user completes it, `tutorial_completed=true` is set as a cookie
+// and the middleware redirects them directly to /{lang}/home on subsequent visits.
+export const prerender = true;
 ---
 
 <MainLayout title="Bienvenido | ¿Qué Ruta Me Lleva?">
@@ -445,11 +447,23 @@ import MainLayout from '../layouts/MainLayout.astro';
 			});
 		});
 
-		// Initial Check
+		// Initial Check — redirect if the tutorial was already completed in a prior visit
 		window.addEventListener('DOMContentLoaded', () => {
-			// Ensure it redirects if cookie already exists (double check client-side)
-			if (document.cookie.includes('tutorial_completed=true')) {
-				window.location.href = '/es/home';
+			// Robust cookie parser: handles valueless flags and avoids false positives
+			// from substrings (e.g. "not_tutorial_completed=true").
+			const cookies: Record<string, string> = {};
+			document.cookie.split('; ').forEach(c => {
+				const idx = c.indexOf('=');
+				if (idx === -1) {
+					cookies[decodeURIComponent(c)] = '';
+				} else {
+					cookies[decodeURIComponent(c.slice(0, idx))] = decodeURIComponent(c.slice(idx + 1));
+				}
+			});
+			if (cookies['tutorial_completed'] === 'true') {
+				// Preserve locale preference if already set
+				const locale = cookies['locale'] || 'es';
+				window.location.href = `/${locale}/home`;
 			}
 		});
 	</script>
