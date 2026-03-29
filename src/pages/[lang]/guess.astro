@@ -66,8 +66,8 @@ const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
                 </div>
                 <h2 id="question-text" class="text-xl font-bold text-slate-800 dark:text-white"></h2>
                 <div class="flex flex-col w-full gap-3">
-                    <button class="btn-answer py-3 rounded-xl border-2 border-teal-500 text-teal-600 dark:text-teal-400 font-bold" data-answer="yes">SÍ</button>
-                    <button class="btn-answer py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold" data-answer="no">NO</button>
+                    <button class="btn-answer py-3 rounded-xl border-2 border-teal-500 text-teal-600 dark:text-teal-400 font-bold" data-answer="yes" data-i18n="game.yes">{lang === 'es' ? 'SÍ' : 'YES'}</button>
+                    <button class="btn-answer py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold" data-answer="no" data-i18n="game.no">{lang === 'es' ? 'NO' : 'NO'}</button>
                 </div>
             </div>
 
