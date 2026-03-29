@@ -179,3 +179,12 @@ Tailwind sigue activo en producción. La PR #342 está bloqueada por este motivo
 La migración a PostCSS/Houdini debe ser **incremental y documentada por componente**.
 
 > Ver análisis completo: [`docs/PR_TRIAGE_2026-03-28.md`](docs/PR_TRIAGE_2026-03-28.md)
+
+## Guías de Enrutamiento Estático
+Para garantizar compatibilidad con CDN/Static Hosting:
+1.  **Enlaces Internos**: Usa `getRelativeLocaleUrl(lang, path)`.
+    - Correcto: `<a href={getRelativeLocaleUrl(lang, 'rutas')}>`
+    - Incorrecto: `<a href="/rutas">`
+2.  **Redirecciones**: Deben ser del lado del cliente.
+    - Usa `window.location.replace()` o `<meta http-equiv="refresh">`.
+3.  **Localización**: No dependas de headers de servidor (ej. `Accept-Language`) en Astro components. Usa el script de detección en `index.astro`.

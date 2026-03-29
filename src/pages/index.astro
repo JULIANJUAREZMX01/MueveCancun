@@ -2,12 +2,36 @@
 import MainLayout from '../layouts/MainLayout.astro';
 
 // This page is the one-time onboarding tutorial.
-// Once the user completes it, `tutorial_completed=true` is set as a cookie
-// and the middleware redirects them directly to /{lang}/home on subsequent visits.
+// Once the user completes it, `tutorial_completed=true` is set as a cookie.
+// On static builds, we use client-side JS to check this and redirect.
 export const prerender = true;
 ---
 
 <MainLayout title="Bienvenido | ¿Qué Ruta Me Lleva?">
+    <head slot="head">
+        <!-- Fallback redirect if JS is disabled (defaults to ES) -->
+        <meta http-equiv="refresh" content="0;url=/es/home" />
+        <script is:inline>
+            // Inline script to prevent FOUC of the tutorial if already completed
+            (function() {
+                const cookies = {};
+                document.cookie.split('; ').forEach(c => {
+                    const [k, v] = c.split('=');
+                    if (k) cookies[decodeURIComponent(k.trim())] = decodeURIComponent(v || '');
+                });
+
+                if (cookies['tutorial_completed'] === 'true') {
+                    const locale = cookies['locale'] || (navigator.language.startsWith('en') ? 'en' : 'es');
+                    window.location.replace('/' + locale + '/home');
+                } else {
+                    // Remove the refresh meta if we want to show the tutorial
+                    const meta = document.querySelector('meta[http-equiv="refresh"]');
+                    if (meta) meta.remove();
+                }
+            })();
+        </script>
+    </head>
+
 	<div class="welcome-shell">
 		<div class="bg-gradient"></div>
 		<div class="bg-grid">
@@ -27,45 +51,53 @@ export const prerender = true;
 		</div>
 
 		<div class="onboarding-container">
-			<div id="tutorial-slider" class="tutorial-slider">
+			<div class="tutorial-slider">
+				<!-- Step 1: Branding -->
 				<section class="step active" data-step="1">
 					<div class="icon-hero animate-float">
 						<div class="logo-box">
-							<span class="logo-text">QC</span>
+							<span class="logo-text text-white">M</span>
 						</div>
 					</div>
-					<h1 class="step-title" data-i18n="welcome.step1.title">Bienvenido a CancúnMueve</h1>
-					<p class="step-desc" data-i18n="welcome.step1.desc">La guía definitiva de transporte público. Rutas, mapas y tarifas actualizadas.</p>
+					<h1 class="step-title" data-i18n="welcome.step1.title">CancúnMueve</h1>
+					<p class="step-desc" data-i18n="welcome.step1.desc">Tu guía inteligente para dominar el transporte público en el paraíso.</p>
 				</section>
 
+				<!-- Step 2: WASM Power -->
 				<section class="step" data-step="2">
 					<div class="icon-hero">
-						<div class="glass-icon-circle bg-emerald-500/20 text-emerald-500">
-							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+						<div class="glass-icon-circle bg-teal-500/20 text-teal-400">
+							<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<polyline points="16 18 22 12 16 6" />
+								<polyline points="8 6 2 12 8 18" />
 							</svg>
 						</div>
 					</div>
-					<h1 class="step-title" data-i18n="welcome.step2.title">Funciona Sin Internet</h1>
-					<p class="step-desc" data-i18n="welcome.step2.desc">Una vez instalada, no necesitas señal. El motor de búsqueda y los mapas viven en tu dispositivo.</p>
+					<h1 class="step-title" data-i18n="welcome.step2.title">Motor Nexus</h1>
+					<p class="step-desc" data-i18n="welcome.step2.desc">Cálculos de ruta ultrarrápidos gracias a tecnología Rust/WASM ejecutándose en tu dispositivo.</p>
 				</section>
 
+				<!-- Step 3: PWA / Offline -->
 				<section class="step" data-step="3">
 					<div class="icon-hero">
-						<div class="glass-icon-circle bg-blue-500/20 text-blue-500">
-							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+						<div class="glass-icon-circle bg-orange-500/20 text-orange-400">
+							<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M5 12.55a11 11 0 0 1 14.08 0" />
+								<path d="M1.42 9a16 16 0 0 1 21.16 0" />
+								<path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+								<line x1="12" y1="20" x2="12.01" y2="20" />
 							</svg>
 						</div>
 					</div>
-					<h1 class="step-title" data-i18n="welcome.step3.title">Inteligencia Local</h1>
-					<p class="step-desc" data-i18n="welcome.step3.desc">Calculamos trayectos en milisegundos usando WebAssembly para ahorrar tu batería.</p>
+					<h1 class="step-title" data-i18n="welcome.step3.title">100% Offline</h1>
+					<p class="step-desc" data-i18n="welcome.step3.desc">¿Sin datos? No hay problema. CancúnMueve funciona sin internet una vez instalado.</p>
 				</section>
 
+				<!-- Step 4: Social Signals -->
 				<section class="step" data-step="4">
 					<div class="icon-hero">
-						<div class="glass-icon-circle bg-rose-500/20 text-rose-500">
-							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<div class="glass-icon-circle bg-sky-500/20 text-sky-400">
+							<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
 							</svg>
@@ -468,7 +500,7 @@ export const prerender = true;
 			});
 			if (cookies['tutorial_completed'] === 'true') {
 				// Preserve locale preference if already set
-				const locale = cookies['locale'] || 'es';
+				const locale = cookies['locale'] || (navigator.language.startsWith('en') ? 'en' : 'es');
 				window.location.href = `/${locale}/home`;
 			}
 		});

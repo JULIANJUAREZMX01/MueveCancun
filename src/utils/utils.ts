@@ -140,3 +140,17 @@ export async function getClosestLandmark(lat: number, lng: number) {
         return null;
     }
 }
+
+/**
+ * Generates a localized relative URL for the given path and language.
+ * Ensures consistent URL structure (e.g., /es/home) across the application.
+ *
+ * @param lang The language code (e.g., 'es', 'en').
+ * @param path The target path (e.g., 'home', '/rutas').
+ * @returns The formatted localized relative URL.
+ */
+export function getRelativeLocaleUrl(lang: string, path: string): string {
+  if (!path) return `/${lang}/`;
+  const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+  return `/${lang}/${normalizedPath}`;
+}
