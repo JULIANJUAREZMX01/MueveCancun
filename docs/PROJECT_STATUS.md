@@ -1,6 +1,6 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
-**Fecha:** 2026-03-10
-**Versión:** 1.0.0 (Nexus Prime v3.3)  
+**Fecha:** 2026-03-12
+**Versión:** 1.0.0 (Nexus Prime v3.4)
 **Estado General:** 🟢 ESTABLE — Motor WASM operativo, PWA desplegada en producción
 
 ---
@@ -14,9 +14,10 @@ persistencia funciona sobre IndexedDB sin necesidad de backend.
 ### Logros Acumulados (hasta este sprint)
 
 | Área | Estado |
+| UI/UX | ✅ Comportamiento bottom sheet y colapso de panel |
 |------|--------|
 | Motor WASM (Nexus Transfer Engine) | ✅ Compilado y operativo |
-| Detección de transbordos (exacto + geo ≤350 m) | ✅ Funcional |
+| Detección de transbordos (exacto + geo ≤350 m + normalización acentos) | ✅ Funcional |
 | Balance unificado IndexedDB | ✅ Resuelto |
 | GPS → parada más cercana | ✅ Implementado |
 | PWA offline (Service Worker) | ✅ Activo |
@@ -194,12 +195,12 @@ Ver [`ROADMAP.md`](../ROADMAP.md) para el plan completo.
 
 | Sprint | Foco | Estado |
 |--------|------|--------|
-| v3.3 (actual) | Nexus Transfer Engine, GPS, mapa interactivo | ✅ Completado |
+| v3.4 (actual) | Nexus Transfer Engine, GPS, mapa interactivo | ✅ Completado |
 | v3.4 | Catálogo de rutas completo + validación de datos | 🔲 Planificado |
 | v3.5 | Crowdsourcing, formularios offline, background sync | 🔲 Planificado |
 | v4.0 | Multi-ciudad (Cancún / Playa / Tulum), analytics real | 🔲 Planificado |
 
 ---
 
-**Última actualización:** 2026-03-10
+**Última actualización:** 2026-03-12
 **Próxima revisión:** Al completar sprint v3.4

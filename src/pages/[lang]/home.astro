@@ -209,4 +209,34 @@ const title = "Inicio";
         transform: scale(1) translateY(0);
     }
 }
+
+/* Improved Map Mode Transitions */
+.dashboard-container.map-mode {
+    justify-content: flex-end;
+}
+
+.dashboard-container.map-mode .hero-headline {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+    max-height: 0;
+    margin: 0;
+}
+
+.dashboard-container.map-mode .glass-panel-wrapper {
+    max-width: 100%;
+    margin: 0;
+}
+
+/* On desktop, keep it to the side but allow it to be compact */
+@media (min-width: 768px) {
+    .dashboard-container.map-mode {
+        justify-content: flex-start;
+    }
+    .dashboard-container.map-mode .glass-panel-wrapper {
+        max-width: 400px;
+        margin-left: 1rem;
+    }
+}
+
 </style>

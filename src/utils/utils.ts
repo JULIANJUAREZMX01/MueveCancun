@@ -1,76 +1,56 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
-
-export function formatDate(date: Date) {
-  return Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric"
-  }).format(date)
-}
-
-export function readingTime(html: string) {
-  const textOnly = html.replace(/<[^>]+>/g, "")
-  const wordCount = textOnly.split(/\s+/).length
-  const readingTimeMinutes = ((wordCount / 200) + 1).toFixed()
-  return `${readingTimeMinutes} min read`
-}
-
-
-export function truncateText(str: string, maxLength: number): string {
-  const ellipsis = '…';
-
-  if (str.length <= maxLength) return str;
-
-  const trimmed = str.trimEnd();
-  if (trimmed.length <= maxLength) return trimmed;
-
-  const cutoff = maxLength - ellipsis.length;
-  const sliced = str.slice(0, cutoff).trimEnd();
-
-  return sliced + ellipsis;
+/**
+ * Sanitizes and normalizes a string for robust comparisons (e.g., stop names).
+ * Removes accents, extra spaces, and converts to lowercase.
+ */
+export function normalizeString(str: string): string {
+    if (!str) return '';
+    return str
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Remove accents
+        .replace(/\s+/g, ' '); // Collapse spaces
 }
 
 /**
- * Serializes an object to a JSON string that is safe to use in HTML attributes.
- * Escapes < to prevent tag injection and ' to prevent attribute breakout.
- * @param obj The object to serialize.
- * @returns The escaped JSON string.
+ * Escapes HTML characters to prevent XSS.
  */
-export function safeJsonStringify(obj: unknown): string {
-    const json = JSON.stringify(obj);
-    const safe = json === undefined ? 'null' : json;
-    return safe
-        .replace(/</g, '\\u003c')
-        .replace(/'/g, "\\u0027");
+export function escapeHtml(unsafe: string): string {
+  if (!unsafe) return '';
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 /**
- * Escapes HTML characters to prevent XSS attacks when rendering user-provided content.
- * @param unsafe The string to escape.
- * @returns The escaped string.
+ * Safe JSON stringify for HTML attributes.
  */
-export function escapeHtml(unsafe: unknown): string {
-  if (unsafe === null || unsafe === undefined) return '';
-  return String(unsafe)
-       .replace(/&/g, "&amp;")
-       .replace(/</g, "&lt;")
-       .replace(/>/g, "&gt;")
-       .replace(/"/g, "&quot;")
-       .replace(/'/g, "&#039;");
+export function safeJsonStringify(obj: any): string {
+  try {
+    return JSON.stringify(obj).replace(/"/g, '&quot;');
+  } catch (e) {
+    return '{}';
+  }
 }
 
 /**
- * Validates and sanitizes a URL component, specifically for query parameters.
- * @param name The URL component to sanitize.
- * @returns The sanitized URL component.
+ * Format date to local string (en-US, MMM DD, YYYY).
  */
-export function safeUrl(name: unknown): string {
-    if (typeof name !== 'string') return '';
-    return encodeURIComponent(name).replace(/'/g, "%27");
+export function formatDate(date: string | Date): string {
+  const d = new Date(date);
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
 }
 
+/**
+ * URL Safe Encoding.
+ */
+export function safeUrl(str: string): string {
+    return encodeURIComponent(str.trim());
+}

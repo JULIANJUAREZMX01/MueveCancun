@@ -187,7 +187,7 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
 
     // Pre-compute normalized stop names + O(1) index
     for route in &mut catalog.rutas {
-        route.stops_normalized = route.stops.iter().map(|s| s.name.to_lowercase()).collect();
+        route.stops_normalized = route.stops.iter().map(|s| normalize_str(&s.name)).collect();
         route.stop_name_to_index = route
             .stops_normalized
             .iter()
@@ -280,6 +280,22 @@ pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
 }
 
 // --- INTERNAL ALGORITHMS ---
+
+fn normalize_str(s: &str) -> String {
+    s.trim()
+        .to_lowercase()
+        .chars()
+        .filter(|c| !c.is_whitespace() || *c == ' ')
+        .collect::<String>()
+        .replace("á", "a")
+        .replace("é", "e")
+        .replace("í", "i")
+        .replace("ó", "o")
+        .replace("ú", "u")
+        .replace("ü", "u")
+        .replace("ñ", "n")
+}
+
 
 /// Known Cancún transfer hubs. Substring match against stop names.
 const PREFERRED_HUBS: &[&str] = &[
@@ -556,8 +572,8 @@ fn find_transfer_routes(
 
 /// Main routing function. Returns up to 5 journeys (Direct first, then Transfer).
 fn find_route_rs(origin: &str, dest: &str, all_routes: &[Route]) -> Vec<Journey> {
-    let origin_norm = origin.to_lowercase();
-    let dest_norm = dest.to_lowercase();
+    let origin_norm = normalize_str(origin);
+    let dest_norm = normalize_str(dest);
     let mut origin_cache: HashMap<&str, f64> = HashMap::new();
     let mut dest_cache: HashMap<&str, f64> = HashMap::new();
 

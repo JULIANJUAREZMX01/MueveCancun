@@ -1,16 +1,17 @@
 # 🗺️ MueveCancún — Roadmap
 
-> Última actualización: 2026-03-10 · Versión actual: **1.0.0 (Nexus Prime v3.3)**
+> Última actualización: 2026-03-12 · Versión actual: **1.0.0 (Nexus Prime v3.4)**
 > App en producción: [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com)
 
 ---
 
-## Estado Actual — v3.3 ✅
+## Estado Actual — v3.4 ✅
 
 El núcleo funcional está terminado y desplegado:
 
 - **Motor WASM (Rust)** — Búsqueda de rutas con detección de transbordos exactos y por proximidad geográfica (≤ 350 m).
-- **PWA offline-first** — Service Worker activo; la app funciona sin conexión a internet.
+- **PWA offline-first**
+- **UI/UX PWA** — Comportamiento bottom sheet para visualización de mapa. — Service Worker activo; la app funciona sin conexión a internet.
 - **GPS → parada** — `CoordinatesStore` resuelve coordenadas a la parada más cercana (radio 1 km).
 - **Mapa interactivo** — Leaflet con popups "Salgo de aquí / Voy aquí".
 - **Wallet IndexedDB** — Balance unificado con firma HMAC, sin backend.
@@ -102,7 +103,7 @@ Estas tareas están identificadas pero aún no tienen sprint asignado. Se irán 
 
 | Versión | Fecha | Cambios principales |
 |---------|-------|---------------------|
-| v3.3 | 2026-03-10 | Nexus Transfer Engine; GPS → parada; mapa interactivo con popups; balance IndexedDB unificado; 11 test files; 6 workflows CI/CD |
+| v3.4 | 2026-03-12 | Nexus Transfer Engine; GPS → parada; mapa interactivo con popups; balance IndexedDB unificado; 11 test files; 6 workflows CI/CD |
 | v3.2 | 2026-02-19 | WasmLoader singleton; SpatialHash; CoordinateFinder 2.1× más rápido; type-safety mejorada |
 | v3.1 | 2026-02-18 | Triple balance system; IndexedDB DataError resuelto; `src/lib/` → `src/utils/` |
 | v3.0 | 2026-02-17 | Consolidación de 12 PRs; arquitectura Nexus establecida |

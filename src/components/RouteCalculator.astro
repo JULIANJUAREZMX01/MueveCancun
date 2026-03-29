@@ -202,7 +202,7 @@ const ui = uiTranslations[currentLang];
                   if (raw) {
                       const journey = JSON.parse(raw);
                       window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey } }));
-                      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_ACTIVE' }));
+                      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'map' }));
                   }
               } catch (err) {
                   console.error("Invalid journey data", err);
@@ -923,7 +923,7 @@ const ui = uiTranslations[currentLang];
               }
 
               console.log(`🔍 Searching: ${origin} -> ${dest}`);
-              const results = find_route(origin, dest); // Pass strings directly
+              const results = find_route(normalizeString(origin), normalizeString(dest)); // Pass strings directly
 
               console.log("🔍 Raw Results:", results);
 
@@ -999,7 +999,7 @@ const ui = uiTranslations[currentLang];
                                 detail: { journey: journeyData }
                              }));
                              // Also trigger view state change to map
-                             window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
+                             window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'map' }));
                          } catch (err) {
                              console.error("Error parsing journey data for map:", err);
                          }
