@@ -143,3 +143,9 @@ Cada PR debe incluir: descripción del problema, fix implementado, tests que lo 
 | **#333** | ❓ VERIFICAR | geo_transfer de marzo-10; puede estar ya en main vía #365 |
 
 > Ver análisis completo: [`docs/PR_TRIAGE_2026-03-28.md`](docs/PR_TRIAGE_2026-03-28.md)
+
+## Mandato Arquitectónico: Static-First (v3.3.1+)
+A partir de marzo de 2026, el proyecto es **estrictamente estático**.
+- **PROHIBIDO**: Middleware para lógica de rutas en request-time.
+- **OBLIGATORIO**: Uso de `getRelativeLocaleUrl(lang, path)` para todos los enlaces internos.
+- **DIRECCIONAMIENTO**: El root `/` se maneja vía client-side JS en `src/pages/index.astro`.

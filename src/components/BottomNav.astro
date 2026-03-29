@@ -1,12 +1,15 @@
 ---
+import { getLangFromUrl } from "../utils/i18n";
+import { getRelativeLocaleUrl } from "../utils/utils";
 const pathname = Astro.url.pathname;
+const lang = getLangFromUrl(Astro.url);
 
 const navItems = [
-  { href: '/home', icon: 'explore', label: 'Inicio', activePattern: /^\/home/ },
-  { href: '/rutas', icon: 'route', label: 'Rutas', activePattern: /^\/rutas/ },
-  { href: '/community', icon: 'forum', label: 'Foro', activePattern: /^\/community/ },
-  { href: '/wallet', icon: 'account_balance_wallet', label: 'Tarjeta', activePattern: /^\/wallet/ },
-  { href: '/about', icon: 'info', label: 'Nosotros', activePattern: /^\/about/ },
+  { href: getRelativeLocaleUrl(lang, 'home'), icon: 'explore', label: 'Inicio', activePattern: /^\/(es|en)\/home/ },
+  { href: getRelativeLocaleUrl(lang, 'rutas'), icon: 'route', label: 'Rutas', activePattern: /^\/(es|en)\/rutas/ },
+  { href: getRelativeLocaleUrl(lang, 'community'), icon: 'forum', label: 'Foro', activePattern: /^\/(es|en)\/community/ },
+  { href: getRelativeLocaleUrl(lang, 'wallet'), icon: 'account_balance_wallet', label: 'Tarjeta', activePattern: /^\/(es|en)\/wallet/ },
+  { href: getRelativeLocaleUrl(lang, 'about'), icon: 'info', label: 'Nosotros', activePattern: /^\/(es|en)\/about/ },
 ];
 ---
 
@@ -40,11 +43,11 @@ const navItems = [
           </svg>
 
           <span class="nav-label" data-i18n={
-            item.href === '/home' ? 'nav.home' :
-            item.href === '/rutas' ? 'nav.routes' :
-            item.href === '/community' ? 'nav.community' :
-            item.href === '/wallet' ? 'nav.wallet' :
-            item.href === '/about' ? 'nav.about' : ''
+            item.href.endsWith('/home') ? 'nav.home' :
+            item.href.endsWith('/rutas') ? 'nav.routes' :
+            item.href.endsWith('/community') ? 'nav.community' :
+            item.href.endsWith('/wallet') ? 'nav.wallet' :
+            item.href.endsWith('/about') ? 'nav.about' : ''
           }>
             {item.label}
           </span>
