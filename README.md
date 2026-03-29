@@ -3,6 +3,10 @@
 
  🏛️ MueveCancun: La Verdad de la Calle (Nexus Prime v3.3)
 
+<!-- STATS:START -->
+> 📊 **851+ commits** | ⚙️ **1187+ líneas de Rust/WASM**
+<!-- STATS:END -->
+
 > "MueveCancun no nació en una oficina, nació en la parada del camión."
 
 ## 🔗 Links
