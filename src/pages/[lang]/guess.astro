@@ -66,8 +66,8 @@ const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
                 </div>
                 <h2 id="question-text" class="text-xl font-bold text-slate-800 dark:text-white"></h2>
                 <div class="flex flex-col w-full gap-3">
-                    <button class="btn-answer py-3 rounded-xl border-2 border-teal-500 text-teal-600 dark:text-teal-400 font-bold" data-answer="yes">SÍ</button>
-                    <button class="btn-answer py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold" data-answer="no">NO</button>
+                    <button class="btn-answer py-3 rounded-xl border-2 border-teal-500 text-teal-600 dark:text-teal-400 font-bold" data-answer="yes" data-i18n="game.yes">{lang === 'es' ? 'SÍ' : 'YES'}</button>
+                    <button class="btn-answer py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold" data-answer="no" data-i18n="game.no">{lang === 'es' ? 'NO' : 'NO'}</button>
                 </div>
             </div>
 
@@ -93,8 +93,30 @@ const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
     </div>
 </MainLayout>
 
-<script>
+<script define:vars={{ lang }}>
     import { getClosestLandmark } from '../../utils/utils';
+    import { showToast } from '../../utils/toast';
+
+    /**
+     * Language for this page, passed from the route param via define:vars.
+     * NOTE: MainLayout hardcodes <html lang="es">, so we cannot rely on
+     * document.documentElement.lang — we use the Astro route param instead.
+     */
+    const pageLang = lang || 'es';
+
+    // --- i18n lookup ---
+    // Translations are embedded by MainLayout in #i18n-translations[data-translations].
+    // We parse them once and use them for dynamic strings (questions, toasts, etc.)
+    const _translationsEl = document.getElementById('i18n-translations');
+    const _allTranslations: Record<string, Record<string, string>> = _translationsEl
+        ? JSON.parse(_translationsEl.getAttribute('data-translations') || '{}')
+        : {};
+    const _t: Record<string, string> = _allTranslations[pageLang] || _allTranslations['es'] || {};
+
+    /** Looks up an i18n key from the page's embedded translations. */
+    function t(key: string, fallback = '...'): string {
+        return _t[key] || fallback;
+    }
 
     const screens = {
         start: document.getElementById('screen-start'),
@@ -112,25 +134,54 @@ const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
     let userLocation: { lat: number, lng: number } | null = null;
     let currentQuestionIndex = 0;
 
+    /** i18n key names for the Akinator-style questions. */
     const questions = [
         'game.question1',
         'game.question2',
         'game.question3'
     ];
 
+    /** Shows one named screen and hides all others. */
     function showScreen(name: keyof typeof screens) {
         Object.values(screens).forEach(s => s?.classList.add('hidden'));
         screens[name]?.classList.remove('hidden');
     }
 
-    // Initialize Game
-    document.getElementById('btn-start')?.addEventListener('click', async () => {
-        try {
-            // Get Location first
-            navigator.geolocation.getCurrentPosition((pos) => {
-                userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            }, (err) => console.warn("GPS failed", err));
+    /** Releases all MediaStream tracks and clears the stream reference. */
+    function stopStream() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+    }
 
+    // Release the camera when the user navigates away (Astro View Transitions)
+    document.addEventListener('astro:before-swap', stopStream);
+
+    // Initialize Game — acquire location + camera access
+    document.getElementById('btn-start')?.addEventListener('click', async () => {
+        // Validate MediaDevices API availability.
+        // getUserMedia requires a secure context (HTTPS or localhost) and a
+        // modern browser.  Provide guidance if unavailable.
+        if (!navigator.mediaDevices?.getUserMedia) {
+            showToast(
+                pageLang === 'es'
+                    ? "Tu navegador no soporta acceso a la cámara. Prueba en Chrome o Safari con HTTPS."
+                    : "Your browser does not support camera access. Try Chrome or Safari over HTTPS.",
+                "error"
+            );
+            return;
+        }
+
+        // Start GPS in parallel — non-blocking; used only for the result screen
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => { userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; },
+                (err) => console.warn("GPS failed, result will use fallback", err)
+            );
+        }
+
+        try {
             stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'environment' },
                 audio: false
@@ -138,23 +189,27 @@ const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
             video.srcObject = stream;
             showScreen('camera');
         } catch (err) {
-            alert("Necesitamos acceso a la cámara para jugar.");
+            showToast(
+                pageLang === 'es'
+                    ? "Necesitamos acceso a la cámara para jugar."
+                    : "Camera access is needed to play.",
+                "warning"
+            );
         }
     });
 
-    // Capture Image
+    // Capture Image — freeze frame and start the question flow
     document.getElementById('btn-capture')?.addEventListener('click', () => {
-        if (stream) {
-            const context = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context?.drawImage(video, 0, 0);
+        if (!stream) return;
 
-            // Stop camera
-            stream.getTracks().forEach(track => track.stop());
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context?.drawImage(video, 0, 0);
 
-            startQuestioning();
-        }
+        // Release camera now that we have the snapshot
+        stopStream();
+        startQuestioning();
     });
 
     function startQuestioning() {
@@ -165,8 +220,9 @@ const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
 
     function askNextQuestion() {
         if (currentQuestionIndex < questions.length) {
-            const key = questions[currentQuestionIndex];
-            const translation = document.querySelector(`[data-i18n="${key}"]`)?.textContent || "...";
+            // Look up translated question text from the embedded translations object.
+            // This avoids relying on DOM elements that may not exist for every key.
+            const translation = t(questions[currentQuestionIndex]);
             if (questionText) questionText.textContent = translation;
         } else {
             showResult();
@@ -181,24 +237,33 @@ const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
     });
 
     async function showResult() {
-        showScreen('question'); // Keep loader visible
+        // Stay on the question screen with the "thinking" message while we resolve
+        showScreen('question');
         if (questionText) {
-            const thinkingKey = 'game.thinking';
-            questionText.textContent = document.querySelector(`[data-i18n="${thinkingKey}"]`)?.textContent || "...";
+            questionText.textContent = t('game.thinking');
         }
 
+        // Language-aware fallback strings when GPS or catalog is unavailable
+        const fallbackUnknown = pageLang === 'es'
+            ? 'Algún lugar misterioso en Cancún'
+            : 'Somewhere mysterious in Cancún';
+        const fallbackNoGps = pageLang === 'es'
+            ? 'Zona Hotelera (¡Seguramente!)'
+            : 'Hotel Zone (most likely!)';
+
+        // Simulate a brief "thinking" delay, then reveal the result
         setTimeout(async () => {
-            let place = "Algún lugar misterioso en Cancún";
+            let place = fallbackUnknown;
 
             if (userLocation) {
                 try {
-                   const landmark = await getClosestLandmark(userLocation.lat, userLocation.lng);
-                   if (landmark) place = landmark.nombre;
+                    const landmark = await getClosestLandmark(userLocation.lat, userLocation.lng);
+                    if (landmark) place = landmark.nombre;
                 } catch (e) {
-                   console.error("Error finding landmark", e);
+                    console.error("Error finding landmark", e);
                 }
             } else {
-                place = "Zona Hotelera (¡Seguramente!)";
+                place = fallbackNoGps;
             }
 
             if (resultPlace) resultPlace.textContent = place;
@@ -207,17 +272,24 @@ const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
     }
 
     document.getElementById('btn-retry')?.addEventListener('click', () => {
+        // Reset state so a fresh game can begin
+        userLocation = null;
+        currentQuestionIndex = 0;
         showScreen('start');
     });
 
     document.getElementById('btn-share')?.addEventListener('click', () => {
-        if (navigator.share) {
-            navigator.share({
-                title: 'CancúnMueve - Adivina Dónde Estoy',
-                text: `¡CancúnMueve adivinó que estoy en ${resultPlace?.textContent}! Pruébalo tú también.`,
-                url: window.location.href
-            });
-        }
+        if (!navigator.share) return; // Web Share API not supported in this browser
+
+        const shareText = pageLang === 'es'
+            ? `¡CancúnMueve adivinó que estoy en ${resultPlace?.textContent}! Pruébalo tú también.`
+            : `CancúnMueve guessed I'm at ${resultPlace?.textContent}! Try it yourself.`;
+
+        navigator.share({
+            title: 'CancúnMueve — Adivina Dónde Estoy',
+            text: shareText,
+            url: window.location.href
+        }).catch(err => console.warn('Share cancelled or failed', err));
     });
 </script>
 

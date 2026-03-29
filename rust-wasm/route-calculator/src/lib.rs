@@ -187,7 +187,7 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
 
     // Pre-compute normalized stop names + O(1) index
     for route in &mut catalog.rutas {
-        route.stops_normalized = route.stops.iter().map(|s| s.name.to_lowercase()).collect();
+        route.stops_normalized = route.stops.iter().map(|s| normalize_str(&s.name)).collect();
         route.stop_name_to_index = route
             .stops_normalized
             .iter()
@@ -280,6 +280,27 @@ pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
 }
 
 // --- INTERNAL ALGORITHMS ---
+
+/// Normalises a stop-name string for accent-insensitive, case-insensitive
+/// comparisons.  Trims whitespace, lowercases, replaces the most common
+/// Spanish diacritics, and collapses internal whitespace runs to a single
+/// space — so "El  Crucero" and "El Crucero" hash to the same key.
+///
+/// **Must stay in sync with `normalizeString()` in `src/utils/utils.ts`.**
+fn normalize_str(s: &str) -> String {
+    // Replace diacritics on the lowercased, trimmed string
+    let normalized = s.trim()
+        .to_lowercase()
+        .replace("á", "a")
+        .replace("é", "e")
+        .replace("í", "i")
+        .replace("ó", "o")
+        .replace("ú", "u")
+        .replace("ü", "u")
+        .replace("ñ", "n");
+    // Collapse multiple whitespace chars to a single space
+    normalized.split_whitespace().collect::<Vec<_>>().join(" ")
+}
 
 /// Known Cancún transfer hubs. Substring match against stop names.
 const PREFERRED_HUBS: &[&str] = &[
@@ -556,8 +577,8 @@ fn find_transfer_routes(
 
 /// Main routing function. Returns up to 5 journeys (Direct first, then Transfer).
 fn find_route_rs(origin: &str, dest: &str, all_routes: &[Route]) -> Vec<Journey> {
-    let origin_norm = origin.to_lowercase();
-    let dest_norm = dest.to_lowercase();
+    let origin_norm = normalize_str(origin);
+    let dest_norm = normalize_str(dest);
     let mut origin_cache: HashMap<&str, f64> = HashMap::new();
     let mut dest_cache: HashMap<&str, f64> = HashMap::new();
 
