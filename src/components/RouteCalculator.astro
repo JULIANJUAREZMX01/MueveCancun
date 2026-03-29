@@ -179,7 +179,7 @@ const ui = uiTranslations[currentLang];
   import { showToast } from '../utils/toast';
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { CoordinateFinder } from '../utils/CoordinateFinder';
-  import { escapeHtml, safeJsonStringify } from '../utils/utils';
+  import { escapeHtml, safeJsonStringify, normalizeString } from '../utils/utils';
   import { getWalletBalance, setWalletBalance } from '../utils/db';
   import { getTransportLabel } from '../utils/transport';
   import { WasmLoader } from '../utils/WasmLoader';
@@ -929,7 +929,7 @@ const ui = uiTranslations[currentLang];
               }
 
               console.log(`🔍 Searching: ${origin} -> ${dest}`);
-              const results = find_route(origin, dest); // Pass strings directly
+              const results = find_route(normalizeString(origin), normalizeString(dest));
 
               console.log("🔍 Raw Results:", results);
 
