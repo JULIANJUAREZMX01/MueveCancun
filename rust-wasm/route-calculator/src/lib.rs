@@ -282,13 +282,14 @@ pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
 // --- INTERNAL ALGORITHMS ---
 
 /// Normalises a stop-name string for accent-insensitive, case-insensitive
-/// comparisons.  Trims whitespace, lowercases, and replaces the most common
-/// Spanish diacritics so that, e.g., "Aeropuerto" and "aeropuerto" and
-/// "Aeropuerto" all hash to the same key.
+/// comparisons.  Trims whitespace, lowercases, replaces the most common
+/// Spanish diacritics, and collapses internal whitespace runs to a single
+/// space — so "El  Crucero" and "El Crucero" hash to the same key.
 ///
-/// Must stay in sync with `normalizeString()` in `src/utils/utils.ts`.
+/// **Must stay in sync with `normalizeString()` in `src/utils/utils.ts`.**
 fn normalize_str(s: &str) -> String {
-    s.trim()
+    // Replace diacritics on the lowercased, trimmed string
+    let normalized = s.trim()
         .to_lowercase()
         .replace("á", "a")
         .replace("é", "e")
@@ -296,7 +297,9 @@ fn normalize_str(s: &str) -> String {
         .replace("ó", "o")
         .replace("ú", "u")
         .replace("ü", "u")
-        .replace("ñ", "n")
+        .replace("ñ", "n");
+    // Collapse multiple whitespace chars to a single space
+    normalized.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 /// Known Cancún transfer hubs. Substring match against stop names.

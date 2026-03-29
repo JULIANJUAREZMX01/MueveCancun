@@ -43,7 +43,7 @@
   "error.no_gps": "Could not get your location. Check permissions.",
   "transport.Bus": "Bus",
   "transport.Combi": "Combi",
-  "transport.Van": "Van / Colective",
+  "transport.Van": "Van / Collective",
   "transport.ADO": "ADO",
   "transport.PlayaExpress": "Playa Express",
   "calc.num_options": "OPTION FOUND",
@@ -69,7 +69,7 @@
   "welcome.step4.title": "Social Signals",
   "welcome.step4.desc": "Real information based on citizen reports to avoid delays and blockages.",
   "welcome.btn.next": "Next",
-  "welcome.btn.start": "Comenzar en Español",
+  "welcome.btn.start": "Start in Spanish",
   "welcome.btn.start_en": "Start in English",
   "welcome.skip": "Skip tutorial"
 }

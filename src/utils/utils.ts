@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { getDistance as getDistanceKm } from "./geometry";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -75,76 +76,67 @@ export function safeUrl(name: unknown): string {
 }
 
 /**
- * Normalizes a string for robust, accent-insensitive comparisons (e.g., stop names).
- * Removes accents, trims, and converts to lowercase.
+ * Normalizes a string for accent-insensitive, case-insensitive stop-name
+ * comparisons.  Uses the same explicit replacement strategy as `normalize_str()`
+ * in `rust-wasm/route-calculator/src/lib.rs` so that both sides produce
+ * identical keys for any given stop name.
+ *
+ * **Must stay in sync with `normalize_str()` in lib.rs.**
+ *
  * @param str The string to normalize.
- * @returns The normalized string.
+ * @returns Trimmed, lowercased string with Spanish diacritics replaced and
+ *   internal whitespace collapsed to a single space.
  */
 export function normalizeString(str: string): string {
     if (!str) return '';
     return str
         .trim()
         .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
+        .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ü/g, 'u')
+        .replace(/ñ/g, 'n')
         .replace(/\s+/g, ' ');
 }
 
 /**
- * Returns the Haversine great-circle distance in **meters** between two
- * geographic coordinates.
- *
- * @param lat1 - Latitude of the first point in decimal degrees.
- * @param lon1 - Longitude of the first point in decimal degrees.
- * @param lat2 - Latitude of the second point in decimal degrees.
- * @param lon2 - Longitude of the second point in decimal degrees.
- * @returns Distance in meters (R = 6 371 km).
- *
- * @example
- * // Distance between two Cancún landmarks (~7.5 km)
- * haversineDistance(21.1619, -86.8515, 21.0821, -86.8770);
- */
-export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371e3; // Earth mean radius in meters
-    const φ1 = lat1 * Math.PI / 180;
-    const φ2 = lat2 * Math.PI / 180;
-    const Δφ = (lat2 - lat1) * Math.PI / 180;
-    const Δλ = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-              Math.cos(φ1) * Math.cos(φ2) *
-              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-/**
  * Finds the nearest transit stop to the given coordinates by scanning the
- * full route catalog.  Uses `haversineDistance` for accuracy.
+ * full route catalog.  Uses `getDistance()` from `geometry.ts` for the
+ * Haversine calculation (returns km).
+ *
+ * **Performance note**: the catalog is loaded once and cached in the module
+ * scope.  Subsequent calls reuse the cached data.
  *
  * @param lat - User latitude in decimal degrees.
  * @param lng - User longitude in decimal degrees.
  * @returns The nearest stop object (`{ nombre, lat, lng, ... }`) from
  *   `master_routes.json`, or `null` if the catalog is unavailable or empty.
  */
+// Module-level cache so repeated calls (e.g., retries) don't re-fetch the catalog.
+let _catalogCache: any[] | null = null;
+
 export async function getClosestLandmark(lat: number, lng: number) {
     try {
-        const response = await fetch('/data/master_routes.json');
-        if (!response.ok) throw new Error(`Failed to load routes: ${response.statusText}`);
-        const data = await response.json();
-        const rutas = data.rutas || [];
+        if (!_catalogCache) {
+            const response = await fetch('/data/master_routes.json');
+            if (!response.ok) throw new Error(`Failed to load routes: ${response.statusText}`);
+            const data = await response.json();
+            _catalogCache = data.rutas || [];
+        }
+
         let closest = null;
-        let minDist = Infinity;
-        for (const ruta of rutas) {
-            for (const parada of ruta.paradas) {
-                const dist = haversineDistance(lat, lng, parada.lat, parada.lng);
-                if (dist < minDist) {
-                    minDist = dist;
+        let minDistKm = Infinity;
+        for (const ruta of _catalogCache) {
+            for (const parada of ruta.paradas || []) {
+                const distKm = getDistanceKm(lat, lng, parada.lat, parada.lng);
+                if (distKm < minDistKm) {
+                    minDistKm = distKm;
                     closest = parada;
                 }
             }
         }
         return closest;
     } catch (e) {
-        console.error("Error fetching master_routes.json", e);
+        console.error("Error loading catalog for landmark lookup", e);
         return null;
     }
 }

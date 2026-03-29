@@ -179,11 +179,10 @@ const ui = uiTranslations[currentLang];
   import { showToast } from '../utils/toast';
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { CoordinateFinder } from '../utils/CoordinateFinder';
-  import { escapeHtml, safeJsonStringify } from '../utils/utils';
+  import { escapeHtml, safeJsonStringify, normalizeString } from '../utils/utils';
   import { getWalletBalance, setWalletBalance } from '../utils/db';
   import { getTransportLabel } from '../utils/transport';
   import { WasmLoader } from '../utils/WasmLoader';
-  import { normalizeString } from '../utils/utils';
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');

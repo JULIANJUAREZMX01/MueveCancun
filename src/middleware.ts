@@ -6,7 +6,8 @@ type Locale = typeof SUPPORTED_LOCALES[number];
 /**
  * Top-level page slugs that exist without a language prefix.
  * A request to `/{slug}` is redirected to `/{locale}/{slug}` using the
- * visitor's stored locale cookie (default: 'es').
+ * visitor's stored locale cookie; falls back to the Accept-Language header
+ * (same strategy as the root redirect), then defaults to 'es'.
  */
 const UNLOCALIZED_PATHS = ['home', 'rutas', 'mapa', 'wallet', 'community', 'tracking', 'contribuir', 'about', 'guess'];
 
@@ -36,7 +37,7 @@ export const onRequest = defineMiddleware(({ request, redirect, cookies, url }, 
     return redirect(`/${locale}/${parts[0]}`, 302);
   }
 
-  // 3. Handle /ruta/[id] -> /es/ruta/[id]
+  // 3. Handle /ruta/[id] -> /{locale}/ruta/[id]
   if (parts.length === 2 && parts[0] === 'ruta') {
     const saved = cookies.get('locale')?.value as Locale;
     if (saved && SUPPORTED_LOCALES.includes(saved)) {

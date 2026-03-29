@@ -22,7 +22,7 @@ const title = lang === 'es' ? "Inicio" : "Home";
     </div>
 
     <!-- Floating Mini-Game Button (Compact Industrial Style) -->
-    <a href={`/${lang}/guess`} class="fixed top-20 right-4 z-30 p-3 bg-teal-500 text-white rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all animate-bounce-slow flex items-center gap-2 group overflow-hidden max-w-[48px] hover:max-w-[200px] duration-500 no-underline" aria-label="Jugar Adivina Dónde Estoy">
+    <a href={`/${lang}/guess`} class="fixed top-20 right-4 z-30 p-3 bg-teal-500 text-white rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all animate-bounce-slow flex items-center gap-2 group overflow-hidden max-w-[48px] hover:max-w-[200px] duration-500 no-underline" aria-label={lang === 'es' ? "Jugar Adivina Dónde Estoy" : "Play Guess Where I Am"}>
         <Icon name="camera-game" class="w-6 h-6 flex-shrink-0" />
         <span class="font-bold text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300" data-i18n="game.title">
             {lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am"}
