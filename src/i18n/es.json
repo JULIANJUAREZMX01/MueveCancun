@@ -48,5 +48,16 @@
   "transport.PlayaExpress": "Playa Express",
   "calc.num_options": "OPCIÓN ENCONTRADA",
   "calc.num_options_plural": "OPCIONES ENCONTRADAS",
-  "calc.fastest_label": "MÁS RÁPIDA: "
+  "calc.fastest_label": "MÁS RÁPIDA: ",
+  "game.title": "Adivina Dónde Estoy",
+  "game.start": "¡Empezar Juego!",
+  "game.instructions": "Toma una foto de tu entorno y adivinaré exactamente dónde estás en Cancún.",
+  "game.capture": "Capturar Foto",
+  "game.thinking": "Mmm... déjame ver...",
+  "game.question1": "¿Hay mucha gente a tu alrededor?",
+  "game.question2": "¿Puedes ver el mar desde aquí?",
+  "game.question3": "¿Hay muchos camiones pasando?",
+  "game.guess": "¡Lo tengo! Estás en:",
+  "game.retry": "Intentar de nuevo",
+  "game.share": "Compartir Logro"
 }
