@@ -74,3 +74,59 @@ export function safeUrl(name: unknown): string {
     return encodeURIComponent(name).replace(/'/g, "%27");
 }
 
+/**
+ * Normalizes a string for robust, accent-insensitive comparisons (e.g., stop names).
+ * Removes accents, trims, and converts to lowercase.
+ * @param str The string to normalize.
+ * @returns The normalized string.
+ */
+export function normalizeString(str: string): string {
+    if (!str) return '';
+    return str
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, ' ');
+}
+
+/**
+ * Returns the Haversine distance in meters between two lat/lng points.
+ */
+export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371e3;
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Finds the closest transit stop/landmark to the given coordinates using the route catalog.
+ */
+export async function getClosestLandmark(lat: number, lng: number) {
+    try {
+        const response = await fetch('/data/master_routes.json');
+        const data = await response.json();
+        const rutas = data.rutas || [];
+        let closest = null;
+        let minDist = Infinity;
+        for (const ruta of rutas) {
+            for (const parada of ruta.paradas) {
+                const dist = haversineDistance(lat, lng, parada.lat, parada.lng);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = parada;
+                }
+            }
+        }
+        return closest;
+    } catch (e) {
+        console.error("Error fetching master_routes.json", e);
+        return null;
+    }
+}

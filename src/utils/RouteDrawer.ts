@@ -103,12 +103,13 @@ export function drawRoute(
     let legs: any[] = [];
     if (data.legs && Array.isArray(data.legs)) {
         legs = data.legs;
-    } else if (data.paradas && Array.isArray(data.paradas)) {
-        // Single route treated as one leg
-        legs = [{ paradas: data.paradas, name: data.nombre || data.name }];
-    } else if (data.stops && Array.isArray(data.stops)) {
-        // Legacy format
-        legs = [{ stops: data.stops, name: data.nombre || data.name }];
+    } else if ((data.paradas && Array.isArray(data.paradas)) || (data.stops && Array.isArray(data.stops))) {
+        // Single route or legacy format treated as one leg
+        legs = [{
+            paradas: data.paradas,
+            stops: data.stops,
+            name: data.nombre || data.name
+        }];
     } else {
         return undefined; // Invalid data
     }

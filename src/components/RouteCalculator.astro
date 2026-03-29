@@ -183,6 +183,7 @@ const ui = uiTranslations[currentLang];
   import { getWalletBalance, setWalletBalance } from '../utils/db';
   import { getTransportLabel } from '../utils/transport';
   import { WasmLoader } from '../utils/WasmLoader';
+  import { normalizeString } from '../utils/utils';
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
@@ -929,7 +930,7 @@ const ui = uiTranslations[currentLang];
               }
 
               console.log(`🔍 Searching: ${origin} -> ${dest}`);
-              const results = find_route(origin, dest); // Pass strings directly
+              const results = find_route(normalizeString(origin), normalizeString(dest));
 
               console.log("🔍 Raw Results:", results);
 
