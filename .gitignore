@@ -46,6 +46,7 @@ build
 /rust-wasm/target
 Cargo.lock
 /src/wasm/
+public/wasm/engine/
 
 # Temporary files
 *.tmp
