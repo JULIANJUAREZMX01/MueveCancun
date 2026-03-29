@@ -172,38 +172,50 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     setupGPS();
   }
 
-  window.addEventListener('SHOW_ROUTE_ON_MAP', (event: any) => {
-      const { journey } = event.detail;
-      if (!map) return;
-      const newLg = drawRoute(map, journey, layerGroup, coordinatesDB);
-      if (newLg) layerGroup = newLg;
-  });
+  let pageAbortController: AbortController | null = null;
 
-  document.addEventListener('click', (e: any) => {
-      const btn = e.target?.closest('.js-map-stop-action');
-      if (!btn) return;
+  function registerPageListeners() {
+      pageAbortController?.abort();
+      pageAbortController = new AbortController();
+      const { signal } = pageAbortController;
 
-      const name = btn.dataset.stopName;
-      const action = btn.dataset.action;
-      if (!name) return;
+      window.addEventListener('SHOW_ROUTE_ON_MAP', (event: any) => {
+          const { journey } = event.detail;
+          if (!map) return;
+          const newLg = drawRoute(map, journey, layerGroup, coordinatesDB);
+          if (newLg) layerGroup = newLg;
+      }, { signal });
 
-      if (action === 'origin') {
-          window.dispatchEvent(new CustomEvent('MAP_SET_STOP', { detail: { type: 'origin', name } }));
-          showToast(`Origen: ${name}`, 'success');
-          map?.closePopup();
-      } else if (action === 'dest') {
-          window.dispatchEvent(new CustomEvent('MAP_SET_STOP', { detail: { type: 'dest', name } }));
-          showToast(`Destino: ${name}`, 'success');
-          map?.closePopup();
-      } else if (action === 'routes') {
-          window.location.href = `/rutas?search=${safeUrl(name)}`;
-      }
-  });
+      document.addEventListener('click', (e: any) => {
+          const btn = e.target?.closest('.js-map-stop-action');
+          if (!btn) return;
+
+          const name = btn.dataset.stopName;
+          const action = btn.dataset.action;
+          if (!name) return;
+
+          if (action === 'origin') {
+              window.dispatchEvent(new CustomEvent('MAP_SET_STOP', { detail: { type: 'origin', name } }));
+              showToast(`Origen: ${name}`, 'success');
+              map?.closePopup();
+          } else if (action === 'dest') {
+              window.dispatchEvent(new CustomEvent('MAP_SET_STOP', { detail: { type: 'dest', name } }));
+              showToast(`Destino: ${name}`, 'success');
+              map?.closePopup();
+          } else if (action === 'routes') {
+              window.location.href = `/rutas?search=${safeUrl(name)}`;
+          }
+      }, { signal });
+  }
+
+  registerPageListeners();
 
   document.addEventListener('astro:before-swap', () => {
       if (map) { map.remove(); map = null; }
       const container = document.getElementById('map-container');
       if (container) delete container.dataset.initialized;
+      pageAbortController?.abort();
+      pageAbortController = null;
   });
 
   function scheduleInit() {
@@ -216,7 +228,10 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
       });
   }
 
-  document.addEventListener('astro:page-load', scheduleInit);
+  document.addEventListener('astro:page-load', () => {
+      registerPageListeners();
+      scheduleInit();
+  });
 
   function setupGPS() {
       const btn = document.getElementById('gps-center-btn');

@@ -2,7 +2,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
-
+use unicode_normalization::UnicodeNormalization;
 use wasm_bindgen::prelude::*;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -282,18 +282,16 @@ pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
 // --- INTERNAL ALGORITHMS ---
 
 fn normalize_str(s: &str) -> String {
+    // NFD decomposes accented chars into base + combining marks, then filter
+    // out all Unicode combining marks (category M) for full diacritic removal.
     s.trim()
         .to_lowercase()
-        .chars()
-        .filter(|c| !c.is_whitespace() || *c == ' ')
+        .nfd()
+        .filter(|c| !unicode_normalization::char::is_combining_mark(*c))
         .collect::<String>()
-        .replace("á", "a")
-        .replace("é", "e")
-        .replace("í", "i")
-        .replace("ó", "o")
-        .replace("ú", "u")
-        .replace("ü", "u")
-        .replace("ñ", "n")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 

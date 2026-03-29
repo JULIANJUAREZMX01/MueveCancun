@@ -14,8 +14,8 @@ persistencia funciona sobre IndexedDB sin necesidad de backend.
 ### Logros Acumulados (hasta este sprint)
 
 | Área | Estado |
-| UI/UX | ✅ Comportamiento bottom sheet y colapso de panel |
 |------|--------|
+| UI/UX | ✅ Comportamiento bottom sheet y colapso de panel |
 | Motor WASM (Nexus Transfer Engine) | ✅ Compilado y operativo |
 | Detección de transbordos (exacto + geo ≤350 m + normalización acentos) | ✅ Funcional |
 | Balance unificado IndexedDB | ✅ Resuelto |
@@ -196,8 +196,8 @@ Ver [`ROADMAP.md`](../ROADMAP.md) para el plan completo.
 | Sprint | Foco | Estado |
 |--------|------|--------|
 | v3.4 (actual) | Nexus Transfer Engine, GPS, mapa interactivo | ✅ Completado |
-| v3.4 | Catálogo de rutas completo + validación de datos | 🔲 Planificado |
-| v3.5 | Crowdsourcing, formularios offline, background sync | 🔲 Planificado |
+| v3.5 | Catálogo de rutas completo + validación de datos | 🔲 Planificado |
+| v3.6 | Crowdsourcing, formularios offline, background sync | 🔲 Planificado |
 | v4.0 | Multi-ciudad (Cancún / Playa / Tulum), analytics real | 🔲 Planificado |
 
 ---

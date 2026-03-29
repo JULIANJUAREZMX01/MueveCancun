@@ -1,3 +1,10 @@
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
 /**
  * Sanitizes and normalizes a string for robust comparisons (e.g., stop names).
  * Removes accents, extra spaces, and converts to lowercase.
@@ -32,9 +39,10 @@ export function escapeHtml(unsafe: any): string {
  * Note: we don't escape > to match the existing test expectations.
  */
 export function safeJsonStringify(obj: any): string {
+  if (obj === undefined) return 'null';
   try {
     const json = JSON.stringify(obj);
-    return json
+    return (json ?? 'null')
       .replace(/</g, '\\u003c')
       .replace(/'/g, '\\u0027');
   } catch (e) {
