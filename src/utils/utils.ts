@@ -111,6 +111,7 @@ export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2
 export async function getClosestLandmark(lat: number, lng: number) {
     try {
         const response = await fetch('/data/master_routes.json');
+        if (!response.ok) throw new Error(`Failed to load routes: ${response.statusText}`);
         const data = await response.json();
         const rutas = data.rutas || [];
         let closest = null;

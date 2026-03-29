@@ -95,6 +95,7 @@ const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
 
 <script>
     import { getClosestLandmark } from '../../utils/utils';
+    import { showToast } from '../../utils/toast';
 
     const screens = {
         start: document.getElementById('screen-start'),
@@ -138,7 +139,7 @@ const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
             video.srcObject = stream;
             showScreen('camera');
         } catch (err) {
-            alert("Necesitamos acceso a la cámara para jugar.");
+            showToast("Necesitamos acceso a la cámara para jugar.", "warning");
         }
     });
 
