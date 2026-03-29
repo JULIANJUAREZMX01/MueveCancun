@@ -149,6 +149,11 @@ const ui = uiTranslations[currentLang];
         <!-- Best match card injected here -->
     </div>
 
+    <div id="rw-results-cta" class="hidden mt-6 pb-4">
+      <button id="btn-report-results" class="w-full btn-secondary btn-md border-dashed border-2 opacity-80 hover:opacity-100 transition-all">
+        ¿Algo está mal con esta ruta?
+      </button>
+    </div>
     <div id="results-container" class="space-y-4 empty:hidden transition-all duration-500 origin-top">
         <!-- Other results injected here -->
     </div>
@@ -916,6 +921,7 @@ const ui = uiTranslations[currentLang];
           const bestResultArea = document.getElementById('best-result-area');
           if (bestResultArea) bestResultArea.replaceChildren();
           document.getElementById('results-info')?.classList.add('hidden');
+          document.getElementById('rw-results-cta')?.classList.add('hidden');
 
           try {
               if (!wasmLoaded || typeof find_route !== 'function') {
@@ -978,6 +984,7 @@ const ui = uiTranslations[currentLang];
 
                  // Show Info Bar NOW
                  document.getElementById('results-info')?.classList.remove('hidden');
+                 document.getElementById('rw-results-cta')?.classList.remove('hidden');
 
                  // Render Cards
                  if (bestResultArea) {
@@ -991,6 +998,11 @@ const ui = uiTranslations[currentLang];
                  }
                  
                  // Re-attach map buttons
+                 document.getElementById('btn-report-results')?.addEventListener('click', () => {
+                     // @ts-ignore - Nexus Global API
+                     window.rwOpenReport?.();
+                 });
+
                  document.querySelectorAll('.view-map-btn').forEach(btn => {
                      btn.addEventListener('click', (e) => {
                          try {

@@ -7,7 +7,6 @@ export function getStaticPaths() {
 }
 
 import MainLayout from '../../layouts/MainLayout.astro';
-import Container from '../../components/Container.astro'; // Assuming Container exists or I'll use standard div
 
 const title = "Comunidad";
 
@@ -28,7 +27,7 @@ const REPORTS = [
             <h1 class="font-display font-black text-3xl text-slate-900 dark:text-white tracking-tight">Comunidad</h1>
             <p class="text-sm text-slate-500">Reportes en tiempo real</p>
         </div>
-        <button class="bg-primary-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:scale-105 transition-transform" aria-label="Create new report">
+        <button id="btn-report-community" class="bg-primary-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:scale-105 transition-transform" aria-label="Create new report">
             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </button>
     </div>
@@ -83,10 +82,32 @@ const REPORTS = [
         <svg class="w-10 h-10 text-slate-300 mb-2" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg>
         <h3 class="font-bold text-slate-500">¿Viste algo?</h3>
         <p class="text-xs text-slate-400 max-w-xs mx-auto mt-1">Comparte reportes de tráfico, accidentes o cambios de ruta con la comunidad.</p>
+        <button id="btn-report-community-alt" class="mt-4 btn-primary btn-sm">
+            Reportar problema
+        </button>
     </div>
 
   </div>
 </MainLayout>
+
+<script>
+    function setup() {
+        const btns = [
+            document.getElementById('btn-report-community'),
+            document.getElementById('btn-report-community-alt')
+        ];
+
+        btns.forEach(btn => {
+            btn?.addEventListener('click', () => {
+                // @ts-ignore - rwOpenReport is global
+                window.rwOpenReport?.();
+            });
+        });
+    }
+
+    document.addEventListener('astro:page-load', setup);
+    setup();
+</script>
 
 <style>
   .glass-card {
