@@ -4,7 +4,7 @@
 > proyecto, sus objetivos, resultados y lecciones aprendidas. Sirve como bitácora
 > de toma de decisiones y guía de contexto para futuros agentes.
 
-_Última actualización: 28 de Marzo, 2026_
+_Última actualización: 29 de Marzo, 2026 (rebased onto main con cambios del 28-Mar)_
 
 ---
 
@@ -28,8 +28,13 @@ Este documento responde esas preguntas en orden cronológico.
 | 1 | 2026-02-03 | (inicial) | Jules + Copilot | feat | PWA V2.2 "Inmortal" — offline mode completo |
 | 2 | 2026-02-18 | `copilot/fix-errors-in-pwa-development` | Copilot | fix/chore | Cleanup repo, WASM build fix, docs |
 | 3 | 2026-03-10 | (múltiples) | Claude | feat | Nexus Prime v3.3 — i18n, GPS fix, CI/CD |
-| 4 | 2026-03-28 | `copilot/seo-audit-report-muevecancun` (#367) | Copilot | feat | Auditoría SEO completa |
-| 5 | 2026-03-28 | `claude/docs-agents-tracking-*` | Claude | docs | Esta bitácora + docs de agentes |
+| 4 | 2026-03-28 | `#347` | Copilot | perf | CoordinateFinder — eliminate redundant toLowerCase |
+| 5 | 2026-03-28 | `#354` | Copilot | test | formatDate unit tests in utils.test.ts |
+| 6 | 2026-03-28 | `#359` | Copilot | chore | Consolidate utilities src/lib → src/utils |
+| 7 | 2026-03-28 | `#372` | Copilot | feat | Citizen Reporting System (Nexus Protocol Tier 1) |
+| 8 | 2026-03-28 | `#375` | Copilot | fix | Make JSON generation idempotent (CI dirty-tree) |
+| 9 | 2026-03-28 | `copilot/seo-audit-report-muevecancun` (#367) | Copilot | feat | Auditoría SEO completa |
+| 10 | 2026-03-29 | `claude/docs-agents-tracking-*` | Claude | docs | Esta bitácora + docs de agentes (rebased) |
 
 ---
 

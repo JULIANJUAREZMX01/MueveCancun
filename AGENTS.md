@@ -9,14 +9,18 @@
 
   HISTORIAL DE CONTRIBUCIONES (seguimiento de PRs y agentes):
   ─────────────────────────────────────────────────────────────
-  | Fecha       | PR / Rama                              | Agente         | Cambio Principal                          |
-  |-------------|----------------------------------------|----------------|-------------------------------------------|
-  | 2026-02-03  | (inicial)                              | Jules / Copilot | PWA V2.2 "Inmortal" — offline mode        |
-  | 2026-02-18  | copilot/fix-errors-in-pwa-development  | Copilot         | Cleanup repo, WASM build fix, docs        |
-  | 2026-02-18  | (merge a main, commit 2217c37)         | Copilot         | Merge conflict resolution                 |
-  | 2026-03-10  | (varios)                               | Copilot/Claude  | Nexus Prime v3.3 — CI/CD, i18n, GPS fix   |
-  | 2026-03-28  | copilot/seo-audit-report-muevecancun   | Copilot         | SEO: OG image, sitemap dinámico, stats    |
-  | 2026-03-28  | claude/docs-agents-tracking-*          | Claude          | Documentación, seguimiento y objetos      |
+  | Fecha       | PR / Rama                              | Agente         | Cambio Principal                              |
+  |-------------|----------------------------------------|----------------|-----------------------------------------------|
+  | 2026-02-03  | (inicial)                              | Jules / Copilot | PWA V2.2 "Inmortal" — offline mode            |
+  | 2026-02-18  | copilot/fix-errors-in-pwa-development  | Copilot         | Cleanup repo, WASM build fix, docs            |
+  | 2026-03-10  | (varios)                               | Copilot/Claude  | Nexus Prime v3.3 — CI/CD, i18n, GPS fix       |
+  | 2026-03-28  | #347                                   | Copilot         | CoordinateFinder perf — eliminate toLowerCase |
+  | 2026-03-28  | #354                                   | Copilot         | test: formatDate unit tests                   |
+  | 2026-03-28  | #359                                   | Copilot         | chore: consolidate src/lib → src/utils        |
+  | 2026-03-28  | #372                                   | Copilot         | feat: Citizen Reporting System (Nexus T1)     |
+  | 2026-03-28  | #375                                   | Copilot         | fix: idempotent JSON generation (CI fix)      |
+  | 2026-03-28  | copilot/seo-audit-report-muevecancun   | Copilot         | SEO: OG image, sitemap dinámico, stats        |
+  | 2026-03-29  | claude/docs-agents-tracking-* (rebased)| Claude          | Documentación, seguimiento y objetos          |
   ─────────────────────────────────────────────────────────────
 -->
 

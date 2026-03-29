@@ -24,6 +24,10 @@ persistencia funciona sobre IndexedDB sin necesidad de backend.
 | i18n Español / Inglés | ✅ Middleware Astro |
 | CI/CD (6 workflows) | ✅ test, build-wasm, validate-data, autocurative, claude-delegation, codeql |
 | Seguridad XSS / DoS / Prototype Pollution | ✅ Implementado |
+| Sistema de reportes ciudadanos (Nexus T1) | ✅ Mergeado (#372) |
+| CoordinateFinder optimizado | ✅ Mergeado (#347) |
+| src/lib consolidado en src/utils | ✅ Mergeado (#359) |
+| JSON generation idempotente | ✅ Mergeado (#375) |
 | SEO (OG image, sitemap, verification tags) | ⏳ PR #367 — pending merge |
 | Catálogo de rutas completo | ⚠️ Datos parciales — pendiente v3.4 |
 

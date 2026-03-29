@@ -152,31 +152,91 @@ for (const file of routeFiles) {
 // Rebuild master.rutas from merged map (preserve order: master first, then new)
 const finalRoutes = Array.from(masterMap.values());
 
+// ---------- Detect content changes (ignore volatile timestamps) ----------
+// Strips fields that change on every run but carry no semantic information,
+// so we can compare whether the *actual* data changed.
+function stripVolatileMeta(obj) {
+  const c = structuredClone(obj);
+  if (c.metadata) {
+    delete c.metadata.last_merged;
+    delete c.metadata.source;
+  }
+  return c;
+}
+
+let masterNeedsWrite = true;
+let finalLastMerged = new Date().toISOString();
+let finalSource = `merge-routes.mjs (${finalRoutes.length} routes from ${routeFiles.length} files)`;
+
+if (fs.existsSync(MASTER_PATH)) {
+  try {
+    const existing = JSON.parse(fs.readFileSync(MASTER_PATH, 'utf8'));
+    const candidate = { ...master, rutas: finalRoutes, metadata: { ...(master.metadata || {}) } };
+    if (JSON.stringify(stripVolatileMeta(candidate)) === JSON.stringify(stripVolatileMeta(existing))) {
+      // Route data unchanged — reuse existing timestamps to keep the file clean
+      finalLastMerged = existing.metadata?.last_merged ?? finalLastMerged;
+      finalSource     = existing.metadata?.source     ?? finalSource;
+      masterNeedsWrite = false;
+      info('master_routes.json content unchanged — skipping write');
+    }
+  } catch (e) {
+    // JSON parse error or missing file: fall through to a normal write
+  }
+}
+
 const updatedMaster = {
   ...master,
   rutas: finalRoutes,
   metadata: {
     ...(master.metadata || {}),
-    last_merged: new Date().toISOString(),
-    source: `merge-routes.mjs (${finalRoutes.length} routes from ${routeFiles.length} files)`,
+    last_merged: finalLastMerged,
+    source: finalSource,
   },
 };
 
+// For routes-index.json: only rewrite when file list or route IDs actually changed.
+// Preserving existing mtimes/generated avoids phantom diffs caused by filesystem
+// touch-times changing without any real route-data change.
+let indexNeedsWrite = true;
+let finalIndexEntries = indexEntries;
+let finalIndexGenerated = new Date().toISOString();
+
+if (fs.existsSync(INDEX_PATH)) {
+  try {
+    const existingIndex = JSON.parse(fs.readFileSync(INDEX_PATH, 'utf8'));
+    const stripMtimes = (entries) => entries.map(e => ({ file: e.file, ids: e.ids }));
+    if (JSON.stringify(stripMtimes(indexEntries)) === JSON.stringify(stripMtimes(existingIndex.files || []))) {
+      finalIndexEntries  = existingIndex.files;
+      finalIndexGenerated = existingIndex.generated;
+      indexNeedsWrite = false;
+      info('routes-index.json content unchanged — skipping write');
+    }
+  } catch (e) {
+    // Fall through to a normal write
+  }
+}
+
 // ---------- Write outputs ----------
 if (!DRY_RUN) {
-  fs.writeFileSync(MASTER_PATH, JSON.stringify(updatedMaster, null, 2));
+  if (masterNeedsWrite) {
+    fs.writeFileSync(MASTER_PATH, JSON.stringify(updatedMaster, null, 2));
+    log(`✅ master_routes.json: ${finalRoutes.length} total routes`);
+    log(`   +${added} added  ~${updated} updated  ✗${skipped} skipped`);
+  } else {
+    log(`✅ master_routes.json: unchanged (${finalRoutes.length} routes) — not rewritten`);
+  }
 
-  // routes-index.json — consumed by SW and RouteCalculator at runtime
-  const index = {
-    generated: new Date().toISOString(),
-    count: indexEntries.reduce((a, e) => a + e.ids.length, 0),
-    files: indexEntries,
-  };
-  fs.writeFileSync(INDEX_PATH, JSON.stringify(index, null, 2));
-
-  log(`✅ master_routes.json: ${finalRoutes.length} total routes`);
-  log(`   +${added} added  ~${updated} updated  ✗${skipped} skipped`);
-  log(`✅ routes-index.json: ${indexEntries.length} file entries`);
+  if (indexNeedsWrite) {
+    const index = {
+      generated: finalIndexGenerated,
+      count: finalIndexEntries.reduce((a, e) => a + e.ids.length, 0),
+      files: finalIndexEntries,
+    };
+    fs.writeFileSync(INDEX_PATH, JSON.stringify(index, null, 2));
+    log(`✅ routes-index.json: ${finalIndexEntries.length} file entries`);
+  } else {
+    log(`✅ routes-index.json: unchanged — not rewritten`);
+  }
 } else {
   log(`[DRY] Would write ${finalRoutes.length} routes to master_routes.json`);
   log(`[DRY] Would write routes-index.json with ${indexEntries.length} entries`);
