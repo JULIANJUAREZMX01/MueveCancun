@@ -144,3 +144,38 @@ git push -u origin claude/descripcion-breve-XXXXX
 | Transbordos no aparecen | Nombres de paradas sin match | Verificar nombres en catálogo; agregar hub alias |
 | Mapa no dibuja ruta | Coordenadas faltantes en paradas | Agregar `lat`/`lng` en `master_routes.json` |
 | SW muestra contenido antiguo | Cache version no bumpeada | Incrementar `CACHE_VERSION` en `public/sw.js` |
+
+---
+
+## PRs Activas — Contexto para Nuevos Agentes
+
+<!-- TRIAGE 2026-03-28 | Auditor: GitHub Copilot Agent -->
+<!-- Última auditoría: docs/PR_TRIAGE_2026-03-28.md -->
+
+Al recibir una tarea, verificar primero si alguna PR pendiente ya aborda el mismo problema.
+
+### PRs listas para mergear (no duplicar trabajo)
+
+| PR | Qué resuelve |
+|----|-------------|
+| **#366** | 🔒 CVEs en deps de build (picomatch, brace-expansion) |
+| **#350** | Event delegation + `e.isTrusted` en botones del mapa |
+| **#351** | Optimización de `CoordinateFinder.find` |
+| **#352** | Error handling + telemetría en `FavoritesStore` |
+
+### PRs en rebase — no duplicar ni sobrescribir
+
+| PR | Qué modifica |
+|----|-------------|
+| **#365** | TypeScript FFI strict, elimina `any`, migra SW a `.ts` |
+| **#360** | Hardening CI, `.gitignore`, telemetry tests |
+| **#357** | `rust-wasm/spatial-index/src/lib.rs` — cache hash |
+| **#355** | Elimina `@ts-ignore` en `wallet.astro` e `InteractiveMap.astro` |
+
+### ⛔ Regla crítica — Tailwind CSS
+
+**NO eliminar Tailwind CSS** en ninguna PR sin un plan de migración explícito y aprobado.
+Tailwind sigue activo en producción. La PR #342 está bloqueada por este motivo.
+La migración a PostCSS/Houdini debe ser **incremental y documentada por componente**.
+
+> Ver análisis completo: [`docs/PR_TRIAGE_2026-03-28.md`](docs/PR_TRIAGE_2026-03-28.md)
