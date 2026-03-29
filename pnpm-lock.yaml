@@ -52,7 +52,7 @@ importers:
         specifier: ^14.2.5
         version: 14.2.6
       sharp:
-        specifier: ^0.33.2
+        specifier: ^0.33.5
         version: 0.33.5
       tailwind-merge:
         specifier: ^2.6.1
@@ -996,7 +996,6 @@ packages:
 
   '@rollup/rollup-linux-x64-gnu@4.59.0':
     resolution: {integrity: sha512-3AHmtQq/ppNuUspKAlvA8HtLybkDflkMuLK4DPo77DfthRb71V84/c4MlWJXixZz4uruIH4uaa07IqoAkG64fg==}
-    cpu: [x64]
     os: [linux]
 
   '@rollup/rollup-linux-x64-musl@4.59.0':
