@@ -57,38 +57,48 @@ try {
     if (!data.metadata) data.metadata = {};
     data.metadata.optimized = true;
 
-    // 3a. Preserve deterministic output by reusing the previous last_optimized
-    //     when the effective content hasn't changed.
-    let reusedLastOptimized = null;
+    // 3a. Only write the output when route content actually changed.
+    //     Volatile metadata fields (last_optimized, last_merged) are excluded
+    //     from the comparison so that timestamp-only changes don't dirty the file
+    //     and break CI agents that expect a clean working tree.
+    function stripVolatileMeta(obj) {
+        const c = structuredClone(obj);
+        if (c.metadata) {
+            delete c.metadata.last_optimized;
+            delete c.metadata.last_merged;
+        }
+        return c;
+    }
+
+    let needsWrite = true;
 
     if (fs.existsSync(outputPath)) {
         try {
             const previousRaw = fs.readFileSync(outputPath, 'utf-8');
             const previousData = JSON.parse(previousRaw);
 
-            const currentCopy = JSON.parse(JSON.stringify(data));
-            const previousCopy = JSON.parse(JSON.stringify(previousData));
-
-            if (currentCopy.metadata) delete currentCopy.metadata.last_optimized;
-            if (previousCopy.metadata) delete previousCopy.metadata.last_optimized;
-
-            if (JSON.stringify(currentCopy) === JSON.stringify(previousCopy) &&
+            if (JSON.stringify(stripVolatileMeta(data)) === JSON.stringify(stripVolatileMeta(previousData)) &&
                 previousData.metadata &&
                 typeof previousData.metadata.last_optimized === 'string') {
-                reusedLastOptimized = previousData.metadata.last_optimized;
+                // Route data unchanged — preserve existing file as-is (incl. last_optimized)
+                needsWrite = false;
             }
         } catch (e) {
-            // Fall back to generating a fresh timestamp below.
+            // Fall back to writing a fresh output below.
         }
     }
 
-    data.metadata.last_optimized = reusedLastOptimized || new Date().toISOString();
+    if (!needsWrite) {
+        console.log(`✅ JSON Optimized! (content unchanged — not rewritten)`);
+    } else {
+        data.metadata.last_optimized = new Date().toISOString();
 
-    // 4. Write Minified JSON
-    fs.writeFileSync(outputPath, JSON.stringify(data)); // No pretty print for optimization
+        // 4. Write Minified JSON
+        fs.writeFileSync(outputPath, JSON.stringify(data)); // No pretty print for optimization
 
-    console.log(`✅ JSON Optimized! Saved to ${outputPath}`);
-    console.log(`📉 Size reduced from ${(rawData.length / 1024).toFixed(2)}KB to ${(fs.statSync(outputPath).size / 1024).toFixed(2)}KB`);
+        console.log(`✅ JSON Optimized! Saved to ${outputPath}`);
+        console.log(`📉 Size reduced from ${(rawData.length / 1024).toFixed(2)}KB to ${(fs.statSync(outputPath).size / 1024).toFixed(2)}KB`);
+    }
 
 } catch (err) {
     console.error('❌ Error optimizing JSON:', err);

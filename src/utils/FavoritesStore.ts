@@ -1,3 +1,6 @@
+import { analytics } from './Analytics';
+import { logger } from './logger';
+
 export interface FavoriteRoute {
     id: string;
     nombre: string;
@@ -16,7 +19,8 @@ class FavoritesStore {
             const data = localStorage.getItem(this.storageKey);
             return data ? JSON.parse(data) : [];
         } catch (e) {
-            console.error("Failed to parse favorites from localStorage", e);
+            logger.error("Failed to parse favorites from localStorage", e);
+            analytics.track('error_storage', { action: 'read', error: (e as Error).message });
             return [];
         }
     }
@@ -59,7 +63,8 @@ class FavoritesStore {
             try {
                 localStorage.setItem(this.storageKey, JSON.stringify(favorites));
             } catch (e) {
-                console.error("Failed to save favorites to localStorage", e);
+                logger.error("Failed to save favorites to localStorage", e);
+                analytics.track('error_storage', { action: 'write', error: (e as Error).message });
             }
         }
     }
