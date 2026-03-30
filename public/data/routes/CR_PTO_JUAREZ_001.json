@@ -1,7 +1,7 @@
 {
   "id": "CR_PTO_JUAREZ_001",
   "nombre": "Combi Roja Puerto Juárez → Ultramar",
-  "tarifa": 13,
+  "tarifa": 10,
   "tipo": "Combi_Municipal",
   "empresa": "Autocar (Controladora SEA)",
   "frecuencia_minutos": 15,

@@ -13,13 +13,12 @@ const navItems = [
 ];
 ---
 
-<nav transition:persist class="graffiti-nav" aria-label="Main navigation">
+<nav transition:persist class="graffiti-nav md:hidden" aria-label="Main navigation">
   <div class="nav-container">
     {navItems.map((item) => {
       const isActive = item.activePattern.test(pathname);
       return (
         <a href={item.href} class={`nav-item ${isActive ? 'active' : ''}`} aria-label={item.label} aria-current={isActive ? 'page' : undefined}>
-          {/* Active Indicator with View Transition Name for smooth gliding */}
           {isActive && (
             <div class="active-indicator" transition:name="nav-indicator"></div>
           )}
@@ -42,13 +41,7 @@ const navItems = [
             )}
           </svg>
 
-          <span class="nav-label" data-i18n={
-            item.href.endsWith('/home') ? 'nav.home' :
-            item.href.endsWith('/rutas') ? 'nav.routes' :
-            item.href.endsWith('/community') ? 'nav.community' :
-            item.href.endsWith('/wallet') ? 'nav.wallet' :
-            item.href.endsWith('/about') ? 'nav.about' : ''
-          }>
+          <span class="nav-label">
             {item.label}
           </span>
         </a>
@@ -58,111 +51,59 @@ const navItems = [
 </nav>
 
 <style>
-  /*
-   * GRAFFITI WARRIOR: CSS5
-   * Pure CSS Grid & Variables. No Tailwind.
-   */
-
   .graffiti-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 40;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid var(--border-light);
-    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid #e2e8f0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0));
   }
 
   :global(.dark) .graffiti-nav {
-    background: rgba(15, 23, 42, 0.92);
+    background: rgba(15, 23, 42, 0.95);
+    border-top-color: #1e293b;
   }
 
   .nav-container {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    height: var(--bottom-nav-h); /* 4rem from tokens */
-    max-width: 32rem; /* max-w-lg */
+    height: var(--bottom-nav-h);
+    max-width: 24rem;
     margin: 0 auto;
   }
 
   .nav-item {
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.125rem;
+    gap: 2px;
+    color: #94a3b8;
     text-decoration: none;
-    color: var(--text-tertiary); /* Slate-400 */
-    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-    /* Active State Logic */
-    &.active {
-      color: var(--color-primary); /* Primary-500 */
-    }
-
-    &:hover:not(.active) {
-      color: var(--text-primary);
-    }
-
-    &:active {
-      transform: scale(0.95);
-    }
-
-    /* GraffitiWarrior: Focus Visible A11y Magic */
-    &:focus-visible {
-      outline: 2px solid var(--color-primary);
-      outline-offset: -2px;
-      border-radius: 0.5rem;
-      background: radial-gradient(
-        circle at center,
-        color-mix(in srgb, var(--color-primary) 20%, transparent) 0%,
-        color-mix(in srgb, var(--color-primary) 5%, transparent) 100%
-      );
-    }
+    position: relative;
+    transition: all 0.2s;
   }
 
-  /* The magic gliding indicator */
-  .active-indicator {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 2rem; /* w-8 approx */
-    height: 3px;
-    background: var(--color-primary);
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    /* view-transition-name: nav-indicator; <- handled via transition:name attribute */
-  }
-
-  .nav-icon {
-    width: 1.5rem;
-    height: 1.5rem;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-    /* Scale up slightly when active */
-    .active & {
-      transform: scale(1.1);
-    }
-  }
-
-  /* Soft background pill behind active icon */
-  .active .nav-icon {
-    filter: drop-shadow(0 2px 4px rgba(13, 148, 136, 0.3));
+  .nav-item.active {
+    color: #0ea5e9;
   }
 
   .nav-label {
-    font-size: 0.625rem; /* text-[10px] */
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.025em;
-    text-align: center;
-    width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  }
+
+  .active-indicator {
+    position: absolute;
+    top: 0;
+    width: 20px;
+    height: 3px;
+    background: #0ea5e9;
+    border-radius: 0 0 2px 2px;
   }
 </style>

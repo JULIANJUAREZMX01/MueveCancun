@@ -38,17 +38,35 @@ const lang = getLangFromUrl(Astro.url);
   </div>
 
   <script define:vars={{ lang }}>
-    const urlPath = window.location.pathname;
-    const parts = urlPath.split('/').filter(p => p);
-
-    if (parts.length >= 2 && parts[0] === 'ruta') {
-      const potentialId = parts[1];
+    // Enhanced client-side redirection for static architecture
+    function handle404Redirection() {
+      const urlPath = window.location.pathname;
+      const parts = urlPath.split('/').filter(p => p);
       const msg = document.getElementById('redirect-message');
-      if (msg) msg.classList.remove('hidden');
 
-      setTimeout(() => {
-        window.location.replace(`/${lang}/rutas?search=${encodeURIComponent(potentialId)}`);
-      }, 100);
+      // 1. Handle unlocalized top-level paths (e.g. /wallet -> /es/wallet)
+      const topLevelPages = ['home', 'rutas', 'tracking', 'wallet', 'community', 'about', 'guess'];
+      const firstPart = parts[0];
+      if (topLevelPages.includes(firstPart)) {
+         const locale = localStorage.getItem('lang') || (navigator.language.startsWith('en') ? 'en' : 'es');
+         window.location.replace(`/${locale}/${firstPart}`);
+         return;
+      }
+
+      // 2. Handle legacy /ruta/[id] paths
+      if (parts.length >= 2 && parts[0] === 'ruta') {
+        const potentialId = parts[1];
+        if (msg) msg.classList.remove('hidden');
+        setTimeout(() => {
+          window.location.replace(`/${lang}/rutas?search=${encodeURIComponent(potentialId)}`);
+        }, 300);
+      }
     }
+
+    // View Transitions Support
+    document.addEventListener('astro:page-load', handle404Redirection);
+
+    // Initial Run
+    handle404Redirection();
   </script>
 </MainLayout>
