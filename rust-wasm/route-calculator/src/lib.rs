@@ -329,14 +329,6 @@ const PREFERRED_HUBS: &[&str] = &[
 /// Geographic transfer threshold: stops within 350 m can be used as a transfer point.
 const GEO_TRANSFER_RADIUS_M: f64 = 350.0;
 
-/// Normalize a stop or query string: trim, lowercase, remove Spanish diacritics.
-fn normalize_str(s: &str) -> String {
-    s.trim().to_lowercase()
-        .replace('á', "a").replace('é', "e").replace('í', "i")
-        .replace('ó', "o").replace('ú', "u").replace('ü', "u")
-        .replace('ñ', "n")
-}
-
 /// Fuzzy stop matching with Jaro-Winkler (O(n) worst case, O(1) for exact match).
 fn match_stop<'a>(
     query_norm: &str,
