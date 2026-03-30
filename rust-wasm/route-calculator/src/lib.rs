@@ -99,7 +99,6 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
 
 /// Returns distance in meters between two lat/lng points.
 #[inline]
-#[allow(dead_code)]
 fn haversine_distance_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     const R: f64 = 6_371_000.0;
     let d_lat = (lat2 - lat1).to_radians();
@@ -112,7 +111,6 @@ fn haversine_distance_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
 
 /// True if stop has valid non-zero coordinates.
 #[inline]
-#[allow(dead_code)]
 fn stop_has_coords(stop: &Stop) -> bool {
     stop.lat.abs() > 0.0001 && stop.lng.abs() > 0.0001
 }
@@ -187,7 +185,7 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
 
     // Pre-compute normalized stop names + O(1) index
     for route in &mut catalog.rutas {
-        route.stops_normalized = route.stops.iter().map(|s| s.name.to_lowercase()).collect();
+        route.stops_normalized = route.stops.iter().map(|s| normalize_str(&s.name)).collect();
         route.stop_name_to_index = route
             .stops_normalized
             .iter()
@@ -308,8 +306,15 @@ const PREFERRED_HUBS: &[&str] = &[
 ];
 
 /// Geographic transfer threshold: stops within 350 m can be used as a transfer point.
-#[allow(dead_code)]
 const GEO_TRANSFER_RADIUS_M: f64 = 350.0;
+
+/// Normalize a stop or query string: trim, lowercase, remove Spanish diacritics.
+fn normalize_str(s: &str) -> String {
+    s.trim().to_lowercase()
+        .replace('á', "a").replace('é', "e").replace('í', "i")
+        .replace('ó', "o").replace('ú', "u").replace('ü', "u")
+        .replace('ñ', "n")
+}
 
 /// Fuzzy stop matching with Jaro-Winkler (O(n) worst case, O(1) for exact match).
 fn match_stop<'a>(
@@ -556,8 +561,8 @@ fn find_transfer_routes(
 
 /// Main routing function. Returns up to 5 journeys (Direct first, then Transfer).
 fn find_route_rs(origin: &str, dest: &str, all_routes: &[Route]) -> Vec<Journey> {
-    let origin_norm = origin.to_lowercase();
-    let dest_norm = dest.to_lowercase();
+    let origin_norm = normalize_str(origin);
+    let dest_norm = normalize_str(dest);
     let mut origin_cache: HashMap<&str, f64> = HashMap::new();
     let mut dest_cache: HashMap<&str, f64> = HashMap::new();
 

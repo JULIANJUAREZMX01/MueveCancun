@@ -41,6 +41,12 @@ try {
                 }
             }
 
+            // Sanitize frecuencia_minutos: ensure it's an integer (WASM expects i32)
+            if (route.frecuencia_minutos !== undefined) {
+                const parsed = parseInt(route.frecuencia_minutos, 10);
+                route.frecuencia_minutos = isNaN(parsed) ? 30 : parsed;
+            }
+
             // Ensure Tipo
             if (!route.tipo && !route.tipo_transporte) {
                 route.tipo = 'Bus_Urbano';
