@@ -87,3 +87,9 @@ sequenceDiagram
                                                               |
                                                        [find_route_rs]
 ```
+
+## 5. Routing & Localization (Static Directives)
+As of v3.3+, the system adheres to a strictly static routing model:
+- **Localized Paths**: All valid routes are prefixed with `/[lang]/`.
+- **Utility-Driven Links**: Developers must use `getRelativeLocaleUrl` for all navigation.
+- **Client-Side Handover**: The root (`/`) and legacy 404 paths are handled via inline JS redirection to maintain CDN compatibility without Middleware overhead.

@@ -1,0 +1,452 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import Icon from '../../components/ui/Icon.astro';
+
+export function getStaticPaths() {
+  return [
+    { params: { lang: "es" } },
+    { params: { lang: "en" } },
+  ];
+}
+
+const { lang } = Astro.params;
+const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
+---
+
+<MainLayout title={title}>
+    <div class="game-container animate-fade-in">
+        <!-- Game Header -->
+        <div class="game-header">
+            <div class="game-icon-pulse">
+                <Icon name="camera-game" class="w-8 h-8 text-white" />
+            </div>
+            <h1 class="text-2xl font-black tracking-tight" data-i18n="game.title">
+                {title}
+            </h1>
+        </div>
+
+        <!-- Game Card -->
+        <div class="glass-card game-card overflow-hidden">
+            <!-- Start Screen -->
+            <div id="screen-start" class="screen flex flex-col items-center text-center p-8 gap-6">
+                <div class="game-illustration">
+                   <div class="brain-orb"></div>
+                   <Icon name="palm-tree" class="w-16 h-16 text-teal-500 absolute z-10" />
+                </div>
+                <p class="text-slate-600 dark:text-slate-300 font-medium" data-i18n="game.instructions">
+                    Toma una foto de tu entorno y adivinaré exactamente dónde estás en Cancún.
+                </p>
+                <button id="btn-start" class="btn-game-primary w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg">
+                    <Icon name="camera-game" class="w-5 h-5" />
+                    <span data-i18n="game.start">¡Empezar Juego!</span>
+                </button>
+            </div>
+
+            <!-- Camera Screen -->
+            <div id="screen-camera" class="screen hidden flex flex-col p-4 gap-4">
+                <div class="camera-viewport rounded-2xl overflow-hidden bg-black relative aspect-[3/4]">
+                    <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
+                    <canvas id="canvas" class="hidden"></canvas>
+                    <div class="camera-overlay">
+                        <div class="scanner-line"></div>
+                        <div class="focus-corners"></div>
+                    </div>
+                </div>
+                <button id="btn-capture" class="btn-game-primary w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
+                    <Icon name="camera-game" class="w-5 h-5" />
+                    <span data-i18n="game.capture">Capturar Foto</span>
+                </button>
+            </div>
+
+            <!-- Question Screen -->
+            <div id="screen-question" class="screen hidden flex flex-col items-center text-center p-8 gap-8">
+                <div class="thinking-loader">
+                    <div class="dots"><span></span><span></span><span></span></div>
+                    <Icon name="loader" class="w-12 h-12 text-teal-500 animate-spin" />
+                </div>
+                <h2 id="question-text" class="text-xl font-bold text-slate-800 dark:text-white"></h2>
+                <div class="flex flex-col w-full gap-3">
+                    <button class="btn-answer py-3 rounded-xl border-2 border-teal-500 text-teal-600 dark:text-teal-400 font-bold" data-answer="yes" data-i18n="game.yes">{lang === 'es' ? 'SÍ' : 'YES'}</button>
+                    <button class="btn-answer py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold" data-answer="no" data-i18n="game.no">{lang === 'es' ? 'NO' : 'NO'}</button>
+                </div>
+            </div>
+
+            <!-- Result Screen -->
+            <div id="screen-result" class="screen hidden flex flex-col items-center text-center p-8 gap-6">
+                <div class="result-badge animate-bounce">
+                    <Icon name="map-pin" class="w-12 h-12 text-white" />
+                </div>
+                <div class="result-content">
+                    <p class="text-sm font-bold text-teal-600 uppercase tracking-widest mb-1" data-i18n="game.guess">¡LO TENGO! ESTÁS EN:</p>
+                    <h2 id="result-place" class="text-3xl font-black text-slate-900 dark:text-white leading-tight"></h2>
+                </div>
+                <div class="flex flex-col w-full gap-3 mt-4">
+                    <button id="btn-retry" class="btn-game-secondary py-3 rounded-xl font-bold" data-i18n="game.retry">Intentar de nuevo</button>
+                    <button id="btn-share" class="btn-game-primary py-3 rounded-xl font-bold" data-i18n="game.share">Compartir Logro</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-hint mt-8 text-center text-slate-400 text-xs px-6">
+             * Este es un juego experimental de movilidad urbana. No guardamos tus fotografías.
+        </div>
+    </div>
+</MainLayout>
+
+<script define:vars={{ lang }}>
+    import { getClosestLandmark } from '../../utils/utils';
+    import { showToast } from '../../utils/toast';
+
+    /**
+     * Language for this page, passed from the route param via define:vars.
+     * NOTE: MainLayout hardcodes <html lang="es">, so we cannot rely on
+     * document.documentElement.lang — we use the Astro route param instead.
+     */
+    const pageLang = lang || 'es';
+
+    // --- i18n lookup ---
+    // Translations are embedded by MainLayout in #i18n-translations[data-translations].
+    // We parse them once and use them for dynamic strings (questions, toasts, etc.)
+    const _translationsEl = document.getElementById('i18n-translations');
+    const _allTranslations: Record<string, Record<string, string>> = _translationsEl
+        ? JSON.parse(_translationsEl.getAttribute('data-translations') || '{}')
+        : {};
+    const _t: Record<string, string> = _allTranslations[pageLang] || _allTranslations['es'] || {};
+
+    /** Looks up an i18n key from the page's embedded translations. */
+    function t(key: string, fallback = '...'): string {
+        return _t[key] || fallback;
+    }
+
+    const screens = {
+        start: document.getElementById('screen-start'),
+        camera: document.getElementById('screen-camera'),
+        question: document.getElementById('screen-question'),
+        result: document.getElementById('screen-result'),
+    };
+
+    const video = document.getElementById('video') as HTMLVideoElement;
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const questionText = document.getElementById('question-text');
+    const resultPlace = document.getElementById('result-place');
+
+    let stream: MediaStream | null = null;
+    let userLocation: { lat: number, lng: number } | null = null;
+    let currentQuestionIndex = 0;
+
+    /** i18n key names for the Akinator-style questions. */
+    const questions = [
+        'game.question1',
+        'game.question2',
+        'game.question3'
+    ];
+
+    /** Shows one named screen and hides all others. */
+    function showScreen(name: keyof typeof screens) {
+        Object.values(screens).forEach(s => s?.classList.add('hidden'));
+        screens[name]?.classList.remove('hidden');
+    }
+
+    /** Releases all MediaStream tracks and clears the stream reference. */
+    function stopStream() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+    }
+
+    // Release the camera when the user navigates away (Astro View Transitions)
+    document.addEventListener('astro:before-swap', stopStream);
+
+    // Initialize Game — acquire location + camera access
+    document.getElementById('btn-start')?.addEventListener('click', async () => {
+        // Validate MediaDevices API availability.
+        // getUserMedia requires a secure context (HTTPS or localhost) and a
+        // modern browser.  Provide guidance if unavailable.
+        if (!navigator.mediaDevices?.getUserMedia) {
+            showToast(
+                pageLang === 'es'
+                    ? "Tu navegador no soporta acceso a la cámara. Prueba en Chrome o Safari con HTTPS."
+                    : "Your browser does not support camera access. Try Chrome or Safari over HTTPS.",
+                "error"
+            );
+            return;
+        }
+
+        // Start GPS in parallel — non-blocking; used only for the result screen
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => { userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; },
+                (err) => console.warn("GPS failed, result will use fallback", err)
+            );
+        }
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
+                audio: false
+            });
+            video.srcObject = stream;
+            showScreen('camera');
+        } catch (err) {
+            showToast(
+                pageLang === 'es'
+                    ? "Necesitamos acceso a la cámara para jugar."
+                    : "Camera access is needed to play.",
+                "warning"
+            );
+        }
+    });
+
+    // Capture Image — freeze frame and start the question flow
+    document.getElementById('btn-capture')?.addEventListener('click', () => {
+        if (!stream) return;
+
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context?.drawImage(video, 0, 0);
+
+        // Release camera now that we have the snapshot
+        stopStream();
+        startQuestioning();
+    });
+
+    function startQuestioning() {
+        currentQuestionIndex = 0;
+        showScreen('question');
+        askNextQuestion();
+    }
+
+    function askNextQuestion() {
+        if (currentQuestionIndex < questions.length) {
+            // Look up translated question text from the embedded translations object.
+            // This avoids relying on DOM elements that may not exist for every key.
+            const translation = t(questions[currentQuestionIndex]);
+            if (questionText) questionText.textContent = translation;
+        } else {
+            showResult();
+        }
+    }
+
+    document.querySelectorAll('.btn-answer').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            askNextQuestion();
+        });
+    });
+
+    async function showResult() {
+        // Stay on the question screen with the "thinking" message while we resolve
+        showScreen('question');
+        if (questionText) {
+            questionText.textContent = t('game.thinking');
+        }
+
+        // Language-aware fallback strings when GPS or catalog is unavailable
+        const fallbackUnknown = pageLang === 'es'
+            ? 'Algún lugar misterioso en Cancún'
+            : 'Somewhere mysterious in Cancún';
+        const fallbackNoGps = pageLang === 'es'
+            ? 'Zona Hotelera (¡Seguramente!)'
+            : 'Hotel Zone (most likely!)';
+
+        // Simulate a brief "thinking" delay, then reveal the result
+        setTimeout(async () => {
+            let place = fallbackUnknown;
+
+            if (userLocation) {
+                try {
+                    const landmark = await getClosestLandmark(userLocation.lat, userLocation.lng);
+                    if (landmark) place = landmark.nombre;
+                } catch (e) {
+                    console.error("Error finding landmark", e);
+                }
+            } else {
+                place = fallbackNoGps;
+            }
+
+            if (resultPlace) resultPlace.textContent = place;
+            showScreen('result');
+        }, 2000);
+    }
+
+    document.getElementById('btn-retry')?.addEventListener('click', () => {
+        // Reset state so a fresh game can begin
+        userLocation = null;
+        currentQuestionIndex = 0;
+        showScreen('start');
+    });
+
+    document.getElementById('btn-share')?.addEventListener('click', () => {
+        if (!navigator.share) return; // Web Share API not supported in this browser
+
+        const shareText = pageLang === 'es'
+            ? `¡CancúnMueve adivinó que estoy en ${resultPlace?.textContent}! Pruébalo tú también.`
+            : `CancúnMueve guessed I'm at ${resultPlace?.textContent}! Try it yourself.`;
+
+        navigator.share({
+            title: 'CancúnMueve — Adivina Dónde Estoy',
+            text: shareText,
+            url: window.location.href
+        }).catch(err => console.warn('Share cancelled or failed', err));
+    });
+</script>
+
+<style>
+    .game-container {
+        padding: 1.5rem;
+        padding-top: calc(var(--header-h) + 1rem);
+        padding-bottom: calc(var(--bottom-nav-h) + 2rem);
+        max-width: 480px;
+        margin: 0 auto;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .game-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .game-icon-pulse {
+        background: var(--color-primary);
+        padding: 1rem;
+        border-radius: 1.5rem;
+        box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 50%, transparent);
+        animation: pulse-glow 2s infinite;
+    }
+
+    @keyframes pulse-glow {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.4); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(13, 148, 136, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0); }
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    :global(.dark) .glass-card {
+        background: rgba(30, 41, 59, 0.7);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .game-illustration {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .brain-orb {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, #2dd4bf 0%, #0d9488 100%);
+        border-radius: 50%;
+        filter: blur(20px);
+        opacity: 0.4;
+        animation: orb-float 4s ease-in-out infinite;
+    }
+
+    @keyframes orb-float {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-10px) scale(1.1); }
+    }
+
+    .btn-game-primary {
+        background: var(--color-primary);
+        color: white;
+        transition: all 0.2s ease;
+    }
+
+    .btn-game-primary:active { transform: scale(0.98); }
+
+    .btn-game-secondary {
+        background: var(--surface-card);
+        border: 1px solid var(--border-light);
+        color: var(--text-secondary);
+    }
+
+    .camera-viewport {
+        border: 2px solid var(--color-primary);
+    }
+
+    .camera-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+    }
+
+    .scanner-line {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+        box-shadow: 0 0 15px var(--color-primary);
+        animation: scan 3s linear infinite;
+    }
+
+    @keyframes scan {
+        0% { top: 0%; }
+        100% { top: 100%; }
+    }
+
+    .focus-corners {
+        position: absolute;
+        inset: 2rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 1rem;
+    }
+
+    .thinking-loader {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dots {
+        position: absolute;
+        display: flex;
+        gap: 4px;
+        top: -20px;
+    }
+
+    .dots span {
+        width: 8px;
+        height: 8px;
+        background: var(--color-primary);
+        border-radius: 50%;
+        animation: dot-jump 0.6s infinite alternate;
+    }
+
+    .dots span:nth-child(2) { animation-delay: 0.2s; }
+    .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dot-jump {
+        from { transform: translateY(0); opacity: 0.4; }
+        to { transform: translateY(-10px); opacity: 1; }
+    }
+
+    .result-badge {
+        background: #F97316;
+        padding: 1.5rem;
+        border-radius: 2rem;
+        box-shadow: 0 10px 20px rgba(249, 115, 22, 0.4);
+    }
+</style>

@@ -279,6 +279,27 @@ pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
 
 // --- INTERNAL ALGORITHMS ---
 
+/// Normalises a stop-name string for accent-insensitive, case-insensitive
+/// comparisons.  Trims whitespace, lowercases, replaces the most common
+/// Spanish diacritics, and collapses internal whitespace runs to a single
+/// space — so "El  Crucero" and "El Crucero" hash to the same key.
+///
+/// **Must stay in sync with `normalizeString()` in `src/utils/utils.ts`.**
+fn normalize_str(s: &str) -> String {
+    // Replace diacritics on the lowercased, trimmed string
+    let normalized = s.trim()
+        .to_lowercase()
+        .replace("á", "a")
+        .replace("é", "e")
+        .replace("í", "i")
+        .replace("ó", "o")
+        .replace("ú", "u")
+        .replace("ü", "u")
+        .replace("ñ", "n");
+    // Collapse multiple whitespace chars to a single space
+    normalized.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
 /// Known Cancún transfer hubs. Substring match against stop names.
 const PREFERRED_HUBS: &[&str] = &[
     "El Crucero",

@@ -129,3 +129,50 @@ rama claude/* → tests pasan → PR a main → CI verde → merge
 ```
 
 Cada PR debe incluir: descripción del problema, fix implementado, tests que lo prueban.
+
+---
+
+## Registro de Triage de PRs
+
+<!-- TRIAGE 2026-03-28 | Auditor: GitHub Copilot Agent -->
+<!-- Análisis completo: docs/PR_TRIAGE_2026-03-28.md -->
+<!--
+  Resultado del último triage (20 PRs, 2026-03-28):
+
+  GRUPO 1 — MERGEAR INMEDIATAMENTE (clean + CI verde):
+    #366 — brace-expansion + picomatch (CVE-2026-33671, CVE-2026-33672, GHSA-f886-m6hf-6m8v) ← URGENTE
+    #350 — Fix Event Delegation + e.isTrusted guard
+    #351 — Optimize CoordinateFinder.find (Set iteration)
+    #352 — FavoritesStore error handling + telemetry
+
+  GRUPO 2 — REBASE NEEDED (CI verde en rama, dirty contra main):
+    #365 — TypeScript/WASM FFI hardening (64 archivos, elimina `any`, migra SW a .ts) ← mayor impacto
+    #360 — CI pipeline hardening (necesita suite completa post-rebase)
+    #357 — spatial-index cache hash fix
+    #355 — type safety @ts-ignore cleanup
+    #341, #363 — docs-only, rebase simple
+
+  GRUPO 3 — BLOQUEADAS / ACCIÓN ESPECIAL:
+    #342 — ⛔ BLOQUEAR: elimina Tailwind activo. Mergear rompe estilos en producción.
+    #338 — CERRAR: base branch incorrecto (speedy/*, no main)
+    #333 — VERIFICAR: posible duplicado de cambios ya en main
+
+  GRUPO 4 — DRAFTS (no tocar):
+    #335, #364, #367, #368, #369
+-->
+
+### Estado de PRs Conocidas Problemáticas
+
+| PR | Estado | Razón del bloqueo |
+|----|--------|------------------|
+| **#342** | 🚫 BLOQUEADA | Elimina Tailwind CSS que sigue activo en producción |
+| **#338** | ⛔ BASE INCORRECTA | Apunta a `speedy/inline-svg-icons-*`, no a `main` |
+| **#333** | ❓ VERIFICAR | geo_transfer de marzo-10; puede estar ya en main vía #365 |
+
+> Ver análisis completo: [`docs/PR_TRIAGE_2026-03-28.md`](docs/PR_TRIAGE_2026-03-28.md)
+
+## Mandato Arquitectónico: Static-First (v3.3.1+)
+A partir de marzo de 2026, el proyecto es **estrictamente estático**.
+- **PROHIBIDO**: Middleware para lógica de rutas en request-time.
+- **OBLIGATORIO**: Uso de `getRelativeLocaleUrl(lang, path)` para todos los enlaces internos.
+- **DIRECCIONAMIENTO**: El root `/` se maneja vía client-side JS en `src/pages/index.astro`.
