@@ -49,6 +49,15 @@
 - **Schedule**: Lunes 06:00 UTC.
 - **Archivo**: `.github/workflows/autocurative.yml`
 
+### 4. `copilot-swe-agent` (Agente de GitHub Copilot)
+<!-- Agente externo de GitHub — opera en ramas `copilot/*`. Genera PRs con cambios de
+     features puntuales. Sus ramas requieren aprobación manual de CI antes de ejecutar
+     workflows (protección estándar de GitHub para bots). -->
+- **Rol**: Features específicas solicitadas por el owner vía issues/tareas.
+- **Branch pattern**: `copilot/descripcion-tarea`
+- **CI**: Sus workflows aparecen como `action_required` hasta aprobación manual del owner.
+- **Ejemplo**: PR #367 — Auditoría SEO, OG image, sitemap dinámico.
+
 ---
 
 ## Protocolo de Comunicación (DOM Events)
@@ -85,6 +94,13 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 1. Leer el archivo completo antes de editar.
 2. Usar `escapeHtml()` para toda interpolación de usuario en innerHTML.
 3. Verificar Dark Mode (`dark:*` clases Tailwind).
+
+### SEO / Metadatos:
+<!-- Scripts de soporte SEO agregados en PR #367 (2026-03-28). Migrados a TS en PR #397. -->
+1. `node --experimental-strip-types scripts/generate_og_image.ts` — Regenera `public/og-image.png` (1200×630px).
+2. `node --experimental-strip-types scripts/update-stats.ts` — Actualiza contadores en `README.md` (commits + LOC Rust).
+3. Variables de entorno opcionales en Render: `PUBLIC_GOOGLE_SITE_VERIFICATION`, `PUBLIC_BING_SITE_VERIFICATION`.
+4. Sitemap dinámico generado en build: `src/pages/sitemap.xml.ts` (incluye `/es/ruta/:id`, `/en/ruta/:id`).
 
 ---
 
@@ -127,6 +143,7 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 
 ```
 rama claude/* → tests pasan → PR a main → CI verde → merge
+rama copilot/* → CI action_required → owner aprueba → CI verde → merge
 ```
 
 Cada PR debe incluir: descripción del problema, fix implementado, tests que lo prueban.

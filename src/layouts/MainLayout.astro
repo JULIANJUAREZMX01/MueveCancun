@@ -75,6 +75,9 @@ const navItems = [
     <meta name="title" content={title} />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
+    <!-- Search Engine Verification -->
+    {googleVerification && <meta name="google-site-verification" content={googleVerification} />}
+    {bingVerification && <meta name="msvalidate.01" content={bingVerification} />}
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />

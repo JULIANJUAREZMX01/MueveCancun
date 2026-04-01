@@ -72,14 +72,18 @@ pnpm test                       # Vitest (TS)
 cd rust-wasm/route-calculator && cargo test --lib  # Tests Rust
 
 # Build completo
-node scripts/build-wasm.mjs    # Compilar Rust → WASM
-node scripts/validate-routes.mjs  # Validar datos de rutas
-node scripts/optimize-json.mjs   # Pre-optimizar JSON para WASM
+node --experimental-strip-types scripts/build-wasm.ts    # Compilar Rust → WASM
+node --experimental-strip-types scripts/validate-routes.ts  # Validar datos de rutas
+node --experimental-strip-types scripts/optimize-json.ts   # Pre-optimizar JSON para WASM
 pnpm build                      # Build Astro SSG completo
 
 # Validación rápida
 node scripts/check-wasm.cjs    # Verificar binario WASM existe
-node scripts/validate-routes.mjs  # Validar JSON de rutas
+node --experimental-strip-types scripts/validate-routes.ts  # Validar JSON de rutas
+
+# SEO / Activos estáticos (scripts agregados en PR #367, migrados a TS en PR #397)
+node --experimental-strip-types scripts/generate_og_image.ts  # Regenera public/og-image.png (1200×630px vía Sharp)
+node --experimental-strip-types scripts/update-stats.ts       # Actualiza estadísticas en README.md
 ```
 
 ---
@@ -145,6 +149,22 @@ El `RouteCalculator.astro` escucha ese evento y actualiza los inputs.
 - **Prototype Pollution**: Usar `Map` en lugar de objetos planos para datos del catálogo.
 - **DoS WASM**: El motor tiene límite de 10M ops y 10MB de payload — no aumentar.
 - **HMAC Wallet**: `src/utils/db.ts` — la firma HMAC es un deterrente; no remover.
+<!-- También: scripts/update-stats.ts usa traversal puro de Node.js (no shell expansion)
+     para evitar inyección de comandos. Mantener ese patrón. -->
+
+---
+
+## SEO y Metadatos (Agregado PR #367, 2026-03-28)
+
+<!-- Contexto: auditoría SEO detectó OG image de 157 bytes (placeholder), sitemap sin
+     páginas localizadas/rutas, y sin soporte de verificación de Search Console. -->
+
+- **OG Image**: `public/og-image.png` — 1200×630px, regenerar con `node --experimental-strip-types scripts/generate_og_image.ts`.
+- **Sitemap dinámico**: `src/pages/sitemap.xml.ts` — incluye `/es/`, `/en/` y todas las rutas (`/es/ruta/:id`).
+- **Verification tags** (condicionales en `MainLayout.astro`):
+  - `PUBLIC_GOOGLE_SITE_VERIFICATION` → `<meta name="google-site-verification" />`
+  - `PUBLIC_BING_SITE_VERIFICATION` → `<meta name="msvalidate.01" />`
+- **Stats README**: `node --experimental-strip-types scripts/update-stats.ts` — actualiza commit count y líneas Rust.
 
 ---
 
