@@ -28,7 +28,8 @@ const MASTER_PATH = path.join(ROOT, 'public/data/master_routes.json');
 const DRY_RUN = process.argv.includes('--dry-run');
 const VERBOSE = process.argv.includes('--verbose');
 const LIMIT_ARG = process.argv.find(a => a.startsWith('--limit='));
-const MAX_GEOCODE = LIMIT_ARG ? parseInt(LIMIT_ARG.split('=')[1] ?? '100') : 100;
+const parsedLimit = LIMIT_ARG ? parseInt(LIMIT_ARG.split('=')[1] ?? '100', 10) : 100;
+const MAX_GEOCODE = isNaN(parsedLimit) ? 100 : parsedLimit;
 const DELAY_MS = 1100; // > 1s required by Nominatim TOS
 
 function log(...a: unknown[]): void  { console.log(...a); }

@@ -188,13 +188,13 @@ async function networkFirstWithCache(request: Request): Promise<Response> {
   }
 }
 
-async function staleWhileRevalidate(request: Request): Promise<Response | undefined> {
+async function staleWhileRevalidate(request: Request): Promise<Response> {
   const cached = await caches.match(request);
   const fetchPromise = fetch(request).then((response: Response) => {
     if (response?.status === 200) {
       caches.open(CACHE_NAME).then(c => c.put(request, response.clone()));
     }
     return response;
-  }).catch((): Response | undefined => cached);
+  }).catch((): Response => cached ?? new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } }));
   return cached ?? fetchPromise;
 }

@@ -170,7 +170,12 @@ const navItems = [
 
       function updateTranslations(lang: string): void {
           const dataEl = document.getElementById('i18n-translations');
-          const allTranslations = dataEl ? JSON.parse(dataEl.dataset.translations ?? '{}') as Record<string, Record<string, string>> : {};
+          let allTranslations: Record<string, Record<string, string>> = {};
+          try {
+            allTranslations = dataEl ? JSON.parse(dataEl.dataset.translations ?? '{}') as Record<string, Record<string, string>> : {};
+          } catch {
+            allTranslations = {};
+          }
           const translations: Record<string, string> = allTranslations[lang] ?? allTranslations['es'] ?? {};
 
           // Update simple text elements

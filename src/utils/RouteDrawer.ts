@@ -51,6 +51,7 @@ interface RouteStop {
     lat?: number | string;
     lng?: number | string;
     lon?: number | string;
+    /** Legacy field names used by some upstream data sources. */
     latitude?: number | string;
     longitude?: number | string;
     nombre?: string;
