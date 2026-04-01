@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["astro.config.mjs", "scripts/**/*.mjs", "scripts/**/*.cjs"]
+  "include": ["astro.config.mjs", "scripts/**/*.ts", "scripts/**/*.cjs"]
 }

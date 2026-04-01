@@ -1,5 +1,5 @@
 /**
- * geocode-stops.mjs
+ * geocode-stops.ts
  *
  * AUTONOMY LAYER: Auto-fills missing lat/lng coordinates for stops in
  * master_routes.json using OpenStreetMap Nominatim (free, no API key needed).
@@ -12,7 +12,7 @@
  *  - Dry-run mode: prints what would be geocoded without writing.
  *
  * Usage:
- *   node scripts/geocode-stops.mjs [--dry-run] [--verbose] [--limit=50]
+ *   node --experimental-strip-types scripts/geocode-stops.ts [--dry-run] [--verbose] [--limit=50]
  *
  * Note: Results may be approximate. Always verify critical stops manually.
  */
@@ -28,16 +28,26 @@ const MASTER_PATH = path.join(ROOT, 'public/data/master_routes.json');
 const DRY_RUN = process.argv.includes('--dry-run');
 const VERBOSE = process.argv.includes('--verbose');
 const LIMIT_ARG = process.argv.find(a => a.startsWith('--limit='));
-const MAX_GEOCODE = LIMIT_ARG ? parseInt(LIMIT_ARG.split('=')[1]) : 100;
+const MAX_GEOCODE = LIMIT_ARG ? parseInt(LIMIT_ARG.split('=')[1] ?? '100') : 100;
 const DELAY_MS = 1100; // > 1s required by Nominatim TOS
 
-function log(...a)  { console.log(...a); }
-function info(...a) { if (VERBOSE) console.log('  ', ...a); }
-function warn(...a) { console.warn('  ⚠️ ', ...a); }
+function log(...a: unknown[]): void  { console.log(...a); }
+function info(...a: unknown[]): void { if (VERBOSE) console.log('  ', ...a); }
+function warn(...a: unknown[]): void { console.warn('  ⚠️ ', ...a); }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function sleep(ms: number): Promise<void> { return new Promise(r => setTimeout(r, ms)); }
 
-function nominatimFetch(stopName) {
+interface Coords {
+    lat: number;
+    lng: number;
+}
+
+interface NominatimResult {
+    lat: string;
+    lon: string;
+}
+
+function nominatimFetch(stopName: string): Promise<Coords | null> {
   const q = encodeURIComponent(`${stopName}, Cancún, Quintana Roo, México`);
   const url = `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&countrycodes=mx`;
 
@@ -46,11 +56,11 @@ function nominatimFetch(stopName) {
       headers: { 'User-Agent': 'MueveCancun-AutoGeocode/1.0 (https://github.com/JULIANJUAREZMX01/MueveCancun)' },
     }, (res) => {
       let data = '';
-      res.on('data', chunk => { data += chunk; });
+      res.on('data', (chunk: Buffer) => { data += chunk; });
       res.on('end', () => {
         try {
-          const parsed = JSON.parse(data);
-          if (parsed && parsed.length > 0) {
+          const parsed = JSON.parse(data) as NominatimResult[];
+          if (parsed && parsed.length > 0 && parsed[0]) {
             resolve({ lat: parseFloat(parsed[0].lat), lng: parseFloat(parsed[0].lon) });
           } else {
             resolve(null); // Not found
@@ -63,7 +73,31 @@ function nominatimFetch(stopName) {
   });
 }
 
-function isMissingCoords(stop) {
+interface CatalogStop {
+    nombre?: string;
+    name?: string;
+    lat?: number;
+    lng?: number;
+    _geocoded?: boolean;
+    [key: string]: unknown;
+}
+
+interface CatalogRoute {
+    paradas?: CatalogStop[];
+    [key: string]: unknown;
+}
+
+interface MasterCatalog {
+    rutas?: CatalogRoute[];
+    metadata?: {
+        last_geocoded?: string;
+        geocoded_count?: number;
+        [key: string]: unknown;
+    };
+    [key: string]: unknown;
+}
+
+function isMissingCoords(stop: CatalogStop): boolean {
   return (
     typeof stop.lat !== 'number' || typeof stop.lng !== 'number' ||
     (stop.lat === 0 && stop.lng === 0) ||
@@ -72,28 +106,28 @@ function isMissingCoords(stop) {
 }
 
 // ---------- Main ----------
-log('🌐 geocode-stops.mjs — Auto-filling missing coordinates…');
+log('🌐 geocode-stops.ts — Auto-filling missing coordinates…');
 if (DRY_RUN) log('   (DRY RUN — no files will be written)');
 log(`   Limit: ${MAX_GEOCODE} stops per run`);
 
-let master;
+let master: MasterCatalog;
 try {
-  master = JSON.parse(fs.readFileSync(MASTER_PATH, 'utf8'));
-} catch (e) {
-  console.error('❌ Cannot read master_routes.json:', e.message);
+  master = JSON.parse(fs.readFileSync(MASTER_PATH, 'utf8')) as MasterCatalog;
+} catch (e: unknown) {
+  console.error('❌ Cannot read master_routes.json:', (e as Error).message);
   process.exit(1);
 }
 
 // Collect stops needing geocoding (deduplicated by name)
-const pendingStops = new Map(); // stopName → [{routeIdx, stopIdx}]
+const pendingStops = new Map<string, { ri: number; si: number }[]>();
 
 for (const [ri, route] of (master.rutas || []).entries()) {
   for (const [si, stop] of (route.paradas || []).entries()) {
     if (isMissingCoords(stop)) {
-      const name = stop.nombre || stop.name || '';
+      const name = stop.nombre ?? stop.name ?? '';
       if (!name.trim()) continue;
       if (!pendingStops.has(name)) pendingStops.set(name, []);
-      pendingStops.get(name).push({ ri, si });
+      pendingStops.get(name)!.push({ ri, si });
     }
   }
 }
@@ -106,7 +140,7 @@ if (pendingStops.size === 0) {
 }
 
 let geocoded = 0, notFound = 0, errors = 0;
-const resolvedNames = new Map(); // name → {lat, lng}
+const resolvedNames = new Map<string, Coords>();
 
 const stopNames = Array.from(pendingStops.keys()).slice(0, MAX_GEOCODE);
 
@@ -136,8 +170,8 @@ for (const [i, name] of stopNames.entries()) {
       info(`   ❌ Not found: ${name}`);
       notFound++;
     }
-  } catch (e) {
-    warn(`Error geocoding "${name}": ${e.message}`);
+  } catch (e: unknown) {
+    warn(`Error geocoding "${name}": ${(e as Error).message}`);
     errors++;
   }
 }
@@ -147,9 +181,9 @@ if (!DRY_RUN && resolvedNames.size > 0) {
   let applied = 0;
   for (const route of (master.rutas || [])) {
     for (const stop of (route.paradas || [])) {
-      const name = stop.nombre || stop.name || '';
+      const name = stop.nombre ?? stop.name ?? '';
       if (resolvedNames.has(name) && isMissingCoords(stop)) {
-        const coords = resolvedNames.get(name);
+        const coords = resolvedNames.get(name)!;
         stop.lat = coords.lat;
         stop.lng = coords.lng;
         stop._geocoded = true; // Mark as auto-geocoded for review
@@ -175,5 +209,5 @@ log(`   ⚠️  Errors:    ${errors}`);
 log(`   ⏭️  Skipped (limit): ${Math.max(0, pendingStops.size - MAX_GEOCODE)}`);
 
 if (geocoded > 0 && !DRY_RUN) {
-  log('\n💡 Tip: Run `node scripts/validate-routes.mjs` and `node scripts/optimize-json.mjs` after geocoding');
+  log('\n💡 Tip: Run `node --experimental-strip-types scripts/validate-routes.ts` and `node --experimental-strip-types scripts/optimize-json.ts` after geocoding');
 }

@@ -1,9 +1,9 @@
 /**
- * update-stats.mjs
+ * update-stats.ts
  * Updates README.md with automated project statistics:
  *   - Total git commits
  *   - Lines of Rust code in rust-wasm/
- * Run: node scripts/update-stats.mjs
+ * Run: node --experimental-strip-types scripts/update-stats.ts
  */
 import { execSync } from 'child_process';
 import { readFileSync, writeFileSync } from 'fs';
@@ -16,7 +16,7 @@ const ROOT = join(__dirname, '..');
 // Minimum commit baseline (preserve historical count even on shallow clones)
 const COMMIT_BASELINE = 851;
 
-function getCommitCount() {
+function getCommitCount(): number {
   try {
     const result = execSync('git rev-list --count HEAD', { cwd: ROOT, encoding: 'utf8' }).trim();
     const count = parseInt(result, 10);
@@ -26,7 +26,7 @@ function getCommitCount() {
   }
 }
 
-function getRustLines() {
+function getRustLines(): number {
   try {
     const result = execSync(
       'find rust-wasm -name "*.rs" | xargs wc -l 2>/dev/null | tail -1',
