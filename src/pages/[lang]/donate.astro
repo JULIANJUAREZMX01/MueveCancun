@@ -10,6 +10,7 @@ const translations = {
     title: 'Escudo de Cancún',
     subtitle: 'Sustenta el transporte de tu ciudad',
     description: 'MueveCancún es 100% gratis porque creemos que el transporte es un derecho. Pero mantenerlo vivo cuesta. Apoya con lo que puedas.',
+    qrText: 'Escaneame para donar',
     tiers: {
       free: {
         name: 'Libre',
@@ -28,7 +29,8 @@ const translations = {
         name: 'Nexus Architect',
         price: '$10/mes',
         features: ['Todo lo anterior', 'Votación en prioridades', 'Comunidad privada', 'API beta access', 'Créditos en el proyecto'],
-        cta: 'Construir el futuro'
+        cta: 'Construir el futuro',
+        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02'
       }
     },
     impact: {
@@ -44,6 +46,7 @@ const translations = {
     title: 'Shield of Cancun',
     subtitle: 'Sustain your city\'s transport',
     description: 'MueveCancún is 100% free because we believe transport is a right. But keeping it alive costs money. Support with what you can.',
+    qrText: 'Scan me to donate',
     tiers: {
       free: {
         name: 'Free',
@@ -62,7 +65,8 @@ const translations = {
         name: 'Nexus Architect',
         price: '$10/mo',
         features: ['Everything above', 'Priority voting', 'Private community', 'API beta access', 'Project credits'],
-        cta: 'Build the future'
+        cta: 'Build the future',
+        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02'
       }
     },
     impact: {
@@ -80,6 +84,9 @@ const t = translations[lang] || translations.es;
 ---
 
 <MainLayout title={t.title}>
+  <!-- Stripe script -->
+  <script async src="https://js.stripe.com/v3/buy-button.js"></script>
+
   <div class="max-w-4xl mx-auto px-4 py-12 space-y-16">
 
     <!-- Hero -->
@@ -136,14 +143,43 @@ const t = translations[lang] || translations.es;
                 </li>
               ))}
             </ul>
-            <button class:list={[
-              "w-full py-4 rounded-2xl font-black text-sm transition-all",
-              tier.recommended
-                ? "bg-primary-500 text-white shadow-lg shadow-primary-500/30 hover:bg-primary-600"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
-            ]}>
-              {tier.cta}
-            </button>
+
+            {key === 'shield' ? (
+              <div class="space-y-6">
+                <div class="flex justify-center">
+                  <stripe-buy-button
+                    buy-button-id="buy_btn_1THXtT2dM2f4HRxoMj7g4bnI"
+                    publishable-key="pk_live_51T6oKE2dM2f4HRxoh2mpjFg4MHpHXxqc65ulAos4p22xPpD3v55ejGpiGx1Y8vdK5doYMTPGvTPi6RzsqdVv2xvE000caSvFag"
+                  >
+                  </stripe-buy-button>
+                </div>
+
+                <div class="flex flex-col items-center gap-2">
+                  <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-md border border-slate-100">
+                    <img src="/qr-donate.png" alt={t.qrText} class="w-full h-full object-contain" />
+                  </div>
+                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{t.qrText}</p>
+                </div>
+              </div>
+            ) : tier.link ? (
+              <a href={tier.link} class:list={[
+                "block w-full py-4 text-center rounded-2xl font-black text-sm transition-all no-underline",
+                tier.recommended
+                  ? "bg-primary-500 text-white shadow-lg shadow-primary-500/30 hover:bg-primary-600"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
+              ]}>
+                {tier.cta}
+              </a>
+            ) : (
+              <button class:list={[
+                "w-full py-4 rounded-2xl font-black text-sm transition-all cursor-default opacity-50",
+                tier.recommended
+                  ? "bg-primary-500 text-white shadow-lg shadow-primary-500/30"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white"
+              ]}>
+                {tier.cta}
+              </button>
+            )}
           </div>
         </div>
       ))}
