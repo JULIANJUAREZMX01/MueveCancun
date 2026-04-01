@@ -10,7 +10,7 @@ interface Props {
   repoName?: string;
 }
 
-const { repoOwner, repoName } = Astro.props;
+const { repoOwner = null, repoName = null } = Astro.props;
 ---
 
 <!-- Botón flotante — visible en todas las páginas vía Layout -->
