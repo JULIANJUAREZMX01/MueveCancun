@@ -1,8 +1,11 @@
-const CACHE_VERSION = 'v3.3.1-ssg';
+/// <reference lib="WebWorker" />
+declare const self: ServiceWorkerGlobalScope;
+
+const CACHE_VERSION = 'v3.3.1-fix';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 
 // Critical assets for offline-first PWA
-const CRITICAL_ASSETS = [
+const CRITICAL_ASSETS: string[] = [
   '/',
   '/home',
   '/rutas',
@@ -45,7 +48,7 @@ const CARTO_TILES_PATTERN = /^https:\/\/[a-d]\.basemaps\.cartocdn\.com\/.*\.png$
 const USER_ROUTE_PATTERN = /\/data\/routes\/ruta_\d+\.json$/;
 
 // --- Install ---
-self.addEventListener('install', (event) => {
+self.addEventListener('install', (event: ExtendableEvent) => {
   console.log(`[SW] Installing ${CACHE_VERSION}`);
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -53,16 +56,16 @@ self.addEventListener('install', (event) => {
         console.log('[SW] Caching critical assets');
         // Use individual puts to avoid one bad URL killing the whole install
         return Promise.allSettled(
-          CRITICAL_ASSETS.map(url => cache.add(url).catch(e => console.warn(`[SW] Failed to cache ${url}:`, e)))
+          CRITICAL_ASSETS.map(url => cache.add(url).catch((e: unknown) => console.warn(`[SW] Failed to cache ${url}:`, e)))
         );
       })
       .then(() => self.skipWaiting())
-      .catch(err => console.error('[SW] Install failed:', err))
+      .catch((err: unknown) => console.error('[SW] Install failed:', err))
   );
 });
 
 // --- Activate ---
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', (event: ExtendableEvent) => {
   console.log(`[SW] Activating ${CACHE_VERSION}`);
   event.waitUntil(
     caches.keys()
@@ -78,13 +81,13 @@ self.addEventListener('activate', (event) => {
 });
 
 // --- Message ---
-self.addEventListener('message', (event) => {
+self.addEventListener('message', (event: ExtendableMessageEvent) => {
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
   // On-demand: cache a user-created route file
   if (event.data?.type === 'CACHE_USER_ROUTE' && event.data.url) {
-    const url = event.data.url;
+    const url = event.data.url as string;
     if (USER_ROUTE_PATTERN.test(url)) {
       caches.open(CACHE_NAME).then(cache => cache.add(url)).catch(() => {});
     }
@@ -92,7 +95,7 @@ self.addEventListener('message', (event) => {
 });
 
 // --- Fetch ---
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', (event: FetchEvent) => {
   const { request } = event;
   const url = new URL(request.url);
 
@@ -131,7 +134,7 @@ self.addEventListener('fetch', (event) => {
 
 // --- Cache Strategies ---
 
-async function cacheFirst(request) {
+async function cacheFirst(request: Request): Promise<Response> {
   try {
     const cached = await caches.match(request);
     if (cached) return cached;
@@ -145,13 +148,14 @@ async function cacheFirst(request) {
     const cached = await caches.match(request);
     if (cached) return cached;
     if (request.mode === 'navigate') {
-      return (await caches.open(CACHE_NAME)).match('/offline');
+      const offlinePage = await (await caches.open(CACHE_NAME)).match('/offline');
+      if (offlinePage) return offlinePage;
     }
     return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
   }
 }
 
-async function networkFirst(request) {
+async function networkFirst(request: Request): Promise<Response> {
   try {
     const response = await fetch(request);
     if (response?.status === 200) {
@@ -163,13 +167,14 @@ async function networkFirst(request) {
     const cached = await caches.match(request);
     if (cached) return cached;
     if (request.mode === 'navigate') {
-      return (await caches.open(CACHE_NAME)).match('/offline');
+      const offlinePage = await (await caches.open(CACHE_NAME)).match('/offline');
+      if (offlinePage) return offlinePage;
     }
     return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
   }
 }
 
-async function networkFirstWithCache(request) {
+async function networkFirstWithCache(request: Request): Promise<Response> {
   try {
     const response = await fetch(request);
     if (response?.status === 200) {
@@ -179,17 +184,17 @@ async function networkFirstWithCache(request) {
     return response;
   } catch {
     const cached = await caches.match(request);
-    return cached || new Response('{}', { status: 503, headers: { 'Content-Type': 'application/json' } });
+    return cached ?? new Response('{}', { status: 503, headers: { 'Content-Type': 'application/json' } });
   }
 }
 
-async function staleWhileRevalidate(request) {
+async function staleWhileRevalidate(request: Request): Promise<Response> {
   const cached = await caches.match(request);
-  const fetchPromise = fetch(request).then(response => {
+  const fetchPromise = fetch(request).then((response: Response) => {
     if (response?.status === 200) {
       caches.open(CACHE_NAME).then(c => c.put(request, response.clone()));
     }
     return response;
-  }).catch(() => cached);
-  return cached || fetchPromise;
+  }).catch((): Response => cached ?? new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } }));
+  return cached ?? fetchPromise;
 }

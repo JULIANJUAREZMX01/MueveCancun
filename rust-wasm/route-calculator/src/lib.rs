@@ -99,7 +99,6 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
 
 /// Returns distance in meters between two lat/lng points.
 #[inline]
-#[allow(dead_code)]
 fn haversine_distance_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     const R: f64 = 6_371_000.0;
     let d_lat = (lat2 - lat1).to_radians();
@@ -112,7 +111,6 @@ fn haversine_distance_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
 
 /// True if stop has valid non-zero coordinates.
 #[inline]
-#[allow(dead_code)]
 fn stop_has_coords(stop: &Stop) -> bool {
     stop.lat.abs() > 0.0001 && stop.lng.abs() > 0.0001
 }
@@ -329,7 +327,6 @@ const PREFERRED_HUBS: &[&str] = &[
 ];
 
 /// Geographic transfer threshold: stops within 350 m can be used as a transfer point.
-#[allow(dead_code)]
 const GEO_TRANSFER_RADIUS_M: f64 = 350.0;
 
 /// Fuzzy stop matching with Jaro-Winkler (O(n) worst case, O(1) for exact match).
