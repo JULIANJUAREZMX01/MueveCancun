@@ -220,11 +220,65 @@ const ui = uiTranslations[currentLang];
               }
           }
 
-          // Sentinel Security Fix: Retry Button Delegation
+          // Sentinel Security Fix: Sentinel Delegation for All Actions
           if (target.closest('.js-retry-search-btn')) {
               e.preventDefault();
               e.stopPropagation();
-              setTimeout(() => document.getElementById('origin-input')?.focus(), 50);
+              document.getElementById('search-card')?.scrollIntoView({ behavior: 'smooth' });
+              document.getElementById('summary-bar')?.classList.add('hidden');
+              document.getElementById('search-form')?.classList.remove('hidden');
+              setTimeout(() => document.getElementById('origin-input')?.focus(), 200);
+          }
+
+          if (target.closest('#gps-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
+              // @ts-ignore
+              if (typeof handleGPSClick === 'function') handleGPSClick();
+          }
+
+          if (target.closest('#swap-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
+              const originInput = document.getElementById('origin-input') as HTMLInputElement;
+              const destInput = document.getElementById('destination-input') as HTMLInputElement;
+              const swapBtn = document.getElementById('swap-btn');
+              if (originInput && destInput) {
+                  const temp = originInput.value;
+                  originInput.value = destInput.value;
+                  destInput.value = temp;
+                  swapBtn?.classList.toggle('rotated');
+                  originInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  destInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+          }
+
+          const qBtn = target.closest('.quick-action-btn') as HTMLElement;
+          if (qBtn) {
+              e.preventDefault();
+              e.stopPropagation();
+              const dest = qBtn.dataset.dest;
+              if (dest) {
+                  const destInput = document.getElementById('destination-input') as HTMLInputElement;
+                  if (destInput) {
+                      destInput.value = dest;
+                      destInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  }
+              }
+          }
+
+          if (target.closest('#btn-report-results')) {
+              e.preventDefault();
+              e.stopPropagation();
+              // @ts-ignore
+              window.rwOpenReport?.();
+          }
+
+          if (target.closest('#edit-search-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
+              document.getElementById('summary-bar')?.classList.add('hidden');
+              document.getElementById('search-form')?.classList.remove('hidden');
           }
       });
   }
@@ -538,15 +592,16 @@ const ui = uiTranslations[currentLang];
       } catch (e) {
         console.warn("GPS/Finder features might be unavailable", e);
       }
-      // Initialize GPS logic regardless of data state (it handles nulls)
-      if (typeof initGPSLogic === 'function') initGPSLogic();
     }
   }
 
   function setupAutocomplete(inputId) {
-      const input = document.getElementById(inputId);
+      const input = document.getElementById(inputId) as HTMLInputElement;
       const container = input?.parentElement; // Input wrapper
       if (!input || !container) return;
+
+      // Guard: Prevent duplicate suggestions list and listeners
+      if (document.getElementById(`${inputId}-suggestions`)) return;
 
       // Create Dropdown Element (Native Popover)
       const list = document.createElement('ul');
@@ -630,43 +685,42 @@ const ui = uiTranslations[currentLang];
       input.addEventListener('focus', updateList);
   }
 
-  function initGPSLogic() {
+  function handleGPSClick() {
       const gpsBtn = document.getElementById('gps-btn');
       if (!gpsBtn) return;
 
-      gpsBtn.addEventListener('click', () => {
-         if (!navigator.geolocation) {
-             showToast(ui['error.no_gps'], 'error');
-             return;
-         }
+      if (!navigator.geolocation) {
+          showToast(ui['error.no_gps'], 'error');
+          return;
+      }
 
-         gpsBtn.classList.add('animate-pulse', 'text-primary-500');
-         navigator.geolocation.getCurrentPosition(
-             (pos) => {
-                 const { latitude, longitude } = pos.coords;
-                 const originInput = document.getElementById('origin-input');
-                 if (originInput && finder) {
-                     // Reverse Geocode: resolve GPS coords to nearest registered stop
-                     const gpsResult = coordinatesStore.findNearestWithDistance(latitude, longitude);
-                     if (gpsResult && gpsResult.distanceKm < 1.0) {
-                         originInput.value = gpsResult.name;
-                         const meters = Math.round(gpsResult.distanceKm * 1000);
-                         showToast(`GPS: ${gpsResult.name} (${meters} m)`, 'success');
-                     } else {
-                         // No registered stop within 1 km — ask user to search manually
-                         showToast('No hay paradas registradas cerca. Escribe tu ubicación manualmente.', 'warning');
-                         originInput.focus();
-                     }
-                 }
-                 gpsBtn.classList.remove('animate-pulse');
-             },
-             (err) => {
-                 console.error(err);
-                 gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
-                 showToast("GPS Error", 'error');
-             }
-         );
-      });
+      gpsBtn.classList.add('animate-pulse', 'text-primary-500');
+      navigator.geolocation.getCurrentPosition(
+          (pos) => {
+              const { latitude, longitude } = pos.coords;
+              const originInput = document.getElementById('origin-input') as HTMLInputElement;
+              if (originInput && finder) {
+                  // Reverse Geocode: resolve GPS coords to nearest registered stop
+                  const gpsResult = coordinatesStore.findNearestWithDistance(latitude, longitude);
+                  if (gpsResult && gpsResult.distanceKm < 1.0) {
+                      originInput.value = gpsResult.name;
+                      const meters = Math.round(gpsResult.distanceKm * 1000);
+                      showToast(`GPS: ${gpsResult.name} (${meters} m)`, 'success');
+                      originInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  } else {
+                      // No registered stop within 1 km — ask user to search manually
+                      showToast('No hay paradas registradas cerca. Escribe tu ubicación manualmente.', 'warning');
+                      originInput.focus();
+                  }
+              }
+              gpsBtn.classList.remove('animate-pulse');
+          },
+          (err) => {
+              console.error(err);
+              gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
+              showToast("GPS Error", 'error');
+          }
+      );
   }
 
   // --- Rendering Functions ---
@@ -840,46 +894,6 @@ const ui = uiTranslations[currentLang];
   // --- Event Listeners ---
 
   function setupEventListeners() {
-      // Swap Button Logic
-      const swapBtn = document.getElementById('swap-btn');
-      if (swapBtn && !swapBtn.dataset.initialized) {
-          swapBtn.dataset.initialized = "true";
-          swapBtn.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-
-              const originInput = document.getElementById('origin-input');
-              const destInput = document.getElementById('destination-input');
-              if (originInput && destInput) {
-                  const temp = originInput.value;
-                  originInput.value = destInput.value;
-                  destInput.value = temp;
-
-                  // Rotate animation
-                  swapBtn.classList.toggle('rotated');
-
-                  // Trigger input events
-                  originInput.dispatchEvent(new Event('input'));
-                  destInput.dispatchEvent(new Event('input'));
-              }
-          });
-      }
-
-      // Quick Action Buttons (Home, Work, Airport, Beach)
-      document.querySelectorAll('.quick-action-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-              const dest = btn.dataset.dest;
-              if (dest) {
-                  const destInput = document.getElementById('destination-input');
-                  if (destInput) {
-                      destInput.value = dest;
-                      destInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  }
-              }
-          });
-      });
-
-
       // Map Picker Button
       const mapPickerBtn = document.getElementById('map-picker-btn');
       if (mapPickerBtn) {
