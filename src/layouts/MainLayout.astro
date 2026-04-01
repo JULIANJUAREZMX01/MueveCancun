@@ -216,12 +216,14 @@ const navItems = [
              const key = el.getAttribute('data-i18n-html');
              const text = translations[key];
              // Preserves icon if we replace innerText carefully or just update text node
-             // For quick actions: <span icon></span> Text
+             // For quick actions: <svg icon></svg> Text
              if (text) {
-                 const icon = el.querySelector('span');
-                 el.innerHTML = '';
-                 if (icon) el.appendChild(icon);
-                 el.appendChild(document.createTextNode(' ' + text));
+                 const icon = el.querySelector('svg, span');
+                 if (icon) {
+                     el.replaceChildren(icon, document.createTextNode(' ' + text));
+                 } else {
+                     el.textContent = text;
+                 }
              }
           });
       }

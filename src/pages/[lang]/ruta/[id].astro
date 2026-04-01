@@ -2,7 +2,7 @@
 import MainLayout from '../../../layouts/MainLayout.astro';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { getLangFromUrl, useTranslations } from '../../../lib/i18n';
+import { getLangFromUrl, useTranslations } from '../../../utils/i18n';
 
 export const prerender = true;
 
@@ -252,7 +252,9 @@ const schemaData = {
        if (isFav) {
           if (icon) {
             // Fill star SVG path for active state
-            icon.innerHTML = '<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>';
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z');
+            icon.replaceChildren(path);
             icon.classList.add('text-primary-500');
           }
           if (text) text.textContent = "Guardado";
@@ -260,7 +262,9 @@ const schemaData = {
        } else {
           if (icon) {
             // Outline star SVG path for inactive state
-            icon.innerHTML = '<path d="M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z"/>';
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', 'M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z');
+            icon.replaceChildren(path);
             icon.classList.remove('text-primary-500');
           }
           if (text) text.textContent = "Guardar";
