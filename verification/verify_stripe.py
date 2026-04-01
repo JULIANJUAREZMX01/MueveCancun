@@ -12,22 +12,31 @@ async def main():
         await page.goto("http://localhost:4321/es/donate")
         await page.wait_for_timeout(3000) # Wait for Stripe script to load
 
-        # Check for Stripe Buy Button
-        buy_button = await page.query_selector('stripe-buy-button')
-        if buy_button:
-            print("SUCCESS: stripe-buy-button found")
-        else:
-            print("FAILURE: stripe-buy-button not found")
+        # Check for Stripe Buy Buttons
+        buy_buttons = await page.query_selector_all('stripe-buy-button')
+        print(f"Found {len(buy_buttons)} stripe-buy-buttons")
 
-        # Check for Architect link
-        architect_link = await page.query_selector('a[href="https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02"]')
-        if architect_link:
-            print("SUCCESS: Architect direct link found")
-        else:
-            print("FAILURE: Architect direct link not found")
+        button_ids = [await b.get_attribute('buy-button-id') for b in buy_buttons]
+        expected_ids = ["buy_btn_1THXtT2dM2f4HRxoMj7g4bnI", "buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB"]
 
-        await page.screenshot(path="verification-artifacts/04_stripe_integration.png", full_page=True)
-        print("Captured Stripe integration screenshot")
+        for eid in expected_ids:
+            if eid in button_ids:
+                print(f"SUCCESS: buy-button-id '{eid}' found")
+            else:
+                print(f"FAILURE: buy-button-id '{eid}' NOT found")
+
+        # Check for QR images
+        qr_shield = await page.query_selector('img[src="/qr-shield.png"]')
+        qr_architect = await page.query_selector('img[src="/qr-architect.png"]')
+
+        if qr_shield: print("SUCCESS: Shield QR found")
+        else: print("FAILURE: Shield QR NOT found")
+
+        if qr_architect: print("SUCCESS: Architect QR found")
+        else: print("FAILURE: Architect QR NOT found")
+
+        await page.screenshot(path="verification-artifacts/05_stripe_complete.png", full_page=True)
+        print("Captured complete Stripe integration screenshot")
 
         await browser.close()
 

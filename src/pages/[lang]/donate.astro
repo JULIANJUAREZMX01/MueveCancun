@@ -23,14 +23,17 @@ const translations = {
         price: '$3/mes',
         features: ['Todo lo anterior', 'Notificaciones de rutas alteradas', 'Datos históricos', 'Acceso a features beta', 'Soporte prioritario'],
         cta: 'Apoyar MueveCancún',
-        recommended: true
+        recommended: true,
+        qr: '/qr-shield.png',
+        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI'
       },
       architect: {
         name: 'Nexus Architect',
         price: '$10/mes',
         features: ['Todo lo anterior', 'Votación en prioridades', 'Comunidad privada', 'API beta access', 'Créditos en el proyecto'],
         cta: 'Construir el futuro',
-        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02'
+        qr: '/qr-architect.png',
+        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB'
       }
     },
     impact: {
@@ -59,14 +62,17 @@ const translations = {
         price: '$3/mo',
         features: ['Everything above', 'Altered route alerts', 'Historical data', 'Beta feature access', 'Priority support'],
         cta: 'Support MueveCancún',
-        recommended: true
+        recommended: true,
+        qr: '/qr-shield.png',
+        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI'
       },
       architect: {
         name: 'Nexus Architect',
         price: '$10/mo',
         features: ['Everything above', 'Priority voting', 'Private community', 'API beta access', 'Project credits'],
         cta: 'Build the future',
-        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02'
+        qr: '/qr-architect.png',
+        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB'
       }
     },
     impact: {
@@ -144,32 +150,25 @@ const t = translations[lang] || translations.es;
               ))}
             </ul>
 
-            {key === 'shield' ? (
+            {tier.buyButtonId ? (
               <div class="space-y-6">
                 <div class="flex justify-center">
                   <stripe-buy-button
-                    buy-button-id="buy_btn_1THXtT2dM2f4HRxoMj7g4bnI"
+                    buy-button-id={tier.buyButtonId}
                     publishable-key="pk_live_51T6oKE2dM2f4HRxoh2mpjFg4MHpHXxqc65ulAos4p22xPpD3v55ejGpiGx1Y8vdK5doYMTPGvTPi6RzsqdVv2xvE000caSvFag"
                   >
                   </stripe-buy-button>
                 </div>
 
-                <div class="flex flex-col items-center gap-2">
-                  <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-md border border-slate-100">
-                    <img src="/qr-donate.png" alt={t.qrText} class="w-full h-full object-contain" />
+                {tier.qr && (
+                  <div class="flex flex-col items-center gap-2">
+                    <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-md border border-slate-100">
+                      <img src={tier.qr} alt={t.qrText} class="w-full h-full object-contain" />
+                    </div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{t.qrText}</p>
                   </div>
-                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{t.qrText}</p>
-                </div>
+                )}
               </div>
-            ) : tier.link ? (
-              <a href={tier.link} class:list={[
-                "block w-full py-4 text-center rounded-2xl font-black text-sm transition-all no-underline",
-                tier.recommended
-                  ? "bg-primary-500 text-white shadow-lg shadow-primary-500/30 hover:bg-primary-600"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
-              ]}>
-                {tier.cta}
-              </a>
             ) : (
               <button class:list={[
                 "w-full py-4 rounded-2xl font-black text-sm transition-all cursor-default opacity-50",
