@@ -1,5 +1,33 @@
 # AGENTS.md — Sistema Multi-Agente de MueveCancun
 
+<!--
+  OBJETO DE ESTUDIO
+  =================
+  Este proyecto es el laboratorio de aprendizaje de Julián Alexander Juárez Alvarado.
+  Objetivo: dominar el ciclo completo de desarrollo de software moderno —
+  Rust/WASM, TypeScript, Astro SSG, PWA, CI/CD — construyendo una app real
+  con impacto social para la ciudad de Cancún.
+
+  SEGUIMIENTO DE AGENTES (ordenado cronológico)
+  =============================================
+  | Fecha      | Agente            | Acción principal                                  | PR/Commit   |
+  |------------|-------------------|---------------------------------------------------|-------------|
+  | 2025-03-02 | speedy            | Optimización O(1) match_stop en WASM (36480x)     | —           |
+  | 2026-02-18 | claude-code       | Análisis completo + limpieza 40+ archivos         | —           |
+  | 2026-03-02 | speedy            | Deduplicación O(N²)→O(1) con Set                  | —           |
+  | 2026-03-04 | speedy            | Inline SVGs via Icon.astro                        | —           |
+  | 2026-03-10 | claude-code       | Nexus Prime v3.3 — PWA producción estable         | v1.0.0      |
+  | 2026-03-28 | claude-code       | Fix revisiones Copilot + merge PR #366            | 1deb594     |
+  | 2026-03-28 | claude-code       | Documentación objetos de estudio en MDs agentes   | este PR     |
+
+  LECCIONES CLAVE APRENDIDAS POR AGENTE
+  ======================================
+  - claude-code: Nunca pushear a main; siempre rama claude/* + PR.
+  - speedy:      Medir antes de optimizar; O(1) HashMap vs O(N) fuzzy scan.
+  - autocurative: Health-check semanal previene regresiones silenciosas.
+  - verificación: No commitear binarios WASM si la tarea solo toca JS/TS.
+-->
+
 **Misión**: PWA offline-first de transporte público en Cancún. Motor de ruteo en WebAssembly (Rust), sin backend.
 
 ---
@@ -45,6 +73,14 @@
   - `scripts/jules-pr.mjs` — bridge comentario PR → Jules
 - **Modos de autoría**: `JULES`, `CO_AUTHORED`, `USER_ONLY` (default: `CO_AUTHORED`)
 - **Branch pattern**: Jules crea ramas `jules/fix-*` o `jules/task-*` automáticamente.
+### 4. `copilot-swe-agent` (Agente de GitHub Copilot)
+<!-- Agente externo de GitHub — opera en ramas `copilot/*`. Genera PRs con cambios de
+     features puntuales. Sus ramas requieren aprobación manual de CI antes de ejecutar
+     workflows (protección estándar de GitHub para bots). -->
+- **Rol**: Features específicas solicitadas por el owner vía issues/tareas.
+- **Branch pattern**: `copilot/descripcion-tarea`
+- **CI**: Sus workflows aparecen como `action_required` hasta aprobación manual del owner.
+- **Ejemplo**: PR #367 — Auditoría SEO, OG image, sitemap dinámico.
 
 ---
 
@@ -82,6 +118,13 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 1. Leer el archivo completo antes de editar.
 2. Usar `escapeHtml()` para toda interpolación de usuario en innerHTML.
 3. Verificar Dark Mode (`dark:*` clases Tailwind).
+
+### SEO / Metadatos:
+<!-- Scripts de soporte SEO agregados en PR #367 (2026-03-28). Migrados a TS en PR #397. -->
+1. `node --experimental-strip-types scripts/generate_og_image.ts` — Regenera `public/og-image.png` (1200×630px).
+2. `node --experimental-strip-types scripts/update-stats.ts` — Actualiza contadores en `README.md` (commits + LOC Rust).
+3. Variables de entorno opcionales en Render: `PUBLIC_GOOGLE_SITE_VERIFICATION`, `PUBLIC_BING_SITE_VERIFICATION`.
+4. Sitemap dinámico generado en build: `src/pages/sitemap.xml.ts` (incluye `/es/ruta/:id`, `/en/ruta/:id`).
 
 ---
 
@@ -125,6 +168,7 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 ```
 rama claude/* → tests pasan → PR a main → CI verde → merge
 rama jules/*  → PR abierto por Jules → revisión → merge
+rama copilot/* → CI action_required → owner aprueba → CI verde → merge
 ```
 
 Cada PR debe incluir: descripción del problema, fix implementado, tests que lo prueban.
@@ -139,3 +183,53 @@ Cada PR debe incluir: descripción del problema, fix implementado, tests que lo 
 | `JULES_API_KEY` | `jules` | Google Jules API Key |
 
 Configurar en: **Settings → Secrets and variables → Actions → New repository secret**
+## Historial de PRs por Área
+
+<!-- TRACKING: registro de merges para trazabilidad y aprendizaje -->
+| Área           | Descripción breve                             | Estado   |
+|----------------|-----------------------------------------------|----------|
+| WASM / Routing | Motor de transbordos exacto + geo ≤350 m      | ✅ Merged |
+| GPS            | `findNearestWithDistance` reemplaza texto lat/lng | ✅ Merged |
+| Seguridad      | XSS `escapeHtml()`, DoS circuit-breaker, HMAC wallet | ✅ Merged |
+| CI/CD          | 6 workflows: tests, WASM, validate-data, CodeQL, autocurative | ✅ Merged |
+| i18n           | Middleware Astro ES/EN; helpers en `src/utils/i18n.ts` | ✅ Merged |
+| PWA            | Service Worker offline-first, cache OpenStreetMap | ✅ Merged |
+| Documentación  | Objetos de estudio y seguimiento en MDs agentes | ✅ Merged |
+| CI / Docs Hardening | Test isolation, Tailwind docs fix, patch scripts removed, spatial-index build fix — [ADR-2026-003](docs/adr/ADR-2026-003.md) | ✅ Merged |
+
+---
+
+## 🔗 Mapa de Inter-comunicación entre Archivos de Agentes
+
+<!-- CROSS-REFERENCES: actualizar al agregar nuevos agentes o archivos de seguimiento -->
+| Archivo | Propósito | Referencia cruzada |
+|---------|-----------|-------------------|
+| `AGENTS.md` (este archivo) | Registro maestro de agentes, protocolos, historial de PRs | → `CLAUDE.md`, `docs/TRACKING.md`, `.Jules/speedy.md` |
+| `CLAUDE.md` | Instrucciones de desarrollo para claude-code | → `AGENTS.md` §Agentes Disponibles, `docs/TRACKING.md` |
+| `docs/TRACKING.md` | Bitácora unificada multi-agente | → Todos los MDs, `docs/adr/` |
+| `.Jules/speedy.md` | Optimizaciones y reglas de oro de speedy | → `AGENTS.md` §Historial, `docs/TRACKING.md` |
+| `docs/adr/ADR-2026-002.md` | Decisión de arquitectura Astro+WASM+Lit | → `docs/TRACKING.md`, `CLAUDE.md` |
+| `docs/adr/ADR-2026-003.md` | CI hardening, test isolation, limpieza de artefactos | → Este archivo §Historial, `docs/TRACKING.md` |
+
+---
+
+## Registro de Triage de PRs
+
+<!-- TRIAGE 2026-03-28 | Auditor: GitHub Copilot Agent -->
+<!-- Análisis completo: docs/PR_TRIAGE_2026-03-28.md -->
+
+### Estado de PRs Conocidas Problemáticas
+
+| PR | Estado | Razón del bloqueo |
+|----|--------|------------------|
+| **#342** | 🚫 BLOQUEADA | Elimina Tailwind CSS que sigue activo en producción |
+| **#338** | ⛔ BASE INCORRECTA | Apunta a `speedy/inline-svg-icons-*`, no a `main` |
+| **#333** | ❓ VERIFICAR | geo_transfer de marzo-10; puede estar ya en main vía #365 |
+
+> Ver análisis completo: [`docs/PR_TRIAGE_2026-03-28.md`](docs/PR_TRIAGE_2026-03-28.md)
+
+## Mandato Arquitectónico: Static-First (v3.3.1+)
+A partir de marzo de 2026, el proyecto es **estrictamente estático**.
+- **PROHIBIDO**: Middleware para lógica de rutas en request-time.
+- **OBLIGATORIO**: Uso de `getRelativeLocaleUrl(lang, path)` para todos los enlaces internos.
+- **DIRECCIONAMIENTO**: El root `/` se maneja vía client-side JS en `src/pages/index.astro`.

@@ -1,4 +1,13 @@
-
+/**
+ * Lazy-loads the Leaflet map library (CSS + JS) from /vendor/leaflet/.
+ *
+ * Multiple concurrent callers share a single in-flight Promise so Leaflet is
+ * only fetched once per page load.  On failure the shared Promise is cleared so
+ * callers can retry on next invocation.
+ *
+ * @returns A Promise that resolves once `window.L` is available, or rejects if
+ *   either the CSS or JS asset fails to load.
+ */
 let loadPromise: Promise<void> | null = null;
 
 export function loadLeaflet(): Promise<void> {

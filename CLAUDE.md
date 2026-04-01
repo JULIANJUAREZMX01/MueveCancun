@@ -1,5 +1,45 @@
 # CLAUDE.md — MueveCancun AI Agent Instructions
 
+<!--
+  OBJETO DE ESTUDIO — claude-code
+  ================================
+  Este agente es el asistente principal de desarrollo para Julián.
+  Su función va más allá de escribir código: también enseña los fundamentos
+  de cada decisión técnica para que Julián los comprenda y replique.
+
+  DECISIONES TÉCNICAS DOCUMENTADAS
+  =================================
+  1. WASM en lugar de backend Node.js
+     → Razón: sin costo de servidor, funciona offline, performance nativa en Rust.
+     → Aprendizaje: separar lógica de negocio (Rust) de presentación (Astro/TS).
+
+  2. IndexedDB + HMAC para wallet
+     → Razón: persistencia offline sin base de datos remota.
+     → Aprendizaje: criptografía del lado cliente como deterrente (no banco real).
+
+  3. `escapeHtml()` obligatorio en innerHTML
+     → Razón: prevenir XSS en cualquier string que venga del usuario o del catálogo.
+     → Aprendizaje: toda interpolación de datos externos en HTML es un vector de ataque.
+
+  4. CustomEvents para comunicación entre componentes
+     → Razón: desacoplar mapa, calculador y wallet sin estado global compartido.
+     → Aprendizaje: arquitectura orientada a eventos reduce dependencias circulares.
+
+  5. Circuit-breaker en WASM (10M ops, 10MB payload)
+     → Razón: prevenir DoS desde el cliente al motor de ruteo.
+     → Aprendizaje: los límites de recursos son parte del diseño de seguridad.
+
+  SEGUIMIENTO DE TAREAS (claude-code)
+  =====================================
+  | Sprint     | Tarea completada                          | Tests añadidos |
+  |------------|-------------------------------------------|----------------|
+  | Feb 2026   | Análisis y limpieza inicial del proyecto  | —              |
+  | Mar 2026   | Nexus Prime v3.3 — producción estable     | ✅ Vitest + Rust|
+  | Mar 2026   | Fix GPS: findNearestWithDistance          | ✅             |
+  | Mar 2026   | Fix revisiones Copilot PR #366            | ✅             |
+  | Mar 2026   | Documentación objetos de estudio          | —              |
+-->
+
 ## Proyecto
 
 **MueveCancun** es una PWA offline-first para transporte público en Cancún y la Riviera Maya.
@@ -32,14 +72,18 @@ pnpm test                       # Vitest (TS)
 cd rust-wasm/route-calculator && cargo test --lib  # Tests Rust
 
 # Build completo
-node scripts/build-wasm.mjs    # Compilar Rust → WASM
-node scripts/validate-routes.mjs  # Validar datos de rutas
-node scripts/optimize-json.mjs   # Pre-optimizar JSON para WASM
+node --experimental-strip-types scripts/build-wasm.ts    # Compilar Rust → WASM
+node --experimental-strip-types scripts/validate-routes.ts  # Validar datos de rutas
+node --experimental-strip-types scripts/optimize-json.ts   # Pre-optimizar JSON para WASM
 pnpm build                      # Build Astro SSG completo
 
 # Validación rápida
 node scripts/check-wasm.cjs    # Verificar binario WASM existe
-node scripts/validate-routes.mjs  # Validar JSON de rutas
+node --experimental-strip-types scripts/validate-routes.ts  # Validar JSON de rutas
+
+# SEO / Activos estáticos (scripts agregados en PR #367, migrados a TS en PR #397)
+node --experimental-strip-types scripts/generate_og_image.ts  # Regenera public/og-image.png (1200×630px vía Sharp)
+node --experimental-strip-types scripts/update-stats.ts       # Actualiza estadísticas en README.md
 ```
 
 ---
@@ -105,6 +149,22 @@ El `RouteCalculator.astro` escucha ese evento y actualiza los inputs.
 - **Prototype Pollution**: Usar `Map` en lugar de objetos planos para datos del catálogo.
 - **DoS WASM**: El motor tiene límite de 10M ops y 10MB de payload — no aumentar.
 - **HMAC Wallet**: `src/utils/db.ts` — la firma HMAC es un deterrente; no remover.
+<!-- También: scripts/update-stats.ts usa traversal puro de Node.js (no shell expansion)
+     para evitar inyección de comandos. Mantener ese patrón. -->
+
+---
+
+## SEO y Metadatos (Agregado PR #367, 2026-03-28)
+
+<!-- Contexto: auditoría SEO detectó OG image de 157 bytes (placeholder), sitemap sin
+     páginas localizadas/rutas, y sin soporte de verificación de Search Console. -->
+
+- **OG Image**: `public/og-image.png` — 1200×630px, regenerar con `node --experimental-strip-types scripts/generate_og_image.ts`.
+- **Sitemap dinámico**: `src/pages/sitemap.xml.ts` — incluye `/es/`, `/en/` y todas las rutas (`/es/ruta/:id`).
+- **Verification tags** (condicionales en `MainLayout.astro`):
+  - `PUBLIC_GOOGLE_SITE_VERIFICATION` → `<meta name="google-site-verification" />`
+  - `PUBLIC_BING_SITE_VERIFICATION` → `<meta name="msvalidate.01" />`
+- **Stats README**: `node --experimental-strip-types scripts/update-stats.ts` — actualiza commit count y líneas Rust.
 
 ---
 
@@ -144,3 +204,58 @@ git push -u origin claude/descripcion-breve-XXXXX
 | Transbordos no aparecen | Nombres de paradas sin match | Verificar nombres en catálogo; agregar hub alias |
 | Mapa no dibuja ruta | Coordenadas faltantes en paradas | Agregar `lat`/`lng` en `master_routes.json` |
 | SW muestra contenido antiguo | Cache version no bumpeada | Incrementar `CACHE_VERSION` en `public/sw.js` |
+
+---
+
+## Próximos Pasos Recomendados (v3.4+)
+
+<!-- TRACKING: backlog priorizado para el agente claude-code -->
+- [ ] **v3.4** — Completar catálogo `master_routes.json` con rutas reales y coordenadas
+- [ ] **v3.4** — Tests de integración para 5+ rutas conocidas de Cancún
+- [ ] **v3.5** — Formulario de reporte de incidentes con Background Sync API
+- [ ] **v3.6** — Modo contribuidor: interfaz para agregar paradas desde el campo
+- [ ] **v4.0** — Mapa 3D / AR para indicar dirección de camioneta en parada
+
+---
+
+## PRs Activas — Contexto para Nuevos Agentes
+
+<!-- TRIAGE 2026-03-28 | Auditor: GitHub Copilot Agent -->
+<!-- Última auditoría: docs/PR_TRIAGE_2026-03-28.md -->
+
+Al recibir una tarea, verificar primero si alguna PR pendiente ya aborda el mismo problema.
+
+### PRs listas para mergear (no duplicar trabajo)
+
+| PR | Qué resuelve |
+|----|-------------|
+| **#366** | 🔒 CVEs en deps de build (picomatch, brace-expansion) |
+| **#350** | Event delegation + `e.isTrusted` en botones del mapa |
+| **#351** | Optimización de `CoordinateFinder.find` |
+| **#352** | Error handling + telemetría en `FavoritesStore` |
+
+### PRs en rebase — no duplicar ni sobrescribir
+
+| PR | Qué modifica |
+|----|-------------|
+| **#365** | TypeScript FFI strict, elimina `any`, migra SW a `.ts` |
+| **#360** | Hardening CI, `.gitignore`, telemetry tests |
+| **#357** | `rust-wasm/spatial-index/src/lib.rs` — cache hash |
+| **#355** | Elimina `@ts-ignore` en `wallet.astro` e `InteractiveMap.astro` |
+
+### ⛔ Regla crítica — Tailwind CSS
+
+**NO eliminar Tailwind CSS** en ninguna PR sin un plan de migración explícito y aprobado.
+Tailwind sigue activo en producción. La PR #342 está bloqueada por este motivo.
+La migración a PostCSS/Houdini debe ser **incremental y documentada por componente**.
+
+> Ver análisis completo: [`docs/PR_TRIAGE_2026-03-28.md`](docs/PR_TRIAGE_2026-03-28.md)
+
+## Guías de Enrutamiento Estático
+Para garantizar compatibilidad con CDN/Static Hosting:
+1.  **Enlaces Internos**: Usa `getRelativeLocaleUrl(lang, path)`.
+    - Correcto: `<a href={getRelativeLocaleUrl(lang, 'rutas')}>`
+    - Incorrecto: `<a href="/rutas">`
+2.  **Redirecciones**: Deben ser del lado del cliente.
+    - Usa `window.location.replace()` o `<meta http-equiv="refresh">`.
+3.  **Localización**: No dependas de headers de servidor (ej. `Accept-Language`) en Astro components. Usa el script de detección en `index.astro`.

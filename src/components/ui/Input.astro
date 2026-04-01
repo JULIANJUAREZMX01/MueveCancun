@@ -1,7 +1,6 @@
 ---
 import Icon from './Icon.astro';
 
-// ✅ TypeScript in Astro Frontmatter
 interface Props {
   type?: 'text' | 'email' | 'password' | 'number' | 'search' | 'textarea';
   id?: string;
@@ -11,7 +10,7 @@ interface Props {
   list?: string;
   class?: string;
   label?: string;
-  icon?: string; // Icon name or path for Icon.astro (e.g. "map-plus" or "/icons/map-plus.svg"); not an arbitrary URL
+  icon?: string; // Icon identifier resolved by Icon.astro (e.g. "map-plus" or "/icons/map-plus.svg"). Arbitrary external URLs are not supported.
   'aria-controls'?: string;
   'aria-expanded'?: boolean | string;
   required?: boolean;
@@ -41,6 +40,7 @@ const isFloating = variant === 'floating';
 // For floating labels, we need a placeholder to trigger :placeholder-shown.
 // If none provided, use a single space.
 const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
+
 ---
 
 <div class={`graffiti-input-wrapper ${variant} ${className || ''}`}>
@@ -162,6 +162,7 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
   .graffiti-input-wrapper {
     width: 100%;
     position: relative;
+    --input-bg: #f1f5f9; /* default: slate-100 */
 
     /* Label Styling */
     .graffiti-label {
@@ -192,8 +193,8 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
       padding: 0.75rem 1rem;
       padding-right: 3rem; /* pr-12 for action slot space */
 
-      background-color: #f1f5f9; /* slate-100 — subtle gray pill bg */
-      border: 2px solid transparent;
+      background-color: var(--surface-elevated);
+      border: 2.5px solid var(--border-light);
       border-radius: var(--radius-full); /* pill-shaped */
 
       font-size: 1rem;
@@ -213,8 +214,8 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
       &:focus-visible {
         outline: none;
         border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
-        background-color: var(--color-white);
+        box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.18);
+        background-color: var(--surface-bg);
       }
 
       &.textarea {
@@ -334,6 +335,11 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
     &.floating {
       margin-top: 0.5rem;
 
+      /* Update token when the input is focused */
+      &:has(.graffiti-input:focus-visible) {
+        --input-bg: var(--color-white);
+      }
+
       .graffiti-label {
         position: absolute;
         left: 1rem;
@@ -359,15 +365,10 @@ const inputPlaceholder = isFloating && !placeholder ? " " : placeholder;
       &:has(.graffiti-input:not(:placeholder-shown)) {
         .graffiti-label {
           transform: translateY(-1.5rem) scale(0.85);
-          background: #f1f5f9;
+          background: var(--input-bg);
           padding: 0 0.25rem;
           font-weight: 600;
         }
-      }
-
-      /* When focused, label bg should match focused input bg */
-      &:has(.graffiti-input:focus-visible) .graffiti-label {
-        background: var(--color-white);
       }
     }
   }
