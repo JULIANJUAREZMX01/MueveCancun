@@ -7,19 +7,34 @@ vi.mock('idb', () => {
   let store: any = {};
 
   const mockTx = {
-    objectStore: (_name: string) => ({
-      get: async (key: string) => store[key],
-      put: async (val: any, key: string) => { store[key] = val; },
+    objectStore: (name: string) => ({
+      get: async (key: string) => {
+        if (!store[name]) store[name] = {};
+        return store[name][key];
+      },
+      put: async (val: any, key: string) => {
+        if (!store[name]) store[name] = {};
+        store[name][key] = val;
+      },
     }),
     done: Promise.resolve(),
   };
 
   const mockDb = {
     transaction: (_storeName: string, _mode?: string) => mockTx,
-    get: async (_storeName: string, key: string) => store[key],
-    put: async (_storeName: string, val: any, key: string) => { store[key] = val; },
+    get: async (storeName: string, key: string) => {
+      if (!store[storeName]) store[storeName] = {};
+      return store[storeName][key];
+    },
+    put: async (storeName: string, val: any, key: string) => {
+      if (!store[storeName]) store[storeName] = {};
+      store[storeName][key] = val;
+    },
     // A helper method on the mock to let us bypass the SDK and directly tamper
-    _tamperStore: (key: string, val: any) => { store[key] = val; },
+    _tamperStore: (storeName: string, key: string, val: any) => {
+      if (!store[storeName]) store[storeName] = {};
+      store[storeName][key] = val;
+    },
     _clearStore: () => { store = {}; }
   };
 
@@ -59,9 +74,13 @@ describe('DB Security Checks', () => {
   beforeEach(async () => {
     __resetDBPromise();
     // We clear the mock store before each test
-    const db = await openDB('cancunmueve-db', 3);
+    const db = await openDB('cancunmueve-db', 4);
     // @ts-ignore
     db._clearStore();
+
+    // Reset migration flag
+    localStorageMock.setItem.mockClear();
+    localStorageMock.removeItem.mockClear();
 
     // Simulate migration already done to prevent auto-signing loophole
     localStorageMock.getItem.mockImplementation((key) => {
@@ -82,20 +101,27 @@ describe('DB Security Checks', () => {
   });
 
   it('should reset balance to 0 if amount is tampered with', async () => {
-    // 1. Set legitimate balance
+    // 1. Set migration as done to avoid the trust-once loophole
+    localStorageMock.getItem.mockImplementation((key) => {
+      if (key === 'v4_key_migration_done') return 'true';
+      if (key === 'balance_migration_done') return 'true';
+      return null;
+    });
+
+    // 2. Set legitimate balance
     await setWalletBalance(50.00);
 
-    // 2. Tamper with the store directly (bypassing the signature generation)
-    const db = await openDB('cancunmueve-db', 3);
+    // 3. Tamper with the store directly (bypassing the signature generation)
+    const db = await openDB('cancunmueve-db', 4);
     // @ts-ignore
     const existing = await db.get('wallet-status', 'current_balance');
 
     // User tries to artificially inflate balance to 9999
     existing.amount = 9999.00;
     // @ts-ignore
-    db._tamperStore('current_balance', existing);
+    db._tamperStore('wallet-status', 'current_balance', existing);
 
-    // 3. Read it back via the API, it should detect tampering and reset to 0
+    // 4. Read it back via the API, it should detect tampering and reset to 0
     const tamperedBalance = await getWalletBalance();
 
     expect(tamperedBalance).toBeDefined();
@@ -105,14 +131,14 @@ describe('DB Security Checks', () => {
   it('should treat a missing signature as a legacy record and backfill it', async () => {
     await setWalletBalance(75.00);
 
-    const db = await openDB('cancunmueve-db', 3);
+    const db = await openDB('cancunmueve-db', 4);
     // @ts-ignore
     const existing = await db.get('wallet-status', 'current_balance');
 
     // Simulate a legacy record: remove its signature
     delete existing.signature;
     // @ts-ignore
-    db._tamperStore('current_balance', existing);
+    db._tamperStore('wallet-status', 'current_balance', existing);
 
     const result = await getWalletBalance();
 
