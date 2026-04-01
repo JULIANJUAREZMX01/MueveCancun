@@ -145,3 +145,19 @@ Cada PR debe incluir: descripción del problema, fix implementado, tests que lo 
 | i18n           | Middleware Astro ES/EN; helpers en `src/utils/i18n.ts` | ✅ Merged |
 | PWA            | Service Worker offline-first, cache OpenStreetMap | ✅ Merged |
 | Documentación  | Objetos de estudio y seguimiento en MDs agentes | ✅ Este PR |
+| CI / Docs Hardening | Test isolation, Tailwind docs fix, patch scripts removed, spatial-index build fix — [ADR-2026-003](docs/adr/ADR-2026-003.md) | ⏳ En merge |
+
+---
+
+## 🔗 Mapa de Inter-comunicación entre Archivos de Agentes
+
+<!-- CROSS-REFERENCES: actualizar al agregar nuevos agentes o archivos de seguimiento -->
+| Archivo | Propósito | Referencia cruzada |
+|---------|-----------|-------------------|
+| `AGENTS.md` (este archivo) | Registro maestro de agentes, protocolos, historial de PRs | → `CLAUDE.md`, `docs/TRACKING.md`, `.Jules/speedy.md` |
+| `CLAUDE.md` | Instrucciones de desarrollo para claude-code | → `AGENTS.md` §Agentes Disponibles, `docs/TRACKING.md` |
+| `docs/TRACKING.md` | Bitácora unificada multi-agente | → Todos los MDs, `docs/adr/` |
+| `.Jules/speedy.md` | Optimizaciones y reglas de oro de speedy | → `AGENTS.md` §Historial, `docs/TRACKING.md` |
+| `verification/learning.md` | Lecciones del proceso de verificación | → `docs/TRACKING.md`, `docs/adr/` |
+| `docs/adr/ADR-2026-002.md` | Decisión de arquitectura Astro+WASM+Lit | → `docs/TRACKING.md`, `CLAUDE.md` |
+| `docs/adr/ADR-2026-003.md` | CI hardening, test isolation, limpieza de artefactos | → Este archivo §Historial, `docs/TRACKING.md` |

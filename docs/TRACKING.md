@@ -29,6 +29,7 @@
 | 2026-03-10 | claude-code    | PWA             | Nexus Prime v3.3 — producción estable          | ✅ Done  |
 | 2026-03-28 | claude-code    | Fix/Review      | Revisiones Copilot PR #366 corregidas          | ✅ Done  |
 | 2026-03-28 | claude-code    | Documentación   | Objetos de estudio en MDs de agentes           | ✅ Done  |
+| 2026-03-28 | copilot        | CI/Docs         | Test isolation (vi.stubGlobal), Tailwind docs corregidos, scripts temporales eliminados, spatial-index build fix — ver [ADR-2026-003](adr/ADR-2026-003.md) | ⏳ En merge |
 
 ---
 
@@ -126,3 +127,26 @@ Antes de hacer merge, verificar:
 - [ ] Todo `innerHTML` con datos externos usa `escapeHtml()`
 - [ ] CI verde (todas las checks de GitHub Actions)
 - [ ] PR tiene descripción del problema, fix y tests
+- [ ] Tests nuevos usan `vi.stubGlobal()` + `vi.unstubAllGlobals()` en afterEach (no mutación directa de globalThis)
+- [ ] Documentación actualizada si hay cambios de arquitectura (crear o actualizar ADR en `docs/adr/`)
+
+---
+
+## 📂 Índice de ADRs
+
+| ID | Título | Fecha | Estado |
+|----|--------|-------|--------|
+| [ADR-2026-002](adr/ADR-2026-002.md) | Astro Islands + Rust/WASM + Web Components/Lit | 2026-03-13 | ✅ Aprobado |
+| [ADR-2026-003](adr/ADR-2026-003.md) | CI Hardening, Test Isolation, Limpieza de Artefactos | 2026-03-28 | ✅ Aprobado |
+
+---
+
+## 🔗 Mapa de Inter-comunicación entre Archivos de Agentes
+
+| Archivo | Propósito | Referencia cruzada |
+|---------|-----------|-------------------|
+| `AGENTS.md` | Registro maestro de agentes y protocolos | → `CLAUDE.md`, `docs/TRACKING.md`, `.Jules/speedy.md` |
+| `CLAUDE.md` | Instrucciones de desarrollo para claude-code | → `AGENTS.md`, `docs/TRACKING.md` |
+| `docs/TRACKING.md` (este archivo) | Bitácora unificada multi-agente | → Todos los MDs de agentes, `docs/adr/` |
+| `.Jules/speedy.md` | Optimizaciones y reglas de oro de speedy | → `AGENTS.md` §Historial, `docs/TRACKING.md` |
+| `verification/learning.md` | Lecciones del proceso de verificación | → `docs/TRACKING.md`, `docs/adr/` |
