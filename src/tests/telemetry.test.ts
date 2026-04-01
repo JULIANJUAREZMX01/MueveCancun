@@ -55,6 +55,7 @@ describe('Telemetry', () => {
     // Reset the module state by calling stopTracking
     stopTracking();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('should start tracking and handle success path', async () => {

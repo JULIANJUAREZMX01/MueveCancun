@@ -1,5 +1,33 @@
 # AGENTS.md — Sistema Multi-Agente de MueveCancun
 
+<!--
+  OBJETO DE ESTUDIO
+  =================
+  Este proyecto es el laboratorio de aprendizaje de Julián Alexander Juárez Alvarado.
+  Objetivo: dominar el ciclo completo de desarrollo de software moderno —
+  Rust/WASM, TypeScript, Astro SSG, PWA, CI/CD — construyendo una app real
+  con impacto social para la ciudad de Cancún.
+
+  SEGUIMIENTO DE AGENTES (ordenado cronológico)
+  =============================================
+  | Fecha      | Agente            | Acción principal                                  | PR/Commit   |
+  |------------|-------------------|---------------------------------------------------|-------------|
+  | 2025-03-02 | speedy            | Optimización O(1) match_stop en WASM (36480x)     | —           |
+  | 2026-02-18 | claude-code       | Análisis completo + limpieza 40+ archivos         | —           |
+  | 2026-03-02 | speedy            | Deduplicación O(N²)→O(1) con Set                  | —           |
+  | 2026-03-04 | speedy            | Inline SVGs via Icon.astro                        | —           |
+  | 2026-03-10 | claude-code       | Nexus Prime v3.3 — PWA producción estable         | v1.0.0      |
+  | 2026-03-28 | claude-code       | Fix revisiones Copilot + merge PR #366            | 1deb594     |
+  | 2026-03-28 | claude-code       | Documentación objetos de estudio en MDs agentes   | este PR     |
+
+  LECCIONES CLAVE APRENDIDAS POR AGENTE
+  ======================================
+  - claude-code: Nunca pushear a main; siempre rama claude/* + PR.
+  - speedy:      Medir antes de optimizar; O(1) HashMap vs O(N) fuzzy scan.
+  - autocurative: Health-check semanal previene regresiones silenciosas.
+  - verificación: No commitear binarios WASM si la tarea solo toca JS/TS.
+-->
+
 **Misión**: PWA offline-first de transporte público en Cancún. Motor de ruteo en WebAssembly (Rust), sin backend.
 
 ---
@@ -105,34 +133,40 @@ Cada PR debe incluir: descripción del problema, fix implementado, tests que lo 
 
 ---
 
+## Historial de PRs por Área
+
+<!-- TRACKING: registro de merges para trazabilidad y aprendizaje -->
+| Área           | Descripción breve                             | Estado   |
+|----------------|-----------------------------------------------|----------|
+| WASM / Routing | Motor de transbordos exacto + geo ≤350 m      | ✅ Merged |
+| GPS            | `findNearestWithDistance` reemplaza texto lat/lng | ✅ Merged |
+| Seguridad      | XSS `escapeHtml()`, DoS circuit-breaker, HMAC wallet | ✅ Merged |
+| CI/CD          | 6 workflows: tests, WASM, validate-data, CodeQL, autocurative | ✅ Merged |
+| i18n           | Middleware Astro ES/EN; helpers en `src/utils/i18n.ts` | ✅ Merged |
+| PWA            | Service Worker offline-first, cache OpenStreetMap | ✅ Merged |
+| Documentación  | Objetos de estudio y seguimiento en MDs agentes | ✅ Merged |
+| CI / Docs Hardening | Test isolation, Tailwind docs fix, patch scripts removed, spatial-index build fix — [ADR-2026-003](docs/adr/ADR-2026-003.md) | ✅ Merged |
+
+---
+
+## 🔗 Mapa de Inter-comunicación entre Archivos de Agentes
+
+<!-- CROSS-REFERENCES: actualizar al agregar nuevos agentes o archivos de seguimiento -->
+| Archivo | Propósito | Referencia cruzada |
+|---------|-----------|-------------------|
+| `AGENTS.md` (este archivo) | Registro maestro de agentes, protocolos, historial de PRs | → `CLAUDE.md`, `docs/TRACKING.md`, `.Jules/speedy.md` |
+| `CLAUDE.md` | Instrucciones de desarrollo para claude-code | → `AGENTS.md` §Agentes Disponibles, `docs/TRACKING.md` |
+| `docs/TRACKING.md` | Bitácora unificada multi-agente | → Todos los MDs, `docs/adr/` |
+| `.Jules/speedy.md` | Optimizaciones y reglas de oro de speedy | → `AGENTS.md` §Historial, `docs/TRACKING.md` |
+| `docs/adr/ADR-2026-002.md` | Decisión de arquitectura Astro+WASM+Lit | → `docs/TRACKING.md`, `CLAUDE.md` |
+| `docs/adr/ADR-2026-003.md` | CI hardening, test isolation, limpieza de artefactos | → Este archivo §Historial, `docs/TRACKING.md` |
+
+---
+
 ## Registro de Triage de PRs
 
 <!-- TRIAGE 2026-03-28 | Auditor: GitHub Copilot Agent -->
 <!-- Análisis completo: docs/PR_TRIAGE_2026-03-28.md -->
-<!--
-  Resultado del último triage (20 PRs, 2026-03-28):
-
-  GRUPO 1 — MERGEAR INMEDIATAMENTE (clean + CI verde):
-    #366 — brace-expansion + picomatch (CVE-2026-33671, CVE-2026-33672, GHSA-f886-m6hf-6m8v) ← URGENTE
-    #350 — Fix Event Delegation + e.isTrusted guard
-    #351 — Optimize CoordinateFinder.find (Set iteration)
-    #352 — FavoritesStore error handling + telemetry
-
-  GRUPO 2 — REBASE NEEDED (CI verde en rama, dirty contra main):
-    #365 — TypeScript/WASM FFI hardening (64 archivos, elimina `any`, migra SW a .ts) ← mayor impacto
-    #360 — CI pipeline hardening (necesita suite completa post-rebase)
-    #357 — spatial-index cache hash fix
-    #355 — type safety @ts-ignore cleanup
-    #341, #363 — docs-only, rebase simple
-
-  GRUPO 3 — BLOQUEADAS / ACCIÓN ESPECIAL:
-    #342 — ⛔ BLOQUEAR: elimina Tailwind activo. Mergear rompe estilos en producción.
-    #338 — CERRAR: base branch incorrecto (speedy/*, no main)
-    #333 — VERIFICAR: posible duplicado de cambios ya en main
-
-  GRUPO 4 — DRAFTS (no tocar):
-    #335, #364, #367, #368, #369
--->
 
 ### Estado de PRs Conocidas Problemáticas
 
