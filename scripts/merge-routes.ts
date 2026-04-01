@@ -1,8 +1,8 @@
 /**
- * merge-routes.mjs
+ * merge-routes.ts
  *
  * AUTONOMY LAYER: Merges all individual route files in public/data/routes/
- * into master_routes.json. Run before optimize-json.mjs on every build.
+ * into master_routes.json. Run before optimize-json.ts on every build.
  *
  * Rules:
  *  - Individual files in routes/ WIN over same ID in master (they're more recent).
@@ -12,7 +12,7 @@
  *  - Does NOT delete routes from master that have no individual file.
  *
  * Usage:
- *   node scripts/merge-routes.mjs [--dry-run] [--verbose]
+ *   node --experimental-strip-types scripts/merge-routes.ts [--dry-run] [--verbose]
  */
 import fs from 'fs';
 import path from 'path';
@@ -27,30 +27,66 @@ const INDEX_PATH  = path.join(ROOT, 'public/data/routes-index.json');
 const DRY_RUN = process.argv.includes('--dry-run');
 const VERBOSE = process.argv.includes('--verbose');
 
-function log(...args)  { console.log(...args); }
-function info(...args) { if (VERBOSE) console.log(' ', ...args); }
-function warn(...args) { console.warn('  ⚠️ ', ...args); }
+function log(...args: unknown[]): void  { console.log(...args); }
+function info(...args: unknown[]): void { if (VERBOSE) console.log(' ', ...args); }
+function warn(...args: unknown[]): void { console.warn('  ⚠️ ', ...args); }
+
+interface RouteRecord {
+    id?: string;
+    paradas?: unknown[];
+    stops?: unknown[];
+    frecuencia_minutos?: unknown;
+    [key: string]: unknown;
+}
+
+interface MasterCatalog {
+    rutas?: RouteRecord[];
+    metadata?: {
+        last_merged?: string;
+        source?: string;
+        [key: string]: unknown;
+    };
+    [key: string]: unknown;
+}
+
+interface RouteFile {
+    name: string;
+    path: string;
+    mtime: number;
+}
+
+interface IndexEntry {
+    file: string;
+    ids: string[];
+    mtime: string;
+}
+
+interface IndexFile {
+    generated: string;
+    count: number;
+    files: IndexEntry[];
+}
 
 // ---------- Load master ----------
-log('🔀 merge-routes.mjs — Merging route catalog…');
+log('🔀 merge-routes.ts — Merging route catalog…');
 if (DRY_RUN) log('   (DRY RUN — no files will be written)');
 
-let master;
+let master: MasterCatalog;
 try {
-  master = JSON.parse(fs.readFileSync(MASTER_PATH, 'utf8'));
-} catch (e) {
-  console.error('❌ Cannot read master_routes.json:', e.message);
+  master = JSON.parse(fs.readFileSync(MASTER_PATH, 'utf8')) as MasterCatalog;
+} catch (e: unknown) {
+  console.error('❌ Cannot read master_routes.json:', (e as Error).message);
   process.exit(1);
 }
 
 // Build index of existing master routes: id → route object
-const masterMap = new Map();
+const masterMap = new Map<string, RouteRecord>();
 for (const r of (master.rutas || [])) {
   if (r.id) masterMap.set(r.id, r);
 }
 
 // ---------- Load individual route files ----------
-const routeFiles = fs.existsSync(ROUTES_DIR)
+const routeFiles: RouteFile[] = fs.existsSync(ROUTES_DIR)
   ? fs.readdirSync(ROUTES_DIR)
       .filter(f => f.endsWith('.json'))
       .map(f => ({
@@ -67,35 +103,35 @@ log(`   routes/: ${routeFiles.length} files`);
 let merged = 0, skipped = 0, updated = 0, added = 0;
 
 // Track which route files we include (for routes-index.json)
-const indexEntries = [];
+const indexEntries: IndexEntry[] = [];
 
 for (const file of routeFiles) {
-  let raw;
+  let raw: string;
   try {
     raw = fs.readFileSync(file.path, 'utf8');
-  } catch (e) {
-    warn(`Cannot read ${file.name}: ${e.message}`);
+  } catch (e: unknown) {
+    warn(`Cannot read ${file.name}: ${(e as Error).message}`);
     skipped++;
     continue;
   }
 
-  let parsed;
+  let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
-  } catch (e) {
-    warn(`JSON parse error in ${file.name}: ${e.message}`);
+  } catch (e: unknown) {
+    warn(`JSON parse error in ${file.name}: ${(e as Error).message}`);
     skipped++;
     continue;
   }
 
   // Normalize: individual files can be a route object, array, or {rutas:[...]}
-  let routes = [];
+  let routes: RouteRecord[] = [];
   if (Array.isArray(parsed)) {
-    routes = parsed;
-  } else if (parsed.rutas && Array.isArray(parsed.rutas)) {
-    routes = parsed.rutas;
-  } else if (parsed.id) {
-    routes = [parsed];
+    routes = parsed as RouteRecord[];
+  } else if (parsed && typeof parsed === 'object' && 'rutas' in parsed && Array.isArray((parsed as MasterCatalog).rutas)) {
+    routes = (parsed as MasterCatalog).rutas!;
+  } else if (parsed && typeof parsed === 'object' && 'id' in parsed) {
+    routes = [parsed as RouteRecord];
   } else {
     warn(`${file.name}: Unrecognized format — skipping`);
     skipped++;
@@ -110,7 +146,7 @@ for (const file of routeFiles) {
     }
 
     const stops = route.paradas || route.stops || [];
-    if (stops.length === 0) {
+    if (!Array.isArray(stops) || stops.length === 0) {
       warn(`${file.name}: Route '${route.id}' has no stops — skipping`);
       skipped++;
       continue;
@@ -118,7 +154,7 @@ for (const file of routeFiles) {
 
     // Normalize field names (paradas is canonical)
     if (!route.paradas && route.stops) {
-      route.paradas = route.stops;
+      route.paradas = route.stops as RouteRecord[];
       delete route.stops;
     }
 
@@ -142,7 +178,7 @@ for (const file of routeFiles) {
   // Register file in index
   indexEntries.push({
     file: `routes/${file.name}`,
-    ids: routes.filter(r => r?.id).map(r => r.id),
+    ids: routes.filter(r => r?.id).map(r => r.id!),
     mtime: new Date(file.mtime).toISOString(),
   });
 
@@ -153,9 +189,7 @@ for (const file of routeFiles) {
 const finalRoutes = Array.from(masterMap.values());
 
 // ---------- Detect content changes (ignore volatile timestamps) ----------
-// Strips fields that change on every run but carry no semantic information,
-// so we can compare whether the *actual* data changed.
-function stripVolatileMeta(obj) {
+function stripVolatileMeta(obj: MasterCatalog): MasterCatalog {
   const c = structuredClone(obj);
   if (c.metadata) {
     delete c.metadata.last_merged;
@@ -166,25 +200,22 @@ function stripVolatileMeta(obj) {
 
 let masterNeedsWrite = true;
 let finalLastMerged = new Date().toISOString();
-let finalSource = `merge-routes.mjs (${finalRoutes.length} routes from ${routeFiles.length} files)`;
+let finalSource = `merge-routes.ts (${finalRoutes.length} routes from ${routeFiles.length} files)`;
 
 if (fs.existsSync(MASTER_PATH)) {
   try {
-    const existing = JSON.parse(fs.readFileSync(MASTER_PATH, 'utf8'));
-    const candidate = { ...master, rutas: finalRoutes, metadata: { ...(master.metadata || {}) } };
+    const existing = JSON.parse(fs.readFileSync(MASTER_PATH, 'utf8')) as MasterCatalog;
+    const candidate: MasterCatalog = { ...master, rutas: finalRoutes, metadata: { ...(master.metadata || {}) } };
     if (JSON.stringify(stripVolatileMeta(candidate)) === JSON.stringify(stripVolatileMeta(existing))) {
-      // Route data unchanged — reuse existing timestamps to keep the file clean
       finalLastMerged = existing.metadata?.last_merged ?? finalLastMerged;
       finalSource     = existing.metadata?.source     ?? finalSource;
       masterNeedsWrite = false;
       info('master_routes.json content unchanged — skipping write');
     }
-  } catch (e) {
-    // JSON parse error or missing file: fall through to a normal write
-  }
+  } catch { /* JSON parse error or missing file: fall through to a normal write */ }
 }
 
-const updatedMaster = {
+const updatedMaster: MasterCatalog = {
   ...master,
   rutas: finalRoutes,
   metadata: {
@@ -195,25 +226,21 @@ const updatedMaster = {
 };
 
 // For routes-index.json: only rewrite when file list or route IDs actually changed.
-// Preserving existing mtimes/generated avoids phantom diffs caused by filesystem
-// touch-times changing without any real route-data change.
 let indexNeedsWrite = true;
 let finalIndexEntries = indexEntries;
 let finalIndexGenerated = new Date().toISOString();
 
 if (fs.existsSync(INDEX_PATH)) {
   try {
-    const existingIndex = JSON.parse(fs.readFileSync(INDEX_PATH, 'utf8'));
-    const stripMtimes = (entries) => entries.map(e => ({ file: e.file, ids: e.ids }));
+    const existingIndex = JSON.parse(fs.readFileSync(INDEX_PATH, 'utf8')) as IndexFile;
+    const stripMtimes = (entries: IndexEntry[]) => entries.map(e => ({ file: e.file, ids: e.ids }));
     if (JSON.stringify(stripMtimes(indexEntries)) === JSON.stringify(stripMtimes(existingIndex.files || []))) {
       finalIndexEntries  = existingIndex.files;
       finalIndexGenerated = existingIndex.generated;
       indexNeedsWrite = false;
       info('routes-index.json content unchanged — skipping write');
     }
-  } catch (e) {
-    // Fall through to a normal write
-  }
+  } catch { /* Fall through to a normal write */ }
 }
 
 // ---------- Write outputs ----------
@@ -227,7 +254,7 @@ if (!DRY_RUN) {
   }
 
   if (indexNeedsWrite) {
-    const index = {
+    const index: IndexFile = {
       generated: finalIndexGenerated,
       count: finalIndexEntries.reduce((a, e) => a + e.ids.length, 0),
       files: finalIndexEntries,
@@ -240,4 +267,5 @@ if (!DRY_RUN) {
 } else {
   log(`[DRY] Would write ${finalRoutes.length} routes to master_routes.json`);
   log(`[DRY] Would write routes-index.json with ${indexEntries.length} entries`);
+  log(`[DRY] Merged ${merged} file(s), +${added} added  ~${updated} updated  ✗${skipped} skipped`);
 }
