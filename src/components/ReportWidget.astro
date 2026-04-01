@@ -10,9 +10,7 @@ interface Props {
   repoName?: string;
 }
 
-const repoOwner = Astro.props.repoOwner ?? import.meta.env.GITHUB_REPO_OWNER ?? "JULIANJUAREZMX01";
-const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "MueveCancun";
-const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN ?? "";
+const { repoOwner, repoName } = Astro.props;
 ---
 
 <!-- Botón flotante — visible en todas las páginas vía Layout -->
@@ -338,7 +336,7 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN ?? "";
   }
 </style>
 
-<script define:vars={{ repoOwner, repoName, githubToken }}>
+<script is:inline define:vars={{ repoOwner, repoName }}>
   /** @type {any} */
   (() => {
     // ── Referencias DOM ──────────────────────────────────────────
@@ -492,7 +490,7 @@ _Versión: Nexus Protocol 1.1_
 `;
     };
 
-    // ── Envío → GitHub Issues API ─────────────────────────────────
+    // ── Envío → Backend API ───────────────────────────────────────
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -504,7 +502,7 @@ _Versión: Nexus Protocol 1.1_
       const lng = formData.get('lng') || '';
 
       if (!tipo) { showFeedback('Selecciona el tipo de problema.', 'error'); return; }
-      if (!descripcion || descripcion.toString().trim().length < 10) {
+      if (!descripcion || (descripcion).toString().trim().length < 10) {
         showFeedback('La descripción es muy corta, agrega más detalle.', 'error');
         return;
       }
@@ -512,42 +510,32 @@ _Versión: Nexus Protocol 1.1_
       setSubmitting(true);
       if (feedback) feedback.hidden = true;
 
-      const issuePayload = {
-        title:  `[REPORTE] ${TIPO_TITLES[tipo] ?? tipo}${ruta ? ` — ${ruta}` : ''}`,
-        body:   buildIssueBody({
-          tipo,
-          ruta,
-          descripcion,
-          lat,
-          lng,
-          userAgent: navigator.userAgent,
-          url: window.location.href
-        }),
-        labels: TIPO_LABELS[tipo] ?? ['reporte', 'estado:pendiente'],
+      const payload = {
+        tipo,
+        ruta,
+        descripcion,
+        lat,
+        lng,
+        repoOwner,
+        repoName,
+        userAgent: navigator.userAgent,
+        url: window.location.href
       };
 
       try {
-        const res = await fetch(
-          `https://api.github.com/repos/${repoOwner}/${repoName}/issues`,
-          {
-            method: 'POST',
-            headers: {
-              'Accept':        'application/vnd.github+json',
-              'Authorization': `Bearer ${githubToken}`,
-              'X-GitHub-Api-Version': '2022-11-28',
-              'Content-Type':  'application/json',
-            },
-            body: JSON.stringify(issuePayload),
-          }
-        );
+        const res = await fetch('/api/report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
 
         if (res.ok) {
-          const issue = await res.json();
-          showFeedback(`¡Gracias! Reporte enviado (#${issue.number})`, 'success');
+          const data = await res.json();
+          showFeedback(`¡Gracias! Reporte enviado (#${data.number})`, 'success');
           setTimeout(closeModal, 2800);
         } else {
           const errData = await res.json().catch(() => ({}));
-          console.error('[ReportWidget] GitHub API error:', res.status, errData);
+          console.error('[ReportWidget] API error:', res.status, errData);
           showFeedback(
             res.status === 401
               ? 'Error de autenticación. Contacta al admin.'

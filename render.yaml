@@ -7,7 +7,7 @@ projects:
     services:
     - type: web
       name: QueRutaMeLLevaCancun
-      runtime: static
+      runtime: node
       repo: https://github.com/JULIANJUAREZMX01/MueveCancun
       envVars:
       - key: NODE_VERSION
@@ -15,7 +15,7 @@ projects:
       - key: ENABLE_PNPM
         sync: false
       buildCommand: bash scripts/setup-render.sh
-      staticPublishPath: dist
+      startCommand: node dist/server/entry.mjs
       autoDeployTrigger: checksPass
       previews:
         generation: automatic
