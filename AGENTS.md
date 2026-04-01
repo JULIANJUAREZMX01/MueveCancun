@@ -49,6 +49,30 @@
 - **Schedule**: Lunes 06:00 UTC.
 - **Archivo**: `.github/workflows/autocurative.yml`
 
+### 4. `jules` (Agente de Codificación Gemini — Google Jules)
+- **Rol**: Corrección autónoma de errores CI, resolución de Issues, asistencia en PRs, tareas delegadas de codificación iterativa.
+- **Trigger automático**:
+  - Label `jules` en un Issue → `.github/workflows/jules-issue-handler.yml`
+  - CI falla en rama activa → `.github/workflows/jules-ci-fixer.yml`
+  - Comentario `/jules <tarea>` en un PR → `.github/workflows/jules-pr-assistant.yml`
+  - Invocación manual → `.github/workflows/jules-delegation.yml`
+- **Requiere**: Secreto `JULES_API_KEY` (Configurar en Settings → Secrets → Actions).
+- **API**: `https://jules.googleapis.com/v1alpha/sessions`
+- **CLI**: `@google/jules` — `jules remote new`, `jules list` (ver: https://jules.google/docs/cli/reference)
+- **Capacidades clave**:
+  - CI Fixer: detecta, corrige, hace commit y reenvía reparaciones automáticamente.
+  - Abre PRs directamente con los cambios aplicados.
+  - Entornos "repoless" para tareas efímeras (Node, Python, Rust, Bun preinstalados).
+  - Conexión MCP: Render, Supabase, Stitch, Context7.
+  - Hasta 5 tareas simultáneas con `--parallel`.
+  - Planning Critic interno para reducir tasas de fallo.
+- **Scripts de orquestación**:
+  - `scripts/jules-api.mjs` — cliente REST compartido
+  - `scripts/jules-ci-fix.mjs` — payload builder para fallas CI
+  - `scripts/jules-issue.mjs` — bridge Issue → Jules
+  - `scripts/jules-pr.mjs` — bridge comentario PR → Jules
+- **Modos de autoría**: `JULES`, `CO_AUTHORED`, `USER_ONLY` (default: `CO_AUTHORED`)
+- **Branch pattern**: Jules crea ramas `jules/fix-*` o `jules/task-*` automáticamente.
 ### 4. `copilot-swe-agent` (Agente de GitHub Copilot)
 <!-- Agente externo de GitHub — opera en ramas `copilot/*`. Genera PRs con cambios de
      features puntuales. Sus ramas requieren aprobación manual de CI antes de ejecutar
@@ -143,6 +167,7 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 
 ```
 rama claude/* → tests pasan → PR a main → CI verde → merge
+rama jules/*  → PR abierto por Jules → revisión → merge
 rama copilot/* → CI action_required → owner aprueba → CI verde → merge
 ```
 
@@ -150,6 +175,14 @@ Cada PR debe incluir: descripción del problema, fix implementado, tests que lo 
 
 ---
 
+## Secretos GitHub Requeridos
+
+| Secreto | Agente | Descripción |
+|---------|--------|-------------|
+| `ANTHROPIC_API_KEY` | `claude-delegation` | Claude API Key (Anthropic) |
+| `JULES_API_KEY` | `jules` | Google Jules API Key |
+
+Configurar en: **Settings → Secrets and variables → Actions → New repository secret**
 ## Historial de PRs por Área
 
 <!-- TRACKING: registro de merges para trazabilidad y aprendizaje -->
