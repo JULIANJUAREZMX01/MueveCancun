@@ -270,6 +270,7 @@ const ui = uiTranslations[currentLang];
           if (target.closest('#btn-report-results')) {
               e.preventDefault();
               e.stopPropagation();
+              (window as Window & { rwOpenReport?: () => void }).rwOpenReport?.();
               // @ts-ignore
               window.rwOpenReport?.();
           }
@@ -1031,8 +1032,7 @@ const ui = uiTranslations[currentLang];
                  
                  // Re-attach map buttons
                  document.getElementById('btn-report-results')?.addEventListener('click', () => {
-                     // @ts-ignore - Nexus Global API
-                     window.rwOpenReport?.();
+                     (window as Window & { rwOpenReport?: () => void }).rwOpenReport?.();
                  });
               }
 
