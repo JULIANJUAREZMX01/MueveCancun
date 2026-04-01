@@ -55,7 +55,7 @@ fi
 
 # 4. PNPM & Build Sequence
 log "Instalando dependencias y generando sitio..."
-pnpm install --frozen-lockfile
+pnpm install --no-frozen-lockfile
 pnpm run build
 
 success "SECUENCIA MAESTRA COMPLETADA - LISTO PARA DEPLOY"
