@@ -1,9 +1,9 @@
 {
   "metadata": {
     "last_updated": "2026-02-17T07:09:33.432854",
-    "source": "merge-routes.mjs (50 routes from 10 files)",
+    "source": "merge-routes.mjs (51 routes from 14 files)",
     "version": "3.2.0",
-    "last_merged": "2026-03-29T15:07:01.210Z"
+    "last_merged": "2026-04-01T22:34:26.987Z"
   },
   "social_alerts": [
     "Retraso en Zona Hotelera por obra pública"
@@ -12,7 +12,7 @@
     {
       "id": "R2_94_VILLAS_OTOCH_001",
       "nombre": "R-2-94 Villas Otoch (Eje Kabah - ZH)",
-      "tarifa": 15,
+      "tarifa": 12,
       "tipo": "Bus_Urbano_Isla",
       "frecuencia_minutos": 10,
       "horario": {
@@ -69,7 +69,7 @@
     {
       "id": "CR_PTO_JUAREZ_001",
       "nombre": "Combi Roja Puerto Juárez → Ultramar",
-      "tarifa": 13,
+      "tarifa": 10,
       "tipo": "Combi_Municipal",
       "empresa": "Autocar (Controladora SEA)",
       "frecuencia_minutos": 15,
@@ -122,7 +122,7 @@
     {
       "id": "R1_ZONA_HOTELERA_001",
       "nombre": "R-1 Centro → Zona Hotelera",
-      "tarifa": 15,
+      "tarifa": 12,
       "tipo": "Bus_Urban",
       "empresa": "Controladora SEA (rojas)",
       "frecuencia_minutos": 10,
@@ -244,7 +244,7 @@
     {
       "id": "R28_VILLAS_OTOCH_001",
       "nombre": "R-28 Villas Otoch → Av. Tulum",
-      "tarifa": 13,
+      "tarifa": 10,
       "tipo": "Bus_Urban",
       "social_alerts": [],
       "last_updated": "2026-01-30T06:16:46.258Z",
@@ -282,7 +282,7 @@
     {
       "id": "R19_VILLAS_OTOCH_002",
       "nombre": "R-19 Villas Otoch - Crucero",
-      "tarifa": 13,
+      "tarifa": 10,
       "tipo": "Bus_Urban",
       "frecuencia_minutos": 25,
       "horario": {
@@ -352,15 +352,17 @@
     },
     {
       "id": "R10",
-      "nombre": "Las Américas - Aeropuerto",
-      "tarifa": 15,
+      "nombre": "Las Américas - Villas del Mar (Vía Kabah)",
+      "tarifa": 10,
       "tipo": "Transporte",
       "frecuencia_minutos": 20,
       "horario": {
         "inicio_oficial": "04:00-23:00"
       },
-      "social_alerts": [],
-      "last_updated": "2026-01-30T06:16:46.258Z",
+      "social_alerts": [
+        "⚠️ Esta ruta NO llega al Aeropuerto."
+      ],
+      "last_updated": "2026-04-01T22:20:23Z",
       "paradas": [
         {
           "id": "R10_001",
@@ -425,22 +427,6 @@
           "lng": -86.8415,
           "orden": 8,
           "landmarks": "Universidad"
-        },
-        {
-          "id": "R10_009",
-          "nombre": "T3 Aeropuerto",
-          "lat": 21.0412,
-          "lng": -86.8725,
-          "orden": 9,
-          "landmarks": "Vuelos Internacionales"
-        },
-        {
-          "id": "R10_010",
-          "nombre": "T2 Aeropuerto",
-          "lat": 21.0365,
-          "lng": -86.8775,
-          "orden": 10,
-          "landmarks": "Vuelos Nacionales"
         }
       ]
     },
@@ -5373,7 +5359,8 @@
       "id": "R1",
       "nombre": "Crucero - Zona Hotelera",
       "color": "#FF6B6B",
-      "tarifa": 15,
+      "tipo": "Bus_Urban",
+      "tarifa": 12,
       "paradas": [
         {
           "id": "R1_001",
@@ -5402,7 +5389,8 @@
       "id": "R2",
       "nombre": "Walmart - Puerto Juárez",
       "color": "#4ECDC4",
-      "tarifa": 15,
+      "tipo": "Bus_Urban",
+      "tarifa": 10,
       "paradas": [
         {
           "id": "R2_001",
@@ -5495,12 +5483,16 @@
       "id": "R6_WALMART_001",
       "nombre": "R-6 Santa Fe - Walmart A.Q. Roo",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 10,
       "horario": {
-        "inicio": "06:00 - 22:30"
+        "inicio": "06:00 - 22:00"
       },
       "frecuencia_minutos": 10,
       "empresa": "Turicun",
+      "social_alerts": [
+        "Últimas salidas alrededor de las 10:00 PM."
+      ],
+      "last_updated": "2026-04-01T22:21:19Z",
       "paradas": [
         {
           "nombre": "Santa Fe",
@@ -5510,26 +5502,26 @@
         },
         {
           "nombre": "Av. Kabah",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.155,
+          "lng": -86.845,
           "orden": 2
         },
         {
           "nombre": "Multiplaza Kabah",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.15,
+          "lng": -86.84,
           "orden": 3
         },
         {
           "nombre": "Walmart Andrés Quintana Roo",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.145,
+          "lng": -86.835,
           "orden": 4
         },
         {
           "nombre": "El Crucero",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.1576,
+          "lng": -86.8269,
           "orden": 5
         }
       ]
@@ -5765,12 +5757,13 @@
       "id": "R27_TIERRA_MAYA_001",
       "nombre": "R-27 Tierra Maya - Zona Hotelera",
       "tipo": "Bus_Urban",
-      "tarifa": 15,
+      "tarifa": 12,
       "horario": {
         "inicio": "05:30 - 23:00"
       },
       "frecuencia_minutos": 10,
       "empresa": "Turicun",
+      "last_updated": "2026-04-01T22:21:19Z",
       "paradas": [
         {
           "nombre": "Tierra Maya",
@@ -5780,32 +5773,32 @@
         },
         {
           "nombre": "Av. Kabah",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.155,
+          "lng": -86.845,
           "orden": 2
         },
         {
           "nombre": "Plaza Las Américas",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.1472,
+          "lng": -86.8234,
           "orden": 3
         },
         {
           "nombre": "Entrada Zona Hotelera",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.153,
+          "lng": -86.815,
           "orden": 4
         },
         {
           "nombre": "Zona Hotelera",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.135,
+          "lng": -86.768,
           "orden": 5
         },
         {
           "nombre": "Playa Delfines",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.085,
+          "lng": -86.775,
           "orden": 6
         }
       ]
@@ -5986,12 +5979,13 @@
       "id": "R33_REG102_001",
       "nombre": "R-33 Región 102 - Plaza Las Américas",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 10,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
       "frecuencia_minutos": 15,
       "empresa": "Autocar",
+      "last_updated": "2026-04-01T22:21:19Z",
       "paradas": [
         {
           "nombre": "Región 102",
@@ -6001,21 +5995,65 @@
         },
         {
           "nombre": "Av. Talleres",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.15,
+          "lng": -86.86,
           "orden": 2
         },
         {
           "nombre": "Av. Kabah",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.145,
+          "lng": -86.845,
           "orden": 3
         },
         {
           "nombre": "Plaza Las Américas",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.1472,
+          "lng": -86.8234,
           "orden": 4
+        }
+      ]
+    },
+    {
+      "id": "R15_HOTELES_001",
+      "nombre": "R-15 Centro - Hoteles",
+      "tipo": "Bus_Urban",
+      "tarifa": 12,
+      "horario": {
+        "inicio": "06:00 - 22:30"
+      },
+      "frecuencia_minutos": 15,
+      "empresa": "Autocar",
+      "last_updated": "2026-04-01T22:21:19Z",
+      "paradas": [
+        {
+          "nombre": "El Crucero",
+          "lat": 21.1576,
+          "lng": -86.8269,
+          "orden": 1
+        },
+        {
+          "nombre": "Av. Tulum",
+          "lat": 21.155,
+          "lng": -86.825,
+          "orden": 2
+        },
+        {
+          "nombre": "Plaza Las Américas",
+          "lat": 21.1472,
+          "lng": -86.8234,
+          "orden": 3
+        },
+        {
+          "nombre": "Entrada Zona Hotelera",
+          "lat": 21.153,
+          "lng": -86.815,
+          "orden": 4
+        },
+        {
+          "nombre": "Boulevard Kukulcán",
+          "lat": 21.135,
+          "lng": -86.768,
+          "orden": 5
         }
       ]
     }

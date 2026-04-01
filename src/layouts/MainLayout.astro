@@ -8,6 +8,8 @@ import BottomNav from '../components/BottomNav.astro';
 import ScrollToTop from '../components/ui/ScrollToTop.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import ReportWidget from '../components/ReportWidget.astro';
+import BrowserDetection from '../components/ui/BrowserDetection.astro';
+import DonateNudge from '../components/ui/DonateNudge.astro';
 import { ui as uiTranslations, getLangFromUrl } from '../utils/i18n';
 import { safeJsonStringify, getRelativeLocaleUrl } from '../utils/utils';
 
@@ -432,6 +434,8 @@ const navItems = [
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
     </style>
+    <BrowserDetection />
+    <DonateNudge />
     <ReportWidget />
   </body>
 </html>
