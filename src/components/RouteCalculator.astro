@@ -233,7 +233,6 @@ const ui = uiTranslations[currentLang];
           if (target.closest('#gps-btn')) {
               e.preventDefault();
               e.stopPropagation();
-              // @ts-ignore
               if (typeof handleGPSClick === 'function') handleGPSClick();
           }
 
@@ -270,8 +269,7 @@ const ui = uiTranslations[currentLang];
           if (target.closest('#btn-report-results')) {
               e.preventDefault();
               e.stopPropagation();
-              // @ts-ignore
-              window.rwOpenReport?.();
+              (window as Window & { rwOpenReport?: () => void }).rwOpenReport?.();
           }
 
           if (target.closest('#edit-search-btn')) {
@@ -1021,8 +1019,7 @@ const ui = uiTranslations[currentLang];
                  
                  // Re-attach map buttons
                  document.getElementById('btn-report-results')?.addEventListener('click', () => {
-                     // @ts-ignore - Nexus Global API
-                     window.rwOpenReport?.();
+                     (window as Window & { rwOpenReport?: () => void }).rwOpenReport?.();
                  });
               }
 
