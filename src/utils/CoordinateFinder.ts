@@ -18,24 +18,33 @@ export class CoordinateFinder {
 
     constructor(db: Map<string, [number, number]>, originalNames?: Map<string, string>) {
         this.db = db;
-        this.keys = Array.from(db.keys());
-        this.lowerKeys = this.keys.map(k => k.toLowerCase());
+        const size = db.size;
+        this.keys = new Array(size);
+        this.lowerKeys = new Array(size);
         this.originalNames = originalNames ?? new Map();
-        this.buildIndex();
-    }
 
-    private buildIndex() {
-        for (let i = 0; i < this.lowerKeys.length; i++) {
-            const lowerKey = this.lowerKeys[i];
-            const originalKey = this.keys[i];
-            // Tokenize: split by non-alphanumeric (including Spanish accents)
+        let i = 0;
+        for (const key of db.keys()) {
+            const lowerKey = key.toLowerCase();
+            this.keys[i] = key;
+            this.lowerKeys[i] = lowerKey;
+            i++;
+        }
+
+        // Separate loop for indexing but still using optimized Map access
+        // This is faster due to better CPU cache usage and engine optimizations.
+        for (let j = 0; j < size; j++) {
+            const lowerKey = this.lowerKeys[j];
+            const originalKey = this.keys[j];
             const tokens = lowerKey.split(/[^a-z0-9\u00C0-\u017F]+/);
             for (const token of tokens) {
                 if (token.length < 3) continue;
-                if (!this.tokenIndex.has(token)) {
-                    this.tokenIndex.set(token, []);
+                let matches = this.tokenIndex.get(token);
+                if (matches === undefined) {
+                    matches = [];
+                    this.tokenIndex.set(token, matches);
                 }
-                this.tokenIndex.get(token)!.push(originalKey);
+                matches.push(originalKey);
             }
         }
     }
