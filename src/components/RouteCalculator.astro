@@ -1,12 +1,13 @@
 ---
 import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../utils/i18n';
-import { safeJsonStringify } from '../utils/utils';
+import { safeJsonStringify, getRelativeLocaleUrl } from '../utils/utils';
 import Input from './ui/Input.astro';
 import Switch from './ui/Switch.astro';
 import PassengerSelector from './ui/PassengerSelector.astro';
 import Icon from './ui/Icon.astro';
 
-const currentLang = getLangFromUrl(Astro.url);
+const lang = getLangFromUrl(Astro.url);
+const currentLang = lang;
 const t = useTranslations(currentLang);
 const ui = uiTranslations[currentLang];
 ---
@@ -195,28 +196,90 @@ const ui = uiTranslations[currentLang];
 
 
   // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
-  if (typeof document !== 'undefined') {
+  if (typeof document !== 'undefined' && !(window as any).__RouteCalculatorDelegationAttached) {
+      (window as any).__RouteCalculatorDelegationAttached = true;
       document.addEventListener('click', (e) => {
-          const target = e.target;
+          if (!e.isTrusted) return; // Security: Ensure event is user-generated
+
+          const target = e.target as HTMLElement;
           if (!target || !target.closest) return;
 
-          const btn = target.closest('.view-map-btn');
+          const btn = target.closest('.view-map-btn') as HTMLElement;
           if (btn) {
+              e.preventDefault();
+              e.stopPropagation();
               try {
                   const raw = btn.dataset.journey;
                   if (raw) {
                       const journey = JSON.parse(raw);
                       window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey } }));
-                      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_ACTIVE' }));
+                      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
                   }
               } catch (err) {
                   console.error("Invalid journey data", err);
               }
           }
 
-          // Sentinel Security Fix: Retry Button Delegation
+          // Sentinel Security Fix: Sentinel Delegation for All Actions
           if (target.closest('.js-retry-search-btn')) {
-              setTimeout(() => document.getElementById('origin-input')?.focus(), 50);
+              e.preventDefault();
+              e.stopPropagation();
+              document.getElementById('search-card')?.scrollIntoView({ behavior: 'smooth' });
+              document.getElementById('summary-bar')?.classList.add('hidden');
+              document.getElementById('search-form')?.classList.remove('hidden');
+              setTimeout(() => document.getElementById('origin-input')?.focus(), 200);
+          }
+
+          if (target.closest('#gps-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
+              // @ts-ignore
+              if (typeof handleGPSClick === 'function') handleGPSClick();
+          }
+
+          if (target.closest('#swap-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
+              const originInput = document.getElementById('origin-input') as HTMLInputElement;
+              const destInput = document.getElementById('destination-input') as HTMLInputElement;
+              const swapBtn = document.getElementById('swap-btn');
+              if (originInput && destInput) {
+                  const temp = originInput.value;
+                  originInput.value = destInput.value;
+                  destInput.value = temp;
+                  swapBtn?.classList.toggle('rotated');
+                  originInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  destInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+          }
+
+          const qBtn = target.closest('.quick-action-btn') as HTMLElement;
+          if (qBtn) {
+              e.preventDefault();
+              e.stopPropagation();
+              const dest = qBtn.dataset.dest;
+              if (dest) {
+                  const destInput = document.getElementById('destination-input') as HTMLInputElement;
+                  if (destInput) {
+                      destInput.value = dest;
+                      destInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  }
+              }
+          }
+
+          if (target.closest('#btn-report-results')) {
+              e.preventDefault();
+              e.stopPropagation();
+              (window as Window & { rwOpenReport?: () => void }).rwOpenReport?.();
+              // @ts-ignore
+              window.rwOpenReport?.();
+          }
+
+          if (target.closest('#edit-search-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
+              document.getElementById('summary-bar')?.classList.add('hidden');
+              document.getElementById('search-form')?.classList.remove('hidden');
           }
       });
   }
@@ -530,15 +593,16 @@ const ui = uiTranslations[currentLang];
       } catch (e) {
         console.warn("GPS/Finder features might be unavailable", e);
       }
-      // Initialize GPS logic regardless of data state (it handles nulls)
-      if (typeof initGPSLogic === 'function') initGPSLogic();
     }
   }
 
   function setupAutocomplete(inputId) {
-      const input = document.getElementById(inputId);
+      const input = document.getElementById(inputId) as HTMLInputElement;
       const container = input?.parentElement; // Input wrapper
       if (!input || !container) return;
+
+      // Guard: Prevent duplicate suggestions list and listeners
+      if (document.getElementById(`${inputId}-suggestions`)) return;
 
       // Create Dropdown Element (Native Popover)
       const list = document.createElement('ul');
@@ -622,43 +686,42 @@ const ui = uiTranslations[currentLang];
       input.addEventListener('focus', updateList);
   }
 
-  function initGPSLogic() {
+  function handleGPSClick() {
       const gpsBtn = document.getElementById('gps-btn');
       if (!gpsBtn) return;
 
-      gpsBtn.addEventListener('click', () => {
-         if (!navigator.geolocation) {
-             showToast(ui['error.no_gps'], 'error');
-             return;
-         }
+      if (!navigator.geolocation) {
+          showToast(ui['error.no_gps'], 'error');
+          return;
+      }
 
-         gpsBtn.classList.add('animate-pulse', 'text-primary-500');
-         navigator.geolocation.getCurrentPosition(
-             (pos) => {
-                 const { latitude, longitude } = pos.coords;
-                 const originInput = document.getElementById('origin-input');
-                 if (originInput && finder) {
-                     // Reverse Geocode: resolve GPS coords to nearest registered stop
-                     const gpsResult = coordinatesStore.findNearestWithDistance(latitude, longitude);
-                     if (gpsResult && gpsResult.distanceKm < 1.0) {
-                         originInput.value = gpsResult.name;
-                         const meters = Math.round(gpsResult.distanceKm * 1000);
-                         showToast(`GPS: ${gpsResult.name} (${meters} m)`, 'success');
-                     } else {
-                         // No registered stop within 1 km — ask user to search manually
-                         showToast('No hay paradas registradas cerca. Escribe tu ubicación manualmente.', 'warning');
-                         originInput.focus();
-                     }
-                 }
-                 gpsBtn.classList.remove('animate-pulse');
-             },
-             (err) => {
-                 console.error(err);
-                 gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
-                 showToast("GPS Error", 'error');
-             }
-         );
-      });
+      gpsBtn.classList.add('animate-pulse', 'text-primary-500');
+      navigator.geolocation.getCurrentPosition(
+          (pos) => {
+              const { latitude, longitude } = pos.coords;
+              const originInput = document.getElementById('origin-input') as HTMLInputElement;
+              if (originInput && finder) {
+                  // Reverse Geocode: resolve GPS coords to nearest registered stop
+                  const gpsResult = coordinatesStore.findNearestWithDistance(latitude, longitude);
+                  if (gpsResult && gpsResult.distanceKm < 1.0) {
+                      originInput.value = gpsResult.name;
+                      const meters = Math.round(gpsResult.distanceKm * 1000);
+                      showToast(`GPS: ${gpsResult.name} (${meters} m)`, 'success');
+                      originInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  } else {
+                      // No registered stop within 1 km — ask user to search manually
+                      showToast('No hay paradas registradas cerca. Escribe tu ubicación manualmente.', 'warning');
+                      originInput.focus();
+                  }
+              }
+              gpsBtn.classList.remove('animate-pulse');
+          },
+          (err) => {
+              console.error(err);
+              gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
+              showToast("GPS Error", 'error');
+          }
+      );
   }
 
   // --- Rendering Functions ---
@@ -782,13 +845,18 @@ const ui = uiTranslations[currentLang];
   function renderWasmError() {
     if (!resultsContainer) return;
     const html = `
-        <div class="glass-card text-center animate-slide-up">
-            <svg class="w-10 h-10 mx-auto mb-3" viewBox="0 0 24 24" fill="var(--text-tertiary)" aria-hidden="true"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h.71C7.37 7.69 9.48 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3s-1.34 3-3 3zM8 13h2.55v3h2.9v-3H16l-4-4z"/></svg>
-            <h3 class="font-display font-black text-base mb-2" style="color: var(--text-primary);">${escapeHtml(ui['calc.offline'])}</h3>
-            <p class="text-sm mb-4" style="color: var(--text-secondary);">${escapeHtml(ui['calc.offline_msg'])}</p>
-            <a href="/rutas" class="btn-secondary btn-sm inline-flex items-center gap-2">
-               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> ${escapeHtml(ui['calc.view_all'])}
-            </a>
+        <div class="glass-card text-center animate-slide-up py-8 px-6">
+            <svg class="w-12 h-12 mx-auto mb-4" viewBox="0 0 24 24" fill="var(--text-tertiary)" aria-hidden="true"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h.71C7.37 7.69 9.48 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3s-1.34 3-3 3zM8 13h2.55v3h2.9v-3H16l-4-4z"/></svg>
+            <h3 class="font-display font-black text-lg mb-3" style="color: var(--text-primary);">${escapeHtml(ui['calc.offline'])}</h3>
+            <p class="text-sm mb-6 max-w-[280px] mx-auto" style="color: var(--text-secondary);">${escapeHtml(ui['calc.offline_msg'])}</p>
+            <div class="flex flex-col gap-3">
+                <button class="btn-primary btn-md js-retry-search-btn uppercase tracking-widest">
+                    ${escapeHtml(ui['calc.retry'] || 'Try Again')}
+                </button>
+                <a href={getRelativeLocaleUrl(lang, "rutas")} class="btn-secondary btn-sm inline-flex items-center justify-center gap-2">
+                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> ${escapeHtml(ui['calc.view_all'])}
+                </a>
+            </div>
         </div>
     `;
     resultsContainer.replaceChildren(document.createRange().createContextualFragment(html));
@@ -797,9 +865,14 @@ const ui = uiTranslations[currentLang];
   function renderError(msg) {
     if (!resultsContainer) return;
     const fragment = document.createRange().createContextualFragment(`
-        <div class="glass-card flex items-center gap-3 animate-slide-up" style="border-left: 3px solid var(--color-sunset);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--color-sunset)" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-            <span class="font-bold text-sm js-error-msg" style="color: var(--text-secondary);"></span>
+        <div class="flex flex-col gap-4 animate-slide-up">
+            <div class="glass-card flex items-center gap-3" style="border-left: 3px solid var(--color-sunset);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--color-sunset)" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                <span class="font-bold text-sm js-error-msg" style="color: var(--text-secondary);"></span>
+            </div>
+            <button class="btn-primary btn-md w-full js-retry-search-btn uppercase tracking-widest">
+                ${escapeHtml(ui['calc.retry'] || 'Try Again')}
+            </button>
         </div>
     `);
     const errorMsgSpan = fragment.querySelector('.js-error-msg');
@@ -832,46 +905,6 @@ const ui = uiTranslations[currentLang];
   // --- Event Listeners ---
 
   function setupEventListeners() {
-      // Swap Button Logic
-      const swapBtn = document.getElementById('swap-btn');
-      if (swapBtn && !swapBtn.dataset.initialized) {
-          swapBtn.dataset.initialized = "true";
-          swapBtn.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-
-              const originInput = document.getElementById('origin-input');
-              const destInput = document.getElementById('destination-input');
-              if (originInput && destInput) {
-                  const temp = originInput.value;
-                  originInput.value = destInput.value;
-                  destInput.value = temp;
-
-                  // Rotate animation
-                  swapBtn.classList.toggle('rotated');
-
-                  // Trigger input events
-                  originInput.dispatchEvent(new Event('input'));
-                  destInput.dispatchEvent(new Event('input'));
-              }
-          });
-      }
-
-      // Quick Action Buttons (Home, Work, Airport, Beach)
-      document.querySelectorAll('.quick-action-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-              const dest = btn.dataset.dest;
-              if (dest) {
-                  const destInput = document.getElementById('destination-input');
-                  if (destInput) {
-                      destInput.value = dest;
-                      destInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  }
-              }
-          });
-      });
-
-
       // Map Picker Button
       const mapPickerBtn = document.getElementById('map-picker-btn');
       if (mapPickerBtn) {
@@ -999,23 +1032,7 @@ const ui = uiTranslations[currentLang];
                  
                  // Re-attach map buttons
                  document.getElementById('btn-report-results')?.addEventListener('click', () => {
-                     // @ts-ignore - Nexus Global API
-                     window.rwOpenReport?.();
-                 });
-
-                 document.querySelectorAll('.view-map-btn').forEach(btn => {
-                     btn.addEventListener('click', (e) => {
-                         try {
-                             const journeyData = JSON.parse(btn.dataset.journey);
-                             window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', {
-                                detail: { journey: journeyData }
-                             }));
-                             // Also trigger view state change to map
-                             window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
-                         } catch (err) {
-                             console.error("Error parsing journey data for map:", err);
-                         }
-                     });
+                     (window as Window & { rwOpenReport?: () => void }).rwOpenReport?.();
                  });
               }
 

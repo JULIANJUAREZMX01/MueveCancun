@@ -3,6 +3,10 @@
 
  🏛️ MueveCancun: La Verdad de la Calle (Nexus Prime v3.3)
 
+<!-- STATS:START -->
+> 📊 **851+ commits** | ⚙️ **1187+ líneas de Rust/WASM**
+<!-- STATS:END -->
+
 > "MueveCancun no nació en una oficina, nació en la parada del camión."
 
 ## 🔗 Links
@@ -30,6 +34,15 @@ MueveCancun es simple: **Funciona sin internet**, es ultrarrápida y está dise�
 ## 🏛️ La Arquitectura: El Protocolo Nexus (4 Capas)
 
 Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales que trabajan en conjunto para ofrecer una aplicación offline-first ultrarrápida.
+
+### 0. Stack Tecnológico
+- **Frontend**: Astro Islands.
+- **UI Components**: Web Components / Lit.
+- **Lógica Intensiva**: Rust / WebAssembly (WASM).
+- **Estilos**: CSS purista + PostCSS / Houdini.
+- **Dependencias en proceso de migración**: Tailwind CSS (activo, fase de salida); React y Bootstrap (eliminados).
+- **Documentación de la Decisión**: [ADR-2026-002](docs/adr/ADR-2026-002.md).
+
 
 ### 1. Capa de Datos: Origen de Rutas
 - **Función**: Catálogo base que contiene "Señales Sociales" (alertas de tráfico, bloqueos, avisos de madrugada) y la información de todas las rutas.

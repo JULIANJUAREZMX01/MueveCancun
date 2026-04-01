@@ -1,6 +1,6 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
-**Fecha:** 2026-03-28 _(actualizado desde 2026-03-10)_
-**Versión:** 1.0.0 (Nexus Prime v3.3 + SEO pending)  
+**Fecha:** 2026-03-29
+**Versión:** 1.1.0 (Nexus Prime v3.3.1)
 **Estado General:** 🟢 ESTABLE — Motor WASM operativo, PWA desplegada en producción
 
 ---
@@ -24,12 +24,9 @@ persistencia funciona sobre IndexedDB sin necesidad de backend.
 | i18n Español / Inglés | ✅ Middleware Astro |
 | CI/CD (6 workflows) | ✅ test, build-wasm, validate-data, autocurative, claude-delegation, codeql |
 | Seguridad XSS / DoS / Prototype Pollution | ✅ Implementado |
-| Sistema de reportes ciudadanos (Nexus T1) | ✅ Mergeado (#372) |
-| CoordinateFinder optimizado | ✅ Mergeado (#347) |
-| src/lib consolidado en src/utils | ✅ Mergeado (#359) |
-| JSON generation idempotente | ✅ Mergeado (#375) |
+| Strictly Static Architecture | ✅ Stabilization complete (CDN-First) |
+| TypeScript 100% migration | ✅ Strict mode, scripts, configs, client/SW (#397) |
 | SEO (OG image, sitemap, verification tags) | ⏳ PR #367 — pending merge |
-| Catálogo de rutas completo | ⚠️ Datos parciales — pendiente v3.4 |
 
 ---
 

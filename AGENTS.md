@@ -1,27 +1,31 @@
 # AGENTS.md — Sistema Multi-Agente de MueveCancun
 
 <!--
-  OBJETO DE ESTUDIO:
-  Este archivo define el protocolo de coordinación entre todos los agentes de IA
-  que contribuyen al proyecto MueveCancun. Actúa como "contrato" de comportamiento:
-  qué agente hace qué, cómo se comunican los componentes y cuáles son los límites
-  de seguridad/rendimiento del sistema.
+  OBJETO DE ESTUDIO
+  =================
+  Este proyecto es el laboratorio de aprendizaje de Julián Alexander Juárez Alvarado.
+  Objetivo: dominar el ciclo completo de desarrollo de software moderno —
+  Rust/WASM, TypeScript, Astro SSG, PWA, CI/CD — construyendo una app real
+  con impacto social para la ciudad de Cancún.
 
-  HISTORIAL DE CONTRIBUCIONES (seguimiento de PRs y agentes):
-  ─────────────────────────────────────────────────────────────
-  | Fecha       | PR / Rama                              | Agente         | Cambio Principal                              |
-  |-------------|----------------------------------------|----------------|-----------------------------------------------|
-  | 2026-02-03  | (inicial)                              | Jules / Copilot | PWA V2.2 "Inmortal" — offline mode            |
-  | 2026-02-18  | copilot/fix-errors-in-pwa-development  | Copilot         | Cleanup repo, WASM build fix, docs            |
-  | 2026-03-10  | (varios)                               | Copilot/Claude  | Nexus Prime v3.3 — CI/CD, i18n, GPS fix       |
-  | 2026-03-28  | #347                                   | Copilot         | CoordinateFinder perf — eliminate toLowerCase |
-  | 2026-03-28  | #354                                   | Copilot         | test: formatDate unit tests                   |
-  | 2026-03-28  | #359                                   | Copilot         | chore: consolidate src/lib → src/utils        |
-  | 2026-03-28  | #372                                   | Copilot         | feat: Citizen Reporting System (Nexus T1)     |
-  | 2026-03-28  | #375                                   | Copilot         | fix: idempotent JSON generation (CI fix)      |
-  | 2026-03-28  | copilot/seo-audit-report-muevecancun   | Copilot         | SEO: OG image, sitemap dinámico, stats        |
-  | 2026-03-29  | claude/docs-agents-tracking-* (rebased)| Claude          | Documentación, seguimiento y objetos          |
-  ─────────────────────────────────────────────────────────────
+  SEGUIMIENTO DE AGENTES (ordenado cronológico)
+  =============================================
+  | Fecha      | Agente            | Acción principal                                  | PR/Commit   |
+  |------------|-------------------|---------------------------------------------------|-------------|
+  | 2025-03-02 | speedy            | Optimización O(1) match_stop en WASM (36480x)     | —           |
+  | 2026-02-18 | claude-code       | Análisis completo + limpieza 40+ archivos         | —           |
+  | 2026-03-02 | speedy            | Deduplicación O(N²)→O(1) con Set                  | —           |
+  | 2026-03-04 | speedy            | Inline SVGs via Icon.astro                        | —           |
+  | 2026-03-10 | claude-code       | Nexus Prime v3.3 — PWA producción estable         | v1.0.0      |
+  | 2026-03-28 | claude-code       | Fix revisiones Copilot + merge PR #366            | 1deb594     |
+  | 2026-03-28 | claude-code       | Documentación objetos de estudio en MDs agentes   | este PR     |
+
+  LECCIONES CLAVE APRENDIDAS POR AGENTE
+  ======================================
+  - claude-code: Nunca pushear a main; siempre rama claude/* + PR.
+  - speedy:      Medir antes de optimizar; O(1) HashMap vs O(N) fuzzy scan.
+  - autocurative: Health-check semanal previene regresiones silenciosas.
+  - verificación: No commitear binarios WASM si la tarea solo toca JS/TS.
 -->
 
 **Misión**: PWA offline-first de transporte público en Cancún. Motor de ruteo en WebAssembly (Rust), sin backend.
@@ -92,9 +96,9 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 3. Verificar Dark Mode (`dark:*` clases Tailwind).
 
 ### SEO / Metadatos:
-<!-- Scripts de soporte SEO agregados en PR #367 (2026-03-28). -->
-1. `node scripts/generate_og_image.mjs` — Regenera `public/og-image.png` (1200×630px).
-2. `node scripts/update-stats.mjs` — Actualiza contadores en `README.md` (commits + LOC Rust).
+<!-- Scripts de soporte SEO agregados en PR #367 (2026-03-28). Migrados a TS en PR #397. -->
+1. `node --experimental-strip-types scripts/generate_og_image.ts` — Regenera `public/og-image.png` (1200×630px).
+2. `node --experimental-strip-types scripts/update-stats.ts` — Actualiza contadores en `README.md` (commits + LOC Rust).
 3. Variables de entorno opcionales en Render: `PUBLIC_GOOGLE_SITE_VERIFICATION`, `PUBLIC_BING_SITE_VERIFICATION`.
 4. Sitemap dinámico generado en build: `src/pages/sitemap.xml.ts` (incluye `/es/ruta/:id`, `/en/ruta/:id`).
 
@@ -146,14 +150,53 @@ Cada PR debe incluir: descripción del problema, fix implementado, tests que lo 
 
 ---
 
-## Variables de Entorno (Render / Deploy)
+## Historial de PRs por Área
 
-<!-- Documentadas a partir de PR #367. Solo las opcionales SEO son nuevas.
-     Las demás existían previamente. -->
+<!-- TRACKING: registro de merges para trazabilidad y aprendizaje -->
+| Área           | Descripción breve                             | Estado   |
+|----------------|-----------------------------------------------|----------|
+| WASM / Routing | Motor de transbordos exacto + geo ≤350 m      | ✅ Merged |
+| GPS            | `findNearestWithDistance` reemplaza texto lat/lng | ✅ Merged |
+| Seguridad      | XSS `escapeHtml()`, DoS circuit-breaker, HMAC wallet | ✅ Merged |
+| CI/CD          | 6 workflows: tests, WASM, validate-data, CodeQL, autocurative | ✅ Merged |
+| i18n           | Middleware Astro ES/EN; helpers en `src/utils/i18n.ts` | ✅ Merged |
+| PWA            | Service Worker offline-first, cache OpenStreetMap | ✅ Merged |
+| Documentación  | Objetos de estudio y seguimiento en MDs agentes | ✅ Merged |
+| CI / Docs Hardening | Test isolation, Tailwind docs fix, patch scripts removed, spatial-index build fix — [ADR-2026-003](docs/adr/ADR-2026-003.md) | ✅ Merged |
 
-| Variable | Obligatoria | Descripción |
-|----------|-------------|-------------|
-| `PUBLIC_GOOGLE_SITE_VERIFICATION` | ❌ Opcional | Token de Google Search Console |
-| `PUBLIC_BING_SITE_VERIFICATION` | ❌ Opcional | Token de Bing Webmaster Tools |
-| `ANTHROPIC_API_KEY` | ✅ Para `claude-delegation` | API key del agente autónomo |
+---
 
+## 🔗 Mapa de Inter-comunicación entre Archivos de Agentes
+
+<!-- CROSS-REFERENCES: actualizar al agregar nuevos agentes o archivos de seguimiento -->
+| Archivo | Propósito | Referencia cruzada |
+|---------|-----------|-------------------|
+| `AGENTS.md` (este archivo) | Registro maestro de agentes, protocolos, historial de PRs | → `CLAUDE.md`, `docs/TRACKING.md`, `.Jules/speedy.md` |
+| `CLAUDE.md` | Instrucciones de desarrollo para claude-code | → `AGENTS.md` §Agentes Disponibles, `docs/TRACKING.md` |
+| `docs/TRACKING.md` | Bitácora unificada multi-agente | → Todos los MDs, `docs/adr/` |
+| `.Jules/speedy.md` | Optimizaciones y reglas de oro de speedy | → `AGENTS.md` §Historial, `docs/TRACKING.md` |
+| `docs/adr/ADR-2026-002.md` | Decisión de arquitectura Astro+WASM+Lit | → `docs/TRACKING.md`, `CLAUDE.md` |
+| `docs/adr/ADR-2026-003.md` | CI hardening, test isolation, limpieza de artefactos | → Este archivo §Historial, `docs/TRACKING.md` |
+
+---
+
+## Registro de Triage de PRs
+
+<!-- TRIAGE 2026-03-28 | Auditor: GitHub Copilot Agent -->
+<!-- Análisis completo: docs/PR_TRIAGE_2026-03-28.md -->
+
+### Estado de PRs Conocidas Problemáticas
+
+| PR | Estado | Razón del bloqueo |
+|----|--------|------------------|
+| **#342** | 🚫 BLOQUEADA | Elimina Tailwind CSS que sigue activo en producción |
+| **#338** | ⛔ BASE INCORRECTA | Apunta a `speedy/inline-svg-icons-*`, no a `main` |
+| **#333** | ❓ VERIFICAR | geo_transfer de marzo-10; puede estar ya en main vía #365 |
+
+> Ver análisis completo: [`docs/PR_TRIAGE_2026-03-28.md`](docs/PR_TRIAGE_2026-03-28.md)
+
+## Mandato Arquitectónico: Static-First (v3.3.1+)
+A partir de marzo de 2026, el proyecto es **estrictamente estático**.
+- **PROHIBIDO**: Middleware para lógica de rutas en request-time.
+- **OBLIGATORIO**: Uso de `getRelativeLocaleUrl(lang, path)` para todos los enlaces internos.
+- **DIRECCIONAMIENTO**: El root `/` se maneja vía client-side JS en `src/pages/index.astro`.
