@@ -31,7 +31,8 @@
     "test": "vitest",
     "check-wasm": "node scripts/check-wasm.cjs",
     "validate-catalog": "node scripts/validate-catalog.mjs",
-    "bench": "vitest bench"
+    "bench": "vitest bench",
+    "generate-roadmap": "node scripts/generate-roadmap-doc.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
@@ -43,6 +44,7 @@
     "astro": "^5.16.15",
     "autoprefixer": "^10.4.23",
     "clsx": "^2.1.1",
+    "docx": "^9.6.1",
     "fuse.js": "^7.0.0",
     "idb": "^8.0.3",
     "postcss": "^8.5.6",
