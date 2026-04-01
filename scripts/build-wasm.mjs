@@ -47,15 +47,7 @@ if (!hasWasmPack || !hasCargo) {
         console.warn('✅ Pre-built WASM artifacts found. Skipping build and using existing files.');
         process.exit(0);
     } else {
-        console.error('❌ WASM build tools missing AND no pre-built artifacts found.');
-        console.error('');
-        console.error('To fix this, install the Rust toolchain and wasm-pack:');
-        console.error('  1. Install Rust: https://rustup.rs/  (curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh)');
-        console.error('  2. Add the wasm32 target: rustup target add wasm32-unknown-unknown');
-        console.error('  3. Install wasm-pack: cargo install wasm-pack  (or: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh)');
-        console.error('  4. Re-run: node scripts/build-wasm.mjs');
-        console.error('');
-        console.error('In CI/CD (e.g. Render), set BUILD_WASM=1 and ensure the build image includes Rust.');
+        console.error('❌ WASM build tools missing AND artifacts missing.');
         process.exit(1);
     }
 }
