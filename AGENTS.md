@@ -144,8 +144,8 @@ Cada PR debe incluir: descripción del problema, fix implementado, tests que lo 
 | CI/CD          | 6 workflows: tests, WASM, validate-data, CodeQL, autocurative | ✅ Merged |
 | i18n           | Middleware Astro ES/EN; helpers en `src/utils/i18n.ts` | ✅ Merged |
 | PWA            | Service Worker offline-first, cache OpenStreetMap | ✅ Merged |
-| Documentación  | Objetos de estudio y seguimiento en MDs agentes | ✅ Este PR |
-| CI / Docs Hardening | Test isolation, Tailwind docs fix, patch scripts removed, spatial-index build fix — [ADR-2026-003](docs/adr/ADR-2026-003.md) | ⏳ En merge |
+| Documentación  | Objetos de estudio y seguimiento en MDs agentes | ✅ Merged |
+| CI / Docs Hardening | Test isolation, Tailwind docs fix, patch scripts removed, spatial-index build fix — [ADR-2026-003](docs/adr/ADR-2026-003.md) | ✅ Merged |
 
 ---
 
@@ -158,6 +158,28 @@ Cada PR debe incluir: descripción del problema, fix implementado, tests que lo 
 | `CLAUDE.md` | Instrucciones de desarrollo para claude-code | → `AGENTS.md` §Agentes Disponibles, `docs/TRACKING.md` |
 | `docs/TRACKING.md` | Bitácora unificada multi-agente | → Todos los MDs, `docs/adr/` |
 | `.Jules/speedy.md` | Optimizaciones y reglas de oro de speedy | → `AGENTS.md` §Historial, `docs/TRACKING.md` |
-| `verification/learning.md` | Lecciones del proceso de verificación | → `docs/TRACKING.md`, `docs/adr/` |
 | `docs/adr/ADR-2026-002.md` | Decisión de arquitectura Astro+WASM+Lit | → `docs/TRACKING.md`, `CLAUDE.md` |
 | `docs/adr/ADR-2026-003.md` | CI hardening, test isolation, limpieza de artefactos | → Este archivo §Historial, `docs/TRACKING.md` |
+
+---
+
+## Registro de Triage de PRs
+
+<!-- TRIAGE 2026-03-28 | Auditor: GitHub Copilot Agent -->
+<!-- Análisis completo: docs/PR_TRIAGE_2026-03-28.md -->
+
+### Estado de PRs Conocidas Problemáticas
+
+| PR | Estado | Razón del bloqueo |
+|----|--------|------------------|
+| **#342** | 🚫 BLOQUEADA | Elimina Tailwind CSS que sigue activo en producción |
+| **#338** | ⛔ BASE INCORRECTA | Apunta a `speedy/inline-svg-icons-*`, no a `main` |
+| **#333** | ❓ VERIFICAR | geo_transfer de marzo-10; puede estar ya en main vía #365 |
+
+> Ver análisis completo: [`docs/PR_TRIAGE_2026-03-28.md`](docs/PR_TRIAGE_2026-03-28.md)
+
+## Mandato Arquitectónico: Static-First (v3.3.1+)
+A partir de marzo de 2026, el proyecto es **estrictamente estático**.
+- **PROHIBIDO**: Middleware para lógica de rutas en request-time.
+- **OBLIGATORIO**: Uso de `getRelativeLocaleUrl(lang, path)` para todos los enlaces internos.
+- **DIRECCIONAMIENTO**: El root `/` se maneja vía client-side JS en `src/pages/index.astro`.

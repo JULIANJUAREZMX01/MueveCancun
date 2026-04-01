@@ -195,3 +195,47 @@ git push -u origin claude/descripcion-breve-XXXXX
 - [ ] **v3.5** — Formulario de reporte de incidentes con Background Sync API
 - [ ] **v3.6** — Modo contribuidor: interfaz para agregar paradas desde el campo
 - [ ] **v4.0** — Mapa 3D / AR para indicar dirección de camioneta en parada
+
+---
+
+## PRs Activas — Contexto para Nuevos Agentes
+
+<!-- TRIAGE 2026-03-28 | Auditor: GitHub Copilot Agent -->
+<!-- Última auditoría: docs/PR_TRIAGE_2026-03-28.md -->
+
+Al recibir una tarea, verificar primero si alguna PR pendiente ya aborda el mismo problema.
+
+### PRs listas para mergear (no duplicar trabajo)
+
+| PR | Qué resuelve |
+|----|-------------|
+| **#366** | 🔒 CVEs en deps de build (picomatch, brace-expansion) |
+| **#350** | Event delegation + `e.isTrusted` en botones del mapa |
+| **#351** | Optimización de `CoordinateFinder.find` |
+| **#352** | Error handling + telemetría en `FavoritesStore` |
+
+### PRs en rebase — no duplicar ni sobrescribir
+
+| PR | Qué modifica |
+|----|-------------|
+| **#365** | TypeScript FFI strict, elimina `any`, migra SW a `.ts` |
+| **#360** | Hardening CI, `.gitignore`, telemetry tests |
+| **#357** | `rust-wasm/spatial-index/src/lib.rs` — cache hash |
+| **#355** | Elimina `@ts-ignore` en `wallet.astro` e `InteractiveMap.astro` |
+
+### ⛔ Regla crítica — Tailwind CSS
+
+**NO eliminar Tailwind CSS** en ninguna PR sin un plan de migración explícito y aprobado.
+Tailwind sigue activo en producción. La PR #342 está bloqueada por este motivo.
+La migración a PostCSS/Houdini debe ser **incremental y documentada por componente**.
+
+> Ver análisis completo: [`docs/PR_TRIAGE_2026-03-28.md`](docs/PR_TRIAGE_2026-03-28.md)
+
+## Guías de Enrutamiento Estático
+Para garantizar compatibilidad con CDN/Static Hosting:
+1.  **Enlaces Internos**: Usa `getRelativeLocaleUrl(lang, path)`.
+    - Correcto: `<a href={getRelativeLocaleUrl(lang, 'rutas')}>`
+    - Incorrecto: `<a href="/rutas">`
+2.  **Redirecciones**: Deben ser del lado del cliente.
+    - Usa `window.location.replace()` o `<meta http-equiv="refresh">`.
+3.  **Localización**: No dependas de headers de servidor (ej. `Accept-Language`) en Astro components. Usa el script de detección en `index.astro`.

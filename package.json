@@ -18,6 +18,8 @@
     "validate-routes": "node scripts/validate-routes.mjs",
     "geocode-stops": "node scripts/geocode-stops.mjs --dry-run",
     "geocode-stops:run": "node scripts/geocode-stops.mjs",
+    "generate-og": "node scripts/generate_og_image.mjs",
+    "update-stats": "node scripts/update-stats.mjs",
     "prepare-data": "node scripts/merge-routes.mjs && node scripts/optimize-json.mjs",
     "dev": "pnpm run prepare-data && astro dev",
     "dev:network": "pnpm run prepare-data && astro dev --host",
@@ -29,7 +31,8 @@
     "test": "vitest",
     "check-wasm": "node scripts/check-wasm.cjs",
     "validate-catalog": "node scripts/validate-catalog.mjs",
-    "bench": "vitest bench"
+    "bench": "vitest bench",
+    "generate-roadmap": "node scripts/generate-roadmap-doc.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
@@ -41,11 +44,12 @@
     "astro": "^5.16.15",
     "autoprefixer": "^10.4.23",
     "clsx": "^2.1.1",
+    "docx": "^9.6.1",
     "fuse.js": "^7.0.0",
     "idb": "^8.0.3",
     "postcss": "^8.5.6",
     "serve": "^14.2.5",
-    "sharp": "^0.33.2",
+    "sharp": "^0.33.5",
     "tailwind-merge": "^2.6.1",
     "tailwindcss": "^3.4.0",
     "vite": "^6.3.1",

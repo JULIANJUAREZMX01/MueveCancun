@@ -65,7 +65,8 @@ fn calculate_stops_hash(stops: &[Stop]) -> u64 {
     let mut hasher = DefaultHasher::new();
     for stop in stops {
         stop.id.hash(&mut hasher);
-        // Hashing f64 by bits to avoid hash collision for stops with same ID but different locations
+        // Include coordinates in hash to prevent collisions when different datasets
+        // have the same stop IDs but different locations.
         stop.lat.to_bits().hash(&mut hasher);
         stop.lng.to_bits().hash(&mut hasher);
     }
@@ -190,8 +191,9 @@ mod tests {
         // Query with Dataset B at the location of Dataset B
         let res_b = find_nearest_stop_native(21.2, -86.9, &stops_b).expect("Should find a stop");
 
-        // This assertion now passes because we include the dataset's hash in the cache key.
-        // Previously, different datasets with overlapping stop IDs would cause a cache collision.
+        // This assertion will fail before the bug is fixed, because the cache will return
+        // the item from Dataset A, but `find_nearest_stop_native` returns `NearestStopResult`
+        // which includes the stop it found, so we can assert on the ID.
         assert_eq!(res_b.stop.id, "B1", "Second query should return stop from dataset B, not use cached A");
     }
 }

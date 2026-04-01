@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -7,98 +7,75 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
-const modules = ['route-calculator'];
-// NOTE: 'spatial-index' is a workspace member but its wasm-pack JS glue has not
-// been generated yet and the frontend does not yet import it. It will be added
-// back to this list once the JS glue (spatial_index.js) is committed and the
-// frontend wires up the Rust spatial-index crate.
+const modules = ['route-calculator', 'spatial-index'];
 
-console.log('🏗️  Starting WASM build process...');
+// Nexus Signaling Functions
+const log = (msg) => console.log(`\x1b[1;34m[NEXUS_LOG]\x1b[0m ${msg}`);
+const success = (msg) => console.log(`\x1b[1;32m[SUCCESS]\x1b[0m ${msg}`);
+const error = (msg) => console.error(`\x1b[1;31m[ERROR]\x1b[0m ${msg}`);
 
-// Check for required tools
+log("Iniciando forja de modulos WASM...");
+
+// 1. Verificacion de Toolchain
 let wasmPackCmd = 'wasm-pack';
-let hasWasmPack = false;
+let useNpx = false;
+
 try {
     execSync('wasm-pack --version', { stdio: 'ignore' });
-    hasWasmPack = true;
 } catch (e) {
-    console.warn('⚠️ Global wasm-pack not found. Trying npx...');
     try {
         execSync('npx wasm-pack --version', { stdio: 'ignore' });
-        wasmPackCmd = 'npx wasm-pack';
-        hasWasmPack = true;
+        wasmPackCmd = 'npx';
+        useNpx = true;
     } catch (e2) {
-        hasWasmPack = false;
+        // Fallback check for artifacts
+        const artifactsExist = modules.every(mod => {
+            const wasmPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}_bg.wasm`);
+            const jsPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}.js`);
+            return fs.existsSync(wasmPath) && fs.existsSync(jsPath);
+        });
+
+        if (artifactsExist) {
+            log("[WARNING] Herramientas Rust/WASM no detectadas. Usando artefactos pre-existentes.");
+            process.exit(0);
+        } else {
+            error("wasm-pack no detectado y no hay artefactos previos. Abortando.");
+            process.exit(1);
+        }
     }
 }
 
-let hasCargo = false;
-try {
-    execSync('cargo --version', { stdio: 'ignore' });
-    hasCargo = true;
-} catch (e) {
-    hasCargo = false;
-}
-
-// Check for existing artifacts
-let artifactsExist = true;
-for (const mod of modules) {
-    const wasmPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}_bg.wasm`);
-    const jsPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}.js`);
-    if (!fs.existsSync(wasmPath) || !fs.existsSync(jsPath)) {
-        artifactsExist = false;
-        break;
-    }
-}
-
-if (!hasWasmPack || !hasCargo) {
-    if (artifactsExist) {
-        console.warn('⚠️  WASM build tools (wasm-pack/cargo) missing or failed.');
-        console.warn('✅ Pre-built WASM artifacts found. Skipping build and using existing files.');
-        process.exit(0);
-    } else {
-        console.error('❌ WASM build tools missing AND artifacts missing.');
-        console.error('   Please install Rust and wasm-pack to build the project.');
-        process.exit(1);
-    }
-}
-
-console.log(`✅ Build tools found using: ${wasmPackCmd}. Proceeding with compilation...`);
-
-for (const mod of modules) {
-    console.log(`📦 Processing ${mod}...`);
+// 2. Proceso de Compilacion
+modules.forEach(mod => {
+    log(`Procesando modulo: ${mod}...`);
     const sourceDir = path.join(rootDir, 'rust-wasm', mod);
     const publicOutDir = path.join(rootDir, 'public', 'wasm', mod);
 
-    // Clean public output directory before building
     if (fs.existsSync(publicOutDir)) {
-        console.log(`🧹 Cleaning old artifacts in ${publicOutDir}...`);
         fs.rmSync(publicOutDir, { recursive: true, force: true });
     }
     fs.mkdirSync(publicOutDir, { recursive: true });
 
-    if (hasWasmPack) {
-        try {
-            // Build with wasm-pack
-            console.log(`🚀 Building ${mod} with ${wasmPackCmd}...`);
-            execSync(`${wasmPackCmd} build --target web --out-dir ${publicOutDir}`, {
-                cwd: sourceDir,
-                stdio: 'inherit'
-            });
+    try {
+        const cmd = useNpx ? 'npx' : 'wasm-pack';
+        const args = useNpx
+            ? ['wasm-pack', 'build', '--target', 'web', '--out-dir', publicOutDir]
+            : ['build', '--target', 'web', '--out-dir', publicOutDir];
 
-        } catch (e) {
-            console.error(`❌ Failed to build ${mod} with ${wasmPackCmd}.`);
-            process.exit(1);
-        }
+        // Security Fix: Using execFileSync with args array to prevent shell injection
+        execFileSync(cmd, args, {
+            cwd: sourceDir,
+            stdio: 'inherit'
+        });
+
+        const gitignorePath = path.join(publicOutDir, '.gitignore');
+        if (fs.existsSync(gitignorePath)) fs.unlinkSync(gitignorePath);
+
+        success(`Modulo ${mod} forjado correctamente.`);
+    } catch (e) {
+        error(`Fallo en la compilacion de ${mod}. Abortando.`);
+        process.exit(1);
     }
+});
 
-    // Clean up .gitignore in output dir
-    const gitignorePath = path.join(publicOutDir, '.gitignore');
-    if (fs.existsSync(gitignorePath)) {
-        fs.unlinkSync(gitignorePath);
-    }
-
-    console.log(`✅ ${mod} built successfully to public/wasm/${mod}/`);
-}
-
-console.log('🎉 WASM setup complete.');
+success("SECUENCIA WASM FINALIZADA.");
