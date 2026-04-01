@@ -168,18 +168,18 @@ const navItems = [
           updateTranslations(lang);
       }
 
-      function updateTranslations(lang) {
+      function updateTranslations(lang: string): void {
           const dataEl = document.getElementById('i18n-translations');
-          const allTranslations = dataEl ? JSON.parse(dataEl.dataset.translations || '{}') : {};
-          const translations = allTranslations[lang] || allTranslations['es'] || {};
+          const allTranslations = dataEl ? JSON.parse(dataEl.dataset.translations ?? '{}') as Record<string, Record<string, string>> : {};
+          const translations: Record<string, string> = allTranslations[lang] ?? allTranslations['es'] ?? {};
 
           // Update simple text elements
-          document.querySelectorAll('[data-i18n]').forEach(el => {
+          document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
               const key = el.getAttribute('data-i18n');
-              const text = translations[key];
+              const text = key ? translations[key] : undefined;
               if (text) {
                   // Update lang toggle visual state
-                  const langToggles = document.querySelectorAll('.lang-toggle-btn');
+                  const langToggles = document.querySelectorAll<HTMLElement>('.lang-toggle-btn');
                   langToggles.forEach(btn => {
                       btn.textContent = lang.toUpperCase();
                   });
@@ -193,9 +193,9 @@ const navItems = [
           });
 
           // Custom Input Labels
-          document.querySelectorAll('[data-i18n-label]').forEach(el => {
+          document.querySelectorAll<HTMLElement>('[data-i18n-label]').forEach(el => {
               const key = el.getAttribute('data-i18n-label');
-              const text = translations[key];
+              const text = key ? translations[key] : undefined;
               if (text) {
                  if (el.tagName === 'INPUT') {
                      const id = el.id;
@@ -211,18 +211,18 @@ const navItems = [
           });
           
           // Placeholders
-          document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+          document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-i18n-placeholder]').forEach(el => {
                const key = el.getAttribute('data-i18n-placeholder');
-               const text = translations[key];
+               const text = key ? translations[key] : undefined;
                if (text && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
                    el.placeholder = text;
                }
           });
 
           // Quick Action Buttons (HTML content)
-          document.querySelectorAll('[data-i18n-html]').forEach(el => {
+          document.querySelectorAll<HTMLElement>('[data-i18n-html]').forEach(el => {
              const key = el.getAttribute('data-i18n-html');
-             const text = translations[key];
+             const text = key ? translations[key] : undefined;
              // Preserves icon if we replace innerText carefully or just update text node
              // For quick actions: <span icon></span> Text
              if (text) {
@@ -244,7 +244,7 @@ const navItems = [
             const balance = walletData?.amount ?? 180.00;
             const balanceEl = document.getElementById('header-balance-amount');
             if (balanceEl) balanceEl.textContent = `$${balance.toFixed(2)}`;
-          } catch (e) {
+          } catch (e: unknown) {
             console.warn("[MainLayout] Balance sync failed", e);
           }
       }
@@ -262,8 +262,8 @@ const navItems = [
           syncGlobalBalance();
       });
 
-      window.addEventListener('LANGUAGE_CHANGE', (e) => {
-          updateTranslations(e.detail);
+      window.addEventListener('LANGUAGE_CHANGE', (e: Event) => {
+          updateTranslations((e as CustomEvent<string>).detail);
       });
     </script>
     {ga4Id && (
@@ -388,14 +388,14 @@ const navItems = [
 
     <div id="i18n-translations" data-translations={safeJsonStringify(uiTranslations)} class="hidden"></div>
 
-    <script is:inline>
-      function setupThemeToggle() {
+    <script>
+      function setupThemeToggle(): void {
         // Find existing buttons (desktop + mobile)
-        const toggles = document.querySelectorAll('.theme-toggle');
+        const toggles = document.querySelectorAll<HTMLElement>('.theme-toggle');
 
         toggles.forEach(btn => {
-          const newBtn = btn.cloneNode(true);
-          btn.parentNode.replaceChild(newBtn, btn);
+          const newBtn = btn.cloneNode(true) as HTMLElement;
+          btn.parentNode!.replaceChild(newBtn, btn);
 
           newBtn.addEventListener('click', () => {
             document.documentElement.classList.toggle("dark");
