@@ -19,31 +19,25 @@ describe('Telemetry', () => {
     watchPositionMock = vi.fn();
     clearWatchMock = vi.fn();
 
-    // Ensure we are in a "browser-like" environment for the test
-    if (typeof globalThis.navigator === 'undefined') {
-      (globalThis as any).navigator = {};
-    }
+    // Use vi.stubGlobal so state is fully restored in afterEach
+    vi.stubGlobal('navigator', {
+      geolocation: {
+        watchPosition: watchPositionMock,
+        clearWatch: clearWatchMock,
+      },
+    });
 
-    (globalThis.navigator as any).geolocation = {
-      watchPosition: watchPositionMock,
-      clearWatch: clearWatchMock,
-    };
-
-    if (typeof globalThis.window === 'undefined') {
-       (globalThis as any).window = {
-         dispatchEvent: vi.fn(),
-         CustomEvent: class CustomEvent {
-           type: string;
-           detail: any;
-           constructor(type: string, options: any) {
-             this.type = type;
-             this.detail = options.detail;
-           }
-         }
-       };
-    } else {
-      vi.spyOn(window, 'dispatchEvent').mockImplementation(() => true);
-    }
+    vi.stubGlobal('window', {
+      dispatchEvent: vi.fn(),
+      CustomEvent: class CustomEvent {
+        type: string;
+        detail: any;
+        constructor(type: string, options: any) {
+          this.type = type;
+          this.detail = options.detail;
+        }
+      },
+    });
 
     dispatchEventSpy = vi.spyOn(globalThis.window, 'dispatchEvent');
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -54,6 +48,7 @@ describe('Telemetry', () => {
     // Reset the module state by calling stopTracking
     stopTracking();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('should start tracking and handle success path', async () => {

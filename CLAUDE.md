@@ -1,5 +1,45 @@
 # CLAUDE.md — MueveCancun AI Agent Instructions
 
+<!--
+  OBJETO DE ESTUDIO — claude-code
+  ================================
+  Este agente es el asistente principal de desarrollo para Julián.
+  Su función va más allá de escribir código: también enseña los fundamentos
+  de cada decisión técnica para que Julián los comprenda y replique.
+
+  DECISIONES TÉCNICAS DOCUMENTADAS
+  =================================
+  1. WASM en lugar de backend Node.js
+     → Razón: sin costo de servidor, funciona offline, performance nativa en Rust.
+     → Aprendizaje: separar lógica de negocio (Rust) de presentación (Astro/TS).
+
+  2. IndexedDB + HMAC para wallet
+     → Razón: persistencia offline sin base de datos remota.
+     → Aprendizaje: criptografía del lado cliente como deterrente (no banco real).
+
+  3. `escapeHtml()` obligatorio en innerHTML
+     → Razón: prevenir XSS en cualquier string que venga del usuario o del catálogo.
+     → Aprendizaje: toda interpolación de datos externos en HTML es un vector de ataque.
+
+  4. CustomEvents para comunicación entre componentes
+     → Razón: desacoplar mapa, calculador y wallet sin estado global compartido.
+     → Aprendizaje: arquitectura orientada a eventos reduce dependencias circulares.
+
+  5. Circuit-breaker en WASM (10M ops, 10MB payload)
+     → Razón: prevenir DoS desde el cliente al motor de ruteo.
+     → Aprendizaje: los límites de recursos son parte del diseño de seguridad.
+
+  SEGUIMIENTO DE TAREAS (claude-code)
+  =====================================
+  | Sprint     | Tarea completada                          | Tests añadidos |
+  |------------|-------------------------------------------|----------------|
+  | Feb 2026   | Análisis y limpieza inicial del proyecto  | —              |
+  | Mar 2026   | Nexus Prime v3.3 — producción estable     | ✅ Vitest + Rust|
+  | Mar 2026   | Fix GPS: findNearestWithDistance          | ✅             |
+  | Mar 2026   | Fix revisiones Copilot PR #366            | ✅             |
+  | Mar 2026   | Documentación objetos de estudio          | —              |
+-->
+
 ## Proyecto
 
 **MueveCancun** es una PWA offline-first para transporte público en Cancún y la Riviera Maya.
@@ -144,6 +184,17 @@ git push -u origin claude/descripcion-breve-XXXXX
 | Transbordos no aparecen | Nombres de paradas sin match | Verificar nombres en catálogo; agregar hub alias |
 | Mapa no dibuja ruta | Coordenadas faltantes en paradas | Agregar `lat`/`lng` en `master_routes.json` |
 | SW muestra contenido antiguo | Cache version no bumpeada | Incrementar `CACHE_VERSION` en `public/sw.js` |
+
+---
+
+## Próximos Pasos Recomendados (v3.4+)
+
+<!-- TRACKING: backlog priorizado para el agente claude-code -->
+- [ ] **v3.4** — Completar catálogo `master_routes.json` con rutas reales y coordenadas
+- [ ] **v3.4** — Tests de integración para 5+ rutas conocidas de Cancún
+- [ ] **v3.5** — Formulario de reporte de incidentes con Background Sync API
+- [ ] **v3.6** — Modo contribuidor: interfaz para agregar paradas desde el campo
+- [ ] **v4.0** — Mapa 3D / AR para indicar dirección de camioneta en parada
 
 ---
 
