@@ -8,14 +8,27 @@ interface LatLngExpression extends Array<number> {
     1: number;
 }
 
-interface Map {
-    fitBounds(bounds: any[], options?: any): void;
+/** Minimal Leaflet layer with addTo and bindPopup support. */
+interface LeafletLayer {
+    addTo(group: LeafletLayerGroup): LeafletLayer;
+    bindPopup(content: string): LeafletLayer;
 }
 
-interface LayerGroup {
+interface LeafletLayerGroup extends LeafletLayer {
     clearLayers(): void;
     remove(): void;
-    addTo(map: Map): LayerGroup;
+}
+
+interface LeafletMap {
+    fitBounds(bounds: LatLngExpression[], options?: object): void;
+}
+
+/** Minimal Leaflet library instance (window.L). */
+interface LeafletLib {
+    polyline(coords: LatLngExpression[], options: PolylineOptions): LeafletLayer;
+    marker(coords: LatLngExpression, options?: MarkerOptions): LeafletLayer;
+    circleMarker(coords: LatLngExpression, options?: MarkerOptions): LeafletLayer;
+    layerGroup(): LeafletLayerGroup;
 }
 
 interface PolylineOptions {
@@ -26,7 +39,7 @@ interface PolylineOptions {
 }
 
 interface MarkerOptions {
-    icon?: any;
+    icon?: object;
     radius?: number;
     color?: string;
     fillOpacity?: number;
@@ -38,18 +51,22 @@ interface RouteStop {
     lat?: number | string;
     lng?: number | string;
     lon?: number | string;
+    latitude?: number | string;
+    longitude?: number | string;
     nombre?: string;
     name?: string;
 }
 
+interface RouteLeg {
+    paradas?: RouteStop[];
+    stops_info?: RouteStop[];
+    stops?: string[];
+    name?: string;
+    nombre?: string;
+}
+
 export interface RouteData {
-    legs?: {
-        paradas?: RouteStop[];
-        stops_info?: RouteStop[];
-        stops?: string[];
-        name?: string;
-        nombre?: string;
-    }[];
+    legs?: RouteLeg[];
     paradas?: RouteStop[];
     stops?: string[];
     nombre?: string;
@@ -58,11 +75,11 @@ export interface RouteData {
 
 // --- Internal Helpers ---
 
-function createPolyline(L: any, coords: LatLngExpression[], options: PolylineOptions): any {
+function createPolyline(L: LeafletLib, coords: LatLngExpression[], options: PolylineOptions): LeafletLayer {
     return L.polyline(coords, options);
 }
 
-function createMarker(L: any, coords: LatLngExpression, popupContent: string, options?: MarkerOptions): any {
+function createMarker(L: LeafletLib, coords: LatLngExpression, popupContent: string, options?: MarkerOptions): LeafletLayer {
     const marker = options && options.radius
         ? L.circleMarker(coords, options)
         : L.marker(coords, options);
@@ -81,14 +98,14 @@ function createMarker(L: any, coords: LatLngExpression, popupContent: string, op
  * @returns The new LayerGroup containing the drawn route.
  */
 export function drawRoute(
-    map: Map,
+    map: LeafletMap,
     data: RouteData,
-    existingLayerGroup: LayerGroup | null | undefined,
-    coordinatesDB: Map<string, [number, number]> | any
-): LayerGroup | undefined {
+    existingLayerGroup: LeafletLayerGroup | null | undefined,
+    coordinatesDB: Map<string, [number, number]> | Record<string, [number, number]>
+): LeafletLayerGroup | undefined {
 
     // Access global L safely
-    const L = (window as any).L;
+    const L = (window as unknown as { L?: LeafletLib }).L;
     if (!L || !map) return undefined;
 
     // Reset layers
@@ -96,11 +113,11 @@ export function drawRoute(
         existingLayerGroup.clearLayers();
         existingLayerGroup.remove();
     }
-    const layerGroup = L.layerGroup().addTo(map);
+    const layerGroup = L.layerGroup().addTo(map as unknown as LeafletLayerGroup);
 
     // Normalize Data Structure
     // 'data' could be a full Journey (with legs) or a single Route object
-    let legs: any[] = [];
+    let legs: RouteLeg[] = [];
     if (data.legs && Array.isArray(data.legs)) {
         legs = data.legs;
     } else if ((data.paradas && Array.isArray(data.paradas)) || (data.stops && Array.isArray(data.stops))) {
@@ -117,20 +134,20 @@ export function drawRoute(
     }
 
     const allBounds: LatLngExpression[] = [];
-    const newLayers: any[] = []; // Array to collect all markers before adding to layerGroup
+    const newLayers: LeafletLayer[] = [];
 
     legs.forEach((leg, index) => {
         const routeCoords: LatLngExpression[] = [];
         const validStops: { name: string, latlng: LatLngExpression }[] = [];
 
         // Try to get explicit coordinates from 'paradas' object array
-        const stopsSource = leg.paradas || leg.stops_info || [];
+        const stopsSource = leg.paradas ?? leg.stops_info ?? [];
 
         if (stopsSource.length > 0 && typeof stopsSource[0] === 'object') {
             // New Format: [{ lat, lng, nombre }, ...]
             stopsSource.forEach((stop: RouteStop) => {
-                const latVal = stop.lat || (stop as any).latitude;
-                const lngVal = stop.lng || stop.lon || (stop as any).longitude;
+                const latVal = stop.lat ?? stop.latitude;
+                const lngVal = stop.lng ?? stop.lon ?? stop.longitude;
 
                 if (latVal !== undefined && lngVal !== undefined) {
                     const lat = parseFloat(String(latVal));
@@ -139,7 +156,7 @@ export function drawRoute(
                     if (!isNaN(lat) && !isNaN(lng)) {
                         const coords: LatLngExpression = [lat, lng];
                         routeCoords.push(coords);
-                        validStops.push({ name: stop.nombre || stop.name || 'Parada', latlng: coords });
+                        validStops.push({ name: stop.nombre ?? stop.name ?? 'Parada', latlng: coords });
                         allBounds.push(coords);
                     }
                 }
@@ -149,13 +166,13 @@ export function drawRoute(
         // Fallback or Addition: Use 'stops' array of names
         if (routeCoords.length === 0) {
             // Legacy: Array of strings + coordinatesDB
-            const stopNames: string[] = leg.stops || [];
+            const stopNames: string[] = leg.stops ?? [];
             stopNames.forEach(name => {
                 let coords: [number, number] | undefined;
                 if (coordinatesDB instanceof Map) {
                     coords = coordinatesDB.get(name) ?? coordinatesDB.get(name.toLowerCase().trim());
                 } else if (coordinatesDB && typeof coordinatesDB === 'object') {
-                    coords = coordinatesDB[name];
+                    coords = (coordinatesDB as Record<string, [number, number]>)[name];
                 }
 
                 if (coords) {
@@ -178,19 +195,19 @@ export function drawRoute(
             // Start Marker (only for first leg)
             if (index === 0) {
                  const start = validStops[0];
-                 newLayers.push(createMarker(L, start.latlng, `<b>Inicio:</b> ${escapeHtml(start.name)}`));
+                 if (start) newLayers.push(createMarker(L, start.latlng, `<b>Inicio:</b> ${escapeHtml(start.name)}`));
             }
 
             // End Marker (only for last leg)
             if (index === legs.length - 1) {
                  const end = validStops[validStops.length - 1];
-                 newLayers.push(createMarker(L, end.latlng, `<b>Fin:</b> ${escapeHtml(end.name)}`));
+                 if (end) newLayers.push(createMarker(L, end.latlng, `<b>Fin:</b> ${escapeHtml(end.name)}`));
             }
 
             // Transfer Marker (if not last leg)
             if (index < legs.length - 1) {
                 const end = validStops[validStops.length - 1];
-                 newLayers.push(createMarker(L, end.latlng, `<b>Transbordo:</b> ${escapeHtml(end.name)}`));
+                 if (end) newLayers.push(createMarker(L, end.latlng, `<b>Transbordo:</b> ${escapeHtml(end.name)}`));
             }
 
             // Intermediate dots
