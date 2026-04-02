@@ -465,11 +465,11 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
       const res = await fetch("https://api.github.com/repos/" + config.owner + "/" + config.repo + "/issues", {
         method: "POST",
         headers: {
-          "Accept": "application/vnd.github+json",
-          "Authorization": "Bearer " + config.token,
-          "X-GitHub-Api-Version": "2022-11-28",
-          "Content-Type": "application/json",
-          "User-Agent": "MueveCancun-Report-Widget"
+          'Accept': 'application/vnd.github+json',
+          'Authorization': `Bearer ${config.token}`,
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json',
+          'User-Agent': 'MueveCancun-Report-Widget'
         },
         body: JSON.stringify(payload)
       });
@@ -501,7 +501,7 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
           await sendToGitHub(payload);
           if (r.id !== undefined) await deletePendingReport(r.id);
         } catch (err) {
-          console.warn("[ReportWidget] Fallo al sincronizar reporte:", err);
+          console.warn(`[ReportWidget] Fallo al sincronizar reporte #${r.id}:`, err);
           break;
         }
       }
@@ -539,27 +539,28 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
       const fullData: PendingReport = { ...data, timestamp: Date.now() };
 
       try {
-        if (!navigator.onLine) throw new Error("Offline");
-
+        if (!navigator.onLine) throw new Error('Offline');
         const payload = buildPayload(fullData);
         const ghRes = await sendToGitHub(payload);
-        showFeedback("¡Gracias! Reporte enviado (#" + ghRes.number + ")", "success");
-        setTimeout(closeModal, 2500);
+        showFeedback(`¡Gracias! Reporte enviado (#${ghRes.number})`, 'success');
+        setTimeout(closeModal, 2800);
       } catch (err) {
-        console.warn("[ReportWidget] Submission failed, queuing offline:", err);
-
+        console.warn('[ReportWidget] Submission failed, queuing offline:', err);
         try {
           await savePendingReport(data);
-          showFeedback("Sin conexión. Reporte guardado localmente, se enviará cuando recuperes señal. ✓", "info");
+          const pending = await getPendingReports();
           if (badge) {
-            const count = (await getPendingReports()).length;
-            badge.textContent = count.toString();
+            badge.textContent = pending.length.toString();
             badge.hidden = false;
           }
-          setTimeout(closeModal, 4000);
-        } catch (dbErr) {
-          console.error("[ReportWidget] IDB Error:", dbErr);
-          showFeedback("Error crítico al guardar reporte local.", "error");
+          showFeedback('Sin conexión. Reporte guardado para enviar después. ✓', 'info');
+          setTimeout(closeModal, 2800);
+        } catch (queueErr) {
+          console.error('[ReportWidget] Error al guardar reporte pendiente:', queueErr);
+          showFeedback(
+            'No se pudo guardar el reporte para enviar después. Revisa si estás en modo privado o si el almacenamiento está bloqueado e inténtalo de nuevo.',
+            'error'
+          );
           setSubmitting(false);
         }
       }
