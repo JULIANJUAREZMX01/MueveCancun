@@ -179,7 +179,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     )}
     <ClientRouter />
   </head>
-  <body id="top" data-ready="false" class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
+  <body id="top" class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
     <!-- ═══ Unified Header (Responsive) ═══ -->
     { !hideNav && (
@@ -275,7 +275,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
       // Run on every navigation because MainLayout persists but content updates
       document.addEventListener('astro:page-load', () => {
-        document.body.dataset.ready = "true";
         setupThemeToggle();
       });
 

@@ -1,149 +1,296 @@
 ---
 /**
- * CITIZEN REPORTING SYSTEM (Tier 1)
- * Optimized for Nexus Protocol v1.2 (Offline-First)
- * Standardized in ADR-002
+ * ReportWidget.astro
+ * Sistema de reportes ciudadanos — MueveCancun / Protocolo Nexus
+ * Tier 1: Formulario → GitHub Issues API (sin servidor) + Offline Queue
  */
 
 interface Props {
   repoOwner?: string;
   repoName?: string;
-  lang?: string;
 }
 
-const {
-  repoOwner = import.meta.env.GITHUB_REPO_OWNER || "JULIANJUAREZMX01",
-  repoName = import.meta.env.GITHUB_REPO_NAME || "MueveCancun",
-  lang = "es"
-} = Astro.props;
-
+const repoOwner = Astro.props.repoOwner ?? import.meta.env.GITHUB_REPO_OWNER ?? "JULIANJUAREZMX01";
+const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "MueveCancun";
 const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
-
-// Localizations
-const i18n = {
-  es: {
-    title: "Reportar Problema",
-    descPlaceholder: "Describe qué está mal (precio, ruta, ubicación...)",
-    submit: "Enviar Reporte",
-    cancel: "Cancelar",
-    success: "¡Gracias! Reporte enviado.",
-    offline: "Sin conexión. Reporte guardado para enviar después. ✓",
-    geoBtn: "Agregar ubicación (opcional)",
-    geoCaptured: "Ubicación capturada ✓",
-    geoError: "Error de GPS",
-    chars: "caracteres",
-    type: "Tipo de problema",
-    types: {
-      precio: "Precio incorrecto",
-      ruta: "Ruta / destino mal",
-      nueva: "Falta una ruta",
-      cancelada: "Ruta cancelada",
-      comentario: "Otro comentario"
-    }
-  },
-  en: {
-    title: "Report Issue",
-    descPlaceholder: "Describe what's wrong (price, route, location...)",
-    submit: "Send Report",
-    cancel: "Cancel",
-    success: "Thanks! Report sent.",
-    offline: "No connection. Report queued for later. ✓",
-    geoBtn: "Add location (optional)",
-    geoCaptured: "Location captured ✓",
-    geoError: "GPS Error",
-    chars: "characters",
-    type: "Issue type",
-    types: {
-      precio: "Incorrect price",
-      ruta: "Wrong route/destination",
-      nueva: "Missing route",
-      cancelada: "Cancelled route",
-      comentario: "Other comment"
-    }
-  }
-}[lang === 'en' ? 'en' : 'es'];
 ---
 
-<div id="report-widget-container" data-owner={repoOwner} data-repo={repoName} data-token={githubToken}>
-  <!-- FAB -->
-  <button id="rw-fab" class="rw-fab" aria-label={i18n.title} title={i18n.title} type="button">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-      <line x1="12" y1="7" x2="12" y2="11"></line>
-      <line x1="12" y1="15" x2="12.01" y2="15"></line>
-    </svg>
-    <span id="rw-queue-badge" class="rw-badge" hidden>0</span>
-  </button>
+<!-- Configuración para el script cliente -->
+<div
+  id="rw-config"
+  data-owner={repoOwner}
+  data-repo={repoName}
+  data-token={githubToken}
+  hidden
+></div>
 
-  <!-- Overlay/Modal -->
-  <div id="rw-overlay" class="rw-overlay" hidden>
-    <div class="rw-modal">
-      <div class="rw-header">
-        <h3 class="rw-title">{i18n.title}</h3>
-        <button id="rw-close" class="rw-close-btn" type="button">&times;</button>
+<!-- Botón flotante — visible en todas las páginas vía Layout -->
+<div id="rw-fab" class="rw-fab" title="Reportar problema en una ruta" aria-label="Reportar problema">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    <line x1="12" y1="8" x2="12" y2="12"/>
+    <line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  <span class="rw-fab-label">Reportar</span>
+  <span id="rw-queue-badge" class="rw-queue-badge" hidden>0</span>
+</div>
+
+<!-- Overlay + Modal -->
+<div id="rw-overlay" class="rw-overlay" role="dialog" aria-modal="true" aria-labelledby="rw-modal-title" hidden>
+  <div class="rw-modal glass-card">
+
+    <header class="rw-modal-header">
+      <div class="rw-modal-title-group">
+        <span class="rw-modal-icon">🚌</span>
+        <h2 id="rw-modal-title">Reportar problema</h2>
+      </div>
+      <button id="rw-close" class="rw-close" aria-label="Cerrar">&times;</button>
+    </header>
+
+    <p class="rw-modal-subtitle">
+      Tu reporte llega directo al equipo. Cada dato correcto mejora la app para todos.
+    </p>
+
+    <form id="rw-form" class="rw-form" novalidate>
+
+      <!-- Tipo de reporte -->
+      <fieldset class="rw-fieldset">
+        <legend class="rw-label">¿Qué está mal?</legend>
+        <div class="rw-type-grid">
+          {[
+            { value: "precio",    icon: "💰", label: "Precio"         },
+            { value: "ruta",      icon: "🗺️", label: "Ruta mal"       },
+            { value: "nueva",     icon: "✨", label: "Falta ruta"     },
+            { value: "cancelada", icon: "🚫", label: "Cancelada"      },
+            { value: "comentario",icon: "💬", label: "Otro"           },
+          ].map(t => (
+            <label class="rw-type-card">
+              <input type="radio" name="tipo" value={t.value} required />
+              <span class="rw-type-icon">{t.icon}</span>
+              <span class="rw-type-label">{t.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <!-- Ruta afectada -->
+      <div class="rw-field">
+        <label class="rw-label" for="rw-ruta">Ruta afectada <span class="rw-optional">(ej. R-27, Combi)</span></label>
+        <input
+          id="rw-ruta"
+          class="rw-input input"
+          type="text"
+          name="ruta"
+          placeholder="Nombre o número de ruta..."
+          autocomplete="off"
+          maxlength="80"
+        />
       </div>
 
-      <form id="rw-form" class="rw-form" onsubmit="return false;">
-        <div class="rw-group">
-          <label class="rw-label">{i18n.type}</label>
-          <select name="tipo" class="rw-select" required>
-            <option value="">-- Selecciona --</option>
-            {Object.entries(i18n.types).map(([val, label]) => (
-              <option value={val}>{label}</option>
-            ))}
-          </select>
-        </div>
+      <!-- Descripción -->
+      <div class="rw-field">
+        <label class="rw-label" for="rw-desc">Descripción <span class="rw-req">*</span></label>
+        <textarea
+          id="rw-desc"
+          class="rw-input input rw-textarea"
+          name="descripcion"
+          placeholder="Ej: El R-27 ahora cobra 15 pesos..."
+          rows="3"
+          required
+          maxlength="500"
+        ></textarea>
+        <span class="rw-charcount"><span id="rw-chars">0</span>/500</span>
+      </div>
 
-        <div class="rw-group">
-          <label class="rw-label">Ruta (opcional)</label>
-          <input type="text" name="ruta" class="rw-input" placeholder="Ej: R-1, Zona Hotelera..." />
-        </div>
+      <!-- Geolocalización opcional -->
+      <div class="rw-field">
+        <button type="button" id="rw-geo-btn" class="rw-geo-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+          <span id="rw-geo-text">Agregar ubicación (opcional)</span>
+        </button>
+        <span id="rw-geo-status" class="rw-geo-status"></span>
+        <input type="hidden" id="rw-lat" name="lat" />
+        <input type="hidden" id="rw-lng" name="lng" />
+      </div>
 
-        <div class="rw-group">
-          <label class="rw-label">Descripción</label>
-          <textarea
-            id="rw-desc"
-            name="descripcion"
-            class="rw-textarea"
-            placeholder={i18n.descPlaceholder}
-            required
-            maxlength="500"
-          ></textarea>
-        </div>
+      <!-- Estado del envío -->
+      <div id="rw-feedback" class="rw-feedback" hidden></div>
 
-        <div id="rw-feedback" class="rw-feedback" hidden></div>
+      <!-- Acciones -->
+      <div class="rw-actions">
+        <button type="button" id="rw-cancel" class="rw-btn btn-secondary">Cancelar</button>
+        <button type="submit" id="rw-submit" class="rw-btn btn-primary">
+          <span id="rw-submit-text">Enviar reporte</span>
+          <span id="rw-submit-spinner" class="spinner" hidden></span>
+        </button>
+      </div>
 
-        <div class="rw-actions">
-          <button type="button" id="rw-cancel" class="rw-btn-secondary">{i18n.cancel}</button>
-          <button type="submit" id="rw-submit" class="rw-btn-primary">
-            <span id="rw-submit-text">{i18n.submit}</span>
-          </button>
-        </div>
-      </form>
-    </div>
+    </form>
+
+    <p class="rw-footer-note">
+      Anónimo · Los reportes se revisan antes de publicar
+    </p>
+
   </div>
 </div>
 
 <style>
-  .rw-fab { position: fixed; bottom: 5rem; right: 1rem; z-index: 100; width: 3.5rem; height: 3.5rem; border-radius: 999px; background: #0ea5e9; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4); border: none; cursor: pointer; }
-  .rw-badge { position: absolute; top: -2px; right: -2px; background: #f43f5e; color: white; font-size: 10px; font-weight: 900; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid white; }
-  .rw-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-  .rw-overlay[hidden] { display: none !important; }
-  .rw-modal { background: white; width: 100%; max-width: 24rem; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
-  :global(.dark) .rw-modal { background: #1e293b; color: white; }
-  .rw-header { padding: 1.25rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
-  .rw-title { font-weight: 900; font-size: 1.125rem; margin: 0; }
-  .rw-close-btn { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
-  .rw-form { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
-  .rw-label { font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
-  .rw-select, .rw-input, .rw-textarea { width: 100%; padding: 0.75rem; border: 2px solid #f1f5f9; border-radius: 12px; font-size: 0.875rem; background: #f8fafc; }
-  .rw-textarea { height: 6rem; resize: none; }
-  .rw-feedback { padding: 0.75rem; border-radius: 12px; font-size: 0.875rem; font-weight: 600; text-align: center; }
-  .rw-feedback.success { background: #f0fdf4; color: #166534; }
-  .rw-feedback.info { background: #f0f9ff; color: #075985; }
-  .rw-actions { display: flex; gap: 0.75rem; }
-  .rw-btn-primary { background: #0ea5e9; color: white; flex: 1; padding: 0.875rem; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; }
-  .rw-btn-secondary { background: #f1f5f9; color: #64748b; flex: 1; padding: 0.875rem; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; }
+  :root {
+    --rw-primary:     var(--color-primary, #0d9488);
+    --rw-primary-dk:  var(--color-teal-dark, #0f766e);
+    --rw-danger:      #ef4444;
+    --rw-success:     #22c55e;
+    --rw-surface:     var(--surface-card, #ffffff);
+    --rw-border:      var(--border-light, #e2e8f0);
+    --rw-text:        var(--text-primary, #1a202c);
+    --rw-text-muted:  var(--text-secondary, #64748b);
+    --rw-radius:      var(--radius-xl, 24px);
+    --rw-radius-sm:   var(--radius-md, 12px);
+    --rw-shadow:      var(--glass-shadow);
+    --rw-transition:  0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .rw-fab {
+    position: fixed;
+    bottom: 96px;
+    right: 18px;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px 12px 14px;
+    background: var(--rw-primary);
+    color: #fff;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(13, 148, 136, 0.4);
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: transform var(--rw-transition), box-shadow var(--rw-transition);
+  }
+  .rw-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(13, 148, 136, 0.5); }
+
+  .rw-queue-badge {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    background: var(--rw-danger);
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 900;
+    border: 2px solid var(--rw-surface);
+  }
+
+  .rw-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    animation: rw-fade-in 0.2s ease;
+  }
+  .rw-overlay[hidden] { display: none; }
+  @keyframes rw-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+  .rw-modal {
+    width: 100%;
+    max-width: 520px;
+    max-height: 92dvh;
+    overflow-y: auto;
+    background: var(--rw-surface);
+    border-radius: var(--rw-radius) var(--rw-radius) 0 0;
+    box-shadow: var(--rw-shadow);
+    padding: 24px;
+    position: relative;
+    border: 1px solid var(--rw-border);
+    border-bottom: none;
+  }
+
+  .rw-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .rw-modal-title-group { display: flex; align-items: center; gap: 10px; }
+  .rw-modal-icon { font-size: 1.4rem; }
+  #rw-modal-title { font-size: 1.25rem; font-weight: 900; margin: 0; color: var(--rw-text); }
+  .rw-close { background: none; border: none; font-size: 1.8rem; color: var(--rw-text-muted); cursor: pointer; padding: 4px; line-height: 1; }
+
+  .rw-modal-subtitle { font-size: 0.9rem; color: var(--rw-text-muted); margin-bottom: 24px; line-height: 1.5; font-weight: 500; }
+
+  .rw-fieldset { border: none; padding: 0; margin: 0 0 20px 0; }
+  .rw-label { display: block; font-size: 0.82rem; font-weight: 800; color: var(--rw-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .rw-optional { font-weight: 500; text-transform: none; opacity: 0.7; }
+  .rw-req { color: var(--rw-danger); }
+
+  .rw-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .rw-type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 6px;
+    border: 2px solid var(--rw-border);
+    border-radius: var(--rw-radius-sm);
+    cursor: pointer;
+    transition: all var(--rw-transition);
+    position: relative;
+  }
+  .rw-type-card:has(input:checked) { border-color: var(--rw-primary); background: var(--rw-primary-lt, rgba(13, 148, 136, 0.08)); }
+  .rw-type-card input { position: absolute; opacity: 0; }
+  .rw-type-icon { font-size: 1.2rem; margin-bottom: 4px; }
+  .rw-type-label { font-size: 0.75rem; font-weight: 700; text-align: center; }
+
+  .rw-field { margin-bottom: 18px; position: relative; }
+  .rw-input { width: 100%; box-sizing: border-box; }
+  .rw-textarea { resize: none; min-height: 80px; }
+  .rw-charcount { position: absolute; bottom: 8px; right: 12px; font-size: 0.65rem; color: var(--rw-text-muted); font-weight: 700; }
+
+  .rw-geo-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background: var(--rw-surface2, #f8fafc);
+    border: 1px dashed var(--rw-border);
+    border-radius: var(--rw-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--rw-text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .rw-geo-active { background: #f0fdf4; border-color: var(--rw-success); color: #166534; }
+  .rw-geo-error { color: var(--rw-danger); border-color: var(--rw-danger); }
+  .rw-geo-status { display: block; font-size: 0.75rem; color: var(--rw-text-muted); text-align: center; margin-top: 4px; }
+
+  .rw-feedback {
+    padding: 12px;
+    border-radius: var(--rw-radius-sm);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .rw-feedback[hidden] { display: none; }
+  .rw-feedback.success { background: rgba(34,197,94,0.1); color: #166534; }
+  .rw-feedback.error   { background: rgba(239,68,68,0.1); color: #991b1b; }
+  .rw-feedback.info    { background: rgba(13,148,136,0.1); color: #0f766e; }
+
+  .rw-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .rw-btn { padding: 10px 20px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: none; border-radius: var(--rw-radius-sm); }
+  .rw-footer-note { text-align: center; font-size: 0.7rem; color: var(--rw-text-muted); margin-top: 16px; }
+
+  @media (min-width: 640px) {
+    .rw-overlay { align-items: center; padding: 20px; }
+    .rw-modal { border-radius: var(--rw-radius); border-bottom: 1px solid var(--rw-border); }
+  }
 </style>
 
 <script>
@@ -335,7 +482,6 @@ const i18n = {
       if (isSyncing || !navigator.onLine || !config.token) return;
       isSyncing = true;
 
-    const updateBadge = async () => {
       const reports = await getPendingReports();
       if (badge) {
         badge.textContent = reports.length.toString();
@@ -367,21 +513,12 @@ const i18n = {
       }
       isSyncing = false;
     };
-    updateBadge();
-    window.addEventListener('online', updateBadge);
-
-    fab?.addEventListener('click', () => {
-        overlay?.removeAttribute('hidden');
-        if (feedback) feedback.hidden = true;
-    });
 
     window.addEventListener("online", syncOfflineReports);
     syncOfflineReports();
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      e.stopPropagation();
-
       const formData = new FormData(form);
       const data: Omit<PendingReport, "timestamp"> = {
         tipo: formData.get("tipo") as string,
@@ -425,7 +562,6 @@ const i18n = {
           showFeedback("Error crítico al guardar reporte local.", "error");
           setSubmitting(false);
         }
-        setTimeout(close, 2500);
       }
     });
 
