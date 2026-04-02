@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { escapeHtml, safeJsonStringify, truncateText, safeUrl, formatDate } from '../utils/utils';
+import { escapeHtml, safeJsonStringify, truncateText } from '../utils/utils';
 import { getDistance } from '../utils/geometry';
 
 describe('escapeHtml Utility', () => {
@@ -144,51 +144,5 @@ describe('truncateText Utility', () => {
     // Cutoff = 1 - 1 = 0
     expect(truncateText('A', 1)).toBe('A');
     expect(truncateText('AB', 1)).toBe('…'); // slice(0, 0) + '…'
-  });
-});
-
-describe('safeUrl Utility', () => {
-  it('should encode standard strings', () => {
-    expect(safeUrl('hello')).toBe('hello');
-    expect(safeUrl('Cancún')).toBe('Canc%C3%BAn');
-  });
-
-  it('should encode special characters', () => {
-    expect(safeUrl('hello world')).toBe('hello%20world');
-    expect(safeUrl('foo&bar=baz')).toBe('foo%26bar%3Dbaz');
-  });
-
-  it('should specifically handle single quotes by escaping them', () => {
-    expect(safeUrl("it's a trap")).toBe('it%27s%20a%20trap');
-    expect(safeUrl("'")).toBe('%27');
-  });
-
-  it('should return empty string for non-string inputs', () => {
-    expect(safeUrl(null as any)).toBe('');
-    expect(safeUrl(undefined as any)).toBe('');
-    expect(safeUrl(123 as any)).toBe('');
-    expect(safeUrl({} as any)).toBe('');
-    expect(safeUrl(true as any)).toBe('');
-  });
-
-  it('should handle empty strings', () => {
-    expect(safeUrl('')).toBe('');
-  });
-});
-
-describe('formatDate Utility', () => {
-  it('should format dates correctly for en-US', () => {
-    const date = new Date(2024, 0, 1); // Jan 1, 2024
-    expect(formatDate(date)).toBe('Jan 01, 2024');
-  });
-
-  it('should format other dates correctly', () => {
-    const date = new Date(2024, 11, 25); // Dec 25, 2024
-    expect(formatDate(date)).toBe('Dec 25, 2024');
-  });
-
-  it('should handle single digit days with leading zero', () => {
-    const date = new Date(2024, 4, 5); // May 5, 2024
-    expect(formatDate(date)).toBe('May 05, 2024');
   });
 });

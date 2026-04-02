@@ -1,6 +1,6 @@
 # 🗺️ MueveCancún — Roadmap
 
-> Última actualización: 2026-03-29 · Versión actual: **1.0.0 (Nexus Prime v3.3)**
+> Última actualización: 2026-03-10 · Versión actual: **1.0.0 (Nexus Prime v3.3)**
 > App en producción: [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com)
 
 ---
@@ -102,7 +102,6 @@ Estas tareas están identificadas pero aún no tienen sprint asignado. Se irán 
 
 | Versión | Fecha | Cambios principales |
 |---------|-------|---------------------|
-| v3.3.1 | 2026-03-29 | Strictly Static Stabilization; Client-side redirects for CDN compatibility; Localization utility implementation |
 | v3.3 | 2026-03-10 | Nexus Transfer Engine; GPS → parada; mapa interactivo con popups; balance IndexedDB unificado; 11 test files; 6 workflows CI/CD |
 | v3.2 | 2026-02-19 | WasmLoader singleton; SpatialHash; CoordinateFinder 2.1× más rápido; type-safety mejorada |
 | v3.1 | 2026-02-18 | Triple balance system; IndexedDB DataError resuelto; `src/lib/` → `src/utils/` |
