@@ -402,3 +402,10 @@ const isEs = lang === 'es';
   }
   .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
 </style>
+    document.addEventListener('astro:page-load', () => {
+      walletInitialized = false;
+      setupWallet();
+    });
+    // astro:page-load fires on initial load — no additional direct call needed
+  </script>
+</MainLayout>

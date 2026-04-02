@@ -12,7 +12,6 @@ interface Props {
 
 const repoOwner = Astro.props.repoOwner ?? import.meta.env.GITHUB_REPO_OWNER ?? "JULIANJUAREZMX01";
 const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "MueveCancun";
-const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
 ---
 
 <!-- Configuración para el script cliente -->
@@ -20,7 +19,6 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
   id="rw-config"
   data-owner={repoOwner}
   data-repo={repoName}
-  data-token={githubToken}
   hidden
 ></div>
 
@@ -294,49 +292,55 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
 </style>
 
 <script>
-  import { savePendingReport, getPendingReports, deletePendingReport } from '../utils/db';
+  import { savePendingReport, getPendingReports, deletePendingReport, type PendingReport } from "../utils/db";
+
+  // Extend window interface for global function access
+  declare global {
+    interface Window {
+      rwOpenReport: () => void;
+    }
+  }
 
   (() => {
     // ── Config ───────────────────────────────────────────────────
-    const configEl = document.getElementById('rw-config') as HTMLDivElement;
+    const configEl = document.getElementById("rw-config") as HTMLDivElement;
     if (!configEl) return;
 
     const config = {
-      owner: configEl.dataset.owner,
-      repo:  configEl.dataset.repo,
-      token: configEl.dataset.token
+      owner: configEl.dataset.owner || "",
+      repo:  configEl.dataset.repo || ""
     };
 
     // ── Referencias DOM ──────────────────────────────────────────
-    const fab      = document.getElementById('rw-fab');
-    const badge    = document.getElementById('rw-queue-badge');
-    const overlay  = document.getElementById('rw-overlay');
-    const form     = document.getElementById('rw-form') as HTMLFormElement;
-    const closeBtn = document.getElementById('rw-close');
-    const cancelBtn= document.getElementById('rw-cancel');
-    const geoBtn   = document.getElementById('rw-geo-btn');
-    const geoText  = document.getElementById('rw-geo-text');
-    const geoStatus= document.getElementById('rw-geo-status');
-    const latInput = document.getElementById('rw-lat') as HTMLInputElement;
-    const lngInput = document.getElementById('rw-lng') as HTMLInputElement;
-    const feedback = document.getElementById('rw-feedback');
-    const submitBtn= document.getElementById('rw-submit') as HTMLButtonElement;
-    const submitTxt= document.getElementById('rw-submit-text');
-    const spinner  = document.getElementById('rw-submit-spinner');
-    const textarea = document.getElementById('rw-desc') as HTMLTextAreaElement;
-    const charCount= document.getElementById('rw-chars');
+    const fab      = document.getElementById("rw-fab");
+    const badge    = document.getElementById("rw-queue-badge");
+    const overlay  = document.getElementById("rw-overlay");
+    const form     = document.getElementById("rw-form") as HTMLFormElement;
+    const closeBtn = document.getElementById("rw-close");
+    const cancelBtn= document.getElementById("rw-cancel");
+    const geoBtn   = document.getElementById("rw-geo-btn");
+    const geoText  = document.getElementById("rw-geo-text");
+    const geoStatus= document.getElementById("rw-geo-status");
+    const latInput = document.getElementById("rw-lat") as HTMLInputElement;
+    const lngInput = document.getElementById("rw-lng") as HTMLInputElement;
+    const feedback = document.getElementById("rw-feedback");
+    const submitBtn= document.getElementById("rw-submit") as HTMLButtonElement;
+    const submitTxt= document.getElementById("rw-submit-text");
+    const spinner  = document.getElementById("rw-submit-spinner");
+    const textarea = document.getElementById("rw-desc") as HTMLTextAreaElement;
+    const charCount= document.getElementById("rw-chars");
 
     if (!fab || !overlay || !form || !submitBtn || !textarea || !charCount) return;
 
     // ── UI Logic ────────────────────────────────────────────────
-    const openModal  = () => {
+    const openModal = () => {
       overlay.hidden = false;
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     };
 
     const closeModal = () => {
       overlay.hidden = true;
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
       resetForm();
     };
 
@@ -346,64 +350,64 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
       if (spinner) spinner.hidden = !loading;
     };
 
-    const showFeedback = (msg: string, type: 'success' | 'error' | 'info') => {
+    const showFeedback = (msg: string, type: "success" | "error" | "info") => {
       if (!feedback) return;
       feedback.textContent = msg;
-      feedback.className   = `rw-feedback ${type}`;
-      feedback.hidden      = false;
+      feedback.className = "rw-feedback " + type;
+      feedback.hidden = false;
     };
 
     const resetForm = () => {
       form.reset();
-      if (latInput) latInput.value = '';
-      if (lngInput) lngInput.value = '';
-      geoBtn?.classList.remove('rw-geo-active', 'rw-geo-error');
-      if (geoText) geoText.textContent = 'Agregar ubicación (opcional)';
-      if (geoStatus) geoStatus.textContent = '';
-      charCount.textContent = '0';
+      if (latInput) latInput.value = "";
+      if (lngInput) lngInput.value = "";
+      geoBtn?.classList.remove("rw-geo-active", "rw-geo-error");
+      if (geoText) geoText.textContent = "Agregar ubicación (opcional)";
+      if (geoStatus) geoStatus.textContent = "";
+      charCount.textContent = "0";
       if (feedback) feedback.hidden = true;
       setSubmitting(false);
     };
 
     // ── Events ───────────────────────────────────────────────────
-    fab.addEventListener('click', openModal);
-    closeBtn?.addEventListener('click', closeModal);
-    cancelBtn?.addEventListener('click', closeModal);
-    overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !overlay.hidden) closeModal(); });
+    fab.addEventListener("click", openModal);
+    closeBtn?.addEventListener("click", closeModal);
+    cancelBtn?.addEventListener("click", closeModal);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !overlay.hidden) closeModal(); });
     window.rwOpenReport = openModal;
 
-    textarea.addEventListener('input', () => {
+    textarea.addEventListener("input", () => {
       charCount.textContent = textarea.value.length.toString();
     });
 
     // ── Geo ──────────────────────────────────────────────────────
-    geoBtn?.addEventListener('click', () => {
+    geoBtn?.addEventListener("click", () => {
       if (latInput.value) {
-        latInput.value = ''; lngInput.value = '';
-        geoBtn.classList.remove('rw-geo-active', 'rw-geo-error');
-        geoText.textContent = 'Agregar ubicación (opcional)';
-        geoStatus.textContent = '';
+        latInput.value = ""; lngInput.value = "";
+        geoBtn.classList.remove("rw-geo-active", "rw-geo-error");
+        geoText.textContent = "Agregar ubicación (opcional)";
+        geoStatus.textContent = "";
         return;
       }
       if (!navigator.geolocation) {
-        geoBtn.classList.add('rw-geo-error');
-        geoText.textContent = 'GPS no disponible';
+        geoBtn.classList.add("rw-geo-error");
+        geoText.textContent = "GPS no disponible";
         return;
       }
-      geoText.textContent = 'Obteniendo...';
+      geoText.textContent = "Obteniendo...";
       navigator.geolocation.getCurrentPosition(
         pos => {
           latInput.value = pos.coords.latitude.toFixed(6);
           lngInput.value = pos.coords.longitude.toFixed(6);
-          geoBtn.classList.add('rw-geo-active');
-          geoText.textContent = 'Ubicación capturada ✓';
-          geoStatus.textContent = `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+          geoBtn.classList.add("rw-geo-active");
+          geoText.textContent = "Ubicación capturada ✓";
+          geoStatus.textContent = pos.coords.latitude.toFixed(4) + ", " + pos.coords.longitude.toFixed(4);
         },
         err => {
-          geoBtn.classList.add('rw-geo-error');
-          geoText.textContent = 'Error de GPS';
-          geoStatus.textContent = err.code === 1 ? 'Permiso denegado' : 'Fallo de GPS';
+          geoBtn.classList.add("rw-geo-error");
+          geoText.textContent = "Error de GPS";
+          geoStatus.textContent = err.code === 1 ? "Permiso denegado" : "Fallo de GPS";
         },
         { timeout: 8000 }
       );
@@ -411,83 +415,81 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
 
     // ── Submission Logic ─────────────────────────────────────────
     const TIPO_LABELS: Record<string, string[]> = {
-      precio:     ['reporte:precio',    'estado:pendiente'],
-      ruta:       ['reporte:ruta',      'estado:pendiente'],
-      nueva:      ['reporte:nueva-ruta','estado:pendiente'],
-      cancelada:  ['reporte:cancelada', 'estado:pendiente'],
-      comentario: ['reporte:info',      'estado:pendiente'],
+      precio:     ["reporte:precio",    "estado:pendiente"],
+      ruta:       ["reporte:ruta",      "estado:pendiente"],
+      nueva:      ["reporte:nueva-ruta","estado:pendiente"],
+      cancelada:  ["reporte:cancelada", "estado:pendiente"],
+      comentario: ["reporte:info",      "estado:pendiente"],
     };
 
     const TIPO_TITLES: Record<string, string> = {
-      precio:     'Precio incorrecto',
-      ruta:       'Ruta / destino mal',
-      nueva:      'Ruta nueva no listada',
-      cancelada:  'Ruta cancelada',
-      comentario: 'Otro comentario',
+      precio:     "Precio incorrecto",
+      ruta:       "Ruta / destino mal",
+      nueva:      "Ruta nueva no listada",
+      cancelada:  "Ruta cancelada",
+      comentario: "Otro comentario",
     };
 
-    const buildPayload = (data: any) => ({
-      title: `[REPORTE] ${TIPO_TITLES[data.tipo] ?? data.tipo}${data.ruta ? ` — ${data.ruta}` : ''}`,
-      labels: TIPO_LABELS[data.tipo] ?? ['reporte', 'estado:pendiente'],
-      body: `## 📋 Reporte ciudadano — MueveCancun
+    function buildPayload(data: PendingReport) {
+      const typeLabel = TIPO_TITLES[data.tipo] || data.tipo;
+      const titleSuffix = data.ruta ? (" \u2014 " + data.ruta) : "";
+      const dateStr = new Date(data.timestamp).toLocaleString("es-MX", { timeZone: "America/Cancun" });
 
-**Tipo:** ${TIPO_TITLES[data.tipo] ?? data.tipo}
-**Ruta:** ${data.ruta || '_No especificada_'}
-**Fecha:** ${new Date(data.timestamp || Date.now()).toLocaleString('es-MX', { timeZone: 'America/Cancun' })}
+      let body = "## \ud83d\udccb Reporte ciudadano \u2014 MueveCancun\n\n";
+      body += "**Tipo:** " + typeLabel + "\n";
+      body += "**Ruta:** " + (data.ruta || "_No especificada_") + "\n";
+      body += "**Fecha:** " + dateStr + "\n\n";
+      body += "## \ud83d\udcdd Descripci\u00f3n\n" + data.descripcion + "\n\n";
 
-## 📝 Descripción
-${data.descripcion}
+      if (data.lat && data.lng) {
+        body += "**\ud83d\udccd Ubicaci\u00f3n:** [" + data.lat + ", " + data.lng + "](https://www.openstreetmap.org/?mlat=" + data.lat + "&mlon=" + data.lng + "#map=16/" + data.lat + "/" + data.lng + ")\n\n";
+      }
 
-${data.lat && data.lng ? `**📍 Ubicación:** [${data.lat}, ${data.lng}](https://www.openstreetmap.org/?mlat=${data.lat}&mlon=${data.lng}#map=16/${data.lat}/${data.lng})` : ''}
+      body += "---\n";
+      body += "_Dispositivo: " + data.userAgent + "_\n";
+      body += "_URL: " + data.url + "_\n";
+      body += "Nexus Protocol v1.2 (Offline-First)\n";
 
----
-_Dispositivo: ${data.userAgent}_
-_URL: ${data.url}_
-Nexus Protocol v1.2 (Offline-First)
-`
-    });
+      return {
+        title: "[REPORTE] " + typeLabel + titleSuffix,
+        labels: TIPO_LABELS[data.tipo] || ["reporte", "estado:pendiente"],
+        body: body
+      };
+    }
 
-    const sendToGitHub = async (payload: any) => {
-      if (!config.token) throw new Error('Token ausente');
-      const res = await fetch(`https://api.github.com/repos/${config.owner}/${config.repo}/issues`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/vnd.github+json',
-          'Authorization': `Bearer ${config.token}`,
-          'X-GitHub-Api-Version': '2022-11-28',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+    const openGitHubIssue = (payload: { title: string; body: string; labels: string[] }) => {
+      const params = new URLSearchParams({
+        title: payload.title,
+        body: payload.body,
+        labels: payload.labels.join(',')
       });
-      if (!res.ok) throw new Error(`GitHub API Error: ${res.status}`);
-      return res.json();
+      const url = `https://github.com/${config.owner}/${config.repo}/issues/new?${params.toString()}`;
+      const win = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!win) {
+        throw new Error('Popup blocked');
+      }
     };
 
-    // ── Sync Queue ───────────────────────────────────────────────
     let isSyncing = false;
     const syncOfflineReports = async () => {
-      if (isSyncing || !navigator.onLine || !config.token) return;
-      isSyncing = true;
-
-      const reports = await getPendingReports();
+      // Always update badge from IndexedDB to reflect persisted state on page load
+      const allReports = await getPendingReports();
       if (badge) {
-        badge.textContent = reports.length.toString();
-        badge.hidden = reports.length === 0;
+        badge.textContent = allReports.length.toString();
+        badge.hidden = allReports.length === 0;
       }
 
-      if (reports.length === 0) {
-        isSyncing = false;
-        return;
-      }
+      // Only attempt to send when online and not already syncing
+      if (isSyncing || !navigator.onLine || allReports.length === 0) return;
 
-      console.log(`[ReportWidget] Sincronizando ${reports.length} reportes pendientes...`);
+      isSyncing = true;
+      console.log("[ReportWidget] Sincronizando reportes pendientes...");
 
-      for (const r of reports) {
+      for (const r of allReports) {
         try {
           const payload = buildPayload(r);
-          await sendToGitHub(payload);
-          await deletePendingReport(r.id!);
-          console.log(`[ReportWidget] Sincronizado reporte #${r.id} ✓`);
+          openGitHubIssue(payload);
+          if (r.id !== undefined) await deletePendingReport(r.id);
         } catch (err) {
           console.warn(`[ReportWidget] Fallo al sincronizar reporte #${r.id}:`, err);
           break;
@@ -502,58 +504,60 @@ Nexus Protocol v1.2 (Offline-First)
       isSyncing = false;
     };
 
-    // Trigger sync on load and network recovery
-    window.addEventListener('online', syncOfflineReports);
+    window.addEventListener("online", syncOfflineReports);
     syncOfflineReports();
 
-    // ── Main Submit ──────────────────────────────────────────────
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
-      const data = {
-        tipo: formData.get('tipo') as string,
-        ruta: formData.get('ruta') as string,
-        descripcion: (formData.get('descripcion') as string).trim(),
-        lat: formData.get('lat') as string,
-        lng: formData.get('lng') as string,
+      const data: Omit<PendingReport, "timestamp"> = {
+        tipo: String(formData.get("tipo") ?? ""),
+        ruta: String(formData.get("ruta") ?? ""),
+        descripcion: String(formData.get("descripcion") ?? "").trim(),
+        lat: String(formData.get("lat") ?? ""),
+        lng: String(formData.get("lng") ?? ""),
         userAgent: navigator.userAgent,
-        url: window.location.href,
-        timestamp: Date.now()
+        url: window.location.href
       };
 
-      if (!data.tipo) { showFeedback('Selecciona el tipo de problema.', 'error'); return; }
-      if (data.descripcion.length < 10) { showFeedback('La descripción es muy corta.', 'error'); return; }
+      if (!data.tipo) { showFeedback("Selecciona el tipo de problema.", "error"); return; }
+      if (data.descripcion.length < 10) { showFeedback("La descripción es muy corta.", "error"); return; }
 
       setSubmitting(true);
       if (feedback) feedback.hidden = true;
 
+      const fullData: PendingReport = { ...data, timestamp: Date.now() };
+
       try {
-        const payload = buildPayload(data);
-        await sendToGitHub(payload);
-        showFeedback(`¡Gracias! Reporte enviado.`, 'success');
+        if (!navigator.onLine) throw new Error('Offline');
+        const payload = buildPayload(fullData);
+        openGitHubIssue(payload);
+        showFeedback('¡Gracias! Se abrirá GitHub para completar el reporte.', 'success');
         setTimeout(closeModal, 2800);
       } catch (err) {
-        if (!navigator.onLine || !config.token) {
-          try {
-            await savePendingReport(data);
-            const pending = await getPendingReports();
-            if (badge) {
-              badge.textContent = pending.length.toString();
-              badge.hidden = false;
-            }
-            showFeedback('Sin conexión. Reporte guardado para enviar después. ✓', 'info');
-            setTimeout(closeModal, 2800);
-          } catch (queueErr) {
-            console.error('[ReportWidget] Error al guardar reporte pendiente:', queueErr);
-            showFeedback(
-              'No se pudo guardar el reporte para enviar después. Revisa si estás en modo privado o si el almacenamiento está bloqueado e inténtalo de nuevo.',
-              'error'
-            );
-            setSubmitting(false);
+        const isOffline = !navigator.onLine;
+        const isPopupBlocked = err instanceof Error && err.message === 'Popup blocked';
+        if (isPopupBlocked) {
+          showFeedback('El navegador bloqueó la ventana emergente. Permite ventanas emergentes e intenta de nuevo.', 'error');
+          setSubmitting(false);
+          return;
+        }
+        console.warn('[ReportWidget] Submission failed, queuing offline:', err);
+        try {
+          await savePendingReport(data);
+          const pending = await getPendingReports();
+          if (badge) {
+            badge.textContent = pending.length.toString();
+            badge.hidden = false;
           }
-        } else {
-          console.error('[ReportWidget] Error al enviar:', err);
-          showFeedback('Error al enviar. Intenta de nuevo.', 'error');
+          showFeedback('Sin conexión. Reporte guardado para enviar después. ✓', 'info');
+          setTimeout(closeModal, 2800);
+        } catch (queueErr) {
+          console.error('[ReportWidget] Error al guardar reporte pendiente:', queueErr);
+          showFeedback(
+            'No se pudo guardar el reporte para enviar después. Revisa si estás en modo privado o si el almacenamiento está bloqueado e inténtalo de nuevo.',
+            'error'
+          );
           setSubmitting(false);
         }
       }

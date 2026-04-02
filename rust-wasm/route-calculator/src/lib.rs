@@ -92,13 +92,11 @@ pub struct RouteLeg {
 
 struct AppState {
     routes_list: Vec<Route>,
-    routes_map: HashMap<String, Route>,
 }
 
 static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
     RwLock::new(AppState {
         routes_list: Vec::new(),
-        routes_map: HashMap::new(),
     })
 });
 
@@ -150,45 +148,10 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     }
 
     let mut db = DB.write().map_err(|_| "Lock failed".to_string())?;
-    db.routes_map = catalog.rutas.iter().map(|r| (r.id.clone(), r.clone())).collect();
     db.routes_list = catalog.rutas;
     Ok(())
 }
 
-pub fn get_route_by_id_core(id: &str) -> Result<Option<Route>, String> {
-    // Sentinel: DoS Protection - Limit ID length to prevent hash collision attacks or massive allocation
-    if id.len() > 100 {
-        return Ok(None);
-    }
-    let db = DB.read().map_err(|_| "Lock failed".to_string())?;
-    Ok(db.routes_map.get(id).cloned())
-}
-
-pub fn get_all_routes_core() -> Result<Vec<Route>, String> {
-    let db = DB.read().map_err(|_| "Lock failed".to_string())?;
-    Ok(db.routes_list.clone())
-}
-
-pub fn find_route_core_wrapper(origin: &str, dest: &str) -> Result<Vec<Journey>, String> {
-    if origin.len() > 100 || dest.len() > 100 {
-        return Ok(Vec::new());
-    }
-
-    let db = DB.read().map_err(|_| "Lock failed".to_string())?;
-
-    if db.routes_list.is_empty() {
-        return Err("ERROR: Catalog not loaded. Call load_catalog() first.".to_string());
-    }
-
-    Ok(find_route_rs(origin, dest, &db.routes_list))
-}
-
-// --- WASM EXPORTS ---
-
-#[wasm_bindgen]
-pub fn validate_operator_funds(balance: f64) -> bool {
-    balance >= 0.0
-}
 #[wasm_bindgen]
 pub fn load_catalog(json_payload: &str) -> Result<(), JsValue> {
     load_catalog_core(json_payload).map_err(|e| JsValue::from_str(&e))
