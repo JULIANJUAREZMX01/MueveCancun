@@ -90,7 +90,7 @@ export const ui = {
         'calc.tourist': 'Turista',
         'calc.btn': 'TRAZAR RUTA',
         'calc.balance.warning': 'Saldo Insuficiente',
-        'calc.balance.msg': 'Requiere mínimo para operar.',
+        'calc.balance.msg': 'Requiere saldo mínimo para operar.',
         'calc.gps': 'Usar mi ubicación',
         'calc.map': 'Seleccionar en mapa',
         'calc.reset': 'EDITAR',
