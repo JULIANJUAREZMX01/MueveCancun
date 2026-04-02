@@ -152,6 +152,40 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     Ok(())
 }
 
+pub fn get_route_by_id_core(id: &str) -> Result<Option<Route>, String> {
+    // Sentinel: DoS Protection - Limit ID length to prevent hash collision attacks or massive allocation
+    if id.len() > 100 {
+        return Ok(None);
+    }
+    let db = DB.read().map_err(|_| "Lock failed".to_string())?;
+    Ok(db.routes_map.get(id).cloned())
+}
+
+pub fn get_all_routes_core() -> Result<Vec<Route>, String> {
+    let db = DB.read().map_err(|_| "Lock failed".to_string())?;
+    Ok(db.routes_list.clone())
+}
+
+pub fn find_route_core_wrapper(origin: &str, dest: &str) -> Result<Vec<Journey>, String> {
+    if origin.len() > 100 || dest.len() > 100 {
+        return Ok(Vec::new());
+    }
+
+    let db = DB.read().map_err(|_| "Lock failed".to_string())?;
+
+    if db.routes_list.is_empty() {
+        return Err("ERROR: Catalog not loaded. Call load_catalog() first.".to_string());
+    }
+
+    Ok(find_route_rs(origin, dest, &db.routes_list))
+}
+
+// --- WASM EXPORTS ---
+
+#[wasm_bindgen]
+pub fn validate_operator_funds(balance: f64) -> bool {
+    balance >= 0.0
+}
 #[wasm_bindgen]
 pub fn load_catalog(json_payload: &str) -> Result<(), JsValue> {
     load_catalog_core(json_payload).map_err(|e| JsValue::from_str(&e))
