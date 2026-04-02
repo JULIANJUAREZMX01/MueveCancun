@@ -5357,6 +5357,7 @@
     },
     {
       "id": "R1",
+      "tipo": "Bus_Urbano",
       "nombre": "Crucero - Zona Hotelera",
       "color": "#FF6B6B",
       "tipo": "Bus_Urbano",
@@ -5387,6 +5388,7 @@
     },
     {
       "id": "R2",
+      "tipo": "Bus_Urbano",
       "nombre": "Walmart - Puerto Juárez",
       "color": "#4ECDC4",
       "tipo": "Bus_Urbano",
