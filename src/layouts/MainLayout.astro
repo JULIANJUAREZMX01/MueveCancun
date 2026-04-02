@@ -150,7 +150,7 @@ const navItems = [
       async function syncGlobalBalance() {
           try {
             const walletData = await getWalletBalance();
-            const balance = walletData?.amount ?? 0.00;
+            const balance = walletData?.amount ?? 180.00;
             const balanceEl = document.getElementById('header-balance-amount');
             if (balanceEl) balanceEl.textContent = `$${balance.toFixed(2)}`;
           } catch (e: unknown) {
@@ -265,7 +265,7 @@ const navItems = [
          <!-- Unified Balance Badge -->
          <a href={getRelativeLocaleUrl(lang, "wallet")} id="header-balance-badge" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 no-underline transition-all hover:scale-105 active:scale-95 group" aria-label="Wallet balance">
             <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" aria-hidden="true"></span>
-            <span id="header-balance-amount" class="text-xs font-black text-slate-700 dark:text-slate-300">$0.00</span>
+            <span id="header-balance-amount" class="text-xs font-black text-slate-700 dark:text-slate-300">$180.00</span>
          </a>
 
          <button class="theme-toggle w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800"

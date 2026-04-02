@@ -306,6 +306,6 @@ import MainLayout from '../../layouts/MainLayout.astro';
       walletInitialized = false;
       setupWallet();
     });
-    setupWallet();
+    // astro:page-load fires on initial load — no additional direct call needed
   </script>
 </MainLayout>

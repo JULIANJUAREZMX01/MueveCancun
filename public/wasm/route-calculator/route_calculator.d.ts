@@ -5,15 +5,12 @@ export function find_route(origin: string, dest: string): any;
 
 export function load_catalog(json_payload: string): void;
 
-export function validate_operator_funds(balance: number): boolean;
-
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly find_route: (a: number, b: number, c: number, d: number) => [number, number, number];
     readonly load_catalog: (a: number, b: number) => [number, number];
-    readonly validate_operator_funds: (a: number) => number;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;
