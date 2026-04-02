@@ -9,8 +9,10 @@ export function getStaticPaths() {
 import MainLayout from '../../layouts/MainLayout.astro';
 import InteractiveMap from '../../components/InteractiveMap.astro';
 import RouteCalculator from '../../components/RouteCalculator.astro';
+import Icon from '../../components/ui/Icon.astro';
 
-const title = "Inicio";
+const { lang } = Astro.params;
+const title = lang === 'es' ? "Inicio" : "Home";
 ---
 
 <MainLayout title={title}>
@@ -18,6 +20,14 @@ const title = "Inicio";
     <div class="fixed inset-0 z-0 h-full w-full">
         <InteractiveMap center={[21.1619, -86.8515]} zoom={13} />
     </div>
+
+    <!-- Floating Mini-Game Button (Compact Industrial Style) -->
+    <a href={`/${lang}/guess`} class="fixed top-20 right-4 z-30 p-3 bg-teal-500 text-white rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all animate-bounce-slow flex items-center gap-2 group overflow-hidden max-w-[48px] hover:max-w-[200px] duration-500 no-underline" aria-label={lang === 'es' ? "Jugar Adivina Dónde Estoy" : "Play Guess Where I Am"}>
+        <Icon name="camera-game" class="w-6 h-6 flex-shrink-0" />
+        <span class="font-bold text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300" data-i18n="game.title">
+            {lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am"}
+        </span>
+    </a>
 
     <!-- Dashboard Overlay -->
 	<div class="dashboard-container pointer-events-none">
@@ -208,5 +218,14 @@ const title = "Inicio";
         opacity: 1;
         transform: scale(1) translateY(0);
     }
+}
+
+@keyframes bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.animate-bounce-slow {
+    animation: bounce-slow 3s ease-in-out infinite;
 }
 </style>

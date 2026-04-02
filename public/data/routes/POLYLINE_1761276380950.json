@@ -1,0 +1,584 @@
+{
+  "id": "POLYLINE_1761276380950",
+  "nombre": "RUTA 2 CHACMOOL-PORTILLO",
+  "tarifa": 12,
+  "tipo": "Bus_Urbano",
+  "paradas": [
+    {
+      "nombre": "Stop 1 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.195430542214588,
+      "lng": -86.8876075744629,
+      "orden": 1
+    },
+    {
+      "nombre": "Stop 2 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.1942301703056,
+      "lng": -86.88562273979188,
+      "orden": 2
+    },
+    {
+      "nombre": "Stop 3 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.19332488337388,
+      "lng": -86.88459813594818,
+      "orden": 3
+    },
+    {
+      "nombre": "Stop 4 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.191764375753536,
+      "lng": -86.88327312469484,
+      "orden": 4
+    },
+    {
+      "nombre": "Stop 5 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.191454272917586,
+      "lng": -86.88308000564577,
+      "orden": 5
+    },
+    {
+      "nombre": "Stop 6 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.19130422292464,
+      "lng": -86.88274741172792,
+      "orden": 6
+    },
+    {
+      "nombre": "Stop 7 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.18585230319359,
+      "lng": -86.87945365905762,
+      "orden": 7
+    },
+    {
+      "nombre": "Stop 8 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.180870373201245,
+      "lng": -86.8760633468628,
+      "orden": 8
+    },
+    {
+      "nombre": "Stop 9 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.174687744748013,
+      "lng": -86.8728232383728,
+      "orden": 9
+    },
+    {
+      "nombre": "Stop 10 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.15212596233785,
+      "lng": -86.87098860740663,
+      "orden": 10
+    },
+    {
+      "nombre": "Stop 11 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.161641350716934,
+      "lng": -86.85160160064697,
+      "orden": 11
+    },
+    {
+      "nombre": "Stop 12 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.161481265119168,
+      "lng": -86.85120463371277,
+      "orden": 12
+    },
+    {
+      "nombre": "Stop 13 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.15321160800611,
+      "lng": -86.84280931949617,
+      "orden": 13
+    },
+    {
+      "nombre": "Stop 14 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.152906427309148,
+      "lng": -86.84285223484041,
+      "orden": 14
+    },
+    {
+      "nombre": "Stop 15 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.152606248960826,
+      "lng": -86.84266984462738,
+      "orden": 15
+    },
+    {
+      "nombre": "Stop 16 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.152511192357007,
+      "lng": -86.84232115745546,
+      "orden": 16
+    },
+    {
+      "nombre": "Stop 17 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.152541210238486,
+      "lng": -86.84193491935731,
+      "orden": 17
+    },
+    {
+      "nombre": "Stop 18 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.15252119831817,
+      "lng": -86.8415540456772,
+      "orden": 18
+    },
+    {
+      "nombre": "Stop 19 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.1527813530713,
+      "lng": -86.84103906154634,
+      "orden": 19
+    },
+    {
+      "nombre": "Stop 20 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.15462743809368,
+      "lng": -86.83510065078737,
+      "orden": 20
+    },
+    {
+      "nombre": "Stop 21 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.155633019438714,
+      "lng": -86.83204293251038,
+      "orden": 21
+    },
+    {
+      "nombre": "Stop 22 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.155973214566554,
+      "lng": -86.8303370475769,
+      "orden": 22
+    },
+    {
+      "nombre": "Stop 23 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.156013237471388,
+      "lng": -86.8290764093399,
+      "orden": 23
+    },
+    {
+      "nombre": "Stop 24 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.15591318018904,
+      "lng": -86.82877600193024,
+      "orden": 24
+    },
+    {
+      "nombre": "Stop 25 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.156618582587512,
+      "lng": -86.82622253894806,
+      "orden": 25
+    },
+    {
+      "nombre": "Stop 26 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.156628588271115,
+      "lng": -86.82589530944826,
+      "orden": 26
+    },
+    {
+      "nombre": "Stop 27 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.156488508639114,
+      "lng": -86.82543933391572,
+      "orden": 27
+    },
+    {
+      "nombre": "Stop 28 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.156383448828127,
+      "lng": -86.82445228099824,
+      "orden": 28
+    },
+    {
+      "nombre": "Stop 29 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.15549293886475,
+      "lng": -86.8217271566391,
+      "orden": 29
+    },
+    {
+      "nombre": "Stop 30 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.15544291005622,
+      "lng": -86.82085812091829,
+      "orden": 30
+    },
+    {
+      "nombre": "Stop 31 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.155943197380843,
+      "lng": -86.81849241256715,
+      "orden": 31
+    },
+    {
+      "nombre": "Stop 32 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.15672864506997,
+      "lng": -86.81708693504333,
+      "orden": 32
+    },
+    {
+      "nombre": "Stop 33 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.157158888534518,
+      "lng": -86.81495189666748,
+      "orden": 33
+    },
+    {
+      "nombre": "Stop 34 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.15879980561845,
+      "lng": -86.80723786354065,
+      "orden": 34
+    },
+    {
+      "nombre": "Stop 35 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.159039938300207,
+      "lng": -86.80599331855775,
+      "orden": 35
+    },
+    {
+      "nombre": "Stop 36 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.158994913452045,
+      "lng": -86.80444300174715,
+      "orden": 36
+    },
+    {
+      "nombre": "Stop 37 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.15842960030423,
+      "lng": -86.80282294750215,
+      "orden": 37
+    },
+    {
+      "nombre": "Stop 38 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.157384015430466,
+      "lng": -86.80137991905212,
+      "orden": 38
+    },
+    {
+      "nombre": "Stop 39 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.153046510330118,
+      "lng": -86.79800033569337,
+      "orden": 39
+    },
+    {
+      "nombre": "Stop 40 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.150164775794085,
+      "lng": -86.79458856582643,
+      "orden": 40
+    },
+    {
+      "nombre": "Stop 41 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.14475636916366,
+      "lng": -86.79006099700929,
+      "orden": 41
+    },
+    {
+      "nombre": "Stop 42 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.143830766371075,
+      "lng": -86.78906321525574,
+      "orden": 42
+    },
+    {
+      "nombre": "Stop 43 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.143245382160273,
+      "lng": -86.78805470466614,
+      "orden": 43
+    },
+    {
+      "nombre": "Stop 44 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.14282010158217,
+      "lng": -86.78699254989624,
+      "orden": 44
+    },
+    {
+      "nombre": "Stop 45 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.142675005576226,
+      "lng": -86.78601622581482,
+      "orden": 45
+    },
+    {
+      "nombre": "Stop 46 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.142675005576226,
+      "lng": -86.78493797779085,
+      "orden": 46
+    },
+    {
+      "nombre": "Stop 47 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.14321035909997,
+      "lng": -86.78231477737428,
+      "orden": 47
+    },
+    {
+      "nombre": "Stop 48 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.14343050391292,
+      "lng": -86.78104877471924,
+      "orden": 48
+    },
+    {
+      "nombre": "Stop 49 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.14342049733759,
+      "lng": -86.77943944931032,
+      "orden": 49
+    },
+    {
+      "nombre": "Stop 50 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.143295415089213,
+      "lng": -86.77815735340118,
+      "orden": 50
+    },
+    {
+      "nombre": "Stop 51 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.142680008889148,
+      "lng": -86.77622079849243,
+      "orden": 51
+    },
+    {
+      "nombre": "Stop 52 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.142424839715034,
+      "lng": -86.77550733089448,
+      "orden": 52
+    },
+    {
+      "nombre": "Stop 53 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.138937483625977,
+      "lng": -86.77042722702028,
+      "orden": 53
+    },
+    {
+      "nombre": "Stop 54 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.13644574995287,
+      "lng": -86.76589965820314,
+      "orden": 54
+    },
+    {
+      "nombre": "Stop 55 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.135630173405296,
+      "lng": -86.76386117935182,
+      "orden": 55
+    },
+    {
+      "nombre": "Stop 56 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.13479457805478,
+      "lng": -86.76108241081239,
+      "orden": 56
+    },
+    {
+      "nombre": "Stop 57 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.13466448494167,
+      "lng": -86.75572872161867,
+      "orden": 57
+    },
+    {
+      "nombre": "Stop 58 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.134814592369732,
+      "lng": -86.75407648086549,
+      "orden": 58
+    },
+    {
+      "nombre": "Stop 59 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.135585141440632,
+      "lng": -86.75269246101381,
+      "orden": 59
+    },
+    {
+      "nombre": "Stop 60 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.13657584150247,
+      "lng": -86.75121188163759,
+      "orden": 60
+    },
+    {
+      "nombre": "Stop 61 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.13691608040001,
+      "lng": -86.7502248287201,
+      "orden": 61
+    },
+    {
+      "nombre": "Stop 62 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.136325665344195,
+      "lng": -86.74872279167177,
+      "orden": 62
+    },
+    {
+      "nombre": "Stop 63 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.135054763938438,
+      "lng": -86.7479395866394,
+      "orden": 63
+    },
+    {
+      "nombre": "Stop 64 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.13254295036798,
+      "lng": -86.74854040145875,
+      "orden": 64
+    },
+    {
+      "nombre": "Stop 65 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.130281281016803,
+      "lng": -86.74984931945802,
+      "orden": 65
+    },
+    {
+      "nombre": "Stop 66 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.127329050083844,
+      "lng": -86.75275683403017,
+      "orden": 66
+    },
+    {
+      "nombre": "Stop 67 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.125157371501324,
+      "lng": -86.7544198036194,
+      "orden": 67
+    },
+    {
+      "nombre": "Stop 68 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.12343601841697,
+      "lng": -86.75510644912721,
+      "orden": 68
+    },
+    {
+      "nombre": "Stop 69 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.12223005856929,
+      "lng": -86.75526201725008,
+      "orden": 69
+    },
+    {
+      "nombre": "Stop 70 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.118912367399172,
+      "lng": -86.75729513168335,
+      "orden": 70
+    },
+    {
+      "nombre": "Stop 71 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.117376096126097,
+      "lng": -86.75736486911775,
+      "orden": 71
+    },
+    {
+      "nombre": "Stop 72 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.115534551289954,
+      "lng": -86.7584216594696,
+      "orden": 72
+    },
+    {
+      "nombre": "Stop 73 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.113372708620254,
+      "lng": -86.7606908082962,
+      "orden": 73
+    },
+    {
+      "nombre": "Stop 74 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.111621192619754,
+      "lng": -86.76218748092651,
+      "orden": 74
+    },
+    {
+      "nombre": "Stop 75 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.109294146526697,
+      "lng": -86.76332473754883,
+      "orden": 75
+    },
+    {
+      "nombre": "Stop 76 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.108233201574443,
+      "lng": -86.7634427547455,
+      "orden": 76
+    },
+    {
+      "nombre": "Stop 77 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.106651778983792,
+      "lng": -86.76380753517152,
+      "orden": 77
+    },
+    {
+      "nombre": "Stop 78 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.10021581578446,
+      "lng": -86.76725149154665,
+      "orden": 78
+    },
+    {
+      "nombre": "Stop 79 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.090346129725607,
+      "lng": -86.7719078063965,
+      "orden": 79
+    },
+    {
+      "nombre": "Stop 80 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.08141680212701,
+      "lng": -86.77574872970582,
+      "orden": 80
+    },
+    {
+      "nombre": "Stop 81 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.07545027078886,
+      "lng": -86.77752971649171,
+      "orden": 81
+    },
+    {
+      "nombre": "Stop 82 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.07002412332077,
+      "lng": -86.78092002868654,
+      "orden": 82
+    },
+    {
+      "nombre": "Stop 83 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.06888280510847,
+      "lng": -86.78102731704712,
+      "orden": 83
+    },
+    {
+      "nombre": "Stop 84 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.066294783557638,
+      "lng": -86.78003489971162,
+      "orden": 84
+    },
+    {
+      "nombre": "Stop 85 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.06473794426043,
+      "lng": -86.7797613143921,
+      "orden": 85
+    },
+    {
+      "nombre": "Stop 86 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.06361660939926,
+      "lng": -86.77980422973634,
+      "orden": 86
+    },
+    {
+      "nombre": "Stop 87 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.062365109618188,
+      "lng": -86.77957892417909,
+      "orden": 87
+    },
+    {
+      "nombre": "Stop 88 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.061063538678134,
+      "lng": -86.77989006042482,
+      "orden": 88
+    },
+    {
+      "nombre": "Stop 89 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.060162444434255,
+      "lng": -86.7805337905884,
+      "orden": 89
+    },
+    {
+      "nombre": "Stop 90 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.059151209951153,
+      "lng": -86.78154230117799,
+      "orden": 90
+    },
+    {
+      "nombre": "Stop 91 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.05580707866271,
+      "lng": -86.78266882896425,
+      "orden": 91
+    },
+    {
+      "nombre": "Stop 92 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.049278797481843,
+      "lng": -86.78322672843933,
+      "orden": 92
+    },
+    {
+      "nombre": "Stop 93 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.04750649995971,
+      "lng": -86.783344745636,
+      "orden": 93
+    },
+    {
+      "nombre": "Stop 94 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.04225456789002,
+      "lng": -86.78306043148041,
+      "orden": 94
+    },
+    {
+      "nombre": "Stop 95 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.041093009760854,
+      "lng": -86.78330183029176,
+      "orden": 95
+    },
+    {
+      "nombre": "Stop 96 - RUTA 2 CHACMOOL-PORTILLO",
+      "lat": 21.040987868276197,
+      "lng": -86.78317844867708,
+      "orden": 96
+    }
+  ]
+}

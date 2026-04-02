@@ -149,6 +149,11 @@ const ui = uiTranslations[currentLang];
         <!-- Best match card injected here -->
     </div>
 
+    <div id="rw-results-cta" class="hidden mt-6 pb-4">
+      <button id="btn-report-results" class="w-full btn-secondary btn-md border-dashed border-2 opacity-80 hover:opacity-100 transition-all">
+        ¿Algo está mal con esta ruta?
+      </button>
+    </div>
     <div id="results-container" class="space-y-4 empty:hidden transition-all duration-500 origin-top">
         <!-- Other results injected here -->
     </div>
@@ -174,7 +179,7 @@ const ui = uiTranslations[currentLang];
   import { showToast } from '../utils/toast';
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { CoordinateFinder } from '../utils/CoordinateFinder';
-  import { escapeHtml, safeJsonStringify } from '../utils/utils';
+  import { escapeHtml, safeJsonStringify, normalizeString } from '../utils/utils';
   import { getWalletBalance, setWalletBalance } from '../utils/db';
   import { getTransportLabel } from '../utils/transport';
   import { WasmLoader } from '../utils/WasmLoader';
@@ -275,14 +280,14 @@ const ui = uiTranslations[currentLang];
             balance = walletData.amount;
             console.log("[RouteCalculator] Balance loaded from IndexedDB:", balance);
         } else {
-            // Fallback: initialize to 180.0 if no balance found
-            balance = 180.0;
+            // Fallback: initialize to 0.0 if no balance found
+            balance = 0.0;
             await setWalletBalance(balance);
-            console.log("[RouteCalculator] Balance initialized to 180.0 in IndexedDB");
+            console.log("[RouteCalculator] Balance initialized to 0.0 in IndexedDB");
         }
     } catch (e) {
         console.warn("[RouteCalculator] IndexedDB Error, using default balance:", e);
-        balance = 180.0;
+        balance = 0.0;
     }
 
     if (wasmLoaded && typeof validate_operator_funds === 'function') {
@@ -290,10 +295,10 @@ const ui = uiTranslations[currentLang];
             hasBalance = validate_operator_funds(balance);
         } catch (e) {
             console.warn("WASM validation failed, fallback to strict check", e);
-            hasBalance = balance >= 180.0;
+            hasBalance = balance >= 0.0;
         }
     } else {
-        hasBalance = balance >= 180.0;
+        hasBalance = balance >= 0.0;
     }
 
     if (balanceBadge) {
@@ -565,19 +570,32 @@ const ui = uiTranslations[currentLang];
           const results = finder.search(val, 6); // Limit to 6 suggestions
           
           if (results.length > 0) {
-              list.innerHTML = '';
+              list.replaceChildren();
               results.forEach(res => {
                   const li = document.createElement('li');
                   li.className = 'px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors flex items-center gap-3 group';
-                  li.innerHTML = `
-                      <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-500 transition-colors">
-                          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                      </div>
-                      <div class="flex-1">
-                          <p class="text-sm font-bold text-slate-700 group-hover:text-primary-700">${escapeHtml(res.name)}</p>
-                          <p class="text-[10px] text-slate-500 font-mono">COORD: ${res.coords[0].toFixed(4)}, ${res.coords[1].toFixed(4)}</p>
-                      </div>
-                  `;
+
+                  const iconDiv = document.createElement('div');
+                  iconDiv.className = 'w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-500 transition-colors';
+                  const svgFragment = document.createRange().createContextualFragment('<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>');
+                  iconDiv.appendChild(svgFragment);
+
+                  const contentDiv = document.createElement('div');
+                  contentDiv.className = 'flex-1';
+
+                  const nameP = document.createElement('p');
+                  nameP.className = 'text-sm font-bold text-slate-700 group-hover:text-primary-700';
+                  nameP.textContent = res.name;
+
+                  const coordP = document.createElement('p');
+                  coordP.className = 'text-[10px] text-slate-500 font-mono';
+                  coordP.textContent = `COORD: ${res.coords[0].toFixed(4)}, ${res.coords[1].toFixed(4)}`;
+
+                  contentDiv.appendChild(nameP);
+                  contentDiv.appendChild(coordP);
+                  li.appendChild(iconDiv);
+                  li.appendChild(contentDiv);
+
                   li.addEventListener('click', () => {
                       input.value = res.name;
                       try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
@@ -655,10 +673,9 @@ const ui = uiTranslations[currentLang];
              stopsPreview = `${escapeHtml(route.stops[0].name)} → ${escapeHtml(route.stops[route.stops.length - 1].name)}`;
         }
 
-        // Sentinel Fix: Replace < with \u003c to prevent JSON-based HTML injection
-        return `
+        const html = `
           <div class="glass-card active:scale-[0.98] transition-all duration-300 mb-4 animate-slide-up relative overflow-hidden group hover:-translate-y-0.5 ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
-            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${ui['calc.best']}</div>` : ''}
+            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${escapeHtml(ui['calc.best'])}</div>` : ''}
             <div class="flex justify-between items-start">
               <div class="flex-1 min-w-0 pr-2">
                 <span class="badge-primary mb-2">
@@ -682,7 +699,7 @@ const ui = uiTranslations[currentLang];
                 <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration || '')}</p>
 
                 <button class="btn-primary btn-sm mt-3 whitespace-nowrap view-map-btn" data-journey='${safeJsonStringify(journey)}'>
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg> <span data-i18n="calc.results.map">${ui['calc.results.map'] || 'Ver Mapa'}</span>
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg> <span data-i18n="calc.results.map">${escapeHtml(ui['calc.results.map'] || 'Ver Mapa')}</span>
                 </button>
               </div>
             </div>
@@ -691,6 +708,7 @@ const ui = uiTranslations[currentLang];
             </div>
           </div>
         `;
+        return document.createRange().createContextualFragment(html);
   }
 
   function renderTransferCardHtml(journey, isBest = false) {
@@ -698,13 +716,12 @@ const ui = uiTranslations[currentLang];
       const leg2 = journey.legs[1];
       const transferPoint = journey.transfer_point;
 
-      // Sentinel Fix: Replace < with \u003c to prevent JSON-based HTML injection
-      return `
+      const html = `
           <div class="glass-card active:scale-[0.98] transition-all mb-3 animate-slide-up relative overflow-hidden group ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
             <div class="absolute top-0 right-0 bg-accent-500 text-white px-3 py-1 rounded-bl-xl text-xxs font-black uppercase tracking-widest ${isBest ? 'mr-24' : ''}">
-               ${ui['calc.transfer']}
+               ${escapeHtml(ui['calc.transfer'])}
             </div>
-            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${ui['calc.best']}</div>` : ''}
+            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${escapeHtml(ui['calc.best'])}</div>` : ''}
 
             <div class="flex flex-col gap-3 mt-5">
                 <!-- Leg 1 -->
@@ -728,7 +745,7 @@ const ui = uiTranslations[currentLang];
                     </div>
                     <div class="chip text-xxs">
                         <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
-                        <span data-i18n="calc.results.transfer_at">${ui['calc.results.transfer_at'] || 'Transfer at'}</span> <span class="text-primary-500 font-black ml-1">${escapeHtml(transferPoint)}</span>
+                        <span data-i18n="calc.results.transfer_at">${escapeHtml(ui['calc.results.transfer_at'] || 'Transfer at')}</span> <span class="text-primary-500 font-black ml-1">${escapeHtml(transferPoint)}</span>
                     </div>
                 </div>
 
@@ -754,54 +771,60 @@ const ui = uiTranslations[currentLang];
 
                 <button class="btn-primary btn-sm view-map-btn"
                     data-journey='${safeJsonStringify(journey)}'>
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg> <span data-i18n="calc.view_route">${ui['calc.view_route']}</span>
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg> <span data-i18n="calc.view_route">${escapeHtml(ui['calc.view_route'])}</span>
                 </button>
             </div>
           </div>
       `;
+      return document.createRange().createContextualFragment(html);
   }
 
   function renderWasmError() {
     if (!resultsContainer) return;
-    resultsContainer.innerHTML = `
+    const html = `
         <div class="glass-card text-center animate-slide-up">
             <svg class="w-10 h-10 mx-auto mb-3" viewBox="0 0 24 24" fill="var(--text-tertiary)" aria-hidden="true"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h.71C7.37 7.69 9.48 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3s-1.34 3-3 3zM8 13h2.55v3h2.9v-3H16l-4-4z"/></svg>
-            <h3 class="font-display font-black text-base mb-2" style="color: var(--text-primary);">${ui['calc.offline']}</h3>
-            <p class="text-sm mb-4" style="color: var(--text-secondary);">${ui['calc.offline_msg']}</p>
+            <h3 class="font-display font-black text-base mb-2" style="color: var(--text-primary);">${escapeHtml(ui['calc.offline'])}</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">${escapeHtml(ui['calc.offline_msg'])}</p>
             <a href="/rutas" class="btn-secondary btn-sm inline-flex items-center gap-2">
-               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> ${ui['calc.view_all']}
+               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> ${escapeHtml(ui['calc.view_all'])}
             </a>
         </div>
     `;
+    resultsContainer.replaceChildren(document.createRange().createContextualFragment(html));
   }
 
   function renderError(msg) {
     if (!resultsContainer) return;
-    resultsContainer.innerHTML = `
+    const fragment = document.createRange().createContextualFragment(`
         <div class="glass-card flex items-center gap-3 animate-slide-up" style="border-left: 3px solid var(--color-sunset);">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--color-sunset)" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-            <span class="font-bold text-sm" style="color: var(--text-secondary);">${escapeHtml(msg)}</span>
+            <span class="font-bold text-sm js-error-msg" style="color: var(--text-secondary);"></span>
         </div>
-    `;
+    `);
+    const errorMsgSpan = fragment.querySelector('.js-error-msg');
+    if (errorMsgSpan) errorMsgSpan.textContent = String(msg);
+    resultsContainer.replaceChildren(fragment);
     showToast(msg, 'error');
   }
 
   function renderEmptyState() {
       if (!resultsContainer) return;
-      resultsContainer.innerHTML = `
+      const html = `
           <div class="glass-card text-center animate-slide-up py-10 px-6">
               <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                   <svg class="w-10 h-10 text-slate-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.71 5.71L18.29 2.29a1 1 0 00-1.41 0l-.71.71L12 7.17l-1.29-1.29a1 1 0 00-1.42 0L2.29 12.88a1 1 0 000 1.41l3.42 3.42a1 1 0 001.41 0l.71-.71L12 12.83l1.29 1.29a1 1 0 001.42 0l7-7a1 1 0 000-1.41z"/></svg>
               </div>
-              <h3 class="font-display font-black text-xl mb-3" style="color: var(--text-primary);" data-i18n="calc.no_route">${ui['calc.no_route'] || 'No routes found'}</h3>
+              <h3 class="font-display font-black text-xl mb-3" style="color: var(--text-primary);" data-i18n="calc.no_route">${escapeHtml(ui['calc.no_route'] || 'No routes found')}</h3>
               <p class="text-sm mb-8 max-w-[260px] mx-auto leading-relaxed" style="color: var(--text-secondary);" data-i18n="calc.no_route_msg">
-                  ${ui['calc.no_route_msg'] || 'Try changing your origin or destination, or walking to a main avenue.'}
+                  ${escapeHtml(ui['calc.no_route_msg'] || 'Try changing your origin or destination, or walking to a main avenue.')}
               </p>
                <button class="btn-primary btn-md w-full js-retry-search-btn uppercase tracking-widest" data-i18n="calc.retry">
-                  ${ui['calc.retry'] || 'Try Again'}
+                  ${escapeHtml(ui['calc.retry'] || 'Try Again')}
               </button>
           </div>
       `;
+      resultsContainer.replaceChildren(document.createRange().createContextualFragment(html));
   }
 
   // --- Search Logic ---
@@ -894,10 +917,11 @@ const ui = uiTranslations[currentLang];
           if (timeBadge) timeBadge.textContent = '';
 
 
-          if (resultsContainer) resultsContainer.innerHTML = '';
+          if (resultsContainer) resultsContainer.replaceChildren();
           const bestResultArea = document.getElementById('best-result-area');
-          if (bestResultArea) bestResultArea.innerHTML = '';
+          if (bestResultArea) bestResultArea.replaceChildren();
           document.getElementById('results-info')?.classList.add('hidden');
+          document.getElementById('rw-results-cta')?.classList.add('hidden');
 
           try {
               if (!wasmLoaded || typeof find_route !== 'function') {
@@ -905,7 +929,7 @@ const ui = uiTranslations[currentLang];
               }
 
               console.log(`🔍 Searching: ${origin} -> ${dest}`);
-              const results = find_route(origin, dest); // Pass strings directly
+              const results = find_route(normalizeString(origin), normalizeString(dest));
 
               console.log("🔍 Raw Results:", results);
 
@@ -960,21 +984,25 @@ const ui = uiTranslations[currentLang];
 
                  // Show Info Bar NOW
                  document.getElementById('results-info')?.classList.remove('hidden');
+                 document.getElementById('rw-results-cta')?.classList.remove('hidden');
 
                  // Render Cards
                  if (bestResultArea) {
-                     bestResultArea.innerHTML = best.type === 'Transfer' ? renderTransferCardHtml(best, true) : renderBestResultHtml(best, true);
+                     bestResultArea.replaceChildren(best.type === 'Transfer' ? renderTransferCardHtml(best, true) : renderBestResultHtml(best, true));
                  }
 
                  if (others.length > 0 && resultsContainer) {
                      others.forEach(r => {
-                         const div = document.createElement('div');
-                         div.innerHTML = r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r);
-                         if (div.firstElementChild) resultsContainer.appendChild(div.firstElementChild);
+                         resultsContainer.appendChild(r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r));
                      });
                  }
                  
                  // Re-attach map buttons
+                 document.getElementById('btn-report-results')?.addEventListener('click', () => {
+                     // @ts-ignore - Nexus Global API
+                     window.rwOpenReport?.();
+                 });
+
                  document.querySelectorAll('.view-map-btn').forEach(btn => {
                      btn.addEventListener('click', (e) => {
                          try {

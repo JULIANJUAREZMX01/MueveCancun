@@ -1,7 +1,7 @@
 import { openDB, type IDBPDatabase } from 'idb';
 
 const DB_NAME = 'cancunmueve-db';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 // Crypto utilities for securing balance against client-side tampering (DevTools modifications).
 // Note: The HMAC key is static and client-visible. This is a deterrent against casual/manual
@@ -40,7 +40,7 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
   try {
     const expectedSignature = await generateSignature(amount);
     return expectedSignature === signatureHex;
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 };
@@ -52,13 +52,45 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
  * Accepts the already-open db instance to avoid circular recursion with initDB.
  */
 export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
-  // Migration from localStorage to IndexedDB is complete.
-  // This function is kept for backwards compatibility but now only marks it as done.
   try {
-      localStorage.setItem('balance_migration_done', 'true');
-      localStorage.removeItem('muevecancun_balance');
-      localStorage.removeItem('user_balance');
-  } catch (e) {
+      // Helper to mark migration complete and clear legacy keys
+      const finalizeMigration = () => {
+          localStorage.setItem('balance_migration_done', 'true');
+          localStorage.removeItem('muevecancun_balance');
+          localStorage.removeItem('user_balance');
+      };
+
+      // Read BEFORE removing to avoid silent balance loss on upgrade
+      const legacyBalance = parseFloat(
+          localStorage.getItem('muevecancun_balance') ?? localStorage.getItem('user_balance') ?? 'NaN'
+      );
+
+      // If there is no valid positive legacy balance, we can safely mark migration done
+      if (isNaN(legacyBalance) || legacyBalance <= 0) {
+          finalizeMigration();
+          return;
+      }
+
+      // If a positive legacy balance exists and IDB still has the default 0.00, migrate it
+      try {
+          const tx = db.transaction('wallet-status', 'readwrite');
+          const store = tx.objectStore('wallet-status');
+          const existing = await store.get('current_balance');
+          const isDefault = existing?.amount === 0.00;
+          if (isDefault) {
+              const signature = await generateSignature(legacyBalance);
+              await store.put(
+                  { id: 'current_balance', amount: legacyBalance, currency: 'MXN', signature },
+                  'current_balance'
+              );
+          }
+          await tx.done;
+          // Only after a successful transaction do we clear legacy data and mark migration done
+          finalizeMigration();
+      } catch (_e) {
+          // On IndexedDB/WebCrypto failure, keep legacy values so a later init can retry
+      }
+  } catch (_e) {
       // Ignore errors if localStorage is not available (e.g. SSR)
   }
 };
@@ -79,20 +111,24 @@ export const initDB = async (): Promise<IDBPDatabase> => {
           if (oldVersion < 2) {
             db.createObjectStore('wallet-status');
           }
-          // Version 3: Migration handled in code, no schema changes needed
+          if (oldVersion < 4) {
+            if (!db.objectStoreNames.contains('pending-reports')) {
+              db.createObjectStore('pending-reports', { keyPath: 'id', autoIncrement: true });
+            }
+          }
         },
       });
 
-      // Initialize test balance if empty (180 MXN for consistency with UI)
+      // Initialize test balance if empty (0 MXN for consistency with UI)
       const tx = db.transaction('wallet-status', 'readwrite');
       const store = tx.objectStore('wallet-status');
       const balance = await store.get('current_balance');
 
       if (balance === undefined) {
-        const defaultAmount = 180.00;
+        const defaultAmount = 0.00;
         const signature = await generateSignature(defaultAmount);
         await store.put({ id: 'current_balance', amount: defaultAmount, currency: 'MXN', signature }, 'current_balance');
-        console.log('[DB] Initial wallet balance set to 180.00 MXN');
+        console.log('[DB] Initial wallet balance set to 0.00 MXN');
       }
 
       await tx.done;
@@ -180,6 +216,42 @@ export const updateWalletBalance = async (amount: number) => {
     await store.put(balance, 'current_balance');
     await tx.done;
   }
+};
+
+// --- Offline Reporting Support ---
+
+export interface PendingReport {
+  id?: number;
+  tipo: string;
+  ruta: string;
+  descripcion: string;
+  lat?: string;
+  lng?: string;
+  userAgent: string;
+  url: string;
+  timestamp: number;
+}
+
+export const savePendingReport = async (report: Omit<PendingReport, 'id' | 'timestamp'>) => {
+  const db = await initDB();
+  const tx = db.transaction('pending-reports', 'readwrite');
+  await tx.objectStore('pending-reports').add({
+    ...report,
+    timestamp: Date.now()
+  });
+  await tx.done;
+};
+
+export const getPendingReports = async (): Promise<PendingReport[]> => {
+  const db = await initDB();
+  return db.getAll('pending-reports');
+};
+
+export const deletePendingReport = async (id: number) => {
+  const db = await initDB();
+  const tx = db.transaction('pending-reports', 'readwrite');
+  await tx.objectStore('pending-reports').delete(id);
+  await tx.done;
 };
 
 // Test util

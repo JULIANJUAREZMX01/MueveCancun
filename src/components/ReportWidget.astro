@@ -1,0 +1,563 @@
+---
+/**
+ * ReportWidget.astro
+ * Sistema de reportes ciudadanos — MueveCancun / Protocolo Nexus
+ * Tier 1: Formulario → GitHub Issues API (sin servidor) + Offline Queue
+ */
+
+interface Props {
+  repoOwner?: string;
+  repoName?: string;
+}
+
+const repoOwner = Astro.props.repoOwner ?? import.meta.env.GITHUB_REPO_OWNER ?? "JULIANJUAREZMX01";
+const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "MueveCancun";
+const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
+---
+
+<!-- Configuración para el script cliente -->
+<div
+  id="rw-config"
+  data-owner={repoOwner}
+  data-repo={repoName}
+  data-token={githubToken}
+  hidden
+></div>
+
+<!-- Botón flotante — visible en todas las páginas vía Layout -->
+<div id="rw-fab" class="rw-fab" title="Reportar problema en una ruta" aria-label="Reportar problema">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    <line x1="12" y1="8" x2="12" y2="12"/>
+    <line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  <span class="rw-fab-label">Reportar</span>
+  <span id="rw-queue-badge" class="rw-queue-badge" hidden>0</span>
+</div>
+
+<!-- Overlay + Modal -->
+<div id="rw-overlay" class="rw-overlay" role="dialog" aria-modal="true" aria-labelledby="rw-modal-title" hidden>
+  <div class="rw-modal glass-card">
+
+    <header class="rw-modal-header">
+      <div class="rw-modal-title-group">
+        <span class="rw-modal-icon">🚌</span>
+        <h2 id="rw-modal-title">Reportar problema</h2>
+      </div>
+      <button id="rw-close" class="rw-close" aria-label="Cerrar">&times;</button>
+    </header>
+
+    <p class="rw-modal-subtitle">
+      Tu reporte llega directo al equipo. Cada dato correcto mejora la app para todos.
+    </p>
+
+    <form id="rw-form" class="rw-form" novalidate>
+
+      <!-- Tipo de reporte -->
+      <fieldset class="rw-fieldset">
+        <legend class="rw-label">¿Qué está mal?</legend>
+        <div class="rw-type-grid">
+          {[
+            { value: "precio",    icon: "💰", label: "Precio"         },
+            { value: "ruta",      icon: "🗺️", label: "Ruta mal"       },
+            { value: "nueva",     icon: "✨", label: "Falta ruta"     },
+            { value: "cancelada", icon: "🚫", label: "Cancelada"      },
+            { value: "comentario",icon: "💬", label: "Otro"           },
+          ].map(t => (
+            <label class="rw-type-card">
+              <input type="radio" name="tipo" value={t.value} required />
+              <span class="rw-type-icon">{t.icon}</span>
+              <span class="rw-type-label">{t.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <!-- Ruta afectada -->
+      <div class="rw-field">
+        <label class="rw-label" for="rw-ruta">Ruta afectada <span class="rw-optional">(ej. R-27, Combi)</span></label>
+        <input
+          id="rw-ruta"
+          class="rw-input input"
+          type="text"
+          name="ruta"
+          placeholder="Nombre o número de ruta..."
+          autocomplete="off"
+          maxlength="80"
+        />
+      </div>
+
+      <!-- Descripción -->
+      <div class="rw-field">
+        <label class="rw-label" for="rw-desc">Descripción <span class="rw-req">*</span></label>
+        <textarea
+          id="rw-desc"
+          class="rw-input input rw-textarea"
+          name="descripcion"
+          placeholder="Ej: El R-27 ahora cobra 15 pesos..."
+          rows="3"
+          required
+          maxlength="500"
+        ></textarea>
+        <span class="rw-charcount"><span id="rw-chars">0</span>/500</span>
+      </div>
+
+      <!-- Geolocalización opcional -->
+      <div class="rw-field">
+        <button type="button" id="rw-geo-btn" class="rw-geo-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+          <span id="rw-geo-text">Agregar ubicación (opcional)</span>
+        </button>
+        <span id="rw-geo-status" class="rw-geo-status"></span>
+        <input type="hidden" id="rw-lat" name="lat" />
+        <input type="hidden" id="rw-lng" name="lng" />
+      </div>
+
+      <!-- Estado del envío -->
+      <div id="rw-feedback" class="rw-feedback" hidden></div>
+
+      <!-- Acciones -->
+      <div class="rw-actions">
+        <button type="button" id="rw-cancel" class="rw-btn btn-secondary">Cancelar</button>
+        <button type="submit" id="rw-submit" class="rw-btn btn-primary">
+          <span id="rw-submit-text">Enviar reporte</span>
+          <span id="rw-submit-spinner" class="spinner" hidden></span>
+        </button>
+      </div>
+
+    </form>
+
+    <p class="rw-footer-note">
+      Anónimo · Los reportes se revisan antes de publicar
+    </p>
+
+  </div>
+</div>
+
+<style>
+  :root {
+    --rw-primary:     var(--color-primary, #0d9488);
+    --rw-primary-dk:  var(--color-teal-dark, #0f766e);
+    --rw-danger:      #ef4444;
+    --rw-success:     #22c55e;
+    --rw-surface:     var(--surface-card, #ffffff);
+    --rw-border:      var(--border-light, #e2e8f0);
+    --rw-text:        var(--text-primary, #1a202c);
+    --rw-text-muted:  var(--text-secondary, #64748b);
+    --rw-radius:      var(--radius-xl, 24px);
+    --rw-radius-sm:   var(--radius-md, 12px);
+    --rw-shadow:      var(--glass-shadow);
+    --rw-transition:  0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .rw-fab {
+    position: fixed;
+    bottom: 96px;
+    right: 18px;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px 12px 14px;
+    background: var(--rw-primary);
+    color: #fff;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(13, 148, 136, 0.4);
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: transform var(--rw-transition), box-shadow var(--rw-transition);
+  }
+  .rw-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(13, 148, 136, 0.5); }
+
+  .rw-queue-badge {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    background: var(--rw-danger);
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 900;
+    border: 2px solid var(--rw-surface);
+  }
+
+  .rw-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    animation: rw-fade-in 0.2s ease;
+  }
+  .rw-overlay[hidden] { display: none; }
+  @keyframes rw-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+  .rw-modal {
+    width: 100%;
+    max-width: 520px;
+    max-height: 92dvh;
+    overflow-y: auto;
+    background: var(--rw-surface);
+    border-radius: var(--rw-radius) var(--rw-radius) 0 0;
+    box-shadow: var(--rw-shadow);
+    padding: 24px;
+    position: relative;
+    border: 1px solid var(--rw-border);
+    border-bottom: none;
+  }
+
+  .rw-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .rw-modal-title-group { display: flex; align-items: center; gap: 10px; }
+  .rw-modal-icon { font-size: 1.4rem; }
+  #rw-modal-title { font-size: 1.25rem; font-weight: 900; margin: 0; color: var(--rw-text); }
+  .rw-close { background: none; border: none; font-size: 1.8rem; color: var(--rw-text-muted); cursor: pointer; padding: 4px; line-height: 1; }
+
+  .rw-modal-subtitle { font-size: 0.9rem; color: var(--rw-text-muted); margin-bottom: 24px; line-height: 1.5; font-weight: 500; }
+
+  .rw-fieldset { border: none; padding: 0; margin: 0 0 20px 0; }
+  .rw-label { display: block; font-size: 0.82rem; font-weight: 800; color: var(--rw-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .rw-optional { font-weight: 500; text-transform: none; opacity: 0.7; }
+  .rw-req { color: var(--rw-danger); }
+
+  .rw-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .rw-type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 6px;
+    border: 2px solid var(--rw-border);
+    border-radius: var(--rw-radius-sm);
+    cursor: pointer;
+    transition: all var(--rw-transition);
+    position: relative;
+  }
+  .rw-type-card:has(input:checked) { border-color: var(--rw-primary); background: var(--rw-primary-lt, rgba(13, 148, 136, 0.08)); }
+  .rw-type-card input { position: absolute; opacity: 0; }
+  .rw-type-icon { font-size: 1.2rem; margin-bottom: 4px; }
+  .rw-type-label { font-size: 0.75rem; font-weight: 700; text-align: center; }
+
+  .rw-field { margin-bottom: 18px; position: relative; }
+  .rw-input { width: 100%; box-sizing: border-box; }
+  .rw-textarea { resize: none; min-height: 80px; }
+  .rw-charcount { position: absolute; bottom: 8px; right: 12px; font-size: 0.65rem; color: var(--rw-text-muted); font-weight: 700; }
+
+  .rw-geo-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background: var(--rw-surface2, #f8fafc);
+    border: 1px dashed var(--rw-border);
+    border-radius: var(--rw-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--rw-text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .rw-geo-active { background: #f0fdf4; border-color: var(--rw-success); color: #166534; }
+  .rw-geo-error { color: var(--rw-danger); border-color: var(--rw-danger); }
+  .rw-geo-status { display: block; font-size: 0.75rem; color: var(--rw-text-muted); text-align: center; margin-top: 4px; }
+
+  .rw-feedback {
+    padding: 12px;
+    border-radius: var(--rw-radius-sm);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .rw-feedback[hidden] { display: none; }
+  .rw-feedback.success { background: rgba(34,197,94,0.1); color: #166534; }
+  .rw-feedback.error   { background: rgba(239,68,68,0.1); color: #991b1b; }
+  .rw-feedback.info    { background: rgba(13,148,136,0.1); color: #0f766e; }
+
+  .rw-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .rw-btn { padding: 10px 20px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: none; border-radius: var(--rw-radius-sm); }
+  .rw-footer-note { text-align: center; font-size: 0.7rem; color: var(--rw-text-muted); margin-top: 16px; }
+
+  @media (min-width: 640px) {
+    .rw-overlay { align-items: center; padding: 20px; }
+    .rw-modal { border-radius: var(--rw-radius); border-bottom: 1px solid var(--rw-border); }
+  }
+</style>
+
+<script>
+  import { savePendingReport, getPendingReports, deletePendingReport } from '../utils/db';
+
+  (() => {
+    // ── Config ───────────────────────────────────────────────────
+    const configEl = document.getElementById('rw-config') as HTMLDivElement;
+    if (!configEl) return;
+
+    const config = {
+      owner: configEl.dataset.owner,
+      repo:  configEl.dataset.repo,
+      token: configEl.dataset.token
+    };
+
+    // ── Referencias DOM ──────────────────────────────────────────
+    const fab      = document.getElementById('rw-fab');
+    const badge    = document.getElementById('rw-queue-badge');
+    const overlay  = document.getElementById('rw-overlay');
+    const form     = document.getElementById('rw-form') as HTMLFormElement;
+    const closeBtn = document.getElementById('rw-close');
+    const cancelBtn= document.getElementById('rw-cancel');
+    const geoBtn   = document.getElementById('rw-geo-btn');
+    const geoText  = document.getElementById('rw-geo-text');
+    const geoStatus= document.getElementById('rw-geo-status');
+    const latInput = document.getElementById('rw-lat') as HTMLInputElement;
+    const lngInput = document.getElementById('rw-lng') as HTMLInputElement;
+    const feedback = document.getElementById('rw-feedback');
+    const submitBtn= document.getElementById('rw-submit') as HTMLButtonElement;
+    const submitTxt= document.getElementById('rw-submit-text');
+    const spinner  = document.getElementById('rw-submit-spinner');
+    const textarea = document.getElementById('rw-desc') as HTMLTextAreaElement;
+    const charCount= document.getElementById('rw-chars');
+
+    if (!fab || !overlay || !form || !submitBtn || !textarea || !charCount) return;
+
+    // ── UI Logic ────────────────────────────────────────────────
+    const openModal  = () => {
+      overlay.hidden = false;
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeModal = () => {
+      overlay.hidden = true;
+      document.body.style.overflow = '';
+      resetForm();
+    };
+
+    const setSubmitting = (loading: boolean) => {
+      submitBtn.disabled = loading;
+      if (submitTxt) submitTxt.hidden = loading;
+      if (spinner) spinner.hidden = !loading;
+    };
+
+    const showFeedback = (msg: string, type: 'success' | 'error' | 'info') => {
+      if (!feedback) return;
+      feedback.textContent = msg;
+      feedback.className   = `rw-feedback ${type}`;
+      feedback.hidden      = false;
+    };
+
+    const resetForm = () => {
+      form.reset();
+      if (latInput) latInput.value = '';
+      if (lngInput) lngInput.value = '';
+      geoBtn?.classList.remove('rw-geo-active', 'rw-geo-error');
+      if (geoText) geoText.textContent = 'Agregar ubicación (opcional)';
+      if (geoStatus) geoStatus.textContent = '';
+      charCount.textContent = '0';
+      if (feedback) feedback.hidden = true;
+      setSubmitting(false);
+    };
+
+    // ── Events ───────────────────────────────────────────────────
+    fab.addEventListener('click', openModal);
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !overlay.hidden) closeModal(); });
+    window.rwOpenReport = openModal;
+
+    textarea.addEventListener('input', () => {
+      charCount.textContent = textarea.value.length.toString();
+    });
+
+    // ── Geo ──────────────────────────────────────────────────────
+    geoBtn?.addEventListener('click', () => {
+      if (latInput.value) {
+        latInput.value = ''; lngInput.value = '';
+        geoBtn.classList.remove('rw-geo-active', 'rw-geo-error');
+        geoText.textContent = 'Agregar ubicación (opcional)';
+        geoStatus.textContent = '';
+        return;
+      }
+      if (!navigator.geolocation) {
+        geoBtn.classList.add('rw-geo-error');
+        geoText.textContent = 'GPS no disponible';
+        return;
+      }
+      geoText.textContent = 'Obteniendo...';
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          latInput.value = pos.coords.latitude.toFixed(6);
+          lngInput.value = pos.coords.longitude.toFixed(6);
+          geoBtn.classList.add('rw-geo-active');
+          geoText.textContent = 'Ubicación capturada ✓';
+          geoStatus.textContent = `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+        },
+        err => {
+          geoBtn.classList.add('rw-geo-error');
+          geoText.textContent = 'Error de GPS';
+          geoStatus.textContent = err.code === 1 ? 'Permiso denegado' : 'Fallo de GPS';
+        },
+        { timeout: 8000 }
+      );
+    });
+
+    // ── Submission Logic ─────────────────────────────────────────
+    const TIPO_LABELS: Record<string, string[]> = {
+      precio:     ['reporte:precio',    'estado:pendiente'],
+      ruta:       ['reporte:ruta',      'estado:pendiente'],
+      nueva:      ['reporte:nueva-ruta','estado:pendiente'],
+      cancelada:  ['reporte:cancelada', 'estado:pendiente'],
+      comentario: ['reporte:info',      'estado:pendiente'],
+    };
+
+    const TIPO_TITLES: Record<string, string> = {
+      precio:     'Precio incorrecto',
+      ruta:       'Ruta / destino mal',
+      nueva:      'Ruta nueva no listada',
+      cancelada:  'Ruta cancelada',
+      comentario: 'Otro comentario',
+    };
+
+    const buildPayload = (data: any) => ({
+      title: `[REPORTE] ${TIPO_TITLES[data.tipo] ?? data.tipo}${data.ruta ? ` — ${data.ruta}` : ''}`,
+      labels: TIPO_LABELS[data.tipo] ?? ['reporte', 'estado:pendiente'],
+      body: `## 📋 Reporte ciudadano — MueveCancun
+
+**Tipo:** ${TIPO_TITLES[data.tipo] ?? data.tipo}
+**Ruta:** ${data.ruta || '_No especificada_'}
+**Fecha:** ${new Date(data.timestamp || Date.now()).toLocaleString('es-MX', { timeZone: 'America/Cancun' })}
+
+## 📝 Descripción
+${data.descripcion}
+
+${data.lat && data.lng ? `**📍 Ubicación:** [${data.lat}, ${data.lng}](https://www.openstreetmap.org/?mlat=${data.lat}&mlon=${data.lng}#map=16/${data.lat}/${data.lng})` : ''}
+
+---
+_Dispositivo: ${data.userAgent}_
+_URL: ${data.url}_
+Nexus Protocol v1.2 (Offline-First)
+`
+    });
+
+    const sendToGitHub = async (payload: any) => {
+      if (!config.token) throw new Error('Token ausente');
+      const res = await fetch(`https://api.github.com/repos/${config.owner}/${config.repo}/issues`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'Authorization': `Bearer ${config.token}`,
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(`GitHub API Error: ${res.status}`);
+      return res.json();
+    };
+
+    // ── Sync Queue ───────────────────────────────────────────────
+    let isSyncing = false;
+    const syncOfflineReports = async () => {
+      if (isSyncing || !navigator.onLine || !config.token) return;
+      isSyncing = true;
+
+      const reports = await getPendingReports();
+      if (badge) {
+        badge.textContent = reports.length.toString();
+        badge.hidden = reports.length === 0;
+      }
+
+      if (reports.length === 0) {
+        isSyncing = false;
+        return;
+      }
+
+      console.log(`[ReportWidget] Sincronizando ${reports.length} reportes pendientes...`);
+
+      for (const r of reports) {
+        try {
+          const payload = buildPayload(r);
+          await sendToGitHub(payload);
+          await deletePendingReport(r.id!);
+          console.log(`[ReportWidget] Sincronizado reporte #${r.id} ✓`);
+        } catch (err) {
+          console.warn(`[ReportWidget] Fallo al sincronizar reporte #${r.id}:`, err);
+          break;
+        }
+      }
+
+      const updated = await getPendingReports();
+      if (badge) {
+        badge.textContent = updated.length.toString();
+        badge.hidden = updated.length === 0;
+      }
+      isSyncing = false;
+    };
+
+    // Trigger sync on load and network recovery
+    window.addEventListener('online', syncOfflineReports);
+    syncOfflineReports();
+
+    // ── Main Submit ──────────────────────────────────────────────
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        tipo: formData.get('tipo') as string,
+        ruta: formData.get('ruta') as string,
+        descripcion: (formData.get('descripcion') as string).trim(),
+        lat: formData.get('lat') as string,
+        lng: formData.get('lng') as string,
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        timestamp: Date.now()
+      };
+
+      if (!data.tipo) { showFeedback('Selecciona el tipo de problema.', 'error'); return; }
+      if (data.descripcion.length < 10) { showFeedback('La descripción es muy corta.', 'error'); return; }
+
+      setSubmitting(true);
+      if (feedback) feedback.hidden = true;
+
+      try {
+        const payload = buildPayload(data);
+        await sendToGitHub(payload);
+        showFeedback(`¡Gracias! Reporte enviado.`, 'success');
+        setTimeout(closeModal, 2800);
+      } catch (err) {
+        if (!navigator.onLine || !config.token) {
+          try {
+            await savePendingReport(data);
+            const pending = await getPendingReports();
+            if (badge) {
+              badge.textContent = pending.length.toString();
+              badge.hidden = false;
+            }
+            showFeedback('Sin conexión. Reporte guardado para enviar después. ✓', 'info');
+            setTimeout(closeModal, 2800);
+          } catch (queueErr) {
+            console.error('[ReportWidget] Error al guardar reporte pendiente:', queueErr);
+            showFeedback(
+              'No se pudo guardar el reporte para enviar después. Revisa si estás en modo privado o si el almacenamiento está bloqueado e inténtalo de nuevo.',
+              'error'
+            );
+            setSubmitting(false);
+          }
+        } else {
+          console.error('[ReportWidget] Error al enviar:', err);
+          showFeedback('Error al enviar. Intenta de nuevo.', 'error');
+          setSubmitting(false);
+        }
+      }
+    });
+
+  })();
+</script>

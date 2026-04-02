@@ -1,24 +1,14 @@
 import { defineMiddleware } from 'astro:middleware';
 
-const SUPPORTED_LOCALES = ['es', 'en'] as const;
-type Locale = typeof SUPPORTED_LOCALES[number];
+/**
+ * NEXUS v3.3.1 - Passive Middleware
+ * In 'output: static' mode, middleware runs ONLY at build-time.
+ * We avoid dynamic redirects here to prevent infinite loop artifacts in index.html.
+ * All routing logic is migrated to client-side scripts in src/utils/auth.ts.
+ */
 
-export const onRequest = defineMiddleware(({ request, redirect, cookies, url }, next) => {
-  const path = url.pathname;
-
-  // Handle root redirect
-  if (path === '/' || path === '') {
-    // 1. Cookie preference
-    const saved = cookies.get('locale')?.value as Locale;
-    if (saved && SUPPORTED_LOCALES.includes(saved)) {
-      return redirect(`/${saved}/home`, 302);
-    }
-
-    // 2. Browser preference
-    const lang = request.headers.get('accept-language') ?? '';
-    const locale = lang.toLowerCase().startsWith('en') ? 'en' : 'es';
-    return redirect(`/${locale}/home`, 302);
-  }
-
+export const onRequest = defineMiddleware(async ({ request: _request, redirect, cookies, url }, next) => {
+  // Pass through all requests in static mode.
+  // Routing logic is now handled in MainLayout.astro and index.astro via JS.
   return next();
 });

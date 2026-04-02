@@ -1,13 +1,21 @@
 ---
+import { getLangFromUrl } from "../utils/i18n";
+import { getRelativeLocaleUrl } from "../utils/utils";
 const pathname = Astro.url.pathname;
+const lang = getLangFromUrl(Astro.url);
 
 const navItems = [
-  { href: '/home', icon: 'explore', label: 'Inicio', activePattern: /^\/home/ },
-  { href: '/rutas', icon: 'route', label: 'Rutas', activePattern: /^\/rutas/ },
-  { href: '/community', icon: 'forum', label: 'Foro', activePattern: /^\/community/ },
-  { href: '/wallet', icon: 'account_balance_wallet', label: 'Tarjeta', activePattern: /^\/wallet/ },
-  { href: '/about', icon: 'info', label: 'Nosotros', activePattern: /^\/about/ },
+  { href: getRelativeLocaleUrl(lang, 'home'), icon: 'explore', label: 'Inicio', activePattern: /^\/(es|en)\/home/ },
+  { href: getRelativeLocaleUrl(lang, 'rutas'), icon: 'route', label: 'Rutas', activePattern: /^\/(es|en)\/rutas/ },
+  { href: getRelativeLocaleUrl(lang, 'community'), icon: 'forum', label: 'Foro', activePattern: /^\/(es|en)\/community/ },
+  { href: getRelativeLocaleUrl(lang, 'wallet'), icon: 'account_balance_wallet', label: 'Tarjeta', activePattern: /^\/(es|en)\/wallet/ },
+  { href: getRelativeLocaleUrl(lang, 'about'), icon: 'info', label: 'Nosotros', activePattern: /^\/(es|en)\/about/ },
+  { href: getRelativeLocaleUrl(lang, 'suscripcion'), icon: 'premium', label: 'Suscripciones', activePattern: /^\/(es|en)\/suscripcion/ },
 ];
+
+const donateHref = getRelativeLocaleUrl(lang, 'donate');
+const isDonateActive = /^\/(es|en)\/donate/.test(pathname);
+const donateLabel = lang === 'en' ? 'Support' : 'Apoyar';
 ---
 
 <nav transition:persist class="graffiti-nav" aria-label="Main navigation">
@@ -16,7 +24,6 @@ const navItems = [
       const isActive = item.activePattern.test(pathname);
       return (
         <a href={item.href} class={`nav-item ${isActive ? 'active' : ''}`} aria-label={item.label} aria-current={isActive ? 'page' : undefined}>
-          {/* Active Indicator with View Transition Name for smooth gliding */}
           {isActive && (
             <div class="active-indicator" transition:name="nav-indicator"></div>
           )}
@@ -34,32 +41,44 @@ const navItems = [
             {item.icon === 'account_balance_wallet' && (
               <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
             )}
+                        {item.icon === 'premium' && (
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+            )}
             {item.icon === 'info' && (
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
             )}
           </svg>
 
           <span class="nav-label" data-i18n={
-            item.href === '/home' ? 'nav.home' :
-            item.href === '/rutas' ? 'nav.routes' :
-            item.href === '/community' ? 'nav.community' :
-            item.href === '/wallet' ? 'nav.wallet' :
-            item.href === '/about' ? 'nav.about' : ''
+            item.href.endsWith('/home') ? 'nav.home' :
+            item.href.endsWith('/rutas') ? 'nav.routes' :
+            item.href.endsWith('/community') ? 'nav.community' :
+            item.href.endsWith('/wallet') ? 'nav.wallet' :
+            item.href.endsWith('/about') ? 'nav.about' :
+            item.href.endsWith('/suscripcion') ? 'nav.subscription' : ''
           }>
             {item.label}
           </span>
         </a>
       );
     })}
+
+    <!-- 💜 Botón de donación flotante: fuera del grid, posicionado sobre el nav -->
+    <a
+      href={donateHref}
+      class={`donate-fab ${isDonateActive ? 'donate-fab--active' : ''}`}
+      aria-label={donateLabel}
+      title={donateLabel}
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 21.593c-.425-.394-8.993-7.817-8.993-12.097C3.007 5.48 7.016 2 12 2s8.993 3.48 8.993 7.496c0 4.28-8.568 11.703-8.993 12.097zM12 4C8.112 4 5.007 6.702 5.007 9.496c0 3.066 5.63 8.786 6.993 10.118 1.363-1.332 6.993-7.052 6.993-10.118C18.993 6.702 15.888 4 12 4zm0 7a2 2 0 110-4 2 2 0 010 4z"/>
+      </svg>
+      <span class="donate-fab__label">{donateLabel}</span>
+    </a>
   </div>
 </nav>
 
 <style>
-  /*
-   * GRAFFITI WARRIOR: CSS5
-   * Pure CSS Grid & Variables. No Tailwind.
-   */
-
   .graffiti-nav {
     position: fixed;
     bottom: 0;
@@ -78,10 +97,11 @@ const navItems = [
   }
 
   .nav-container {
+    position: relative;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    height: var(--bottom-nav-h); /* 4rem from tokens */
-    max-width: 32rem; /* max-w-lg */
+    grid-template-columns: repeat(6, 1fr);
+    height: var(--bottom-nav-h);
+    max-width: 32rem;
     margin: 0 auto;
   }
 
@@ -93,12 +113,11 @@ const navItems = [
     justify-content: center;
     gap: 0.125rem;
     text-decoration: none;
-    color: var(--text-tertiary); /* Slate-400 */
+    color: var(--text-tertiary);
     transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Active State Logic */
     &.active {
-      color: var(--color-primary); /* Primary-500 */
+      color: var(--color-primary);
     }
 
     &:hover:not(.active) {
@@ -109,7 +128,6 @@ const navItems = [
       transform: scale(0.95);
     }
 
-    /* GraffitiWarrior: Focus Visible A11y Magic */
     &:focus-visible {
       outline: 2px solid var(--color-primary);
       outline-offset: -2px;
@@ -122,18 +140,16 @@ const navItems = [
     }
   }
 
-  /* The magic gliding indicator */
   .active-indicator {
     position: absolute;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 2rem; /* w-8 approx */
+    width: 2rem;
     height: 3px;
     background: var(--color-primary);
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
-    /* view-transition-name: nav-indicator; <- handled via transition:name attribute */
   }
 
   .nav-icon {
@@ -141,19 +157,17 @@ const navItems = [
     height: 1.5rem;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-    /* Scale up slightly when active */
     .active & {
       transform: scale(1.1);
     }
   }
 
-  /* Soft background pill behind active icon */
   .active .nav-icon {
     filter: drop-shadow(0 2px 4px rgba(13, 148, 136, 0.3));
   }
 
   .nav-label {
-    font-size: 0.625rem; /* text-[10px] */
+    font-size: 0.625rem;
     font-weight: 700;
     letter-spacing: 0.025em;
     text-align: center;
@@ -161,5 +175,71 @@ const navItems = [
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  /* =====================
+   * 💜 DONATE FAB BUTTON
+   * Flotante sobre el nav, centrado, con animación de latido
+   * ===================== */
+  .donate-fab {
+    position: absolute;
+    top: -1.75rem;             /* Sale 28px por encima del nav */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    text-decoration: none;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: white;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.45), 0 1px 6px rgba(0,0,0,0.15);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+    animation: donate-pulse 2.5s ease-in-out infinite;
+    z-index: 50;
+    white-space: nowrap;
+
+    &:hover {
+      transform: translateX(-50%) scale(1.08);
+      box-shadow: 0 6px 28px rgba(124, 58, 237, 0.6), 0 2px 8px rgba(0,0,0,0.2);
+      animation: none;
+    }
+
+    &:active {
+      transform: translateX(-50%) scale(0.96);
+    }
+
+    &.donate-fab--active {
+      background: linear-gradient(135deg, #6d28d9, #9333ea);
+      box-shadow: 0 4px 20px rgba(109, 40, 217, 0.55);
+      animation: none;
+    }
+  }
+
+  .donate-fab__label {
+    font-size: 0.55rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  @keyframes donate-pulse {
+    0%, 100% {
+      box-shadow: 0 4px 20px rgba(124, 58, 237, 0.45), 0 1px 6px rgba(0,0,0,0.15);
+      transform: translateX(-50%) scale(1);
+    }
+    50% {
+      box-shadow: 0 6px 30px rgba(168, 85, 247, 0.65), 0 2px 10px rgba(0,0,0,0.2);
+      transform: translateX(-50%) scale(1.05);
+    }
+  }
+
+  /* Evitar que el FAB tape ítems del nav en su columna central */
+  .nav-container > .nav-item:nth-child(3) {
+    visibility: hidden;
+    pointer-events: none;
   }
 </style>

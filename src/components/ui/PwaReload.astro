@@ -88,7 +88,7 @@
         };
 
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js').then(reg => {
+            navigator.serviceWorker.register('/sw.js', { type: 'module' }).then(reg => {
                 if (reg.waiting) showToast();
 
                 reg.addEventListener('updatefound', () => {
