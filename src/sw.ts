@@ -1,4 +1,5 @@
 /// <reference lib="WebWorker" />
+export type {}; // Makes this file a TS module so `declare const self` can shadow the global
 declare const self: ServiceWorkerGlobalScope;
 
 const CACHE_VERSION = 'v3.3.1-fix';
