@@ -4,7 +4,8 @@
       "id": "R2",
       "nombre": "Walmart - Puerto Juárez",
       "color": "#4ECDC4",
-      "tarifa": 15.0,
+      "tipo": "Bus_Urban",
+      "tarifa": 10,
       "paradas": [
         {
           "id": "R2_001",

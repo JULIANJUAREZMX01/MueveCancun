@@ -4,7 +4,8 @@
       "id": "R1",
       "nombre": "Crucero - Zona Hotelera",
       "color": "#FF6B6B",
-      "tarifa": 15.0,
+      "tipo": "Bus_Urban",
+      "tarifa": 12,
       "paradas": [
         {
           "id": "R1_001",

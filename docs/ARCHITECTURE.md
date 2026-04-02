@@ -32,6 +32,9 @@ This document details the 4-layer architecture of the MueveCancun ecosystem.
 - **Future Expansion**: `scripts/listener/` will house Python agents for social scraping.
 
 ## 4. Frontend Layer (Astro)
+- **UI Components**: Web Components / Lit.
+- **Styling**: Tailwind CSS + CSS purista (target: migrar a PostCSS/Houdini puro; Bootstrap eliminado).
+- **Architecture Documentation**: [ADR-2026-002](adr/ADR-2026-002.md).
 - **Framework**: Astro 5.
 - **Key Component**: `src/components/RouteCalculator.astro`.
 - **Data Consumption**:
@@ -87,3 +90,9 @@ sequenceDiagram
                                                               |
                                                        [find_route_rs]
 ```
+
+## 5. Routing & Localization (Static Directives)
+As of v3.3+, the system adheres to a strictly static routing model:
+- **Localized Paths**: All valid routes are prefixed with `/[lang]/`.
+- **Utility-Driven Links**: Developers must use `getRelativeLocaleUrl` for all navigation.
+- **Client-Side Handover**: The root (`/`) and legacy 404 paths are handled via inline JS redirection to maintain CDN compatibility without Middleware overhead.

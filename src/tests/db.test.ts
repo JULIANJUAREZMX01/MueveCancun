@@ -2,24 +2,43 @@ import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import { openDB } from 'idb';
 import { getWalletBalance, __resetDBPromise, setWalletBalance, initDB, updateWalletBalance } from '../utils/db';
 
+// --- Mock shape that matches the vi.mock implementation below ---
+interface MockObjectStore {
+  get: (key: string) => Promise<unknown>;
+  put: (val: unknown, key: string) => Promise<void>;
+}
+
+interface MockTxShape {
+  objectStore: (_name: string) => MockObjectStore;
+  done: Promise<void>;
+}
+
+interface MockDB {
+  transaction: (_storeName: string, _mode?: string) => MockTxShape;
+  get: (_storeName: string, key: string) => Promise<unknown>;
+  put: (_storeName: string, val: unknown, key: string) => Promise<void>;
+  _tamperStore: (key: string, val: unknown) => void;
+  _clearStore: () => void;
+}
+
 // Mock the idb library
 vi.mock('idb', () => {
-  let store: any = {};
+  let store: Record<string, unknown> = {};
 
-  const mockTx = {
-    objectStore: (_name: string) => ({
+  const mockTx: MockTxShape = {
+    objectStore: (_name: string): MockObjectStore => ({
       get: async (key: string) => store[key],
-      put: async (val: any, key: string) => { store[key] = val; },
+      put: async (val: unknown, key: string) => { store[key] = val; },
     }),
     done: Promise.resolve(),
   };
 
-  const mockDb = {
+  const mockDb: MockDB = {
     transaction: (_storeName: string, _mode?: string) => mockTx,
     get: async (_storeName: string, key: string) => store[key],
-    put: async (_storeName: string, val: any, key: string) => { store[key] = val; },
+    put: async (_storeName: string, val: unknown, key: string) => { store[key] = val; },
     // A helper method on the mock to let us bypass the SDK and directly tamper
-    _tamperStore: (key: string, val: any) => { store[key] = val; },
+    _tamperStore: (key: string, val: unknown) => { store[key] = val; },
     _clearStore: () => { store = {}; }
   };
 
@@ -31,10 +50,9 @@ vi.mock('idb', () => {
 // Since we use Web Crypto API, we need to ensure it's available in the test environment.
 // Node 20+ has crypto.subtle on globalThis.
 import { webcrypto } from 'crypto';
-const originalLocalStorage = (globalThis as any).localStorage;
+const originalLocalStorage = (globalThis as unknown as Record<string, unknown>).localStorage;
 if (!globalThis.crypto) {
-  // @ts-ignore
-  globalThis.crypto = webcrypto;
+  Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true, writable: false });
 }
 
 
@@ -45,13 +63,13 @@ const localStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-globalThis.localStorage = localStorageMock as any;
+Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock, configurable: true, writable: true });
 
 afterAll(() => {
   // Only restore localStorage, which we replaced with a mock.
   // globalThis.crypto is not restored because we only polyfill it when absent;
   // in Node 20+ it is already defined and read-only, so nothing was changed.
-  (globalThis as any).localStorage = originalLocalStorage;
+  Object.defineProperty(globalThis, 'localStorage', { value: originalLocalStorage, configurable: true, writable: true });
 });
 
 describe('DB Security Checks', () => {
@@ -59,12 +77,11 @@ describe('DB Security Checks', () => {
   beforeEach(async () => {
     __resetDBPromise();
     // We clear the mock store before each test
-    const db = await openDB('cancunmueve-db', 3);
-    // @ts-ignore
+    const db = await openDB('cancunmueve-db', 3) as unknown as MockDB;
     db._clearStore();
 
     // Simulate migration already done to prevent auto-signing loophole
-    localStorageMock.getItem.mockImplementation((key) => {
+    localStorageMock.getItem.mockImplementation((key: string) => {
       if (key === 'balance_migration_done') return 'true';
       return null;
     });
@@ -86,13 +103,11 @@ describe('DB Security Checks', () => {
     await setWalletBalance(50.00);
 
     // 2. Tamper with the store directly (bypassing the signature generation)
-    const db = await openDB('cancunmueve-db', 3);
-    // @ts-ignore
-    const existing = await db.get('wallet-status', 'current_balance');
+    const db = await openDB('cancunmueve-db', 3) as unknown as MockDB;
+    const existing = await db.get('wallet-status', 'current_balance') as Record<string, unknown>;
 
     // User tries to artificially inflate balance to 9999
     existing.amount = 9999.00;
-    // @ts-ignore
     db._tamperStore('current_balance', existing);
 
     // 3. Read it back via the API, it should detect tampering and reset to 0
@@ -105,13 +120,11 @@ describe('DB Security Checks', () => {
   it('should treat a missing signature as a legacy record and backfill it', async () => {
     await setWalletBalance(75.00);
 
-    const db = await openDB('cancunmueve-db', 3);
-    // @ts-ignore
-    const existing = await db.get('wallet-status', 'current_balance');
+    const db = await openDB('cancunmueve-db', 3) as unknown as MockDB;
+    const existing = await db.get('wallet-status', 'current_balance') as Record<string, unknown>;
 
     // Simulate a legacy record: remove its signature
     delete existing.signature;
-    // @ts-ignore
     db._tamperStore('current_balance', existing);
 
     const result = await getWalletBalance();
@@ -132,7 +145,7 @@ describe('DB Security Checks', () => {
 
   it('should initialize a fresh profile with default 180.00 MXN balance and a valid signature', async () => {
     // Simulate a fresh profile: no migration done and no localStorage values
-    localStorageMock.getItem.mockImplementation((_key) => null);
+    localStorageMock.getItem.mockImplementation((_key: string) => null);
 
     __resetDBPromise();
     await initDB();
