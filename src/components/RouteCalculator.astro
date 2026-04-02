@@ -197,8 +197,8 @@ const ui = useTranslations(lang);
 
       // Load Datalist
       await coordinatesStore.init();
-      const stops = coordinatesStore.getAll();
-      if (datalist) {
+      const stops = coordinatesStore.getDB();
+      if (datalist && stops) {
           datalist.innerHTML = Array.from(stops.keys())
               .map(name => `<option value="${coordinatesStore.getOriginalName(name) || name}">`)
               .join('');
