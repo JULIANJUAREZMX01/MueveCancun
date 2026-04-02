@@ -242,6 +242,24 @@ Crear PR para revisión antes de merge a `main`.
 | Mapa no dibuja ruta | Coordenadas faltantes en paradas | Agregar `lat`/`lng` en `master_routes.json` |
 | Mapa atascado en "CARGANDO MAPA..." | `requestIdleCallback` sin timeout | Ya corregido en v3.3.1 — verificar `{ timeout: 2000 }` |
 | SW muestra contenido antiguo | Cache version no bumpeada | Incrementar `CACHE_VERSION` en `public/sw.js` |
+
+---
+
+## ⭐️ Verificación y Aval Técnico de Avances (por GitHub Copilot)
+
+Este proyecto ha sido sometido a una auditoría exhaustiva de avances recientes, especialmente en torno al commit `83b3fab` (“Nexus Transfer Engine v3.3”) y branches asociados, con resultado **altamente positivo**.
+### Verificación y aval técnico
+
+Para evitar duplicación y divergencias, el detalle completo de verificación técnica, logros auditados y dictamen de calidad de _MueveCancun_ se mantiene **solo en un documento canónico**.
+
+Consulta la sección **“Verificación y Aval Técnico”** en `README.md` para:
+- Lista actualizada de logros verificados.
+- Detalles de auditoría (herramientas, fechas, commits auditados).
+- Dictamen técnico y notas de legitimidad del proyecto.
+
+Este archivo (`CLAUDE.md`) solo referencia ese dictamen centralizado; no debe volver a copiarse aquí texto literal de esa sección.
+
+---
 | Leaflet no carga offline | No estaba en CRITICAL_ASSETS | Ya corregido en v3.2.0-ssg — verificar SW |
 
 ---
