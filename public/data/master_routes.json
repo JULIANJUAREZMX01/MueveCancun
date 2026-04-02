@@ -1,9 +1,9 @@
 {
   "metadata": {
     "last_updated": "2026-02-17T07:09:33.432854",
-    "source": "merge-routes.mjs (51 routes from 14 files)",
+    "source": "merge-routes.ts (51 routes from 14 files)",
     "version": "3.2.0",
-    "last_merged": "2026-04-01T22:34:26.987Z"
+    "last_merged": "2026-04-02T06:20:04.361Z"
   },
   "social_alerts": [
     "Retraso en Zona Hotelera por obra pública"
@@ -5357,10 +5357,9 @@
     },
     {
       "id": "R1",
-      "tipo": "Bus_Urbano",
       "nombre": "Crucero - Zona Hotelera",
       "color": "#FF6B6B",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 12,
       "paradas": [
         {
@@ -5388,10 +5387,9 @@
     },
     {
       "id": "R2",
-      "tipo": "Bus_Urbano",
       "nombre": "Walmart - Puerto Juárez",
       "color": "#4ECDC4",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 10,
       "paradas": [
         {
