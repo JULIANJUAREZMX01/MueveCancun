@@ -1,0 +1,94 @@
+---
+import { getLangFromUrl } from '../../utils/i18n';
+import { getRelativeLocaleUrl } from '../../utils/utils';
+
+const lang = getLangFromUrl(Astro.url);
+
+const translations = {
+  es: {
+    title: '💡 Tip: Apoya MueveCancún',
+    message: 'Este proyecto vive de ti. Por <strong>$3/mes</strong> obtienes notificaciones de rutas alteradas y acceso a datos históricos.',
+    primaryCta: 'Apoyar',
+    secondaryCta: 'Más tarde'
+  },
+  en: {
+    title: '💡 Tip: Support MueveCancún',
+    message: 'This project lives off you. For <strong>$3/mo</strong> you get altered route notifications and historical data access.',
+    primaryCta: 'Support',
+    secondaryCta: 'Later'
+  }
+};
+
+const t = translations[lang] || translations.es;
+const donateUrl = getRelativeLocaleUrl(lang, 'donate');
+---
+
+<div id="donate-nudge" class="hidden fixed bottom-20 md:bottom-6 right-4 left-4 md:left-auto md:w-80 z-50 animate-in fade-in slide-in-from-bottom-8 duration-500">
+  <div class="bg-white dark:bg-slate-900 border-l-4 border-primary-500 rounded-2xl shadow-2xl p-6 relative overflow-hidden group">
+    <!-- Close Button -->
+    <button id="close-donate-nudge" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+      </svg>
+    </button>
+
+    <!-- Content -->
+    <div class="space-y-4">
+      <h4 class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">{t.title}</h4>
+      <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" set:html={t.message}></p>
+
+      <div class="flex gap-2">
+        <a href={donateUrl} class="flex-1 bg-primary-500 text-white text-center py-2.5 rounded-xl text-xs font-black shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all hover:scale-[1.02] active:scale-95 no-underline">
+          {t.primaryCta}
+        </a>
+        <button id="dismiss-donate-nudge" class="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+          {t.secondaryCta}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setupNudge() {
+    const nudge = document.getElementById('donate-nudge');
+    const closeBtn = document.getElementById('close-donate-nudge');
+    const dismissBtn = document.getElementById('dismiss-donate-nudge');
+
+    if (!nudge) return;
+
+    function getCount() {
+      return parseInt(localStorage.getItem('donate_nudge_count') || '0');
+    }
+
+    function incrementCount() {
+      const count = getCount() + 1;
+      localStorage.setItem('donate_nudge_count', count.toString());
+
+      if (count >= 5 && !localStorage.getItem('donate_nudge_dismissed')) {
+        nudge?.classList.remove('hidden');
+      }
+    }
+
+    function dismiss() {
+      nudge?.classList.add('hidden');
+      localStorage.setItem('donate_nudge_dismissed', 'true');
+
+      // Show again in 14 days
+      setTimeout(() => {
+        localStorage.removeItem('donate_nudge_dismissed');
+        localStorage.setItem('donate_nudge_count', '0');
+      }, 14 * 24 * 60 * 60 * 1000);
+    }
+
+    // Listen for search event (this event must be dispatched from RouteCalculator)
+    window.addEventListener('ROUTE_CALCULATED', () => {
+      incrementCount();
+    });
+
+    closeBtn?.addEventListener('click', dismiss);
+    dismissBtn?.addEventListener('click', dismiss);
+  }
+
+  document.addEventListener('astro:page-load', setupNudge);
+</script>

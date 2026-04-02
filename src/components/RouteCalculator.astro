@@ -232,8 +232,17 @@ const ui = useTranslations(lang);
           document.getElementById('btn-text')?.classList.add('hidden');
 
           try {
-              const resultsRaw = find_route(origin.toLowerCase(), dest.toLowerCase());
-              const results = JSON.parse(resultsRaw);
+              if (!wasmLoaded || typeof find_route !== 'function') {
+                  throw new Error("WASM not ready or find_route not defined");
+              }
+
+              console.log(`🔍 Searching: ${origin} -> ${dest}`);
+              const results = find_route(normalizeString(origin), normalizeString(dest));
+
+              console.log("🔍 Raw Results:", results);
+              if (results && results.length > 0) {
+                  window.dispatchEvent(new CustomEvent('ROUTE_CALCULATED'));
+              }
 
               if (!results || results.length === 0) {
                   showToast("No se encontró una ruta directa o con 1 transbordo", "warning");

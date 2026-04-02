@@ -1,14 +1,16 @@
 {
   "id": "R10",
-  "nombre": "Las Américas - Aeropuerto",
+  "nombre": "Las Américas - Villas del Mar (Vía Kabah)",
   "tarifa": 10,
   "tipo": "Transporte",
   "frecuencia_minutos": 20,
   "horario": {
     "inicio_oficial": "04:00-23:00"
   },
-  "social_alerts": [],
-  "last_updated": "2026-01-30T06:16:46.258Z",
+  "social_alerts": [
+    "⚠️ Esta ruta NO llega al Aeropuerto."
+  ],
+  "last_updated": "2026-04-01T22:20:23Z",
   "paradas": [
     {
       "id": "R10_001",
@@ -73,22 +75,6 @@
       "lng": -86.8415,
       "orden": 8,
       "landmarks": "Universidad"
-    },
-    {
-      "id": "R10_009",
-      "nombre": "T3 Aeropuerto",
-      "lat": 21.0412,
-      "lng": -86.8725,
-      "orden": 9,
-      "landmarks": "Vuelos Internacionales"
-    },
-    {
-      "id": "R10_010",
-      "nombre": "T2 Aeropuerto",
-      "lat": 21.0365,
-      "lng": -86.8775,
-      "orden": 10,
-      "landmarks": "Vuelos Nacionales"
     }
   ]
 }

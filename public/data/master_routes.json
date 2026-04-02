@@ -1,9 +1,9 @@
 {
   "metadata": {
     "last_updated": "2026-02-17T07:09:33.432854",
-    "source": "merge-routes.mjs (50 routes from 10 files)",
+    "source": "merge-routes.mjs (51 routes from 14 files)",
     "version": "3.2.0",
-    "last_merged": "2026-03-29T15:07:01.210Z"
+    "last_merged": "2026-04-01T22:34:26.987Z"
   },
   "social_alerts": [
     "Retraso en Zona Hotelera por obra pública"
@@ -352,15 +352,17 @@
     },
     {
       "id": "R10",
-      "nombre": "Las Américas - Aeropuerto",
+      "nombre": "Las Américas - Villas del Mar (Vía Kabah)",
       "tarifa": 10,
       "tipo": "Transporte",
       "frecuencia_minutos": 20,
       "horario": {
         "inicio_oficial": "04:00-23:00"
       },
-      "social_alerts": [],
-      "last_updated": "2026-01-30T06:16:46.258Z",
+      "social_alerts": [
+        "⚠️ Esta ruta NO llega al Aeropuerto."
+      ],
+      "last_updated": "2026-04-01T22:20:23Z",
       "paradas": [
         {
           "id": "R10_001",
@@ -425,22 +427,6 @@
           "lng": -86.8415,
           "orden": 8,
           "landmarks": "Universidad"
-        },
-        {
-          "id": "R10_009",
-          "nombre": "T3 Aeropuerto",
-          "lat": 21.0412,
-          "lng": -86.8725,
-          "orden": 9,
-          "landmarks": "Vuelos Internacionales"
-        },
-        {
-          "id": "R10_010",
-          "nombre": "T2 Aeropuerto",
-          "lat": 21.0365,
-          "lng": -86.8775,
-          "orden": 10,
-          "landmarks": "Vuelos Nacionales"
         }
       ]
     },
@@ -2624,7 +2610,7 @@
     {
       "id": "ruta_1760328606309",
       "nombre": "RUTA 17",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -2801,7 +2787,7 @@
     {
       "id": "ruta_1760414609200",
       "nombre": "RUTA 13",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -2962,7 +2948,7 @@
     {
       "id": "ruta_1760462813166",
       "nombre": "RUTA CENTRAL ABASTOS",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -3083,7 +3069,7 @@
     {
       "id": "ruta_1760462813165",
       "nombre": "RUTA 70",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -3204,7 +3190,7 @@
     {
       "id": "ruta_1761460735535",
       "nombre": "RUTA 5",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -3301,7 +3287,7 @@
     {
       "id": "ruta_1760989478537",
       "nombre": "RUTA 21",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -3422,7 +3408,7 @@
     {
       "id": "ruta_1464274794329",
       "nombre": "RUTA 2 TORITO",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -3735,7 +3721,7 @@
     {
       "id": "ruta_1653475759991",
       "nombre": "RUTA 2 VILLAS DEL MAR",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -4056,7 +4042,7 @@
     {
       "id": "ruta_1760333218631",
       "nombre": "RUTA 2 LA JOYA",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -4401,7 +4387,7 @@
     {
       "id": "ruta_1761276380950",
       "nombre": "RUTA 2 CHACMOOL-PORTILLO",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -4730,7 +4716,7 @@
     {
       "id": "ruta_1761277331648",
       "nombre": "RUTA 2-15",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -5091,7 +5077,7 @@
     {
       "id": "ruta_1761277780965",
       "nombre": "RUTA 1 REHOYADA",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -5373,6 +5359,7 @@
       "id": "R1",
       "nombre": "Crucero - Zona Hotelera",
       "color": "#FF6B6B",
+      "tipo": "Bus_Urban",
       "tarifa": 12,
       "paradas": [
         {
@@ -5396,14 +5383,14 @@
           "lng": -86.7474,
           "orden": 7
         }
-      ],
-      "tipo": "Bus_Urban"
+      ]
     },
     {
       "id": "R2",
       "nombre": "Walmart - Puerto Juárez",
       "color": "#4ECDC4",
-      "tarifa": 12,
+      "tipo": "Bus_Urban",
+      "tarifa": 10,
       "paradas": [
         {
           "id": "R2_001",
@@ -5419,14 +5406,13 @@
           "lng": -86.8234,
           "orden": 3
         }
-      ],
-      "tipo": "Bus_Urban"
+      ]
     },
     {
       "id": "R10_AEROPUERTO",
-      "nombre": "R-10 Las Américas - Aeropuerto (NO LLEGA AL AEROPUERTO / SOLO TRABAJADORES)",
+      "nombre": "R-10 Las Américas - Aeropuerto (Trabajadores)",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 15,
       "horario": {
         "inicio": "04:00-23:00"
       },
@@ -5491,10 +5477,6 @@
           "lng": -86.8515,
           "orden": 10
         }
-      ],
-      "social_alerts": [
-        "⚠️ IMPORTANTE: Esta ruta NO entra a las terminales del Aeropuerto. Se queda en la entrada (carretera).",
-        "Principalmente para trabajadores de la zona."
       ]
     },
     {
@@ -5503,10 +5485,14 @@
       "tipo": "Bus_Urban",
       "tarifa": 10,
       "horario": {
-        "inicio": "06:00 - 22:30"
+        "inicio": "06:00 - 22:00"
       },
       "frecuencia_minutos": 10,
       "empresa": "Turicun",
+      "social_alerts": [
+        "Últimas salidas alrededor de las 10:00 PM."
+      ],
+      "last_updated": "2026-04-01T22:21:19Z",
       "paradas": [
         {
           "nombre": "Santa Fe",
@@ -5516,26 +5502,26 @@
         },
         {
           "nombre": "Av. Kabah",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.155,
+          "lng": -86.845,
           "orden": 2
         },
         {
           "nombre": "Multiplaza Kabah",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.15,
+          "lng": -86.84,
           "orden": 3
         },
         {
           "nombre": "Walmart Andrés Quintana Roo",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.145,
+          "lng": -86.835,
           "orden": 4
         },
         {
           "nombre": "El Crucero",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.1576,
+          "lng": -86.8269,
           "orden": 5
         }
       ]
@@ -5544,7 +5530,7 @@
       "id": "R29_OUTLET_001",
       "nombre": "R-29 ADO - Plaza Outlet",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "06:30 - 23:00"
       },
@@ -5593,7 +5579,7 @@
       "id": "R17_LAKIN_001",
       "nombre": "R-17 Tierra Maya - Lak'in",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "05:00 - 23:30"
       },
@@ -5636,7 +5622,7 @@
       "id": "R21_AMERICAS_001",
       "nombre": "R-21 Las Américas - Kabah",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
@@ -5679,7 +5665,7 @@
       "id": "R44_CENTRO_001",
       "nombre": "R-44 Centro - Plaza Las Américas",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 13,
       "horario": {
         "inicio": "05:45 - 23:00"
       },
@@ -5728,7 +5714,7 @@
       "id": "R5_HEROES_001",
       "nombre": "R-5 Los Héroes - Crucero",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
@@ -5777,6 +5763,7 @@
       },
       "frecuencia_minutos": 10,
       "empresa": "Turicun",
+      "last_updated": "2026-04-01T22:21:19Z",
       "paradas": [
         {
           "nombre": "Tierra Maya",
@@ -5786,32 +5773,32 @@
         },
         {
           "nombre": "Av. Kabah",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.155,
+          "lng": -86.845,
           "orden": 2
         },
         {
           "nombre": "Plaza Las Américas",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.1472,
+          "lng": -86.8234,
           "orden": 3
         },
         {
           "nombre": "Entrada Zona Hotelera",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.153,
+          "lng": -86.815,
           "orden": 4
         },
         {
           "nombre": "Zona Hotelera",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.135,
+          "lng": -86.768,
           "orden": 5
         },
         {
           "nombre": "Playa Delfines",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.085,
+          "lng": -86.775,
           "orden": 6
         }
       ]
@@ -5820,7 +5807,7 @@
       "id": "R237_RANCHO_001",
       "nombre": "R-237 Rancho Viejo - Crucero",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
@@ -5863,7 +5850,7 @@
       "id": "R71_RESIDENCIAL_001",
       "nombre": "R-71 Polígono Sur - Centro",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 13,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
@@ -5906,7 +5893,7 @@
       "id": "R31_UNIVERSIDAD_001",
       "nombre": "R-31 Universidad del Caribe - Centro",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "07:00 - 21:00"
       },
@@ -5949,7 +5936,7 @@
       "id": "R30_REG103_001",
       "nombre": "R-30 Región 103 - Zona Hotelera",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 15,
       "horario": {
         "inicio": "05:00 - 23:00"
       },
@@ -5998,6 +5985,7 @@
       },
       "frecuencia_minutos": 15,
       "empresa": "Autocar",
+      "last_updated": "2026-04-01T22:21:19Z",
       "paradas": [
         {
           "nombre": "Región 102",
@@ -6007,21 +5995,65 @@
         },
         {
           "nombre": "Av. Talleres",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.15,
+          "lng": -86.86,
           "orden": 2
         },
         {
           "nombre": "Av. Kabah",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.145,
+          "lng": -86.845,
           "orden": 3
         },
         {
           "nombre": "Plaza Las Américas",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "lat": 21.1472,
+          "lng": -86.8234,
           "orden": 4
+        }
+      ]
+    },
+    {
+      "id": "R15_HOTELES_001",
+      "nombre": "R-15 Centro - Hoteles",
+      "tipo": "Bus_Urban",
+      "tarifa": 12,
+      "horario": {
+        "inicio": "06:00 - 22:30"
+      },
+      "frecuencia_minutos": 15,
+      "empresa": "Autocar",
+      "last_updated": "2026-04-01T22:21:19Z",
+      "paradas": [
+        {
+          "nombre": "El Crucero",
+          "lat": 21.1576,
+          "lng": -86.8269,
+          "orden": 1
+        },
+        {
+          "nombre": "Av. Tulum",
+          "lat": 21.155,
+          "lng": -86.825,
+          "orden": 2
+        },
+        {
+          "nombre": "Plaza Las Américas",
+          "lat": 21.1472,
+          "lng": -86.8234,
+          "orden": 3
+        },
+        {
+          "nombre": "Entrada Zona Hotelera",
+          "lat": 21.153,
+          "lng": -86.815,
+          "orden": 4
+        },
+        {
+          "nombre": "Boulevard Kukulcán",
+          "lat": 21.135,
+          "lng": -86.768,
+          "orden": 5
         }
       ]
     }

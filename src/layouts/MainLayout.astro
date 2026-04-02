@@ -11,6 +11,8 @@ import Toast from '../components/ui/Toast.astro';
 import PwaReload from '../components/ui/PwaReload.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import ReportWidget from '../components/ReportWidget.astro';
+import BrowserDetection from '../components/ui/BrowserDetection.astro';
+import DonateNudge from '../components/ui/DonateNudge.astro';
 import '../styles/tokens.css';
 import '../styles/main.css';
 import '../index.css';
@@ -31,11 +33,24 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const pathname = Astro.url.pathname;
 const ga4Id = import.meta.env.PUBLIC_GA4_ID;
+const googleVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
+const bingVerification = import.meta.env.PUBLIC_BING_SITE_VERIFICATION;
+const siteBase = Astro.site?.href?.replace(/\/$/, '') ?? '';
+const canonicalUrl = siteBase + pathname;
+const ogImage = `${siteBase}/og-image.png`;
 
 const uiTranslations = {
   es: useTranslations('es'),
   en: useTranslations('en')
 };
+
+const navItems = [
+  { href: getRelativeLocaleUrl(lang, 'home'), label: 'Inicio', icon: 'explore', activePattern: /^\/(es|en)\/home/ },
+  { href: getRelativeLocaleUrl(lang, 'rutas'), label: 'Rutas', icon: 'route', activePattern: /^\/(es|en)\/rutas/ },
+  { href: getRelativeLocaleUrl(lang, 'community'), label: 'Foro', icon: 'forum', activePattern: /^\/(es|en)\/community/ },
+  { href: getRelativeLocaleUrl(lang, 'wallet'), label: 'Wallet', icon: 'account_balance_wallet', activePattern: /^\/(es|en)\/wallet/ },
+  { href: getRelativeLocaleUrl(lang, 'about'), label: 'Nosotros', icon: 'info', activePattern: /^\/(es|en)\/about/ },
+];
 ---
 
 <!DOCTYPE html>
@@ -435,6 +450,8 @@ const uiTranslations = {
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
     </style>
+    <BrowserDetection />
+    <DonateNudge />
     <ReportWidget />
   </body>
 </html>

@@ -11,9 +11,13 @@ const navItems = [
   { href: getRelativeLocaleUrl(lang, 'wallet'), icon: 'account_balance_wallet', label: 'Tarjeta', activePattern: /^\/(es|en)\/wallet/ },
   { href: getRelativeLocaleUrl(lang, 'about'), icon: 'info', label: 'Nosotros', activePattern: /^\/(es|en)\/about/ },
 ];
+
+const donateHref = getRelativeLocaleUrl(lang, 'donate');
+const isDonateActive = /^\/(es|en)\/donate/.test(pathname);
+const donateLabel = lang === 'en' ? 'Support' : 'Apoyar';
 ---
 
-<nav transition:persist class="graffiti-nav md:hidden" aria-label="Main navigation">
+<nav transition:persist class="graffiti-nav" aria-label="Main navigation">
   <div class="nav-container">
     {navItems.map((item) => {
       const isActive = item.activePattern.test(pathname);
@@ -41,12 +45,31 @@ const navItems = [
             )}
           </svg>
 
-          <span class="nav-label">
+          <span class="nav-label" data-i18n={
+            item.href.endsWith('/home') ? 'nav.home' :
+            item.href.endsWith('/rutas') ? 'nav.routes' :
+            item.href.endsWith('/community') ? 'nav.community' :
+            item.href.endsWith('/wallet') ? 'nav.wallet' :
+            item.href.endsWith('/about') ? 'nav.about' : ''
+          }>
             {item.label}
           </span>
         </a>
       );
     })}
+
+    <!-- 💜 Botón de donación flotante: fuera del grid, posicionado sobre el nav -->
+    <a
+      href={donateHref}
+      class={`donate-fab ${isDonateActive ? 'donate-fab--active' : ''}`}
+      aria-label={donateLabel}
+      title={donateLabel}
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 21.593c-.425-.394-8.993-7.817-8.993-12.097C3.007 5.48 7.016 2 12 2s8.993 3.48 8.993 7.496c0 4.28-8.568 11.703-8.993 12.097zM12 4C8.112 4 5.007 6.702 5.007 9.496c0 3.066 5.63 8.786 6.993 10.118 1.363-1.332 6.993-7.052 6.993-10.118C18.993 6.702 15.888 4 12 4zm0 7a2 2 0 110-4 2 2 0 010 4z"/>
+      </svg>
+      <span class="donate-fab__label">{donateLabel}</span>
+    </a>
   </div>
 </nav>
 
@@ -56,54 +79,162 @@ const navItems = [
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 100;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid #e2e8f0;
-    padding-bottom: env(safe-area-inset-bottom, 0);
-    height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0));
+    z-index: 40;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border-light);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   :global(.dark) .graffiti-nav {
-    background: rgba(15, 23, 42, 0.95);
-    border-top-color: #1e293b;
+    background: rgba(15, 23, 42, 0.92);
   }
 
   .nav-container {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     height: var(--bottom-nav-h);
-    max-width: 24rem;
+    max-width: 32rem;
     margin: 0 auto;
   }
 
   .nav-item {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    color: #94a3b8;
+    gap: 0.125rem;
     text-decoration: none;
-    position: relative;
-    transition: all 0.2s;
-  }
+    color: var(--text-tertiary);
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  .nav-item.active {
-    color: #0ea5e9;
-  }
+    &.active {
+      color: var(--color-primary);
+    }
 
-  .nav-label {
-    font-size: 10px;
-    font-weight: 700;
+    &:hover:not(.active) {
+      color: var(--text-primary);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: -2px;
+      border-radius: 0.5rem;
+      background: radial-gradient(
+        circle at center,
+        color-mix(in srgb, var(--color-primary) 20%, transparent) 0%,
+        color-mix(in srgb, var(--color-primary) 5%, transparent) 100%
+      );
+    }
   }
 
   .active-indicator {
     position: absolute;
     top: 0;
-    width: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2rem;
     height: 3px;
-    background: #0ea5e9;
-    border-radius: 0 0 2px 2px;
+    background: var(--color-primary);
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+
+  .nav-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    .active & {
+      transform: scale(1.1);
+    }
+  }
+
+  .active .nav-icon {
+    filter: drop-shadow(0 2px 4px rgba(13, 148, 136, 0.3));
+  }
+
+  .nav-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* =====================
+   * 💜 DONATE FAB BUTTON
+   * Flotante sobre el nav, centrado, con animación de latido
+   * ===================== */
+  .donate-fab {
+    position: absolute;
+    top: -1.75rem;             /* Sale 28px por encima del nav */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    text-decoration: none;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: white;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.45), 0 1px 6px rgba(0,0,0,0.15);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+    animation: donate-pulse 2.5s ease-in-out infinite;
+    z-index: 50;
+    white-space: nowrap;
+
+    &:hover {
+      transform: translateX(-50%) scale(1.08);
+      box-shadow: 0 6px 28px rgba(124, 58, 237, 0.6), 0 2px 8px rgba(0,0,0,0.2);
+      animation: none;
+    }
+
+    &:active {
+      transform: translateX(-50%) scale(0.96);
+    }
+
+    &.donate-fab--active {
+      background: linear-gradient(135deg, #6d28d9, #9333ea);
+      box-shadow: 0 4px 20px rgba(109, 40, 217, 0.55);
+      animation: none;
+    }
+  }
+
+  .donate-fab__label {
+    font-size: 0.55rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  @keyframes donate-pulse {
+    0%, 100% {
+      box-shadow: 0 4px 20px rgba(124, 58, 237, 0.45), 0 1px 6px rgba(0,0,0,0.15);
+      transform: translateX(-50%) scale(1);
+    }
+    50% {
+      box-shadow: 0 6px 30px rgba(168, 85, 247, 0.65), 0 2px 10px rgba(0,0,0,0.2);
+      transform: translateX(-50%) scale(1.05);
+    }
+  }
+
+  /* Evitar que el FAB tape ítems del nav en su columna central */
+  .nav-container > .nav-item:nth-child(3) {
+    visibility: hidden;
+    pointer-events: none;
   }
 </style>
