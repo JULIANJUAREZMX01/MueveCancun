@@ -557,117 +557,117 @@
       "empresa": "Transporte Público",
       "paradas": [
         {
-          "nombre": "Parada RUTA 81 #1",
+          "nombre": "Mercado 23 / Av. Uxmal",
           "lat": 21.1619,
           "lng": -86.8515,
           "orden": 1
         },
         {
-          "nombre": "Parada RUTA 81 #2",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Av. Uxmal / SM 20",
+          "lat": 21.159,
+          "lng": -86.853,
           "orden": 2
         },
         {
-          "nombre": "Parada RUTA 81 #3",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "SM 22 / Av. Tulum Sur",
+          "lat": 21.1555,
+          "lng": -86.8548,
           "orden": 3
         },
         {
-          "nombre": "Parada RUTA 81 #4",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Hospital General / Av. Yaxchilán",
+          "lat": 21.1523,
+          "lng": -86.8561,
           "orden": 4
         },
         {
-          "nombre": "Parada RUTA 81 #5",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Av. Cobá / Parque de las Palapas",
+          "lat": 21.1485,
+          "lng": -86.8482,
           "orden": 5
         },
         {
-          "nombre": "Parada RUTA 81 #6",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Plaza Las Américas (Sur)",
+          "lat": 21.1415,
+          "lng": -86.8445,
           "orden": 6
         },
         {
-          "nombre": "Parada RUTA 81 #7",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Av. Kabah / SM 57",
+          "lat": 21.1375,
+          "lng": -86.8478,
           "orden": 7
         },
         {
-          "nombre": "Parada RUTA 81 #8",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Av. Tulum / SM 62",
+          "lat": 21.1338,
+          "lng": -86.851,
           "orden": 8
         },
         {
-          "nombre": "Parada RUTA 81 #9",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "SM 65 / Av. Nichupté",
+          "lat": 21.13,
+          "lng": -86.8543,
           "orden": 9
         },
         {
-          "nombre": "Parada RUTA 81 #10",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Av. López Portillo / SM 95",
+          "lat": 21.1262,
+          "lng": -86.8576,
           "orden": 10
         },
         {
-          "nombre": "Parada RUTA 81 #11",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Colonia El Pedregal",
+          "lat": 21.1225,
+          "lng": -86.8608,
           "orden": 11
         },
         {
-          "nombre": "Parada RUTA 81 #12",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Colonia Pinos / SM 316",
+          "lat": 21.1188,
+          "lng": -86.864,
           "orden": 12
         },
         {
-          "nombre": "Parada RUTA 81 #13",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Av. Kabah / Colonia Monte Cristo",
+          "lat": 21.1151,
+          "lng": -86.8673,
           "orden": 13
         },
         {
-          "nombre": "Parada RUTA 81 #14",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Parque Industrial / Av. Kabah",
+          "lat": 21.1112,
+          "lng": -86.8706,
           "orden": 14
         },
         {
-          "nombre": "Parada RUTA 81 #15",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Av. Las Torres / Col. El Paraíso",
+          "lat": 21.1073,
+          "lng": -86.8739,
           "orden": 15
         },
         {
-          "nombre": "Parada RUTA 81 #16",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Colonia Bojórquez",
+          "lat": 21.1035,
+          "lng": -86.8772,
           "orden": 16
         },
         {
-          "nombre": "Parada RUTA 81 #17",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "SM 521 / Col. Villas del Rey",
+          "lat": 21.0997,
+          "lng": -86.8805,
           "orden": 17
         },
         {
-          "nombre": "Parada RUTA 81 #18",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Col. La Florida / Limones",
+          "lat": 21.096,
+          "lng": -86.8837,
           "orden": 18
         },
         {
-          "nombre": "Parada RUTA 81 #19",
-          "lat": 21.1619,
-          "lng": -86.8515,
+          "nombre": "Terminal Final RUTA 81 (Col. La Florida)",
+          "lat": 21.0924,
+          "lng": -86.8869,
           "orden": 19
         }
       ]
