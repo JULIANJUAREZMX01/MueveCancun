@@ -68,9 +68,9 @@ const ui = useTranslations(lang);
 </div>
 
 <script lang="ts">
-  import { wasmLoader } from "../utils/WasmLoader";
+  import { WasmLoader } from "../utils/WasmLoader";
   import { coordinatesStore } from "../utils/CoordinatesStore";
-  import { showToast } from "../utils/utils";
+  import { showToast } from "../utils/toast";
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
