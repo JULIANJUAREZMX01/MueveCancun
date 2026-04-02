@@ -11,6 +11,8 @@ import Toast from '../components/ui/Toast.astro';
 import PwaReload from '../components/ui/PwaReload.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import ReportWidget from '../components/ReportWidget.astro';
+import BrowserDetection from '../components/ui/BrowserDetection.astro';
+import DonateNudge from '../components/ui/DonateNudge.astro';
 import '../styles/tokens.css';
 import '../styles/main.css';
 import '../index.css';
@@ -435,6 +437,8 @@ const uiTranslations = {
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
     </style>
+    <BrowserDetection />
+    <DonateNudge />
     <ReportWidget />
   </body>
 </html>
