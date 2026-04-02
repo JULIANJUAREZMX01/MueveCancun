@@ -1,4 +1,11 @@
-# 🏛️ MueveCancun: La Verdad de la Calle (Nexus Prime v3.3)
+
+#<img width="1200" height="630" alt="og-image" src="https://github.com/user-attachments/assets/a78c46b0-e786-4b36-8ec9-92d5a9ad7021" />
+
+ 🏛️ MueveCancun: La Verdad de la Calle (Nexus Prime v3.3)
+
+<!-- STATS:START -->
+> 📊 **851+ commits** | ⚙️ **1187+ líneas de Rust/WASM**
+<!-- STATS:END -->
 
 > "MueveCancun no nació en una oficina, nació en la parada del camión."
 
@@ -27,6 +34,15 @@ MueveCancun es simple: **Funciona sin internet**, es ultrarrápida y está dise�
 ## 🏛️ La Arquitectura: El Protocolo Nexus (4 Capas)
 
 Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales que trabajan en conjunto para ofrecer una aplicación offline-first ultrarrápida.
+
+### 0. Stack Tecnológico
+- **Frontend**: Astro Islands.
+- **UI Components**: Web Components / Lit.
+- **Lógica Intensiva**: Rust / WebAssembly (WASM).
+- **Estilos**: CSS purista + PostCSS / Houdini.
+- **Dependencias en proceso de migración**: Tailwind CSS (activo, fase de salida); React y Bootstrap (eliminados).
+- **Documentación de la Decisión**: [ADR-2026-002](docs/adr/ADR-2026-002.md).
+
 
 ### 1. Capa de Datos: Origen de Rutas
 - **Función**: Catálogo base que contiene "Señales Sociales" (alertas de tráfico, bloqueos, avisos de madrugada) y la información de todas las rutas.
@@ -111,6 +127,17 @@ Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales 
 
 - Nunca hacer push directo a `main`; siempre rama + PR.
 - Secreto requerido: `ANTHROPIC_API_KEY` para `claude-delegation`.
+
+## 🗺️ Novedades v3.3.1 (Nexus Stability)
+
+- **fix(map)**: Mapa ya no se queda en "CARGANDO MAPA..." — `requestIdleCallback` usa `{ timeout: 2000 }` para garantizar ejecución aunque WASM ocupe el hilo principal.
+- **fix(map)**: `_loadLeaflet` reescrito con manejo correcto de race conditions; Leaflet añadido a `CRITICAL_ASSETS` del Service Worker.
+- **feat(wasm)**: campo `is_forward: bool` en `Journey` — rutas directas en sentido correcto tienen prioridad máxima (score 5 vs 4 en reversa).
+- **fix(wasm)**: `stop_has_coords` corregido de OR → AND; una parada necesita `lat` Y `lng` válidos.
+- **feat(lib)**: nuevos módulos en `src/lib/` — `idb.ts`, `sync.ts`, `telemetry.ts`, `types.ts`; y utilidades de transporte en `src/utils/transport.ts`.
+- **feat(utils)**: `coordinateFinder.ts` (búsqueda fuzzy), `logger.ts` (logging condicional por entorno).
+- **ci**: WASM cacheado por SHA; `pnpm/action-setup` sin versión fija; `build-check` depende de `rust-tests`.
+- **perf**: íconos SVG inlineados en build-time; flujo de navegación unificado — el mapa ahora se inicia desde la pantalla principal (la ruta `/mapa` se mantiene para compatibilidad y deep-links).
 
 ## 🗺️ Novedades v3.3 (Nexus Transfer Engine)
 
@@ -232,3 +259,8 @@ We prioritize CSS5 features over JavaScript for interactive states:
 1. **JSON Optimization**: Shrinks catalog size by ~40% before build.
 2. **WASM Compilation**: Generates optimized binaries with `wasm-pack`.
 3. **Astro Build**: Static site generation and asset bundling.
+
+
+## 📊 Estadísticas
+- 🔢 851+ commits
+- 🦀 1,206 líneas de Rust/WASM

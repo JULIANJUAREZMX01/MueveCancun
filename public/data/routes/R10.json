@@ -1,7 +1,7 @@
 {
   "id": "R10",
   "nombre": "Las Américas - Aeropuerto",
-  "tarifa": 15,
+  "tarifa": 10,
   "tipo": "Transporte",
   "frecuencia_minutos": 20,
   "horario": {

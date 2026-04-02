@@ -1,240 +1,483 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-export const prerender = true;
+import { getLangFromUrl, useTranslations } from '../utils/i18n';
+import { ui } from '../utils/i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// This page is strictly the onboarding/tutorial.
+// Redirection logic is handled via client-side script to support static hosting.
 ---
 
-<MainLayout title="CancúnMueve" hideNav={true}>
-	<div class="splash-container">
-		<div class="grid-overlay">
-			<svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg">
-				<defs>
-					<pattern height="40" id="grid" patternUnits="userSpaceOnUse" width="40">
-						<path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"></path>
-					</pattern>
-				</defs>
-				<rect fill="url(#grid)" height="100%" width="100%"></rect>
-			</svg>
+<MainLayout title="MueveCancun - Bienvenido" hideNav={true}>
+	<div class="welcome-shell">
+		<div class="bg-gradient"></div>
+		<div class="bg-grid"></div>
+
+		<!-- Language Switcher (Top Right) -->
+		<div class="lang-switch-top">
+			<button id="set-es" class="lang-btn active">ES</button>
+			<button id="set-en" class="lang-btn">EN</button>
 		</div>
 
-		<div class="top-spacer"></div>
-
-		<div class="brand-section animate-float">
-			<div class="brand-logo-container">
-				<div class="brand-icon">
-					<svg class="icon-bus-svg" width="60" height="60" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
-				</div>
-				<h1 class="brand-title">
-					Cancún<span class="brand-title-light">Mueve</span>
-				</h1>
-			</div>
-			<p class="brand-tagline">
-				La ciudad en tu mano
-			</p>
-		</div>
-
-		<div class="status-section">
-			<div class="connecting-status">
-				<span class="status-text animate-pulse">Connecting to Engine...</span>
-				<div class="location-pulse-container">
-					<div class="pulse-ring animate-ping"></div>
-					<div class="location-icon-circle animate-pulse-slow">
-						<svg width="30" height="30" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+		<div class="onboarding-container">
+			<div class="tutorial-slider">
+				<!-- Step 1: Welcome -->
+				<section class="step active" data-step="1">
+					<div class="icon-hero animate-float">
+						<div class="logo-box">
+							<span class="logo-text">M</span>
+						</div>
 					</div>
-				</div>
+					<h1 class="step-title" data-i18n="welcome.step1.title">Bienvenido a MueveCancun</h1>
+					<p class="step-desc" data-i18n="welcome.step1.desc">La guía definitiva para moverte en transporte público por el paraíso.</p>
+				</section>
+
+				<!-- Step 2: Offline -->
+				<section class="step" data-step="2">
+					<div class="icon-hero">
+						<div class="glass-icon-circle">
+							<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+							</svg>
+						</div>
+					</div>
+					<h1 class="step-title" data-i18n="welcome.step2.title">100% Offline-First</h1>
+					<p class="step-desc" data-i18n="welcome.step2.desc">Busca rutas y paradas sin necesidad de datos móviles. El mapa vive en tu dispositivo.</p>
+				</section>
+
+				<!-- Step 3: Calculation -->
+				<section class="step" data-step="3">
+					<div class="icon-hero">
+						<div class="glass-icon-circle">
+							<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+							</svg>
+						</div>
+					</div>
+					<h1 class="step-title" data-i18n="welcome.step3.title">Ruteo Inteligente</h1>
+					<p class="step-desc" data-i18n="welcome.step3.desc">Calculamos la mejor combinación de rutas, transbordos y precios oficiales.</p>
+				</section>
+
+				<!-- Step 4: Social -->
+				<section class="step" data-step="4">
+					<div class="icon-hero">
+						<div class="glass-icon-circle">
+							<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+							</svg>
+						</div>
+					</div>
+					<h1 class="step-title" data-i18n="welcome.step4.title">Social Signals</h1>
+					<p class="step-desc" data-i18n="welcome.step4.desc">Información real basada en reportes ciudadanos para evitar retrasos y bloqueos.</p>
+				</section>
 			</div>
-			<div class="version-tag">
-				<span class="version-text">v2.0.0</span>
+
+			<div class="onboarding-controls">
+				<div class="dots-container">
+					<div class="dot active" data-go="1"></div>
+					<div class="dot" data-go="2"></div>
+					<div class="dot" data-go="3"></div>
+					<div class="dot" data-go="4"></div>
+				</div>
+
+				<div class="buttons-stack">
+					<button id="btn-next" class="btn-primary">
+						<span class="btn-text" data-i18n="welcome.btn.next">Siguiente</span>
+					</button>
+					<div class="start-options hidden">
+						<button id="start-es" class="btn-start btn-teal" data-i18n="welcome.btn.start">Comenzar en Español</button>
+						<button id="start-en" class="btn-start btn-orange" data-i18n="welcome.btn.start_en">Start in English</button>
+					</div>
+					<button id="btn-skip" class="btn-skip" data-i18n="welcome.skip">Omitir tutorial</button>
+				</div>
 			</div>
 		</div>
 
 		<div class="bottom-bar"></div>
 	</div>
 
-	<script>
-		import { navigate } from 'astro:transitions/client';
+	<style>
+		.welcome-shell {
+			position: fixed;
+			inset: 0;
+			background: #0f172a;
+			color: white;
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+			z-index: 1000;
+		}
 
-		setTimeout(() => {
-			const currentUrl = new URL(window.location.href);
-			const saved = document.cookie.match(/locale=([^;]+)/)?.[1];
-			const userLang = navigator.language.toLowerCase().startsWith('en') ? 'en' : 'es';
-			const lang = saved || userLang;
+		.bg-gradient {
+			position: absolute;
+			inset: 0;
+			background: radial-gradient(circle at 50% -20%, #1e293b 0%, #0f172a 100%);
+			z-index: 1;
+		}
 
-            // Ensure lang is valid
-            const targetLang = ['es', 'en'].includes(lang) ? lang : 'es';
+		.bg-grid {
+			position: absolute;
+			inset: 0;
+			z-index: 2;
+			opacity: 0.5;
+		}
 
-			const targetUrl = new URL(`/${targetLang}/home`, window.location.origin);
-			targetUrl.search = currentUrl.search;
-			navigate(targetUrl.toString());
-		}, 2500);
+		.lang-switch-top {
+			position: absolute;
+			top: 1.5rem;
+			right: 1.5rem;
+			z-index: 50;
+			display: flex;
+			gap: 0.5rem;
+			background: rgba(255, 255, 255, 0.05);
+			padding: 0.25rem;
+			border-radius: 9999px;
+			backdrop-filter: blur(8px);
+		}
+
+		.lang-btn {
+			padding: 0.5rem 1rem;
+			font-size: 0.75rem;
+			font-weight: 800;
+			border-radius: 9999px;
+			transition: all 0.3s ease;
+			color: rgba(255, 255, 255, 0.5);
+			background: transparent;
+			border: none;
+			cursor: pointer;
+		}
+
+		.lang-btn.active {
+			background: white;
+			color: #0f172a;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+		}
+
+		.onboarding-container {
+			position: relative;
+			z-index: 10;
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			max-width: 24rem;
+			margin: 0 auto;
+			padding: 2rem;
+			width: 100%;
+		}
+
+		.tutorial-slider {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+		}
+
+		.step {
+			display: none;
+			flex-direction: column;
+			align-items: center;
+			animation: slide-up 0.5s ease-out;
+		}
+
+		.step.active {
+			display: flex;
+		}
+
+		.icon-hero {
+			margin-bottom: 2rem;
+		}
+
+		.logo-box {
+			width: 80px;
+			height: 80px;
+			background: linear-gradient(135deg, #0ea5e9, #2dd4bf);
+			border-radius: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			box-shadow: 0 0 40px rgba(45, 212, 191, 0.3);
+		}
+
+		.logo-text {
+			font-size: 2.5rem;
+			font-weight: 900;
+			letter-spacing: -2px;
+			color: white;
+		}
+
+		.glass-icon-circle {
+			width: 80px;
+			height: 80px;
+			border-radius: 9999px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			backdrop-filter: blur(12px);
+			border: 1px solid rgba(255, 255, 255, 0.1);
+		}
+
+		.step-title {
+			font-size: 1.75rem;
+			font-weight: 900;
+			margin-bottom: 1rem;
+			line-height: 1.2;
+			background: linear-gradient(to bottom, #fff, #94a3b8);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+
+		.step-desc {
+			color: #94a3b8;
+			line-height: 1.6;
+			font-size: 1rem;
+		}
+
+		.onboarding-controls {
+			padding-bottom: 2rem;
+		}
+
+		.dots-container {
+			display: flex;
+			justify-content: center;
+			gap: 0.75rem;
+			margin-bottom: 2rem;
+		}
+
+		.dot {
+			width: 8px;
+			height: 8px;
+			background: rgba(255, 255, 255, 0.2);
+			border-radius: 9999px;
+			transition: all 0.3s ease;
+			cursor: pointer;
+		}
+
+		.dot.active {
+			width: 24px;
+			background: #2dd4bf;
+			box-shadow: 0 0 12px rgba(45, 212, 191, 0.5);
+		}
+
+		.buttons-stack {
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+		}
+
+		.btn-primary {
+			background: white;
+			color: #0f172a;
+			padding: 1rem;
+			border-radius: 12px;
+			font-weight: 800;
+			font-size: 1rem;
+			transition: all 0.3s ease;
+			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+			border: none;
+			cursor: pointer;
+		}
+
+		.btn-primary:active {
+			transform: scale(0.95);
+		}
+
+		.start-options {
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+			animation: fade-in 0.4s ease;
+		}
+
+		.start-options.hidden {
+			display: none;
+		}
+
+		.btn-start {
+			padding: 1rem;
+			border-radius: 12px;
+			font-weight: 800;
+			color: white;
+			transition: all 0.3s ease;
+			border: none;
+			cursor: pointer;
+		}
+
+		.btn-teal {
+			background: #14b8a6;
+			box-shadow: 0 4px 14px rgba(20, 184, 166, 0.4);
+		}
+
+		.btn-orange {
+			background: #f97316;
+			box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4);
+		}
+
+		.btn-skip {
+			background: transparent;
+			color: #64748b;
+			font-size: 0.875rem;
+			font-weight: 600;
+			padding: 0.5rem;
+			transition: color 0.3s ease;
+			border: none;
+			cursor: pointer;
+		}
+
+		.btn-skip:hover {
+			color: white;
+		}
+
+		.bottom-bar {
+			height: 6px;
+			background: linear-gradient(to right, #0ea5e9, #2dd4bf, #f97316);
+			z-index: 100;
+		}
+
+		.hidden {
+			display: none !important;
+		}
+
+		@keyframes slide-up {
+			from { opacity: 0; transform: translateY(20px); }
+			to { opacity: 1; transform: translateY(0); }
+		}
+
+		@keyframes fade-in {
+			from { opacity: 0; }
+			to { opacity: 1; }
+		}
+
+		@keyframes float {
+			0%, 100% { transform: translateY(0); }
+			50% { transform: translateY(-10px); }
+		}
+
+		.animate-float {
+			animation: float 3s ease-in-out infinite;
+		}
+	</style>
+
+	<script lang="ts">
+		function initTutorial() {
+			let currentStep = 1;
+			const totalSteps = 4;
+			let currentLang = 'es';
+
+			const steps = document.querySelectorAll('.step');
+			const dots = document.querySelectorAll('.dot');
+			const btnNext = document.getElementById('btn-next');
+			const startOptions = document.querySelector('.start-options');
+			const skipBtn = document.getElementById('btn-skip');
+
+			// Robust cookie parser
+			function getCookie(name: string) {
+				const value = `; ${document.cookie}`;
+				const parts = value.split(`; ${name}=`);
+				if (parts.length === 2) return parts.pop()?.split(';').shift();
+				return null;
+			}
+
+			// Pre-check for redirection
+			const isTutorialCompleted = getCookie('tutorial_completed') === 'true';
+			if (isTutorialCompleted) {
+				const locale = getCookie('locale') || (navigator.language.startsWith('en') ? 'en' : 'es');
+				window.location.href = `/${locale}/home`;
+				return;
+			}
+
+			function updateTutorialUI(lang: string) {
+				const translationsEl = document.getElementById('i18n-translations');
+				if (!translationsEl) return;
+				const all = JSON.parse(translationsEl.getAttribute('data-translations') || '{}');
+				const t = all[lang];
+				if (!t) return;
+
+				document.querySelectorAll('[data-i18n]').forEach(el => {
+					const key = el.getAttribute('data-i18n');
+					if (key && t[key]) {
+						(el as HTMLElement).innerText = t[key];
+					}
+				});
+			}
+
+			function goToStep(stepNum: number) {
+				if (stepNum > totalSteps) return;
+
+				steps.forEach(s => s.classList.remove('active'));
+				dots.forEach(d => d.classList.remove('active'));
+
+				const activeStep = document.querySelector(`.step[data-step="${stepNum}"]`);
+				const activeDot = document.querySelector(`.dot[data-go="${stepNum}"]`);
+
+				if (activeStep) activeStep.classList.add('active');
+				if (activeDot) activeDot.classList.add('active');
+
+				if (stepNum === totalSteps) {
+					btnNext?.classList.add('hidden');
+					startOptions?.classList.remove('hidden');
+				} else {
+					btnNext?.classList.remove('hidden');
+					startOptions?.classList.add('hidden');
+				}
+				currentStep = stepNum;
+			}
+
+			function finishTutorial(lang: string) {
+				document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
+				try {
+					window.localStorage.setItem('lang', lang);
+				} catch (e) {}
+				document.cookie = `locale=${encodeURIComponent(lang)}; path=/; max-age=31536000; SameSite=Lax`;
+				window.location.href = `/${lang}/home`;
+			}
+
+			// Event Listeners
+			btnNext?.addEventListener('click', () => {
+				if (currentStep < totalSteps) {
+					goToStep(currentStep + 1);
+				}
+			});
+
+			skipBtn?.addEventListener('click', () => finishTutorial(currentLang));
+
+			document.getElementById('start-es')?.addEventListener('click', () => finishTutorial('es'));
+			document.getElementById('start-en')?.addEventListener('click', () => finishTutorial('en'));
+
+			document.getElementById('set-es')?.addEventListener('click', (e) => {
+				currentLang = 'es';
+				document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+				(e.target as HTMLElement).classList.add('active');
+				updateTutorialUI('es');
+			});
+
+			document.getElementById('set-en')?.addEventListener('click', (e) => {
+				currentLang = 'en';
+				document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+				(e.target as HTMLElement).classList.add('active');
+				updateTutorialUI('en');
+			});
+
+			dots.forEach(dot => {
+				dot.addEventListener('click', () => {
+					const target = parseInt(dot.getAttribute('data-go') || '1');
+					goToStep(target);
+				});
+			});
+		}
+
+		// Use astro:page-load for View Transitions compatibility
+		document.addEventListener('astro:page-load', initTutorial);
+
+		// Fallback for direct loads or browsers without View Transitions support
+		if (document.readyState === 'complete') {
+			initTutorial();
+		} else {
+			window.addEventListener('DOMContentLoaded', initTutorial);
+		}
 	</script>
 </MainLayout>
-
-<style>
-	.splash-container {
-		position: relative;
-		width: 100%;
-		height: 100vh;
-		background: linear-gradient(175deg, #0d9488 0%, #14b8a6 45%, #ccfbf1 75%, #f0fdfa 100%);
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: space-between;
-		padding: 4rem 2rem;
-		overflow: hidden;
-		color: white;
-	}
-
-	.grid-overlay {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		opacity: 0.1;
-		mix-blend-mode: overlay;
-		overflow: hidden;
-	}
-
-	.h-full { height: 100%; }
-	.w-full { width: 100%; }
-
-	.top-spacer { height: 2.5rem; width: 100%; }
-
-	/* Brand Section */
-	.brand-section {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-	}
-
-	.brand-logo-container {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		margin-bottom: 1.5rem;
-	}
-
-	.brand-icon {
-		background-color: white;
-		border-radius: 1.5rem;
-		padding: 1rem;
-		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.icon-bus-svg {
-		color: #0d9488;
-	}
-
-	.brand-title {
-		color: white;
-		font-size: 3.75rem;
-		font-weight: 800;
-		letter-spacing: -0.025em;
-		margin: 0;
-		line-height: 1;
-	}
-
-	.brand-title-light { font-weight: 300; }
-
-	.brand-tagline {
-		color: white;
-		font-size: 1.25rem;
-		font-weight: 500;
-		text-transform: uppercase;
-		letter-spacing: 0.25em;
-		opacity: 0.9;
-		margin-top: 1rem;
-	}
-
-	/* Status Section */
-	.status-section {
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		position: relative;
-	}
-
-	.connecting-status {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-		margin-bottom: 3rem;
-		position: relative;
-		z-index: 10;
-	}
-
-	.status-text {
-		color: rgba(255, 255, 255, 0.9);
-		font-size: 0.875rem;
-		font-weight: 500;
-		letter-spacing: 0.05em;
-	}
-
-	.location-pulse-container { position: relative; }
-
-	.pulse-ring {
-		position: absolute;
-		inset: 0;
-		background-color: rgba(255, 255, 255, 0.3);
-		border-radius: 9999px;
-		transform: scale(1.5);
-	}
-
-	.location-icon-circle {
-		position: relative;
-		background-color: rgba(255, 255, 255, 0.2);
-		backdrop-filter: blur(4px);
-		padding: 1rem;
-		border-radius: 9999px;
-		border: 1px solid rgba(255, 255, 255, 0.3);
-	}
-
-	/* icon-location removed - using inline SVG */
-
-	.version-tag {
-		position: absolute;
-		bottom: 0;
-		right: 0;
-	}
-
-	.version-text {
-		color: rgba(255, 255, 255, 0.6);
-		font-size: 10px;
-		font-family: monospace;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-	}
-
-	.bottom-bar {
-		position: absolute;
-		bottom: 0.5rem;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 8rem;
-		height: 0.375rem;
-		background-color: rgba(255, 255, 255, 0.2);
-		border-radius: 9999px;
-	}
-
-	/* Animations */
-	@keyframes float {
-		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-10px); }
-	}
-	.animate-float { animation: float 3s ease-in-out infinite; }
-
-	@keyframes ping {
-		75%, 100% { transform: scale(2); opacity: 0; }
-	}
-	.animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
-
-	@keyframes pulse { 50% { opacity: .5; } }
-	.animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-
-	@keyframes pulse-slow { 50% { opacity: .5; } }
-	.animate-pulse-slow { animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-</style>
