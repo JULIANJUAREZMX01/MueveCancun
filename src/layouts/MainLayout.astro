@@ -13,8 +13,7 @@ import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import ReportWidget from '../components/ReportWidget.astro';
 import BrowserDetection from '../components/ui/BrowserDetection.astro';
 import DonateNudge from '../components/ui/DonateNudge.astro';
-import { ui as uiTranslations, getLangFromUrl } from '../utils/i18n';
-import { safeJsonStringify, getRelativeLocaleUrl } from '../utils/utils';
+import { ui as uiTranslations } from '../utils/i18n';
 import '../styles/tokens.css';
 import '../styles/main.css';
 import '../index.css';
@@ -52,7 +51,6 @@ const navItems = [
   { href: getRelativeLocaleUrl(lang, 'community'), label: 'Foro', icon: 'forum', activePattern: /^\/(es|en)\/community/ },
   { href: getRelativeLocaleUrl(lang, 'wallet'), label: 'Wallet', icon: 'account_balance_wallet', activePattern: /^\/(es|en)\/wallet/ },
   { href: getRelativeLocaleUrl(lang, 'about'), label: 'Nosotros', icon: 'info', activePattern: /^\/(es|en)\/about/ },
-  { href: getRelativeLocaleUrl(lang, 'suscripcion'), label: 'Suscripciones', icon: 'premium', activePattern: /^\/(es|en)\/suscripcion/ },
 ];
 ---
 
@@ -88,9 +86,6 @@ const navItems = [
     <meta name="title" content={title} />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
-    <!-- Search Engine Verification -->
-    {googleVerification && <meta name="google-site-verification" content={googleVerification} />}
-    {bingVerification && <meta name="msvalidate.01" content={bingVerification} />}
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
@@ -100,156 +95,46 @@ const navItems = [
     <meta property="og:image" content={ogImage} />
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content={canonicalUrl} />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImage} />
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalUrl} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content={ogImage} />
 
-    <!-- Geo-tags: Cancún, Quintana Roo -->
-    <meta name="geo.region" content="MX-ROO" />
-    <meta name="geo.placename" content="Cancún" />
-    <meta name="geo.position" content="21.161908;-86.851528" />
-    <meta name="ICBM" content="21.161908, -86.851528" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="CancúnMueve" />
 
-    <!-- PWA Manifest & Theme -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#00B4D8" />
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <!-- Schema.org JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "MueveCancún",
-      "url": "https://querutamellevacancun.onrender.com",
-      "description": "Aplicación web offline-first para transporte público en Cancún con cálculo de rutas por WebAssembly.",
-      "applicationCategory": "TravelApplication",
-      "operatingSystem": "Any",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "MXN"
-      },
-      "featureList": "Offline Routing, Cancún Public Transit, Zero Data Cost, PWA",
-      "author": {
-        "@type": "Organization",
-        "name": "MueveCancún Engineering"
-      }
-    }
-    </script>
-    <link rel="apple-touch-icon" href="/icons/pwa-192x192.png" />
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
-
-    <!-- Preload Critical Data -->
-    <link rel="preload" href="/data/master_routes.optimized.json" as="fetch" crossorigin />
-
-    <!-- Leaflet Optimization: Lazy Loaded via InteractiveMap -->
-    <link rel="preconnect" href="https://basemaps.cartocdn.com" />
-    <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
-
+    <!-- Client-side Logic (Optimization Hub) -->
     <script>
       import { getWalletBalance } from '../utils/db';
-      
-      // 1. Theme Initialization
-      function applyTheme() {
-          const theme = localStorage.getItem("theme");
-          if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-            document.documentElement.classList.add("dark");
-          } else {
-            document.documentElement.classList.remove("dark");
-          }
-      }
-      
-      // 2. I18n Initialization
+      import { updateTranslations } from '../utils/i18n';
+
+      // 1. Initial Theme & Preference Sync
+      const applyTheme = () => {
+        const theme = localStorage.getItem("theme");
+        if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+      };
+
+      // 2. Language Initialization
       function applyLanguage() {
-          const stored = localStorage.getItem('lang');
-          if (stored) {
-              updateTranslations(stored);
-              return;
-          }
-
-          // Auto-detect browser language
-          const navLang = navigator.language.split('-')[0];
-          const supported = ['es', 'en'];
-          const lang = supported.includes(navLang) ? navLang : 'es';
+          const lang = document.documentElement.lang || 'es';
+          const labels = document.querySelectorAll('[data-i18n]');
           
-          localStorage.setItem('lang', lang);
-          updateTranslations(lang);
-      }
-
-      function updateTranslations(lang: string): void {
-          const dataEl = document.getElementById('i18n-translations');
-          let allTranslations: Record<string, Record<string, string>> = {};
-          try {
-            allTranslations = dataEl ? JSON.parse(dataEl.dataset.translations ?? '{}') as Record<string, Record<string, string>> : {};
-          } catch {
-            allTranslations = {};
-          }
-          const translations: Record<string, string> = allTranslations[lang] ?? allTranslations['es'] ?? {};
-
-          // Update simple text elements
-          document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
-              const key = el.getAttribute('data-i18n');
-              const text = key ? translations[key] : undefined;
-              if (text) {
-                  // Update lang toggle visual state
-                  const langToggles = document.querySelectorAll<HTMLElement>('.lang-toggle-btn');
-                  langToggles.forEach(btn => {
-                      btn.textContent = lang.toUpperCase();
-                  });
-
-                  if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                       // handled by data-i18n-placeholder
-                  } else {
-                      el.textContent = text;
-                  }
-              }
-          });
-
-          // Custom Input Labels
-          document.querySelectorAll<HTMLElement>('[data-i18n-label]').forEach(el => {
-              const key = el.getAttribute('data-i18n-label');
-              const text = key ? translations[key] : undefined;
-              if (text) {
-                 if (el.tagName === 'INPUT') {
-                     const id = el.id;
-                     if (id) {
-                         const label = document.querySelector(`label[for="${id}"]`);
-                         if (label) label.textContent = text;
-                     }
-                 } else {
-                     const labelSpan = el.querySelector('.label-text');
-                     if (labelSpan) labelSpan.textContent = text;
-                 }
-              }
-          });
-          
-          // Placeholders
-          document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-i18n-placeholder]').forEach(el => {
-               const key = el.getAttribute('data-i18n-placeholder');
-               const text = key ? translations[key] : undefined;
-               if (text && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
-                   el.placeholder = text;
-               }
-          });
-
-          // Quick Action Buttons (HTML content)
-          document.querySelectorAll<HTMLElement>('[data-i18n-html]').forEach(el => {
-             const key = el.getAttribute('data-i18n-html');
-             const text = key ? translations[key] : undefined;
-             // Preserves icon if we replace innerText carefully or just update text node
-             // For quick actions: <span icon></span> Text
-             if (text) {
-                 const icon = el.querySelector('span');
+          labels.forEach(el => {
+             const key = el.getAttribute('data-i18n');
+             if (key && (window as any).uiTranslations && (window as any).uiTranslations[lang]) {
+                 const text = (window as any).uiTranslations[lang][key];
                  el.innerHTML = '';
-                 if (icon) el.appendChild(icon);
+                 const icon = el.getAttribute('data-i18n-icon');
+                 if (icon) el.insertAdjacentHTML('afterbegin', icon);
                  el.appendChild(document.createTextNode(' ' + text));
              }
           });
@@ -350,12 +235,11 @@ const navItems = [
       <nav class="hidden md:flex items-center gap-1" aria-label="Desktop navigation">
         {navItems.map(item => {
           let i18nKey = '';
-          if (item.href === '/home') i18nKey = 'nav.home';
-          else if (item.href === '/rutas') i18nKey = 'nav.routes';
-          else if (item.href === '/community') i18nKey = 'nav.community';
-          else if (item.href === '/wallet') i18nKey = 'nav.wallet';
-          else if (item.href === '/about') i18nKey = 'nav.about';
-          else if (item.href.includes('/suscripcion')) i18nKey = 'nav.subscription';
+          if (item.href.endsWith('/home')) i18nKey = 'nav.home';
+          else if (item.href.endsWith('/rutas')) i18nKey = 'nav.routes';
+          else if (item.href.endsWith('/community')) i18nKey = 'nav.community';
+          else if (item.href.endsWith('/wallet')) i18nKey = 'nav.wallet';
+          else if (item.href.endsWith('/about')) i18nKey = 'nav.about';
 
           return (
             <a href={item.href}
