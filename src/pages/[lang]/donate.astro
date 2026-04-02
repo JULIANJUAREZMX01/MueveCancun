@@ -1,7 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 export function getStaticPaths() { return [{ params: { lang: 'es' } }, { params: { lang: 'en' } }]; }
-import { getLangFromUrl, ui } from '../../utils/i18n';
+import { getLangFromUrl } from '../../utils/i18n';
 
 const lang = getLangFromUrl(Astro.url);
 
@@ -12,6 +12,56 @@ const translations = {
     description: 'MueveCancún es 100% gratis porque creemos que el transporte es un derecho. Pero mantenerlo vivo cuesta. Apoya con lo que puedas.',
     qrText: 'Escaneame para donar',
     directLinkText: '¿El botón no funciona? Usa este enlace directo',
+    recurringTitle: 'Apoyo Recurrente (Suscripciones)',
+    oneTimeTitle: 'Aportación Única (Donaciones)',
+    copyLinksTitle: '🔗 Links de Pago (compartir)',
+    copy: 'Copiar',
+    plans: {
+      starter: {
+        name: 'Agente IA (Starter)',
+        price: '$16',
+        period: '/mes',
+        features: [
+          'Agente IA personal en MueveCancún',
+          'Consultas de rutas inteligentes',
+          'Reportes ciudadanos asistidos',
+          'Tips de transporte en tiempo real',
+          'Soporte directo vía chat',
+          'Financias el desarrollo de la app'
+        ],
+        link: 'https://buy.stripe.com/dRm00c4kygCicKUdTt7AI04'
+      },
+      elite: {
+        name: 'Elite',
+        price: '$160',
+        period: '/mes',
+        features: [
+          'Todo lo del plan Starter',
+          'Automatizaciones avanzadas',
+          'Skills personalizados',
+          'Backend functions dedicadas',
+          'Dominio propio conectado',
+          'Estrategias y mejoras premium',
+          'Soporte prioritario 24/7'
+        ],
+        link: 'https://buy.stripe.com/8x214g8AO99QbGQ2aL7AI05',
+        recommended: true
+      },
+      eliteAnnual: {
+        name: 'Elite Anual',
+        price: '$1,920',
+        period: '/año',
+        features: [
+          'Todo lo del plan Elite',
+          '2 meses gratis vs mensual',
+          'Máxima estabilidad y continuidad',
+          'Plan de desarrollo anual',
+          'Skills store ilimitado',
+          'Meta final del proyecto'
+        ],
+        link: 'https://buy.stripe.com/3cIeV66sG3Pwh1a7v57AI06'
+      }
+    },
     tiers: {
       free: {
         name: 'Libre',
@@ -21,17 +71,18 @@ const translations = {
       },
       shield: {
         name: 'Shield Guardian',
-        price: '$3/mes',
+        price: '$3',
+        period: '',
         features: ['Todo lo anterior', 'Notificaciones de rutas alteradas', 'Datos históricos', 'Acceso a features beta', 'Soporte prioritario'],
         cta: 'Apoyar MueveCancún',
-        recommended: true,
         qr: '/qr-shield.png',
         buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
         link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02'
       },
       architect: {
         name: 'Nexus Architect',
-        price: '$10/mes',
+        price: '$10',
+        period: '',
         features: ['Todo lo anterior', 'Votación en prioridades', 'Comunidad privada', 'API beta access', 'Créditos en el proyecto'],
         cta: 'Construir el futuro',
         qr: '/qr-architect.png',
@@ -54,6 +105,56 @@ const translations = {
     description: 'MueveCancún is 100% free because we believe transport is a right. But keeping it alive costs money. Support with what you can.',
     qrText: 'Scan me to donate',
     directLinkText: 'Button not working? Use this direct link',
+    recurringTitle: 'Recurring Support (Subscriptions)',
+    oneTimeTitle: 'One-time Support (Donations)',
+    copyLinksTitle: '🔗 Payment Links (share)',
+    copy: 'Copy',
+    plans: {
+      starter: {
+        name: 'AI Agent (Starter)',
+        price: '$16',
+        period: '/mo',
+        features: [
+          'Personal AI agent in MueveCancún',
+          'Intelligent route queries',
+          'Assisted citizen reports',
+          'Real-time transport tips',
+          'Direct chat support',
+          'Finance app development'
+        ],
+        link: 'https://buy.stripe.com/dRm00c4kygCicKUdTt7AI04'
+      },
+      elite: {
+        name: 'Elite',
+        price: '$160',
+        period: '/mo',
+        features: [
+          'Everything in Starter',
+          'Advanced automations',
+          'Custom skills',
+          'Dedicated backend functions',
+          'Connected custom domain',
+          'Premium strategies & upgrades',
+          '24/7 priority support'
+        ],
+        link: 'https://buy.stripe.com/8x214g8AO99QbGQ2aL7AI05',
+        recommended: true
+      },
+      eliteAnnual: {
+        name: 'Elite Annual',
+        price: '$1,920',
+        period: '/yr',
+        features: [
+          'Everything in Elite',
+          '2 months free vs monthly',
+          'Maximum stability and continuity',
+          'Annual development plan',
+          'Unlimited skills store',
+          'Final project goal'
+        ],
+        link: 'https://buy.stripe.com/3cIeV66sG3Pwh1a7v57AI06'
+      }
+    },
     tiers: {
       free: {
         name: 'Free',
@@ -63,17 +164,18 @@ const translations = {
       },
       shield: {
         name: 'Shield Guardian',
-        price: '$3/mo',
+        price: '$3',
+        period: '',
         features: ['Everything above', 'Altered route alerts', 'Historical data', 'Beta feature access', 'Priority support'],
         cta: 'Support MueveCancún',
-        recommended: true,
         qr: '/qr-shield.png',
         buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
         link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02'
       },
       architect: {
         name: 'Nexus Architect',
-        price: '$10/mo',
+        price: '$10',
+        period: '',
         features: ['Everything above', 'Priority voting', 'Private community', 'API beta access', 'Project credits'],
         cta: 'Build the future',
         qr: '/qr-architect.png',
@@ -128,75 +230,134 @@ const t = translations[lang] || translations.es;
       </div>
     </section>
 
-    <!-- Tiers -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-      {Object.entries(t.tiers).map(([key, tier]) => (
-        <div class:list={[
-          "relative bg-white dark:bg-slate-900 rounded-3xl p-8 border-2 transition-all hover:scale-[1.02]",
-          tier.recommended ? "border-primary-500 shadow-xl shadow-primary-500/10 scale-105 z-10" : "border-slate-200 dark:border-slate-800"
-        ]}>
-          {tier.recommended && (
-            <span class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full">
-              Recomendado
-            </span>
-          )}
-          <div class="space-y-6">
-            <div class="text-center space-y-2">
-              <h3 class="text-xl font-black text-slate-900 dark:text-white">{tier.name}</h3>
-              <p class="text-3xl font-black text-primary-600">{tier.price}</p>
-            </div>
-            <ul class="space-y-3">
-              {tier.features.map(feature => (
-                <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                  </svg>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-
-            {tier.buyButtonId ? (
-              <div class="space-y-6">
-                <div class="flex justify-center">
-                  <stripe-buy-button
-                    buy-button-id={tier.buyButtonId}
-                    publishable-key="pk_live_51T6oKE2dM2f4HRxoh2mpjFg4MHpHXxqc65ulAos4p22xPpD3v55ejGpiGx1Y8vdK5doYMTPGvTPi6RzsqdVv2xvE000caSvFag"
-                  >
-                  </stripe-buy-button>
-                </div>
-
-                {tier.link && (
-                  <div class="text-center">
-                    <a href={tier.link} class="text-[10px] text-primary-500 hover:underline font-bold transition-all">
-                      {t.directLinkText}
-                    </a>
-                  </div>
-                )}
-
-                {tier.qr && (
-                  <div class="flex flex-col items-center gap-2">
-                    <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-md border border-slate-100">
-                      <img src={tier.qr} alt={t.qrText} class="w-full h-full object-contain" />
-                    </div>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{t.qrText}</p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button class:list={[
-                "w-full py-4 rounded-2xl font-black text-sm transition-all cursor-default opacity-50",
-                tier.recommended
-                  ? "bg-primary-500 text-white shadow-lg shadow-primary-500/30"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white"
-              ]}>
-                {tier.cta}
-              </button>
+    <!-- Recurring Support -->
+    <section class="space-y-8">
+      <h2 class="text-2xl font-black text-slate-900 dark:text-white text-center uppercase tracking-tight">{t.recurringTitle}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+        {Object.entries(t.plans).map(([key, plan]) => (
+          <div class:list={[
+            "relative bg-white dark:bg-slate-900 rounded-3xl p-8 border-2 transition-all hover:scale-[1.02] flex flex-col h-full",
+            plan.recommended ? "border-primary-500 shadow-xl shadow-primary-500/10 scale-105 z-10" : "border-slate-200 dark:border-slate-800"
+          ]}>
+            {plan.recommended && (
+              <span class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full">
+                Recomendado
+              </span>
             )}
+            <div class="space-y-6 flex-1">
+              <div class="text-center space-y-2">
+                <h3 class="text-xl font-black text-slate-900 dark:text-white">{plan.name}</h3>
+                <p class="text-3xl font-black text-primary-600">{plan.price}<span class="text-sm font-normal opacity-70">{plan.period}</span></p>
+              </div>
+              <ul class="space-y-3">
+                {plan.features.map(feature => (
+                  <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div class="mt-8">
+              <a href={plan.link} target="_blank" rel="noopener noreferrer" class:list={[
+                "block w-full py-4 rounded-2xl font-black text-sm text-center transition-all uppercase tracking-widest no-underline",
+                plan.recommended
+                  ? "bg-primary-500 text-white shadow-lg shadow-primary-500/30 hover:opacity-90"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
+              ]}>
+                Suscribirme
+              </a>
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- One-Time Support -->
+    <section class="space-y-8">
+      <h2 class="text-2xl font-black text-slate-900 dark:text-white text-center uppercase tracking-tight">{t.oneTimeTitle}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+        {Object.entries(t.tiers).map(([key, tier]) => (
+          <div class:list={[
+            "relative bg-white dark:bg-slate-900 rounded-3xl p-8 border-2 transition-all hover:scale-[1.02] flex flex-col h-full",
+            tier.recommended ? "border-primary-500 shadow-xl shadow-primary-500/10 scale-105 z-10" : "border-slate-200 dark:border-slate-800"
+          ]}>
+            <div class="space-y-6 flex-1">
+              <div class="text-center space-y-2">
+                <h3 class="text-xl font-black text-slate-900 dark:text-white">{tier.name}</h3>
+                <p class="text-3xl font-black text-primary-600">{tier.price}<span class="text-sm font-normal opacity-70">{tier.period}</span></p>
+              </div>
+              <ul class="space-y-3">
+                {tier.features.map(feature => (
+                  <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              {tier.buyButtonId ? (
+                <div class="space-y-6">
+                  <div class="flex justify-center">
+                    <stripe-buy-button
+                      buy-button-id={tier.buyButtonId}
+                      publishable-key="pk_live_51T6oKE2dM2f4HRxoh2mpjFg4MHpHXxqc65ulAos4p22xPpD3v55ejGpiGx1Y8vdK5doYMTPGvTPi6RzsqdVv2xvE000caSvFag"
+                    >
+                    </stripe-buy-button>
+                  </div>
+
+                  {tier.link && (
+                    <div class="text-center">
+                      <a href={tier.link} class="text-[10px] text-primary-500 hover:underline font-bold transition-all">
+                        {t.directLinkText}
+                      </a>
+                    </div>
+                  )}
+
+                  {tier.qr && (
+                    <div class="flex flex-col items-center gap-2">
+                      <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-md border border-slate-100">
+                        <img src={tier.qr} alt={t.qrText} class="w-full h-full object-contain" />
+                      </div>
+                      <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{t.qrText}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button class:list={[
+                  "w-full py-4 rounded-2xl font-black text-sm transition-all cursor-default opacity-50",
+                  "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white"
+                ]}>
+                  {tier.cta}
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Copy Links -->
+    <section class="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+      <h3 class="font-black text-slate-900 dark:text-white uppercase tracking-widest text-sm text-center">{t.copyLinksTitle}</h3>
+      <div class="space-y-3">
+        {[...Object.entries(t.plans), ...Object.entries(t.tiers).filter(([_,v]) => v.link)].map(([key, plan]) => (
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-xl px-4 py-3 gap-2 border border-slate-100 dark:border-slate-800">
+            <span class="text-sm text-slate-700 dark:text-slate-300 font-bold">{plan.name} {plan.price}{plan.period || ''}</span>
+            <div class="flex items-center gap-2 overflow-hidden">
+              <span class="text-[10px] text-slate-400 truncate max-w-[120px] sm:max-w-48 font-mono">{plan.link}</span>
+              <button class="copy-btn min-h-0 min-w-0 text-[10px] bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors font-black uppercase tracking-tighter shrink-0" data-link={plan.link}>
+                {t.copy}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
 
     <!-- Trust -->
     <footer class="text-center space-y-6 pt-12 border-top border-slate-100 dark:border-slate-800">
@@ -217,4 +378,27 @@ const t = translations[lang] || translations.es;
       </div>
     </footer>
   </div>
+
+  <script>
+    import { showToast } from '../../utils/toast';
+
+    function setupCopyButtons() {
+      const buttons = document.querySelectorAll('.copy-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const link = btn.getAttribute('data-link');
+          if (link) {
+            navigator.clipboard.writeText(link).then(() => {
+              showToast("¡Link copiado!", "success");
+            }).catch(() => {
+              showToast("Error al copiar", "error");
+            });
+          }
+        });
+      });
+    }
+
+    document.addEventListener('astro:page-load', setupCopyButtons);
+    setupCopyButtons();
+  </script>
 </MainLayout>
