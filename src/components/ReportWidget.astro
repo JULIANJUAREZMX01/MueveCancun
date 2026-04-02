@@ -534,14 +534,23 @@ Nexus Protocol v1.2 (Offline-First)
         setTimeout(closeModal, 2800);
       } catch (err) {
         if (!navigator.onLine || !config.token) {
-          await savePendingReport(data);
-          const pending = await getPendingReports();
-          if (badge) {
-            badge.textContent = pending.length.toString();
-            badge.hidden = false;
+          try {
+            await savePendingReport(data);
+            const pending = await getPendingReports();
+            if (badge) {
+              badge.textContent = pending.length.toString();
+              badge.hidden = false;
+            }
+            showFeedback('Sin conexión. Reporte guardado para enviar después. ✓', 'info');
+            setTimeout(closeModal, 2800);
+          } catch (queueErr) {
+            console.error('[ReportWidget] Error al guardar reporte pendiente:', queueErr);
+            showFeedback(
+              'No se pudo guardar el reporte para enviar después. Revisa si estás en modo privado o si el almacenamiento está bloqueado e inténtalo de nuevo.',
+              'error'
+            );
+            setSubmitting(false);
           }
-          showFeedback('Sin conexión. Reporte guardado para enviar después. ✓', 'info');
-          setTimeout(closeModal, 2800);
         } else {
           console.error('[ReportWidget] Error al enviar:', err);
           showFeedback('Error al enviar. Intenta de nuevo.', 'error');
