@@ -491,7 +491,7 @@ _Versión: Nexus Protocol 1.1_
 `;
     };
 
-    // ── Envío → Backend API segura (/api/report) ─────────────────
+    // ── Envío → Proxy serverless Base44 (token seguro, nunca expuesto) ─────
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -512,7 +512,7 @@ _Versión: Nexus Protocol 1.1_
       if (feedback) feedback.hidden = true;
 
       try {
-        const res = await fetch('/api/report', {
+        const res = await fetch('https://not-yet-named-user-skipped-to-sp-d14220f3.base44.app/functions/createGithubIssue', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
