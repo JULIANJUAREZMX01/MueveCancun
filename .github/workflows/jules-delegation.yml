@@ -1,0 +1,100 @@
+name: Delegate to Jules (Manual)
+
+# Manual workflow for delegating arbitrary tasks to Jules.
+# Jules will analyze the codebase, implement the requested changes,
+# and open a Pull Request.
+#
+# Requires secret: JULES_API_KEY
+#
+# Usage: Actions → "Delegate to Jules (Manual)" → Run workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Describe the task or feature for Jules to implement"
+        required: true
+        type: string
+      target_branch:
+        description: "Branch to base the work on (default: main)"
+        required: false
+        default: "main"
+        type: string
+      author_mode:
+        description: "Author mode for commits"
+        required: false
+        default: "CO_AUTHORED"
+        type: choice
+        options:
+          - CO_AUTHORED
+          - JULES
+          - USER_ONLY
+      open_pr:
+        description: "Open a Pull Request with the changes"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      file_filter:
+        description: "Comma-separated glob patterns to limit file scope (optional, e.g. src/**,scripts/**)"
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: jules-delegation-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  delegate-to-jules:
+    name: Invoke Jules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.target_branch }}
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate JULES_API_KEY is set
+        run: |
+          if [ -z "${{ secrets.JULES_API_KEY }}" ]; then
+            echo "::error::Secret JULES_API_KEY is not configured."
+            echo "::error::Go to Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          fi
+          echo "✅ JULES_API_KEY is configured"
+
+      - name: Invoke Jules delegation script
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+          JULES_TASK: ${{ github.event.inputs.task }}
+          TARGET_BRANCH: ${{ github.event.inputs.target_branch }}
+          AUTHOR_MODE: ${{ github.event.inputs.author_mode }}
+          OPEN_PR: ${{ github.event.inputs.open_pr }}
+          FILE_FILTER: ${{ github.event.inputs.file_filter }}
+          TRIGGERED_BY: ${{ github.actor }}
+          RUN_ID: ${{ github.run_id }}
+        run: node scripts/jules-delegate.mjs
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "## ✅ Jules Task Delegated" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Task**: ${{ github.event.inputs.task }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Branch**: ${{ github.event.inputs.target_branch }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Author mode**: ${{ github.event.inputs.author_mode }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Open PR**: ${{ github.event.inputs.open_pr }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Jules está trabajando. Un Pull Request aparecerá próximamente." >> "$GITHUB_STEP_SUMMARY"
