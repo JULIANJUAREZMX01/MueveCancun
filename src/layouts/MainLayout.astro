@@ -13,6 +13,7 @@ import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import ReportWidget from '../components/ReportWidget.astro';
 import BrowserDetection from '../components/ui/BrowserDetection.astro';
 import DonateNudge from '../components/ui/DonateNudge.astro';
+import { Analytics } from '@vercel/analytics/astro';
 import { ui as uiTranslations, getLangFromUrl } from '../utils/i18n';
 import { safeJsonStringify, getRelativeLocaleUrl } from '../utils/utils';
 import '../styles/tokens.css';
@@ -462,6 +463,7 @@ const navItems = [
     <BrowserDetection />
     <DonateNudge />
     <ReportWidget />
+    <Analytics />
   </body>
 </html>
 
