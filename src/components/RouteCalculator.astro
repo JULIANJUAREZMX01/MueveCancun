@@ -72,7 +72,108 @@ const ui = useTranslations(lang);
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { showToast } from "../utils/utils";
 
-  let find_route: any = null;
+  let currentLang = document.documentElement.lang || 'es';
+  const i18nDataEl = document.getElementById('i18n-data');
+  const ui = i18nDataEl ? JSON.parse(i18nDataEl.dataset.ui || '{}') : {};
+
+  // DOM Elements
+  const balanceBadge = document.getElementById('balance-badge');
+  const searchBtn = document.getElementById('search-btn'); // Renamed from btn for clarity, but keeping logic
+  const resultsContainer = document.getElementById('results-container');
+
+
+  // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
+  if (typeof document !== 'undefined' && !(window as any).__RouteCalculatorDelegationAttached) {
+      (window as any).__RouteCalculatorDelegationAttached = true;
+      document.addEventListener('click', (e) => {
+          if (!e.isTrusted) return; // Security: Ensure event is user-generated
+
+          const target = e.target as HTMLElement;
+          if (!target || !target.closest) return;
+
+          const btn = target.closest('.view-map-btn') as HTMLElement;
+          if (btn) {
+              e.preventDefault();
+              e.stopPropagation();
+              try {
+                  const raw = btn.dataset.journey;
+                  if (raw) {
+                      const journey = JSON.parse(raw);
+                      window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey } }));
+                      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
+                  }
+              } catch (err) {
+                  console.error("Invalid journey data", err);
+              }
+          }
+
+          // Sentinel Security Fix: Sentinel Delegation for All Actions
+          if (target.closest('.js-retry-search-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
+              document.getElementById('search-card')?.scrollIntoView({ behavior: 'smooth' });
+              document.getElementById('summary-bar')?.classList.add('hidden');
+              document.getElementById('search-form')?.classList.remove('hidden');
+              setTimeout(() => document.getElementById('origin-input')?.focus(), 200);
+          }
+
+          if (target.closest('#gps-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
+              // @ts-ignore
+              if (typeof handleGPSClick === 'function') handleGPSClick();
+          }
+
+          if (target.closest('#swap-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
+              const originInput = document.getElementById('origin-input') as HTMLInputElement;
+              const destInput = document.getElementById('destination-input') as HTMLInputElement;
+              const swapBtn = document.getElementById('swap-btn');
+              if (originInput && destInput) {
+                  const temp = originInput.value;
+                  originInput.value = destInput.value;
+                  destInput.value = temp;
+                  swapBtn?.classList.toggle('rotated');
+                  originInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  destInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+          }
+
+          const qBtn = target.closest('.quick-action-btn') as HTMLElement;
+          if (qBtn) {
+              e.preventDefault();
+              e.stopPropagation();
+              const dest = qBtn.dataset.dest;
+              if (dest) {
+                  const destInput = document.getElementById('destination-input') as HTMLInputElement;
+                  if (destInput) {
+                      destInput.value = dest;
+                      destInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  }
+              }
+          }
+
+          if (target.closest('#btn-report-results')) {
+              e.preventDefault();
+              e.stopPropagation();
+              (window as Window & { rwOpenReport?: () => void }).rwOpenReport?.();
+              // @ts-ignore
+              window.rwOpenReport?.();
+          }
+
+          if (target.closest('#edit-search-btn')) {
+              e.preventDefault();
+              e.stopPropagation();
+              document.getElementById('summary-bar')?.classList.add('hidden');
+              document.getElementById('search-form')?.classList.remove('hidden');
+          }
+      });
+  }
+
+  // State
+  let balance = 0;
+  let hasBalance = false;
   let wasmLoaded = false;
 
   async function startCalculator() {
@@ -137,7 +238,71 @@ const ui = useTranslations(lang);
               if (!results || results.length === 0) {
                   showToast("No se encontró una ruta directa o con 1 transbordo", "warning");
               } else {
-                  renderResults(results);
+                 // Normalize WASM output (Spanish → English field mapping)
+                 const normalized = results.map(normalizeJourney);
+
+                 normalized.sort((a, b) => {
+                     // Prioritize Direct routes
+                     if (a.type === 'Direct' && b.type !== 'Direct') return -1;
+                     if (b.type === 'Direct' && a.type !== 'Direct') return 1;
+                     return a.total_price - b.total_price;
+                 });
+
+                 const best = normalized[0];
+                 const others = normalized.slice(1);
+
+                  // Prepare UI Data
+                 const optionsLabel = ui['calc.results.options'] || 'OPCIONES';
+                 const fastestLabel = ui['calc.results.fastest'] || 'MÁS RÁPIDA';
+                 const countText = `${normalized.length} ${optionsLabel}`;
+                 let timeText = '';
+                 let showTimeBadge = false;
+
+                 if (best) {
+                     let duration = best.duration_minutes || 0;
+                     timeText = `${fastestLabel}: ${duration}min`;
+                     showTimeBadge = true;
+                 }
+
+                 // ATOMIC DOM UPDATE
+                 const countLabel = document.getElementById('results-count-label');
+                 const timeBadge = document.getElementById('results-time-badge');
+                 
+                 if (countLabel) {
+                     countLabel.textContent = countText;
+                     countLabel.classList.remove('hidden');
+                 }
+                 
+                 if (timeBadge) {
+                     timeBadge.textContent = timeText;
+                     if (showTimeBadge) {
+                         timeBadge.classList.remove('hidden');
+                         timeBadge.style.display = 'inline-flex';
+                     } else {
+                         timeBadge.classList.add('hidden');
+                         timeBadge.style.display = 'none';
+                     }
+                 }
+
+                 // Show Info Bar NOW
+                 document.getElementById('results-info')?.classList.remove('hidden');
+                 document.getElementById('rw-results-cta')?.classList.remove('hidden');
+
+                 // Render Cards
+                 if (bestResultArea) {
+                     bestResultArea.replaceChildren(best.type === 'Transfer' ? renderTransferCardHtml(best, true) : renderBestResultHtml(best, true));
+                 }
+
+                 if (others.length > 0 && resultsContainer) {
+                     others.forEach(r => {
+                         resultsContainer.appendChild(r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r));
+                     });
+                 }
+                 
+                 // Re-attach map buttons
+                 document.getElementById('btn-report-results')?.addEventListener('click', () => {
+                     (window as Window & { rwOpenReport?: () => void }).rwOpenReport?.();
+                 });
               }
           } catch (e) {
               console.error("Search Error", e);
