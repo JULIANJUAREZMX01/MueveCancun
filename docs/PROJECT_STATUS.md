@@ -1,6 +1,6 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
 **Fecha:** 2026-04-02
-**Versión:** 1.2.1 (Nexus Prime v3.3.3)
+**Versión:** 1.0.1 (Nexus Prime v3.3.3)
 **Estado General:** 🟢 ESTABLE — Motor WASM operativo, PWA desplegada en producción
 
 ---
