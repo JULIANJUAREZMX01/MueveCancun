@@ -40,7 +40,7 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
   try {
     const expectedSignature = await generateSignature(amount);
     return expectedSignature === signatureHex;
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 };
@@ -51,14 +51,14 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
  * into a single source: IndexedDB via this module.
  * Accepts the already-open db instance to avoid circular recursion with initDB.
  */
-export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
+export const migrateBalanceFromLocalStorage = async (_db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
   // Migration from localStorage to IndexedDB is complete.
   // This function is kept for backwards compatibility but now only marks it as done.
   try {
       localStorage.setItem('balance_migration_done', 'true');
       localStorage.removeItem('muevecancun_balance');
       localStorage.removeItem('user_balance');
-  } catch (e) {
+  } catch (_e) {
       // Ignore errors if localStorage is not available (e.g. SSR)
   }
 };
@@ -83,16 +83,16 @@ export const initDB = async (): Promise<IDBPDatabase> => {
         },
       });
 
-      // Initialize test balance if empty (180 MXN for consistency with UI)
+      // Initialize test balance if empty (0 MXN for consistency with UI)
       const tx = db.transaction('wallet-status', 'readwrite');
       const store = tx.objectStore('wallet-status');
       const balance = await store.get('current_balance');
 
       if (balance === undefined) {
-        const defaultAmount = 180.00;
+        const defaultAmount = 0.00;
         const signature = await generateSignature(defaultAmount);
         await store.put({ id: 'current_balance', amount: defaultAmount, currency: 'MXN', signature }, 'current_balance');
-        console.log('[DB] Initial wallet balance set to 180.00 MXN');
+        console.log('[DB] Initial wallet balance set to 0.00 MXN');
       }
 
       await tx.done;

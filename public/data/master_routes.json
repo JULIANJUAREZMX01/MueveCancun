@@ -5371,6 +5371,7 @@
     },
     {
       "id": "R1",
+      "tipo": "Bus_Urbano",
       "nombre": "Crucero - Zona Hotelera",
       "color": "#FF6B6B",
       "tarifa": 15,
@@ -5400,6 +5401,7 @@
     },
     {
       "id": "R2",
+      "tipo": "Bus_Urbano",
       "nombre": "Walmart - Puerto Juárez",
       "color": "#4ECDC4",
       "tarifa": 15,
