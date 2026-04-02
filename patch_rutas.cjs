@@ -1,3 +1,15 @@
+/**
+ * One-off codemod script to update the rutas page markup.
+ *
+ * This script modifies `src/pages/[lang]/rutas/index.astro` in-place by:
+ *  - Ensuring the LitBadge component import is present.
+ *  - Replacing a hard-coded <span> badge with a <lit-badge> component.
+ *
+ * Intended usage:
+ *  - Run manually from the repo root with: `node patch_rutas.cjs`
+ *  - Use during the migration to LitBadge; it is not part of normal runtime.
+ *  - After the migration is complete and committed, this script can be removed.
+ */
 const fs = require('fs');
 
 const path = 'src/pages/[lang]/rutas/index.astro';
