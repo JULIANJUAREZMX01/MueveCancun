@@ -52,25 +52,25 @@ import MainLayout from '../layouts/MainLayout.astro';
 					<div class="icon-hero">
 						<div class="glass-icon-circle bg-amber-500/20 text-amber-500">
 							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
 							</svg>
 						</div>
 					</div>
-					<h1 class="step-title" data-i18n="welcome.step3.title">Inteligencia Local</h1>
-					<p class="step-desc" data-i18n="welcome.step3.desc">Calculamos trayectos en milisegundos usando WebAssembly para ahorrar tu batería.</p>
+					<h1 class="step-title" data-i18n="welcome.step3.title">Billetera Digital</h1>
+					<p class="step-desc" data-i18n="welcome.step3.desc">Recarga saldo, paga tus viajes y obtén beneficios exclusivos como conductor o pasajero.</p>
 				</section>
 
 				<section class="step" data-step="4">
 					<div class="icon-hero">
-						<div class="glass-icon-circle bg-rose-500/20 text-rose-500">
+						<div class="glass-icon-circle bg-orange-500/20 text-orange-500">
 							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
 							</svg>
 						</div>
 					</div>
-					<h1 class="step-title" data-i18n="welcome.step4.title">Social Signals</h1>
-					<p class="step-desc" data-i18n="welcome.step4.desc">Información real basada en reportes ciudadanos para evitar retrasos y bloqueos.</p>
+					<h1 class="step-title" data-i18n="welcome.step4.title">Señales Sociales</h1>
+					<p class="step-desc" data-i18n="welcome.step4.desc">Información real de la calle: bloqueos, tráfico y avisos de última hora.</p>
 				</section>
 			</div>
 
@@ -84,13 +84,12 @@ import MainLayout from '../layouts/MainLayout.astro';
 
 				<div class="buttons-stack">
 					<button id="btn-next" class="btn-primary">
-						<span class="btn-text" data-i18n="welcome.btn.next">Siguiente</span>
+						<span class="btn-text">Siguiente</span>
 					</button>
 					<div class="start-options hidden">
-						<button id="start-es" class="btn-start btn-teal" data-i18n="welcome.btn.start">Comenzar en Español</button>
-						<button id="start-en" class="btn-start btn-orange" data-i18n="welcome.btn.start_en">Start in English</button>
+						<button id="start-es" class="btn-start btn-teal">Comenzar en Español</button>
+						<button id="start-en" class="btn-start btn-orange">Start in English</button>
 					</div>
-					<button id="btn-skip" class="btn-skip" data-i18n="welcome.skip">Omitir tutorial</button>
 				</div>
 			</div>
 		</div>
@@ -99,267 +98,46 @@ import MainLayout from '../layouts/MainLayout.astro';
 	</div>
 
 	<style>
-		.welcome-shell {
-			position: fixed;
-			inset: 0;
-			background: #0f172a;
-			color: white;
-			overflow: hidden;
-			display: flex;
-			flex-direction: column;
-			z-index: 1000;
-		}
-
-		.bg-gradient {
-			position: absolute;
-			inset: 0;
-			background: radial-gradient(circle at 50% -20%, #1e293b 0%, #0f172a 100%);
-			z-index: 1;
-		}
-
-		.bg-grid {
-			position: absolute;
-			inset: 0;
-			z-index: 2;
-			opacity: 0.5;
-		}
-
-		.lang-switch-top {
-			position: absolute;
-			top: 1.5rem;
-			right: 1.5rem;
-			z-index: 50;
-			display: flex;
-			gap: 0.5rem;
-			background: rgba(255, 255, 255, 0.05);
-			padding: 0.25rem;
-			border-radius: 9999px;
-			backdrop-filter: blur(8px);
-		}
-
-		.lang-btn {
-			padding: 0.5rem 1rem;
-			font-size: 0.75rem;
-			font-weight: 800;
-			border-radius: 9999px;
-			transition: all 0.3s ease;
-			color: rgba(255, 255, 255, 0.5);
-		}
-
-		.lang-btn.active {
-			background: white;
-			color: #0f172a;
-			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-		}
-
-		.onboarding-container {
-			position: relative;
-			z-index: 10;
-			flex: 1;
-			display: flex;
-			flex-direction: column;
-			max-width: 24rem;
-			margin: 0 auto;
-			padding: 2rem;
-			width: 100%;
-		}
-
-		.tutorial-slider {
-			flex: 1;
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			align-items: center;
-			text-align: center;
-		}
-
-		.step {
-			display: none;
-			flex-direction: column;
-			align-items: center;
-			animation: slide-up 0.5s ease-out;
-		}
-
-		.step.active {
-			display: flex;
-		}
-
-		.icon-hero {
-			margin-bottom: 2rem;
-		}
-
-		.logo-box {
-			width: 80px;
-			height: 80px;
-			background: linear-gradient(135deg, #0ea5e9, #2dd4bf);
-			border-radius: 20px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			box-shadow: 0 0 40px rgba(45, 212, 191, 0.3);
-		}
-
-		.logo-text {
-			font-size: 2.5rem;
-			font-weight: 900;
-			letter-spacing: -2px;
-		}
-
-		.glass-icon-circle {
-			width: 80px;
-			height: 80px;
-			border-radius: 9999px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			backdrop-filter: blur(12px);
-			border: 1px solid rgba(255, 255, 255, 0.1);
-		}
-
-		.step-title {
-			font-size: 1.75rem;
-			font-weight: 900;
-			margin-bottom: 1rem;
-			line-height: 1.2;
-			background: linear-gradient(to bottom, #fff, #94a3b8);
-			-webkit-background-clip: text;
-			-webkit-text-fill-color: transparent;
-		}
-
-		.step-desc {
-			color: #94a3b8;
-			line-height: 1.6;
-			font-size: 1rem;
-		}
-
-		.onboarding-controls {
-			padding-bottom: 2rem;
-		}
-
-		.dots-container {
-			display: flex;
-			justify-content: center;
-			gap: 0.75rem;
-			margin-bottom: 2rem;
-		}
-
-		.dot {
-			width: 8px;
-			height: 8px;
-			background: rgba(255, 255, 255, 0.2);
-			border-radius: 9999px;
-			transition: all 0.3s ease;
-			cursor: pointer;
-		}
-
-		.dot.active {
-			width: 24px;
-			background: #2dd4bf;
-			box-shadow: 0 0 12px rgba(45, 212, 191, 0.5);
-		}
-
-		.buttons-stack {
-			display: flex;
-			flex-direction: column;
-			gap: 0.75rem;
-		}
-
-		.btn-primary {
-			background: white;
-			color: #0f172a;
-			padding: 1rem;
-			border-radius: 12px;
-			font-weight: 800;
-			font-size: 1rem;
-			transition: all 0.3s ease;
-			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-		}
-
-		.btn-primary:active {
-			transform: scale(0.95);
-		}
-
-		.start-options {
-			display: flex;
-			flex-direction: column;
-			gap: 0.75rem;
-			animation: fade-in 0.4s ease;
-		}
-
-		.start-options.hidden {
-			display: none;
-		}
-
-		.btn-start {
-			padding: 1rem;
-			border-radius: 12px;
-			font-weight: 800;
-			color: white;
-			transition: all 0.3s ease;
-		}
-
-		.btn-teal {
-			background: #14b8a6;
-			box-shadow: 0 4px 14px rgba(20, 184, 166, 0.4);
-		}
-
-		.btn-orange {
-			background: #f97316;
-			box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4);
-		}
-
-		.btn-skip {
-			background: transparent;
-			color: #64748b;
-			font-size: 0.875rem;
-			font-weight: 600;
-			padding: 0.5rem;
-			transition: color 0.3s ease;
-		}
-
-		.btn-skip:hover {
-			color: white;
-		}
-
-		.bottom-bar {
-			height: 6px;
-			background: linear-gradient(to right, #0ea5e9, #2dd4bf, #f97316);
-			z-index: 100;
-		}
-
-		.hidden {
-			display: none !important;
-		}
-
-		@keyframes slide-up {
-			from { opacity: 0; transform: translateY(20px); }
-			to { opacity: 1; transform: translateY(0); }
-		}
-
-		@keyframes fade-in {
-			from { opacity: 0; }
-			to { opacity: 1; }
-		}
-
-		@keyframes float {
-			0%, 100% { transform: translateY(0); }
-			50% { transform: translateY(-10px); }
-		}
-
-		.animate-float {
-			animation: float 3s ease-in-out infinite;
-		}
-
-		.animate-fade-in {
-			animation: fade-in 1s ease;
-		}
+		.welcome-shell { position: fixed; inset: 0; background: #0f172a; color: white; overflow: hidden; display: flex; flex-direction: column; z-index: 1000; }
+		.bg-gradient { position: absolute; inset: 0; background: radial-gradient(circle at 50% -20%, #1e293b 0%, #0f172a 100%); z-index: 1; }
+		.bg-grid { position: absolute; inset: 0; z-index: 2; opacity: 0.5; }
+		.lang-switch-top { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 50; display: flex; gap: 0.5rem; background: rgba(255, 255, 255, 0.05); padding: 0.25rem; border-radius: 9999px; backdrop-filter: blur(8px); }
+		.lang-btn { padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 800; border-radius: 9999px; transition: all 0.3s ease; color: rgba(255, 255, 255, 0.5); }
+		.lang-btn.active { background: white; color: #0f172a; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+		.onboarding-container { position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; max-width: 24rem; margin: 0 auto; padding: 2rem; width: 100%; }
+		.tutorial-slider { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+		.step { display: none; flex-direction: column; align-items: center; animation: slide-up 0.5s ease-out; }
+		.step.active { display: flex; }
+		.icon-hero { margin-bottom: 2rem; }
+		.logo-box { width: 80px; height: 80px; background: linear-gradient(135deg, #0ea5e9, #2dd4bf); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(45, 212, 191, 0.3); }
+		.logo-text { font-size: 2.5rem; font-weight: 900; letter-spacing: -2px; }
+		.glass-icon-circle { width: 80px; height: 80px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+		.step-title { font-size: 1.75rem; font-weight: 900; margin-bottom: 1rem; line-height: 1.2; background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+		.step-desc { color: #94a3b8; line-height: 1.6; font-size: 1rem; }
+		.onboarding-controls { padding-bottom: 2rem; }
+		.dots-container { display: flex; justify-content: center; gap: 0.75rem; margin-bottom: 2rem; }
+		.dot { width: 8px; height: 8px; background: rgba(255, 255, 255, 0.2); border-radius: 9999px; transition: all 0.3s ease; cursor: pointer; }
+		.dot.active { width: 24px; background: #2dd4bf; box-shadow: 0 0 12px rgba(45, 212, 191, 0.5); }
+		.buttons-stack { display: flex; flex-direction: column; gap: 0.75rem; }
+		.btn-primary { background: white; color: #0f172a; padding: 1rem; border-radius: 12px; font-weight: 800; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+		.btn-primary:active { transform: scale(0.95); }
+		.start-options { display: flex; flex-direction: column; gap: 0.75rem; animation: fade-in 0.4s ease; }
+		.start-options.hidden { display: none; }
+		.btn-start { padding: 1rem; border-radius: 12px; font-weight: 800; color: white; transition: all 0.3s ease; }
+		.btn-teal { background: #14b8a6; box-shadow: 0 4px 14px rgba(20, 184, 166, 0.4); }
+		.btn-orange { background: #f97316; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4); }
+		.bottom-bar { height: 6px; background: linear-gradient(to right, #0ea5e9, #2dd4bf, #f97316); z-index: 100; }
+		.hidden { display: none !important; }
+		@keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+		@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+		@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+		.animate-float { animation: float 3s ease-in-out infinite; }
 	</style>
 
 	<script>
 		let currentStep = 1;
 		const totalSteps = 4;
 		let currentLang = 'es';
-
 		const steps = document.querySelectorAll('.step');
 		const dots = document.querySelectorAll('.dot');
 		const btnNext = document.getElementById('btn-next');
@@ -383,16 +161,12 @@ import MainLayout from '../layouts/MainLayout.astro';
 
 		function goToStep(stepNum: number) {
 			if (stepNum > totalSteps) return;
-
 			steps.forEach(s => s.classList.remove('active'));
 			dots.forEach(d => d.classList.remove('active'));
-
 			const activeStep = document.querySelector(`.step[data-step="${stepNum}"]`);
 			const activeDot = document.querySelector(`.dot[data-go="${stepNum}"]`);
-
 			if (activeStep) activeStep.classList.add('active');
 			if (activeDot) activeDot.classList.add('active');
-
 			if (stepNum === totalSteps) {
 				btnNext?.classList.add('hidden');
 				startOptions?.classList.remove('hidden');
@@ -412,32 +186,23 @@ import MainLayout from '../layouts/MainLayout.astro';
 			window.location.href = `/${lang}/home`;
 		}
 
-		// Event Listeners
-		btnNext?.addEventListener('click', () => {
-			if (currentStep < totalSteps) {
-				goToStep(currentStep + 1);
-			}
-		});
-
-		skipBtn?.addEventListener('click', () => finishTutorial(currentLang));
-
+		btnNext?.addEventListener('click', () => { if (currentStep < totalSteps) goToStep(currentStep + 1); });
 		document.getElementById('start-es')?.addEventListener('click', () => finishTutorial('es'));
 		document.getElementById('start-en')?.addEventListener('click', () => finishTutorial('en'));
-
 		document.getElementById('set-es')?.addEventListener('click', (e) => {
 			currentLang = 'es';
 			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
 			(e.target as HTMLElement).classList.add('active');
+			localStorage.setItem('lang', 'es');
 			updateTutorialUI('es');
 		});
-
 		document.getElementById('set-en')?.addEventListener('click', (e) => {
 			currentLang = 'en';
 			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
 			(e.target as HTMLElement).classList.add('active');
+			localStorage.setItem('lang', 'en');
 			updateTutorialUI('en');
 		});
-
 		dots.forEach(dot => {
 			dot.addEventListener('click', () => {
 				const target = parseInt(dot.getAttribute('data-go') || '1');
