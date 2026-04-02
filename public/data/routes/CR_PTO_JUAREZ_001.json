@@ -24,8 +24,8 @@
     {
       "id": "CR_PTO_JUAREZ_001_002",
       "nombre": "El Crucero",
-      "lat": 21.1576,
-      "lng": -86.8269,
+      "lat": 21.1714,
+      "lng": -86.8219,
       "orden": 2
     },
     {
@@ -45,8 +45,8 @@
     {
       "id": "CR_PTO_JUAREZ_001_005",
       "nombre": "Muelle Ultramar (Puerto Juárez)",
-      "lat": 21.207,
-      "lng": -86.802,
+      "lat": 21.1819,
+      "lng": -86.8028,
       "orden": 5
     }
   ]
