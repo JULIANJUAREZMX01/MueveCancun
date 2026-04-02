@@ -40,7 +40,6 @@
     "@astrojs/mdx": "^4.0.0",
     "@astrojs/rss": "^4.0.5",
     "@astrojs/tailwind": "^5.1.0",
-    "@astrojs/vercel": "^10.0.4",
     "@rollup/rollup-linux-x64-gnu": "^4.57.1",
     "@tailwindcss/typography": "^0.5.10",
     "@types/node": "^24.10.1",

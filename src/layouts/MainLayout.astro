@@ -4,7 +4,7 @@
  * Pure CSS5 + Astro SSG. No React.
  */
 import { ClientRouter } from 'astro:transitions';
-import { getLangFromUrl, useTranslations } from '../utils/i18n';
+import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../utils/i18n';
 import { getRelativeLocaleUrl, safeJsonStringify } from '../utils/utils';
 import BottomNav from '../components/BottomNav.astro';
 import Toast from '../components/ui/Toast.astro';
@@ -13,10 +13,6 @@ import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import ReportWidget from '../components/ReportWidget.astro';
 import BrowserDetection from '../components/ui/BrowserDetection.astro';
 import DonateNudge from '../components/ui/DonateNudge.astro';
-import { Analytics } from '@vercel/analytics/astro';
-import { ui as uiTranslations, getLangFromUrl } from '../utils/i18n';
-import { safeJsonStringify, getRelativeLocaleUrl } from '../utils/utils';
-import { ui as uiTranslations } from '../utils/i18n';
 import '../styles/tokens.css';
 import '../styles/main.css';
 import '../index.css';
@@ -38,105 +34,71 @@ const t = useTranslations(lang);
 const pathname = Astro.url.pathname;
 const ga4Id = import.meta.env.PUBLIC_GA4_ID;
 const googleVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
-const bingVerification = import.meta.env.PUBLIC_BING_SITE_VERIFICATION;
-const siteBase = Astro.site?.href?.replace(/\/$/, '') ?? '';
-const canonicalUrl = siteBase + pathname;
-const ogImage = `${siteBase}/og-image.png`;
-
-const uiTranslations = {
-  es: useTranslations('es'),
-  en: useTranslations('en')
-};
 
 const navItems = [
-  { href: getRelativeLocaleUrl(lang, 'home'), label: 'Inicio', icon: 'explore', activePattern: /^\/(es|en)\/home/ },
-  { href: getRelativeLocaleUrl(lang, 'rutas'), label: 'Rutas', icon: 'route', activePattern: /^\/(es|en)\/rutas/ },
-  { href: getRelativeLocaleUrl(lang, 'community'), label: 'Foro', icon: 'forum', activePattern: /^\/(es|en)\/community/ },
-  { href: getRelativeLocaleUrl(lang, 'wallet'), label: 'Wallet', icon: 'account_balance_wallet', activePattern: /^\/(es|en)\/wallet/ },
-  { href: getRelativeLocaleUrl(lang, 'about'), label: 'Nosotros', icon: 'info', activePattern: /^\/(es|en)\/about/ },
+  { href: getRelativeLocaleUrl(lang, "home"), label: "Home", activePattern: /\/(es|en)\/home/ },
+  { href: getRelativeLocaleUrl(lang, "rutas"), label: "Rutas", activePattern: /\/(es|en)\/(rutas|ruta)/ },
+  { href: getRelativeLocaleUrl(lang, "community"), label: "Comunidad", activePattern: /\/(es|en)\/community/ },
+  { href: getRelativeLocaleUrl(lang, "wallet"), label: "Mi Tarjeta", activePattern: /\/(es|en)\/wallet/ },
+  { href: getRelativeLocaleUrl(lang, "about"), label: "Info", activePattern: /\/(es|en)\/about/ }
 ];
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang={lang} class="scroll-smooth">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-
-    <!-- 🛡️ Sentinel: Strict CSP -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://*.cartocdn.com https://www.googletagmanager.com https://www.google-analytics.com;
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        img-src 'self' data: https://*.cartocdn.com https://*.openstreetmap.org https://www.google-analytics.com;
-        font-src 'self' https://fonts.gstatic.com;
-        connect-src 'self' https://*.cartocdn.com https://www.google-analytics.com;
-        worker-src 'self' blob:;
-        object-src 'none';
-        base-uri 'self';
-        upgrade-insecure-requests;
-    ">
-
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0f172a" />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- SEO Site Verification -->
-    {googleVerification && <meta name="google-site-verification" content={googleVerification} />}
-    {bingVerification && <meta name="msvalidate.01" content={bingVerification} />}
-
-    <!-- Primary Meta Tags -->
+    <!-- SEO -->
     <title>{title}</title>
-    <meta name="title" content={title} />
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalUrl} />
+    <link rel="canonical" href={canonicalURL} />
+    {googleVerification && <meta name="google-site-verification" content={googleVerification} />}
 
-    <!-- Open Graph / Facebook / WhatsApp -->
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:url" content={Astro.url} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={ogImage} />
+    <meta property="og:image" content={new URL('/og-image.png', Astro.url)} />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={canonicalUrl} />
+    <meta property="twitter:url" content={Astro.url} />
     <meta property="twitter:title" content={title} />
     <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={ogImage} />
+    <meta property="twitter:image" content={new URL('/og-image.png', Astro.url)} />
 
-    <link rel="sitemap" href="/sitemap-index.xml" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#ffffff" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="CancúnMueve" />
+    <script is:inline>
+      // 1. Initial Theme & Language setup
+      function applyTheme() {
+          const theme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          if (theme === "dark") document.documentElement.classList.add("dark");
+          else document.documentElement.classList.remove("dark");
+      }
 
-    <!-- Client-side Logic (Optimization Hub) -->
-    <script>
-      import { getWalletBalance } from '../utils/db';
-      import { updateTranslations } from '../utils/i18n';
-
-      // 1. Initial Theme & Preference Sync
-      const applyTheme = () => {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
-      };
-
-      // 2. Language Initialization
       function applyLanguage() {
-          const lang = document.documentElement.lang || 'es';
-          const labels = document.querySelectorAll('[data-i18n]');
-          
-          labels.forEach(el => {
+          const savedLang = localStorage.getItem("lang") || "es";
+          document.documentElement.setAttribute("lang", savedLang);
+      }
+
+      function updateTranslations(langCode) {
+          const trans = JSON.parse(document.getElementById('i18n-translations').dataset.translations);
+          const elements = document.querySelectorAll('[data-i18n]');
+          elements.forEach(el => {
              const key = el.getAttribute('data-i18n');
-             if (key && (window as any).uiTranslations && (window as any).uiTranslations[lang]) {
-                 const text = (window as any).uiTranslations[lang][key];
+             const text = trans[langCode] && trans[langCode][key] ? trans[langCode][key] : trans['es'][key];
+             if (text) {
+                 // Preserving SVG icons if any
+                 const icon = el.querySelector('svg')?.outerHTML || '';
                  el.innerHTML = '';
-                 const icon = el.getAttribute('data-i18n-icon');
                  if (icon) el.insertAdjacentHTML('afterbegin', icon);
                  el.appendChild(document.createTextNode(' ' + text));
              }
@@ -145,6 +107,9 @@ const navItems = [
 
       applyTheme();
       applyLanguage();
+    </script>
+    <script>
+      import { getWalletBalance } from '../utils/db';
       
       // 3. Global Balance Sync
       async function syncGlobalBalance() {
@@ -161,18 +126,12 @@ const navItems = [
       syncGlobalBalance();
       
       document.addEventListener('astro:after-swap', () => {
-        applyTheme();
-        applyLanguage();
         syncGlobalBalance();
       });
 
       window.addEventListener('BALANCE_UPDATED', () => {
           console.log("[MainLayout] Balance update event received");
           syncGlobalBalance();
-      });
-
-      window.addEventListener('LANGUAGE_CHANGE', (e: Event) => {
-          updateTranslations((e as CustomEvent<string>).detail);
       });
     </script>
     {ga4Id && (
@@ -349,7 +308,6 @@ const navItems = [
     <BrowserDetection />
     <DonateNudge />
     <ReportWidget />
-    <Analytics />
   </body>
 </html>
 
