@@ -21,7 +21,7 @@ const ui = useTranslations(lang);
                 id="origin-input"
                 type="text"
                 list="stops-datalist"
-                placeholder={ui['calc.origin.placeholder']}
+                placeholder={ui('calc.placeholder.origin')}
                 class="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-orange-500 transition-all outline-none"
             />
         </div>
@@ -35,7 +35,7 @@ const ui = useTranslations(lang);
                 id="dest-input"
                 type="text"
                 list="stops-datalist"
-                placeholder={ui['calc.dest.placeholder']}
+                placeholder={ui('calc.placeholder.dest')}
                 class="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-sky-500 transition-all outline-none"
             />
         </div>
@@ -49,7 +49,7 @@ const ui = useTranslations(lang);
 
   <!-- Search Button -->
   <button id="search-route-btn" class="w-full bg-slate-900 text-white py-4 rounded-3xl font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl hover:bg-slate-800 transition-all active:scale-[0.98]">
-      <span id="btn-text">{ui['calc.btn.search']}</span>
+      <span id="btn-text">{ui('calc.btn')}</span>
       <div id="search-spinner" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
   </button>
 
@@ -68,9 +68,10 @@ const ui = useTranslations(lang);
 </div>
 
 <script lang="ts">
-  import { wasmLoader } from "../utils/WasmLoader";
+  import { WasmLoader } from "../utils/WasmLoader";
   import { coordinatesStore } from "../utils/CoordinatesStore";
-  import { showToast } from "../utils/utils";
+  import { showToast } from "../utils/toast";
+  import { normalizeString } from "../utils/utils";
 
   let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
@@ -80,6 +81,9 @@ const ui = useTranslations(lang);
   const balanceBadge = document.getElementById('balance-badge');
   const searchBtn = document.getElementById('search-btn'); // Renamed from btn for clarity, but keeping logic
   const resultsContainer = document.getElementById('results-container');
+
+  // WASM find_route function reference
+  let find_route: ((origin: string, dest: string) => any) | null = null;
 
 
   // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
@@ -91,6 +95,7 @@ const ui = useTranslations(lang);
           const target = e.target as HTMLElement;
           if (!target || !target.closest) return;
 
+          // Handle "View on Map" buttons (dynamically added in results)
           const btn = target.closest('.view-map-btn') as HTMLElement;
           if (btn) {
               e.preventDefault();
@@ -107,66 +112,11 @@ const ui = useTranslations(lang);
               }
           }
 
-          // Sentinel Security Fix: Sentinel Delegation for All Actions
-          if (target.closest('.js-retry-search-btn')) {
-              e.preventDefault();
-              e.stopPropagation();
-              document.getElementById('search-card')?.scrollIntoView({ behavior: 'smooth' });
-              document.getElementById('summary-bar')?.classList.add('hidden');
-              document.getElementById('search-form')?.classList.remove('hidden');
-              setTimeout(() => document.getElementById('origin-input')?.focus(), 200);
-          }
-
-          if (target.closest('#gps-btn')) {
-              e.preventDefault();
-              e.stopPropagation();
-              // @ts-ignore
-              if (typeof handleGPSClick === 'function') handleGPSClick();
-          }
-
-          if (target.closest('#swap-btn')) {
-              e.preventDefault();
-              e.stopPropagation();
-              const originInput = document.getElementById('origin-input') as HTMLInputElement;
-              const destInput = document.getElementById('destination-input') as HTMLInputElement;
-              const swapBtn = document.getElementById('swap-btn');
-              if (originInput && destInput) {
-                  const temp = originInput.value;
-                  originInput.value = destInput.value;
-                  destInput.value = temp;
-                  swapBtn?.classList.toggle('rotated');
-                  originInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  destInput.dispatchEvent(new Event('input', { bubbles: true }));
-              }
-          }
-
-          const qBtn = target.closest('.quick-action-btn') as HTMLElement;
-          if (qBtn) {
-              e.preventDefault();
-              e.stopPropagation();
-              const dest = qBtn.dataset.dest;
-              if (dest) {
-                  const destInput = document.getElementById('destination-input') as HTMLInputElement;
-                  if (destInput) {
-                      destInput.value = dest;
-                      destInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  }
-              }
-          }
-
+          // Handle "Report Results" button (dynamically added in results)
           if (target.closest('#btn-report-results')) {
               e.preventDefault();
               e.stopPropagation();
               (window as Window & { rwOpenReport?: () => void }).rwOpenReport?.();
-              // @ts-ignore
-              window.rwOpenReport?.();
-          }
-
-          if (target.closest('#edit-search-btn')) {
-              e.preventDefault();
-              e.stopPropagation();
-              document.getElementById('summary-bar')?.classList.add('hidden');
-              document.getElementById('search-form')?.classList.remove('hidden');
           }
       });
   }
@@ -187,8 +137,8 @@ const ui = useTranslations(lang);
 
       // WASM Initialization
       try {
-          const module = await wasmLoader.load();
-          find_route = module.find_route_rs;
+          const module = await WasmLoader.getModule();
+          find_route = module.find_route.bind(module);
           wasmLoaded = true;
           console.log("[RouteCalculator] WASM Ready");
       } catch (e) {
@@ -242,76 +192,9 @@ const ui = useTranslations(lang);
               console.log("🔍 Raw Results:", results);
               if (results && results.length > 0) {
                   window.dispatchEvent(new CustomEvent('ROUTE_CALCULATED'));
-              }
-
-              if (!results || results.length === 0) {
-                  showToast("No se encontró una ruta directa o con 1 transbordo", "warning");
+                  renderResults(results);
               } else {
-                 // Normalize WASM output (Spanish → English field mapping)
-                 const normalized = results.map(normalizeJourney);
-
-                 normalized.sort((a, b) => {
-                     // Prioritize Direct routes
-                     if (a.type === 'Direct' && b.type !== 'Direct') return -1;
-                     if (b.type === 'Direct' && a.type !== 'Direct') return 1;
-                     return a.total_price - b.total_price;
-                 });
-
-                 const best = normalized[0];
-                 const others = normalized.slice(1);
-
-                  // Prepare UI Data
-                 const optionsLabel = ui['calc.results.options'] || 'OPCIONES';
-                 const fastestLabel = ui['calc.results.fastest'] || 'MÁS RÁPIDA';
-                 const countText = `${normalized.length} ${optionsLabel}`;
-                 let timeText = '';
-                 let showTimeBadge = false;
-
-                 if (best) {
-                     let duration = best.duration_minutes || 0;
-                     timeText = `${fastestLabel}: ${duration}min`;
-                     showTimeBadge = true;
-                 }
-
-                 // ATOMIC DOM UPDATE
-                 const countLabel = document.getElementById('results-count-label');
-                 const timeBadge = document.getElementById('results-time-badge');
-                 
-                 if (countLabel) {
-                     countLabel.textContent = countText;
-                     countLabel.classList.remove('hidden');
-                 }
-                 
-                 if (timeBadge) {
-                     timeBadge.textContent = timeText;
-                     if (showTimeBadge) {
-                         timeBadge.classList.remove('hidden');
-                         timeBadge.style.display = 'inline-flex';
-                     } else {
-                         timeBadge.classList.add('hidden');
-                         timeBadge.style.display = 'none';
-                     }
-                 }
-
-                 // Show Info Bar NOW
-                 document.getElementById('results-info')?.classList.remove('hidden');
-                 document.getElementById('rw-results-cta')?.classList.remove('hidden');
-
-                 // Render Cards
-                 if (bestResultArea) {
-                     bestResultArea.replaceChildren(best.type === 'Transfer' ? renderTransferCardHtml(best, true) : renderBestResultHtml(best, true));
-                 }
-
-                 if (others.length > 0 && resultsContainer) {
-                     others.forEach(r => {
-                         resultsContainer.appendChild(r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r));
-                     });
-                 }
-                 
-                 // Re-attach map buttons
-                 document.getElementById('btn-report-results')?.addEventListener('click', () => {
-                     (window as Window & { rwOpenReport?: () => void }).rwOpenReport?.();
-                 });
+                  showToast("No se encontró una ruta directa o con 1 transbordo", "warning");
               }
           } catch (e) {
               console.error("Search Error", e);

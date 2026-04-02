@@ -1,0 +1,22 @@
+---
+export function getStaticPaths() {
+  return [
+    { params: { lang: "es" } },
+    { params: { lang: "en" } },
+  ];
+}
+const { lang } = Astro.params;
+return Astro.redirect(`/${lang}/donate`);
+---
+<!DOCTYPE html>
+<html lang={lang}>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content={`0;url=/${lang}/donate`}>
+    <title>Redirecting...</title>
+</head>
+<body>
+    <p>Redirecting to <a href={`/${lang}/donate`}>Support Page</a>...</p>
+</body>
+</html>
