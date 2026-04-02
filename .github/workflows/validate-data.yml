@@ -7,7 +7,7 @@ on:
   push:
     paths:
       - "public/data/**"
-      - "scripts/validate-routes.mjs"
+      - "scripts/validate-routes.ts"
   pull_request:
     paths:
       - "public/data/**"
@@ -19,13 +19,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Validate all route data
-        run: node scripts/validate-routes.mjs
+        run: node --experimental-strip-types scripts/validate-routes.ts
 
       - name: Check route coordinate coverage
         run: |
