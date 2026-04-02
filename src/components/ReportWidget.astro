@@ -469,9 +469,6 @@ Nexus Protocol v1.2 (Offline-First)
     const syncOfflineReports = async () => {
       if (isSyncing || !navigator.onLine || !config.token) return;
       isSyncing = true;
-    // ── Envío → Proxy serverless Base44 (token seguro, nunca expuesto) ─────
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
 
       const reports = await getPendingReports();
       if (badge) {
@@ -494,7 +491,7 @@ Nexus Protocol v1.2 (Offline-First)
           console.log(`[ReportWidget] Sincronizado reporte #${r.id} ✓`);
         } catch (err) {
           console.warn(`[ReportWidget] Fallo al sincronizar reporte #${r.id}:`, err);
-          break; // Stop if we hit an error (likely network or token)
+          break;
         }
       }
 
@@ -532,33 +529,23 @@ Nexus Protocol v1.2 (Offline-First)
       if (feedback) feedback.hidden = true;
 
       try {
-        const res = await fetch('https://not-yet-named-user-skipped-to-sp-d14220f3.base44.app/functions/createGithubIssue', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tipo,
-            ruta,
-            descripcion,
-            lat,
-            lng,
-            repoOwner,
-            repoName,
-            userAgent: navigator.userAgent,
-            url: window.location.href
-          }),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          showFeedback(`¡Gracias! Reporte enviado (#${data.number})`, 'success');
+        const payload = buildPayload(data);
+        await sendToGitHub(payload);
+        showFeedback(`¡Gracias! Reporte enviado.`, 'success');
+        setTimeout(closeModal, 2800);
+      } catch (err) {
+        if (!navigator.onLine || !config.token) {
+          await savePendingReport(data);
+          const pending = await getPendingReports();
+          if (badge) {
+            badge.textContent = pending.length.toString();
+            badge.hidden = false;
+          }
+          showFeedback('Sin conexión. Reporte guardado para enviar después. ✓', 'info');
           setTimeout(closeModal, 2800);
         } else {
-          const errData = await res.json().catch(() => ({}));
-          console.error('[ReportWidget] API error:', res.status, errData);
-          showFeedback(
-            errData.error || `Error al enviar (${res.status}).`,
-            'error'
-          );
+          console.error('[ReportWidget] Error al enviar:', err);
+          showFeedback('Error al enviar. Intenta de nuevo.', 'error');
           setSubmitting(false);
         }
       }
