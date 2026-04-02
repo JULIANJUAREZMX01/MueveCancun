@@ -34,7 +34,7 @@ export const ui = {
         'calc.tourist': 'Tourist',
         'calc.btn': 'CALCULATE ROUTE',
         'calc.balance.warning': 'Insufficient Balance',
-        'calc.balance.msg': 'Requires mínimo to operate.',
+        'calc.balance.msg': 'A minimum balance is required to operate. Please add funds to your wallet.',
         'calc.gps': 'Use my location',
         'calc.map': 'Select on map',
         'calc.reset': 'EDIT',
