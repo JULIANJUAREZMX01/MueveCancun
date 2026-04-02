@@ -4,31 +4,11 @@ import path from 'path';
 const inputFile = path.join(process.cwd(), 'public/data/master_routes.json');
 const optimizedFile = path.join(process.cwd(), 'public/data/master_routes.optimized.json');
 
-interface CatalogStop {
-    nombre?: unknown;
-    lat?: unknown;
-    lng?: unknown;
-    [key: string]: unknown;
-}
-
-interface CatalogRoute {
-    id?: unknown;
-    nombre?: unknown;
-    paradas?: CatalogStop[];
-    [key: string]: unknown;
-}
-
-interface CatalogData {
-    rutas?: CatalogRoute[];
-    metadata?: unknown;
-    [key: string]: unknown;
-}
-
-function validateCatalog(filePath: string): boolean {
+function validateCatalog(filePath) {
     console.log(`🔍 Validating: ${path.basename(filePath)}`);
     try {
         const raw = fs.readFileSync(filePath, 'utf-8');
-        const data = JSON.parse(raw) as CatalogData;
+        const data = JSON.parse(raw);
         let errors = 0;
 
         // 1. Check Root structure
@@ -54,18 +34,18 @@ function validateCatalog(filePath: string): boolean {
                       errors++;
                  }
                  if (!route.paradas || !Array.isArray(route.paradas)) {
-                     console.error(`❌ Route [${String(route.id ?? index)}] missing 'paradas' array.`);
+                     console.error(`❌ Route [${route.id || index}] missing 'paradas' array.`);
                      errors++;
                  } else {
                      // Check limits for DoS protection (as defined in Rust WASM)
                      if (route.paradas.length > 500) {
-                         console.error(`❌ Route [${String(route.id)}] exceeds max 500 stops (${route.paradas.length}).`);
+                         console.error(`❌ Route [${route.id}] exceeds max 500 stops (${route.paradas.length}).`);
                          errors++;
                      }
                      // Validate stops structure
                      route.paradas.forEach((stop, stopIndex) => {
                          if (!stop.nombre || typeof stop.lat !== 'number' || typeof stop.lng !== 'number') {
-                             console.error(`❌ Route [${String(route.id)}] Stop [${stopIndex}] malformed: ${JSON.stringify(stop)}`);
+                             console.error(`❌ Route [${route.id}] Stop [${stopIndex}] malformed: ${JSON.stringify(stop)}`);
                              errors++;
                          }
                      });
@@ -86,8 +66,8 @@ function validateCatalog(filePath: string): boolean {
 
         console.log(`✅ Schema valid. Evaluated ${data.rutas ? data.rutas.length : 0} routes.`);
         return true;
-    } catch (err: unknown) {
-        console.error(`❌ Failed to parse or read JSON: ${(err as Error).message}`);
+    } catch (err) {
+        console.error(`❌ Failed to parse or read JSON: ${err.message}`);
         return false;
     }
 }

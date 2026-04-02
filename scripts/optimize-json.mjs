@@ -10,46 +10,9 @@ const outputPath = path.resolve(__dirname, '../public/data/master_routes.optimiz
 
 console.log('🔄 Optimizing JSON data...');
 
-interface Horario {
-    inicio?: string;
-    fin?: string;
-    inicio_oficial?: string;
-    fin_oficial?: string;
-}
-
-interface RouteRecord {
-    horario?: string | Horario;
-    tipo?: string;
-    tipo_transporte?: string;
-    frecuencia_minutos?: unknown;
-    [key: string]: unknown;
-}
-
-interface CatalogData {
-    version?: string;
-    metadata?: {
-        version?: string;
-        optimized?: boolean;
-        last_optimized?: string;
-        last_merged?: string;
-        [key: string]: unknown;
-    };
-    rutas?: RouteRecord[];
-    [key: string]: unknown;
-}
-
-function stripVolatileMeta(obj: CatalogData): CatalogData {
-    const c = JSON.parse(JSON.stringify(obj)) as CatalogData;
-    if (c.metadata) {
-        delete c.metadata.last_optimized;
-        delete c.metadata.last_merged;
-    }
-    return c;
-}
-
 try {
     const rawData = fs.readFileSync(inputPath, 'utf-8');
-    const data = JSON.parse(rawData) as CatalogData;
+    const data = JSON.parse(rawData);
 
     // 1. Promote Version
     if (data.metadata && data.metadata.version) {
@@ -69,11 +32,10 @@ try {
                     fin: parts[1]?.trim() || ''
                 };
             } else if (route.horario && typeof route.horario === 'object') {
-                const h = route.horario as Horario;
-                if (!h.inicio && h.inicio_oficial) {
+                if (!route.horario.inicio && route.horario.inicio_oficial) {
                     route.horario = {
-                        inicio: h.inicio_oficial,
-                        fin: h.fin_oficial || ''
+                        inicio: route.horario.inicio_oficial,
+                        fin: route.horario.fin_oficial || ''
                     };
                 }
             }
@@ -85,7 +47,7 @@ try {
 
             // Normalize frecuencia_minutos to Number (WASM expectations u32)
             if (route.frecuencia_minutos !== undefined && route.frecuencia_minutos !== null) {
-                const val = parseInt(String(route.frecuencia_minutos));
+                const val = parseInt(route.frecuencia_minutos);
                 if (!isNaN(val)) {
                     route.frecuencia_minutos = val;
                 } else {
@@ -101,19 +63,28 @@ try {
     if (!data.metadata) data.metadata = {};
     data.metadata.optimized = true;
 
+    function stripVolatileMeta(obj) {
+        const c = JSON.parse(JSON.stringify(obj));
+        if (c.metadata) {
+            delete c.metadata.last_optimized;
+            delete c.metadata.last_merged;
+        }
+        return c;
+    }
+
     let needsWrite = true;
 
     if (fs.existsSync(outputPath)) {
         try {
             const previousRaw = fs.readFileSync(outputPath, 'utf-8');
-            const previousData = JSON.parse(previousRaw) as CatalogData;
+            const previousData = JSON.parse(previousRaw);
 
             if (JSON.stringify(stripVolatileMeta(data)) === JSON.stringify(stripVolatileMeta(previousData)) &&
                 previousData.metadata &&
                 typeof previousData.metadata.last_optimized === 'string') {
                 needsWrite = false;
             }
-        } catch { /* fall through: rewrite if output is missing or malformed */ }
+        } catch (e) { }
     }
 
     if (!needsWrite) {
@@ -124,7 +95,7 @@ try {
         console.log(`✅ JSON Optimized! Saved to ${outputPath}`);
     }
 
-} catch (err: unknown) {
+} catch (err) {
     console.error('❌ Error optimizing JSON:', err);
     process.exit(1);
 }

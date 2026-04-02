@@ -11,7 +11,7 @@ MueveCancun es una PWA offline-first de transporte público para Cancún y la Ri
 El motor de ruteo está compilado a WebAssembly (Rust), la UI es Astro 5 SSG, y toda la
 persistencia funciona sobre IndexedDB sin necesidad de backend.
 
-### Logros Acumulados (hasta 28-Mar-2026)
+### Logros Acumulados (hasta este sprint)
 
 | Área | Estado |
 |------|--------|
@@ -25,8 +25,6 @@ persistencia funciona sobre IndexedDB sin necesidad de backend.
 | CI/CD (6 workflows) | ✅ test, build-wasm, validate-data, autocurative, claude-delegation, codeql |
 | Seguridad XSS / DoS / Prototype Pollution | ✅ Implementado |
 | Strictly Static Architecture | ✅ Stabilization complete (CDN-First) |
-| TypeScript 100% migration | ✅ Strict mode, scripts, configs, client/SW (#397) |
-| SEO (OG image, sitemap, verification tags) | ⏳ PR #367 — pending merge |
 
 ---
 

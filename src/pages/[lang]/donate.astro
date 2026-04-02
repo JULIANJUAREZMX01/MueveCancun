@@ -1,7 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 export function getStaticPaths() { return [{ params: { lang: 'es' } }, { params: { lang: 'en' } }]; }
-import { getLangFromUrl } from '../../utils/i18n';
+import { getLangFromUrl, ui } from '../../utils/i18n';
 
 const lang = getLangFromUrl(Astro.url);
 
@@ -10,8 +10,8 @@ const translations = {
     title: 'Escudo de Cancún',
     subtitle: 'Sustenta el transporte de tu ciudad',
     description: 'MueveCancún es 100% gratis porque creemos que el transporte es un derecho. Pero mantenerlo vivo cuesta. Apoya con lo que puedas.',
-    qrText: 'Escanéame para donar',
-    recommendedLabel: 'Recomendado',
+    qrText: 'Escaneame para donar',
+    directLinkText: '¿El botón no funciona? Usa este enlace directo',
     tiers: {
       free: {
         name: 'Libre',
@@ -26,7 +26,8 @@ const translations = {
         cta: 'Apoyar MueveCancún',
         recommended: true,
         qr: '/qr-shield.png',
-        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI'
+        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
+        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02'
       },
       architect: {
         name: 'Nexus Architect',
@@ -34,7 +35,8 @@ const translations = {
         features: ['Todo lo anterior', 'Votación en prioridades', 'Comunidad privada', 'API beta access', 'Créditos en el proyecto'],
         cta: 'Construir el futuro',
         qr: '/qr-architect.png',
-        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB'
+        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB',
+        link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03'
       }
     },
     impact: {
@@ -51,7 +53,7 @@ const translations = {
     subtitle: 'Sustain your city\'s transport',
     description: 'MueveCancún is 100% free because we believe transport is a right. But keeping it alive costs money. Support with what you can.',
     qrText: 'Scan me to donate',
-    recommendedLabel: 'Recommended',
+    directLinkText: 'Button not working? Use this direct link',
     tiers: {
       free: {
         name: 'Free',
@@ -66,7 +68,8 @@ const translations = {
         cta: 'Support MueveCancún',
         recommended: true,
         qr: '/qr-shield.png',
-        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI'
+        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
+        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02'
       },
       architect: {
         name: 'Nexus Architect',
@@ -74,7 +77,8 @@ const translations = {
         features: ['Everything above', 'Priority voting', 'Private community', 'API beta access', 'Project credits'],
         cta: 'Build the future',
         qr: '/qr-architect.png',
-        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB'
+        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB',
+        link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03'
       }
     },
     impact: {
@@ -133,7 +137,7 @@ const t = translations[lang] || translations.es;
         ]}>
           {tier.recommended && (
             <span class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full">
-              {t.recommendedLabel}
+              Recomendado
             </span>
           )}
           <div class="space-y-6">
@@ -157,10 +161,18 @@ const t = translations[lang] || translations.es;
                 <div class="flex justify-center">
                   <stripe-buy-button
                     buy-button-id={tier.buyButtonId}
-                    publishable-key={import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY}
+                    publishable-key="pk_live_51T6oKE2dM2f4HRxoh2mpjFg4MHpHXxqc65ulAos4p22xPpD3v55ejGpiGx1Y8vdK5doYMTPGvTPi6RzsqdVv2xvE000caSvFag"
                   >
                   </stripe-buy-button>
                 </div>
+
+                {tier.link && (
+                  <div class="text-center">
+                    <a href={tier.link} class="text-[10px] text-primary-500 hover:underline font-bold transition-all">
+                      {t.directLinkText}
+                    </a>
+                  </div>
+                )}
 
                 {tier.qr && (
                   <div class="flex flex-col items-center gap-2">
@@ -187,7 +199,7 @@ const t = translations[lang] || translations.es;
     </div>
 
     <!-- Trust -->
-    <footer class="text-center space-y-6 pt-12 border-t border-slate-100 dark:border-slate-800">
+    <footer class="text-center space-y-6 pt-12 border-top border-slate-100 dark:border-slate-800">
       <p class="text-sm text-slate-500 italic">
         "Este no es un proyecto de código. Es un proyecto de confianza."
       </p>

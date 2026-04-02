@@ -1,7 +1,7 @@
 /**
- * validate-routes.ts
+ * validate-routes.mjs
  * Validates master_routes.json + all individual route files in public/data/routes/
- * Used by CI workflows and can be run locally: node --experimental-strip-types scripts/validate-routes.ts
+ * Used by CI workflows and can be run locally: node scripts/validate-routes.mjs
  */
 import fs from 'fs';
 import path from 'path';
@@ -13,49 +13,34 @@ const ROUTES_DIR = path.join(ROOT, 'public/data/routes');
 let totalErrors = 0;
 let totalWarnings = 0;
 
-function error(msg: string): void {
+function error(msg) {
     console.error(`  ❌ ${msg}`);
     totalErrors++;
 }
 
-function warn(msg: string): void {
+function warn(msg) {
     console.warn(`  ⚠️  ${msg}`);
     totalWarnings++;
 }
 
-interface RouteStop {
-    nombre?: unknown;
-    lat?: unknown;
-    lng?: unknown;
-}
-
-interface RouteObject {
-    id?: unknown;
-    nombre?: unknown;
-    tarifa?: unknown;
-    tipo?: unknown;
-    tipo_transporte?: unknown;
-    paradas?: RouteStop[];
-}
-
-function validateRouteObject(route: RouteObject, source: string): void {
+function validateRouteObject(route, source) {
     if (!route.id) error(`[${source}] Route missing 'id'`);
     if (!route.nombre) error(`[${source}] Route missing 'nombre'`);
-    if (typeof route.tarifa !== 'number') warn(`[${source}] Route '${String(route.id)}' missing numeric 'tarifa'`);
-    if (!route.tipo && !route.tipo_transporte) warn(`[${source}] Route '${String(route.id)}' missing 'tipo'`);
+    if (typeof route.tarifa !== 'number') warn(`[${source}] Route '${route.id}' missing numeric 'tarifa'`);
+    if (!route.tipo && !route.tipo_transporte) warn(`[${source}] Route '${route.id}' missing 'tipo'`);
 
     const stops = route.paradas || [];
     if (!Array.isArray(stops) || stops.length === 0) {
-        error(`[${source}] Route '${String(route.id)}' has no 'paradas' array`);
+        error(`[${source}] Route '${route.id}' has no 'paradas' array`);
         return;
     }
     if (stops.length > 500) {
-        error(`[${source}] Route '${String(route.id)}' exceeds 500 stops (${stops.length})`);
+        error(`[${source}] Route '${route.id}' exceeds 500 stops (${stops.length})`);
     }
 
     let missingCoords = 0;
     for (const [i, stop] of stops.entries()) {
-        if (!stop.nombre) error(`[${source}] Route '${String(route.id)}' Stop[${i}] missing 'nombre'`);
+        if (!stop.nombre) error(`[${source}] Route '${route.id}' Stop[${i}] missing 'nombre'`);
         if (typeof stop.lat !== 'number' || typeof stop.lng !== 'number') {
             missingCoords++;
         } else if (stop.lat === 0 && stop.lng === 0) {
@@ -64,7 +49,7 @@ function validateRouteObject(route: RouteObject, source: string): void {
     }
     if (missingCoords > 0) {
         const pct = ((missingCoords / stops.length) * 100).toFixed(0);
-        warn(`[${source}] Route '${String(route.id)}': ${missingCoords}/${stops.length} stops missing coords (${pct}%)`);
+        warn(`[${source}] Route '${route.id}': ${missingCoords}/${stops.length} stops missing coords (${pct}%)`);
     }
 }
 
@@ -74,7 +59,7 @@ if (!fs.existsSync(MASTER)) {
     error('master_routes.json not found');
 } else {
     try {
-        const data = JSON.parse(fs.readFileSync(MASTER, 'utf8')) as { rutas?: RouteObject[]; metadata?: unknown; version?: unknown };
+        const data = JSON.parse(fs.readFileSync(MASTER, 'utf8'));
         const routes = data.rutas || [];
         if (!Array.isArray(routes)) {
             error("master_routes.json missing 'rutas' array");
@@ -87,8 +72,8 @@ if (!fs.existsSync(MASTER)) {
         if (!data.metadata && !data.version) {
             warn("master_routes.json missing 'metadata' or 'version'");
         }
-    } catch (e: unknown) {
-        error(`master_routes.json JSON parse error: ${(e as Error).message}`);
+    } catch (e) {
+        error(`master_routes.json JSON parse error: ${e.message}`);
     }
 }
 
@@ -100,14 +85,14 @@ if (fs.existsSync(ROUTES_DIR)) {
         const filePath = path.join(ROUTES_DIR, file);
         try {
             const raw = fs.readFileSync(filePath, 'utf8');
-            const data = JSON.parse(raw) as RouteObject | RouteObject[] | { rutas?: RouteObject[] };
+            const data = JSON.parse(raw);
             // Individual files can be a single route object OR an array
-            const routes = Array.isArray(data) ? data : ('rutas' in data && Array.isArray(data.rutas) ? data.rutas : [data as RouteObject]);
+            const routes = Array.isArray(data) ? data : (data.rutas || [data]);
             for (const r of routes) {
                 if (r && r.id) validateRouteObject(r, file);
             }
-        } catch (e: unknown) {
-            error(`${file}: JSON parse error: ${(e as Error).message}`);
+        } catch (e) {
+            error(`${file}: JSON parse error: ${e.message}`);
         }
     }
 }

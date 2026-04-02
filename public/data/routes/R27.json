@@ -4,8 +4,7 @@
   "tipo": "Bus_Urban",
   "tarifa": 12,
   "horario": {
-    "inicio": "05:30",
-    "fin": "23:00"
+    "inicio": "05:30 - 23:00"
   },
   "frecuencia_minutos": 10,
   "empresa": "Turicun",

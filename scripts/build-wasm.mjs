@@ -10,22 +10,24 @@ const rootDir = path.resolve(__dirname, '..');
 const modules = ['route-calculator', 'spatial-index'];
 
 // Nexus Signaling Functions
-const log = (msg: string): void => console.log(`\x1b[1;34m[NEXUS_LOG]\x1b[0m ${msg}`);
-const success = (msg: string): void => console.log(`\x1b[1;32m[SUCCESS]\x1b[0m ${msg}`);
-const error = (msg: string): void => console.error(`\x1b[1;31m[ERROR]\x1b[0m ${msg}`);
+const log = (msg) => console.log(`\x1b[1;34m[NEXUS_LOG]\x1b[0m ${msg}`);
+const success = (msg) => console.log(`\x1b[1;32m[SUCCESS]\x1b[0m ${msg}`);
+const error = (msg) => console.error(`\x1b[1;31m[ERROR]\x1b[0m ${msg}`);
 
 log("Iniciando forja de modulos WASM...");
 
 // 1. Verificacion de Toolchain
+let wasmPackCmd = 'wasm-pack';
 let useNpx = false;
 
 try {
     execSync('wasm-pack --version', { stdio: 'ignore' });
-} catch {
+} catch (e) {
     try {
         execSync('npx wasm-pack --version', { stdio: 'ignore' });
+        wasmPackCmd = 'npx';
         useNpx = true;
-    } catch {
+    } catch (e2) {
         // Fallback check for artifacts
         const artifactsExist = modules.every(mod => {
             const wasmPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}_bg.wasm`);
@@ -70,7 +72,7 @@ modules.forEach(mod => {
         if (fs.existsSync(gitignorePath)) fs.unlinkSync(gitignorePath);
 
         success(`Modulo ${mod} forjado correctamente.`);
-    } catch {
+    } catch (e) {
         error(`Fallo en la compilacion de ${mod}. Abortando.`);
         process.exit(1);
     }

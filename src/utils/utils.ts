@@ -1,7 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { getDistance as getDistanceKm } from "./geometry";
-import type { RouteData } from "../types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -113,7 +112,7 @@ export function normalizeString(str: string): string {
  *   `master_routes.json`, or `null` if the catalog is unavailable or empty.
  */
 // Module-level cache so repeated calls (e.g., retries) don't re-fetch the catalog.
-let _catalogCache: RouteData[] | null = null;
+let _catalogCache: any[] | null = null;
 
 export async function getClosestLandmark(lat: number, lng: number) {
     try {

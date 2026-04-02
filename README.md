@@ -35,15 +35,6 @@ MueveCancun es simple: **Funciona sin internet**, es ultrarrápida y está dise�
 
 Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales que trabajan en conjunto para ofrecer una aplicación offline-first ultrarrápida.
 
-### 0. Stack Tecnológico
-- **Frontend**: Astro Islands.
-- **UI Components**: Web Components / Lit.
-- **Lógica Intensiva**: Rust / WebAssembly (WASM).
-- **Estilos**: CSS purista + PostCSS / Houdini.
-- **Dependencias en proceso de migración**: Tailwind CSS (activo, fase de salida); React y Bootstrap (eliminados).
-- **Documentación de la Decisión**: [ADR-2026-002](docs/adr/ADR-2026-002.md).
-
-
 ### 1. Capa de Datos: Origen de Rutas
 - **Función**: Catálogo base que contiene "Señales Sociales" (alertas de tráfico, bloqueos, avisos de madrugada) y la información de todas las rutas.
 - **Ubicación**: `public/data/master_routes.json` con estructura validada para el motor WASM.
@@ -248,8 +239,3 @@ We prioritize CSS5 features over JavaScript for interactive states:
 1. **JSON Optimization**: Shrinks catalog size by ~40% before build.
 2. **WASM Compilation**: Generates optimized binaries with `wasm-pack`.
 3. **Astro Build**: Static site generation and asset bundling.
-
-
-## 📊 Estadísticas
-- 🔢 851+ commits
-- 🦀 1,206 líneas de Rust/WASM
