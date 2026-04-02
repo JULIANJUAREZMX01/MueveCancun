@@ -1,59 +1,59 @@
 {
   "id": "POLYLINE_1760338237012",
-  "nombre": "RUTA 235-227 ",
+  "nombre": "RUTA 235-227",
   "tarifa": 12,
   "tipo": "Bus_Urbano",
   "paradas": [
     {
-      "nombre": "Stop 1 - RUTA 235-227 ",
+      "nombre": "Stop 1 - RUTA 235-227",
       "lat": 21.17359725434049,
       "lng": -86.91443502902986,
       "orden": 1
     },
     {
-      "nombre": "Stop 2 - RUTA 235-227 ",
+      "nombre": "Stop 2 - RUTA 235-227",
       "lat": 21.1727968892928,
       "lng": -86.9144082069397,
       "orden": 2
     },
     {
-      "nombre": "Stop 3 - RUTA 235-227 ",
+      "nombre": "Stop 3 - RUTA 235-227",
       "lat": 21.172821900766102,
       "lng": -86.91429555416109,
       "orden": 3
     },
     {
-      "nombre": "Stop 4 - RUTA 235-227 ",
+      "nombre": "Stop 4 - RUTA 235-227",
       "lat": 21.176378489208503,
       "lng": -86.91425800323488,
       "orden": 4
     },
     {
-      "nombre": "Stop 5 - RUTA 235-227 ",
+      "nombre": "Stop 5 - RUTA 235-227",
       "lat": 21.17666861501331,
       "lng": -86.91392004489899,
       "orden": 5
     },
     {
-      "nombre": "Stop 6 - RUTA 235-227 ",
+      "nombre": "Stop 6 - RUTA 235-227",
       "lat": 21.176763656101464,
       "lng": -86.91311538219452,
       "orden": 6
     },
     {
-      "nombre": "Stop 7 - RUTA 235-227 ",
+      "nombre": "Stop 7 - RUTA 235-227",
       "lat": 21.17873949646898,
       "lng": -86.90843760967256,
       "orden": 7
     },
     {
-      "nombre": "Stop 8 - RUTA 235-227 ",
+      "nombre": "Stop 8 - RUTA 235-227",
       "lat": 21.179514819021513,
       "lng": -86.90711259841919,
       "orden": 8
     },
     {
-      "nombre": "Stop 9 - RUTA 235-227 ",
+      "nombre": "Stop 9 - RUTA 235-227",
       "lat": 21.1797549180844,
       "lng": -86.90703213214876,
       "orden": 9
