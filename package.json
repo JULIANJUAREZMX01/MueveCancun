@@ -32,6 +32,7 @@
     "bench": "vitest bench"
   },
   "dependencies": {
+    "@astrojs/lit": "^4.3.0",
     "@astrojs/mdx": "^4.0.0",
     "@astrojs/rss": "^4.0.5",
     "@astrojs/tailwind": "^5.1.0",
@@ -43,6 +44,7 @@
     "clsx": "^2.1.1",
     "fuse.js": "^7.0.0",
     "idb": "^8.0.3",
+    "lit": "^3.3.2",
     "postcss": "^8.5.6",
     "serve": "^14.2.5",
     "sharp": "^0.33.2",
