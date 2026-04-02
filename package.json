@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.6"
   },
   "pnpm": {
     "overrides": {
@@ -13,25 +13,28 @@
     }
   },
   "scripts": {
-    "merge-routes": "node scripts/merge-routes.mjs",
-    "optimize-json": "node scripts/optimize-json.mjs",
-    "validate-routes": "node scripts/validate-routes.mjs",
-    "geocode-stops": "node scripts/geocode-stops.mjs --dry-run",
-    "geocode-stops:run": "node scripts/geocode-stops.mjs",
-    "generate-og": "node scripts/generate_og_image.mjs",
-    "update-stats": "node scripts/update-stats.mjs",
-    "prepare-data": "node scripts/merge-routes.mjs && node scripts/optimize-json.mjs",
+    "merge-routes": "node --experimental-strip-types scripts/merge-routes.ts",
+    "optimize-json": "node --experimental-strip-types scripts/optimize-json.ts",
+    "validate-routes": "node --experimental-strip-types scripts/validate-routes.ts",
+    "geocode-stops": "node --experimental-strip-types scripts/geocode-stops.ts --dry-run",
+    "geocode-stops:run": "node --experimental-strip-types scripts/geocode-stops.ts",
+    "generate-og": "node --experimental-strip-types scripts/generate_og_image.ts",
+    "update-stats": "node --experimental-strip-types scripts/update-stats.ts",
+    "prepare-data": "node --experimental-strip-types scripts/merge-routes.ts && node --experimental-strip-types scripts/optimize-json.ts",
     "dev": "pnpm run prepare-data && astro dev",
     "dev:network": "pnpm run prepare-data && astro dev --host",
-    "build": "pnpm prepare-data && node scripts/validate-routes.mjs && node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && astro build",
-    "build:wasm": "node scripts/build-wasm.mjs",
+    "build": "pnpm prepare-data && node --experimental-strip-types scripts/validate-routes.ts && node --experimental-strip-types scripts/build-wasm.ts && node scripts/check-wasm.cjs && tsc -p tsconfig.client.json && tsc -p tsconfig.sw.json && astro build",
+    "build:wasm": "node --experimental-strip-types scripts/build-wasm.ts",
+    "compile-client": "tsc -p tsconfig.client.json",
+    "compile-sw": "tsc -p tsconfig.sw.json",
     "astro": "astro",
     "lint": "eslint .",
     "preview": "astro preview",
     "test": "vitest",
     "check-wasm": "node scripts/check-wasm.cjs",
-    "validate-catalog": "node scripts/validate-catalog.mjs",
-    "bench": "vitest bench"
+    "validate-catalog": "node --experimental-strip-types scripts/validate-catalog.ts",
+    "bench": "vitest bench",
+    "generate-roadmap": "node --experimental-strip-types scripts/generate-roadmap-doc.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
@@ -43,6 +46,7 @@
     "astro": "^5.16.15",
     "autoprefixer": "^10.4.23",
     "clsx": "^2.1.1",
+    "docx": "^9.6.1",
     "fuse.js": "^7.0.0",
     "idb": "^8.0.3",
     "postcss": "^8.5.6",

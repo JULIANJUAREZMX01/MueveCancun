@@ -58,27 +58,21 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
           localStorage.getItem('muevecancun_balance') ?? localStorage.getItem('user_balance') ?? 'NaN'
       );
 
+      localStorage.setItem('balance_migration_done', 'true');
+      localStorage.removeItem('muevecancun_balance');
+      localStorage.removeItem('user_balance');
+
       // If a positive legacy balance exists and IDB still has the default 180.00, migrate it
       if (!isNaN(legacyBalance) && legacyBalance > 0) {
           const tx = db.transaction('wallet-status', 'readwrite');
           const store = tx.objectStore('wallet-status');
           const existing = await store.get('current_balance');
-          const isDefault = existing?.amount === 180.0;
+          const isDefault = existing?.amount === 180.00;
           if (isDefault) {
               const signature = await generateSignature(legacyBalance);
-              await store.put(
-                { id: 'current_balance', amount: legacyBalance, currency: 'MXN', signature },
-                'current_balance'
-              );
-              await tx.done;
-
-              // Mark migration as completed and clear legacy keys ONLY after successful migration
-              localStorage.setItem('balance_migration_done', 'true');
-              localStorage.removeItem('muevecancun_balance');
-              localStorage.removeItem('user_balance');
-          } else {
-              await tx.done;
+              await store.put({ id: 'current_balance', amount: legacyBalance, currency: 'MXN', signature }, 'current_balance');
           }
+          await tx.done;
       }
   } catch (e) {
       // Ignore errors if localStorage is not available (e.g. SSR)
