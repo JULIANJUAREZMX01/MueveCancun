@@ -92,11 +92,13 @@ pub struct RouteLeg {
 
 struct AppState {
     routes_list: Vec<Route>,
+    routes_map: HashMap<String, Route>,
 }
 
 static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
     RwLock::new(AppState {
         routes_list: Vec::new(),
+        routes_map: HashMap::new(),
     })
 });
 
@@ -148,6 +150,7 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     }
 
     let mut db = DB.write().map_err(|_| "Lock failed".to_string())?;
+    db.routes_map = catalog.rutas.iter().map(|r| (r.id.clone(), r.clone())).collect();
     db.routes_list = catalog.rutas;
     Ok(())
 }

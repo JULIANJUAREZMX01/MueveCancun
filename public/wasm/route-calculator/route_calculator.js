@@ -29,6 +29,15 @@ export function load_catalog(json_payload) {
     }
 }
 
+/**
+ * @param {number} balance
+ * @returns {boolean}
+ */
+export function validate_operator_funds(balance) {
+    const ret = wasm.validate_operator_funds(balance);
+    return ret !== 0;
+}
+
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,

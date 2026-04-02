@@ -2,7 +2,6 @@
   "rutas": [
     {
       "id": "R2",
-  "tipo": "Bus_Urbano",
       "nombre": "Walmart - Puerto Juárez",
       "color": "#4ECDC4",
       "tipo": "Bus_Urban",
