@@ -125,7 +125,7 @@ Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales 
 - **fix(map)**: `_loadLeaflet` reescrito con manejo correcto de race conditions; Leaflet añadido a `CRITICAL_ASSETS` del Service Worker.
 - **feat(wasm)**: campo `is_forward: bool` en `Journey` — rutas directas en sentido correcto tienen prioridad máxima (score 5 vs 4 en reversa).
 - **fix(wasm)**: `stop_has_coords` corregido de OR → AND; una parada necesita `lat` Y `lng` válidos.
-- **feat(lib)**: nuevos módulos en `src/lib/` — `transport.ts`, `idb.ts`, `sync.ts`, `telemetry.ts`, `types.ts`.
+- **feat(lib)**: nuevos módulos en `src/lib/` — `idb.ts`, `sync.ts`, `telemetry.ts`, `types.ts`; y utilidades de transporte en `src/utils/transport.ts`.
 - **feat(utils)**: `coordinateFinder.ts` (búsqueda fuzzy), `logger.ts` (logging condicional por entorno).
 - **ci**: WASM cacheado por SHA; `pnpm/action-setup` sin versión fija; `build-check` depende de `rust-tests`.
 - **perf**: íconos SVG inlineados en build-time; flujo de navegación unificado — el mapa ahora se inicia desde la pantalla principal (la ruta `/mapa` se mantiene para compatibilidad y deep-links).
