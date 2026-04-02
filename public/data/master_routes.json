@@ -5396,7 +5396,8 @@
           "lng": -86.7474,
           "orden": 7
         }
-      ]
+      ],
+      "tipo": "Bus_Urban"
     },
     {
       "id": "R2",
@@ -5418,11 +5419,12 @@
           "lng": -86.8234,
           "orden": 3
         }
-      ]
+      ],
+      "tipo": "Bus_Urban"
     },
     {
       "id": "R10_AEROPUERTO",
-      "nombre": "R-10 Las Américas - Aeropuerto (Trabajadores)",
+      "nombre": "R-10 Las Américas - Aeropuerto (NO LLEGA AL AEROPUERTO / SOLO TRABAJADORES)",
       "tipo": "Bus_Urban",
       "tarifa": 12,
       "horario": {
@@ -5489,6 +5491,10 @@
           "lng": -86.8515,
           "orden": 10
         }
+      ],
+      "social_alerts": [
+        "⚠️ IMPORTANTE: Esta ruta NO entra a las terminales del Aeropuerto. Se queda en la entrada (carretera).",
+        "Principalmente para trabajadores de la zona."
       ]
     },
     {

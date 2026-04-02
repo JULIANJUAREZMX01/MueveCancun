@@ -1,70 +1,69 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import { getLangFromUrl, useTranslations } from '../utils/i18n';
-import { ui } from '../utils/i18n';
 
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
-
-// This page is strictly the onboarding/tutorial.
-// Redirection logic is handled via client-side script to support static hosting.
+// El tutorial solo se muestra si no se ha completado.
+// El middleware maneja la redirección si ya existe la cookie.
 ---
 
-<MainLayout title="MueveCancun - Bienvenido" hideNav={true}>
+<MainLayout title="Bienvenido | ¿Qué Ruta Me Lleva?">
 	<div class="welcome-shell">
 		<div class="bg-gradient"></div>
-		<div class="bg-grid"></div>
+		<div class="bg-grid">
+			<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+						<path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="0.5" class="text-teal-500/10"></path>
+					</pattern>
+				</defs>
+				<rect width="100%" height="100%" fill="url(#grid-pattern)"></rect>
+			</svg>
+		</div>
 
-		<!-- Language Switcher (Top Right) -->
-		<div class="lang-switch-top">
+		<div class="lang-switch-top animate-fade-in">
 			<button id="set-es" class="lang-btn active">ES</button>
 			<button id="set-en" class="lang-btn">EN</button>
 		</div>
 
 		<div class="onboarding-container">
-			<div class="tutorial-slider">
-				<!-- Step 1: Welcome -->
+			<div id="tutorial-slider" class="tutorial-slider">
 				<section class="step active" data-step="1">
 					<div class="icon-hero animate-float">
 						<div class="logo-box">
-							<span class="logo-text">M</span>
+							<span class="logo-text">QC</span>
 						</div>
 					</div>
-					<h1 class="step-title" data-i18n="welcome.step1.title">Bienvenido a MueveCancun</h1>
-					<p class="step-desc" data-i18n="welcome.step1.desc">La guía definitiva para moverte en transporte público por el paraíso.</p>
+					<h1 class="step-title" data-i18n="welcome.step1.title">Bienvenido a CancúnMueve</h1>
+					<p class="step-desc" data-i18n="welcome.step1.desc">La guía definitiva de transporte público. Rutas, mapas y tarifas actualizadas.</p>
 				</section>
 
-				<!-- Step 2: Offline -->
 				<section class="step" data-step="2">
 					<div class="icon-hero">
-						<div class="glass-icon-circle">
-							<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+						<div class="glass-icon-circle bg-emerald-500/20 text-emerald-500">
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
 							</svg>
 						</div>
 					</div>
-					<h1 class="step-title" data-i18n="welcome.step2.title">100% Offline-First</h1>
-					<p class="step-desc" data-i18n="welcome.step2.desc">Busca rutas y paradas sin necesidad de datos móviles. El mapa vive en tu dispositivo.</p>
+					<h1 class="step-title" data-i18n="welcome.step2.title">Funciona Sin Internet</h1>
+					<p class="step-desc" data-i18n="welcome.step2.desc">Una vez instalada, no necesitas señal. El motor de búsqueda y los mapas viven en tu dispositivo.</p>
 				</section>
 
-				<!-- Step 3: Calculation -->
 				<section class="step" data-step="3">
 					<div class="icon-hero">
-						<div class="glass-icon-circle">
-							<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+						<div class="glass-icon-circle bg-blue-500/20 text-blue-500">
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
 							</svg>
 						</div>
 					</div>
-					<h1 class="step-title" data-i18n="welcome.step3.title">Ruteo Inteligente</h1>
-					<p class="step-desc" data-i18n="welcome.step3.desc">Calculamos la mejor combinación de rutas, transbordos y precios oficiales.</p>
+					<h1 class="step-title" data-i18n="welcome.step3.title">Inteligencia Local</h1>
+					<p class="step-desc" data-i18n="welcome.step3.desc">Calculamos trayectos en milisegundos usando WebAssembly para ahorrar tu batería.</p>
 				</section>
 
-				<!-- Step 4: Social -->
 				<section class="step" data-step="4">
 					<div class="icon-hero">
-						<div class="glass-icon-circle">
-							<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+						<div class="glass-icon-circle bg-rose-500/20 text-rose-500">
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
 							</svg>
@@ -145,9 +144,6 @@ const t = useTranslations(lang);
 			border-radius: 9999px;
 			transition: all 0.3s ease;
 			color: rgba(255, 255, 255, 0.5);
-			background: transparent;
-			border: none;
-			cursor: pointer;
 		}
 
 		.lang-btn.active {
@@ -207,7 +203,6 @@ const t = useTranslations(lang);
 			font-size: 2.5rem;
 			font-weight: 900;
 			letter-spacing: -2px;
-			color: white;
 		}
 
 		.glass-icon-circle {
@@ -278,8 +273,6 @@ const t = useTranslations(lang);
 			font-size: 1rem;
 			transition: all 0.3s ease;
 			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-			border: none;
-			cursor: pointer;
 		}
 
 		.btn-primary:active {
@@ -303,8 +296,6 @@ const t = useTranslations(lang);
 			font-weight: 800;
 			color: white;
 			transition: all 0.3s ease;
-			border: none;
-			cursor: pointer;
 		}
 
 		.btn-teal {
@@ -324,8 +315,6 @@ const t = useTranslations(lang);
 			font-weight: 600;
 			padding: 0.5rem;
 			transition: color 0.3s ease;
-			border: none;
-			cursor: pointer;
 		}
 
 		.btn-skip:hover {
@@ -360,124 +349,108 @@ const t = useTranslations(lang);
 		.animate-float {
 			animation: float 3s ease-in-out infinite;
 		}
+
+		.animate-fade-in {
+			animation: fade-in 1s ease;
+		}
 	</style>
 
-	<script lang="ts">
-		function initTutorial() {
-			let currentStep = 1;
-			const totalSteps = 4;
-			let currentLang = 'es';
+	<script>
+		import { navigate } from 'astro:transitions/client';
 
-			const steps = document.querySelectorAll('.step');
-			const dots = document.querySelectorAll('.dot');
-			const btnNext = document.getElementById('btn-next');
-			const startOptions = document.querySelector('.start-options');
-			const skipBtn = document.getElementById('btn-skip');
+		let currentStep = 1;
+		const totalSteps = 4;
+		let currentLang = 'es';
 
-			// Robust cookie parser
-			function getCookie(name: string) {
-				const value = `; ${document.cookie}`;
-				const parts = value.split(`; ${name}=`);
-				if (parts.length === 2) return parts.pop()?.split(';').shift();
-				return null;
-			}
+		const steps = document.querySelectorAll('.step');
+		const dots = document.querySelectorAll('.dot');
+		const btnNext = document.getElementById('btn-next');
+		const startOptions = document.querySelector('.start-options');
+		const skipBtn = document.getElementById('btn-skip');
 
-			// Pre-check for redirection
-			const isTutorialCompleted = getCookie('tutorial_completed') === 'true';
-			if (isTutorialCompleted) {
-				const locale = getCookie('locale') || (navigator.language.startsWith('en') ? 'en' : 'es');
-				window.location.href = `/${locale}/home`;
-				return;
-			}
+		function updateTutorialUI(lang) {
+			const translationsEl = document.getElementById('i18n-translations');
+			if (!translationsEl) return;
+			const all = JSON.parse(translationsEl.getAttribute('data-translations') || '{}');
+			const t = all[lang];
+			if (!t) return;
 
-			function updateTutorialUI(lang: string) {
-				const translationsEl = document.getElementById('i18n-translations');
-				if (!translationsEl) return;
-				const all = JSON.parse(translationsEl.getAttribute('data-translations') || '{}');
-				const t = all[lang];
-				if (!t) return;
-
-				document.querySelectorAll('[data-i18n]').forEach(el => {
-					const key = el.getAttribute('data-i18n');
-					if (key && t[key]) {
-						(el as HTMLElement).innerText = t[key];
-					}
-				});
-			}
-
-			function goToStep(stepNum: number) {
-				if (stepNum > totalSteps) return;
-
-				steps.forEach(s => s.classList.remove('active'));
-				dots.forEach(d => d.classList.remove('active'));
-
-				const activeStep = document.querySelector(`.step[data-step="${stepNum}"]`);
-				const activeDot = document.querySelector(`.dot[data-go="${stepNum}"]`);
-
-				if (activeStep) activeStep.classList.add('active');
-				if (activeDot) activeDot.classList.add('active');
-
-				if (stepNum === totalSteps) {
-					btnNext?.classList.add('hidden');
-					startOptions?.classList.remove('hidden');
-				} else {
-					btnNext?.classList.remove('hidden');
-					startOptions?.classList.add('hidden');
+			document.querySelectorAll('[data-i18n]').forEach(el => {
+				const key = el.getAttribute('data-i18n');
+				if (t[key]) {
+					(el as HTMLElement).innerText = t[key];
 				}
-				currentStep = stepNum;
-			}
-
-			function finishTutorial(lang: string) {
-				document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
-				try {
-					window.localStorage.setItem('lang', lang);
-				} catch (e) {}
-				document.cookie = `locale=${encodeURIComponent(lang)}; path=/; max-age=31536000; SameSite=Lax`;
-				window.location.href = `/${lang}/home`;
-			}
-
-			// Event Listeners
-			btnNext?.addEventListener('click', () => {
-				if (currentStep < totalSteps) {
-					goToStep(currentStep + 1);
-				}
-			});
-
-			skipBtn?.addEventListener('click', () => finishTutorial(currentLang));
-
-			document.getElementById('start-es')?.addEventListener('click', () => finishTutorial('es'));
-			document.getElementById('start-en')?.addEventListener('click', () => finishTutorial('en'));
-
-			document.getElementById('set-es')?.addEventListener('click', (e) => {
-				currentLang = 'es';
-				document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-				(e.target as HTMLElement).classList.add('active');
-				updateTutorialUI('es');
-			});
-
-			document.getElementById('set-en')?.addEventListener('click', (e) => {
-				currentLang = 'en';
-				document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-				(e.target as HTMLElement).classList.add('active');
-				updateTutorialUI('en');
-			});
-
-			dots.forEach(dot => {
-				dot.addEventListener('click', () => {
-					const target = parseInt(dot.getAttribute('data-go') || '1');
-					goToStep(target);
-				});
 			});
 		}
 
-		// Use astro:page-load for View Transitions compatibility
-		document.addEventListener('astro:page-load', initTutorial);
+		function goToStep(stepNum) {
+			if (stepNum > totalSteps) return;
 
-		// Fallback for direct loads or browsers without View Transitions support
-		if (document.readyState === 'complete') {
-			initTutorial();
-		} else {
-			window.addEventListener('DOMContentLoaded', initTutorial);
+			steps.forEach(s => s.classList.remove('active'));
+			dots.forEach(d => d.classList.remove('active'));
+
+			const activeStep = document.querySelector(`.step[data-step="${stepNum}"]`);
+			const activeDot = document.querySelector(`.dot[data-go="${stepNum}"]`);
+
+			if (activeStep) activeStep.classList.add('active');
+			if (activeDot) activeDot.classList.add('active');
+
+			if (stepNum === totalSteps) {
+				btnNext?.classList.add('hidden');
+				startOptions?.classList.remove('hidden');
+			} else {
+				btnNext?.classList.remove('hidden');
+				startOptions?.classList.add('hidden');
+			}
+			currentStep = stepNum;
 		}
+
+		function finishTutorial(lang) {
+			// Set cookie for 1 year
+			document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
+			// Use the selected language for redirection
+			window.location.href = `/${lang}/home`;
+		}
+
+		// Event Listeners
+		btnNext?.addEventListener('click', () => {
+			if (currentStep < totalSteps) {
+				goToStep(currentStep + 1);
+			}
+		});
+
+		skipBtn?.addEventListener('click', () => finishTutorial(currentLang));
+
+		document.getElementById('start-es')?.addEventListener('click', () => finishTutorial('es'));
+		document.getElementById('start-en')?.addEventListener('click', () => finishTutorial('en'));
+
+		document.getElementById('set-es')?.addEventListener('click', (e) => {
+			currentLang = 'es';
+			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+			(e.target as HTMLElement).classList.add('active');
+			updateTutorialUI('es');
+		});
+
+		document.getElementById('set-en')?.addEventListener('click', (e) => {
+			currentLang = 'en';
+			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+			(e.target as HTMLElement).classList.add('active');
+			updateTutorialUI('en');
+		});
+
+		dots.forEach(dot => {
+			dot.addEventListener('click', () => {
+				const target = parseInt(dot.getAttribute('data-go') || '1');
+				goToStep(target);
+			});
+		});
+
+		// Initial Check
+		window.addEventListener('DOMContentLoaded', () => {
+			// Ensure it redirects if cookie already exists (double check client-side)
+			if (document.cookie.includes('tutorial_completed=true')) {
+				window.location.href = '/es/home';
+			}
+		});
 	</script>
 </MainLayout>
