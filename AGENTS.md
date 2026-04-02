@@ -84,6 +84,31 @@
 
 ---
 
+## Módulos `src/lib/` (Capa 5 — Lib)
+
+| Módulo | Propósito |
+|--------|-----------|
+| `transport.ts` | Etiquetas legibles por tipo de vehículo (`getTransportLabel`) |
+| `idb.ts` | Abstracción IndexedDB con caché LRU y expiración TTL |
+| `sync.ts` | Cola offline — encola operaciones fallidas y las reintenta con backoff |
+| `telemetry.ts` | Métricas ligeras de uso (errores, rutas buscadas) — no envía datos externos |
+| `types.ts` | Interfaces TypeScript compartidas entre WASM y UI |
+| `SpatialHash.ts` | Índice espacial para búsqueda O(1) de paradas cercanas |
+| `FavoritesStore.ts` | Rutas favoritas persistidas en IndexedDB |
+| `CoordinatesStore.ts` | Base de datos de coordenadas de paradas; resuelve GPS → nombre |
+
+---
+
+## Módulos `src/utils/`
+
+| Módulo | Propósito |
+|--------|-----------|
+| `coordinateFinder.ts` | Búsqueda fuzzy de paradas por tokens de nombre |
+| `logger.ts` | `logger.info()` / `logger.error()` — silenciado en producción |
+| `db.ts` | HMAC wallet en IndexedDB (balance del usuario) |
+
+---
+
 ## Protocolo de Comunicación (DOM Events)
 
 Los componentes se comunican mediante `CustomEvent` en el browser:
@@ -160,6 +185,8 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 | `DB Lock Poisoned` | Panic en Rust | Recarga de página |
 | GPS sin paradas cercanas | Radio > 1km | Toast de aviso, input manual |
 | Transbordos no encontrados | Nombres sin match | Revisar hubs en `lib.rs` |
+| Mapa stuck en "CARGANDO MAPA..." | `requestIdleCallback` sin timeout | Verificar `{ timeout: 2000 }` en `scheduleInit()` de `InteractiveMap.astro` |
+| Leaflet no carga offline | No estaba en CRITICAL_ASSETS | Verificar `/vendor/leaflet/leaflet.js` en `public/sw.js` |
 
 ---
 

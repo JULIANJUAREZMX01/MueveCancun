@@ -128,6 +128,17 @@ Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales 
 - Nunca hacer push directo a `main`; siempre rama + PR.
 - Secreto requerido: `ANTHROPIC_API_KEY` para `claude-delegation`.
 
+## 🗺️ Novedades v3.3.1 (Nexus Stability)
+
+- **fix(map)**: Mapa ya no se queda en "CARGANDO MAPA..." — `requestIdleCallback` usa `{ timeout: 2000 }` para garantizar ejecución aunque WASM ocupe el hilo principal.
+- **fix(map)**: `_loadLeaflet` reescrito con manejo correcto de race conditions; Leaflet añadido a `CRITICAL_ASSETS` del Service Worker.
+- **feat(wasm)**: campo `is_forward: bool` en `Journey` — rutas directas en sentido correcto tienen prioridad máxima (score 5 vs 4 en reversa).
+- **fix(wasm)**: `stop_has_coords` corregido de OR → AND; una parada necesita `lat` Y `lng` válidos.
+- **feat(lib)**: nuevos módulos en `src/lib/` — `idb.ts`, `sync.ts`, `telemetry.ts`, `types.ts`; y utilidades de transporte en `src/utils/transport.ts`.
+- **feat(utils)**: `coordinateFinder.ts` (búsqueda fuzzy), `logger.ts` (logging condicional por entorno).
+- **ci**: WASM cacheado por SHA; `pnpm/action-setup` sin versión fija; `build-check` depende de `rust-tests`.
+- **perf**: íconos SVG inlineados en build-time; flujo de navegación unificado — el mapa ahora se inicia desde la pantalla principal (la ruta `/mapa` se mantiene para compatibilidad y deep-links).
+
 ## 🗺️ Novedades v3.3 (Nexus Transfer Engine)
 
 - **Fix crítico**: transbordos ahora detectados por **proximidad geográfica** (≤350 m) además de nombre exacto.
