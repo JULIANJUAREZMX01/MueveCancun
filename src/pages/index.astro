@@ -211,6 +211,9 @@ import MainLayout from '../layouts/MainLayout.astro';
 		});
 		// Initial Check
         function checkTutorial() {
+            // Only act when on the tutorial root page ("/")
+            const isRoot = window.location.pathname === '/';
+            if (!isRoot) return;
             if (document.cookie.includes('tutorial_completed=true')) {
                 const savedLang = localStorage.getItem('lang') || 'es';
                 window.location.href = `/${savedLang}/home`;
