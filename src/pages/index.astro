@@ -1,11 +1,11 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 
-// El tutorial solo se muestra si no se ha completado.
-// El middleware maneja la redirección si ya existe la cookie.
+// The tutorial is only shown if it hasn't been completed.
+// Redirect logic is handled client-side in static builds.
 ---
 
-<MainLayout title="Bienvenido | ¿Qué Ruta Me Lleva?">
+<MainLayout title="Bienvenido | ¿Qué Ruta Me Lleva?" hideNav={true}>
 	<div class="welcome-shell">
 		<div class="bg-gradient"></div>
 		<div class="bg-grid">
@@ -50,7 +50,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 
 				<section class="step" data-step="3">
 					<div class="icon-hero">
-						<div class="glass-icon-circle bg-blue-500/20 text-blue-500">
+						<div class="glass-icon-circle bg-amber-500/20 text-amber-500">
 							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
 							</svg>
@@ -356,8 +356,6 @@ import MainLayout from '../layouts/MainLayout.astro';
 	</style>
 
 	<script>
-		import { navigate } from 'astro:transitions/client';
-
 		let currentStep = 1;
 		const totalSteps = 4;
 		let currentLang = 'es';
@@ -368,7 +366,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 		const startOptions = document.querySelector('.start-options');
 		const skipBtn = document.getElementById('btn-skip');
 
-		function updateTutorialUI(lang) {
+		function updateTutorialUI(lang: string) {
 			const translationsEl = document.getElementById('i18n-translations');
 			if (!translationsEl) return;
 			const all = JSON.parse(translationsEl.getAttribute('data-translations') || '{}');
@@ -383,7 +381,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 			});
 		}
 
-		function goToStep(stepNum) {
+		function goToStep(stepNum: number) {
 			if (stepNum > totalSteps) return;
 
 			steps.forEach(s => s.classList.remove('active'));
@@ -405,9 +403,11 @@ import MainLayout from '../layouts/MainLayout.astro';
 			currentStep = stepNum;
 		}
 
-		function finishTutorial(lang) {
+		function finishTutorial(lang: string) {
 			// Set cookie for 1 year
 			document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
+            // Store preference in localStorage as well
+            localStorage.setItem('lang', lang);
 			// Use the selected language for redirection
 			window.location.href = `/${lang}/home`;
 		}
@@ -446,11 +446,14 @@ import MainLayout from '../layouts/MainLayout.astro';
 		});
 
 		// Initial Check
-		window.addEventListener('DOMContentLoaded', () => {
-			// Ensure it redirects if cookie already exists (double check client-side)
-			if (document.cookie.includes('tutorial_completed=true')) {
-				window.location.href = '/es/home';
-			}
-		});
+        function checkTutorial() {
+            if (document.cookie.includes('tutorial_completed=true')) {
+                const savedLang = localStorage.getItem('lang') || 'es';
+                window.location.href = `/${savedLang}/home`;
+            }
+        }
+
+        checkTutorial();
+        document.addEventListener('astro:after-swap', checkTutorial);
 	</script>
 </MainLayout>
