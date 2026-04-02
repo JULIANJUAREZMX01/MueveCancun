@@ -469,6 +469,9 @@ Nexus Protocol v1.2 (Offline-First)
     const syncOfflineReports = async () => {
       if (isSyncing || !navigator.onLine || !config.token) return;
       isSyncing = true;
+    // ── Envío → Proxy serverless Base44 (token seguro, nunca expuesto) ─────
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
       const reports = await getPendingReports();
       if (badge) {
@@ -529,27 +532,33 @@ Nexus Protocol v1.2 (Offline-First)
       if (feedback) feedback.hidden = true;
 
       try {
-        if (!navigator.onLine) throw new Error('Offline');
+        const res = await fetch('https://not-yet-named-user-skipped-to-sp-d14220f3.base44.app/functions/createGithubIssue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tipo,
+            ruta,
+            descripcion,
+            lat,
+            lng,
+            repoOwner,
+            repoName,
+            userAgent: navigator.userAgent,
+            url: window.location.href
+          }),
+        });
 
-        const payload = buildPayload(data);
-        const ghRes = await sendToGitHub(payload);
-        showFeedback(`¡Gracias! Reporte enviado (#${ghRes.number})`, 'success');
-        setTimeout(closeModal, 2500);
-      } catch (err) {
-        console.warn('[ReportWidget] Submission failed, queuing offline:', err);
-
-        try {
-          await savePendingReport(data);
-          showFeedback('Sin conexión. Reporte guardado localmente, se enviará cuando recuperes señal. ✓', 'info');
-          if (badge) {
-            const count = (await getPendingReports()).length;
-            badge.textContent = count.toString();
-            badge.hidden = false;
-          }
-          setTimeout(closeModal, 4000);
-        } catch (dbErr) {
-          console.error('[ReportWidget] IDB Error:', dbErr);
-          showFeedback('Error crítico al guardar reporte local.', 'error');
+        if (res.ok) {
+          const data = await res.json();
+          showFeedback(`¡Gracias! Reporte enviado (#${data.number})`, 'success');
+          setTimeout(closeModal, 2800);
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          console.error('[ReportWidget] API error:', res.status, errData);
+          showFeedback(
+            errData.error || `Error al enviar (${res.status}).`,
+            'error'
+          );
           setSubmitting(false);
         }
       }
