@@ -1,46 +1,41 @@
 ---
+/*
+ * GRAFFITI WARRIOR: Main Layout (Framework Nexus v3.3)
+ * Pure CSS5 + Astro SSG. No React.
+ */
 import { ClientRouter } from 'astro:transitions';
-import '../styles/tokens.css';
-import '../index.css';
+import { getLangFromUrl, useTranslations } from '../utils/i18n';
+import { getRelativeLocaleUrl, safeJsonStringify } from '../utils/utils';
+import BottomNav from '../components/BottomNav.astro';
 import Toast from '../components/ui/Toast.astro';
 import PwaReload from '../components/ui/PwaReload.astro';
-import BottomNav from '../components/BottomNav.astro';
-import ScrollToTop from '../components/ui/ScrollToTop.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import ReportWidget from '../components/ReportWidget.astro';
-import { ui as uiTranslations, getLangFromUrl } from '../utils/i18n';
-import { safeJsonStringify, getRelativeLocaleUrl } from '../utils/utils';
+import '../styles/tokens.css';
+import '../styles/main.css';
+import '../index.css';
 
 interface Props {
-  title: string;
-  description?: string;
-  image?: string;
-  hideNav?: boolean;
+	title?: string;
+	description?: string;
+	hideNav?: boolean;
 }
 
 const {
-  title,
-  description = "La app oficial de transporte público para Cancún y Riviera Maya.",
-  image = "/og-image.png",
+  title = "MueveCancun - Tu Guía de Transporte",
+  description = "La mejor forma de moverte en Cancún sin datos.",
   hideNav = false
 } = Astro.props;
 
-const pathname = Astro.url.pathname;
 const lang = getLangFromUrl(Astro.url);
-const siteBase = Astro.site?.href?.replace(/\/$/, '') ?? '';
-const canonicalUrl = siteBase + pathname;
-const ogImage = image.startsWith('http') ? image : `${siteBase}${image}`;
+const t = useTranslations(lang);
+const pathname = Astro.url.pathname;
 const ga4Id = import.meta.env.PUBLIC_GA4_ID;
-const googleVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
-const bingVerification = import.meta.env.PUBLIC_BING_SITE_VERIFICATION;
 
-const navItems = [
-  { href: getRelativeLocaleUrl(lang, 'home'), label: 'Inicio', icon: 'explore', activePattern: /^\/(es|en)\/home/ },
-  { href: getRelativeLocaleUrl(lang, 'rutas'), label: 'Rutas', icon: 'route', activePattern: /^\/(es|en)\/rutas/ },
-  { href: getRelativeLocaleUrl(lang, 'community'), label: 'Foro', icon: 'forum', activePattern: /^\/(es|en)\/community/ },
-  { href: getRelativeLocaleUrl(lang, 'wallet'), label: 'Wallet', icon: 'account_balance_wallet', activePattern: /^\/(es|en)\/wallet/ },
-  { href: getRelativeLocaleUrl(lang, 'about'), label: 'Nosotros', icon: 'info', activePattern: /^\/(es|en)\/about/ },
-];
+const uiTranslations = {
+  es: useTranslations('es'),
+  en: useTranslations('en')
+};
 ---
 
 <!DOCTYPE html>
@@ -443,3 +438,29 @@ const navItems = [
     <ReportWidget />
   </body>
 </html>
+
+<style is:global>
+	:root {
+		--header-h: 3.5rem;
+		--bottom-nav-h: 4rem;
+	}
+
+	body {
+		/* Touch improvements */
+		-webkit-tap-highlight-color: transparent;
+		touch-action: manipulation;
+	}
+
+	/* Fix horizontal scroll issues */
+	html, body {
+		overflow-x: hidden;
+		width: 100%;
+		position: relative;
+	}
+
+	/* Touch target minimums */
+	button, a, input {
+		min-height: 44px;
+		min-width: 44px;
+	}
+</style>
