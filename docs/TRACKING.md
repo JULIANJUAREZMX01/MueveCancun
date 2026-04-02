@@ -138,6 +138,7 @@ Antes de hacer merge, verificar:
 |----|--------|-------|--------|
 | [ADR-2026-002](adr/ADR-2026-002.md) | Astro Islands + Rust/WASM + Web Components/Lit | 2026-03-13 | ✅ Aprobado |
 | [ADR-2026-003](adr/ADR-2026-003.md) | CI Hardening, Test Isolation, Limpieza de Artefactos | 2026-03-28 | ✅ Aprobado |
+| [ADR-004-Donation-System](adr/ADR-004-Donation-System.md) | Shield Guardian — Sistema de Donación y Sostenibilidad | 2026-04-01 | ✅ Aprobado |
 
 ---
 
