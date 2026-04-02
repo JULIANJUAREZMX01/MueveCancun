@@ -98,7 +98,7 @@ node --experimental-strip-types scripts/update-stats.ts       # Actualiza estad�
 | `public/data/master_routes.json` | Catálogo de rutas | Alto — mal JSON rompe el motor |
 | `src/components/RouteCalculator.astro` | UI principal | Medio — leer antes de editar |
 | `src/components/InteractiveMap.astro` | Mapa Leaflet | Medio — requestIdleCallback timeout crítico |
-| `public/sw.js` | Service Worker PWA v3.2.0-ssg | Medio — afecta caché offline |
+| `public/sw.js` | Service Worker PWA v3.3.1-ssg | Medio — afecta caché offline |
 | `src/utils/CoordinatesStore.ts` | Base de datos de coordenadas | Bajo |
 | `src/lib/idb.ts` | Abstracción IndexedDB | Bajo |
 | `src/lib/sync.ts` | Cola de sync offline | Bajo |
