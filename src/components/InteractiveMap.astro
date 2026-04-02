@@ -37,7 +37,8 @@
 
 <script lang="ts">
   import { coordinatesStore } from "../utils/CoordinatesStore";
-  import { showToast } from "../utils/utils";
+  import { showToast } from "../utils/toast";
+  import { loadLeaflet } from "../utils/leafletLoader";
 
   let map: any = null;
   let layerGroup: any = null;
@@ -59,30 +60,60 @@
 
   function drawRoute(mapInstance: any, journey: any, currentLayerGroup: any, coords: Map<string, [number, number]>) {
       if (!mapInstance || !journey) return null;
-      if (currentLayerGroup) mapInstance.removeLayer(currentLayerGroup);
 
+      // Clear previous layers
+      if (currentLayerGroup) {
+          currentLayerGroup.clearLayers();
+          mapInstance.removeLayer(currentLayerGroup);
+      }
+
+      const L = (window as any).L;
       const newLayers: any[] = [];
       const polylineCoords: any[] = [];
 
-      journey.legs.forEach((leg: any) => {
-          const legCoords = leg.stops
-              .map((s: any) => coords.get(s.nombre.toLowerCase().trim()))
+      journey.legs.forEach((leg: any, index: number) => {
+          const legCoords = (leg.stops || [])
+              .map((s: any) => {
+                  const name = typeof s === 'string' ? s : (s.nombre || s.name);
+                  return coords.get(name.toLowerCase().trim());
+              })
               .filter(Boolean);
 
           if (legCoords.length > 1) {
               const color = leg.transport_type === 'Bus_HotelZone' ? '#F97316' : '#0EA5E9';
-              const poly = (window as any).L.polyline(legCoords, {
+
+              // Animated polyline
+              const poly = L.polyline(legCoords, {
                   color,
                   weight: 6,
                   opacity: 0.8,
-                  lineJoin: 'round'
+                  lineJoin: 'round',
+                  className: 'animated-route-line'
               });
               newLayers.push(poly);
               polylineCoords.push(...legCoords);
+
+              // Markers for start/end/transfers
+              if (index === 0) {
+                  newLayers.push(L.circleMarker(legCoords[0], {
+                      radius: 8, fillColor: '#FFFFFF', color: '#F97316', weight: 3, opacity: 1, fillOpacity: 1
+                  }).bindPopup("<b>Inicio</b>"));
+              }
+
+              if (index === journey.legs.length - 1) {
+                  newLayers.push(L.circleMarker(legCoords[legCoords.length - 1], {
+                      radius: 8, fillColor: '#FFFFFF', color: '#0EA5E9', weight: 3, opacity: 1, fillOpacity: 1
+                  }).bindPopup("<b>Destino</b>"));
+              } else {
+                  // Transfer point
+                  newLayers.push(L.circleMarker(legCoords[legCoords.length - 1], {
+                      radius: 6, fillColor: '#FFFFFF', color: '#64748b', weight: 2, opacity: 1, fillOpacity: 1
+                  }).bindPopup("<b>Transbordo</b>"));
+              }
           }
       });
 
-      const lg = (window as any).L.layerGroup(newLayers).addTo(mapInstance);
+      const lg = L.layerGroup(newLayers).addTo(mapInstance);
       if (polylineCoords.length > 0) {
           mapInstance.fitBounds(polylineCoords, { padding: [40, 40] });
       }
@@ -95,42 +126,51 @@
     const container = document.getElementById('map');
     if (!container) return;
 
-    // Load dependencies from global scope (assumes Leaflet is in MainLayout head)
-    if (!(window as any).L) {
-        console.warn("[Map] Leaflet not found in window");
+    try {
+        await loadLeaflet();
+    } catch (e) {
+        console.error("[Map] Failed to load Leaflet", e);
         return;
     }
+
+    const L = (window as any).L;
 
     await coordinatesStore.init();
     coordinatesDB = coordinatesStore.getAll();
 
     // Cancun Center
-    map = (window as any).L.map('map', {
+    map = L.map('map', {
         center: [21.1619, -86.8515],
         zoom: 13,
         zoomControl: false,
         attributionControl: false
     });
 
-    // CartoDB Voyager (No labels for cleaner look, or standard for refs)
-    (window as any).L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    // CartoDB Voyager
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: 19
     }).addTo(map);
 
-    layerGroup = (window as any).L.layerGroup().addTo(map);
+    layerGroup = L.layerGroup().addTo(map);
 
     // Initial check for pending routes
     const pendingRoute = localStorage.getItem('pending_route');
     if (pendingRoute) {
         try {
             const data = JSON.parse(pendingRoute);
-            const newLg = drawRoute(map, data, layerGroup, coordinatesDB);
-            if (newLg) layerGroup = newLg;
+            layerGroup = drawRoute(map, data, layerGroup, coordinatesDB);
             localStorage.removeItem('pending_route');
         } catch (e) {
             console.error("Error parsing pending route", e);
         }
     }
+
+    // --- Listen for events ---
+    window.addEventListener('SHOW_ROUTE_ON_MAP', (e: any) => {
+        if (e.detail && e.detail.journey) {
+            layerGroup = drawRoute(map, e.detail.journey, layerGroup, coordinatesDB);
+        }
+    });
 
     // --- Draw all stops as markers ---
     const allStops = Array.from(coordinatesDB.entries());
@@ -141,7 +181,7 @@
             const displayName = coordinatesStore.getOriginalName(key) || key;
             const isHub = (window as any).__PREFERRED_HUBS?.some((h: string) => displayName.includes(h)) ?? false;
 
-            const marker = (window as any).L.circleMarker(coords, {
+            const marker = L.circleMarker(coords, {
                 radius: isHub ? 8 : 5,
                 fillColor: isHub ? '#F97316' : '#0EA5E9',
                 color: '#FFFFFF',
@@ -163,14 +203,8 @@
         });
 
         if (newLayers.length > 0) {
-            stopMarkersLayer = (window as any).L.layerGroup(newLayers).addTo(map);
-            const allCoords = allStops.map(([, c]) => c);
-            setTimeout(() => map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 14 }), 100);
+            stopMarkersLayer = L.layerGroup(newLayers).addTo(map);
         }
-    } else if (allStops.length > 200) {
-        console.warn(`[Map] ${allStops.length} stops — using cluster-free optimized view (zoom to see stops)`);
-        const allCoords = allStops.map(([, c]) => c);
-        setTimeout(() => map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 13 }), 100);
     }
 
     // --- Map click ---
@@ -182,7 +216,7 @@
             return;
         }
 
-        (window as any).L.popup()
+        L.popup()
             .setLatLng([
                 coordinatesDB.get(result.name.toLowerCase().trim())?.[0] ?? lat,
                 coordinatesDB.get(result.name.toLowerCase().trim())?.[1] ?? lng,
@@ -252,9 +286,10 @@
               btn.classList.remove('animate-pulse', 'text-primary-500');
               const { latitude, longitude } = pos.coords;
               if (map) {
+                  const L = (window as any).L;
                   map.setView([latitude, longitude], 16);
-                  (window as any).L.marker([latitude, longitude], {
-                      icon: (window as any).L.divIcon({
+                  L.marker([latitude, longitude], {
+                      icon: L.divIcon({
                           className: 'user-location-marker',
                           html: '<div class="pulse-ring"></div><div class="dot"></div>',
                           iconSize: [24, 24]
@@ -333,5 +368,17 @@
   @keyframes map-marker-pulse {
       0% { transform: scale(0.5); opacity: 1; }
       100% { transform: scale(2.5); opacity: 0; }
+  }
+
+  /* Animated Route Line */
+  .animated-route-line {
+    stroke-dasharray: 12;
+    animation: dash-flow 2s linear infinite;
+  }
+
+  @keyframes dash-flow {
+    to {
+      stroke-dashoffset: -24;
+    }
   }
 </style>

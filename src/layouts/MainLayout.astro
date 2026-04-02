@@ -110,6 +110,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     </script>
     <script>
       import { getWalletBalance } from '../utils/db';
+      import '../client/bg';
+      import '../client/animate';
       
       // 3. Global Balance Sync
       async function syncGlobalBalance() {
@@ -180,6 +182,16 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <ClientRouter />
   </head>
   <body id="top" class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
+
+    <!-- ═══ Background Particles & Stars ═══ -->
+    <div id="bg-canvas" class="fixed inset-0 pointer-events-none z-[-1] overflow-hidden" aria-hidden="true">
+        <div id="particles1" class="absolute top-0 left-0"></div>
+        <div id="particles2" class="absolute top-0 left-0"></div>
+        <div id="particles3" class="absolute top-0 left-0"></div>
+        <div id="stars1" class="absolute top-0 left-0"></div>
+        <div id="stars2" class="absolute top-0 left-0"></div>
+        <div id="stars3" class="absolute top-0 left-0"></div>
+    </div>
 
     <!-- ═══ Unified Header (Responsive) ═══ -->
     { !hideNav && (
