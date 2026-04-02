@@ -17,8 +17,8 @@ let content = fs.readFileSync(path, 'utf8');
 
 if (!content.includes('LitBadge')) {
     content = content.replace(
-        "import { getTransportLabel } from '../../utils/transport';",
-        "import { getTransportLabel } from '../../utils/transport';\nimport '../../components/ui/lit/LitBadge';"
+        "import { getTransportLabel } from '../../../utils/transport';",
+        "import { getTransportLabel } from '../../../utils/transport';\nimport '../../../components/ui/lit/LitBadge';"
     );
 }
 
