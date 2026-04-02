@@ -1,7 +1,7 @@
 import { openDB, type IDBPDatabase } from 'idb';
 
 const DB_NAME = 'cancunmueve-db';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 // Crypto utilities for securing balance against client-side tampering (DevTools modifications).
 // Note: The HMAC key is static and client-visible. This is a deterrent against casual/manual
@@ -111,7 +111,11 @@ export const initDB = async (): Promise<IDBPDatabase> => {
           if (oldVersion < 2) {
             db.createObjectStore('wallet-status');
           }
-          // Version 3: Migration handled in code, no schema changes needed
+          if (oldVersion < 4) {
+            if (!db.objectStoreNames.contains('pending-reports')) {
+              db.createObjectStore('pending-reports', { keyPath: 'id', autoIncrement: true });
+            }
+          }
         },
       });
 
@@ -212,6 +216,42 @@ export const updateWalletBalance = async (amount: number) => {
     await store.put(balance, 'current_balance');
     await tx.done;
   }
+};
+
+// --- Offline Reporting Support ---
+
+export interface PendingReport {
+  id?: number;
+  tipo: string;
+  ruta: string;
+  descripcion: string;
+  lat?: string;
+  lng?: string;
+  userAgent: string;
+  url: string;
+  timestamp: number;
+}
+
+export const savePendingReport = async (report: Omit<PendingReport, 'id' | 'timestamp'>) => {
+  const db = await initDB();
+  const tx = db.transaction('pending-reports', 'readwrite');
+  await tx.objectStore('pending-reports').add({
+    ...report,
+    timestamp: Date.now()
+  });
+  await tx.done;
+};
+
+export const getPendingReports = async (): Promise<PendingReport[]> => {
+  const db = await initDB();
+  return db.getAll('pending-reports');
+};
+
+export const deletePendingReport = async (id: number) => {
+  const db = await initDB();
+  const tx = db.transaction('pending-reports', 'readwrite');
+  await tx.objectStore('pending-reports').delete(id);
+  await tx.done;
 };
 
 // Test util
