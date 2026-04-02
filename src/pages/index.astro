@@ -180,9 +180,9 @@ import MainLayout from '../layouts/MainLayout.astro';
 		function finishTutorial(lang: string) {
 			// Set cookie for 1 year
 			document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
+			document.cookie = `locale=${encodeURIComponent(lang)}; path=/; max-age=31536000; SameSite=Lax`;
             // Store preference in localStorage as well
             localStorage.setItem('lang', lang);
-			// Use the selected language for redirection
 			window.location.href = `/${lang}/home`;
 		}
 
@@ -209,7 +209,6 @@ import MainLayout from '../layouts/MainLayout.astro';
 				goToStep(target);
 			});
 		});
-
 		// Initial Check
         function checkTutorial() {
             if (document.cookie.includes('tutorial_completed=true')) {

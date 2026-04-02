@@ -71,12 +71,12 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
           return;
       }
 
-      // If a positive legacy balance exists and IDB still has the default 180.00, migrate it
+      // If a positive legacy balance exists and IDB still has the default 0.00, migrate it
       try {
           const tx = db.transaction('wallet-status', 'readwrite');
           const store = tx.objectStore('wallet-status');
           const existing = await store.get('current_balance');
-          const isDefault = existing?.amount === 180.00;
+          const isDefault = existing?.amount === 0.00;
           if (isDefault) {
               const signature = await generateSignature(legacyBalance);
               await store.put(
@@ -87,10 +87,10 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
           await tx.done;
           // Only after a successful transaction do we clear legacy data and mark migration done
           finalizeMigration();
-      } catch (e) {
+      } catch (_e) {
           // On IndexedDB/WebCrypto failure, keep legacy values so a later init can retry
       }
-  } catch (e) {
+  } catch (_e) {
       // Ignore errors if localStorage is not available (e.g. SSR)
   }
 };
