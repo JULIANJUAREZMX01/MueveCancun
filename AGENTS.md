@@ -306,3 +306,30 @@ A partir de marzo de 2026, el proyecto es **estrictamente estático**.
 - **PROHIBIDO**: Middleware para lógica de rutas en request-time.
 - **OBLIGATORIO**: Uso de `getRelativeLocaleUrl(lang, path)` para todos los enlaces internos.
 - **DIRECCIONAMIENTO**: El root `/` se maneja vía client-side JS en `src/pages/index.astro`.
+
+---
+
+## Nexus Prime Stabilization Audit (v3.3.5) - April 2026
+**Agent:** JULES
+**Status:** COMPLETED
+
+### [IDEA]
+Systematic stabilization of PWA core systems (WASM, GPS, Payments, Reporting) after critical deploy failure resolutions.
+
+### [EXECUTION]
+1.  **WASM Preload:** Implemented `WasmLoader.preload()` to warm up the engine on app launch. Added loading states to `RouteCalculator.astro`.
+2.  **Geolocation:** Created `getCurrentPosition` wrapper in `src/utils/geolocation.ts` with a 10s hard timeout and unified error handling across the app.
+3.  **Donation System:** Fixed Stripe Buy Button integration in `src/pages/[lang]/donate.astro` for static environments. Unified branding to "Guardians" tiers.
+4.  **Reporting:** Refined `ReportWidget.astro` to use IndexedDB v4 for offline queuing and direct GitHub API submission.
+5.  **Service Worker:** Optimized `public/sw.js` with localized route patterns and CartoDB/OSM tile caching.
+6.  **Navigation Guards:** Updated `src/utils/auth.ts` to whitelist `/donate` and `/suscripcion` from tutorial redirects.
+
+### [VALIDATION]
+-   WASM Build: `node --experimental-strip-types scripts/build-wasm.ts` ([SUCCESS])
+-   Type Audit: `pnpm tsc --noEmit` (0 errors)
+-   Unit Tests: `pnpm test` (16/16 files passed)
+-   Production Build: `pnpm run build` ([SUCCESS])
+
+### [HANDOFF]
+-   Update `docs/PROJECT_STATUS.md` with version 1.2.3 (v3.3.5).
+-   Update `ROADMAP.md` marking stabilization as complete.
