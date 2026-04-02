@@ -41,6 +41,12 @@ La PWA ha sido consolidada en la versión 3.4, integrando más de 22 ramas de de
 3. **Promotional Codes**: Sistema de códigos de descuento (e.g., 'MUEVECANCUN2026').
 4. **Nexus Transfer Engine**: Motor WASM optimizado para transbordos geográficos y de nombre.
 
+### Cambios Clave:
+1. **Wallet Prime**: Saldo inicial de $0.00 MXN. Funcionalidad de búsqueda abierta para todos.
+2. **Conductor Registration**: Nuevo flujo para que conductores reciban un bono de $180.00 MXN.
+3. **Promotional Codes**: Sistema de códigos de descuento (e.g., 'MUEVECANCUN2026').
+4. **Nexus Transfer Engine**: Motor WASM optimizado para transbordos geográficos y de nombre.
+
 ### 4. `jules` (Agente de Codificación Gemini — Google Jules)
 - **Rol**: Corrección autónoma de errores CI, resolución de Issues, asistencia en PRs, tareas delegadas de codificación iterativa.
 - **Trigger automático**:
@@ -111,6 +117,9 @@ Los componentes se comunican mediante `CustomEvent` en el browser:
 | `SHOW_ROUTE_ON_MAP` | `RouteCalculator.astro` | `InteractiveMap.astro` | `{ journey: Journey }` |
 | `BALANCE_UPDATED` | `wallet.astro` | `RouteCalculator.astro` | `{}` |
 
+---
+
+## Guía de Desarrollo
 localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 
 ---
@@ -185,6 +194,12 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 ### WASM Build:
 `pnpm build:wasm` (usa wasm-pack para compilar rust-wasm/).
 
+### Data Update:
+1. Editar `public/data/master_routes.json`.
+2. Ejecutar `pnpm run prepare-data` (merge + optimize).
+
+### Deployment:
+El sistema está configurado para Render (SSG). El middleware maneja redirecciones de idioma y completitud de tutorial.
 ```
 rama claude/* → tests pasan → PR a main → CI verde → merge
 rama jules/*  → PR abierto por Jules → revisión → merge

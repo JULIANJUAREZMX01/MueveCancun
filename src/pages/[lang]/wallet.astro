@@ -71,7 +71,39 @@ import MainLayout from '../../layouts/MainLayout.astro';
           </div>
           <div class="grid grid-cols-2 gap-4">
             <input type="text" placeholder="MM/AA" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none transition-all" />
-            <input type="password" placeholder="CVV" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none transition-all" />
+            <label for="card-number" class="sr-only">Número de Tarjeta</label>
+            <input
+              id="card-number"
+              type="text"
+              placeholder="Número de Tarjeta"
+              autocomplete="cc-number"
+              inputmode="numeric"
+              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none transition-all"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="card-expiry" class="sr-only">Fecha de vencimiento (MM/AA)</label>
+              <input
+                id="card-expiry"
+                type="text"
+                placeholder="MM/AA"
+                autocomplete="cc-exp"
+                inputmode="numeric"
+                class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label for="card-cvv" class="sr-only">Código de seguridad (CVV)</label>
+              <input
+                id="card-cvv"
+                type="password"
+                placeholder="CVV"
+                autocomplete="cc-csc"
+                inputmode="numeric"
+                class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none transition-all"
+              />
+            </div>
           </div>
           <button class="w-full border-2 border-dashed border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:border-primary-400 hover:text-primary-500 transition-all">
             + Guardar Tarjeta
