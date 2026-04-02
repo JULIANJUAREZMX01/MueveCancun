@@ -37,8 +37,9 @@ const lang = getLangFromUrl(Astro.url);
     </div>
   </div>
 
-  <script define:vars={{ lang }}>
-    // Enhanced client-side redirection for static architecture
+  <script>
+    import { getPreferredLocale } from "../utils/auth";
+
     function handle404Redirection() {
       const urlPath = window.location.pathname;
       const parts = urlPath.split('/').filter(p => p);
@@ -48,7 +49,7 @@ const lang = getLangFromUrl(Astro.url);
       const topLevelPages = ['home', 'rutas', 'tracking', 'wallet', 'community', 'about', 'guess'];
       const firstPart = parts[0];
       if (topLevelPages.includes(firstPart)) {
-         const locale = localStorage.getItem('lang') || (navigator.language.startsWith('en') ? 'en' : 'es');
+         const locale = getPreferredLocale();
          const { search, hash } = window.location;
          window.location.replace(`/${locale}/${firstPart}${search || ''}${hash || ''}`);
          return;
@@ -57,9 +58,10 @@ const lang = getLangFromUrl(Astro.url);
       // 2. Handle legacy /ruta/[id] paths
       if (parts.length >= 2 && parts[0] === 'ruta') {
         const potentialId = parts[1];
+        const locale = getPreferredLocale();
         if (msg) msg.classList.remove('hidden');
         setTimeout(() => {
-          window.location.replace(`/${lang}/rutas?search=${encodeURIComponent(potentialId)}`);
+          window.location.replace(`/${locale}/rutas?search=${encodeURIComponent(potentialId)}`);
         }, 300);
       }
     }
