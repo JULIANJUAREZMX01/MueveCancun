@@ -521,11 +521,11 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
       e.preventDefault();
       const formData = new FormData(form);
       const data: Omit<PendingReport, "timestamp"> = {
-        tipo: formData.get("tipo") as string,
-        ruta: formData.get("ruta") as string,
-        descripcion: (formData.get("descripcion") as string || "").trim(),
-        lat: formData.get("lat") as string,
-        lng: formData.get("lng") as string,
+        tipo: String(formData.get("tipo") ?? ""),
+        ruta: String(formData.get("ruta") ?? ""),
+        descripcion: String(formData.get("descripcion") ?? "").trim(),
+        lat: String(formData.get("lat") ?? ""),
+        lng: String(formData.get("lng") ?? ""),
         userAgent: navigator.userAgent,
         url: window.location.href
       };
