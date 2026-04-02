@@ -138,6 +138,8 @@ const ui = useTranslations(lang);
       // WASM Initialization
       try {
           const module = await WasmLoader.getModule();
+          const { text } = await coordinatesStore.init();
+          module.load_catalog(text);
           find_route = module.find_route.bind(module);
           wasmLoaded = true;
           console.log("[RouteCalculator] WASM Ready");
