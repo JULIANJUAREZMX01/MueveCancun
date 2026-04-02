@@ -11,6 +11,7 @@ const translations = {
     subtitle: 'Sustenta el transporte de tu ciudad',
     description: 'MueveCancún es 100% gratis porque creemos que el transporte es un derecho. Pero mantenerlo vivo cuesta. Apoya con lo que puedas.',
     qrText: 'Escanéame para donar',
+    recommendedLabel: 'Recomendado',
     tiers: {
       free: {
         name: 'Libre',
@@ -50,6 +51,7 @@ const translations = {
     subtitle: 'Sustain your city\'s transport',
     description: 'MueveCancún is 100% free because we believe transport is a right. But keeping it alive costs money. Support with what you can.',
     qrText: 'Scan me to donate',
+    recommendedLabel: 'Recommended',
     tiers: {
       free: {
         name: 'Free',
@@ -131,7 +133,7 @@ const t = translations[lang] || translations.es;
         ]}>
           {tier.recommended && (
             <span class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full">
-              Recomendado
+              {t.recommendedLabel}
             </span>
           )}
           <div class="space-y-6">
