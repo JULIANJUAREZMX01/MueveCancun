@@ -1,0 +1,19 @@
+{
+  "id": "R15_HOTELES_001",
+  "nombre": "R-15 Centro - Hoteles",
+  "tipo": "Bus_Urban",
+  "tarifa": 12,
+  "horario": {
+    "inicio": "06:00 - 22:30"
+  },
+  "frecuencia_minutos": 15,
+  "empresa": "Autocar",
+  "last_updated": "2026-04-01T22:21:19Z",
+  "paradas": [
+    {"nombre": "El Crucero", "lat": 21.1576, "lng": -86.8269, "orden": 1},
+    {"nombre": "Av. Tulum", "lat": 21.155, "lng": -86.825, "orden": 2},
+    {"nombre": "Plaza Las Américas", "lat": 21.1472, "lng": -86.8234, "orden": 3},
+    {"nombre": "Entrada Zona Hotelera", "lat": 21.153, "lng": -86.815, "orden": 4},
+    {"nombre": "Boulevard Kukulcán", "lat": 21.135, "lng": -86.768, "orden": 5}
+  ]
+}

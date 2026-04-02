@@ -561,3 +561,18 @@
 .theme-toggle:active svg {
   transform: rotate(30deg) scale(0.85);
 }
+
+/* Fix for mobile overflow < 480px */
+@media (max-width: 480px) {
+  .calculator-container, .main-content, .app-container {
+    max-width: 100vw;
+    overflow-x: hidden;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  /* Ensure inputs don't push the container */
+  input, select, textarea {
+    max-width: 100%;
+  }
+}

@@ -1,25 +1,11 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 
-// This page is the one-time onboarding tutorial.
-export const prerender = true;
+// The tutorial is only shown if it hasn't been completed.
+// Redirect logic is handled client-side in static builds.
 ---
 
-<MainLayout title="Bienvenido | ¿Qué Ruta Me Lleva?">
-    <script is:inline>
-        // Redirect if already completed
-        const cookies = document.cookie.split('; ').reduce((acc, c) => {
-            const [k, v] = c.split('=');
-            acc[k] = v;
-            return acc;
-        }, {});
-
-        if (cookies['tutorial_completed'] === 'true') {
-            const locale = cookies['locale'] || 'es';
-            window.location.href = `/${locale}/home`;
-        }
-    </script>
-
+<MainLayout title="Bienvenido | ¿Qué Ruta Me Lleva?" hideNav={true}>
 	<div class="welcome-shell">
 		<div class="bg-gradient"></div>
 		<div class="bg-grid">
@@ -64,7 +50,7 @@ export const prerender = true;
 
 				<section class="step" data-step="3">
 					<div class="icon-hero">
-						<div class="glass-icon-circle bg-primary-500/20 text-primary-500">
+						<div class="glass-icon-circle bg-amber-500/20 text-amber-500">
 							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
 							</svg>
@@ -123,7 +109,7 @@ export const prerender = true;
 		.step { display: none; flex-direction: column; align-items: center; animation: slide-up 0.5s ease-out; }
 		.step.active { display: flex; }
 		.icon-hero { margin-bottom: 2rem; }
-		.logo-box { width: 80px; height: 80px; background: linear-gradient(135deg, #0ea5e9, #2dd4bf); border-radius: 20px; display: flex; align-items: center; justify-content: center; shadow: 0 0 40px rgba(45, 212, 191, 0.3); }
+		.logo-box { width: 80px; height: 80px; background: linear-gradient(135deg, #0ea5e9, #2dd4bf); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(45, 212, 191, 0.3); }
 		.logo-text { font-size: 2.5rem; font-weight: 900; letter-spacing: -2px; }
 		.glass-icon-circle { width: 80px; height: 80px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
 		.step-title { font-size: 1.75rem; font-weight: 900; margin-bottom: 1rem; line-height: 1.2; background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -156,8 +142,24 @@ export const prerender = true;
 		const dots = document.querySelectorAll('.dot');
 		const btnNext = document.getElementById('btn-next');
 		const startOptions = document.querySelector('.start-options');
+		const skipBtn = document.getElementById('btn-skip');
 
-		function goToStep(stepNum) {
+		function updateTutorialUI(lang: string) {
+			const translationsEl = document.getElementById('i18n-translations');
+			if (!translationsEl) return;
+			const all = JSON.parse(translationsEl.getAttribute('data-translations') || '{}');
+			const t = all[lang];
+			if (!t) return;
+
+			document.querySelectorAll('[data-i18n]').forEach(el => {
+				const key = el.getAttribute('data-i18n');
+				if (t[key]) {
+					(el as HTMLElement).innerText = t[key];
+				}
+			});
+		}
+
+		function goToStep(stepNum: number) {
 			if (stepNum > totalSteps) return;
 			steps.forEach(s => s.classList.remove('active'));
 			dots.forEach(d => d.classList.remove('active'));
@@ -175,9 +177,12 @@ export const prerender = true;
 			currentStep = stepNum;
 		}
 
-		function finishTutorial(lang) {
+		function finishTutorial(lang: string) {
+			// Set cookie for 1 year
 			document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
 			document.cookie = `locale=${encodeURIComponent(lang)}; path=/; max-age=31536000; SameSite=Lax`;
+            // Store preference in localStorage as well
+            localStorage.setItem('lang', lang);
 			window.location.href = `/${lang}/home`;
 		}
 
@@ -188,11 +193,15 @@ export const prerender = true;
 			currentLang = 'es';
 			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
 			(e.target as HTMLElement).classList.add('active');
+			localStorage.setItem('lang', 'es');
+			updateTutorialUI('es');
 		});
 		document.getElementById('set-en')?.addEventListener('click', (e) => {
 			currentLang = 'en';
 			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
 			(e.target as HTMLElement).classList.add('active');
+			localStorage.setItem('lang', 'en');
+			updateTutorialUI('en');
 		});
 		dots.forEach(dot => {
 			dot.addEventListener('click', () => {
@@ -200,5 +209,15 @@ export const prerender = true;
 				goToStep(target);
 			});
 		});
+		// Initial Check
+        function checkTutorial() {
+            if (document.cookie.includes('tutorial_completed=true')) {
+                const savedLang = localStorage.getItem('lang') || 'es';
+                window.location.href = `/${savedLang}/home`;
+            }
+        }
+
+        checkTutorial();
+        document.addEventListener('astro:after-swap', checkTutorial);
 	</script>
 </MainLayout>

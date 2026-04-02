@@ -31,10 +31,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node 20
+      - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -54,20 +54,20 @@ jobs:
 
       # --- Step 1: Merge all route files into master catalog ---
       - name: Merge individual routes into master catalog
-        run: node scripts/merge-routes.mjs --verbose
+        run: node --experimental-strip-types scripts/merge-routes.ts --verbose
         continue-on-error: false
 
       # --- Step 2: Auto-geocode missing coordinates (optional, rate-limited) ---
       - name: Geocode missing stop coordinates
         if: github.event.inputs.run_geocode == 'true'
-        run: node scripts/geocode-stops.mjs --limit=50 --verbose
+        run: node --experimental-strip-types scripts/geocode-stops.ts --limit=50 --verbose
         continue-on-error: true # Network failures don't break the pipeline
 
       # --- Step 3: Validate all route data ---
       - name: Validate route data
         id: validate
         run: |
-          if node scripts/validate-routes.mjs; then
+          if node --experimental-strip-types scripts/validate-routes.ts; then
             echo "ok=true" >> $GITHUB_OUTPUT
           else
             echo "ok=false" >> $GITHUB_OUTPUT
@@ -76,7 +76,7 @@ jobs:
 
       # --- Step 4: Optimize JSON ---
       - name: Optimize JSON catalog
-        run: node scripts/optimize-json.mjs
+        run: node --experimental-strip-types scripts/optimize-json.ts
 
       # --- Step 5: Run Rust tests ---
       - name: Run Rust unit tests
@@ -102,7 +102,7 @@ jobs:
 
       - name: Rebuild WASM if needed
         if: steps.wasm_check.outputs.ok == 'false' || steps.rust_tests.outputs.ok == 'true'
-        run: node scripts/build-wasm.mjs
+        run: node --experimental-strip-types scripts/build-wasm.ts
 
       - name: Verify WASM after rebuild
         run: node scripts/check-wasm.cjs

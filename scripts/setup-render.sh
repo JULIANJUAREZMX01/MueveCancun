@@ -34,24 +34,23 @@ fi
 log "Configurando target wasm32-unknown-unknown..."
 rustup target add wasm32-unknown-unknown
 
-# 3. WASM Pack Check (Security-first verification)
-log "Verificando wasm-pack (usando herramienta fijada en package.json)..."
-if command -v pnpm >/dev/null 2>&1; then
-    if ! pnpm exec wasm-pack --version >/dev/null 2>&1; then
-        log "wasm-pack no está disponible aún; se utilizará la versión fijada vía pnpm/npx durante el build."
-    else
-        success "wasm-pack detectado vía pnpm exec."
-    fi
+# 3. WASM Pack — ensure it is available before build
+log "Verificando/instalando wasm-pack..."
+if command -v wasm-pack >/dev/null 2>&1; then
+    success "wasm-pack ya instalado (sistema): $(wasm-pack --version)"
+elif command -v pnpm >/dev/null 2>&1 && pnpm exec wasm-pack --version >/dev/null 2>&1; then
+    success "wasm-pack disponible vía pnpm exec"
 else
-    if ! command -v npx >/dev/null 2>&1; then
-        log "npx no está disponible; asegúrate de que wasm-pack pueda ser resuelto por el proceso de build."
-    else
-        if ! npx wasm-pack --version >/dev/null 2>&1; then
-            log "wasm-pack no se pudo resolver vía npx; scripts/build-wasm.mjs podrá intentar obtenerlo en tiempo de build."
-        else
-            success "wasm-pack detectado vía npx."
-        fi
+    log "wasm-pack no encontrado. Instalando via curl (instalador oficial de rustwasm.github.io)..."
+    # The installer from rustwasm.github.io/wasm-pack is the project's official distribution method.
+    curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh -s -- --no-modify-path
+    export PATH="$HOME/.cargo/bin:$PATH"
+    if ! command -v wasm-pack >/dev/null 2>&1; then
+        log "curl install failed. Intentando via cargo install..."
+        cargo install wasm-pack --locked
     fi
+    wasm-pack --version
+    success "wasm-pack instalado correctamente."
 fi
 
 # 4. PNPM & Build Sequence

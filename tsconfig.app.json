@@ -16,6 +16,12 @@
     "noEmit": true,
     "noUncheckedSideEffectImports": true,
 
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
