@@ -25,10 +25,8 @@ const COLORS = {
 
 const border = { style: BorderStyle.SINGLE, size: 1, color: 'DDDDDD' };
 const borders = { top: border, bottom: border, left: border, right: border };
-const noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
-const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
 
-function h1(text) {
+function h1(text: string): Paragraph {
   return new Paragraph({
     heading: HeadingLevel.HEADING_1,
     spacing: { before: 400, after: 200 },
@@ -36,7 +34,7 @@ function h1(text) {
   });
 }
 
-function h2(text) {
+function h2(text: string): Paragraph {
   return new Paragraph({
     heading: HeadingLevel.HEADING_2,
     spacing: { before: 320, after: 160 },
@@ -44,21 +42,21 @@ function h2(text) {
   });
 }
 
-function h3(text) {
+function h3(text: string): Paragraph {
   return new Paragraph({
     spacing: { before: 240, after: 120 },
     children: [new TextRun({ text, bold: true, size: 24, color: COLORS.dark, font: 'Arial' })]
   });
 }
 
-function p(text, opts = {}) {
+function p(text: string, opts: { color?: string; bold?: boolean; italic?: boolean } = {}): Paragraph {
   return new Paragraph({
     spacing: { before: 80, after: 80 },
-    children: [new TextRun({ text, size: 22, font: 'Arial', color: opts.color || '333333', bold: opts.bold || false, italics: opts.italic || false })]
+    children: [new TextRun({ text, size: 22, font: 'Arial', color: opts.color ?? '333333', bold: opts.bold ?? false, italics: opts.italic ?? false })]
   });
 }
 
-function quote(text) {
+function quote(text: string): Paragraph {
   return new Paragraph({
     spacing: { before: 160, after: 160 },
     indent: { left: 720 },
@@ -67,7 +65,7 @@ function quote(text) {
   });
 }
 
-function bullet(text, level = 0) {
+function bullet(text: string, level: number = 0): Paragraph {
   return new Paragraph({
     numbering: { reference: 'bullets', level },
     spacing: { before: 60, after: 60 },
@@ -75,7 +73,7 @@ function bullet(text, level = 0) {
   });
 }
 
-function divider() {
+function divider(): Paragraph {
   return new Paragraph({
     spacing: { before: 200, after: 200 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'DDDDDD', space: 1 } },
@@ -83,7 +81,7 @@ function divider() {
   });
 }
 
-function colorBlock(label, value, color, lightColor) {
+function colorBlock(label: string, value: string, color: string, lightColor: string): Table {
   return new Table({
     width: { size: 9360, type: WidthType.DXA },
     columnWidths: [2000, 7360],
@@ -115,7 +113,8 @@ function colorBlock(label, value, color, lightColor) {
   });
 }
 
-function taskTable(tasks) {
+interface TaskRow { task: string; deliverable: string; deadline: string; prio: string; }
+function taskTable(tasks: TaskRow[]): Table {
   const headerRow = new TableRow({
     children: [
       new TableCell({
@@ -192,7 +191,7 @@ function taskTable(tasks) {
   });
 }
 
-function spacer() {
+function spacer(): Paragraph {
   return new Paragraph({ spacing: { before: 120, after: 120 }, children: [] });
 }
 
