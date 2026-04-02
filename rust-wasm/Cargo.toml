@@ -2,6 +2,7 @@
 members = [
     "route-calculator",
     "shared-types",
+    "spatial-index",
 ]
 resolver = "2"
 
