@@ -7,34 +7,72 @@ export function getStaticPaths() {
 }
 
 import MainLayout from '../../layouts/MainLayout.astro';
+const { lang } = Astro.params;
+const isEs = lang === 'es';
 ---
 
-<MainLayout title="Mi Tarjeta">
-  <div class="space-y-8 animate-fade-in pb-10">
-    
-    <!-- Balance Card Section -->
-    <section class="relative group max-w-xl mx-auto px-4 pt-4">
-      <div class="absolute -inset-1 bg-gradient-to-r from-primary-600 to-primary-400 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-      
-      <div class="relative bg-slate-900 rounded-3xl p-8 shadow-2xl overflow-hidden border border-slate-800">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-        
-        <div class="relative z-10 flex flex-col h-full justify-between">
-          <div class="flex justify-between items-start">
+<MainLayout title={isEs ? "Mi Tarjeta" : "My Card"}>
+  <div class="space-y-5 animate-fade-in pb-28 px-4 max-w-xl mx-auto pt-2">
+
+    <!-- Balance Card -->
+    <section class="relative group">
+      <div class="absolute -inset-0.5 bg-gradient-to-r from-primary-600 to-teal-400 rounded-3xl blur opacity-20 group-hover:opacity-35 transition duration-700"></div>
+      <div class="relative bg-slate-900 rounded-3xl p-6 shadow-2xl overflow-hidden border border-slate-800">
+        <!-- Background decoration -->
+        <div class="absolute top-0 right-0 w-48 h-48 bg-primary-500/10 rounded-full -mr-24 -mt-24 blur-3xl pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-32 h-32 bg-teal-500/5 rounded-full -ml-16 -mb-16 blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10">
+          <div class="flex justify-between items-start mb-6">
             <div>
-              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Saldo Disponible</p>
-              <h2 id="balance-amount" class="text-5xl font-black text-white tracking-tighter">$0.00</h2>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                {isEs ? "Saldo Disponible" : "Available Balance"}
+              </p>
+              <h2 id="balance-amount" class="text-4xl font-black text-white tracking-tighter">$0.00</h2>
               <p class="text-xs text-slate-500 font-bold mt-1">MXN Peso Mexicano</p>
             </div>
-            <div class="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black rounded-full uppercase tracking-wider">
-              Activo
+            <div class="flex flex-col items-end gap-2">
+              <span class="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black rounded-full uppercase tracking-wider">
+                {isEs ? "Activo" : "Active"}
+              </span>
+              <!-- Dark mode toggle hint -->
+              <div id="wallet-loading-dot" class="w-2 h-2 rounded-full bg-slate-600 animate-pulse"></div>
             </div>
           </div>
 
-          <div class="mt-12 flex gap-4">
-            <button id="open-recharge" popovertarget="recharge-popover" class="flex-1 bg-white hover:bg-slate-100 text-slate-900 font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-white/5">
-              RECARGAR
+          <!-- Quick actions -->
+          <div class="flex gap-3">
+            <button
+              id="open-recharge"
+              popovertarget="recharge-popover"
+              class="flex-1 bg-white hover:bg-slate-100 text-slate-900 font-black py-3.5 rounded-2xl transition-all active:scale-95 shadow-xl shadow-white/5 text-sm uppercase tracking-wider"
+            >
+              {isEs ? "Recargar" : "Top Up"}
             </button>
+            <button
+              id="btn-history"
+              class="w-12 h-12 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-95"
+              aria-label={isEs ? "Historial" : "History"}
+            >
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Transaction History (collapsible) -->
+    <section id="history-panel" class="hidden">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">{isEs ? "Historial" : "History"}</h3>
+          <button id="close-history" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+        <div id="history-list" class="divide-y divide-slate-100 dark:divide-slate-800 max-h-60 overflow-y-auto">
+          <div class="px-4 py-8 text-center text-xs text-slate-400 font-bold">
+            {isEs ? "Sin movimientos aún" : "No movements yet"}
           </div>
         </div>
       </div>
@@ -68,184 +106,348 @@ import MainLayout from '../../layouts/MainLayout.astro';
     </section>
 
     <!-- Promotional Code -->
-    <section class="max-w-xl mx-auto px-4 space-y-4">
-      <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Código Promocional</h3>
+    <section>
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
+          {isEs ? "Código Promocional" : "Promo Code"}
+        </h3>
         <div class="flex gap-2">
-          <input type="text" id="promo-code" placeholder="Ingresa tu código" class="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all" />
-          <button id="apply-promo" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95">Aplicar</button>
+          <input
+            type="text"
+            id="promo-code"
+            placeholder={isEs ? "Ingresa tu código" : "Enter your code"}
+            class="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all uppercase"
+          />
+          <button
+            id="apply-promo"
+            class="bg-primary-600 hover:bg-primary-700 active:scale-95 text-white px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all"
+          >
+            {isEs ? "Aplicar" : "Apply"}
+          </button>
+        </div>
+        <p class="mt-2 text-[10px] text-slate-400 font-medium">
+          {isEs ? "Prueba: MUEVECANCUN2026 (+$50 MXN)" : "Try: MUEVECANCUN2026 (+$50 MXN)"}
+        </p>
+      </div>
+    </section>
+
+    <!-- Conductor Registration -->
+    <section>
+      <div class="bg-orange-50 dark:bg-orange-950/20 p-5 rounded-2xl border border-orange-100 dark:border-orange-900/30 shadow-sm">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-2xl">🚕</span>
+          <h3 class="text-xs font-black text-orange-700 dark:text-orange-400 uppercase tracking-widest">
+            {isEs ? "¿Eres Conductor?" : "Are you a Driver?"}
+          </h3>
+        </div>
+        <p class="text-xs text-orange-600 dark:text-orange-500/80 mb-4 font-medium leading-relaxed">
+          {isEs
+            ? "Regístrate como operador y recibe un bono de bienvenida de $180.00 MXN para comenzar a usar Brújula Urbana."
+            : "Register as an operator and receive a $180.00 MXN welcome bonus to start using Brújula Urbana."
+          }
+        </p>
+        <button
+          id="register-pilot"
+          class="w-full bg-orange-600 hover:bg-orange-700 active:scale-95 text-white py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-orange-500/20"
+        >
+          {isEs ? "Registrarme Como Conductor" : "Register as Driver"}
+        </button>
+      </div>
+    </section>
+
+    <!-- Payment Method (UI only — future Stripe integration) -->
+    <section>
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            {isEs ? "Método de Pago" : "Payment Method"}
+          </h3>
+          <span class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+            {isEs ? "Próximamente" : "Coming soon"}
+          </span>
+        </div>
+        <div class="space-y-3 opacity-50 pointer-events-none select-none">
+          <div>
+            <label for="card-number" class="sr-only">{isEs ? "Número de Tarjeta" : "Card Number"}</label>
+            <input
+              id="card-number"
+              type="text"
+              placeholder={isEs ? "Número de Tarjeta" : "Card Number"}
+              disabled
+              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <input type="text" placeholder="MM/AA" disabled class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+            <input type="password" placeholder="CVV" disabled class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+          </div>
         </div>
       </div>
     </section>
   </div>
 
   <!-- Recharge Popover -->
-  <div id="recharge-popover" popover class="bg-white dark:bg-slate-900 rounded-3xl p-0 shadow-2xl w-[90%] max-w-sm border border-slate-200 dark:border-slate-800 overflow-hidden graffiti-dialog-popover">
+  <div id="recharge-popover" popover class="bg-white dark:bg-slate-900 rounded-3xl p-0 shadow-2xl w-[90%] max-w-sm border border-slate-200 dark:border-slate-800 overflow-hidden recharge-popover-anim">
     <div class="p-6">
-      <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Recargar Saldo</h3>
-      <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">El monto se acreditará instantáneamente a tu billetera virtual.</p>
-      
-      <div class="grid grid-cols-3 gap-3 mb-8 graffiti-radio-group">
-        <label class="amount-label" tabindex="0">
-            <input type="radio" name="recharge-amount" value="20" class="sr-only amount-radio" />
-            <span class="amount-text">$20</span>
-        </label>
-        <label class="amount-label" tabindex="0">
-            <input type="radio" name="recharge-amount" value="50" class="sr-only amount-radio" checked />
-            <span class="amount-text">$50</span>
-        </label>
-        <label class="amount-label" tabindex="0">
-            <input type="radio" name="recharge-amount" value="100" class="sr-only amount-radio" />
-            <span class="amount-text">$100</span>
-        </label>
+      <h3 class="text-xl font-black text-slate-800 dark:text-white mb-1">{isEs ? "Recargar Saldo" : "Top Up Balance"}</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">
+        {isEs ? "El monto se acreditará instantáneamente." : "Amount will be credited instantly."}
+      </p>
+
+      <div class="grid grid-cols-3 gap-3 mb-6 recharge-radio-group">
+        {[20, 50, 100, 150, 200, 500].map((amt, i) => (
+          <label class="amount-label" tabindex="0">
+            <input type="radio" name="recharge-amount" value={String(amt)} class="sr-only amount-radio" checked={i === 1} />
+            <span class="amount-text">${amt}</span>
+          </label>
+        ))}
       </div>
 
       <div class="flex flex-col gap-3">
         <button id="confirm-recharge" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all uppercase tracking-widest">
-          CONFIRMAR PAGO
+          {isEs ? "Confirmar" : "Confirm"}
         </button>
-        <button id="close-recharge" popovertarget="recharge-popover" popovertargetaction="hide" class="w-full bg-transparent text-slate-400 dark:text-slate-500 py-2 font-bold text-xs uppercase tracking-widest">
-          CANCELAR
+        <button id="close-recharge" popovertarget="recharge-popover" popovertargetaction="hide" class="w-full text-slate-400 py-2 font-bold text-xs uppercase tracking-widest">
+          {isEs ? "Cancelar" : "Cancel"}
         </button>
       </div>
     </div>
   </div>
+</MainLayout>
 
-  <style>
-    .graffiti-dialog-popover {
-      margin: auto;
-      opacity: 0;
-      transform: translateY(1rem) scale(0.95);
-      transition: opacity 0.3s ease-out, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), overlay 0.3s allow-discrete, display 0.3s allow-discrete;
-      &:popover-open {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        @starting-style { opacity: 0; transform: translateY(1rem) scale(0.95); }
-      }
-      &::backdrop {
-        background: rgba(15, 23, 42, 0.5);
-        backdrop-filter: blur(4px);
-        opacity: 0;
-        transition: opacity 0.3s ease-out, overlay 0.3s allow-discrete, display 0.3s allow-discrete;
-      }
-      &:popover-open::backdrop {
-        opacity: 1;
-        @starting-style { opacity: 0; }
-      }
+<script>
+  import { showToast } from '../../utils/toast';
+  import { getWalletBalance, setWalletBalance } from '../../utils/db';
+
+  // Transaction history stored in localStorage
+  const TX_KEY = 'wallet_transactions';
+
+  function getTxHistory(): Array<{ type: string; amount: number; label: string; ts: number }> {
+    try { return JSON.parse(localStorage.getItem(TX_KEY) || '[]'); }
+    catch { return []; }
+  }
+
+  function addTx(type: string, amount: number, label: string) {
+    const history = getTxHistory();
+    history.unshift({ type, amount, label, ts: Date.now() });
+    localStorage.setItem(TX_KEY, JSON.stringify(history.slice(0, 50)));
+  }
+
+  function formatTxDate(ts: number): string {
+    const d = new Date(ts);
+    return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('history-list');
+    if (!list) return;
+    const history = getTxHistory();
+    if (history.length === 0) {
+      list.innerHTML = '<div class="px-4 py-8 text-center text-xs text-slate-400 font-bold">Sin movimientos aún</div>';
+      return;
+    }
+    // Clear existing items
+    while (list.firstChild) {
+      list.removeChild(list.firstChild);
     }
 
-    .graffiti-radio-group {
-      .amount-label {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem 0;
-        border-radius: 0.75rem;
-        border: 2px solid #f1f5f9;
-        cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        @media (prefers-color-scheme: dark) { border-color: #1e293b; }
-        &:hover { border-color: #f97316; }
-        &:active { transform: scale(0.95); }
-        .amount-text { font-weight: 900; color: #475569; @media (prefers-color-scheme: dark) { color: #94a3b8; } }
-      }
-      .amount-label:has(.amount-radio:checked) {
-        border-color: #f97316;
-        background-color: rgba(249, 115, 22, 0.1);
-        @media (prefers-color-scheme: dark) { background-color: rgba(249, 115, 22, 0.2); }
-        .amount-text { color: #ea580c; @media (prefers-color-scheme: dark) { color: #fb923c; } }
-      }
-    }
+    history.forEach(tx => {
+      const item = document.createElement('div');
+      item.className = 'flex items-center justify-between px-4 py-3';
 
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border-width: 0;
-    }
-  </style>
+      const left = document.createElement('div');
 
-  <script>
-    import { showToast } from '../../utils/toast';
-    import { getWalletBalance, setWalletBalance } from '../../utils/db';
+      const labelEl = document.createElement('p');
+      labelEl.className = 'text-sm font-bold text-slate-800 dark:text-white';
+      labelEl.textContent = tx.label;
 
-    let walletInitialized = false;
+      const dateEl = document.createElement('p');
+      dateEl.className = 'text-[10px] text-slate-400 font-medium';
+      dateEl.textContent = formatTxDate(tx.ts);
 
-    async function setupWallet() {
-      if (walletInitialized) return;
-      walletInitialized = true;
+      left.appendChild(labelEl);
+      left.appendChild(dateEl);
 
-      const balanceAmount = document.getElementById('balance-amount');
-      const confirmBtn = document.getElementById('confirm-recharge');
-      const popover = document.getElementById('recharge-popover');
-      const applyPromoBtn = document.getElementById('apply-promo');
-      const promoInput = document.getElementById('promo-code') as HTMLInputElement;
+      const amountEl = document.createElement('span');
+      amountEl.className = 'font-black text-sm ' + (tx.type === 'credit' ? 'text-emerald-500' : 'text-red-500');
+      const sign = tx.type === 'credit' ? '+' : '-';
+      amountEl.textContent = `${sign}$${tx.amount.toFixed(2)}`;
 
-      async function updateBalanceUI() {
-          const walletData = await getWalletBalance();
-          const balance = walletData?.amount ?? 0.00;
-          if (balanceAmount) balanceAmount.textContent = `$${balance.toFixed(2)}`;
-          const headerBalance = document.getElementById('header-balance-amount');
-          if (headerBalance) headerBalance.textContent = `$${balance.toFixed(2)}`;
-      }
+      item.appendChild(left);
+      item.appendChild(amountEl);
 
-      await updateBalanceUI();
-
-      confirmBtn?.addEventListener('click', async () => {
-          const selectedRadio = document.querySelector('input[name="recharge-amount"]:checked') as HTMLInputElement;
-          const selectedAmount = selectedRadio ? parseInt(selectedRadio.value) : 50;
-          const walletData = await getWalletBalance();
-          const currentBalance = walletData?.amount ?? 0.00;
-          await setWalletBalance(currentBalance + selectedAmount);
-          await updateBalanceUI();
-          window.dispatchEvent(new CustomEvent('BALANCE_UPDATED'));
-          if (popover && popover.matches(':popover-open')) {
-            // @ts-ignore
-            popover.hidePopover();
-          }
-          showToast(`¡Recarga exitosa! +$${selectedAmount}`, "success");
-      });
-
-      applyPromoBtn?.addEventListener('click', async () => {
-          const code = promoInput?.value.trim().toUpperCase();
-          if (!code) return;
-
-          let redeemedCodes: string[] = [];
-          try {
-              redeemedCodes = JSON.parse(localStorage.getItem('redeemed_promo_codes') || '[]');
-              if (!Array.isArray(redeemedCodes)) redeemedCodes = [];
-          } catch {
-              redeemedCodes = [];
-          }
-
-          if (code === 'MUEVECANCUN2026') {
-              if (redeemedCodes.includes(code)) {
-                  showToast("Este código ya fue utilizado", "error");
-                  return;
-              }
-              const walletData = await getWalletBalance();
-              const currentBalance = walletData?.amount ?? 0.00;
-              await setWalletBalance(currentBalance + 50.00);
-              await updateBalanceUI();
-              redeemedCodes.push(code);
-              localStorage.setItem('redeemed_promo_codes', JSON.stringify(redeemedCodes));
-              showToast("¡Código aplicado! +$50.00", "success");
-              if (promoInput) promoInput.value = '';
-          } else {
-              showToast("Código inválido o expirado", "error");
-          }
-      });
-    }
-
-    document.addEventListener('astro:page-load', () => {
-      walletInitialized = false;
-      setupWallet();
+      list.appendChild(item);
     });
-    setupWallet();
+  }
+
+  let walletInitialized = false;
+
+  async function setupWallet() {
+    if (walletInitialized) return;
+    walletInitialized = true;
+
+    const balanceAmount  = document.getElementById('balance-amount');
+    const loadingDot     = document.getElementById('wallet-loading-dot');
+    const confirmBtn     = document.getElementById('confirm-recharge');
+    const popover        = document.getElementById('recharge-popover');
+    const applyPromoBtn  = document.getElementById('apply-promo');
+    const promoInput     = document.getElementById('promo-code') as HTMLInputElement;
+    const registerPilotBtn = document.getElementById('register-pilot') as HTMLButtonElement;
+    const historyBtn     = document.getElementById('btn-history');
+    const historyPanel   = document.getElementById('history-panel');
+    const closeHistoryBtn= document.getElementById('close-history');
+
+    async function updateBalanceUI() {
+      const walletData = await getWalletBalance();
+      const balance = walletData?.amount ?? 0.00;
+      if (balanceAmount) balanceAmount.textContent = `$${balance.toFixed(2)}`;
+      const headerBalance = document.getElementById('header-balance-amount');
+      if (headerBalance) headerBalance.textContent = `$${balance.toFixed(2)}`;
+      if (loadingDot) { loadingDot.classList.remove('animate-pulse'); loadingDot.classList.add('bg-emerald-500'); }
+    }
+
+    await updateBalanceUI();
+
+    // Restore operator registration state
+    if (registerPilotBtn && localStorage.getItem('operator_registered') === 'true') {
+      registerPilotBtn.textContent = 'YA REGISTRADO ✓';
+      registerPilotBtn.disabled = true;
+      registerPilotBtn.classList.add('opacity-60', 'cursor-not-allowed');
+    }
+
+    // Recharge confirm
+    confirmBtn?.addEventListener('click', async () => {
+      const selectedRadio = document.querySelector('input[name="recharge-amount"]:checked') as HTMLInputElement;
+      const selectedAmount = selectedRadio ? parseInt(selectedRadio.value) : 50;
+      const walletData = await getWalletBalance();
+      const currentBalance = walletData?.amount ?? 0.00;
+      await setWalletBalance(currentBalance + selectedAmount);
+      addTx('credit', selectedAmount, `Recarga +$${selectedAmount}`);
+      await updateBalanceUI();
+      window.dispatchEvent(new CustomEvent('BALANCE_UPDATED'));
+      // @ts-ignore
+      if (popover && popover.matches(':popover-open')) popover.hidePopover();
+      showToast(`¡Recarga exitosa! +$${selectedAmount}`, 'success');
+    });
+
+    // Promo code
+    applyPromoBtn?.addEventListener('click', async () => {
+      const code = promoInput?.value.trim().toUpperCase();
+      if (!code) return;
+      let redeemedCodes: string[] = [];
+      try { redeemedCodes = JSON.parse(localStorage.getItem('redeemed_promo_codes') || '[]'); } catch { /* */ }
+      if (!Array.isArray(redeemedCodes)) redeemedCodes = [];
+
+      if (code === 'MUEVECANCUN2026') {
+        if (redeemedCodes.includes(code)) { showToast('Este código ya fue utilizado', 'error'); return; }
+        const walletData = await getWalletBalance();
+        const currentBalance = walletData?.amount ?? 0.00;
+        await setWalletBalance(currentBalance + 50.00);
+        addTx('credit', 50, 'Código promo: MUEVECANCUN2026');
+        await updateBalanceUI();
+        redeemedCodes.push(code);
+        localStorage.setItem('redeemed_promo_codes', JSON.stringify(redeemedCodes));
+        showToast('¡Código aplicado! +$50.00', 'success');
+        if (promoInput) promoInput.value = '';
+      } else {
+        showToast('Código inválido o expirado', 'error');
+      }
+    });
+
+    // Conductor registration
+    registerPilotBtn?.addEventListener('click', async () => {
+      if (localStorage.getItem('operator_registered') === 'true') {
+        showToast('Ya estás registrado como conductor', 'error');
+        return;
+      }
+      const walletData = await getWalletBalance();
+      const currentBalance = walletData?.amount ?? 0.00;
+      await setWalletBalance(currentBalance + 180.00);
+      addTx('credit', 180, 'Bono de bienvenida conductor');
+      await updateBalanceUI();
+      localStorage.setItem('operator_registered', 'true');
+      registerPilotBtn.textContent = 'YA REGISTRADO ✓';
+      registerPilotBtn.disabled = true;
+      registerPilotBtn.classList.add('opacity-60', 'cursor-not-allowed');
+      window.dispatchEvent(new CustomEvent('BALANCE_UPDATED'));
+      showToast('¡Registro exitoso! +$180.00 MXN', 'success');
+    });
+
+    // History toggle
+    historyBtn?.addEventListener('click', () => {
+      historyPanel?.classList.toggle('hidden');
+      if (!historyPanel?.classList.contains('hidden')) renderHistory();
+    });
+    closeHistoryBtn?.addEventListener('click', () => historyPanel?.classList.add('hidden'));
+  }
+
+  document.addEventListener('astro:page-load', setupWallet);
+  setupWallet();
+</script>
+
+<style>
+  .recharge-popover-anim {
+    margin: auto;
+    opacity: 0;
+    transform: translateY(1rem) scale(0.96);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                overlay 0.25s allow-discrete, display 0.25s allow-discrete;
+  }
+  .recharge-popover-anim:popover-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    @starting-style { opacity: 0; transform: translateY(1rem) scale(0.96); }
+  }
+  .recharge-popover-anim::backdrop {
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.25s ease, overlay 0.25s allow-discrete, display 0.25s allow-discrete;
+  }
+  .recharge-popover-anim:popover-open::backdrop {
+    opacity: 1;
+    @starting-style { opacity: 0; }
+  }
+
+  .recharge-radio-group .amount-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 0;
+    border-radius: 0.75rem;
+    border: 2px solid #f1f5f9;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  :global(.dark) .recharge-radio-group .amount-label { border-color: #1e293b; }
+  .recharge-radio-group .amount-label:hover { border-color: #f97316; }
+  .recharge-radio-group .amount-label:has(.amount-radio:checked) {
+    border-color: #f97316;
+    background-color: rgba(249,115,22,0.08);
+  }
+  :global(.dark) .recharge-radio-group .amount-label:has(.amount-radio:checked) {
+    background-color: rgba(249,115,22,0.18);
+  }
+  .amount-text {
+    font-weight: 900;
+    color: #475569;
+    font-size: 0.9rem;
+  }
+  :global(.dark) .amount-text { color: #94a3b8; }
+  .recharge-radio-group .amount-label:has(.amount-radio:checked) .amount-text { color: #ea580c; }
+  :global(.dark) .recharge-radio-group .amount-label:has(.amount-radio:checked) .amount-text { color: #fb923c; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0;
+    margin: -1px; overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border-width: 0;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+</style>
   </script>
 </MainLayout>
