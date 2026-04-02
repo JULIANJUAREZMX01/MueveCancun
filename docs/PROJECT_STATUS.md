@@ -1,6 +1,6 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
 **Fecha:** 2026-04-02
-**Versión:** 1.2.0 (Nexus Prime v3.3.2)
+**Versión:** 1.2.1 (Nexus Prime v3.3.3)
 **Estado General:** 🟢 ESTABLE — Motor WASM operativo, PWA desplegada en producción
 
 ---
@@ -25,6 +25,7 @@ persistencia funciona sobre IndexedDB sin necesidad de backend.
 | CI/CD (6 workflows) | ✅ test, build-wasm, validate-data, autocurative, claude-delegation, codeql |
 | Seguridad XSS / DoS / Prototype Pollution | ✅ Implementado |
 | Strictly Static Architecture | ✅ Stabilization complete (CDN-First) |
+| Tier 1 Reporting (Offline-First) | ✅ Custom IDB Queue + GitHub API |
 
 ---
 
@@ -202,5 +203,4 @@ Ver [`ROADMAP.md`](../ROADMAP.md) para el plan completo.
 
 ---
 
-**Última actualización:** 2026-03-10
-**Próxima revisión:** Al completar sprint v3.4
+**Última actualización:** 2026-04-02
