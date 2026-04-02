@@ -1,9 +1,6 @@
 ---
 export function getStaticPaths() {
-  return [
-    { params: { lang: "es" } },
-    { params: { lang: "en" } },
-  ];
+  return SUPPORTED_LOCALES.map(lang => ({ params: { lang } }));
 }
 const { lang } = Astro.params;
 return Astro.redirect(`/${lang}/donate`);
