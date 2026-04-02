@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { getDistance as getDistanceKm } from "./geometry";
+import type { RouteData } from "../types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -112,7 +113,7 @@ export function normalizeString(str: string): string {
  *   `master_routes.json`, or `null` if the catalog is unavailable or empty.
  */
 // Module-level cache so repeated calls (e.g., retries) don't re-fetch the catalog.
-let _catalogCache: any[] | null = null;
+let _catalogCache: RouteData[] | null = null;
 
 export async function getClosestLandmark(lat: number, lng: number) {
     try {
@@ -139,4 +140,18 @@ export async function getClosestLandmark(lat: number, lng: number) {
         console.error("Error loading catalog for landmark lookup", e);
         return null;
     }
+}
+
+/**
+ * Generates a localized relative URL for the given path and language.
+ * Ensures consistent URL structure (e.g., /es/home) across the application.
+ *
+ * @param lang The language code (e.g., 'es', 'en').
+ * @param path The target path (e.g., 'home', '/rutas').
+ * @returns The formatted localized relative URL.
+ */
+export function getRelativeLocaleUrl(lang: string, path: string): string {
+  if (!path) return `/${lang}/`;
+  const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+  return `/${lang}/${normalizedPath}`;
 }

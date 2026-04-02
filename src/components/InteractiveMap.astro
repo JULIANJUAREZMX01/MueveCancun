@@ -1,145 +1,125 @@
 ---
-import { safeJsonStringify } from '../utils/utils';
-
-interface Props {
-  center?: [number, number];
-  zoom?: number;
-}
-
-const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
+/*
+ * GRAFFITI WARRIOR: Interactive Map (Leaflet)
+ * Strictly Static. Vanilla JS. View Transitions Lifecycle.
+ */
 ---
 
-<div id="map-container" class="w-full h-full relative" data-center={safeJsonStringify(center)} data-zoom={zoom}>
-    <!-- Loading Spinner -->
-    <div id="map-loader" class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50 dark:bg-slate-900 transition-opacity duration-500">
-        <div class="flex flex-col items-center gap-3">
-            <div class="w-10 h-10 border-4 border-slate-200 dark:border-slate-800 border-t-primary-500 rounded-full animate-spin"></div>
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Cargando Mapa...</span>
-        </div>
-    </div>
+<div class="map-wrapper" transition:persist>
+  <div id="map-container" class="w-full relative overflow-hidden" style="height: calc(100dvh - var(--header-h) - var(--bottom-nav-h, 0px));">
+      <!-- Fallback / Loading -->
+      <div id="map-fallback" class="absolute inset-0 bg-slate-100 flex items-center justify-center z-0">
+          <div class="flex flex-col items-center gap-3">
+              <div class="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Cargando Mapa...</p>
+          </div>
+      </div>
 
-    <!-- Map Element -->
-    <div id="leaflet-map" class="w-full h-full z-0"></div>
+      <!-- Hint -->
+      <div id="tap-hint" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+          <div class="bg-slate-900/80 backdrop-blur text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-tighter flex items-center gap-2 shadow-xl border border-white/10">
+              <span class="animate-bounce">👆</span> Toca cualquier punto para ver paradas
+          </div>
+      </div>
 
-    <!-- Map Controls (Custom) -->
-    <div class="absolute bottom-24 right-4 z-[400] flex flex-col gap-2">
-        <button id="gps-center-btn" class="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-primary-500 transition-colors active:scale-95" style="anchor-name: --gps-map-btn" aria-label="Centrar en mi ubicación">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-        </button>
-        <div id="gps-tooltip" class="graffiti-tooltip left" style="position-anchor: --gps-map-btn">Mi Ubicación</div>
-    </div>
+      <!-- Map Instance -->
+      <div id="map" class="w-full h-full z-10"></div>
 
-    <!-- Tap hint badge (normal mode) -->
-    <div id="tap-hint" class="absolute top-4 left-1/2 -translate-x-1/2 z-[400] hidden">
-        <span class="bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm shadow-lg">
-            Toca una parada para usarla como origen o destino
-        </span>
-    </div>
+      <!-- Controls Overlay -->
+      <div class="absolute right-4 bottom-24 md:bottom-8 z-30 flex flex-col gap-2">
+          <button id="gps-center-btn" class="w-12 h-12 bg-white rounded-2xl shadow-xl flex items-center justify-center text-slate-600 hover:text-primary-500 transition-all active:scale-90 outline-none border border-slate-100" aria-label="Centrar en mi ubicación">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </button>
+          <div class="graffiti-tooltip">Mi Ubicación</div>
+      </div>
+  </div>
 </div>
 
-<script>
-  import { showToast } from '../utils/toast';
-  import { coordinatesStore } from '../utils/CoordinatesStore';
-  import { drawRoute } from '../utils/RouteDrawer';
-  import { escapeHtml, safeUrl } from '../utils/utils';
-  import { loadLeaflet } from '../utils/leafletLoader';
+<script lang="ts">
+  import { coordinatesStore } from "../utils/CoordinatesStore";
+  import { showToast } from "../utils/utils";
 
-  let map: any;
-  let layerGroup: any;
-  let coordinatesDB: Map<string, [number, number]> = new Map();
+  let map: any = null;
+  let layerGroup: any = null;
   let stopMarkersLayer: any = null;
+  let coordinatesDB: Map<string, [number, number]> = new Map();
+
+  function escapeHtml(unsafe: string) {
+      return unsafe
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+  }
+
+  function safeUrl(name: string) {
+      return encodeURIComponent(name);
+  }
+
+  function drawRoute(mapInstance: any, journey: any, currentLayerGroup: any, coords: Map<string, [number, number]>) {
+      if (!mapInstance || !journey) return null;
+      if (currentLayerGroup) mapInstance.removeLayer(currentLayerGroup);
+
+      const newLayers: any[] = [];
+      const polylineCoords: any[] = [];
+
+      journey.legs.forEach((leg: any) => {
+          const legCoords = leg.stops
+              .map((s: any) => coords.get(s.nombre.toLowerCase().trim()))
+              .filter(Boolean);
+
+          if (legCoords.length > 1) {
+              const color = leg.transport_type === 'Bus_HotelZone' ? '#F97316' : '#0EA5E9';
+              const poly = (window as any).L.polyline(legCoords, {
+                  color,
+                  weight: 6,
+                  opacity: 0.8,
+                  lineJoin: 'round'
+              });
+              newLayers.push(poly);
+              polylineCoords.push(...legCoords);
+          }
+      });
+
+      const lg = (window as any).L.layerGroup(newLayers).addTo(mapInstance);
+      if (polylineCoords.length > 0) {
+          mapInstance.fitBounds(polylineCoords, { padding: [40, 40] });
+      }
+      return lg;
+  }
 
   async function initMap() {
-    const container = document.getElementById('map-container');
-    const loader = document.getElementById('map-loader');
-    const mapEl = document.getElementById('leaflet-map');
+    if (map) return;
 
-    if (!container || !mapEl) return;
+    const container = document.getElementById('map');
+    if (!container) return;
 
-    try {
-        await loadLeaflet();
-    } catch (e) {
-        console.error("Failed to load map engine", e);
-        if (loader) {
-            // Use textContent to avoid any HTML injection risk
-            loader.textContent = 'Error al cargar el mapa. Por favor, recarga la página.';
-            loader.classList.add('text-red-500', 'font-bold', 'text-center', 'flex', 'items-center', 'justify-center');
-        }
+    // Load dependencies from global scope (assumes Leaflet is in MainLayout head)
+    if (!(window as any).L) {
+        console.warn("[Map] Leaflet not found in window");
         return;
     }
 
-    if (loader) {
-        loader.classList.add('opacity-0', 'pointer-events-none');
-        setTimeout(() => loader.remove(), 500);
-    }
+    await coordinatesStore.init();
+    coordinatesDB = coordinatesStore.getAll();
 
-    if (map) { map.remove(); map = null; }
-
-    const center = JSON.parse(container.dataset.center!);
-    const zoom = parseInt(container.dataset.zoom!);
-
-    map = (window as any).L.map('leaflet-map', {
+    // Cancun Center
+    map = (window as any).L.map('map', {
+        center: [21.1619, -86.8515],
+        zoom: 13,
         zoomControl: false,
         attributionControl: false
-    }).setView(center, zoom);
+    });
 
-    (window as any).L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    // CartoDB Voyager (No labels for cleaner look, or standard for refs)
+    (window as any).L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: 19
     }).addTo(map);
 
-    // Load coordinates DB
-    try {
-        await coordinatesStore.init();
-        coordinatesDB = coordinatesStore.getDB() || new Map();
-    } catch (e) {
-        console.warn("Failed to load coordinates via Store", e);
-        coordinatesDB = new Map();
-    }
+    layerGroup = (window as any).L.layerGroup().addTo(map);
 
-    // --- URL param: picker mode (from /mapa?picker=dest) ---
-    const urlParams = new URLSearchParams(window.location.search);
-    const isPicker = urlParams.get('picker');
-
-    if (isPicker) {
-        showToast("Toque el mapa para seleccionar una parada cercana", "info");
-
-        const indicator = document.createElement('div');
-        indicator.className = 'absolute top-4 left-1/2 -translate-x-1/2 bg-primary-600 text-white px-4 py-2 rounded-full shadow-lg z-[1000] font-bold text-sm animate-bounce';
-        indicator.textContent = "📍 Modo Selección";
-        container.parentElement?.appendChild(indicator);
-
-        map.on('click', (e: any) => {
-            const { lat, lng } = e.latlng;
-            const result = coordinatesStore.findNearestWithDistance(lat, lng);
-
-            if (result && result.distanceKm < 1.0) {
-                (window as any).L.popup()
-                    .setLatLng(e.latlng)
-                    .setContent(`
-                        <div class="text-center p-1">
-                            <p class="font-bold text-sm mb-2">"${escapeHtml(result.name)}"</p>
-                            <p class="text-xs text-slate-500 mb-2">${(result.distanceKm * 1000).toFixed(0)} m de distancia</p>
-                            <button id="confirm-pick-btn" class="bg-primary-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full">
-                                ✅ Seleccionar parada
-                            </button>
-                        </div>
-                    `)
-                    .openOn(map);
-
-                setTimeout(() => {
-                    document.getElementById('confirm-pick-btn')?.addEventListener('click', () => {
-                        window.location.href = `/?selected_stop=${encodeURIComponent(result.name)}`;
-                    });
-                }, 100);
-            } else {
-                showToast("No hay paradas registradas cerca", "warning");
-            }
-        });
-
-        return;
-    }
-
-    // --- Normal mode: check for pending route from localStorage ---
+    // Initial check for pending routes
     const pendingRoute = localStorage.getItem('pending_route');
     if (pendingRoute) {
         try {
@@ -189,18 +169,17 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
         }
     } else if (allStops.length > 200) {
         console.warn(`[Map] ${allStops.length} stops — using cluster-free optimized view (zoom to see stops)`);
-        // Still fit bounds without individual markers
         const allCoords = allStops.map(([, c]) => c);
         setTimeout(() => map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 13 }), 100);
     }
 
-    // --- Map click (normal mode): tap anywhere to find nearest stop ---
+    // --- Map click ---
     map.on('click', (e: any) => {
         const { lat, lng } = e.latlng;
         const result = coordinatesStore.findNearestWithDistance(lat, lng);
 
         if (!result || result.distanceKm > 0.8) {
-            return; // Too far — ignore silent clicks
+            return;
         }
 
         (window as any).L.popup()
@@ -222,32 +201,13 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
             .openOn(map);
     });
 
-    // Show tap hint briefly on first load
-    const tapHint = document.getElementById('tap-hint');
-    if (tapHint && !sessionStorage.getItem('map_hint_shown')) {
-        tapHint.classList.remove('hidden');
-        setTimeout(() => tapHint.classList.add('hidden'), 3500);
-        sessionStorage.setItem('map_hint_shown', '1');
-    }
+    // Final measure to prevent small square
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 500);
   }
 
-  // --- Event Listeners ---
-
-  window.addEventListener('SHOW_ROUTE_ON_MAP', (event: any) => {
-      const { journey } = event.detail;
-      const newLg = drawRoute(map, journey, layerGroup, coordinatesDB);
-      if (newLg) layerGroup = newLg;
-  });
-
-  // Global click delegation for popup buttons (CSP-compliant, no inline handlers)
-  document.addEventListener('click', (e: any) => {
-      // Legacy: view details button — check before early return
-      const legacy = e.target?.closest('.js-view-details-btn');
-      if (legacy?.dataset.stopName) {
-          window.location.href = `/rutas?search=${safeUrl(legacy.dataset.stopName)}`;
-          return;
-      }
-
+  function handleMapAction(e: any) {
       const btn = e.target?.closest('.js-map-stop-action');
       if (!btn) return;
 
@@ -267,36 +227,19 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
       } else if (action === 'routes') {
           window.location.href = `/rutas?search=${safeUrl(name)}`;
       }
-  });
-
-  // Cleanup on Astro page swap
-  document.addEventListener('astro:before-swap', () => {
-      if (map) { map.remove(); map = null; }
-      const mapEl = document.getElementById('map-container');
-      if (mapEl) delete mapEl.dataset.initialized;
-  });
+  }
 
   function scheduleInit() {
       const mapEl = document.getElementById('map-container');
-      if (!mapEl || mapEl.dataset.initialized) return;
-      mapEl.dataset.initialized = 'true';
-      if ('requestIdleCallback' in window) {
-          // timeout: 2000 ensures map loads even if browser never reaches idle
-          (window as any).requestIdleCallback(() => { initMap(); setupGPS(); }, { timeout: 2000 });
-      } else {
-          setTimeout(() => { initMap(); setupGPS(); }, 200);
+      if (!mapEl || mapEl.dataset.initialized) {
+          if (map) map.invalidateSize();
+          return;
       }
+      mapEl.dataset.initialized = 'true';
+      initMap();
+      setupGPS();
   }
 
-  document.addEventListener('astro:page-load', scheduleInit);
-
-  if (document.readyState === 'complete') {
-      scheduleInit();
-  } else {
-      window.addEventListener('load', scheduleInit);
-  }
-
-  // --- GPS Control ---
   function setupGPS() {
       const btn = document.getElementById('gps-center-btn');
       if (!btn) return;
@@ -324,6 +267,26 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
           });
       });
   }
+
+  // Lifecycle
+  document.addEventListener('astro:page-load', scheduleInit);
+  document.addEventListener('click', handleMapAction);
+
+  document.addEventListener('astro:before-swap', () => {
+      if (map) {
+          map.remove();
+          map = null;
+      }
+      const mapEl = document.getElementById('map-container');
+      if (mapEl) delete mapEl.dataset.initialized;
+  });
+
+  // Initial Run
+  if (document.readyState === 'complete') {
+      scheduleInit();
+  } else {
+      window.addEventListener('load', scheduleInit);
+  }
 </script>
 
 <style>
@@ -339,35 +302,25 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), translate 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.2s;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     z-index: 50;
-    right: anchor(left);
-    top: anchor(top);
-    translate: -12px 6px;
+    right: 60px;
+    top: 12px;
   }
 
-  #gps-center-btn:hover + .graffiti-tooltip,
-  #gps-center-btn:focus-visible + .graffiti-tooltip {
+  #gps-center-btn:hover + .graffiti-tooltip {
     opacity: 1;
-    translate: -16px 6px;
   }
 </style>
 
 <style is:global>
-  .user-location-marker {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-  }
   .user-location-marker .dot {
       width: 12px;
       height: 12px;
       background: #3B82F6;
       border: 2px solid white;
       border-radius: 50%;
-      box-shadow: 0 0 8px rgba(0,0,0,0.3);
-      z-index: 2;
   }
   .user-location-marker .pulse-ring {
       position: absolute;
@@ -375,21 +328,10 @@ const { center = [21.1619, -86.8515], zoom = 13 } = Astro.props;
       height: 30px;
       background: rgba(59, 130, 246, 0.4);
       border-radius: 50%;
-      z-index: 1;
       animation: map-marker-pulse 2s infinite;
   }
   @keyframes map-marker-pulse {
       0% { transform: scale(0.5); opacity: 1; }
       100% { transform: scale(2.5); opacity: 0; }
-  }
-
-  /* Leaflet popup custom styles */
-  .leaflet-popup-content-wrapper {
-      border-radius: 12px !important;
-      padding: 0 !important;
-      overflow: hidden;
-  }
-  .leaflet-popup-content {
-      margin: 0 !important;
   }
 </style>

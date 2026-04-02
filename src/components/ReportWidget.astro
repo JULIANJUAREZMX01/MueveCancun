@@ -12,7 +12,6 @@ interface Props {
 
 const repoOwner = Astro.props.repoOwner ?? import.meta.env.GITHUB_REPO_OWNER ?? "JULIANJUAREZMX01";
 const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "MueveCancun";
-const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN ?? "";
 ---
 
 <!-- Botón flotante — visible en todas las páginas vía Layout -->
@@ -338,7 +337,7 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN ?? "";
   }
 </style>
 
-<script define:vars={{ repoOwner, repoName, githubToken }}>
+<script define:vars={{ repoOwner, repoName }}>
   /** @type {any} */
   (() => {
     // ── Referencias DOM ──────────────────────────────────────────
@@ -492,7 +491,7 @@ _Versión: Nexus Protocol 1.1_
 `;
     };
 
-    // ── Envío → GitHub Issues API ─────────────────────────────────
+    // ── Envío → Proxy serverless Base44 (token seguro, nunca expuesto) ─────
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -512,46 +511,32 @@ _Versión: Nexus Protocol 1.1_
       setSubmitting(true);
       if (feedback) feedback.hidden = true;
 
-      const issuePayload = {
-        title:  `[REPORTE] ${TIPO_TITLES[tipo] ?? tipo}${ruta ? ` — ${ruta}` : ''}`,
-        body:   buildIssueBody({
-          tipo,
-          ruta,
-          descripcion,
-          lat,
-          lng,
-          userAgent: navigator.userAgent,
-          url: window.location.href
-        }),
-        labels: TIPO_LABELS[tipo] ?? ['reporte', 'estado:pendiente'],
-      };
-
       try {
-        const res = await fetch(
-          `https://api.github.com/repos/${repoOwner}/${repoName}/issues`,
-          {
-            method: 'POST',
-            headers: {
-              'Accept':        'application/vnd.github+json',
-              'Authorization': `Bearer ${githubToken}`,
-              'X-GitHub-Api-Version': '2022-11-28',
-              'Content-Type':  'application/json',
-            },
-            body: JSON.stringify(issuePayload),
-          }
-        );
+        const res = await fetch('https://not-yet-named-user-skipped-to-sp-d14220f3.base44.app/functions/createGithubIssue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tipo,
+            ruta,
+            descripcion,
+            lat,
+            lng,
+            repoOwner,
+            repoName,
+            userAgent: navigator.userAgent,
+            url: window.location.href
+          }),
+        });
 
         if (res.ok) {
-          const issue = await res.json();
-          showFeedback(`¡Gracias! Reporte enviado (#${issue.number})`, 'success');
+          const data = await res.json();
+          showFeedback(`¡Gracias! Reporte enviado (#${data.number})`, 'success');
           setTimeout(closeModal, 2800);
         } else {
           const errData = await res.json().catch(() => ({}));
-          console.error('[ReportWidget] GitHub API error:', res.status, errData);
+          console.error('[ReportWidget] API error:', res.status, errData);
           showFeedback(
-            res.status === 401
-              ? 'Error de autenticación. Contacta al admin.'
-              : `Error al enviar (${res.status}).`,
+            errData.error || `Error al enviar (${res.status}).`,
             'error'
           );
           setSubmitting(false);

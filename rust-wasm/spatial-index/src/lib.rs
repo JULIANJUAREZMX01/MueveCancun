@@ -65,6 +65,10 @@ fn calculate_stops_hash(stops: &[Stop]) -> u64 {
     let mut hasher = DefaultHasher::new();
     for stop in stops {
         stop.id.hash(&mut hasher);
+        // Include coordinates in hash to prevent collisions when different datasets
+        // have the same stop IDs but different locations.
+        stop.lat.to_bits().hash(&mut hasher);
+        stop.lng.to_bits().hash(&mut hasher);
     }
     hasher.finish()
 }

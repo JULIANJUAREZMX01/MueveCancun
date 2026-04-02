@@ -51,14 +51,46 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
  * into a single source: IndexedDB via this module.
  * Accepts the already-open db instance to avoid circular recursion with initDB.
  */
-export const migrateBalanceFromLocalStorage = async (_db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
-  // Migration from localStorage to IndexedDB is complete.
-  // This function is kept for backwards compatibility but now only marks it as done.
+export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
   try {
-      localStorage.setItem('balance_migration_done', 'true');
-      localStorage.removeItem('muevecancun_balance');
-      localStorage.removeItem('user_balance');
-  } catch (_e) {
+      // Helper to mark migration complete and clear legacy keys
+      const finalizeMigration = () => {
+          localStorage.setItem('balance_migration_done', 'true');
+          localStorage.removeItem('muevecancun_balance');
+          localStorage.removeItem('user_balance');
+      };
+
+      // Read BEFORE removing to avoid silent balance loss on upgrade
+      const legacyBalance = parseFloat(
+          localStorage.getItem('muevecancun_balance') ?? localStorage.getItem('user_balance') ?? 'NaN'
+      );
+
+      // If there is no valid positive legacy balance, we can safely mark migration done
+      if (isNaN(legacyBalance) || legacyBalance <= 0) {
+          finalizeMigration();
+          return;
+      }
+
+      // If a positive legacy balance exists and IDB still has the default 180.00, migrate it
+      try {
+          const tx = db.transaction('wallet-status', 'readwrite');
+          const store = tx.objectStore('wallet-status');
+          const existing = await store.get('current_balance');
+          const isDefault = existing?.amount === 180.00;
+          if (isDefault) {
+              const signature = await generateSignature(legacyBalance);
+              await store.put(
+                  { id: 'current_balance', amount: legacyBalance, currency: 'MXN', signature },
+                  'current_balance'
+              );
+          }
+          await tx.done;
+          // Only after a successful transaction do we clear legacy data and mark migration done
+          finalizeMigration();
+      } catch (e) {
+          // On IndexedDB/WebCrypto failure, keep legacy values so a later init can retry
+      }
+  } catch (e) {
       // Ignore errors if localStorage is not available (e.g. SSR)
   }
 };
