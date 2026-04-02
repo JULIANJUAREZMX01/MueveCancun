@@ -329,31 +329,78 @@ const ui = useTranslations(lang);
       if (!container || !info) return;
 
       info.classList.remove('hidden');
-      container.innerHTML = results.map(r => `
-          <div class="bg-white p-4 rounded-3xl shadow-md border border-slate-100 flex flex-col gap-2 animate-fade-in">
-              <div class="flex justify-between items-center">
-                  <span class="text-xs font-black text-slate-400 uppercase tracking-widest">${r.type || 'Directo'}</span>
-                  <span class="text-lg font-black text-slate-900">$${r.total_price || 10}</span>
-              </div>
-              <div class="flex flex-col gap-1">
-                  ${r.legs.map((leg: any) => `
-                      <div class="flex items-center gap-2">
-                          <div class="w-2 h-2 rounded-full bg-primary-500"></div>
-                          <span class="text-sm font-bold text-slate-700">${leg.route_id}</span>
-                          <span class="text-xxs text-slate-400">→ ${leg.stops.length} paradas</span>
-                      </div>
-                  `).join('')}
-              </div>
-              <button class="mt-2 w-full py-2 bg-slate-50 rounded-xl text-xs font-bold text-primary-600 hover:bg-primary-50 transition-colors" data-journey='${JSON.stringify(r).replace(/'/g, "&#39;")}'>
-                  Ver en Mapa
-              </button>
-          </div>
-      `).join('');
+      // Clear previous results
+      container.innerHTML = '';
+
+      results.forEach((r: any) => {
+          // Card wrapper
+          const card = document.createElement('div');
+          card.className = 'bg-white p-4 rounded-3xl shadow-md border border-slate-100 flex flex-col gap-2 animate-fade-in';
+
+          // Header (type + price)
+          const header = document.createElement('div');
+          header.className = 'flex justify-between items-center';
+
+          const typeSpan = document.createElement('span');
+          typeSpan.className = 'text-xs font-black text-slate-400 uppercase tracking-widest';
+          typeSpan.textContent = (r.type || 'Directo') + '';
+
+          const priceSpan = document.createElement('span');
+          priceSpan.className = 'text-lg font-black text-slate-900';
+          priceSpan.textContent = '$' + (r.total_price != null ? r.total_price : 10);
+
+          header.appendChild(typeSpan);
+          header.appendChild(priceSpan);
+
+          // Legs container
+          const legsContainer = document.createElement('div');
+          legsContainer.className = 'flex flex-col gap-1';
+
+          if (Array.isArray(r.legs)) {
+              r.legs.forEach((leg: any) => {
+                  const legRow = document.createElement('div');
+                  legRow.className = 'flex items-center gap-2';
+
+                  const dot = document.createElement('div');
+                  dot.className = 'w-2 h-2 rounded-full bg-primary-500';
+
+                  const routeSpan = document.createElement('span');
+                  routeSpan.className = 'text-sm font-bold text-slate-700';
+                  routeSpan.textContent = (leg && leg.route_id != null ? leg.route_id : '') + '';
+
+                  const stopsSpan = document.createElement('span');
+                  stopsSpan.className = 'text-xxs text-slate-400';
+                  const stopsCount = leg && Array.isArray(leg.stops) ? leg.stops.length : 0;
+                  stopsSpan.textContent = '→ ' + stopsCount + ' paradas';
+
+                  legRow.appendChild(dot);
+                  legRow.appendChild(routeSpan);
+                  legRow.appendChild(stopsSpan);
+
+                  legsContainer.appendChild(legRow);
+              });
+          }
+
+          // "Ver en Mapa" button
+          const button = document.createElement('button');
+          button.className = 'mt-2 w-full py-2 bg-slate-50 rounded-xl text-xs font-bold text-primary-600 hover:bg-primary-50 transition-colors';
+          button.textContent = 'Ver en Mapa';
+          button.setAttribute('type', 'button');
+          button.dataset.journey = JSON.stringify(r);
+
+          // Assemble card
+          card.appendChild(header);
+          card.appendChild(legsContainer);
+          card.appendChild(button);
+
+          container.appendChild(card);
+      });
 
       // Attach event listeners to results
       container.querySelectorAll('button[data-journey]').forEach(b => {
           b.addEventListener('click', () => {
-              const journey = JSON.parse(b.getAttribute('data-journey') || '{}');
+              const journeyAttr = (b as HTMLButtonElement).getAttribute('data-journey') || '{}';
+              const journey = JSON.parse(journeyAttr);
               window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey } }));
               window.scrollTo({ top: 0, behavior: 'smooth' });
           });
