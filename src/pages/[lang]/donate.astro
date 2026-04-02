@@ -14,7 +14,8 @@ const translations = {
     directLinkText: '¿El botón no funciona? Usa este enlace directo',
     recurringTitle: 'Apoyo Recurrente (Suscripciones)',
     oneTimeTitle: 'Aportación Única (Donaciones)',
-    copyLinksTitle: '🔗 Links de Pago (compartir)',
+    mrrTitle: 'Panel de Suscripciones',
+    mrrLoading: 'Cargando...',
     copy: 'Copiar',
     plans: {
       starter: {
@@ -72,7 +73,7 @@ const translations = {
       shield: {
         name: 'Shield Guardian',
         price: '$3',
-        period: '',
+        period: '/única vez',
         features: ['Todo lo anterior', 'Notificaciones de rutas alteradas', 'Datos históricos', 'Acceso a features beta', 'Soporte prioritario'],
         cta: 'Apoyar MueveCancún',
         qr: '/qr-shield.png',
@@ -82,7 +83,7 @@ const translations = {
       architect: {
         name: 'Nexus Architect',
         price: '$10',
-        period: '',
+        period: '/única vez',
         features: ['Todo lo anterior', 'Votación en prioridades', 'Comunidad privada', 'API beta access', 'Créditos en el proyecto'],
         cta: 'Construir el futuro',
         qr: '/qr-architect.png',
@@ -90,24 +91,22 @@ const translations = {
         link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03'
       }
     },
-    impact: {
-      title: 'Tu impacto',
-      stats: [
-        { label: 'Guardianes', value: '7' },
-        { label: 'Ingreso mensual', value: '$21' },
-        { label: 'Horas dev/mes', value: '210' }
-      ]
-    }
+    milestones: [
+      { label: 'Fase 1 — Starter', desc: '1 suscriptor = agente pagado', goal: 16, emoji: '🎯' },
+      { label: 'Fase 2 — Elite Mensual', desc: '10 starters o MRR $160', goal: 160, emoji: '⚡' },
+      { label: 'Fase 3 — Elite Anual', desc: 'MRR estable → $1,920/año', goal: 160, emoji: '👑' },
+    ]
   },
   en: {
     title: 'Shield of Cancun',
-    subtitle: 'Sustain your city\'s transport',
+    subtitle: "Sustain your city's transport",
     description: 'MueveCancún is 100% free because we believe transport is a right. But keeping it alive costs money. Support with what you can.',
     qrText: 'Scan me to donate',
     directLinkText: 'Button not working? Use this direct link',
     recurringTitle: 'Recurring Support (Subscriptions)',
     oneTimeTitle: 'One-time Support (Donations)',
-    copyLinksTitle: '🔗 Payment Links (share)',
+    mrrTitle: 'Subscriptions Dashboard',
+    mrrLoading: 'Loading...',
     copy: 'Copy',
     plans: {
       starter: {
@@ -165,7 +164,7 @@ const translations = {
       shield: {
         name: 'Shield Guardian',
         price: '$3',
-        period: '',
+        period: '/one time',
         features: ['Everything above', 'Altered route alerts', 'Historical data', 'Beta feature access', 'Priority support'],
         cta: 'Support MueveCancún',
         qr: '/qr-shield.png',
@@ -175,7 +174,7 @@ const translations = {
       architect: {
         name: 'Nexus Architect',
         price: '$10',
-        period: '',
+        period: '/one time',
         features: ['Everything above', 'Priority voting', 'Private community', 'API beta access', 'Project credits'],
         cta: 'Build the future',
         qr: '/qr-architect.png',
@@ -183,14 +182,11 @@ const translations = {
         link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03'
       }
     },
-    impact: {
-      title: 'Your impact',
-      stats: [
-        { label: 'Guardians', value: '7' },
-        { label: 'Monthly Revenue', value: '$21' },
-        { label: 'Dev hours/mo', value: '210' }
-      ]
-    }
+    milestones: [
+      { label: 'Phase 1 — Starter', desc: '1 subscriber = agent paid', goal: 16, emoji: '🎯' },
+      { label: 'Phase 2 — Elite Monthly', desc: '10 starters or MRR $160', goal: 160, emoji: '⚡' },
+      { label: 'Phase 3 — Elite Annual', desc: 'Stable MRR → $1,920/yr', goal: 160, emoji: '👑' },
+    ]
   }
 };
 
@@ -198,61 +194,92 @@ const t = translations[lang] || translations.es;
 ---
 
 <MainLayout title={t.title}>
-  <!-- Stripe script -->
   <script async src="https://js.stripe.com/v3/buy-button.js"></script>
 
-  <div class="max-w-4xl mx-auto px-4 py-12 space-y-16">
+  <div class="max-w-4xl mx-auto px-4 py-8 space-y-14 pb-28">
 
     <!-- Hero -->
-    <header class="text-center space-y-4">
-      <div class="inline-flex items-center justify-center w-20 h-20 bg-primary-500 rounded-2xl shadow-xl shadow-primary-500/20 mb-4 animate-bounce">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <header class="text-center space-y-3 pt-4">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-primary-500 rounded-2xl shadow-xl shadow-primary-500/20 mb-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
       </div>
-      <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">{t.title}</h1>
-      <p class="text-xl text-primary-600 font-bold">{t.subtitle}</p>
-      <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+      <h1 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">{t.title}</h1>
+      <p class="text-lg text-primary-600 font-bold">{t.subtitle}</p>
+      <p class="text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
         {t.description}
       </p>
     </header>
 
-    <!-- Impact Stats -->
-    <section class="bg-slate-100 dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700">
-      <h2 class="text-center text-sm font-black uppercase tracking-widest text-slate-500 mb-8">{t.impact.title}</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {t.impact.stats.map(stat => (
-          <div class="text-center space-y-1">
-            <p class="text-3xl font-black text-slate-900 dark:text-white">{stat.value}</p>
-            <p class="text-sm font-bold text-slate-500">{stat.label}</p>
+    <!-- MRR Dashboard — live data from GitHub Issues as proxy -->
+    <section class="bg-slate-900 dark:bg-slate-800 rounded-3xl p-6 border border-slate-700">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">{t.mrrTitle}</h2>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span id="mrr-amount" class="text-3xl font-black text-emerald-400">$0</span>
+            <span class="text-slate-500 text-sm font-bold">/MRR</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <p id="subs-count" class="text-2xl font-black text-white">0</p>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">{lang === 'es' ? 'suscriptores activos' : 'active subscribers'}</p>
+        </div>
+      </div>
+
+      <!-- Hoja de Ruta / Milestones -->
+      <div class="space-y-3">
+        <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">🗺️ {lang === 'es' ? 'Hoja de Ruta' : 'Roadmap'}</p>
+        {t.milestones.map((ms, i) => (
+          <div class="milestone-item" data-index={i} data-goal={ms.goal}>
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-2">
+                <span class="text-base">{ms.emoji}</span>
+                <div>
+                  <p class="text-xs font-black text-white">{ms.label}</p>
+                  <p class="text-[10px] text-slate-500">{ms.desc}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="milestone-current text-xs font-black text-emerald-400">$0</span>
+                <span class="text-xs text-slate-600"> / ${ms.goal}</span>
+              </div>
+            </div>
+            <div class="h-1.5 bg-slate-800 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div class="milestone-bar h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-1000" style="width: 0%"></div>
+            </div>
           </div>
         ))}
       </div>
     </section>
 
     <!-- Recurring Support -->
-    <section class="space-y-8">
-      <h2 class="text-2xl font-black text-slate-900 dark:text-white text-center uppercase tracking-tight">{t.recurringTitle}</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+    <section class="space-y-6">
+      <h2 class="text-xl font-black text-slate-900 dark:text-white text-center uppercase tracking-tight">{t.recurringTitle}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         {Object.entries(t.plans).map(([key, plan]) => (
           <div class:list={[
-            "relative bg-white dark:bg-slate-900 rounded-3xl p-8 border-2 transition-all hover:scale-[1.02] flex flex-col h-full",
-            plan.recommended ? "border-primary-500 shadow-xl shadow-primary-500/10 scale-105 z-10" : "border-slate-200 dark:border-slate-800"
+            "relative bg-white dark:bg-slate-900 rounded-3xl p-6 border-2 transition-all hover:scale-[1.02] flex flex-col h-full",
+            (plan as any).recommended ? "border-primary-500 shadow-xl shadow-primary-500/10 scale-105 z-10" : "border-slate-200 dark:border-slate-800"
           ]}>
-            {plan.recommended && (
-              <span class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full">
+            {(plan as any).recommended && (
+              <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full whitespace-nowrap">
                 Recomendado
               </span>
             )}
-            <div class="space-y-6 flex-1">
-              <div class="text-center space-y-2">
-                <h3 class="text-xl font-black text-slate-900 dark:text-white">{plan.name}</h3>
-                <p class="text-3xl font-black text-primary-600">{plan.price}<span class="text-sm font-normal opacity-70">{plan.period}</span></p>
+            <div class="space-y-5 flex-1">
+              <div class="text-center space-y-1">
+                <h3 class="text-lg font-black text-slate-900 dark:text-white">{(plan as any).name}</h3>
+                <p class="text-2xl font-black text-primary-600">{(plan as any).price}<span class="text-xs font-normal opacity-70">{(plan as any).period}</span></p>
               </div>
-              <ul class="space-y-3">
-                {plan.features.map(feature => (
-                  <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <ul class="space-y-2.5">
+                {(plan as any).features.map((feature: string) => (
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                     </svg>
                     {feature}
@@ -260,13 +287,18 @@ const t = translations[lang] || translations.es;
                 ))}
               </ul>
             </div>
-            <div class="mt-8">
-              <a href={plan.link} target="_blank" rel="noopener noreferrer" class:list={[
-                "block w-full py-4 rounded-2xl font-black text-sm text-center transition-all uppercase tracking-widest no-underline",
-                plan.recommended
-                  ? "bg-primary-500 text-white shadow-lg shadow-primary-500/30 hover:opacity-90"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
-              ]}>
+            <div class="mt-6">
+              <a
+                href={(plan as any).link}
+                target="_blank"
+                rel="noopener noreferrer"
+                class:list={[
+                  "block w-full py-3.5 rounded-2xl font-black text-sm text-center transition-all uppercase tracking-widest no-underline",
+                  (plan as any).recommended
+                    ? "bg-primary-500 text-white shadow-lg shadow-primary-500/30 hover:opacity-90"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
+                ]}
+              >
                 Suscribirme
               </a>
             </div>
@@ -276,63 +308,51 @@ const t = translations[lang] || translations.es;
     </section>
 
     <!-- One-Time Support -->
-    <section class="space-y-8">
-      <h2 class="text-2xl font-black text-slate-900 dark:text-white text-center uppercase tracking-tight">{t.oneTimeTitle}</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+    <section class="space-y-6">
+      <h2 class="text-xl font-black text-slate-900 dark:text-white text-center uppercase tracking-tight">{t.oneTimeTitle}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         {Object.entries(t.tiers).map(([key, tier]) => (
           <div class:list={[
-            "relative bg-white dark:bg-slate-900 rounded-3xl p-8 border-2 transition-all hover:scale-[1.02] flex flex-col h-full",
-            tier.recommended ? "border-primary-500 shadow-xl shadow-primary-500/10 scale-105 z-10" : "border-slate-200 dark:border-slate-800"
+            "relative bg-white dark:bg-slate-900 rounded-3xl p-6 border-2 transition-all hover:scale-[1.02] flex flex-col h-full",
+            (tier as any).recommended ? "border-primary-500 shadow-xl shadow-primary-500/10 scale-105 z-10" : "border-slate-200 dark:border-slate-800"
           ]}>
-            <div class="space-y-6 flex-1">
-              <div class="text-center space-y-2">
-                <h3 class="text-xl font-black text-slate-900 dark:text-white">{tier.name}</h3>
-                <p class="text-3xl font-black text-primary-600">{tier.price}<span class="text-sm font-normal opacity-70">{tier.period}</span></p>
+            <div class="space-y-5 flex-1">
+              <div class="text-center space-y-1">
+                <h3 class="text-lg font-black text-slate-900 dark:text-white">{(tier as any).name}</h3>
+                <p class="text-2xl font-black text-primary-600">{(tier as any).price}<span class="text-xs font-normal opacity-70">{(tier as any).period || ''}</span></p>
               </div>
-              <ul class="space-y-3">
-                {tier.features.map(feature => (
-                  <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <ul class="space-y-2.5">
+                {(tier as any).features.map((feature: string) => (
+                  <li class="flex items-start gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                     </svg>
                     {feature}
                   </li>
                 ))}
               </ul>
-
-              {tier.buyButtonId ? (
-                <div class="space-y-6">
+            </div>
+            <div class="mt-6">
+              {(tier as any).buyButtonId ? (
+                <div class="space-y-4">
                   <div class="flex justify-center">
                     <stripe-buy-button
-                      buy-button-id={tier.buyButtonId}
+                      buy-button-id={(tier as any).buyButtonId}
                       publishable-key="pk_live_51T6oKE2dM2f4HRxoh2mpjFg4MHpHXxqc65ulAos4p22xPpD3v55ejGpiGx1Y8vdK5doYMTPGvTPi6RzsqdVv2xvE000caSvFag"
                     >
                     </stripe-buy-button>
                   </div>
-
-                  {tier.link && (
+                  {(tier as any).link && (
                     <div class="text-center">
-                      <a href={tier.link} class="text-[10px] text-primary-500 hover:underline font-bold transition-all">
+                      <a href={(tier as any).link} class="text-[10px] text-primary-500 hover:underline font-bold">
                         {t.directLinkText}
                       </a>
                     </div>
                   )}
-
-                  {tier.qr && (
-                    <div class="flex flex-col items-center gap-2">
-                      <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-md border border-slate-100">
-                        <img src={tier.qr} alt={t.qrText} class="w-full h-full object-contain" />
-                      </div>
-                      <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{t.qrText}</p>
-                    </div>
-                  )}
                 </div>
               ) : (
-                <button class:list={[
-                  "w-full py-4 rounded-2xl font-black text-sm transition-all cursor-default opacity-50",
-                  "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white"
-                ]}>
-                  {tier.cta}
+                <button class="w-full py-3.5 rounded-2xl font-black text-sm bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-widest cursor-default" disabled>
+                  {(tier as any).cta}
                 </button>
               )}
             </div>
@@ -341,64 +361,72 @@ const t = translations[lang] || translations.es;
       </div>
     </section>
 
-    <!-- Copy Links -->
-    <section class="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-      <h3 class="font-black text-slate-900 dark:text-white uppercase tracking-widest text-sm text-center">{t.copyLinksTitle}</h3>
-      <div class="space-y-3">
-        {[...Object.entries(t.plans), ...Object.entries(t.tiers).filter(([_,v]) => v.link)].map(([key, plan]) => (
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-xl px-4 py-3 gap-2 border border-slate-100 dark:border-slate-800">
-            <span class="text-sm text-slate-700 dark:text-slate-300 font-bold">{plan.name} {plan.price}{plan.period || ''}</span>
-            <div class="flex items-center gap-2 overflow-hidden">
-              <span class="text-[10px] text-slate-400 truncate max-w-[120px] sm:max-w-48 font-mono">{plan.link}</span>
-              <button class="copy-btn min-h-0 min-w-0 text-[10px] bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors font-black uppercase tracking-tighter shrink-0" data-link={plan.link}>
-                {t.copy}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <!-- Trust -->
-    <footer class="text-center space-y-6 pt-12 border-top border-slate-100 dark:border-slate-800">
-      <p class="text-sm text-slate-500 italic">
-        "Este no es un proyecto de código. Es un proyecto de confianza."
-      </p>
-      <div class="flex justify-center gap-4">
-        <div class="flex -space-x-2">
-          {[1,2,3,4,5,6,7].map(i => (
-            <div class="w-8 h-8 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold">
-              G{i}
-            </div>
-          ))}
-        </div>
-        <p class="text-xs text-slate-400 flex items-center gap-2">
-           7 Guardianes sostienen MueveCancún
-        </p>
-      </div>
-    </footer>
   </div>
-
-  <script>
-    import { showToast } from '../../utils/toast';
-
-    function setupCopyButtons() {
-      const buttons = document.querySelectorAll('.copy-btn');
-      buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const link = btn.getAttribute('data-link');
-          if (link) {
-            navigator.clipboard.writeText(link).then(() => {
-              showToast("¡Link copiado!", "success");
-            }).catch(() => {
-              showToast("Error al copiar", "error");
-            });
-          }
-        });
-      });
-    }
-
-    document.addEventListener('astro:page-load', setupCopyButtons);
-    setupCopyButtons();
-  </script>
 </MainLayout>
+
+<script define:vars={{ lang }}>
+  // MRR Dashboard: fetch real data from GitHub Issues as proxy for activity
+  // Real Stripe webhook would be needed for exact MRR — this shows open issues count
+  // and a progress bar toward goals
+
+  const STARTER_PRICE = 16;
+  const ELITE_PRICE = 160;
+  const GOALS = [16, 160, 160];
+
+  async function loadMRRDashboard() {
+    const mrrEl   = document.getElementById('mrr-amount');
+    const subsEl  = document.getElementById('subs-count');
+
+    // Try localStorage cache first (5min TTL)
+    try {
+      const cached = localStorage.getItem('mrr_cache');
+      if (cached) {
+        const { ts, mrr, subs } = JSON.parse(cached);
+        if (Date.now() - ts < 300000) {
+          updateMRRUI(mrr, subs);
+          return;
+        }
+      }
+    } catch { /* ignore */ }
+
+    try {
+      // Count open issues with label 'stripe-subscriber' as MRR proxy
+      // In production this would be replaced with a real Stripe endpoint
+      const res = await fetch(
+        'https://api.github.com/repos/JULIANJUAREZMX01/MueveCancun/issues?labels=stripe-subscriber&state=open&per_page=100',
+        { headers: { 'Accept': 'application/vnd.github.v3+json' } }
+      );
+      if (!res.ok) throw new Error('API error');
+      const issues = await res.json();
+      const subs = Array.isArray(issues) ? issues.length : 0;
+      const mrr = subs * STARTER_PRICE; // assume starter by default
+
+      localStorage.setItem('mrr_cache', JSON.stringify({ ts: Date.now(), mrr, subs }));
+      updateMRRUI(mrr, subs);
+    } catch {
+      // Keep $0 — no real data yet
+      updateMRRUI(0, 0);
+    }
+  }
+
+  function updateMRRUI(mrr, subs) {
+    const mrrEl  = document.getElementById('mrr-amount');
+    const subsEl = document.getElementById('subs-count');
+
+    if (mrrEl) mrrEl.textContent = `$${mrr}`;
+    if (subsEl) subsEl.textContent = String(subs);
+
+    // Update milestones
+    document.querySelectorAll('.milestone-item').forEach((item, i) => {
+      const goal = parseInt(item.getAttribute('data-goal') || '1');
+      const bar = item.querySelector('.milestone-bar');
+      const cur = item.querySelector('.milestone-current');
+      const pct = Math.min((mrr / goal) * 100, 100);
+      if (bar) (bar as HTMLElement).style.width = `${pct}%`;
+      if (cur) cur.textContent = `$${mrr}`;
+    });
+  }
+
+  document.addEventListener('astro:page-load', loadMRRDashboard);
+  loadMRRDashboard();
+</script>
