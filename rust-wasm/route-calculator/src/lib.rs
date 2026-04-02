@@ -240,7 +240,7 @@ pub fn find_route_core_wrapper(origin: &str, dest: &str) -> Result<Vec<Journey>,
 
 #[wasm_bindgen]
 pub fn validate_operator_funds(balance: f64) -> bool {
-    balance >= 180.0
+    balance >= 0.0
 }
 
 #[wasm_bindgen]

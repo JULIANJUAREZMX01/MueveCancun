@@ -280,14 +280,14 @@ const ui = uiTranslations[currentLang];
             balance = walletData.amount;
             console.log("[RouteCalculator] Balance loaded from IndexedDB:", balance);
         } else {
-            // Fallback: initialize to 180.0 if no balance found
-            balance = 180.0;
+            // Fallback: initialize to 0.0 if no balance found
+            balance = 0.0;
             await setWalletBalance(balance);
-            console.log("[RouteCalculator] Balance initialized to 180.0 in IndexedDB");
+            console.log("[RouteCalculator] Balance initialized to 0.0 in IndexedDB");
         }
     } catch (e) {
         console.warn("[RouteCalculator] IndexedDB Error, using default balance:", e);
-        balance = 180.0;
+        balance = 0.0;
     }
 
     if (wasmLoaded && typeof validate_operator_funds === 'function') {
@@ -295,10 +295,10 @@ const ui = uiTranslations[currentLang];
             hasBalance = validate_operator_funds(balance);
         } catch (e) {
             console.warn("WASM validation failed, fallback to strict check", e);
-            hasBalance = balance >= 180.0;
+            hasBalance = balance >= 0.0;
         }
     } else {
-        hasBalance = balance >= 180.0;
+        hasBalance = balance >= 0.0;
     }
 
     if (balanceBadge) {
