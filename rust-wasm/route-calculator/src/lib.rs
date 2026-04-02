@@ -100,6 +100,35 @@ static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
     })
 });
 
+
+// --- NORMALIZATION ---
+
+fn normalize_str(s: &str) -> String {
+    let mut result = s.trim().to_lowercase();
+    result = result.replace('á', "a");
+    result = result.replace('é', "e");
+    result = result.replace('í', "i");
+    result = result.replace('ó', "o");
+    result = result.replace('ú', "u");
+    result = result.replace('ü', "u");
+    result = result.replace('ñ', "n");
+
+    let mut collapsed = String::with_capacity(result.len());
+    let mut last_was_whitespace = false;
+    for c in result.chars() {
+        if c.is_whitespace() {
+            if !last_was_whitespace {
+                collapsed.push(' ');
+                last_was_whitespace = true;
+            }
+        } else {
+            collapsed.push(c);
+            last_was_whitespace = false;
+        }
+    }
+    collapsed.trim().to_string()
+}
+
 // --- HAVERSINE DISTANCE ---
 
 #[inline]
@@ -142,7 +171,7 @@ pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
     validate_catalog(&catalog)?;
 
     for route in &mut catalog.rutas {
-        route.stops_normalized = route.stops.iter().map(|s| s.name.to_lowercase()).collect();
+        route.stops_normalized = route.stops.iter().map(|s| normalize_str(&s.name)).collect();
         route.stop_name_to_index = route.stops_normalized.iter().enumerate()
             .map(|(i, n)| (n.clone(), i)).collect();
     }
@@ -173,8 +202,8 @@ struct RouteMatch<'a> {
 }
 
 fn find_route_rs(origin: &str, dest: &str, all_routes: &[Route]) -> Vec<Journey> {
-    let origin_norm = origin.to_lowercase();
-    let dest_norm = dest.to_lowercase();
+    let origin_norm = normalize_str(origin);
+    let dest_norm = normalize_str(dest);
 
     let mut route_matches = Vec::with_capacity(all_routes.len());
     for route in all_routes {
@@ -319,13 +348,23 @@ mod tests {
         for (i, (name, lat, lng)) in stops.into_iter().enumerate() {
             stop_objs.push(Stop { id: None, name: name.to_string(), lat, lng, orden: i as u32, landmarks: String::new() });
         }
-        let stops_normalized: Vec<String> = stop_objs.iter().map(|s| s.name.to_lowercase()).collect();
+        let stops_normalized: Vec<String> = stop_objs.iter().map(|s| normalize_str(&s.name)).collect();
         let stop_name_to_index = stops_normalized.iter().enumerate().map(|(idx, name)| (name.clone(), idx)).collect();
         Route {
             id: id.to_string(), name: id.to_string(), price: 10.0, transport_type: "Bus".to_string(),
             empresa: None, frecuencia_minutos: None, horario: None, stops: stop_objs,
             stops_normalized, stop_name_to_index, social_alerts: vec![], last_updated: "".to_string()
         }
+    }
+
+
+    #[test]
+    fn test_normalization() {
+        assert_eq!(normalize_str("  Cancún  "), "cancun");
+        assert_eq!(normalize_str("México"), "mexico");
+        assert_eq!(normalize_str("Niño"), "nino");
+        assert_eq!(normalize_str("ÁÉÍÓÚ Ü Ñ"), "aeiou u n");
+        assert_eq!(normalize_str("Multiple   Spaces"), "multiple spaces");
     }
 
     #[test]

@@ -75,7 +75,7 @@
           const legCoords = (leg.stops || [])
               .map((s: any) => {
                   const name = typeof s === 'string' ? s : (s.nombre || s.name);
-                  return coords.get(name.toLowerCase().trim());
+                  return coords.get(normalizeString(name));
               })
               .filter(Boolean);
 
@@ -136,7 +136,7 @@
     const L = (window as any).L;
 
     await coordinatesStore.init();
-    coordinatesDB = coordinatesStore.getAll();
+    coordinatesDB = coordinatesStore.getDB();
 
     // Cancun Center
     map = L.map('map', {
@@ -179,7 +179,7 @@
         const newLayers: any[] = [];
         allStops.forEach(([key, coords]) => {
             const displayName = coordinatesStore.getOriginalName(key) || key;
-            const isHub = (window as any).__PREFERRED_HUBS?.some((h: string) => displayName.includes(h)) ?? false;
+            const isHub = (window as any).__PREFERRED_HUBS?.some((h: string) => normalizeString(displayName).includes(normalizeString(h))) ?? false;
 
             const marker = L.circleMarker(coords, {
                 radius: isHub ? 8 : 5,
@@ -218,8 +218,8 @@
 
         L.popup()
             .setLatLng([
-                coordinatesDB.get(result.name.toLowerCase().trim())?.[0] ?? lat,
-                coordinatesDB.get(result.name.toLowerCase().trim())?.[1] ?? lng,
+                coordinatesDB.get(normalizeString(result.name))?.[0] ?? lat,
+                coordinatesDB.get(normalizeString(result.name))?.[1] ?? lng,
             ])
             .setContent(`
                 <div class="p-1 min-w-[170px]">
