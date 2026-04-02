@@ -12,7 +12,6 @@ interface Props {
 
 const repoOwner = Astro.props.repoOwner ?? import.meta.env.GITHUB_REPO_OWNER ?? "JULIANJUAREZMX01";
 const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "MueveCancun";
-const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
 ---
 
 <!-- Configuración para el script cliente -->
@@ -20,7 +19,6 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
   id="rw-config"
   data-owner={repoOwner}
   data-repo={repoName}
-  data-token={githubToken}
   hidden
 ></div>
 
@@ -310,8 +308,7 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
 
     const config = {
       owner: configEl.dataset.owner || "",
-      repo:  configEl.dataset.repo || "",
-      token: configEl.dataset.token || ""
+      repo:  configEl.dataset.repo || ""
     };
 
     // ── Referencias DOM ──────────────────────────────────────────
@@ -460,45 +457,38 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
       };
     }
 
-    const sendToGitHub = async (payload: any) => {
-      if (!config.token) throw new Error("Token ausente");
-      const res = await fetch("https://api.github.com/repos/" + config.owner + "/" + config.repo + "/issues", {
-        method: "POST",
-        headers: {
-          'Accept': 'application/vnd.github+json',
-          'Authorization': `Bearer ${config.token}`,
-          'X-GitHub-Api-Version': '2022-11-28',
-          'Content-Type': 'application/json',
-          'User-Agent': 'MueveCancun-Report-Widget'
-        },
-        body: JSON.stringify(payload)
+    const openGitHubIssue = (payload: { title: string; body: string; labels: string[] }) => {
+      const params = new URLSearchParams({
+        title: payload.title,
+        body: payload.body,
+        labels: payload.labels.join(',')
       });
-      if (!res.ok) throw new Error("GitHub API Error: " + res.status);
-      return res.json();
+      const url = `https://github.com/${config.owner}/${config.repo}/issues/new?${params.toString()}`;
+      const win = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!win) {
+        throw new Error('Popup blocked');
+      }
     };
 
     let isSyncing = false;
     const syncOfflineReports = async () => {
-      if (isSyncing || !navigator.onLine || !config.token) return;
-      isSyncing = true;
-
-      const reports = await getPendingReports();
+      // Always update badge from IndexedDB to reflect persisted state on page load
+      const allReports = await getPendingReports();
       if (badge) {
-        badge.textContent = reports.length.toString();
-        badge.hidden = reports.length === 0;
+        badge.textContent = allReports.length.toString();
+        badge.hidden = allReports.length === 0;
       }
 
-      if (reports.length === 0) {
-        isSyncing = false;
-        return;
-      }
+      // Only attempt to send when online and not already syncing
+      if (isSyncing || !navigator.onLine || allReports.length === 0) return;
 
+      isSyncing = true;
       console.log("[ReportWidget] Sincronizando reportes pendientes...");
 
-      for (const r of reports) {
+      for (const r of allReports) {
         try {
           const payload = buildPayload(r);
-          await sendToGitHub(payload);
+          openGitHubIssue(payload);
           if (r.id !== undefined) await deletePendingReport(r.id);
         } catch (err) {
           console.warn(`[ReportWidget] Fallo al sincronizar reporte #${r.id}:`, err);
@@ -541,10 +531,17 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
       try {
         if (!navigator.onLine) throw new Error('Offline');
         const payload = buildPayload(fullData);
-        const ghRes = await sendToGitHub(payload);
-        showFeedback(`¡Gracias! Reporte enviado (#${ghRes.number})`, 'success');
+        openGitHubIssue(payload);
+        showFeedback('¡Gracias! Se abrirá GitHub para completar el reporte.', 'success');
         setTimeout(closeModal, 2800);
       } catch (err) {
+        const isOffline = !navigator.onLine;
+        const isPopupBlocked = err instanceof Error && err.message === 'Popup blocked';
+        if (isPopupBlocked) {
+          showFeedback('El navegador bloqueó la ventana emergente. Permite ventanas emergentes e intenta de nuevo.', 'error');
+          setSubmitting(false);
+          return;
+        }
         console.warn('[ReportWidget] Submission failed, queuing offline:', err);
         try {
           await savePendingReport(data);

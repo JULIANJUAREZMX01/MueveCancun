@@ -76,7 +76,7 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
           const tx = db.transaction('wallet-status', 'readwrite');
           const store = tx.objectStore('wallet-status');
           const existing = await store.get('current_balance');
-          const isDefault = existing?.amount === 180.00;
+          const isDefault = existing?.amount === 180.00 || existing?.amount === 0.00 || !existing;
           if (isDefault) {
               const signature = await generateSignature(legacyBalance);
               await store.put(
