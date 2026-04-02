@@ -220,17 +220,38 @@ const isEs = lang === 'es';
       list.innerHTML = '<div class="px-4 py-8 text-center text-xs text-slate-400 font-bold">Sin movimientos aún</div>';
       return;
     }
-    list.innerHTML = history.map(tx => `
-      <div class="flex items-center justify-between px-4 py-3">
-        <div>
-          <p class="text-sm font-bold text-slate-800 dark:text-white">${tx.label}</p>
-          <p class="text-[10px] text-slate-400 font-medium">${formatTxDate(tx.ts)}</p>
-        </div>
-        <span class="font-black text-sm ${tx.type === 'credit' ? 'text-emerald-500' : 'text-red-500'}">
-          ${tx.type === 'credit' ? '+' : '-'}$${tx.amount.toFixed(2)}
-        </span>
-      </div>
-    `).join('');
+    // Clear existing items
+    while (list.firstChild) {
+      list.removeChild(list.firstChild);
+    }
+
+    history.forEach(tx => {
+      const item = document.createElement('div');
+      item.className = 'flex items-center justify-between px-4 py-3';
+
+      const left = document.createElement('div');
+
+      const labelEl = document.createElement('p');
+      labelEl.className = 'text-sm font-bold text-slate-800 dark:text-white';
+      labelEl.textContent = tx.label;
+
+      const dateEl = document.createElement('p');
+      dateEl.className = 'text-[10px] text-slate-400 font-medium';
+      dateEl.textContent = formatTxDate(tx.ts);
+
+      left.appendChild(labelEl);
+      left.appendChild(dateEl);
+
+      const amountEl = document.createElement('span');
+      amountEl.className = 'font-black text-sm ' + (tx.type === 'credit' ? 'text-emerald-500' : 'text-red-500');
+      const sign = tx.type === 'credit' ? '+' : '-';
+      amountEl.textContent = `${sign}$${tx.amount.toFixed(2)}`;
+
+      item.appendChild(left);
+      item.appendChild(amountEl);
+
+      list.appendChild(item);
+    });
   }
 
   let walletInitialized = false;
