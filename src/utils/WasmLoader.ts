@@ -1,26 +1,16 @@
-/** Minimal interface for the route-calculator WASM module exports. */
-export interface RouteCalculatorWasm {
-  default(): Promise<void>;
-  validate_operator_funds(balance: number): boolean;
-  load_catalog(json_payload: string): void;
-  get_route_by_id(id: string): string;
-  get_all_routes(): string;
-  find_route(origin: string, dest: string): string;
-}
-
 export class WasmLoader {
   private static instance: WasmLoader;
-  private wasmModule: RouteCalculatorWasm | null = null;
-  private loading: Promise<RouteCalculatorWasm> | null = null;
+  private wasmModule: any = null;
+  private loading: Promise<any> | null = null;
 
-  static async getModule(): Promise<RouteCalculatorWasm> {
+  static async getModule() {
     if (!WasmLoader.instance) {
       WasmLoader.instance = new WasmLoader();
     }
     return WasmLoader.instance.ensureLoaded();
   }
 
-  private async ensureLoaded(): Promise<RouteCalculatorWasm> {
+  private async ensureLoaded() {
     if (this.wasmModule) return this.wasmModule;
     if (this.loading) return this.loading;
 
@@ -34,10 +24,10 @@ export class WasmLoader {
     }
   }
 
-  private async loadWasm(): Promise<RouteCalculatorWasm> {
+  private async loadWasm() {
     try {
         const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
-        const module = await import(/* @vite-ignore */ wasmPath) as RouteCalculatorWasm;
+        const module = await import(/* @vite-ignore */ wasmPath);
         await module.default();
         return module;
     } catch (e) {

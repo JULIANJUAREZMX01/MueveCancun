@@ -48,17 +48,5 @@
   "transport.PlayaExpress": "Playa Express",
   "calc.num_options": "OPCIÓN ENCONTRADA",
   "calc.num_options_plural": "OPCIONES ENCONTRADAS",
-  "calc.fastest_label": "MÁS RÁPIDA: ",
-  "welcome.step1.title": "Bienvenido a CancúnMueve",
-  "welcome.step1.desc": "La guía definitiva de transporte público. Rutas, mapas y tarifas actualizadas.",
-  "welcome.step2.title": "Funciona Sin Internet",
-  "welcome.step2.desc": "Una vez instalada, no necesitas señal. El motor de búsqueda y los mapas viven en tu dispositivo.",
-  "welcome.step3.title": "Inteligencia Local",
-  "welcome.step3.desc": "Calculamos trayectos en milisegundos usando WebAssembly para ahorrar tu batería.",
-  "welcome.step4.title": "Social Signals",
-  "welcome.step4.desc": "Información real basada en reportes ciudadanos para evitar retrasos y bloqueos.",
-  "welcome.btn.next": "Siguiente",
-  "welcome.btn.start": "Comenzar en Español",
-  "welcome.btn.start_en": "Start in English",
-  "welcome.skip": "Omitir tutorial"
+  "calc.fastest_label": "MÁS RÁPIDA: "
 }

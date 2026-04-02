@@ -18,33 +18,22 @@ export class CoordinateFinder {
 
     constructor(db: Map<string, [number, number]>, originalNames?: Map<string, string>) {
         this.db = db;
-        const size = db.size;
-        this.keys = new Array(size);
-        this.lowerKeys = new Array(size);
+        this.keys = Array.from(db.keys());
+        this.lowerKeys = this.keys.map(k => k.toLowerCase());
         this.originalNames = originalNames ?? new Map();
+        this.buildIndex();
+    }
 
-        let i = 0;
-        for (const key of db.keys()) {
-            const lowerKey = key.toLowerCase();
-            this.keys[i] = key;
-            this.lowerKeys[i] = lowerKey;
-            i++;
-        }
-
-        // Separate loop for indexing but still using optimized Map access
-        // This is faster due to better CPU cache usage and engine optimizations.
-        for (let j = 0; j < size; j++) {
-            const lowerKey = this.lowerKeys[j];
-            const originalKey = this.keys[j];
-            const tokens = lowerKey.split(/[^a-z0-9\u00C0-\u017F]+/);
+    private buildIndex() {
+        for (const key of this.keys) {
+            // Tokenize: split by non-alphanumeric (including Spanish accents)
+            const tokens = key.toLowerCase().split(/[^a-z0-9\u00C0-\u017F]+/);
             for (const token of tokens) {
                 if (token.length < 3) continue;
-                let matches = this.tokenIndex.get(token);
-                if (matches === undefined) {
-                    matches = [];
-                    this.tokenIndex.set(token, matches);
+                if (!this.tokenIndex.has(token)) {
+                    this.tokenIndex.set(token, []);
                 }
-                matches.push(originalKey);
+                this.tokenIndex.get(token)!.push(key);
             }
         }
     }
@@ -75,17 +64,10 @@ export class CoordinateFinder {
         if (candidates.size > 0) {
              // Prefer candidates that are substrings or contain the query
              const lowerQ = q.toLowerCase();
-             for (const k of candidates) {
+             bestKey = Array.from(candidates).find(k => {
                  const lowerK = k.toLowerCase();
-                 if (lowerQ.includes(lowerK) || lowerK.includes(lowerQ)) {
-                     bestKey = k;
-                     break;
-                 }
-             }
-             // Fallback to the first candidate if no substring match
-             if (!bestKey) {
-                 bestKey = candidates.values().next().value || null;
-             }
+                 return lowerQ.includes(lowerK) || lowerK.includes(lowerQ);
+             }) || Array.from(candidates)[0];
         }
 
         const result = bestKey ? (this.db.get(bestKey) || null) : null;

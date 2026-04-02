@@ -1,7 +1,7 @@
 {
   "id": "R2_94_VILLAS_OTOCH_001",
   "nombre": "R-2-94 Villas Otoch (Eje Kabah - ZH)",
-  "tarifa": 12,
+  "tarifa": 15,
   "tipo": "Bus_Urbano_Isla",
   "frecuencia_minutos": 10,
   "horario": {

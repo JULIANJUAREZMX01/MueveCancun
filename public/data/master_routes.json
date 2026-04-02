@@ -3,7 +3,7 @@
     "last_updated": "2026-02-17T07:09:33.432854",
     "source": "merge-routes.mjs (50 routes from 10 files)",
     "version": "3.2.0",
-    "last_merged": "2026-03-29T15:07:01.210Z"
+    "last_merged": "2026-04-02T01:20:06.805Z"
   },
   "social_alerts": [
     "Retraso en Zona Hotelera por obra pública"
@@ -12,7 +12,7 @@
     {
       "id": "R2_94_VILLAS_OTOCH_001",
       "nombre": "R-2-94 Villas Otoch (Eje Kabah - ZH)",
-      "tarifa": 12,
+      "tarifa": 15,
       "tipo": "Bus_Urbano_Isla",
       "frecuencia_minutos": 10,
       "horario": {
@@ -69,7 +69,7 @@
     {
       "id": "CR_PTO_JUAREZ_001",
       "nombre": "Combi Roja Puerto Juárez → Ultramar",
-      "tarifa": 10,
+      "tarifa": 13,
       "tipo": "Combi_Municipal",
       "empresa": "Autocar (Controladora SEA)",
       "frecuencia_minutos": 15,
@@ -122,7 +122,7 @@
     {
       "id": "R1_ZONA_HOTELERA_001",
       "nombre": "R-1 Centro → Zona Hotelera",
-      "tarifa": 12,
+      "tarifa": 15,
       "tipo": "Bus_Urban",
       "empresa": "Controladora SEA (rojas)",
       "frecuencia_minutos": 10,
@@ -244,7 +244,7 @@
     {
       "id": "R28_VILLAS_OTOCH_001",
       "nombre": "R-28 Villas Otoch → Av. Tulum",
-      "tarifa": 10,
+      "tarifa": 13,
       "tipo": "Bus_Urban",
       "social_alerts": [],
       "last_updated": "2026-01-30T06:16:46.258Z",
@@ -282,7 +282,7 @@
     {
       "id": "R19_VILLAS_OTOCH_002",
       "nombre": "R-19 Villas Otoch - Crucero",
-      "tarifa": 10,
+      "tarifa": 13,
       "tipo": "Bus_Urban",
       "frecuencia_minutos": 25,
       "horario": {
@@ -353,7 +353,7 @@
     {
       "id": "R10",
       "nombre": "Las Américas - Aeropuerto",
-      "tarifa": 10,
+      "tarifa": 15,
       "tipo": "Transporte",
       "frecuencia_minutos": 20,
       "horario": {
@@ -447,7 +447,7 @@
     {
       "id": "ruta_1753801260218",
       "nombre": "RUTA 31",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -553,7 +553,7 @@
       "id": "ruta_1753802299281",
       "nombre": "RUTA 81",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -675,7 +675,7 @@
     {
       "id": "ruta_1759506708808",
       "nombre": "RUTA 30",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -852,7 +852,7 @@
     {
       "id": "ruta_1761456676914",
       "nombre": "RUTA 44",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -1029,7 +1029,7 @@
     {
       "id": "ruta_1761458818964",
       "nombre": "RUTA 71",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -1174,7 +1174,7 @@
     {
       "id": "ruta_1754576044305",
       "nombre": "RUTA 33",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -1295,7 +1295,7 @@
     {
       "id": "ruta_1756850089371",
       "nombre": "RUTA 29",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -1416,7 +1416,7 @@
     {
       "id": "ruta_1759866849505",
       "nombre": "RUTA 79",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -1585,7 +1585,7 @@
     {
       "id": "ruta_1758230498578",
       "nombre": "RUTA 19",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -1682,7 +1682,7 @@
     {
       "id": "ruta_1759866137331",
       "nombre": "RUTA 18-A",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -1811,7 +1811,7 @@
     {
       "id": "ruta_1760327653692",
       "nombre": "RUTA 28",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -1972,7 +1972,7 @@
     {
       "id": "ruta_1759952771720",
       "nombre": "RUTA 44 COMBI",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -2117,7 +2117,7 @@
     {
       "id": "ruta_1760338237012",
       "nombre": "RUTA 235-227 ",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -2302,7 +2302,7 @@
     {
       "id": "ruta_1760340184559",
       "nombre": "RUTA 234",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -2471,7 +2471,7 @@
     {
       "id": "ruta_1761273705821",
       "nombre": "RUTA 510",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -2624,7 +2624,7 @@
     {
       "id": "ruta_1760328606309",
       "nombre": "RUTA 17",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -2801,7 +2801,7 @@
     {
       "id": "ruta_1760414609200",
       "nombre": "RUTA 13",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -2962,7 +2962,7 @@
     {
       "id": "ruta_1760462813166",
       "nombre": "RUTA CENTRAL ABASTOS",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -3083,7 +3083,7 @@
     {
       "id": "ruta_1760462813165",
       "nombre": "RUTA 70",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -3204,7 +3204,7 @@
     {
       "id": "ruta_1761460735535",
       "nombre": "RUTA 5",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -3301,7 +3301,7 @@
     {
       "id": "ruta_1760989478537",
       "nombre": "RUTA 21",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -3422,7 +3422,7 @@
     {
       "id": "ruta_1464274794329",
       "nombre": "RUTA 2 TORITO",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -3735,7 +3735,7 @@
     {
       "id": "ruta_1653475759991",
       "nombre": "RUTA 2 VILLAS DEL MAR",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -4056,7 +4056,7 @@
     {
       "id": "ruta_1760333218631",
       "nombre": "RUTA 2 LA JOYA",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -4401,7 +4401,7 @@
     {
       "id": "ruta_1761276380950",
       "nombre": "RUTA 2 CHACMOOL-PORTILLO",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -4730,7 +4730,7 @@
     {
       "id": "ruta_1761277331648",
       "nombre": "RUTA 2-15",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -5091,7 +5091,7 @@
     {
       "id": "ruta_1761277780965",
       "nombre": "RUTA 1 REHOYADA",
-      "tarifa": 10,
+      "tarifa": 12,
       "tipo": "Autobús",
       "empresa": "Transporte Público",
       "paradas": [
@@ -5373,7 +5373,7 @@
       "id": "R1",
       "nombre": "Crucero - Zona Hotelera",
       "color": "#FF6B6B",
-      "tarifa": 12,
+      "tarifa": 15,
       "paradas": [
         {
           "id": "R1_001",
@@ -5396,14 +5396,13 @@
           "lng": -86.7474,
           "orden": 7
         }
-      ],
-      "tipo": "Bus_Urban"
+      ]
     },
     {
       "id": "R2",
       "nombre": "Walmart - Puerto Juárez",
       "color": "#4ECDC4",
-      "tarifa": 12,
+      "tarifa": 15,
       "paradas": [
         {
           "id": "R2_001",
@@ -5419,14 +5418,13 @@
           "lng": -86.8234,
           "orden": 3
         }
-      ],
-      "tipo": "Bus_Urban"
+      ]
     },
     {
       "id": "R10_AEROPUERTO",
-      "nombre": "R-10 Las Américas - Aeropuerto (NO LLEGA AL AEROPUERTO / SOLO TRABAJADORES)",
+      "nombre": "R-10 Las Américas - Aeropuerto (Trabajadores)",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 15,
       "horario": {
         "inicio": "04:00-23:00"
       },
@@ -5491,21 +5489,17 @@
           "lng": -86.8515,
           "orden": 10
         }
-      ],
-      "social_alerts": [
-        "⚠️ IMPORTANTE: Esta ruta NO entra a las terminales del Aeropuerto. Se queda en la entrada (carretera).",
-        "Principalmente para trabajadores de la zona."
       ]
     },
     {
       "id": "R6_WALMART_001",
       "nombre": "R-6 Santa Fe - Walmart A.Q. Roo",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "06:00 - 22:30"
       },
-      "frecuencia_minutos": 10,
+      "frecuencia_minutos": "10 min",
       "empresa": "Turicun",
       "paradas": [
         {
@@ -5544,11 +5538,11 @@
       "id": "R29_OUTLET_001",
       "nombre": "R-29 ADO - Plaza Outlet",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "06:30 - 23:00"
       },
-      "frecuencia_minutos": 12,
+      "frecuencia_minutos": "12 min",
       "empresa": "Autocar",
       "paradas": [
         {
@@ -5593,11 +5587,11 @@
       "id": "R17_LAKIN_001",
       "nombre": "R-17 Tierra Maya - Lak'in",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "05:00 - 23:30"
       },
-      "frecuencia_minutos": 8,
+      "frecuencia_minutos": "8 min",
       "empresa": "Autocar",
       "paradas": [
         {
@@ -5636,11 +5630,11 @@
       "id": "R21_AMERICAS_001",
       "nombre": "R-21 Las Américas - Kabah",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
-      "frecuencia_minutos": 15,
+      "frecuencia_minutos": "15 min",
       "empresa": "Maya Caribe",
       "paradas": [
         {
@@ -5679,11 +5673,11 @@
       "id": "R44_CENTRO_001",
       "nombre": "R-44 Centro - Plaza Las Américas",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 13,
       "horario": {
         "inicio": "05:45 - 23:00"
       },
-      "frecuencia_minutos": 10,
+      "frecuencia_minutos": "10 min",
       "empresa": "Turicun",
       "paradas": [
         {
@@ -5728,11 +5722,11 @@
       "id": "R5_HEROES_001",
       "nombre": "R-5 Los Héroes - Crucero",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
-      "frecuencia_minutos": 12,
+      "frecuencia_minutos": "12 min",
       "empresa": "Autocar",
       "paradas": [
         {
@@ -5771,11 +5765,11 @@
       "id": "R27_TIERRA_MAYA_001",
       "nombre": "R-27 Tierra Maya - Zona Hotelera",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 15,
       "horario": {
         "inicio": "05:30 - 23:00"
       },
-      "frecuencia_minutos": 10,
+      "frecuencia_minutos": "10 min",
       "empresa": "Turicun",
       "paradas": [
         {
@@ -5820,11 +5814,11 @@
       "id": "R237_RANCHO_001",
       "nombre": "R-237 Rancho Viejo - Crucero",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
-      "frecuencia_minutos": 15,
+      "frecuencia_minutos": "15 min",
       "empresa": "Maya Caribe",
       "paradas": [
         {
@@ -5863,11 +5857,11 @@
       "id": "R71_RESIDENCIAL_001",
       "nombre": "R-71 Polígono Sur - Centro",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 13,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
-      "frecuencia_minutos": 20,
+      "frecuencia_minutos": "20 min",
       "empresa": "Turicun",
       "paradas": [
         {
@@ -5906,11 +5900,11 @@
       "id": "R31_UNIVERSIDAD_001",
       "nombre": "R-31 Universidad del Caribe - Centro",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "07:00 - 21:00"
       },
-      "frecuencia_minutos": 30,
+      "frecuencia_minutos": "30 min",
       "empresa": "Autocar",
       "paradas": [
         {
@@ -5949,11 +5943,11 @@
       "id": "R30_REG103_001",
       "nombre": "R-30 Región 103 - Zona Hotelera",
       "tipo": "Bus_Urban",
-      "tarifa": 12,
+      "tarifa": 15,
       "horario": {
         "inicio": "05:00 - 23:00"
       },
-      "frecuencia_minutos": 10,
+      "frecuencia_minutos": "10 min",
       "empresa": "Turicun",
       "paradas": [
         {
@@ -5992,11 +5986,11 @@
       "id": "R33_REG102_001",
       "nombre": "R-33 Región 102 - Plaza Las Américas",
       "tipo": "Bus_Urban",
-      "tarifa": 10,
+      "tarifa": 12,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
-      "frecuencia_minutos": 15,
+      "frecuencia_minutos": "15 min",
       "empresa": "Autocar",
       "paradas": [
         {

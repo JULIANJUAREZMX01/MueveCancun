@@ -1,7 +1,7 @@
 {
   "id": "R1_ZONA_HOTELERA_001",
   "nombre": "R-1 Centro → Zona Hotelera",
-  "tarifa": 12,
+  "tarifa": 15,
   "tipo": "Bus_Urban",
   "empresa": "Controladora SEA (rojas)",
   "frecuencia_minutos": 10,

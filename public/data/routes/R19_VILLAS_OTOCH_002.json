@@ -1,7 +1,7 @@
 {
   "id": "R19_VILLAS_OTOCH_002",
   "nombre": "R-19 Villas Otoch - Crucero",
-  "tarifa": 10,
+  "tarifa": 13,
   "tipo": "Bus_Urban",
   "frecuencia_minutos": 25,
   "horario": {
