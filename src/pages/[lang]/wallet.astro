@@ -40,6 +40,33 @@ import MainLayout from '../../layouts/MainLayout.astro';
       </div>
     </section>
 
+    <!-- Escudo de Cancún: Financial Unification -->
+    <section id="support-nexus" class="max-w-xl mx-auto px-4">
+      <div class="glass-card p-6 border-primary-500/20 bg-primary-500/5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center text-white">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.593c-.425-.394-8.993-7.817-8.993-12.097C3.007 5.48 7.016 2 12 2s8.993 3.48 8.993 7.496c0 4.28-8.568 11.703-8.993 12.097zM12 4C8.112 4 5.007 6.702 5.007 9.496c0 3.066 5.63 8.786 6.993 10.118 1.363-1.332 6.993-7.052 6.993-10.118C18.993 6.702 15.888 4 12 4zm0 7a2 2 0 110-4 2 2 0 010 4z"/></svg>
+          </div>
+          <h2 class="text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight">Escudo de Cancún</h2>
+        </div>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+          Apoya el mantenimiento de la infraestructura Nexus y mantén el servicio gratuito para todos.
+        </p>
+        <div class="grid grid-cols-1 gap-3">
+          <a href="/es/suscripcion" class="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-primary-500 transition-all group no-underline">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">🛡️</span>
+              <div>
+                <div class="text-sm font-black text-slate-800 dark:text-white">Shield Guardian</div>
+                <div class="text-xs text-slate-500">$3 USD / mes</div>
+              </div>
+            </div>
+            <div class="text-primary-500 font-bold text-xs uppercase tracking-widest group-hover:translate-x-1 transition-transform">Mejorar →</div>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- Promotional Code -->
     <section class="max-w-xl mx-auto px-4 space-y-4">
       <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -49,69 +76,7 @@ import MainLayout from '../../layouts/MainLayout.astro';
           <button id="apply-promo" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95">Aplicar</button>
         </div>
       </div>
-
-      <!-- Conductores Registration -->
-      <div class="bg-orange-50 dark:bg-orange-950/20 p-6 rounded-2xl border border-orange-100 dark:border-orange-900/30 shadow-sm">
-        <div class="flex items-center gap-3 mb-4">
-            <span class="text-2xl">🚕</span>
-            <h3 class="text-xs font-black text-orange-700 dark:text-orange-400 uppercase tracking-widest">¿Eres Conductor?</h3>
-        </div>
-        <p class="text-xs text-orange-600 dark:text-orange-500/80 mb-6 font-medium">Regístrate como operador y recibe un bono de bienvenida de $180.00 MXN para comenzar a usar Brújula Urbana.</p>
-        <button id="register-pilot" class="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-orange-500/20">
-          REGISTRARME COMO CONDUCTOR
-        </button>
-      </div>
-
-      <!-- Banking Details -->
-      <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Método de Pago</h3>
-        <div class="space-y-4">
-          <div class="relative">
-            <input type="text" placeholder="Número de Tarjeta" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none transition-all" />
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <input type="text" placeholder="MM/AA" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none transition-all" />
-            <label for="card-number" class="sr-only">Número de Tarjeta</label>
-            <input
-              id="card-number"
-              type="text"
-              placeholder="Número de Tarjeta"
-              autocomplete="cc-number"
-              inputmode="numeric"
-              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none transition-all"
-            />
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label for="card-expiry" class="sr-only">Fecha de vencimiento (MM/AA)</label>
-              <input
-                id="card-expiry"
-                type="text"
-                placeholder="MM/AA"
-                autocomplete="cc-exp"
-                inputmode="numeric"
-                class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none transition-all"
-              />
-            </div>
-            <div>
-              <label for="card-cvv" class="sr-only">Código de seguridad (CVV)</label>
-              <input
-                id="card-cvv"
-                type="password"
-                placeholder="CVV"
-                autocomplete="cc-csc"
-                inputmode="numeric"
-                class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none transition-all"
-              />
-            </div>
-          </div>
-          <button class="w-full border-2 border-dashed border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:border-primary-400 hover:text-primary-500 transition-all">
-            + Guardar Tarjeta
-          </button>
-        </div>
-      </div>
     </section>
-
   </div>
 
   <!-- Recharge Popover -->
@@ -220,7 +185,6 @@ import MainLayout from '../../layouts/MainLayout.astro';
       const popover = document.getElementById('recharge-popover');
       const applyPromoBtn = document.getElementById('apply-promo');
       const promoInput = document.getElementById('promo-code') as HTMLInputElement;
-      const registerPilotBtn = document.getElementById('register-pilot') as HTMLButtonElement;
 
       async function updateBalanceUI() {
           const walletData = await getWalletBalance();
@@ -231,13 +195,6 @@ import MainLayout from '../../layouts/MainLayout.astro';
       }
 
       await updateBalanceUI();
-
-      // Reflect persisted registration state on the button
-      if (registerPilotBtn && localStorage.getItem('operator_registered') === 'true') {
-          registerPilotBtn.textContent = 'YA REGISTRADO ✓';
-          registerPilotBtn.disabled = true;
-          registerPilotBtn.classList.add('opacity-60', 'cursor-not-allowed');
-      }
 
       confirmBtn?.addEventListener('click', async () => {
           const selectedRadio = document.querySelector('input[name="recharge-amount"]:checked') as HTMLInputElement;
@@ -282,23 +239,6 @@ import MainLayout from '../../layouts/MainLayout.astro';
           } else {
               showToast("Código inválido o expirado", "error");
           }
-      });
-
-      registerPilotBtn?.addEventListener('click', async () => {
-          if (localStorage.getItem('operator_registered') === 'true') {
-              showToast("Ya estás registrado como conductor", "error");
-              return;
-          }
-          const walletData = await getWalletBalance();
-          const currentBalance = walletData?.amount ?? 0.00;
-          await setWalletBalance(currentBalance + 180.00);
-          await updateBalanceUI();
-          localStorage.setItem('operator_registered', 'true');
-          registerPilotBtn.textContent = 'YA REGISTRADO ✓';
-          registerPilotBtn.disabled = true;
-          registerPilotBtn.classList.add('opacity-60', 'cursor-not-allowed');
-          showToast("¡Registro Exitoso! Bono de $180.00 activado.", "success");
-          window.dispatchEvent(new CustomEvent('BALANCE_UPDATED'));
       });
     }
 
