@@ -193,11 +193,15 @@ import MainLayout from '../layouts/MainLayout.astro';
 			currentLang = 'es';
 			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
 			(e.target as HTMLElement).classList.add('active');
+			localStorage.setItem('lang', 'es');
+			updateTutorialUI('es');
 		});
 		document.getElementById('set-en')?.addEventListener('click', (e) => {
 			currentLang = 'en';
 			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
 			(e.target as HTMLElement).classList.add('active');
+			localStorage.setItem('lang', 'en');
+			updateTutorialUI('en');
 		});
 		dots.forEach(dot => {
 			dot.addEventListener('click', () => {
