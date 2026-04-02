@@ -128,7 +128,7 @@ Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales 
 - **feat(lib)**: nuevos módulos en `src/lib/` — `transport.ts`, `idb.ts`, `sync.ts`, `telemetry.ts`, `types.ts`.
 - **feat(utils)**: `coordinateFinder.ts` (búsqueda fuzzy), `logger.ts` (logging condicional por entorno).
 - **ci**: WASM cacheado por SHA; `pnpm/action-setup` sin versión fija; `build-check` depende de `rust-tests`.
-- **perf**: íconos SVG inlineados en build-time; página `/mapa` eliminada — todo desde pantalla principal.
+- **perf**: íconos SVG inlineados en build-time; flujo de navegación unificado — el mapa ahora se inicia desde la pantalla principal (la ruta `/mapa` se mantiene para compatibilidad y deep-links).
 
 ## 🗺️ Novedades v3.3 (Nexus Transfer Engine)
 
