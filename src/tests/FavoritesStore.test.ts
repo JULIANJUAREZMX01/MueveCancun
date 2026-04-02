@@ -1,6 +1,20 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { favoritesStore } from '../utils/FavoritesStore';
+import { analytics } from '../utils/Analytics';
+import { logger } from '../utils/logger';
+
+vi.mock('../utils/Analytics', () => ({
+    analytics: {
+        track: vi.fn()
+    }
+}));
+
+vi.mock('../utils/logger', () => ({
+    logger: {
+        error: vi.fn()
+    }
+}));
 
 describe('FavoritesStore', () => {
     beforeEach(() => {
@@ -70,5 +84,40 @@ describe('FavoritesStore', () => {
         // Should not throw, but instead return an empty array
         const favorites = favoritesStore.getFavorites();
         expect(favorites).toEqual([]);
+    });
+
+    it('should log and track error when localStorage.getItem throws', () => {
+        const mockError = new Error('getItem failed');
+        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+            throw mockError;
+        });
+
+        const favorites = favoritesStore.getFavorites();
+
+        expect(favorites).toEqual([]);
+        expect(logger.error).toHaveBeenCalledWith(expect.any(String), mockError);
+        expect(analytics.track).toHaveBeenCalledWith('error_storage', {
+            action: 'read',
+            error: mockError.message
+        });
+
+        vi.restoreAllMocks();
+    });
+
+    it('should log and track error when localStorage.setItem throws', () => {
+        const mockError = new Error('setItem failed');
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw mockError;
+        });
+
+        favoritesStore.addFavorite('ruta-err', 'Ruta Error');
+
+        expect(logger.error).toHaveBeenCalledWith(expect.any(String), mockError);
+        expect(analytics.track).toHaveBeenCalledWith('error_storage', {
+            action: 'write',
+            error: mockError.message
+        });
+
+        vi.restoreAllMocks();
     });
 });

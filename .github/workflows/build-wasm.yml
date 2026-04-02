@@ -37,13 +37,16 @@ jobs:
       # Run tests BEFORE building — fail fast if tests break
       - name: Run route-calculator unit tests
         working-directory: rust-wasm/route-calculator
-        run: cargo test --lib -- --nocapture
+        run: cargo test --lib -- --nocapture --test-threads=1
 
       - name: Run spatial-index unit tests
         working-directory: rust-wasm/spatial-index
         run: cargo test --lib || true  # spatial-index tests are optional
 
       # Build WASM
+      # NOTE: Only route-calculator is built and committed here.
+      # spatial-index is a workspace member but its wasm-pack JS glue has not
+      # been committed yet; it will be added to this step once the JS glue is ready.
       - name: Build route-calculator WASM
         run: |
           cd rust-wasm/route-calculator
@@ -74,4 +77,5 @@ jobs:
         with:
           commit_message: "chore(wasm): auto-build route-calculator WASM [skip ci]"
           file_pattern: "public/wasm/route-calculator/*"
+          add_options: "--force"
           commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"

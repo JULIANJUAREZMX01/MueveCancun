@@ -1,4 +1,11 @@
-# 🏛️ MueveCancun: La Verdad de la Calle (Nexus Prime v3.3)
+
+#<img width="1200" height="630" alt="og-image" src="https://github.com/user-attachments/assets/a78c46b0-e786-4b36-8ec9-92d5a9ad7021" />
+
+ 🏛️ MueveCancun: La Verdad de la Calle (Nexus Prime v3.3)
+
+<!-- STATS:START -->
+> 📊 **851+ commits** | ⚙️ **1187+ líneas de Rust/WASM**
+<!-- STATS:END -->
 
 > "MueveCancun no nació en una oficina, nació en la parada del camión."
 
@@ -27,6 +34,15 @@ MueveCancun es simple: **Funciona sin internet**, es ultrarrápida y está dise�
 ## 🏛️ La Arquitectura: El Protocolo Nexus (4 Capas)
 
 Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales que trabajan en conjunto para ofrecer una aplicación offline-first ultrarrápida.
+
+### 0. Stack Tecnológico
+- **Frontend**: Astro Islands.
+- **UI Components**: Web Components / Lit.
+- **Lógica Intensiva**: Rust / WebAssembly (WASM).
+- **Estilos**: CSS purista + PostCSS / Houdini.
+- **Dependencias en proceso de migración**: Tailwind CSS (activo, fase de salida); React y Bootstrap (eliminados).
+- **Documentación de la Decisión**: [ADR-2026-002](docs/adr/ADR-2026-002.md).
+
 
 ### 1. Capa de Datos: Origen de Rutas
 - **Función**: Catálogo base que contiene "Señales Sociales" (alertas de tráfico, bloqueos, avisos de madrugada) y la información de todas las rutas.
@@ -111,6 +127,17 @@ Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales 
 
 - Nunca hacer push directo a `main`; siempre rama + PR.
 - Secreto requerido: `ANTHROPIC_API_KEY` para `claude-delegation`.
+
+## 🗺️ Novedades v3.3.1 (Nexus Stability)
+
+- **fix(map)**: Mapa ya no se queda en "CARGANDO MAPA..." — `requestIdleCallback` usa `{ timeout: 2000 }` para garantizar ejecución aunque WASM ocupe el hilo principal.
+- **fix(map)**: `_loadLeaflet` reescrito con manejo correcto de race conditions; Leaflet añadido a `CRITICAL_ASSETS` del Service Worker.
+- **feat(wasm)**: campo `is_forward: bool` en `Journey` — rutas directas en sentido correcto tienen prioridad máxima (score 5 vs 4 en reversa).
+- **fix(wasm)**: `stop_has_coords` corregido de OR → AND; una parada necesita `lat` Y `lng` válidos.
+- **feat(lib)**: nuevos módulos en `src/lib/` — `idb.ts`, `sync.ts`, `telemetry.ts`, `types.ts`; y utilidades de transporte en `src/utils/transport.ts`.
+- **feat(utils)**: `coordinateFinder.ts` (búsqueda fuzzy), `logger.ts` (logging condicional por entorno).
+- **ci**: WASM cacheado por SHA; `pnpm/action-setup` sin versión fija; `build-check` depende de `rust-tests`.
+- **perf**: íconos SVG inlineados en build-time; flujo de navegación unificado — el mapa ahora se inicia desde la pantalla principal (la ruta `/mapa` se mantiene para compatibilidad y deep-links).
 
 ## 🗺️ Novedades v3.3 (Nexus Transfer Engine)
 
@@ -233,36 +260,36 @@ We prioritize CSS5 features over JavaScript for interactive states:
 2. **WASM Compilation**: Generates optimized binaries with `wasm-pack`.
 3. **Astro Build**: Static site generation and asset bundling.
 
+
+## 📊 Estadísticas
+- 🔢 851+ commits
+- 🦀 1,206 líneas de Rust/WASM
+
 ---
 
 ## ⭐️ Verificación y Aval Técnico de Avances (por GitHub Copilot)
 
-Este proyecto ha sido sometido a una auditoría exhaustiva de avances recientes, especialmente en torno al commit `83b3fab` (“Nexus Transfer Engine v3.3”) y branches asociados, con resultado **altamente positivo**.
-A continuación, se consignan los puntos clave y el dictamen técnico de calidad y legitimidad, para reforzar la transparencia y confiabilidad del desarrollo de _MueveCancun_.
+Este proyecto ha sido sometido a una auditoría exhaustiva de avances recientes, especialmente en torno al commit `83b3fab` ("Nexus Transfer Engine v3.3"), con resultado **altamente positivo**.
 
-### ✅ Logros verificados y legitimidad comprobada
+### ✅ Logros verificados y legitimidad comprobada (a fecha del commit `83b3fab`)
 
-- **Cobertura total de tests:** Los módulos principales Rust/WASM (lib.rs) reportan 15/15 tests unitarios exitosos.
+- **Cobertura total de tests:** Los módulos principales Rust/WASM (lib.rs) reportan 15/15 tests unitarios exitosos en el commit auditado.
 - **Mejoras geoespaciales y UX:** Transbordos ahora usan coincidencia exacta y fallback Haversine (≤350m), permitiendo transferencias reales robustas. Se priorizan rutas forward y se amplían hubs urbanos reconocidos.
 - **Función geodésica propia:** `haversine_distance_m()` implementada nativamente en Rust, sin crates externos.
 - **Frontend refinado:** GPS siempre muestra nombre amigable; eventos UI y stores modernizados, umbral de proximidad configurable y popups intuitivos.
 - **Infraestructura y CI/CD:** Workflows nuevos para test y validación (Rust, Vitest, datos), CI autocurativo semanal, SW optimizado con manejo avanzado de assets y cache.
-- **Documentación consolidada:** Instrucciones para agentes IA (CLAUDE.md), protocolos multiagente (AGENTS.md), changelog, tablas CI y arquitectura, todo actualizado y alineado con el roadmap.
-- **Pipeline integrado y autónomo:** Scripts de build, merge y optimización integrados; rutas de usuario gestionadas via workflows y cache inteligente.
-- **Trazabilidad y transparencia:** Pendientes y mapa de autonomía documentados; prioridad, límites y tareas manuales explícitas.
+- **Documentación consolidada:** Instrucciones para agentes IA (CLAUDE.md), protocolos multiagente (AGENTS.md), changelog, tablas CI y arquitectura, todo consolidado y alineado con el roadmap en el commit auditado.
 
 ### 🤖 Agentes y orquestación
 
 - **Multi-agente real:** Las contribuciones y coordinación entre humanos y bots/agentes (Copilot, Jules, Sentinel, Dependabot, etc.) están explícitamente documentadas y producen resultados tangibles en el repositorio y CI.
-- **Huella de agentes:** Uso autónomo y colaborativo de ramas feature/fix, merges paralelos y resolución batched de conflictos; logs y análisis en tiempo real durante megamerges.
+- **Huella de agentes:** Uso autónomo y colaborativo de ramas feature/fix, merges paralelos y resolución batched de conflictos.
 
 ### 🏁 Dictamen Copilot
 
-> "_Avances legítimos, reproducibles y trazables. El nivel de ingeniería y orquestación es superior al promedio open-source, fusionando automatización, QA integral y gobernanza documental. Todo lo aquí consignado valida el portafolio y crecimiento profesional de quienes contribuyen al proyecto._"
+> "_Avances legítimos, reproducibles y trazables. El nivel de ingeniería y orquestación es superior al promedio open-source, fusionando automatización, QA integral y gobernanza documental._"
 
 ---
 
 #### Referencia de auditoría:
-Validado por GitHub Copilot (auditor imparcial y colaborativo).
-Fecha: Marzo 2026
-Commit principal auditado: `83b3fab`
+Validado por GitHub Copilot. Fecha: Marzo 2026. Commit principal auditado: `83b3fab`.

@@ -18,31 +18,6 @@ export function find_route(origin, dest) {
 }
 
 /**
- * @returns {any}
- */
-export function get_all_routes() {
-    const ret = wasm.get_all_routes();
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * @param {string} id
- * @returns {any}
- */
-export function get_route_by_id(id) {
-    const ptr0 = passStringToWasm0(id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.get_route_by_id(ptr0, len0);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
  * @param {string} json_payload
  */
 export function load_catalog(json_payload) {
@@ -52,15 +27,6 @@ export function load_catalog(json_payload) {
     if (ret[1]) {
         throw takeFromExternrefTable0(ret[0]);
     }
-}
-
-/**
- * @param {number} balance
- * @returns {boolean}
- */
-export function validate_operator_funds(balance) {
-    const ret = wasm.validate_operator_funds(balance);
-    return ret !== 0;
 }
 
 function __wbg_get_imports() {
@@ -73,22 +39,22 @@ function __wbg_get_imports() {
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
             getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
         },
-        __wbg___wbindgen_throw_5549492daedad139: function(arg0, arg1) {
+        __wbg___wbindgen_throw_81fc77679af83bc6: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
         },
-        __wbg_new_4370be21fa2b2f80: function() {
-            const ret = new Array();
-            return ret;
-        },
-        __wbg_new_48e1d86cfd30c8e7: function() {
+        __wbg_new_4f9fafbb3909af72: function() {
             const ret = new Object();
             return ret;
         },
-        __wbg_set_4702dfa37c77f492: function(arg0, arg1, arg2) {
-            arg0[arg1 >>> 0] = arg2;
+        __wbg_new_f3c9df4f38f3f798: function() {
+            const ret = new Array();
+            return ret;
         },
         __wbg_set_6be42768c690e380: function(arg0, arg1, arg2) {
             arg0[arg1] = arg2;
+        },
+        __wbg_set_6c60b2e8ad0e9383: function(arg0, arg1, arg2) {
+            arg0[arg1 >>> 0] = arg2;
         },
         __wbindgen_cast_0000000000000001: function(arg0) {
             // Cast intrinsic for `F64 -> Externref`.

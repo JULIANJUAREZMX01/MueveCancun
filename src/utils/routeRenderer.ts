@@ -1,7 +1,30 @@
 import { escapeHtml, safeJsonStringify } from './utils';
 import { getTransportLabel } from './transport';
 
-export function renderBestResultHtml(journey: any, isBest: boolean = false, ui: any): string {
+/** UI translation strings keyed by dot-notation i18n keys. */
+type UIStrings = Record<string, string>;
+
+/** A single leg of a journey returned by the WASM route calculator. */
+interface JourneyLeg {
+  name: string;
+  transport_type: string;
+  badges?: string[];
+  origin_hub: string;
+  dest_hub: string;
+  stops?: { name: string }[];
+  operator?: string;
+  frequency?: string;
+  duration?: string;
+}
+
+/** Journey result returned by the WASM find_route call. */
+interface Journey {
+  legs: JourneyLeg[];
+  total_price: number;
+  transfer_point: string;
+}
+
+export function renderBestResultHtml(journey: Journey, isBest: boolean = false, ui: UIStrings): string {
     const route = journey.legs[0];
     const badgesHtml = route.badges ? route.badges.map((b: string) => `<span class="badge-primary" style="font-size: 0.5625rem;">${escapeHtml(b)}</span>`).join('') : '';
 
@@ -47,7 +70,7 @@ export function renderBestResultHtml(journey: any, isBest: boolean = false, ui: 
     `;
 }
 
-export function renderTransferCardHtml(journey: any, isBest: boolean = false, ui: any): string {
+export function renderTransferCardHtml(journey: Journey, isBest: boolean = false, ui: UIStrings): string {
     const leg1 = journey.legs[0];
     const leg2 = journey.legs[1];
     const transferPoint = journey.transfer_point;
