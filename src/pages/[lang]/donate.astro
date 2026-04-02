@@ -155,7 +155,7 @@ const t = translations[lang] || translations.es;
                 <div class="flex justify-center">
                   <stripe-buy-button
                     buy-button-id={tier.buyButtonId}
-                    publishable-key="pk_live_51T6oKE2dM2f4HRxoh2mpjFg4MHpHXxqc65ulAos4p22xPpD3v55ejGpiGx1Y8vdK5doYMTPGvTPi6RzsqdVv2xvE000caSvFag"
+                    publishable-key={import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY}
                   >
                   </stripe-buy-button>
                 </div>
