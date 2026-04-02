@@ -123,7 +123,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 		.btn-primary:active { transform: scale(0.95); }
 		.start-options { display: flex; flex-direction: column; gap: 0.75rem; animation: fade-in 0.4s ease; }
 		.start-options.hidden { display: none; }
-		.btn-start { padding: 1rem; border-radius: 12px; font-weight: 800; color: white; transition: all 0.3s ease; }
+		.logo-box { width: 80px; height: 80px; background: linear-gradient(135deg, #0ea5e9, #2dd4bf); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(45, 212, 191, 0.3); }
 		.btn-teal { background: #14b8a6; box-shadow: 0 4px 14px rgba(20, 184, 166, 0.4); }
 		.btn-orange { background: #f97316; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4); }
 		.bottom-bar { height: 6px; background: linear-gradient(to right, #0ea5e9, #2dd4bf, #f97316); z-index: 100; }
@@ -211,6 +211,9 @@ import MainLayout from '../layouts/MainLayout.astro';
 		});
 		// Initial Check
         function checkTutorial() {
+            // Only act when on the tutorial root page ("/")
+            const isRoot = window.location.pathname === '/';
+            if (!isRoot) return;
             if (document.cookie.includes('tutorial_completed=true')) {
                 const savedLang = localStorage.getItem('lang') || 'es';
                 window.location.href = `/${savedLang}/home`;
