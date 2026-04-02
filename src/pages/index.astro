@@ -123,7 +123,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 		.btn-primary:active { transform: scale(0.95); }
 		.start-options { display: flex; flex-direction: column; gap: 0.75rem; animation: fade-in 0.4s ease; }
 		.start-options.hidden { display: none; }
-		.btn-start { padding: 1rem; border-radius: 12px; font-weight: 800; color: white; transition: all 0.3s ease; }
+		.logo-box { width: 80px; height: 80px; background: linear-gradient(135deg, #0ea5e9, #2dd4bf); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(45, 212, 191, 0.3); }
 		.btn-teal { background: #14b8a6; box-shadow: 0 4px 14px rgba(20, 184, 166, 0.4); }
 		.btn-orange { background: #f97316; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4); }
 		.bottom-bar { height: 6px; background: linear-gradient(to right, #0ea5e9, #2dd4bf, #f97316); z-index: 100; }
@@ -135,14 +135,15 @@ import MainLayout from '../layouts/MainLayout.astro';
 	</style>
 
 	<script>
+		import { enforceGuards, setTutorialCompleted, type Locale } from "../utils/auth";
+
 		let currentStep = 1;
 		const totalSteps = 4;
-		let currentLang = 'es';
+		let currentLang: Locale = 'es';
 		const steps = document.querySelectorAll('.step');
 		const dots = document.querySelectorAll('.dot');
 		const btnNext = document.getElementById('btn-next');
 		const startOptions = document.querySelector('.start-options');
-		const skipBtn = document.getElementById('btn-skip');
 
 		function updateTutorialUI(lang: string) {
 			const translationsEl = document.getElementById('i18n-translations');
@@ -177,47 +178,37 @@ import MainLayout from '../layouts/MainLayout.astro';
 			currentStep = stepNum;
 		}
 
-		function finishTutorial(lang: string) {
-			// Set cookie for 1 year
-			document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
-			document.cookie = `locale=${encodeURIComponent(lang)}; path=/; max-age=31536000; SameSite=Lax`;
-            // Store preference in localStorage as well
-            localStorage.setItem('lang', lang);
-			window.location.href = `/${lang}/home`;
+		function finishTutorial(lang: Locale) {
+			setTutorialCompleted(lang);
+			window.location.replace(`/${lang}/home`);
 		}
 
 		btnNext?.addEventListener('click', () => { if (currentStep < totalSteps) goToStep(currentStep + 1); });
 		document.getElementById('start-es')?.addEventListener('click', () => finishTutorial('es'));
 		document.getElementById('start-en')?.addEventListener('click', () => finishTutorial('en'));
+
 		document.getElementById('set-es')?.addEventListener('click', (e) => {
 			currentLang = 'es';
 			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
 			(e.target as HTMLElement).classList.add('active');
-			localStorage.setItem('lang', 'es');
 			updateTutorialUI('es');
 		});
 		document.getElementById('set-en')?.addEventListener('click', (e) => {
 			currentLang = 'en';
 			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
 			(e.target as HTMLElement).classList.add('active');
-			localStorage.setItem('lang', 'en');
 			updateTutorialUI('en');
 		});
+
 		dots.forEach(dot => {
 			dot.addEventListener('click', () => {
 				const target = parseInt(dot.getAttribute('data-go') || '1');
 				goToStep(target);
 			});
 		});
-		// Initial Check
-        function checkTutorial() {
-            if (document.cookie.includes('tutorial_completed=true')) {
-                const savedLang = localStorage.getItem('lang') || 'es';
-                window.location.href = `/${savedLang}/home`;
-            }
-        }
 
-        checkTutorial();
-        document.addEventListener('astro:after-swap', checkTutorial);
+        // Run guards
+        enforceGuards();
+        document.addEventListener('astro:after-swap', enforceGuards);
 	</script>
 </MainLayout>

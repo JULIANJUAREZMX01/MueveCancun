@@ -52,6 +52,7 @@ const navItems = [
   { href: getRelativeLocaleUrl(lang, 'community'), label: 'Foro', icon: 'forum', activePattern: /^\/(es|en)\/community/ },
   { href: getRelativeLocaleUrl(lang, 'wallet'), label: 'Wallet', icon: 'account_balance_wallet', activePattern: /^\/(es|en)\/wallet/ },
   { href: getRelativeLocaleUrl(lang, 'about'), label: 'Nosotros', icon: 'info', activePattern: /^\/(es|en)\/about/ },
+  { href: getRelativeLocaleUrl(lang, 'suscripcion'), label: 'Suscripciones', icon: 'premium', activePattern: /^\/(es|en)\/suscripcion/ },
 ];
 ---
 
@@ -354,6 +355,7 @@ const navItems = [
           else if (item.href === '/community') i18nKey = 'nav.community';
           else if (item.href === '/wallet') i18nKey = 'nav.wallet';
           else if (item.href === '/about') i18nKey = 'nav.about';
+          else if (item.href.includes('/suscripcion')) i18nKey = 'nav.subscription';
 
           return (
             <a href={item.href}
@@ -453,17 +455,9 @@ const navItems = [
       }
     </style>
     <script>
-      function enforceTutorial() {
-        const isTutorialPage = window.location.pathname === "/" || window.location.pathname === "";
-        const isStaticAsset = window.location.pathname.includes(".") || window.location.pathname.startsWith("/_astro");
-
-        if (!isTutorialPage && !isStaticAsset && !document.cookie.includes("tutorial_completed=true")) {
-          window.location.href = "/";
-        }
-      }
-
-      enforceTutorial();
-      document.addEventListener("astro:after-swap", enforceTutorial);
+      import { enforceGuards } from "../utils/auth";
+      enforceGuards();
+      document.addEventListener("astro:after-swap", enforceGuards);
     </script>
     <BrowserDetection />
     <DonateNudge />
