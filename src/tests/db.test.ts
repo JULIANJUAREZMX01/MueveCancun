@@ -143,7 +143,7 @@ describe('DB Security Checks', () => {
     expect(finalBalance?.signature).toBeDefined();
   });
 
-  it('should initialize a fresh profile with default 0.00 MXN balance and a valid signature', async () => {
+  it('should initialize a fresh profile with default 180.00 MXN balance and a valid signature', async () => {
     // Simulate a fresh profile: no migration done and no localStorage values
     localStorageMock.getItem.mockImplementation((_key: string) => null);
 
@@ -152,7 +152,7 @@ describe('DB Security Checks', () => {
 
     const balance = await getWalletBalance();
     expect(balance).toBeDefined();
-    expect(balance?.amount).toBe(0.00);
+    expect(balance?.amount).toBe(180.00);
     expect(balance?.signature).toBeDefined();
   });
 });

@@ -40,7 +40,7 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
   try {
     const expectedSignature = await generateSignature(amount);
     return expectedSignature === signatureHex;
-  } catch (_e) {
+  } catch (e) {
     return false;
   }
 };
@@ -71,12 +71,12 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
           return;
       }
 
-      // If a positive legacy balance exists and IDB still has the default 0.00, migrate it
+      // If a positive legacy balance exists and IDB still has the default 180.00, migrate it
       try {
           const tx = db.transaction('wallet-status', 'readwrite');
           const store = tx.objectStore('wallet-status');
           const existing = await store.get('current_balance');
-          const isDefault = existing?.amount === 0.00;
+          const isDefault = existing?.amount === 180.00;
           if (isDefault) {
               const signature = await generateSignature(legacyBalance);
               await store.put(
@@ -87,10 +87,10 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
           await tx.done;
           // Only after a successful transaction do we clear legacy data and mark migration done
           finalizeMigration();
-      } catch (_e) {
+      } catch (e) {
           // On IndexedDB/WebCrypto failure, keep legacy values so a later init can retry
       }
-  } catch (_e) {
+  } catch (e) {
       // Ignore errors if localStorage is not available (e.g. SSR)
   }
 };
@@ -119,16 +119,16 @@ export const initDB = async (): Promise<IDBPDatabase> => {
         },
       });
 
-      // Initialize test balance if empty (0 MXN for consistency with UI)
+      // Initialize test balance if empty (180 MXN for consistency with UI)
       const tx = db.transaction('wallet-status', 'readwrite');
       const store = tx.objectStore('wallet-status');
       const balance = await store.get('current_balance');
 
       if (balance === undefined) {
-        const defaultAmount = 0.00;
+        const defaultAmount = 180.00;
         const signature = await generateSignature(defaultAmount);
         await store.put({ id: 'current_balance', amount: defaultAmount, currency: 'MXN', signature }, 'current_balance');
-        console.log('[DB] Initial wallet balance set to 0.00 MXN');
+        console.log('[DB] Initial wallet balance set to 180.00 MXN');
       }
 
       await tx.done;

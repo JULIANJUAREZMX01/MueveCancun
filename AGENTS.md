@@ -1,4 +1,4 @@
-# AGENTS.md — Sistema Multi-Agente de MueveCancun (Nexus Prime v3.4)
+# AGENTS.md — Sistema Multi-Agente de MueveCancun
 
 <!--
   OBJETO DE ESTUDIO
@@ -32,14 +32,22 @@
 
 ---
 
-## Estado de Consolidación (Marzo 2026)
-La PWA ha sido consolidada en la versión 3.4, integrando más de 22 ramas de desarrollo. Se ha unificado el catálogo de rutas en un solo `master_routes.json` y se ha optimizado el sistema de páginas dinámicas para eliminar el bloat de build.
+## Agentes Disponibles
 
-### Cambios Clave:
-1. **Wallet Prime**: Saldo inicial de $0.00 MXN. Funcionalidad de búsqueda abierta para todos.
-2. **Conductor Registration**: Nuevo flujo para que conductores reciban un bono de $180.00 MXN.
-3. **Promotional Codes**: Sistema de códigos de descuento (e.g., 'MUEVECANCUN2026').
-4. **Nexus Transfer Engine**: Motor WASM optimizado para transbordos geográficos y de nombre.
+### 1. `claude-code` (Agente Principal)
+- **Rol**: Features, fixes, refactors, documentación.
+- **Branch pattern**: `claude/descripcion-XXXXX` (nunca push a `main`).
+- **Ver**: `CLAUDE.md` para instrucciones detalladas de desarrollo.
+
+### 2. `claude-delegation` (Workflow Autónomo)
+- **Rol**: Tareas de largo plazo vía `.github/workflows/claude-delegation.yml`.
+- **Trigger**: Workflow manual en ramas no protegidas.
+- **Requiere**: Secreto `ANTHROPIC_API_KEY`.
+
+### 3. `autocurative` (Auto-sanador Semanal)
+- **Rol**: Health check — recompila WASM, valida datos, corre tests, auto-commitea fixes.
+- **Schedule**: Lunes 06:00 UTC.
+- **Archivo**: `.github/workflows/autocurative.yml`
 
 ### 4. `jules` (Agente de Codificación Gemini — Google Jules)
 - **Rol**: Corrección autónoma de errores CI, resolución de Issues, asistencia en PRs, tareas delegadas de codificación iterativa.
@@ -107,7 +115,7 @@ Los componentes se comunican mediante `CustomEvent` en el browser:
 
 | Evento | Emisor | Receptor | Payload |
 |--------|--------|----------|---------|
-| `MAP_SET_STOP` | `InteractiveMap.astro` | `RouteCalculator.astro` | `{ type: 'origin'|'dest', name: string }` |
+| `MAP_SET_STOP` | `InteractiveMap.astro` | `RouteCalculator.astro` | `{ type: 'origin'\|'dest', name: string }` |
 | `SHOW_ROUTE_ON_MAP` | `RouteCalculator.astro` | `InteractiveMap.astro` | `{ journey: Journey }` |
 | `BALANCE_UPDATED` | `wallet.astro` | `RouteCalculator.astro` | `{}` |
 
@@ -182,8 +190,7 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 
 ---
 
-### WASM Build:
-`pnpm build:wasm` (usa wasm-pack para compilar rust-wasm/).
+## Flujo de PR
 
 ```
 rama claude/* → tests pasan → PR a main → CI verde → merge
