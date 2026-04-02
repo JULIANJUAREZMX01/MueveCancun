@@ -964,7 +964,9 @@ const ui = uiTranslations[currentLang];
               const results = find_route(normalizeString(origin), normalizeString(dest));
 
               console.log("🔍 Raw Results:", results);
-                 window.dispatchEvent(new CustomEvent('ROUTE_CALCULATED'));
+              if (results && results.length > 0) {
+                  window.dispatchEvent(new CustomEvent('ROUTE_CALCULATED'));
+              }
 
               if (!results || results.length === 0) {
                   renderEmptyState();
