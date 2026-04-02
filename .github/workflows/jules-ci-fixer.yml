@@ -139,6 +139,7 @@ jobs:
             }
 
       - name: Invoke Jules to fix CI failure
+        if: ${{ secrets.JULES_API_KEY != '' }}
         env:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
           FAILED_JOB_NAME: ${{ steps.fetch-logs.outputs.failed_job_name }}
@@ -149,6 +150,10 @@ jobs:
           HEAD_SHA: ${{ needs.detect-failure.outputs.head_sha }}
           RUN_URL: ${{ needs.detect-failure.outputs.run_url }}
         run: node scripts/jules-ci-fix.mjs
+
+      - name: Skip Jules (missing JULES_API_KEY)
+        if: ${{ secrets.JULES_API_KEY == '' }}
+        run: echo "JULES_API_KEY is not configured; skipping Jules CI Fixer."
 
       - name: Post status comment (on PR if applicable)
         if: github.event.workflow_run.event == 'pull_request'
