@@ -49,7 +49,8 @@ const lang = getLangFromUrl(Astro.url);
       const firstPart = parts[0];
       if (topLevelPages.includes(firstPart)) {
          const locale = localStorage.getItem('lang') || (navigator.language.startsWith('en') ? 'en' : 'es');
-         window.location.replace(`/${locale}/${firstPart}`);
+         const { search, hash } = window.location;
+         window.location.replace(`/${locale}/${firstPart}${search || ''}${hash || ''}`);
          return;
       }
 
