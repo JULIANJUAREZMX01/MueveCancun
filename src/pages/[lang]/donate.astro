@@ -1,11 +1,12 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import { getLangFromUrl } from '../../utils/i18n';
+import { getLangFromUrl, useTranslations } from '../../utils/i18n';
+import { getRelativeLocaleUrl } from '../../utils/utils';
 
 export function getStaticPaths() {
   return [
-    { params: { lang: "es" } },
-    { params: { lang: "en" } },
+    { params: { lang: 'es' } },
+    { params: { lang: 'en' } }
   ];
 }
 
@@ -13,129 +14,89 @@ const lang = getLangFromUrl(Astro.url);
 
 const translations = {
   es: {
-    title: 'MueveCancún Guardians',
-    subtitle: 'Niveles de apoyo y recompensas',
-    description: 'Únete a la élite de ciudadanos que hacen posible que esta plataforma siga operando 24/7 sin publicidad y con datos gratuitos.',
+    title: 'Apoya el Proyecto',
+    subtitle: 'MueveCancún es posible gracias a ti',
+    description: 'Somos un proyecto independiente sin fines de lucro. Tu apoyo nos ayuda a mantener los servidores y mejorar los algoritmos de rutas.',
+    mrrTitle: 'Progreso de Fondos',
     recurringTitle: 'Suscripciones Mensuales',
-    oneTimeTitle: 'Donaciones de Guardián',
-    mrrTitle: 'Progreso de la Comunidad',
-    directLinkText: 'Enlace directo',
-    qrText: 'Escaneame para donar',
+    oneTimeTitle: 'Donaciones Únicas',
+    qrText: 'ESCANEAME PARA APOYAR',
+    directLinkText: 'Enlace directo a Stripe',
     plans: {
-      starter: {
-        name: 'Agente IA (Starter)',
-        price: '$16',
-        period: '/mes',
-        features: [
-          'Agente IA personal en MueveCancún',
-          'Consultas de rutas inteligentes',
-          'Reportes ciudadanos asistidos',
-          'Tips de transporte en tiempo real',
-          'Soporte directo vía chat'
-        ],
-        link: 'https://buy.stripe.com/dRm00c4kygCicKUdTt7AI04'
-      },
-      elite: {
-        name: 'Elite Guardian',
-        price: '$160',
-        period: '/mes',
-        features: [
-          'Todo lo del plan Starter',
-          'Automatizaciones avanzadas',
-          'Skills personalizados',
-          'Backend functions dedicadas',
-          'Soporte prioritario 24/7'
-        ],
-        link: 'https://buy.stripe.com/8x214g8AO99QbGQ2aL7AI05',
-        recommended: true
-      }
-    },
-    tiers: {
       shield: {
         name: 'Shield Guardian',
         price: '$3',
-        period: '/única vez',
-        features: ['Notificaciones de rutas alteradas', 'Datos históricos', 'Features beta'],
-        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
-        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02',
-        qr: '/qr-shield.png'
+        period: '/mes',
+        features: [
+          'Notificaciones de rutas alteradas',
+          'Acceso a datos históricos',
+          'Insignia de Guardian en la App',
+          'Soporte prioritario'
+        ],
+        tier: 'shield',
+        recommended: false
       },
       architect: {
         name: 'Nexus Architect',
         price: '$10',
-        period: '/única vez',
-        features: ['Todo lo anterior', 'Votación en prioridades', 'Comunidad privada'],
-        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB',
-        link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03',
-        qr: '/qr-architect.png'
+        period: '/mes',
+        features: [
+          'Todo lo anterior',
+          'Voto en nuevas funcionalidades',
+          'Comunidad privada',
+          'Acceso a la API de MueveCancún',
+          'Tu nombre en los créditos'
+        ],
+        tier: 'architect',
+        recommended: true
       }
     },
     milestones: [
-      { label: 'Fase 1', goal: 16, emoji: '🎯' },
-      { label: 'Fase 2', goal: 160, emoji: '⚡' },
+      { label: 'Fase 1: Servidores', goal: 30, emoji: '🎯' },
+      { label: 'Fase 2: Desarrollo', goal: 100, emoji: '⚡' },
     ]
   },
   en: {
-    title: 'MueveCancún Guardians',
-    subtitle: 'Support levels and rewards',
-    description: 'Join the elite of citizens who make it possible for this platform to continue operating 24/7 without ads and with free data.',
+    title: 'Support the Project',
+    subtitle: 'MueveCancún is possible thanks to you',
+    description: 'We are an independent non-profit project. Your support helps us maintain servers and improve routing algorithms.',
+    mrrTitle: 'Funding Progress',
     recurringTitle: 'Monthly Subscriptions',
-    oneTimeTitle: 'Guardian Donations',
-    mrrTitle: 'Community Progress',
-    directLinkText: 'Direct link',
-    qrText: 'Scan to donate',
+    oneTimeTitle: 'One-time Donations',
+    qrText: 'SCAN ME TO SUPPORT',
+    directLinkText: 'Stripe direct link',
     plans: {
-      starter: {
-        name: 'AI Agent (Starter)',
-        price: '$16',
-        period: '/mo',
-        features: [
-          'Personal AI Agent in MueveCancún',
-          'Smart route queries',
-          'Assisted citizen reports',
-          'Real-time transport tips',
-          'Direct chat support'
-        ],
-        link: 'https://buy.stripe.com/dRm00c4kygCicKUdTt7AI04'
-      },
-      elite: {
-        name: 'Elite Guardian',
-        price: '$160',
-        period: '/mo',
-        features: [
-          'Everything in Starter',
-          'Advanced automations',
-          'Custom skills',
-          'Dedicated backend functions',
-          '24/7 Priority support'
-        ],
-        link: 'https://buy.stripe.com/8x214g8AO99QbGQ2aL7AI05',
-        recommended: true
-      }
-    },
-    tiers: {
       shield: {
         name: 'Shield Guardian',
         price: '$3',
-        period: '/one-time',
-        features: ['Altered route notifications', 'Historical data', 'Beta features'],
-        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
-        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02',
-        qr: '/qr-shield.png'
+        period: '/mo',
+        features: [
+          'Altered route notifications',
+          'Historical data access',
+          'Guardian badge in the App',
+          'Priority support'
+        ],
+        tier: 'shield',
+        recommended: false
       },
       architect: {
         name: 'Nexus Architect',
         price: '$10',
-        period: '/one-time',
-        features: ['Everything above', 'Priority voting', 'Private community'],
-        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB',
-        link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03',
-        qr: '/qr-architect.png'
+        period: '/mo',
+        features: [
+          'Everything above',
+          'Vote on new features',
+          'Private community',
+          'MueveCancún API access',
+          'Your name in credits'
+        ],
+        tier: 'architect',
+        recommended: true
       }
     },
     milestones: [
-      { label: 'Phase 1', goal: 16, emoji: '🎯' },
-      { label: 'Phase 2', goal: 160, emoji: '⚡' },
+      { label: 'Phase 1: Servers', goal: 30, emoji: '🎯' },
+      { label: 'Phase 2: Development', goal: 100, emoji: '⚡' },
     ]
   }
 };
@@ -217,49 +178,12 @@ const t = translations[lang] || translations.es;
                   </li>
                 ))}
               </ul>
-              <a href={(plan as any).link} target="_blank" class="block w-full py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-center font-black text-sm uppercase tracking-widest hover:opacity-90 transition-opacity no-underline">
+              <button
+                data-tier={(plan as any).tier}
+                class="donate-btn block w-full py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-center font-black text-sm uppercase tracking-widest hover:opacity-90 transition-opacity no-underline"
+              >
                 Suscribirme
-              </a>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <!-- One-time Tiers -->
-    <section class="space-y-8 animate-fade-in" style="animation-delay: 0.3s;">
-      <h2 class="text-2xl font-black text-slate-900 dark:text-white text-center">{t.oneTimeTitle}</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {Object.entries(t.tiers).map(([key, tier]) => (
-          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center text-center">
-             <div class="space-y-6 w-full">
-              <div class="flex flex-col items-center gap-4">
-                { (tier as any).qr && (
-                  <div class="p-2 bg-white rounded-2xl shadow-inner border border-slate-100">
-                    <img src={(tier as any).qr} alt={t.qrText} class="w-32 h-32" />
-                    <p class="mt-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">{t.qrText}</p>
-                  </div>
-                )}
-                <div>
-                  <h3 class="text-xl font-black text-slate-900 dark:text-white">{(tier as any).name}</h3>
-                  <p class="text-2xl font-black text-slate-600 dark:text-slate-400">{(tier as any).price}<span class="text-sm font-bold opacity-50">{(tier as any).period}</span></p>
-                </div>
-              </div>
-              <ul class="space-y-3 text-left">
-                {(tier as any).features.map((f: string) => (
-                  <li class="flex items-start gap-3 text-sm text-slate-500 dark:text-slate-400">
-                    <svg class="w-4 h-4 text-emerald-500/50 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div class="pt-4 flex flex-col items-center gap-4">
-                 <stripe-buy-button
-                    buy-button-id={(tier as any).buyButtonId}
-                    publishable-key="pk_live_51T6oKE2dM2f4HRxoh2mpjFg4MHpHXxqc65ulAos4p22xPpD3v55ejGpiGx1Y8vdK5doYMTPGvTPi6RzsqdVv2xvE000caSvFag"
-                  ></stripe-buy-button>
-                  <a href={(tier as any).link} class="text-[10px] font-bold text-slate-400 hover:text-primary-500 transition-colors uppercase tracking-widest no-underline">{t.directLinkText}</a>
-              </div>
+              </button>
             </div>
           </div>
         ))}
@@ -269,15 +193,15 @@ const t = translations[lang] || translations.es;
   </div>
 </MainLayout>
 
-<script is:inline src="https://js.stripe.com/v3/buy-button.js" async></script>
-<script define:vars={{ lang }}>
+<script>
   async function loadMRR() {
-    const STARTER_PRICE = 16;
+    // In a real app, this would fetch from our /api/stats
+    // For now, it might be mocked
     try {
-      const res = await fetch('https://api.github.com/repos/JULIANJUAREZMX01/MueveCancun/issues?labels=stripe-subscriber&state=open');
-      const issues = await res.json();
-      const subs = Array.isArray(issues) ? issues.length : 0;
-      const mrr = subs * STARTER_PRICE;
+      const res = await fetch('/api/checkout'); // Just checking if API is there
+      // Mocked data for display
+      const mrr = 0;
+      const subs = 0;
 
       const mrrEl = document.getElementById('mrr-amount');
       const subsEl = document.getElementById('subs-count');
@@ -295,6 +219,50 @@ const t = translations[lang] || translations.es;
     } catch { /* Fail silently */ }
   }
 
-  document.addEventListener('astro:page-load', loadMRR);
-  loadMRR();
+  function setupDonateButtons() {
+    document.querySelectorAll('.donate-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const target = e.currentTarget as HTMLButtonElement;
+            const tier = target.dataset.tier;
+
+            try {
+                target.disabled = true;
+                const originalText = target.textContent;
+                target.textContent = '⏳ Cargando...';
+
+                const email = prompt(window.location.pathname.startsWith('/en') ? 'Your email:' : 'Tu email:');
+                if (!email) {
+                    target.disabled = false;
+                    target.textContent = originalText;
+                    return;
+                }
+
+                const res = await fetch('/api/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tier, email })
+                });
+
+                const data = await res.json();
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert('Error: ' + data.error);
+                    target.disabled = false;
+                    target.textContent = originalText;
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error en checkout');
+                target.disabled = false;
+                target.textContent = 'Suscribirme';
+            }
+        });
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+      loadMRR();
+      setupDonateButtons();
+  });
 </script>

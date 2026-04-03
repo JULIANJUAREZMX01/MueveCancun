@@ -1,0 +1,9 @@
+{
+  "paradas": [
+    { "id": "crucero", "nombre": "Crucero Hub", "lat": 21.1738, "lng": -86.8285, "rutas": ["R-1", "R-2", "R-10"] },
+    { "id": "aeropuerto", "nombre": "Aeropuerto Internacional", "lat": 21.0425, "lng": -86.8771, "rutas": ["ADO", "R-10"] },
+    { "id": "pto_juarez", "nombre": "Puerto Juárez", "lat": 21.1818, "lng": -86.8043, "rutas": ["Combis Rojos"] },
+    { "id": "playa_express", "nombre": "Terminal Playa Express", "lat": 21.1633, "lng": -86.8260, "rutas": ["Playa Express"] },
+    { "id": "costa_mujeres", "nombre": "Costa Mujeres", "lat": 21.2581, "lng": -86.8055, "rutas": ["R-27"] }
+  ]
+}

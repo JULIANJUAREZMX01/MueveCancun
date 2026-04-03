@@ -3,6 +3,7 @@ export interface RouteCalculatorWasm {
   default(): Promise<void>;
   validate_operator_funds(balance: number): boolean;
   load_catalog(json_payload: string): void;
+  load_catalog_core(json_payload: string): void;
   get_route_by_id(id: string): string;
   get_all_routes(): string;
   find_route(origin: string, dest: string): string;
