@@ -1,4 +1,10 @@
-# Exported from Render on 2026-02-18T03:54:09Z
+# render.yaml — MueveCancún v3.4.0
+# Actualizado para soportar Astro output: 'hybrid' (SSG + SSR endpoints)
+#
+# CAMBIO vs v3.3: runtime static → node
+#   • El 95% del sitio sigue siendo HTML estático (prerenderizado)
+#   • /api/* rutas sirven como SSR (Stripe webhook, reports, checkout)
+#
 version: "1"
 projects:
 - name: QUINTANAROO_CREATIONS
@@ -7,15 +13,24 @@ projects:
     services:
     - type: web
       name: QueRutaMeLLevaCancun
-      runtime: static
+      runtime: node
       repo: https://github.com/JULIANJUAREZMX01/MueveCancun
       envVars:
       - key: NODE_VERSION
-        sync: false
+        value: "22"
       - key: ENABLE_PNPM
-        sync: false
+        value: "1"
+      - key: NODE_ENV
+        value: production
+      # Secrets (set in Render Dashboard → Environment):
+      # STRIPE_SECRET_KEY       → sk_live_...
+      # STRIPE_WEBHOOK_SECRET   → whsec_...
+      # GITHUB_ISSUES_TOKEN     → ghp_...
+      # PUBLIC_URL              → https://querutamellevacancun.onrender.com
+      # PUBLIC_GA4_ID           → G-XXXXXXXX
       buildCommand: bash scripts/setup-render.sh
-      staticPublishPath: dist
+      startCommand: node dist/server/entry.mjs
       autoDeployTrigger: checksPass
+      healthCheckPath: /es/home
       previews:
         generation: automatic
