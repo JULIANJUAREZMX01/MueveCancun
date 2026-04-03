@@ -47,6 +47,7 @@ collections.forEach((collection) => {
         }
 
         const coords = geom.coordinates;
+        // GeoJSON coordinates are [longitude, latitude]; map to application's {lat, lng} order.
         const paradas = coords.map((c, i) => ({
             nombre: `Stop ${i + 1} - ${name}`,
             lat: c[1],
