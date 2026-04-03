@@ -47,10 +47,10 @@ jobs:
       # The untrusted PR branch is never checked out; its diff is fetched via API below.
       - uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       # Fetch PR file changes via GitHub REST API (no code execution).
       # The diff text is passed to Jules as data so it has full context of the changes.
@@ -106,8 +106,11 @@ jobs:
       - name: Post success comment
         if: success()
         uses: actions/github-script@v7
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
         with:
           script: |
+            const { COMMENT_BODY } = process.env;
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -115,7 +118,7 @@ jobs:
               body: [
                 '🤖 **Jules** recibió la solicitud y comenzó a trabajar.',
                 '',
-                `> \`${{ github.event.comment.body }}\``,
+                `> \`${COMMENT_BODY}\``,
                 '',
                 'Los cambios serán commiteados directamente en esta rama. El PR se actualizará automáticamente.',
                 '',
