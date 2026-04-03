@@ -121,7 +121,6 @@ jobs:
                 '🤖 **Jules** recibió la solicitud y comenzó a trabajar.',
                 '',
                 `> \`${process.env.COMMENT_BODY}\``,
-                `> \`${COMMENT_BODY}\``,
                 '',
                 'Los cambios serán commiteados directamente en esta rama. El PR se actualizará automáticamente.',
                 '',
