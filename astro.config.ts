@@ -6,6 +6,8 @@ import { fileURLToPath } from "url"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+const isDev = process.env.NODE_ENV === 'development';
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://querutamellevacancun.onrender.com",
@@ -15,6 +17,9 @@ export default defineConfig({
     tailwind({ applyBaseStyles: false })
   ],
   vite: {
+    define: {
+      'process.env.IS_DEV': JSON.stringify(isDev)
+    },
     build: {
       rollupOptions: {
         external: [

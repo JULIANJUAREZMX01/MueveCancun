@@ -1,9 +1,12 @@
 import { WasmLoader } from '../utils/WasmLoader';
 import { logger } from '../utils/logger';
+import { showToast } from '../utils/toast';
 
 export async function initWasm() {
   try {
     logger.info('Initializing WASM Route Calculator...');
+
+    // WasmLoader.getModule() now has a 5s timeout internally
     const wasmModule = await WasmLoader.getModule();
 
     // Fetch master routes catalog
@@ -15,8 +18,6 @@ export async function initWasm() {
     const catalogJson = await response.text();
 
     // Load catalog into WASM
-    // Note: The specific method name might vary depending on the WASM interface
-    // Based on memory, it's load_catalog_core or load_catalog
     if (typeof wasmModule.load_catalog_core === 'function') {
         wasmModule.load_catalog_core(catalogJson);
     } else if (typeof (wasmModule as any).load_catalog === 'function') {
@@ -26,16 +27,24 @@ export async function initWasm() {
     }
 
     logger.info('✅ WASM initialized with full catalog');
-    window.dispatchEvent(new CustomEvent('wasm-ready'));
+    window.dispatchEvent(new CustomEvent('wasm-ready', { detail: { success: true } }));
     return true;
   } catch (error) {
     logger.error('WASM initialization failed:', error);
+
+    // Compatibility mode fallback
+    showToast("Modo compatibilidad activado", "info");
+
+    window.dispatchEvent(new CustomEvent('wasm-ready', { detail: { success: false, error } }));
     return false;
   }
 }
 
 // Auto-initialize when running in browser
 if (typeof window !== 'undefined') {
+  // Use 'page-load' for Astro View Transitions if applicable,
+  // but initWasm should only run once ideally.
+  // We keep DOMContentLoaded as it's the standard for static sites.
   window.addEventListener('DOMContentLoaded', () => {
     initWasm();
   });

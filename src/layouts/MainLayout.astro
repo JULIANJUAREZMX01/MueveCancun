@@ -44,23 +44,24 @@ const navItems = [
 ];
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const isDev = process.env.NODE_ENV === 'development';
 ---
 
 <!DOCTYPE html>
 <html lang={lang} class="scroll-smooth">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0f172a" />
-    <meta name="generator" content={Astro.generator} />
-
-    <!-- SEO -->
-    <title>{title}</title>
+    <meta charset="UTF-8" />
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalURL} />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#0284c7" />
+
     {googleVerification && <meta name="google-site-verification" content={googleVerification} />}
+
+    <title>{title} | CancúnMueve</title>
+    <link rel="canonical" href={canonicalURL} />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -76,44 +77,32 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta property="twitter:description" content={description} />
     <meta property="twitter:image" content={new URL('/og-image.png', Astro.url)} />
 
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    <!-- Global Scripts -->
     <script is:inline>
-      // 1. Initial Theme & Language setup
-      function applyTheme() {
-          const theme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-          if (theme === "dark") document.documentElement.classList.add("dark");
-          else document.documentElement.classList.remove("dark");
-      }
+      // Prevent FOUC
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      })();
 
-      function applyLanguage() {
-          const savedLang = localStorage.getItem("lang") || "es";
-          document.documentElement.setAttribute("lang", savedLang);
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
       }
-
-      function updateTranslations(langCode) {
-          const trans = JSON.parse(document.getElementById('i18n-translations').dataset.translations);
-          const elements = document.querySelectorAll('[data-i18n]');
-          elements.forEach(el => {
-             const key = el.getAttribute('data-i18n');
-             const text = trans[langCode] && trans[langCode][key] ? trans[langCode][key] : trans['es'][key];
-             if (text) {
-                 // Preserving SVG icons if any
-                 const icon = el.querySelector('svg')?.outerHTML || '';
-                 el.innerHTML = '';
-                 if (icon) el.insertAdjacentHTML('afterbegin', icon);
-                 el.appendChild(document.createTextNode(' ' + text));
-             }
-          });
-      }
-
-      applyTheme();
-      applyLanguage();
     </script>
     <script>
-      import { getWalletBalance } from '../utils/db';
-      import '../client/bg';
-      import '../client/animate';
-      
-      // 3. Global Balance Sync
+      import { getWalletBalance } from "../utils/db";
+
       async function syncGlobalBalance() {
           try {
             const walletData = await getWalletBalance();
@@ -179,7 +168,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     </script>
     </>
     )}
-    <ClientRouter />
+    {!isDev && <ClientRouter />}
   </head>
   <body id="top" class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
@@ -236,7 +225,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
          <!-- Unified Balance Badge -->
          <a href={getRelativeLocaleUrl(lang, "wallet")} id="header-balance-badge" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 no-underline transition-all hover:scale-105 active:scale-95 group" aria-label="Wallet balance">
             <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" aria-hidden="true"></span>
-            <span id="header-balance-amount" class="text-xs font-black text-slate-700 dark:text-slate-300">$180.00</span>
+            <span id="header-balance-amount" class="text-xs font-black text-slate-700 dark:text-slate-300">80.00</span>
          </a>
 
          <button class="theme-toggle w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800"

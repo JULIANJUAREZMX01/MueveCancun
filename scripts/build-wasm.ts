@@ -16,6 +16,26 @@ const error = (msg: string): void => console.error(`\x1b[1;31m[ERROR]\x1b[0m ${m
 
 log("Iniciando forja de modulos WASM...");
 
+const skipWasm = process.argv.includes('--skip-wasm');
+
+if (skipWasm) {
+    log("[SKIP] Saltando compilacion WASM por solicitud del usuario (--skip-wasm).");
+
+    const artifactsExist = modules.every(mod => {
+        const wasmPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}_bg.wasm`);
+        const jsPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}.js`);
+        return fs.existsSync(wasmPath) && fs.existsSync(jsPath);
+    });
+
+    if (artifactsExist) {
+        success("Artefactos WASM detectados. Procediendo con los existentes.");
+        process.exit(0);
+    } else {
+        error("No se detectaron artefactos WASM previos y se solicito --skip-wasm. Abortando.");
+        process.exit(1);
+    }
+}
+
 // 1. Verificacion de Toolchain
 let useNpx = false;
 

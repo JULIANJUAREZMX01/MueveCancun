@@ -11,7 +11,7 @@
       <div id="map-fallback" class="absolute inset-0 bg-slate-100 flex items-center justify-center z-0">
           <div class="flex flex-col items-center gap-3">
               <div class="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Cargando Mapa...</p>
+              <p id="map-loading-text" class="text-xs font-bold text-slate-400 uppercase tracking-widest">Cargando Mapa...</p>
           </div>
       </div>
 
@@ -55,35 +55,29 @@
           .replace(/'/g, "&#039;");
   }
 
-  function safeUrl(name) {
+  function safeUrl(name: string) {
       return encodeURIComponent(name);
   }
 
-  function drawRoute(mapInstance, journey, currentLayerGroup, coords) {
-      if (!mapInstance || !journey) return null;
-
-      if (currentLayerGroup) {
-          currentLayerGroup.clearLayers();
-          mapInstance.removeLayer(currentLayerGroup);
+  function drawRoute(mapInstance, journey, existingLayerGroup, coordinatesDB) {
+      if (existingLayerGroup) {
+          existingLayerGroup.clearLayers();
       }
 
       const L = window.L;
       const newLayers = [];
       const polylineCoords = [];
 
-      journey.legs.forEach((leg, index) => {
-          const legCoords = (leg.stops || [])
-              .map(s => {
-                  const name = typeof s === 'string' ? s : (s.nombre || s.name);
-                  return coords.get(normalizeString(name));
-              })
-              .filter(Boolean);
+      journey.legs?.forEach((leg, index) => {
+          const legCoords = leg.stops?.map(s => {
+              const name = normalizeString(s.name);
+              const coords = coordinatesDB.get(name);
+              return coords ? [coords[0], coords[1]] : null;
+          }).filter(c => c !== null);
 
-          if (legCoords.length > 1) {
-              const color = leg.transport_type === 'Bus_HotelZone' ? '#F97316' : '#0EA5E9';
-
+          if (legCoords && legCoords.length > 1) {
               const poly = L.polyline(legCoords, {
-                  color,
+                  color: index === 0 ? '#F97316' : '#0EA5E9',
                   weight: 6,
                   opacity: 0.8,
                   lineJoin: 'round',
@@ -121,12 +115,16 @@
     if (map) return;
 
     const container = document.getElementById('map');
+    const fallback = document.getElementById('map-fallback');
     if (!container) return;
 
     try {
         await loadLeaflet();
+        if (fallback) fallback.classList.add('hidden');
     } catch (e) {
         console.error("[Map] Failed to load Leaflet", e);
+        const loadingText = document.getElementById('map-loading-text');
+        if (loadingText) loadingText.textContent = "Error al cargar Leaflet";
         return;
     }
 
@@ -227,7 +225,7 @@
     });
 
     setTimeout(() => {
-        map.invalidateSize();
+        map?.invalidateSize();
     }, 500);
   }
 
@@ -260,6 +258,9 @@
           return;
       }
       mapEl.dataset.initialized = 'true';
+
+      // The map no longer waits for WASM indefinitely.
+      // It initializes as soon as possible.
       initMap();
       setupGPS();
   }

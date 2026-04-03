@@ -45,11 +45,14 @@ const verifySignature = async (amount: number, signatureHex: string | undefined)
   }
 };
 
+const dispatchBalanceUpdate = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('BALANCE_UPDATED'));
+  }
+};
+
 /**
  * Migrate balance from localStorage to IndexedDB.
- * This consolidates the triple balance system (user_balance, muevecancun_balance, wallet-status)
- * into a single source: IndexedDB via this module.
- * Accepts the already-open db instance to avoid circular recursion with initDB.
  */
 export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
   try {
@@ -58,6 +61,7 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
           localStorage.setItem('balance_migration_done', 'true');
           localStorage.removeItem('muevecancun_balance');
           localStorage.removeItem('user_balance');
+          dispatchBalanceUpdate();
       };
 
       // Read BEFORE removing to avoid silent balance loss on upgrade
@@ -129,6 +133,7 @@ export const initDB = async (): Promise<IDBPDatabase> => {
         const signature = await generateSignature(defaultAmount);
         await store.put({ id: 'current_balance', amount: defaultAmount, currency: 'MXN', signature }, 'current_balance');
         console.log('[DB] Initial wallet balance set to 180.00 MXN');
+        dispatchBalanceUpdate();
       }
 
       await tx.done;
@@ -163,6 +168,7 @@ export const getWalletBalance = async (): Promise<{ id: string; amount: number; 
       const writeTx = db.transaction('wallet-status', 'readwrite');
       await writeTx.objectStore('wallet-status').put(balance, 'current_balance');
       await writeTx.done;
+      dispatchBalanceUpdate();
       return balance;
     }
 
@@ -177,6 +183,7 @@ export const getWalletBalance = async (): Promise<{ id: string; amount: number; 
       const writeTx = db.transaction('wallet-status', 'readwrite');
       await writeTx.objectStore('wallet-status').put(balance, 'current_balance');
       await writeTx.done;
+      dispatchBalanceUpdate();
       return balance;
     }
   }
@@ -201,6 +208,7 @@ export const setWalletBalance = async (amount: number): Promise<void> => {
   }
 
   await tx.done;
+  dispatchBalanceUpdate();
 };
 
 export const updateWalletBalance = async (amount: number) => {
@@ -215,6 +223,7 @@ export const updateWalletBalance = async (amount: number) => {
     balance.signature = await generateSignature(newAmount);
     await store.put(balance, 'current_balance');
     await tx.done;
+    dispatchBalanceUpdate();
   }
 };
 
