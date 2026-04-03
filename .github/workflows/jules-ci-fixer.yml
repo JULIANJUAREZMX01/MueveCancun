@@ -39,21 +39,12 @@ jobs:
         id: check
         env:
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-          WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
-          BRANCH: ${{ github.event.workflow_run.head_branch }}
-          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
           BRANCH="$HEAD_BRANCH"
-          CONCLUSION="$WORKFLOW_CONCLUSION"
-          BRANCH="$BRANCH"
-          CONCLUSION="$CONCLUSION"
-          HEAD_SHA="$HEAD_SHA"
-          WORKFLOW_NAME="$WORKFLOW_NAME"
-          RUN_URL="$RUN_URL"
-
           echo "Branch: $BRANCH"
           echo "Conclusion: $CONCLUSION"
 
@@ -77,10 +68,10 @@ jobs:
       # The untrusted head SHA is never checked out; its diff is fetched via API below.
       - uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       # Fetch the git diff of the failing commit via GitHub REST API (no code execution).
       # The diff is passed as plain text to Jules so it has full context of the changes.
@@ -189,7 +180,6 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               head: `${context.repo.owner}:${process.env.HEAD_BRANCH}`,
-              head: `${context.repo.owner}:${HEAD_BRANCH}`,
               state: 'open',
             });
             if (prs.data.length > 0) {
@@ -200,7 +190,7 @@ jobs:
                 body: [
                   '🤖 **Jules CI Fixer** fue invocado automáticamente.',
                   '',
-                  `> Workflow **${process.env.WORKFLOW_NAME}** falló en el job \`${process.env.FAILED_JOB}\`.`,
+                  `> Workflow **${process.env.WORKFLOW_NAME}** falló en el job \`${process.env.FAILED_JOB_NAME}\`.`,
                   '',
                   'Jules está analizando los logs y preparando un fix. Un PR con la corrección aparecerá próximamente.',
                   '',
