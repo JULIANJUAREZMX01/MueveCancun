@@ -9,10 +9,18 @@
 function Invoke-MueveCancunGitAudit {
     [CmdletBinding()]
     param (
-        [string]$ProjectRoot = "C:\Ruta\A\Tu\MueveCancun"
+        [string]$ProjectRoot = (Get-Location).Path
     )
 
     Write-Host "[INIT] Iniciando extracción de datos del repositorio..." -ForegroundColor Cyan
+    if (-not (Test-Path -Path $ProjectRoot -PathType Container)) {
+        throw "[ERROR] La ruta del proyecto no existe: $ProjectRoot"
+    }
+
+    if (-not (Test-Path -Path (Join-Path $ProjectRoot ".git"))) {
+        throw "[ERROR] La ruta indicada no parece ser un repositorio Git: $ProjectRoot"
+    }
+
     Push-Location $ProjectRoot
 
     try {
@@ -44,8 +52,7 @@ function Invoke-MueveCancunGitAudit {
     }
 }
 
+Set-Alias -Name mc-gitaudit -Value Invoke-MueveCancunGitAudit
+
 # Exportar la función
 Export-ModuleMember -Function Invoke-MueveCancunGitAudit -Alias mc-gitaudit
-
-# Establecer alias en el entorno actual
-Set-Alias -Name mc-gitaudit -Value Invoke-MueveCancunGitAudit -Scope Global
