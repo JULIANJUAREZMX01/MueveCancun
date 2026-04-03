@@ -36,11 +36,20 @@ export class WasmLoader {
   }
 
   private async loadWasm(): Promise<RouteCalculatorWasm> {
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("WASM load timeout (5s)")), 5000)
+    );
+
     try {
         const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
-        const module = await import(/* @vite-ignore */ wasmPath) as RouteCalculatorWasm;
-        await module.default();
-        return module;
+
+        const loadPromise = (async () => {
+          const module = await import(/* @vite-ignore */ wasmPath) as RouteCalculatorWasm;
+          await module.default();
+          return module;
+        })();
+
+        return await Promise.race([loadPromise, timeoutPromise]);
     } catch (e) {
         console.error("Failed to load WASM module", e);
         throw e;

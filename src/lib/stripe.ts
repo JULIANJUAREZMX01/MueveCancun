@@ -1,16 +1,17 @@
 import Stripe from 'stripe';
 
-const stripe = new Stripe(import.meta.env.STRIPE_SECRET_KEY || '');
+const stripe = (typeof window === 'undefined') ? new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock') : null;
 
 export async function createCheckoutSession(
   tier: 'shield' | 'architect',
   email: string,
   amount?: number
 ) {
+  if (!stripe) throw new Error('Stripe is only available server-side');
   try {
     const prices: any = {
-      shield: 300,      // $3.00 en centavos
-      architect: 1000,  // $10.00
+      shield: 300,      // .00 en centavos
+      architect: 1000,  // 0.00
     };
 
     const session = await stripe.checkout.sessions.create({
@@ -61,6 +62,7 @@ export async function handleStripeWebhook(
   body: string,
   sig: string | undefined
 ) {
+  if (!stripe) throw new Error('Stripe is only available server-side');
   if (!sig) {
     throw new Error('No signature provided');
   }
@@ -69,7 +71,7 @@ export async function handleStripeWebhook(
     const event = stripe.webhooks.constructEvent(
       body,
       sig,
-      import.meta.env.STRIPE_WEBHOOK_SECRET || ''
+      process.env.STRIPE_WEBHOOK_SECRET || 'whsec_mock'
     );
 
     return event;

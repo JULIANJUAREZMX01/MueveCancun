@@ -1,32 +1,33 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
 **Fecha:** 2026-04-02
-**Versión:** 1.2.3 (Nexus Prime v3.3.5)
-**Estado General:** 🟢 OPERATIVO — Estabilización de PWA Completada
+**Versión:** 1.2.4 (Nexus Prime v3.3.6)
+**Estado General:** 🟢 OPERATIVO — Estabilización de Motor Core Completada
 
 ---
 
 ## 🎯 Resumen Ejecutivo
 
-Audit de Estabilización (Abril 2026) finalizado. Se han resuelto cuellos de botella en la carga de WASM, robustecido la captura de GPS y corregido la integración de pagos en el entorno estático. La app es ahora más resiliente en condiciones de baja conectividad.
+Audit de Estabilización (Abril 2026) finalizado. Se han resuelto cuellos de botella críticos en la carga de WASM y el mapa, se ha sincronizado el balance de la wallet en toda la app y se han corregido errores de compilación en entornos Windows/CI. La app ha alcanzado un estado de alta resiliencia.
 
-### Logros Acumulados (v3.3.5)
+### Logros Acumulados (v3.3.6)
 
 | Área | Estado | Mejora |
 |------|--------|--------|
-| Motor WASM | ✅ Optimizado | Pre-carga activa + Feedback visual de carga |
-| Geocodificación | ✅ Robusta | Timeout de 10s + Fallback manual |
-| Pagos (Stripe) | ✅ Corregido | Botones nativos compatibles con SSG |
-| Reportes (GitHub) | ✅ Offline-First | Cola en IDB v4 + Sincronización automática |
-| Navegación | ✅ Protegida | Guards actualizados para flujo de donación |
+| Motor WASM | ✅ Timeout 5s | Fallback a modo compatibilidad + Timeout de seguridad |
+| Mapa (Leaflet) | ✅ Desbloqueado | Carga independiente de WASM; UX inmediata |
+| Wallet | ✅ Sincronizada | Evento `BALANCE_UPDATED` asegura consistencia en UI |
+| Build (WASM) | ✅ Flexible | Flag `--skip-wasm` permite builds en Windows usando artefactos pre-existentes |
+| Estabilidad | ✅ Corregido | View Transitions desactivadas en Dev para evitar SyntaxError |
 
 ---
 
 ## 📁 Estructura del Proyecto (Sincronizada)
 
-- **src/utils/geolocation.ts**: Nueva utilidad unificada para peticiones de ubicación.
-- **src/utils/WasmLoader.ts**: Singleton con soporte de preloading.
-- **src/components/ReportWidget.astro**: Implementación de Social Signals (Tier 1).
-- **public/sw.js**: Service Worker v3.3.5 con cache de mapas optimizado.
+- **src/utils/WasmLoader.ts**: Ahora con protección de timeout de 5 segundos.
+- **src/lib/initWasm.ts**: Manejo de errores con toast de modo compatibilidad.
+- **src/components/InteractiveMap.astro**: Inicialización robusta sin deadlock.
+- **src/utils/db.ts**: Despachador central de eventos de balance.
+- **src/lib/stripe.ts**: Inicialización segura para entornos de build estáticos.
 
 ---
 
@@ -34,18 +35,18 @@ Audit de Estabilización (Abril 2026) finalizado. Se han resuelto cuellos de bot
 
 | Archivo | Módulo testeado | Resultado |
 |---------|----------------|-----------|
-| `geolocation.test.ts` | Timeout y fallbacks de GPS | ✅ PASS |
-| `i18n.test.ts` | Traducciones y fallbacks | ✅ PASS |
-| `db.test.ts` | IndexedDB + Seguridad HMAC | ✅ PASS |
+| `route-calculator` | Tests de Rust (cargo test) | ✅ PASS |
+| `master_routes.json` | Validación de catálogo | ✅ PASS |
 | `pnpm run build` | Build estática completa | ✅ SUCCESS |
+| `Wallet Sync` | Playwright Verification | ✅ VERIFIED |
 
 ---
 
 ## 🔐 Seguridad & Rendimiento
 
-- **Timeout Protection**: Todas las APIs asíncronas del navegador (GPS, Camera) tienen límites de tiempo para evitar bloqueos de UI.
-- **Token Security**: Uso de GitHub PAT limitado por alcance para reportes (ADR-002).
-- **Offline Resilience**: Sincronización de fondo automática al recuperar conexión.
+- **UX Resilience**: El mapa ya no espera indefinidamente al motor de búsqueda, mejorando el TTI percibido.
+- **Build Integrity**: Se previene el crash de Stripe durante el build estático cuando faltan llaves secretas.
+- **Dev Mode DX**: Se eliminan los errores de sintaxis de módulos importados en el router de Astro.
 
 ---
 
