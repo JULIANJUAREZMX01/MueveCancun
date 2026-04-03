@@ -5,7 +5,6 @@
       "tipo": "Bus_Urbano",
       "nombre": "Walmart - Puerto Juárez",
       "color": "#4ECDC4",
-      "tipo": "Bus_Urban",
       "tarifa": 10,
       "paradas": [
         {
@@ -26,3 +25,4 @@
     }
   ]
 }
+

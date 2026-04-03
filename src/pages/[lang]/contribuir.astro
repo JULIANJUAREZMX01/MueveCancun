@@ -214,59 +214,37 @@ const reportOptions = [
         `**User-Agent:** ${navigator.userAgent.substring(0, 100)}`,
       ].filter(Boolean).join('\n');
 
-      // Try to get config from ReportWidget
-      const configEl = document.getElementById('rw-config');
-      const token = configEl?.getAttribute('data-token') || '';
-
-      if (!token) {
-        // No token: save to localStorage queue for later sync
-        try {
-          const queue = JSON.parse(localStorage.getItem('contrib_queue') || '[]');
-          queue.push({ issueTitle, issueBody, ts: Date.now() });
-          localStorage.setItem('contrib_queue', JSON.stringify(queue));
-        } catch { /* ignore */ }
-
-        // Show success anyway — report is queued
-        form.classList.add('hidden');
-        successState?.classList.remove('hidden');
-        return;
-      }
+      // Save report to localStorage queue; server-side /api/reports handles GitHub submission.
+      // Never expose write-scoped tokens to the client.
+      try {
+        const queue = JSON.parse(localStorage.getItem('contrib_queue') || '[]');
+        queue.push({ issueTitle, issueBody, ts: Date.now() });
+        localStorage.setItem('contrib_queue', JSON.stringify(queue));
+      } catch { /* ignore */ }
 
       try {
-        const res = await fetch(
-          `https://api.github.com/repos/JULIANJUAREZMX01/MueveCancun/issues`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/vnd.github.v3+json',
-            },
-            body: JSON.stringify({
-              title: issueTitle,
-              body: issueBody,
-              labels: ['citizen-report', tipo],
-            }),
-          }
-        );
+        // Attempt to submit via server-side API route (available in SSR/hybrid deployments)
+        const res = await fetch('/api/reports', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            issue_type: tipo,
+            description: desc,
+            route_id: ruta || undefined,
+            location: loc || undefined,
+          }),
+        });
 
-        if (!res.ok) throw new Error(`GitHub API ${res.status}`);
-
+        if (res.ok || res.status === 202) {
+          form.classList.add('hidden');
+          successState?.classList.remove('hidden');
+        } else {
+          throw new Error(`API ${res.status}`);
+        }
+      } catch {
+        // In static deployments the API route doesn't exist; report is already queued above.
         form.classList.add('hidden');
         successState?.classList.remove('hidden');
-
-      } catch (err) {
-        console.error('[Contribuir] Submit error:', err);
-        // Save to queue
-        try {
-          const queue = JSON.parse(localStorage.getItem('contrib_queue') || '[]');
-          queue.push({ issueTitle, issueBody, ts: Date.now() });
-          localStorage.setItem('contrib_queue', JSON.stringify(queue));
-        } catch { /* ignore */ }
-        showFeedback(
-          isEs ? 'Sin conexión. El reporte fue guardado y se enviará automáticamente.' : 'No connection. Report saved and will be sent automatically.',
-          'info'
-        );
       } finally {
         btn.disabled = false;
         if (btnText) btnText.classList.remove('hidden');
