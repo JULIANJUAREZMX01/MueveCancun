@@ -32,6 +32,9 @@ This document details the 4-layer architecture of the MueveCancun ecosystem.
 - **Future Expansion**: `scripts/listener/` will house Python agents for social scraping.
 
 ## 4. Frontend Layer (Astro)
+- **UI Components**: Web Components / Lit.
+- **Styling**: Tailwind CSS + CSS purista (target: migrar a PostCSS/Houdini puro; Bootstrap eliminado).
+- **Architecture Documentation**: [ADR-2026-002](adr/ADR-2026-002.md).
 - **Framework**: Astro 5.
 - **Key Component**: `src/components/RouteCalculator.astro`.
 - **Data Consumption**:

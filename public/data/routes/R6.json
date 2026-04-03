@@ -1,0 +1,47 @@
+{
+  "id": "R6_WALMART_001",
+  "nombre": "R-6 Santa Fe - Walmart A.Q. Roo",
+  "tipo": "Bus_Urban",
+  "tarifa": 10,
+  "horario": {
+    "inicio": "06:00 - 22:00"
+  },
+  "frecuencia_minutos": 10,
+  "empresa": "Turicun",
+  "social_alerts": [
+    "Últimas salidas alrededor de las 10:00 PM."
+  ],
+  "last_updated": "2026-04-01T22:21:19Z",
+  "paradas": [
+    {
+      "nombre": "Santa Fe",
+      "lat": 21.1619,
+      "lng": -86.8515,
+      "orden": 1
+    },
+    {
+      "nombre": "Av. Kabah",
+      "lat": 21.155,
+      "lng": -86.845,
+      "orden": 2
+    },
+    {
+      "nombre": "Multiplaza Kabah",
+      "lat": 21.15,
+      "lng": -86.84,
+      "orden": 3
+    },
+    {
+      "nombre": "Walmart Andrés Quintana Roo",
+      "lat": 21.145,
+      "lng": -86.835,
+      "orden": 4
+    },
+    {
+      "nombre": "El Crucero",
+      "lat": 21.1714,
+      "lng": -86.8219,
+      "orden": 5
+    }
+  ]
+}

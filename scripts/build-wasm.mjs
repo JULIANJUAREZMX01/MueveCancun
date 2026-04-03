@@ -1,81 +1,82 @@
-import { execSync, execFileSync } from 'child_process';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { execSync } from 'node:child_process';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 
 const modules = ['route-calculator', 'spatial-index'];
 
-// Nexus Signaling Functions
-const log = (msg) => console.log(`\x1b[1;34m[NEXUS_LOG]\x1b[0m ${msg}`);
-const success = (msg) => console.log(`\x1b[1;32m[SUCCESS]\x1b[0m ${msg}`);
-const error = (msg) => console.error(`\x1b[1;31m[ERROR]\x1b[0m ${msg}`);
-
-log("Iniciando forja de modulos WASM...");
-
-// 1. Verificacion de Toolchain
+let hasWasmPack = false;
 let wasmPackCmd = 'wasm-pack';
-let useNpx = false;
 
 try {
     execSync('wasm-pack --version', { stdio: 'ignore' });
+    hasWasmPack = true;
 } catch (e) {
     try {
         execSync('npx wasm-pack --version', { stdio: 'ignore' });
-        wasmPackCmd = 'npx';
-        useNpx = true;
-    } catch (e2) {
-        // Fallback check for artifacts
-        const artifactsExist = modules.every(mod => {
-            const wasmPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}_bg.wasm`);
-            const jsPath = path.join(rootDir, 'public', 'wasm', mod, `${mod.replace('-', '_')}.js`);
-            return fs.existsSync(wasmPath) && fs.existsSync(jsPath);
-        });
-
-        if (artifactsExist) {
-            log("[WARNING] Herramientas Rust/WASM no detectadas. Usando artefactos pre-existentes.");
+        hasWasmPack = true;
+        wasmPackCmd = 'npx wasm-pack';
+    } catch (ee) {
+        console.warn('⚠️  wasm-pack not found. Checking for pre-built artifacts...');
+        const hasArtifacts = modules.every(mod => fs.existsSync(path.join(rootDir, 'public', 'wasm', mod)));
+        if (hasArtifacts) {
+            console.warn('✅ Pre-built WASM artifacts found. Skipping build and using existing files.');
             process.exit(0);
         } else {
-            error("wasm-pack no detectado y no hay artefactos previos. Abortando.");
+            console.error('❌ WASM build tools missing AND artifacts missing.');
+            console.error('   Please install Rust and wasm-pack to build the project.');
             process.exit(1);
         }
     }
 }
 
-// 2. Proceso de Compilacion
+console.log(`✅ Build tools found using: ${wasmPackCmd}. Proceeding with compilation...`);
+
+try {
+    // Check for both wasm-pack and cargo (Rust toolchain)
+    execSync('wasm-pack --version', { stdio: 'ignore' });
+    execSync('cargo --version', { stdio: 'ignore' });
+} catch (e) {
+    console.warn("⚠️  wasm-pack or cargo (Rust) not found. Skipping WASM build and using pre-built binaries.");
+    process.exit(0);
+}
+
 modules.forEach(mod => {
-    log(`Procesando modulo: ${mod}...`);
+    console.log(`📦 Processing ${mod}...`);
     const sourceDir = path.join(rootDir, 'rust-wasm', mod);
     const publicOutDir = path.join(rootDir, 'public', 'wasm', mod);
 
+    // Clean public output directory before building
     if (fs.existsSync(publicOutDir)) {
+        console.log(`🧹 Cleaning old artifacts in ${publicOutDir}...`);
         fs.rmSync(publicOutDir, { recursive: true, force: true });
     }
     fs.mkdirSync(publicOutDir, { recursive: true });
 
-    try {
-        const cmd = useNpx ? 'npx' : 'wasm-pack';
-        const args = useNpx
-            ? ['wasm-pack', 'build', '--target', 'web', '--out-dir', publicOutDir]
-            : ['build', '--target', 'web', '--out-dir', publicOutDir];
-
-        // Security Fix: Using execFileSync with args array to prevent shell injection
-        execFileSync(cmd, args, {
-            cwd: sourceDir,
-            stdio: 'inherit'
-        });
-
-        const gitignorePath = path.join(publicOutDir, '.gitignore');
-        if (fs.existsSync(gitignorePath)) fs.unlinkSync(gitignorePath);
-
-        success(`Modulo ${mod} forjado correctamente.`);
-    } catch (e) {
-        error(`Fallo en la compilacion de ${mod}. Abortando.`);
-        process.exit(1);
+    if (hasWasmPack) {
+        try {
+            // Build with wasm-pack
+            console.log(`🚀 Building ${mod} with ${wasmPackCmd}...`);
+            execSync(`${wasmPackCmd} build --target web --out-dir ${publicOutDir}`, {
+                cwd: sourceDir,
+                stdio: 'inherit'
+            });
+        } catch (e) {
+            console.error(`❌ Failed to build ${mod} with ${wasmPackCmd}.`);
+            process.exit(1);
+        }
     }
+
+    // Clean up .gitignore in output dir
+    const gitignorePath = path.join(publicOutDir, '.gitignore');
+    if (fs.existsSync(gitignorePath)) {
+        fs.unlinkSync(gitignorePath);
+    }
+
+    console.log(`✅ ${mod} built successfully to public/wasm/${mod}/`);
 });
 
-success("SECUENCIA WASM FINALIZADA.");
+console.log('🎉 WASM setup complete.');

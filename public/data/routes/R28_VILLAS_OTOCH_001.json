@@ -1,7 +1,7 @@
 {
   "id": "R28_VILLAS_OTOCH_001",
   "nombre": "R-28 Villas Otoch → Av. Tulum",
-  "tarifa": 13,
+  "tarifa": 10,
   "tipo": "Bus_Urban",
   "social_alerts": [],
   "last_updated": "2026-01-30T06:16:46.258Z",
@@ -30,8 +30,8 @@
     {
       "id": "R28_VILLAS_OTOCH_001_004",
       "nombre": "El Crucero",
-      "lat": 21.1576,
-      "lng": -86.8269,
+      "lat": 21.1714,
+      "lng": -86.8219,
       "orden": 4
     }
   ]

@@ -10,6 +10,7 @@ import MainLayout from '../../../layouts/MainLayout.astro';
 import { getAllRoutes } from '../../../utils/routes';
 import { getTransportLabel } from '../../../utils/transport';
 
+const { lang } = Astro.params;
 const rawRoutes = await getAllRoutes();
 
 // Types for UI transformation
@@ -45,15 +46,15 @@ const transformRoute = (raw: any): UIRoute => {
      }
   }
 
-  const stops = raw.paradas ? raw.paradas.map((p: any) => p.nombre || p.parada) : [];
+  const stops = raw.paradas ? raw.paradas.map((p: any) => p.nombre || p.parada || "Parada") : [];
 
   return {
-    id: raw.id,
-    name: raw.nombre,
-    price: raw.tarifa || 15,
+    id: raw.id || "R-Unknown",
+    name: raw.nombre || "Ruta sin nombre",
+    price: raw.tarifa || 10,
     transport_type,
     operator: raw.operador || raw.empresa || "Consorcio Urbano",
-    frequency: raw.frecuencia_minutos ? `${raw.frecuencia_minutos} min` : "10 min",
+    frequency: raw.frecuencia_minutos ? `${raw.frecuencia_minutos} min` : "15 min",
     schedule,
     duration: raw.duracion_minutos ? `${raw.duracion_minutos} min` : "45 min est.",
     badges: raw.tags || raw.social_alerts || [],
@@ -81,13 +82,12 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
     <!-- List Container -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
        {routes.map(route => {
-          let stopsPreview = `${route.origin_hub} ➔ ${route.dest_hub}`; // Updated arrow to match previous rendering if needed, but keeping consistent with what I saw
-          const safeId = route.id.replace(/[^a-zA-Z0-9]/g, '');
+          let stopsPreview = `${route.origin_hub} ➔ ${route.dest_hub}`;
+          const safeId = route.id ? route.id.replace(/[^a-zA-Z0-9]/g, '') : 'unknown';
 
           return (
-          <a href={`/ruta/${route.id}`} class="glass-card p-5 group hover:border-primary-300 transition-all active:scale-[0.98] no-underline block overflow-hidden relative stagger-item" style={`animation-delay: ${routes.indexOf(route) * 60}ms; content-visibility: auto; contain-intrinsic-size: auto 150px;`}>
+          <a href={`/${lang}/ruta/${route.id}`} class="glass-card p-5 group hover:border-primary-300 transition-all active:scale-[0.98] no-underline block overflow-hidden relative stagger-item" style={`animation-delay: ${routes.indexOf(route) * 60}ms; content-visibility: auto; contain-intrinsic-size: auto 150px;`}>
             
-            <!-- Background Badge (inline SVG instead of material icon font) -->
             <div class="absolute -right-4 -top-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
                 <svg width="96" height="96" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
             </div>
@@ -105,10 +105,9 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
                 
                 <h3 class="font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary-600 transition-colors truncate pr-4" style={`view-transition-name: route-title-${safeId}`}>{route.name}</h3>
 
-                <!-- Meta Info Row -->
                 <div class="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tighter">
                     <div class="flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.05 9.79L10 7.5v-6h2v4.59l2.59 1.96-1.54 1.74zM12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                        <svg class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.05 9.79L10 7.5v-6h2v4.59l2.59 1.96-1.54 1.74zM12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
                         <span>{route.frequency}</span>
                     </div>
                     <div class="flex items-center gap-1">
@@ -126,7 +125,6 @@ const routes: UIRoute[] = rawRoutes.map(transformRoute);
               </div>
             </div>
 
-            <!-- Stops Preview -->
             <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div class="flex items-center gap-1.5 min-w-0">
                     <svg class="w-3 h-3 text-primary-500 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>

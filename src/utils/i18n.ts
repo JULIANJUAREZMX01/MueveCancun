@@ -16,6 +16,7 @@ export const ui = {
         'nav.wallet': 'Wallet',
         'nav.community': 'Forum',
         'nav.about': 'About Us',
+        'nav.subscription': 'Subscriptions',
         'pwa.update': 'Update Available',
         'pwa.new_version': 'New version ready.',
         'pwa.refresh': 'UPDATE',
@@ -72,6 +73,7 @@ export const ui = {
         'nav.wallet': 'Tarjeta',
         'nav.community': 'Foro',
         'nav.about': 'Nosotros',
+        'nav.subscription': 'Suscripciones',
         'pwa.update': 'Actualización disponible',
         'pwa.new_version': 'Nueva versión lista.',
         'pwa.refresh': 'ACTUALIZAR',
@@ -133,4 +135,24 @@ export function useTranslations(lang: keyof typeof ui) {
     return function t(key: keyof typeof ui['en']) {
         return ui[lang]?.[key] || ui[defaultLang]?.[key] || ui['en']?.[key];
     }
+}
+
+export function getI18N(lang: string | undefined) {
+    const l = (lang && lang in ui) ? lang as keyof typeof ui : defaultLang;
+    const t = (key: string) => {
+        // Simple mock of t for the wallet's keys which aren't in ui yet
+        // In a real app, these should be in ui above
+        const keys: any = {
+            'wallet.title': { es: 'Mi Carjeta', en: 'My Wallet' },
+            'wallet.current_balance': { es: 'Saldo Actual', en: 'Current Balance' },
+            'wallet.operator_section': { es: 'Sección Operador', en: 'Operator Section' },
+            'wallet.pilot_registration': { es: 'Registro de Piloto', en: 'Pilot Registration' },
+            'wallet.pilot_benefit': { es: 'Obtén beneficios exclusivos', en: 'Get exclusive benefits' },
+            'wallet.register_cta': { es: 'Registrar', en: 'Register' },
+            'wallet.promo_title': { es: 'Código Promocional', en: 'Promo Code' },
+            'wallet.apply_promo': { es: 'Aplicar', en: 'Apply' },
+        };
+        return keys[key]?.[l] || key;
+    };
+    return { t, isEs: l === 'es' };
 }

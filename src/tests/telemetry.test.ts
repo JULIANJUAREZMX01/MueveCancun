@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { MockInstance } from 'vitest';
 import { startTracking, stopTracking } from '../lib/telemetry';
 import { put } from '../lib/idb';
 
@@ -7,11 +8,11 @@ vi.mock('../lib/idb', () => ({
 }));
 
 describe('Telemetry', () => {
-  let watchPositionMock: any;
-  let clearWatchMock: any;
-  let dispatchEventSpy: any;
-  let consoleErrorSpy: any;
-  let consoleWarnSpy: any;
+  let watchPositionMock: MockInstance;
+  let clearWatchMock: MockInstance;
+  let dispatchEventSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
+  let consoleWarnSpy: MockInstance;
 
   beforeEach(() => {
     vi.clearAllMocks();

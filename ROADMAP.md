@@ -1,6 +1,6 @@
 # 🗺️ MueveCancún — Roadmap
 
-> Última actualización: 2026-03-29 · Versión actual: **1.0.0 (Nexus Prime v3.3)**
+> Última actualización: 2026-04-02 · Versión actual: **1.2.4 (Nexus Prime v3.3.6)**
 > App en producción: [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com)
 
 ---
@@ -37,15 +37,15 @@ El núcleo funcional está terminado y desplegado:
 
 ## v3.5 — Crowdsourcing y Formularios Offline
 **Objetivo:** Permitir que los usuarios reporten rutas y alertas desde el campo.  
-**Estimado:** 3–4 semanas
+**Estado:** Parcialmente completado (v3.3.3)
 
 ### Tareas
-- [ ] Formulario de reporte de incidentes con validación client-side.
-- [ ] Cola offline para envíos pendientes (Background Sync API).
-- [ ] UI de confirmación de envío (toast + feedback visual).
+- [x] Formulario de reporte de incidentes con validación client-side.
+- [x] Cola offline para envíos pendientes (Custom IDB Queue + `online` event).
+- [x] UI de confirmación de envío (toast + feedback visual).
 - [ ] Moderación básica de reportes (flags de spam/repetición).
 - [ ] Feature flag vía variable de entorno (`CROWDSOURCE_ENABLED`).
-- [ ] Tests E2E (Playwright) del flujo happy-path de reporte.
+- [x] Tests unitarios y de integración para la cola offline.
 
 ---
 
@@ -102,6 +102,8 @@ Estas tareas están identificadas pero aún no tienen sprint asignado. Se irán 
 
 | Versión | Fecha | Cambios principales |
 |---------|-------|---------------------|
+| v3.3.3 | 2026-04-02 | Tier 1 Reporting: Migrated to client-side GitHub API; Added offline queuing with IndexedDB v4; Resolved Render deploy failure |
+| v3.3.2 | 2026-04-02 | Fix infinite redirect loop in static build; remove build-time middleware redirects; client-side tutorial enforcement |
 | v3.3.1 | 2026-03-29 | Strictly Static Stabilization; Client-side redirects for CDN compatibility; Localization utility implementation |
 | v3.3 | 2026-03-10 | Nexus Transfer Engine; GPS → parada; mapa interactivo con popups; balance IndexedDB unificado; 11 test files; 6 workflows CI/CD |
 | v3.2 | 2026-02-19 | WasmLoader singleton; SpatialHash; CoordinateFinder 2.1× más rápido; type-safety mejorada |

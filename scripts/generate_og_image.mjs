@@ -1,68 +1,48 @@
-/**
- * generate_og_image.mjs
- * Generates public/og-image.png (1200×630) using Sharp + SVG.
- * Run: node scripts/generate_og_image.mjs
- */
 import sharp from 'sharp';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const outputPath = join(__dirname, '..', 'public', 'og-image.png');
+async function generateOgImage() {
+    const width = 1200;
+    const height = 630;
 
-const SITE_URL = process.env.PUBLIC_SITE_URL ?? 'querutamellevacancun.onrender.com';
+    // Background and base elements
+    const svg = `
+    <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100%" height="100%" fill="#0b0f19" />
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <defs>
-    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0d0e1a"/>
-      <stop offset="100%" stop-color="#111224"/>
-    </linearGradient>
-  </defs>
+        <!-- Decorative glowing lines (Simulated routes) -->
+        <g opacity="0.4">
+            <path d="M 0,200 Q 300,50 600,300 T 1200,100" fill="none" stroke="#00B4D8" stroke-width="4" />
+            <path d="M 0,400 Q 400,600 800,200 T 1200,500" fill="none" stroke="#9d4edd" stroke-width="4" />
+            <path d="M 200,0 Q 100,300 400,630" fill="none" stroke="#7b2cbf" stroke-width="2" />
+        </g>
 
-  <!-- Background -->
-  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+        <!-- Main Title -->
+        <text x="80" y="120" font-family="Arial, sans-serif" font-weight="bold" font-size="80" fill="#ffffff">🚍 MueveCancún</text>
+        <text x="80" y="200" font-family="Arial, sans-serif" font-weight="bold" font-size="45" fill="#00B4D8">¿Qué ruta me lleva?</text>
 
-  <!-- Decorative curves (right side) -->
-  <path d="M 640 -30 C 900 120, 1320 180, 1100 520" fill="none" stroke="#6b21a8" stroke-width="3" opacity="0.7"/>
-  <path d="M 690 -30 C 970 100, 1370 260, 1180 600" fill="none" stroke="#7c3aed" stroke-width="3" opacity="0.5"/>
-  <path d="M 820 80 C 1100 280, 920 480, 1200 630" fill="none" stroke="#0077a8" stroke-width="3" opacity="0.6"/>
-  <path d="M 870 30  C 1160 260, 960 460, 1200 570" fill="none" stroke="#0090c0" stroke-width="3" opacity="0.5"/>
+        <!-- Features -->
+        <g font-family="Arial, sans-serif" font-size="28" fill="#ffffff">
+            <text x="100" y="280">✓ Funciona sin internet (Offline-first)</text>
+            <text x="100" y="330">✓ Rutas R1, R2, R10 y más</text>
+            <text x="100" y="380">✓ Cálculo de rutas ultra rápido (WASM)</text>
+            <text x="100" y="430">✓ 100% gratis y código abierto</text>
+        </g>
 
-  <!-- Bus icon (white) -->
-  <rect x="55" y="50" width="70" height="58" rx="10" fill="#ffffff"/>
-  <rect x="63" y="58" width="20" height="20" rx="3" fill="#0d0e1a"/>
-  <rect x="93" y="58" width="20" height="20" rx="3" fill="#0d0e1a"/>
-  <circle cx="69"  cy="112" r="7" fill="#0d0e1a" stroke="#ffffff" stroke-width="2"/>
-  <circle cx="111" cy="112" r="7" fill="#0d0e1a" stroke="#ffffff" stroke-width="2"/>
+        <!-- Bottom Bar -->
+        <rect x="0" y="${height - 100}" width="${width}" height="100" fill="#161b22" />
+        <text x="80" y="${height - 40}" font-family="Arial, sans-serif" font-size="24" fill="#ffffff">La guía oficial de transporte público de Cancún</text>
+        <text x="${width - 450}" y="${height - 40}" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="#00B4D8">querutamellevacancun.onrender.com</text>
+    </svg>
+    `;
 
-  <!-- Brand name -->
-  <text x="145" y="103" font-family="DejaVu Sans, Arial, sans-serif" font-weight="bold" font-size="72" fill="#ffffff">MueveCancún</text>
+    try {
+        await sharp(Buffer.from(svg))
+            .png()
+            .toFile('public/og-image.png');
+        console.log('Professional og-image.png generated successfully at public/og-image.png');
+    } catch (error) {
+        console.error('Error generating image:', error);
+    }
+}
 
-  <!-- Subtitle -->
-  <text x="55" y="198" font-family="DejaVu Sans, Arial, sans-serif" font-weight="bold" font-size="50" fill="#00cfc1">¿Qué ruta me lleva?</text>
-
-  <!-- Feature list -->
-  <text x="55"  y="272" font-family="DejaVu Sans, Arial, sans-serif" font-size="32" fill="#00cfc1">✓</text>
-  <text x="100" y="272" font-family="DejaVu Sans, Arial, sans-serif" font-size="32" fill="#ffffff">Funciona sin internet (Offline-first)</text>
-
-  <text x="55"  y="328" font-family="DejaVu Sans, Arial, sans-serif" font-size="32" fill="#00cfc1">✓</text>
-  <text x="100" y="328" font-family="DejaVu Sans, Arial, sans-serif" font-size="32" fill="#ffffff">Rutas R1, R2, R10 y más</text>
-
-  <text x="55"  y="384" font-family="DejaVu Sans, Arial, sans-serif" font-size="32" fill="#00cfc1">✓</text>
-  <text x="100" y="384" font-family="DejaVu Sans, Arial, sans-serif" font-size="32" fill="#ffffff">Cálculo de rutas ultra rápido (WASM)</text>
-
-  <text x="55"  y="440" font-family="DejaVu Sans, Arial, sans-serif" font-size="32" fill="#00cfc1">✓</text>
-  <text x="100" y="440" font-family="DejaVu Sans, Arial, sans-serif" font-size="32" fill="#ffffff">100% gratis y código abierto</text>
-
-  <!-- Bottom bar -->
-  <rect x="0" y="555" width="1200" height="75" fill="#08090d"/>
-  <text x="55"  y="600" font-family="DejaVu Sans, Arial, sans-serif" font-size="25" fill="#a0a8b9">La guía oficial de transporte público de Cancún</text>
-  <text x="830" y="600" font-family="DejaVu Sans, Arial, sans-serif" font-weight="bold" font-size="25" fill="#00cfc1">${SITE_URL}</text>
-</svg>`;
-
-await sharp(Buffer.from(svg))
-  .png()
-  .toFile(outputPath);
-
-console.log(`✅ og-image.png generated at ${outputPath}`);
+generateOgImage();

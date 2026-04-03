@@ -1,0 +1,302 @@
+{
+  "id": "POLYLINE_1759952771720",
+  "nombre": "RUTA 44 COMBI",
+  "tarifa": 12,
+  "tipo": "Bus_Urbano",
+  "paradas": [
+    {
+      "nombre": "Stop 1 - RUTA 44 COMBI",
+      "lat": 21.173747322304806,
+      "lng": -86.90337896347047,
+      "orden": 1
+    },
+    {
+      "nombre": "Stop 2 - RUTA 44 COMBI",
+      "lat": 21.169505342511272,
+      "lng": -86.91161870956421,
+      "orden": 2
+    },
+    {
+      "nombre": "Stop 3 - RUTA 44 COMBI",
+      "lat": 21.167924573650506,
+      "lng": -86.91072821617128,
+      "orden": 3
+    },
+    {
+      "nombre": "Stop 4 - RUTA 44 COMBI",
+      "lat": 21.166093662026505,
+      "lng": -86.9143170118332,
+      "orden": 4
+    },
+    {
+      "nombre": "Stop 5 - RUTA 44 COMBI",
+      "lat": 21.165783505354515,
+      "lng": -86.91474616527559,
+      "orden": 5
+    },
+    {
+      "nombre": "Stop 6 - RUTA 44 COMBI",
+      "lat": 21.165443332773258,
+      "lng": -86.91556692123415,
+      "orden": 6
+    },
+    {
+      "nombre": "Stop 7 - RUTA 44 COMBI",
+      "lat": 21.165348284412243,
+      "lng": -86.91598534584047,
+      "orden": 7
+    },
+    {
+      "nombre": "Stop 8 - RUTA 44 COMBI",
+      "lat": 21.165343281865237,
+      "lng": -86.92502975463869,
+      "orden": 8
+    },
+    {
+      "nombre": "Stop 9 - RUTA 44 COMBI",
+      "lat": 21.16128115787848,
+      "lng": -86.92506194114686,
+      "orden": 9
+    },
+    {
+      "nombre": "Stop 10 - RUTA 44 COMBI",
+      "lat": 21.161061039601243,
+      "lng": -86.9248527288437,
+      "orden": 10
+    },
+    {
+      "nombre": "Stop 11 - RUTA 44 COMBI",
+      "lat": 21.161071044984574,
+      "lng": -86.91825449466707,
+      "orden": 11
+    },
+    {
+      "nombre": "Stop 12 - RUTA 44 COMBI",
+      "lat": 21.161051034217238,
+      "lng": -86.91731035709381,
+      "orden": 12
+    },
+    {
+      "nombre": "Stop 13 - RUTA 44 COMBI",
+      "lat": 21.161271152509347,
+      "lng": -86.91630721092226,
+      "orden": 13
+    },
+    {
+      "nombre": "Stop 14 - RUTA 44 COMBI",
+      "lat": 21.161511281181937,
+      "lng": -86.91564202308656,
+      "orden": 14
+    },
+    {
+      "nombre": "Stop 15 - RUTA 44 COMBI",
+      "lat": 21.161301168614727,
+      "lng": -86.91530942916872,
+      "orden": 15
+    },
+    {
+      "nombre": "Stop 16 - RUTA 44 COMBI",
+      "lat": 21.157929321381715,
+      "lng": -86.91344261169435,
+      "orden": 16
+    },
+    {
+      "nombre": "Stop 17 - RUTA 44 COMBI",
+      "lat": 21.157178899828022,
+      "lng": -86.9130027294159,
+      "orden": 17
+    },
+    {
+      "nombre": "Stop 18 - RUTA 44 COMBI",
+      "lat": 21.156458491557853,
+      "lng": -86.91235899925232,
+      "orden": 18
+    },
+    {
+      "nombre": "Stop 19 - RUTA 44 COMBI",
+      "lat": 21.154297245714833,
+      "lng": -86.9111466407776,
+      "orden": 19
+    },
+    {
+      "nombre": "Stop 20 - RUTA 44 COMBI",
+      "lat": 21.15309653994834,
+      "lng": -86.91047072410585,
+      "orden": 20
+    },
+    {
+      "nombre": "Stop 21 - RUTA 44 COMBI",
+      "lat": 21.15229606402831,
+      "lng": -86.90964460372926,
+      "orden": 21
+    },
+    {
+      "nombre": "Stop 22 - RUTA 44 COMBI",
+      "lat": 21.15162566211581,
+      "lng": -86.90762758255006,
+      "orden": 22
+    },
+    {
+      "nombre": "Stop 23 - RUTA 44 COMBI",
+      "lat": 21.151025299618254,
+      "lng": -86.90701603889465,
+      "orden": 23
+    },
+    {
+      "nombre": "Stop 24 - RUTA 44 COMBI",
+      "lat": 21.149774536598027,
+      "lng": -86.90632939338684,
+      "orden": 24
+    },
+    {
+      "nombre": "Stop 25 - RUTA 44 COMBI",
+      "lat": 21.149124135652926,
+      "lng": -86.90625429153444,
+      "orden": 25
+    },
+    {
+      "nombre": "Stop 26 - RUTA 44 COMBI",
+      "lat": 21.144541229570997,
+      "lng": -86.90366864204408,
+      "orden": 26
+    },
+    {
+      "nombre": "Stop 27 - RUTA 44 COMBI",
+      "lat": 21.144331092923043,
+      "lng": -86.90259575843812,
+      "orden": 27
+    },
+    {
+      "nombre": "Stop 28 - RUTA 44 COMBI",
+      "lat": 21.13724130802778,
+      "lng": -86.90141022205354,
+      "orden": 28
+    },
+    {
+      "nombre": "Stop 29 - RUTA 44 COMBI",
+      "lat": 21.13704617153676,
+      "lng": -86.90128147602081,
+      "orden": 29
+    },
+    {
+      "nombre": "Stop 30 - RUTA 44 COMBI",
+      "lat": 21.140358453547567,
+      "lng": -86.8945223093033,
+      "orden": 30
+    },
+    {
+      "nombre": "Stop 31 - RUTA 44 COMBI",
+      "lat": 21.140278399266315,
+      "lng": -86.89425945281984,
+      "orden": 31
+    },
+    {
+      "nombre": "Stop 32 - RUTA 44 COMBI",
+      "lat": 21.14013830417005,
+      "lng": -86.8837022781372,
+      "orden": 32
+    },
+    {
+      "nombre": "Stop 33 - RUTA 44 COMBI",
+      "lat": 21.140208351734746,
+      "lng": -86.88253283500673,
+      "orden": 33
+    },
+    {
+      "nombre": "Stop 34 - RUTA 44 COMBI",
+      "lat": 21.13993816808849,
+      "lng": -86.86582803726196,
+      "orden": 34
+    },
+    {
+      "nombre": "Stop 35 - RUTA 44 COMBI",
+      "lat": 21.13961794979572,
+      "lng": -86.85755610466003,
+      "orden": 35
+    },
+    {
+      "nombre": "Stop 36 - RUTA 44 COMBI",
+      "lat": 21.139898140839744,
+      "lng": -86.8567943572998,
+      "orden": 36
+    },
+    {
+      "nombre": "Stop 37 - RUTA 44 COMBI",
+      "lat": 21.140748717549293,
+      "lng": -86.85582876205446,
+      "orden": 37
+    },
+    {
+      "nombre": "Stop 38 - RUTA 44 COMBI",
+      "lat": 21.14112897379305,
+      "lng": -86.83404922485353,
+      "orden": 38
+    },
+    {
+      "nombre": "Stop 39 - RUTA 44 COMBI",
+      "lat": 21.14121903433941,
+      "lng": -86.83210730552675,
+      "orden": 39
+    },
+    {
+      "nombre": "Stop 40 - RUTA 44 COMBI",
+      "lat": 21.14370068119079,
+      "lng": -86.82825565338135,
+      "orden": 40
+    },
+    {
+      "nombre": "Stop 41 - RUTA 44 COMBI",
+      "lat": 21.14395084489765,
+      "lng": -86.8252730369568,
+      "orden": 41
+    },
+    {
+      "nombre": "Stop 42 - RUTA 44 COMBI",
+      "lat": 21.143910818732937,
+      "lng": -86.82485461235048,
+      "orden": 42
+    },
+    {
+      "nombre": "Stop 43 - RUTA 44 COMBI",
+      "lat": 21.143710687747188,
+      "lng": -86.82460784912111,
+      "orden": 43
+    },
+    {
+      "nombre": "Stop 44 - RUTA 44 COMBI",
+      "lat": 21.14360061558976,
+      "lng": -86.82427525520326,
+      "orden": 44
+    },
+    {
+      "nombre": "Stop 45 - RUTA 44 COMBI",
+      "lat": 21.14373570413518,
+      "lng": -86.82400166988374,
+      "orden": 45
+    },
+    {
+      "nombre": "Stop 46 - RUTA 44 COMBI",
+      "lat": 21.144035900461756,
+      "lng": -86.82384610176088,
+      "orden": 46
+    },
+    {
+      "nombre": "Stop 47 - RUTA 44 COMBI",
+      "lat": 21.144311079893416,
+      "lng": -86.82398557662964,
+      "orden": 47
+    },
+    {
+      "nombre": "Stop 48 - RUTA 44 COMBI",
+      "lat": 21.14493148255494,
+      "lng": -86.82416796684267,
+      "orden": 48
+    },
+    {
+      "nombre": "Stop 49 - RUTA 44 COMBI",
+      "lat": 21.14543680860925,
+      "lng": -86.82417869567873,
+      "orden": 49
+    }
+  ]
+}
