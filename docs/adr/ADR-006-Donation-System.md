@@ -1,4 +1,4 @@
-# ADR 004: Implementación del Sistema de Donaciones (Escudo de Cancún)
+# ADR 006: Implementación del Sistema de Donaciones (Escudo de Cancún)
 
 ## Estatus
 Aceptado

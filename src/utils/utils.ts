@@ -16,8 +16,30 @@ export function formatDate(date: Date) {
 }
 
 export function readingTime(html: string) {
-  const textOnly = html.replace(/<[^>]+>/g, "")
+<<<<<<< revert-46-ui-hierarchy-branding-v2-4-8861746919044972121
+  let textOnly = html;
+  let prev: string;
+  do {
+    prev = textOnly;
+    textOnly = textOnly.replace(/<[^>]*>/g, "");
+  } while (prev !== textOnly);
   const wordCount = textOnly.split(/\s+/).length
+=======
+  let textOnly = ""
+
+  // Prefer DOM-based text extraction to avoid incomplete tag stripping.
+  if (typeof window !== "undefined" && typeof window.document !== "undefined") {
+    const container = window.document.createElement("div")
+    container.innerHTML = html
+    textOnly = container.textContent || ""
+  } else {
+    // Fallback for environments without a DOM (e.g., SSR). This is only used
+    // to approximate word count and MUST NOT be treated as sanitized HTML.
+    textOnly = html.replace(/<[^>]+>/g, " ")
+  }
+
+  const wordCount = textOnly.trim().split(/\s+/).filter(Boolean).length
+>>>>>>> main
   const readingTimeMinutes = ((wordCount / 200) + 1).toFixed()
   return `${readingTimeMinutes} min read`
 }

@@ -12,15 +12,15 @@ test.describe('PWA Navigation & Crawl', () => {
     const nextBtn = page.locator('#btn-next');
     const startEs = page.locator('#start-es');
 
-    for (let i = 0; i < 6; i++) {
-        if (await startEs.isVisible()) break;
+    await expect
+      .poll(async () => {
+        if (await startEs.isVisible()) return true;
         if (await nextBtn.isVisible()) {
-            await nextBtn.click({ force: true });
-            await page.waitForTimeout(400);
+          await nextBtn.click({ force: true });
         }
-    }
-
-    await expect(startEs).toBeVisible({ timeout: 5000 });
+        return false;
+      }, { timeout: 5000 })
+      .toBe(true);
     await startEs.click({ force: true });
 
     await expect(page).toHaveURL(/\/es\/home/);

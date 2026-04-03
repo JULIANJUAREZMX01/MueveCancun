@@ -1,13 +1,23 @@
 import Stripe from 'stripe';
 
-const stripe = (typeof window === 'undefined') ? new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock') : null;
+let _stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (typeof window !== 'undefined') throw new Error('Stripe must be initialized server-side. Ensure this function is called from an API route or server component.');
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('[Stripe] STRIPE_SECRET_KEY environment variable is not set. Ensure it is configured in your deployment environment.');
+  }
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  }
+  return _stripe;
+}
 
 export async function createCheckoutSession(
   tier: 'shield' | 'architect',
-  email: string,
-  amount?: number
+  email: string
 ) {
-  if (!stripe) throw new Error('Stripe is only available server-side');
+  const stripe = getStripe();
   try {
     const prices: any = {
       shield: 300,      // .00 en centavos
@@ -62,7 +72,7 @@ export async function handleStripeWebhook(
   body: string,
   sig: string | undefined
 ) {
-  if (!stripe) throw new Error('Stripe is only available server-side');
+  const stripe = getStripe();
   if (!sig) {
     throw new Error('No signature provided');
   }

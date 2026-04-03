@@ -39,12 +39,21 @@ jobs:
         id: check
         env:
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
-          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
           BRANCH="$HEAD_BRANCH"
+          CONCLUSION="$WORKFLOW_CONCLUSION"
+          BRANCH="$BRANCH"
+          CONCLUSION="$CONCLUSION"
+          HEAD_SHA="$HEAD_SHA"
+          WORKFLOW_NAME="$WORKFLOW_NAME"
+          RUN_URL="$RUN_URL"
+
           echo "Branch: $BRANCH"
           echo "Conclusion: $CONCLUSION"
 
@@ -162,17 +171,25 @@ jobs:
 
       - name: Post status comment (on PR if applicable)
         if: github.event.workflow_run.event == 'pull_request'
+        env:
+          HEAD_BRANCH: ${{ needs.detect-failure.outputs.head_branch }}
+          WORKFLOW_NAME: ${{ needs.detect-failure.outputs.workflow_name }}
+          FAILED_JOB: ${{ steps.fetch-logs.outputs.failed_job_name }}
+          RUN_URL: ${{ needs.detect-failure.outputs.run_url }}
         uses: actions/github-script@v7
         env:
           HEAD_BRANCH: ${{ needs.detect-failure.outputs.head_branch }}
           WORKFLOW_NAME: ${{ needs.detect-failure.outputs.workflow_name }}
+          FAILED_JOB_NAME: ${{ steps.fetch-logs.outputs.failed_job_name }}
           RUN_URL: ${{ needs.detect-failure.outputs.run_url }}
         with:
           script: |
+            const { HEAD_BRANCH, WORKFLOW_NAME, FAILED_JOB_NAME, RUN_URL } = process.env;
             const prs = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
               head: `${context.repo.owner}:${process.env.HEAD_BRANCH}`,
+              head: `${context.repo.owner}:${HEAD_BRANCH}`,
               state: 'open',
             });
             if (prs.data.length > 0) {
@@ -183,11 +200,16 @@ jobs:
                 body: [
                   '🤖 **Jules CI Fixer** fue invocado automáticamente.',
                   '',
-                  `> Workflow **${process.env.WORKFLOW_NAME}** falló en el job \`${{ steps.fetch-logs.outputs.failed_job_name }}\`.`,
+                  `> Workflow **${process.env.WORKFLOW_NAME}** falló en el job \`${process.env.FAILED_JOB}\`.`,
                   '',
                   'Jules está analizando los logs y preparando un fix. Un PR con la corrección aparecerá próximamente.',
                   '',
                   `[Ver run fallido](${process.env.RUN_URL})`,
+                  `> Workflow **${WORKFLOW_NAME}** falló en el job \`${FAILED_JOB_NAME}\`.`,
+                  '',
+                  'Jules está analizando los logs y preparando un fix. Un PR con la corrección aparecerá próximamente.',
+                  '',
+                  `[Ver run fallido](${RUN_URL})`,
                 ].join('\n'),
               });
             }
