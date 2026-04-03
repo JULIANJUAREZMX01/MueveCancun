@@ -3,9 +3,9 @@ import Stripe from 'stripe';
 let _stripe: Stripe | null = null;
 
 function getStripe(): Stripe {
-  if (typeof window !== 'undefined') throw new Error('Stripe is only available server-side');
+  if (typeof window !== 'undefined') throw new Error('Stripe must be initialized server-side. Ensure this function is called from an API route or server component.');
   if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error('[Stripe] STRIPE_SECRET_KEY environment variable is not set.');
+    throw new Error('[Stripe] STRIPE_SECRET_KEY environment variable is not set. Ensure it is configured in your deployment environment.');
   }
   if (!_stripe) {
     _stripe = new Stripe(process.env.STRIPE_SECRET_KEY);

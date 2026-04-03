@@ -238,11 +238,16 @@ const reportOptions = [
         if (res.ok || res.status === 202) {
           form.classList.add('hidden');
           successState?.classList.remove('hidden');
+        } else if (res.status === 404) {
+          // Static deployment: API route doesn't exist; report is already queued in localStorage above.
+          form.classList.add('hidden');
+          successState?.classList.remove('hidden');
         } else {
           throw new Error(`API ${res.status}`);
         }
-      } catch {
-        // In static deployments the API route doesn't exist; report is already queued above.
+      } catch (err) {
+        // Unexpected error (network failure, etc.); report is already queued in localStorage above.
+        console.error('[Contribuir] Submit error:', err);
         form.classList.add('hidden');
         successState?.classList.remove('hidden');
       } finally {
