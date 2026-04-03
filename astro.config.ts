@@ -20,8 +20,7 @@ export default defineConfig({
     build: {
       rollupOptions: {
         external: [
-          "/wasm/route-calculator/route_calculator.js",
-          "/wasm/spatial-index/spatial_index.js"
+          "/wasm/route-calculator/route_calculator.js"
         ]
       }
     },

@@ -16,6 +16,15 @@ export function formatDate(date: Date) {
 }
 
 export function readingTime(html: string) {
+<<<<<<< revert-46-ui-hierarchy-branding-v2-4-8861746919044972121
+  let textOnly = html;
+  let prev: string;
+  do {
+    prev = textOnly;
+    textOnly = textOnly.replace(/<[^>]*>/g, "");
+  } while (prev !== textOnly);
+  const wordCount = textOnly.split(/\s+/).length
+=======
   let textOnly = ""
 
   // Prefer DOM-based text extraction to avoid incomplete tag stripping.
@@ -30,6 +39,7 @@ export function readingTime(html: string) {
   }
 
   const wordCount = textOnly.trim().split(/\s+/).filter(Boolean).length
+>>>>>>> main
   const readingTimeMinutes = ((wordCount / 200) + 1).toFixed()
   return `${readingTimeMinutes} min read`
 }
