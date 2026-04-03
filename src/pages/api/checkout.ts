@@ -1,19 +1,18 @@
 /**
  * src/pages/api/checkout.ts
  *
- * Crea sesiones de pago Stripe. Requiere `output: 'hybrid'` en astro.config.ts
- * o estar en un servidor Node.js (Render, etc.).
+ * Crea sesiones de pago Stripe.
  *
- * Con output: 'static' puro este endpoint no se ejecuta server-side —
- * las páginas de donate usan links de Stripe directos como fallback.
+ * Astro v5 + output:'static': este endpoint se compila como SSG.
+ * Para servir como endpoint dinámico en producción, Render debe
+ * correr Node.js con output:'server' + @astrojs/node (migración futura).
+ * Por ahora, las páginas de donate usan Stripe Checkout links directos.
  *
  * Requiere env vars: STRIPE_SECRET_KEY, PUBLIC_URL
  */
 import type { APIRoute } from 'astro';
 import { createCheckoutSession } from '../../lib/stripe';
 
-// Marca explícita: este endpoint NUNCA se prerenderiza
-export const prerender = false;
 
 export const POST: APIRoute = async (context) => {
   try {
