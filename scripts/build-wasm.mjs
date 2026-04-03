@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execSync, execFileSync } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -58,9 +58,10 @@ modules.forEach(mod => {
 
     if (hasWasmPack) {
         try {
-            // Build with wasm-pack
+            // Build with wasm-pack — use execFileSync to avoid shell injection via path
             console.log(`🚀 Building ${mod} with ${wasmPackCmd}...`);
-            execSync(`${wasmPackCmd} build --target web --out-dir ${publicOutDir}`, {
+            const [cmd, ...cmdArgs] = wasmPackCmd.split(' ');
+            execFileSync(cmd, [...cmdArgs, 'build', '--target', 'web', '--out-dir', publicOutDir], {
                 cwd: sourceDir,
                 stdio: 'inherit'
             });
