@@ -34,3 +34,24 @@ export interface RoutesCatalog {
   rutas: RouteData[];
   [key: string]: unknown;
 }
+
+export interface RouteLeg {
+  name: string;
+  transport_type: string;
+  operator: string;
+  frequency: string;
+  badges: string[];
+  duration: string;
+  duration_minutes?: number;
+  origin_hub: string;
+  dest_hub: string;
+  stops: Array<{ name: string; lat?: number; lng?: number }>;
+  paradas?: Stop[];
+}
+
+export interface Journey {
+  legs: RouteLeg[];
+  total_price: number;
+  duration_minutes: number;
+  transfer_point?: string;
+}
