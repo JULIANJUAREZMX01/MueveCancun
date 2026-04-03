@@ -10,7 +10,6 @@
  */
 import type { APIRoute } from 'astro';
 
-export const prerender = false; // Necesario para endpoints dinámicos en proyectos SSG híbridos
 
 const GITHUB_OWNER = 'JULIANJUAREZMX01';
 const GITHUB_REPO  = 'MueveCancun';
