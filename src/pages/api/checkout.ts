@@ -1,69 +1,66 @@
+/**
+ * src/pages/api/checkout.ts
+ *
+ * Crea sesiones de pago Stripe. Requiere `output: 'hybrid'` en astro.config.ts
+ * o estar en un servidor Node.js (Render, etc.).
+ *
+ * Con output: 'static' puro este endpoint no se ejecuta server-side —
+ * las páginas de donate usan links de Stripe directos como fallback.
+ *
+ * Requiere env vars: STRIPE_SECRET_KEY, PUBLIC_URL
+ */
 import type { APIRoute } from 'astro';
 import { createCheckoutSession } from '../../lib/stripe';
 
+// Marca explícita: este endpoint NUNCA se prerenderiza
+export const prerender = false;
+
 export const POST: APIRoute = async (context) => {
   try {
-    const { tier, email } = await context.request.json();
+    const { tier, email } = await context.request.json() as { tier?: string; email?: string };
 
-    // Validations
     if (!tier || !email) {
       return new Response(
-        JSON.stringify({
-          error: 'Missing tier or email',
-          code: 'INVALID_INPUT',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        JSON.stringify({ error: 'Missing tier or email', code: 'INVALID_INPUT' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     if (!['shield', 'architect'].includes(tier)) {
       return new Response(
-        JSON.stringify({
-          error: 'Invalid tier',
-          code: 'INVALID_TIER',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        JSON.stringify({ error: 'Invalid tier. Use: shield | architect', code: 'INVALID_TIER' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // Create session
-    const session = await createCheckoutSession(tier, email);
+    // Email básico validation
+    if (!email.includes('@') || email.length > 254) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid email format', code: 'INVALID_EMAIL' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const session = await createCheckoutSession(tier as 'shield' | 'architect', email);
 
     return new Response(
-      JSON.stringify({
-        url: session.url,
-        sessionId: session.sessionId,
-        success: session.success,
-      }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ url: session.url, sessionId: session.sessionId, success: session.success }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
-  } catch (error: any) {
-    console.error('Checkout error:', error);
+
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Checkout failed';
+    console.error('[Checkout API] Error:', error);
     return new Response(
-      JSON.stringify({
-        error: error.message || 'Checkout failed',
-        code: 'CHECKOUT_ERROR',
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: msg, code: 'CHECKOUT_ERROR' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 };
 
 export const GET: APIRoute = async () => {
-    return new Response(
-        JSON.stringify({ status: 'Checkout API is running' }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
+  return new Response(
+    JSON.stringify({ status: 'Checkout API operational', version: '3.4.0' }),
+    { status: 200, headers: { 'Content-Type': 'application/json' } }
+  );
 };
