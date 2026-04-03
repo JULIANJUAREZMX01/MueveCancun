@@ -1,0 +1,4 @@
+*.html linguist-detectable=false
+*.txt  linguist-documentation=true
+*.md   linguist-documentation=true
+public/data/*.json linguist-generated=true

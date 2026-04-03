@@ -1,495 +1,395 @@
-use wasm_bindgen::prelude::*;
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use shared_types::{RootData, haversine_distance, TransportType};
-use petgraph::graph::{NodeIndex, UnGraph};
-use petgraph::algo::dijkstra;
 use std::collections::HashMap;
+use std::sync::RwLock;
 
-// --- SYSTEM OVERRIDE: TRUTH OF THE STREET ---
+use wasm_bindgen::prelude::*;
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct RouteCatalog {
+    pub version: String,
+    pub rutas: Vec<Route>,
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Route {
     pub id: String,
+    #[serde(rename = "nombre")]
     pub name: String,
-    pub transport_type: String, // "Bus", "Combi", "Van"
+    #[serde(rename = "tarifa")]
     pub price: f64,
-    pub duration: String,
-    pub badges: Vec<String>, // e.g., "Aire Acondicionado", "Solo Efectivo"
-    pub origin_hub: String,
-    pub dest_hub: String,
+    #[serde(rename = "tipo", alias = "tipo_transporte")]
+    pub transport_type: String,
+
+    #[serde(default)]
+    pub empresa: Option<String>,
+    #[serde(default)]
+    pub frecuencia_minutos: Option<u32>,
+    #[serde(default)]
+    pub horario: Option<Schedule>,
+
+    #[serde(rename = "paradas")]
+    pub stops: Vec<Stop>,
+
+    // Computed fields (skipped in serialization)
+    #[serde(skip)]
+    pub stops_normalized: Vec<String>,
+    #[serde(skip)]
+    pub stop_name_to_index: HashMap<String, usize>,
+
+    #[serde(default, alias = "advertencias_usuario")]
+    pub social_alerts: Vec<String>,
+    #[serde(default)]
+    pub last_updated: String,
 }
 
-fn get_all_routes() -> Vec<Route> {
-    vec![
-        Route {
-            id: "R-2-94".to_string(),
-            name: "Ruta 2-94".to_string(),
-            transport_type: "Bus".to_string(),
-            price: 15.0,
-            duration: "45 min".to_string(),
-            badges: vec!["Aire Acondicionado".to_string(), "Muy Frecuente".to_string()],
-            origin_hub: "Villas Otoch Paraíso".to_string(),
-            dest_hub: "Zona Hotelera".to_string(),
-        },
-        Route {
-            id: "R-19".to_string(),
-            name: "Ruta 19".to_string(),
-            transport_type: "Bus".to_string(),
-            price: 12.0,
-            duration: "55 min".to_string(),
-            badges: vec!["Rápido".to_string(), "Inseguro de noche".to_string()],
-            origin_hub: "Villas Otoch Paraíso".to_string(),
-            dest_hub: "El Crucero".to_string(),
-        },
-        Route {
-            id: "Combi-Roja".to_string(),
-            name: "Combi Roja".to_string(),
-            transport_type: "Combi".to_string(),
-            price: 10.0,
-            duration: "30 min".to_string(),
-            badges: vec!["Solo Efectivo".to_string()],
-            origin_hub: "Puerto Juárez".to_string(),
-            dest_hub: "El Crucero".to_string(),
-        },
-        Route {
-            id: "Playa-Express".to_string(),
-            name: "Playa Express".to_string(),
-            transport_type: "Van".to_string(),
-            price: 55.0,
-            duration: "60 min".to_string(),
-            badges: vec!["Aire Acondicionado".to_string(), "Viaje Directo".to_string()],
-            origin_hub: "El Crucero".to_string(),
-            dest_hub: "Playa del Carmen".to_string(),
-        },
-    ]
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+pub struct Schedule {
+    pub inicio: Option<String>,
+    pub fin: Option<String>,
+    pub inicio_oficial: Option<String>,
+    pub fin_oficial: Option<String>,
+    pub guardia_nocturna: Option<String>,
 }
 
-pub fn find_route_rs(origin: &str, dest: &str) -> Vec<Route> {
-    let origin_norm = origin.to_lowercase();
-    let dest_norm = dest.to_lowercase();
-
-    // Fallback/Demo Override
-    if origin_norm.contains("villas otoch") || origin_norm.contains("paraíso") {
-        let routes = get_all_routes();
-        // Return R-2-94 and R-19 specifically
-        return routes.into_iter()
-            .filter(|r| r.id == "R-2-94" || r.id == "R-19")
-            .collect();
-    }
-
-    let all_routes = get_all_routes();
-    let mut matched_routes = Vec::new();
-
-    for route in all_routes {
-        // Fuzzy match logic
-        // Check if origin matches route's origin_hub
-        let origin_score = strsim::jaro_winkler(&origin_norm, &route.origin_hub.to_lowercase());
-        let origin_contains = route.origin_hub.to_lowercase().contains(&origin_norm) || origin_norm.contains(&route.origin_hub.to_lowercase());
-
-        // Check if dest matches route's dest_hub
-        let dest_score = strsim::jaro_winkler(&dest_norm, &route.dest_hub.to_lowercase());
-        let dest_contains = route.dest_hub.to_lowercase().contains(&dest_norm) || dest_norm.contains(&route.dest_hub.to_lowercase());
-
-        let is_origin_match = origin_score > 0.8 || origin_contains;
-        let is_dest_match = dest_score > 0.8 || dest_contains;
-
-        if is_origin_match || is_dest_match {
-            matched_routes.push(route);
-        }
-    }
-
-    matched_routes
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Stop {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(rename = "nombre", alias = "parada")]
+    pub name: String,
+    pub lat: f64,
+    pub lng: f64,
+    pub orden: u32,
+    #[serde(default)]
+    pub landmarks: String,
 }
 
-#[wasm_bindgen]
-pub fn find_route(origin: &str, dest: &str) -> JsValue {
-    let routes = find_route_rs(origin, dest);
-    serde_wasm_bindgen::to_value(&routes).unwrap()
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Journey {
+    #[serde(rename = "id")]
+    pub id: String,
+    #[serde(rename = "type")]
+    pub type_: String,
+    pub legs: Vec<RouteLeg>,
+    pub total_price: f64,
+    pub transfer_point: Option<String>,
+    pub geo_transfer: bool,
+    #[serde(default)]
+    pub is_forward: bool,
 }
 
-// --- LEGACY GRAPH LOGIC (Kept for compilation, bypassed for now) ---
-
-#[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq)]
-pub struct BilingualString {
-    pub en: String,
-    pub es: String,
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct RouteLeg {
+    pub route_id: String,
+    pub route_name: String,
+    pub origin_stop: String,
+    pub dest_stop: String,
+    pub price: f64,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
-pub struct RouteResponse {
-    pub success: bool,
-    pub path: Vec<String>,
-    pub has_transfer: bool,
-    pub transfer_point: Option<BilingualString>,
-    pub routes: Vec<String>,
-    pub distance_km: f64,
-    pub time_min: u32,
-    pub instructions: Vec<BilingualString>,
-    pub error: Option<BilingualString>,
-    pub airport_warning: Option<BilingualString>,
-    pub estimated_cost_mxn: f64,
+// --- APP STATE ---
+
+struct AppState {
+    routes_list: Vec<Route>,
 }
 
-#[derive(Clone)]
-struct GraphNode {
-    stop_id: String,
-    route_id: String,
-    transport_type: TransportType,
-    name: String,
-    lat: f64,
-    lng: f64,
-    fare: f64,
-}
+static DB: Lazy<RwLock<AppState>> = Lazy::new(|| {
+    RwLock::new(AppState {
+        routes_list: Vec::new(),
+    })
+});
 
-#[wasm_bindgen]
-pub fn validate_operator_funds(balance: f64) -> bool {
-    // Threshold is 180 MXN (approx 9 USD)
-    // If balance is below this, they cannot operate "Compass"
-    balance >= 180.0
-}
 
-#[wasm_bindgen]
-pub fn calculate_route(
-    origin_lat: f64,
-    origin_lng: f64,
-    dest_lat: f64,
-    dest_lng: f64,
-    routes_val: JsValue
-) -> JsValue {
-    let data: RootData = match serde_wasm_bindgen::from_value(routes_val) {
-        Ok(d) => d,
-        Err(_e) => {
-            return serde_wasm_bindgen::to_value(&error_response("invalid_data")).unwrap();
-        }
-    };
+// --- NORMALIZATION ---
 
-    let res = find_route_internal(origin_lat, origin_lng, dest_lat, dest_lng, &data);
-    serde_wasm_bindgen::to_value(&res).unwrap()
-}
+fn normalize_str(s: &str) -> String {
+    let mut result = s.trim().to_lowercase();
+    result = result.replace('á', "a");
+    result = result.replace('é', "e");
+    result = result.replace('í', "i");
+    result = result.replace('ó', "o");
+    result = result.replace('ú', "u");
+    result = result.replace('ü', "u");
+    result = result.replace('ñ', "n");
 
-pub fn find_route_internal(
-    origin_lat: f64,
-    origin_lng: f64,
-    dest_lat: f64,
-    dest_lng: f64,
-    data: &RootData
-) -> RouteResponse {
-    let mut start_node_info: Option<(String, String, f64)> = None;
-    let mut end_node_info: Option<(String, String, f64)> = None;
-
-    for route in &data.routes {
-        for stop in &route.stops {
-            let dist_origin = haversine_distance(origin_lat, origin_lng, stop.lat, stop.lng);
-            let dist_dest = haversine_distance(dest_lat, dest_lng, stop.lat, stop.lng);
-
-            if start_node_info.is_none() || dist_origin < start_node_info.as_ref().unwrap().2 {
-                start_node_info = Some((stop.id.clone(), route.id.clone(), dist_origin));
+    let mut collapsed = String::with_capacity(result.len());
+    let mut last_was_whitespace = false;
+    for c in result.chars() {
+        if c.is_whitespace() {
+            if !last_was_whitespace {
+                collapsed.push(' ');
+                last_was_whitespace = true;
             }
-            if end_node_info.is_none() || dist_dest < end_node_info.as_ref().unwrap().2 {
-                end_node_info = Some((stop.id.clone(), route.id.clone(), dist_dest));
-            }
-        }
-    }
-
-    let (start_stop_id, start_route_id, dist_start) = match start_node_info {
-        Some(info) => info,
-        None => return error_response("out_of_coverage"),
-    };
-    let (end_stop_id, end_route_id, dist_end) = match end_node_info {
-        Some(info) => info,
-        None => return error_response("out_of_coverage"),
-    };
-
-    if dist_start > 3.0 || dist_end > 3.0 {
-        return error_response("out_of_coverage");
-    }
-
-    let mut graph = UnGraph::<GraphNode, f64>::new_undirected();
-    let mut nodes = HashMap::new();
-
-    for route in &data.routes {
-        let mut prev_node_idx: Option<NodeIndex> = None;
-        for stop in &route.stops {
-            let node = GraphNode {
-                stop_id: stop.id.clone(),
-                route_id: route.id.clone(),
-                transport_type: route.transport_type.clone(),
-                name: stop.name.clone(),
-                lat: stop.lat,
-                lng: stop.lng,
-                fare: route.fare,
-            };
-            let node_idx = graph.add_node(node);
-            nodes.insert((stop.id.clone(), route.id.clone()), node_idx);
-
-            if let Some(prev_idx) = prev_node_idx {
-                let prev_node = graph.node_weight(prev_idx).unwrap();
-                let dist = haversine_distance(prev_node.lat, prev_node.lng, stop.lat, stop.lng);
-                graph.add_edge(prev_idx, node_idx, dist);
-            }
-            prev_node_idx = Some(node_idx);
-        }
-    }
-
-    let all_nodes: Vec<NodeIndex> = graph.node_indices().collect();
-    for i in 0..all_nodes.len() {
-        for j in i + 1..all_nodes.len() {
-            let node_a = graph.node_weight(all_nodes[i]).unwrap();
-            let node_b = graph.node_weight(all_nodes[j]).unwrap();
-
-            if node_a.route_id != node_b.route_id {
-                let dist = haversine_distance(node_a.lat, node_a.lng, node_b.lat, node_b.lng);
-
-                let penalty = if node_a.name.contains("Crucero") || node_a.name.contains("ADO") {
-                    0.5
-                } else {
-                    2.0
-                };
-
-                if dist < 0.5 {
-                    graph.add_edge(all_nodes[i], all_nodes[j], penalty);
-                }
-            }
-        }
-    }
-
-    let start_idx = nodes.get(&(start_stop_id, start_route_id)).unwrap();
-    let end_idx = nodes.get(&(end_stop_id, end_route_id)).unwrap();
-
-    let node_weights = dijkstra(&graph, *start_idx, Some(*end_idx), |e| *e.weight());
-
-    if !node_weights.contains_key(end_idx) {
-        return error_response("no_path");
-    }
-
-    let mut path = Vec::new();
-    let mut current = *end_idx;
-    path.push(current);
-
-    while current != *start_idx {
-        let current_dist = node_weights[&current];
-        let neighbors = graph.neighbors(current);
-        let mut next_node = None;
-
-        for neighbor in neighbors {
-            if let Some(&neighbor_dist) = node_weights.get(&neighbor) {
-                let edge = graph.find_edge(current, neighbor).unwrap();
-                let weight = graph.edge_weight(edge).unwrap();
-                if (current_dist - weight - neighbor_dist).abs() < 0.0001 {
-                    next_node = Some(neighbor);
-                    break;
-                }
-            }
-        }
-
-        if let Some(next) = next_node {
-            current = next;
-            path.push(current);
         } else {
-            break;
+            collapsed.push(c);
+            last_was_whitespace = false;
         }
     }
-    path.reverse();
+    collapsed.trim().to_string()
+}
 
-    let mut res = RouteResponse::default();
-    res.success = true;
-    res.distance_km = node_weights[end_idx];
-    res.time_min = (res.distance_km * 2.5).round() as u32;
+// --- HAVERSINE DISTANCE ---
 
-    let mut routes_used = Vec::new();
-    let mut total_fare = 0.0;
-    let mut last_route = "".to_string();
+#[inline]
+fn haversine_distance_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
+    const R: f64 = 6_371_000.0;
+    let d_lat = (lat2 - lat1).to_radians();
+    let d_lon = (lon2 - lon1).to_radians();
+    let a = (d_lat / 2.0).sin().powi(2)
+        + lat1.to_radians().cos() * lat2.to_radians().cos() * (d_lon / 2.0).sin().powi(2);
+    let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
+    R * c
+}
 
-    for (i, &idx) in path.iter().enumerate() {
-        let node = graph.node_weight(idx).unwrap();
-        res.path.push(node.stop_id.clone());
+// --- CONSTANTS ---
 
-        if node.route_id != last_route {
-            if !last_route.is_empty() {
-                res.has_transfer = true;
-                res.transfer_point = Some(BilingualString {
-                    en: node.name.clone(),
-                    es: node.name.clone(),
-                });
+const MAX_SEARCH_RESULTS: usize = 5;
+const MAX_OPS: usize = 10_000_000;
+const MAX_CANDIDATES: usize = 2000;
+const GEO_TRANSFER_RADIUS_M: f64 = 350.0;
 
-                res.instructions.push(BilingualString {
-                    en: format!("Transfer to {} (Wait approx 5 min)", node.route_id),
-                    es: format!("Transbordo a {} (Espera aprox 5 min)", node.route_id),
-                });
+const PREFERRED_HUBS: &[&str] = &[
+    "El Crucero", "Plaza Las Américas", "ADO", "Zona Hotelera", "Muelle Ultramar",
+    "Mercado 23", "Mercado 28", "Plaza Outlet", "Puerto Juárez", "Av. Tulum",
+    "Av. Kabah", "Parque de las Palapas", "Glorieta del Ceviche", "Plaza Hollywood",
+];
+
+// --- CORE ---
+
+pub fn validate_catalog(catalog: &RouteCatalog) -> Result<(), String> {
+    if catalog.rutas.len() > 5000 { return Err("Too many routes".to_string()); }
+    for r in &catalog.rutas {
+        if r.stops.len() > 500 { return Err(format!("Route {} has too many stops", r.id)); }
+    }
+    Ok(())
+}
+
+pub fn load_catalog_core(json_payload: &str) -> Result<(), String> {
+    if json_payload.len() > 10 * 1024 * 1024 { return Err("Payload too large".to_string()); }
+    let mut catalog: RouteCatalog = serde_json::from_str(json_payload).map_err(|e| e.to_string())?;
+    validate_catalog(&catalog)?;
+
+    for route in &mut catalog.rutas {
+        route.stops_normalized = route.stops.iter().map(|s| normalize_str(&s.name)).collect();
+        route.stop_name_to_index = route.stops_normalized.iter().enumerate()
+            .map(|(i, n)| (n.clone(), i)).collect();
+    }
+
+    let mut db = DB.write().map_err(|_| "Lock failed".to_string())?;
+    db.routes_list = catalog.rutas;
+    Ok(())
+}
+
+#[wasm_bindgen]
+pub fn load_catalog(json_payload: &str) -> Result<(), JsValue> {
+    load_catalog_core(json_payload).map_err(|e| JsValue::from_str(&e))
+}
+
+#[wasm_bindgen]
+pub fn find_route(origin: &str, dest: &str) -> Result<JsValue, JsValue> {
+    let db = DB.read().map_err(|_| JsValue::from_str("Lock failed"))?;
+    let journeys = find_route_rs(origin, dest, &db.routes_list);
+    serde_wasm_bindgen::to_value(&journeys).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+// --- ROUTING ENGINE ---
+
+struct RouteMatch<'a> {
+    route: &'a Route,
+    origin_idx: Option<usize>,
+    dest_idx: Option<usize>,
+}
+
+fn find_route_rs(origin: &str, dest: &str, all_routes: &[Route]) -> Vec<Journey> {
+    let origin_norm = normalize_str(origin);
+    let dest_norm = normalize_str(dest);
+
+    let mut route_matches = Vec::with_capacity(all_routes.len());
+    for route in all_routes {
+        let origin_idx = route.stop_name_to_index.get(&origin_norm).cloned();
+        let dest_idx = route.stop_name_to_index.get(&dest_norm).cloned();
+        route_matches.push(RouteMatch { route, origin_idx, dest_idx });
+    }
+
+    let mut journeys = find_direct_routes(&route_matches);
+
+    // If we have fewer than MAX_SEARCH_RESULTS direct routes, look for transfers
+    if journeys.len() < MAX_SEARCH_RESULTS {
+        let transfers = find_transfer_routes(&route_matches, 0, journeys.len());
+        journeys.extend(transfers);
+    }
+
+    // Sort: Direct (Forward > Reverse) > Hub Transfer > Geo Transfer > Price
+    journeys.sort_by(|a, b| {
+        let score = |j: &Journey| -> i32 {
+            let mut s = 0;
+            if j.type_ == "Direct" {
+                s += 1000;
+                if j.is_forward { s += 500; }
+            } else {
+                if let Some(tp) = &j.transfer_point {
+                    if PREFERRED_HUBS.iter().any(|h| tp.contains(h)) { s += 100; }
+                }
+                if !j.geo_transfer { s += 50; }
+            }
+            s
+        };
+        score(b).cmp(&score(a)).then_with(|| a.total_price.partial_cmp(&b.total_price).unwrap())
+    });
+
+    journeys.truncate(MAX_SEARCH_RESULTS);
+    journeys
+}
+
+fn find_direct_routes(matches: &[RouteMatch]) -> Vec<Journey> {
+    let mut journeys = Vec::new();
+    for m in matches {
+        if let (Some(oi), Some(di)) = (m.origin_idx, m.dest_idx) {
+            journeys.push(Journey {
+                id: format!("{}_dir", m.route.id),
+                type_: "Direct".to_string(),
+                legs: vec![RouteLeg {
+                    route_id: m.route.id.clone(),
+                    route_name: m.route.name.clone(),
+                    origin_stop: m.route.stops[oi].name.clone(),
+                    dest_stop: m.route.stops[di].name.clone(),
+                    price: m.route.price,
+                }],
+                total_price: m.route.price,
+                transfer_point: None,
+                geo_transfer: false,
+                is_forward: oi < di,
+            });
+        }
+    }
+    journeys
+}
+
+fn find_transfer_routes(matches: &[RouteMatch], mut ops: usize, existing: usize) -> Vec<Journey> {
+    let from_origin: Vec<&RouteMatch> = matches.iter().filter(|m| m.origin_idx.is_some()).collect();
+    let to_dest: Vec<&RouteMatch> = matches.iter().filter(|m| m.dest_idx.is_some()).collect();
+    let mut journeys = Vec::new();
+
+    'outer: for ma in &from_origin {
+        let oi_a = ma.origin_idx.unwrap();
+        for mb in &to_dest {
+            if existing + journeys.len() >= MAX_CANDIDATES { break 'outer; }
+            if ma.route.id == mb.route.id { continue; }
+            let di_b = mb.dest_idx.unwrap();
+
+            // 1. Exact Name Transfer
+            for (idx_a, stop_norm_a) in ma.route.stops_normalized.iter().enumerate() {
+                ops += 1; if ops > MAX_OPS { break 'outer; }
+                if idx_a == oi_a { continue; }
+
+                if let Some(&idx_b) = mb.route.stop_name_to_index.get(stop_norm_a) {
+                    if idx_b == di_b { continue; }
+                    journeys.push(create_transfer_journey(ma, mb, idx_a, idx_b, &ma.route.stops[idx_a].name, false));
+                    if journeys.len() >= MAX_SEARCH_RESULTS { break 'outer; }
+                    continue 'outer;
+                }
             }
 
-            routes_used.push(node.route_id.clone());
-            total_fare += node.fare;
+            // 2. Geo Proximity Transfer
+            for (idx_a, sa) in ma.route.stops.iter().enumerate() {
+                if idx_a == oi_a { continue; }
+                for (idx_b, sb) in mb.route.stops.iter().enumerate() {
+                    ops += 1; if ops > MAX_OPS { break 'outer; }
+                    if idx_b == di_b { continue; }
 
-            let vehicle_type = match node.transport_type {
-                TransportType::CombiMunicipal => ("Combi", "Combi"),
-                TransportType::PlayaExpress => ("Playa Express Van", "Playa Express"),
-                TransportType::AdoAirport => ("ADO Bus", "Autobús ADO"),
-                _ => ("Bus", "Autobús"),
-            };
-
-            res.instructions.push(BilingualString {
-                en: format!("Board {} ({}) at {}", node.route_id, vehicle_type.0, node.name),
-                es: format!("Aborda {} ({}) en {}", node.route_id, vehicle_type.1, node.name),
-            });
-
-            last_route = node.route_id.clone();
-        }
-
-        if i == path.len() - 1 {
-            res.instructions.push(BilingualString {
-                en: format!("Get off at {}", node.name),
-                es: format!("Baja en {}", node.name),
-            });
-
-            if node.name.to_lowercase().contains("aeropuerto") || node.name.to_lowercase().contains("airport") {
-                if node.transport_type != TransportType::AdoAirport {
-                    res.airport_warning = Some(BilingualString {
-                        en: "Access restricted to ADO/Private. Nearest drop-off: Airport Entrance (Highway).".to_string(),
-                        es: "Acceso restringido a ADO/Privado. Punto más cercano: Entrada al Aeropuerto (Carretera).".to_string(),
-                    });
+                    if haversine_distance_m(sa.lat, sa.lng, sb.lat, sb.lng) <= GEO_TRANSFER_RADIUS_M {
+                        journeys.push(create_transfer_journey(ma, mb, idx_a, idx_b, &format!("{} / {}", sa.name, sb.name), true));
+                        if journeys.len() >= MAX_SEARCH_RESULTS { break 'outer; }
+                        continue 'outer;
+                    }
                 }
             }
         }
     }
-
-    res.routes = routes_used;
-    res.estimated_cost_mxn = total_fare;
-
-    res
+    journeys
 }
 
-#[wasm_bindgen]
-pub fn calculate_trip_cost(distance: f64, seats: u32, is_tourist: bool) -> JsValue {
-    let base_price = if is_tourist {
-        29.0
-    } else if distance > 15.0 {
-        25.0
-    } else {
-        15.0
-    };
-
-    let total_mxn = base_price * (seats as f64);
-
-    serde_wasm_bindgen::to_value(&serde_json::json!({
-        "cost_mxn": total_mxn,
-        "base_price": base_price,
-        "currency": "MXN",
-        "payment_method": "CASH_ONLY",
-        "info": {
-            "en": "Pay in cash directly to the driver.",
-            "es": "Paga en efectivo directamente al conductor."
-        },
-        "seats": seats
-    })).unwrap()
-}
-
-fn error_response(error_key: &str) -> RouteResponse {
-    let error_msg = match error_key {
-        "invalid_data" => BilingualString {
-            en: "Invalid data format".to_string(),
-            es: "Formato de datos inválido".to_string(),
-        },
-        "out_of_coverage" => BilingualString {
-            en: "Location out of coverage".to_string(),
-            es: "Ubicación fuera de cobertura".to_string(),
-        },
-        "no_path" => BilingualString {
-            en: "No route found".to_string(),
-            es: "No se encontró ruta".to_string(),
-        },
-        _ => BilingualString {
-            en: "Unknown error".to_string(),
-            es: "Error desconocido".to_string(),
-        }
-    };
-
-    RouteResponse {
-        success: false,
-        error: Some(error_msg),
-        ..Default::default()
+fn create_transfer_journey(ma: &RouteMatch, mb: &RouteMatch, idx_a: usize, idx_b: usize, tp: &str, geo: bool) -> Journey {
+    Journey {
+        id: format!("{}_{}_tx", ma.route.id, mb.route.id),
+        type_: "Transfer".to_string(),
+        legs: vec![
+            RouteLeg {
+                route_id: ma.route.id.clone(),
+                route_name: ma.route.name.clone(),
+                origin_stop: ma.route.stops[ma.origin_idx.unwrap()].name.clone(),
+                dest_stop: ma.route.stops[idx_a].name.clone(),
+                price: ma.route.price,
+            },
+            RouteLeg {
+                route_id: mb.route.id.clone(),
+                route_name: mb.route.name.clone(),
+                origin_stop: mb.route.stops[idx_b].name.clone(),
+                dest_stop: mb.route.stops[mb.dest_idx.unwrap()].name.clone(),
+                price: mb.route.price,
+            }
+        ],
+        total_price: ma.route.price + mb.route.price,
+        transfer_point: Some(tp.to_string()),
+        geo_transfer: geo,
+        is_forward: true,
     }
 }
+
+// --- TESTS ---
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use shared_types::{Route, Stop, RootData, TransportType};
 
-    fn mock_data() -> RootData {
-        RootData {
-            routes: vec![
-                Route {
-                    id: "R1".to_string(),
-                    name: "Crucero".to_string(),
-                    color: "red".to_string(),
-                    fare: 15.0,
-                    transport_type: TransportType::BusHotelZone,
-                    stops: vec![
-                        Stop { id: "R1_001".to_string(), name: "El Crucero Hub".to_string(), lat: 21.1619, lng: -86.8515, order: 1 },
-                        Stop { id: "R1_003".to_string(), name: "Plaza Las Américas".to_string(), lat: 21.1472, lng: -86.8234, order: 3 },
-                    ],
-                },
-                Route {
-                    id: "ADO_AIR".to_string(),
-                    name: "ADO".to_string(),
-                    color: "blue".to_string(),
-                    fare: 110.0,
-                    transport_type: TransportType::AdoAirport,
-                    stops: vec![
-                        Stop { id: "ADO_001".to_string(), name: "ADO Centro".to_string(), lat: 21.1605, lng: -86.8260, order: 1 },
-                        Stop { id: "ADO_002".to_string(), name: "Airport T2".to_string(), lat: 21.0412, lng: -86.8725, order: 2 },
-                    ],
-                },
-                Route {
-                    id: "R10".to_string(),
-                    name: "Urban".to_string(),
-                    color: "yellow".to_string(),
-                    fare: 15.0,
-                    transport_type: TransportType::BusUrban,
-                    stops: vec![
-                        Stop { id: "R10_001".to_string(), name: "Plaza Las Américas".to_string(), lat: 21.1472, lng: -86.8234, order: 1 },
-                        Stop { id: "R10_009".to_string(), name: "Airport Entrance".to_string(), lat: 21.0450, lng: -86.8700, order: 9 },
-                    ],
-                },
-            ],
+    fn mock_route(id: &str, stops: Vec<(&str, f64, f64)>) -> Route {
+        let mut stop_objs = Vec::new();
+        for (i, (name, lat, lng)) in stops.into_iter().enumerate() {
+            stop_objs.push(Stop { id: None, name: name.to_string(), lat, lng, orden: i as u32, landmarks: String::new() });
+        }
+        let stops_normalized: Vec<String> = stop_objs.iter().map(|s| normalize_str(&s.name)).collect();
+        let stop_name_to_index = stops_normalized.iter().enumerate().map(|(idx, name)| (name.clone(), idx)).collect();
+        Route {
+            id: id.to_string(), name: id.to_string(), price: 10.0, transport_type: "Bus".to_string(),
+            empresa: None, frecuencia_minutos: None, horario: None, stops: stop_objs,
+            stops_normalized, stop_name_to_index, social_alerts: vec![], last_updated: "".to_string()
         }
     }
 
+
     #[test]
-    fn test_airport_gatekeeper() {
-        let data = mock_data();
-        let res = find_route_internal(21.1472, -86.8234, 21.0450, -86.8700, &data);
-        assert!(res.success);
-        assert!(res.airport_warning.is_some());
-        assert!(res.airport_warning.unwrap().en.contains("restricted to ADO"));
+    fn test_normalization() {
+        assert_eq!(normalize_str("  Cancún  "), "cancun");
+        assert_eq!(normalize_str("México"), "mexico");
+        assert_eq!(normalize_str("Niño"), "nino");
+        assert_eq!(normalize_str("ÁÉÍÓÚ Ü Ñ"), "aeiou u n");
+        assert_eq!(normalize_str("Multiple   Spaces"), "multiple spaces");
     }
 
     #[test]
-    fn test_ado_no_warning() {
-        let data = mock_data();
-        let res = find_route_internal(21.1605, -86.8260, 21.0412, -86.8725, &data);
-        assert!(res.success);
-        assert!(res.airport_warning.is_none());
-    }
-
-    // Updated test for truth of the street logic
-    #[test]
-    fn test_find_route_demo_override() {
-        let res = find_route_rs("Villas Otoch Paraíso", "Anywhere");
-
-        assert!(res.len() >= 2);
-        assert!(res.iter().any(|r| r.id == "R-2-94"));
-        assert!(res.iter().any(|r| r.id == "R-19"));
+    fn test_find_route_direct() {
+        let routes = vec![mock_route("R1", vec![("A", 0.0, 0.0), ("B", 0.0, 0.01)])];
+        let res = find_route_rs("A", "B", &routes);
+        assert_eq!(res.len(), 1);
+        assert_eq!(res[0].type_, "Direct");
     }
 
     #[test]
-    fn test_find_route_fuzzy() {
-        // "El Crocero" is a typo for "El Crucero"
-        let res = find_route_rs("Puerto Juárez", "El Crocero");
+    fn test_find_route_transfer() {
+        let r1 = mock_route("R1", vec![("A", 0.0, 0.0), ("Hub", 0.1, 0.1)]);
+        let r2 = mock_route("R2", vec![("Hub", 0.1, 0.1), ("B", 0.2, 0.2)]);
+        let res = find_route_rs("A", "B", &vec![r1, r2]);
+        assert_eq!(res.len(), 1);
+        assert_eq!(res[0].type_, "Transfer");
+    }
 
-        // Should find "Combi-Roja" which goes from Puerto Juárez to El Crucero
-        assert!(!res.is_empty());
-        assert!(res.iter().any(|r| r.id == "Combi-Roja"));
+    #[test]
+    fn test_geo_transfer() {
+        let r1 = mock_route("R1", vec![("A", 21.1576, -86.8269), ("H1", 21.1580, -86.8269)]);
+        let r2 = mock_route("R2", vec![("H2", 21.1600, -86.8269), ("B", 21.1620, -86.8269)]);
+        let res = find_route_rs("A", "B", &vec![r1, r2]);
+        assert_eq!(res.len(), 1);
+        assert!(res[0].geo_transfer);
     }
 }

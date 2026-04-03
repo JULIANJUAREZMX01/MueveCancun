@@ -18,12 +18,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
 # Dependencies
 node_modules
+package-lock.json
 .venv
-pip-wheel-metadata
 
 # Build Outputs
 dist
@@ -31,30 +30,53 @@ dist-ssr
 out
 target
 build
+.astro
 
-# Project Specific
-.codersinflow
+# AI Agent Directories
+.agent
+.agent_context
+.Jules
+.cursor
 .claude
-CLAUDE.md
+# CLAUDE.md is tracked intentionally (AI agent instructions for this repo)
 .codex
-*.vsix
-__pycache__
-*.pyc
-.next
+.codersinflow
 
 # Rust / WASM
 /rust-wasm/target
-/src/wasm/route_calculator/pkg
-
+Cargo.lock
+/src/wasm/
 # Temporary files
 *.tmp
 tmp/
+__pycache__
+*.pyc
 
-# Frameworks / Tooling
-.astro
+# Testing Artifacts
 test-results
-node_modules/
-dist/
-.astro/
-pnpm-lock.yaml
-Cargo.lock
+*_snapshot.html
+*_content.md
+snapshot_*.png
+public/data/master_routes.optimized.json
+
+# Archivos de sesión y debugging — nunca al repo
+*_snapshot.html
+*_snapshot.png
+server_log.txt
+preview_output.txt
+commit_msg.txt
+
+# Artefactos de desarrollo de agentes — scripts temporales de fix/patch
+fix-*.py
+fix_*.py
+fix_*.js
+fix-*.js
+patch_*.js
+patch_*.diff
+patch*.diff
+script_block.js
+full_script.ts
+test_browser*.js
+*.astro.bak
+*.astro.new
+path/

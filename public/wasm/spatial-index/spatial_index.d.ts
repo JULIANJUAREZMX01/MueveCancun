@@ -1,12 +1,15 @@
 /* tslint:disable */
 /* eslint-disable */
 
+export function clear_spatial_index(): void;
+
 export function find_nearest_stop(user_lat: number, user_lng: number, stops_val: any): any;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
+    readonly clear_spatial_index: () => void;
     readonly find_nearest_stop: (a: number, b: number, c: any) => any;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

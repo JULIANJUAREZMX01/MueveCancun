@@ -1,382 +1,294 @@
 ---
+import { getLangFromUrl, useTranslations } from '../utils/i18n';
 import Card from './ui/Card.astro';
 import Button from './ui/Button.astro';
 import Input from './ui/Input.astro';
-import Badge from './ui/Badge.astro';
-import SkeletonLoader from './ui/SkeletonLoader.astro';
+import Icon from './ui/Icon.astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const searchUrl = `/api/search`;
 ---
 
-<div class="space-y-6" id="route-calculator-wrapper">
-
-  <Card class="relative overflow-hidden border-0 !p-0 shadow-lg ring-1 ring-black/5">
-    <!-- Header / Status Bar -->
-    <div class="bg-slate-50 border-b border-slate-100 p-4 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <span class="text-xl">🧭</span>
-        <h2 class="text-lg font-black text-deep-navy tracking-tight" id="title-text">Brújula Urbana</h2>
-      </div>
-      <div class="flex items-center gap-2">
-        <div id="balance-badge-container">
-           <Badge variant="default" class="font-mono" id="balance-badge">Loading...</Badge>
-        </div>
-        <button id="lang-toggle" class="text-xs font-bold bg-white border border-slate-200 px-2 py-1 rounded-lg uppercase text-slate-500">EN</button>
-      </div>
-    </div>
-
-    <div class="p-5 space-y-5">
-      <!-- Alerts -->
-      <div id="balance-warning" class="hidden">
-        <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded-r-md flex items-start gap-3">
-          <span class="text-red-500 mt-0.5">⚠️</span>
-          <div>
-            <p class="text-xs font-bold text-red-800 uppercase tracking-wide">Saldo Insuficiente</p>
-            <p class="text-xs text-red-600 font-medium mt-1" id="warning-text">Requiere $180 MXN para operar.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Inputs -->
-      <div class="space-y-4 relative">
-        <div class="relative z-10">
+<div class="calculator-wrapper relative z-20 -mt-12 px-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
+  <Card className="p-6 md:p-8 shadow-2xl shadow-slate-900/10 border-slate-100/50 backdrop-blur-xl bg-white/90">
+    <div class="space-y-6">
+      <!-- Input Group -->
+      <div class="relative space-y-3">
+        <div class="relative group">
+          <div class="absolute left-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)] z-10"></div>
           <Input
             id="origin-input"
-            label="Origen"
-            icon="/icons/map-pin.svg"
-            placeholder="¿Dónde estás?"
-            list="locations"
+            type="text"
+            placeholder={t('search.origin_placeholder')}
+            className="pl-10 h-14 text-sm font-bold bg-slate-50 border-transparent focus:bg-white focus:border-orange-500/30 transition-all rounded-2xl"
+            list="stops-datalist"
           />
         </div>
 
         <!-- Swap Button -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 mt-2">
-          <button id="swap-btn" class="w-10 h-10 bg-slate-50 border-2 border-slate-200 rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform hover:bg-white text-slate-500">
-            <img src="/icons/swap.svg" class="w-5 h-5 opacity-60" alt="Swap" />
-          </button>
-        </div>
+        <button id="swap-stops-btn" class="absolute right-8 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white shadow-lg border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-primary-500 transition-all active:scale-90">
+          <Icon name="swap" className="w-4 h-4" />
+        </button>
 
-        <div class="relative z-0">
+        <div class="relative group">
+          <div class="absolute left-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary-500 shadow-[0_0_10px_rgba(14,165,233,0.5)] z-10"></div>
           <Input
-            id="destination-input"
-            label="Destino"
-            icon="/icons/flag.svg"
-            placeholder="¿A dónde vas?"
-            list="locations"
+            id="dest-input"
+            type="text"
+            placeholder={t('search.destination_placeholder')}
+            className="pl-10 h-14 text-sm font-bold bg-slate-50 border-transparent focus:bg-white focus:border-primary-500/30 transition-all rounded-2xl"
+            list="stops-datalist"
           />
         </div>
       </div>
 
-      <!-- Quick Actions (Horizontal Scroll) -->
-      <div>
-        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Accesos Rápidos</label>
-        <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
-          <button class="quick-action-btn snap-start flex-shrink-0 bg-slate-50 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-2 transition-colors active:scale-95" data-dest="Walmart">
-            <span>🏠</span> <span class="text-sm font-bold">Casa</span>
-          </button>
-          <button class="quick-action-btn snap-start flex-shrink-0 bg-slate-50 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-2 transition-colors active:scale-95" data-dest="Plaza Las Américas">
-            <span>💼</span> <span class="text-sm font-bold">Trabajo</span>
-          </button>
-          <button class="quick-action-btn snap-start flex-shrink-0 bg-slate-50 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-2 transition-colors active:scale-95" data-dest="Aeropuerto Terminal 2">
-            <span>✈️</span> <span class="text-sm font-bold">Aeropuerto</span>
-          </button>
-           <button class="quick-action-btn snap-start flex-shrink-0 bg-slate-50 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-2 transition-colors active:scale-95" data-dest="Playa Delfines (El Mirador)">
-            <span>🏖️</span> <span class="text-sm font-bold">Playa</span>
-          </button>
-        </div>
-      </div>
+      <datalist id="stops-datalist"></datalist>
 
-      <!-- Options -->
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label for="seats-input" class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Asientos</label>
-          <div class="relative">
-            <select id="seats-input" class="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 font-bold text-slate-700 appearance-none focus:ring-2 focus:ring-primary-100 focus:border-primary-500">
-              <option value="1">1 Pasajero</option>
-              <option value="2">2 Pasajeros</option>
-              <option value="3">3 Pasajeros</option>
-              <option value="4">4 Pasajeros</option>
-            </select>
-            <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
-          </div>
+      <!-- Action Button -->
+      <Button
+        id="search-route-btn"
+        className="w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-primary-500/20 active:scale-[0.98] transition-all group"
+      >
+        <span id="btn-text" class="flex items-center justify-center gap-2">
+          {t('search.cta')}
+          <Icon name="arrow-right" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        </span>
+        <div id="search-spinner" class="hidden">
+           <Icon name="spinner" className="w-5 h-5 animate-spin mx-auto" />
         </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Modo</label>
-          <label class="flex items-center h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 cursor-pointer hover:bg-slate-100 transition-colors">
-            <input type="checkbox" id="tourist-checkbox" class="w-5 h-5 rounded text-primary-500 border-gray-300 focus:ring-primary-500 mr-3" />
-            <span class="text-sm font-bold text-slate-700">Turista</span>
-          </label>
-        </div>
-      </div>
-
-      <Button id="calculate-btn" class="w-full text-lg shadow-xl shadow-primary-500/20">
-        <span id="btn-text">TRAZAR RUTA</span>
-        <img src="/icons/loader.svg" class="w-5 h-5 animate-spin hidden" id="btn-spinner" alt="Loading" />
       </Button>
-
     </div>
-
-    <!-- Loading State -->
-    <div id="calculation-loader" class="hidden p-5 space-y-4 border-t border-slate-100 bg-slate-50/50">
-        <SkeletonLoader height="h-24" />
-        <SkeletonLoader height="h-12" />
-        <SkeletonLoader height="h-12" />
-    </div>
-
   </Card>
 
-  <!-- Results Area -->
-  <div id="results-container" class="space-y-4 empty:hidden">
-      <!-- Results injected here -->
+  <!-- Results Preview Area -->
+  <div id="results-info" class="hidden mt-8 space-y-4">
+    <div class="flex items-center justify-between px-2">
+      <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('search.results_title')}</h3>
+      <button id="btn-report-results" class="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest flex items-center gap-1">
+        ⚠️ {t('search.report_error')}
+      </button>
+    </div>
+    <div id="results-container" class="grid grid-cols-1 gap-4 pb-12">
+      <!-- Dynamic results go here -->
+    </div>
   </div>
-
-  <datalist id="locations">
-    <option value="El Crucero Hub"></option>
-    <option value="ADO Centro / Terminal"></option>
-    <option value="Plaza Las Américas"></option>
-    <option value="Aeropuerto Terminal 2"></option>
-    <option value="Aeropuerto Terminal 4"></option>
-    <option value="Muelle Ultramar (Puerto Juárez)"></option>
-    <option value="Playa Delfines (El Mirador)"></option>
-    <option value="Playa del Carmen Centro"></option>
-    <option value="Walmart"></option>
-    <option value="Villas Otoch Paraíso"></option>
-    <option value="Hospital General (Av. Kabah)"></option>
-  </datalist>
-
 </div>
 
-<script>
-  import { openDB } from 'idb';
+<div id="i18n-data" data-ui={JSON.stringify(t('ui'))}></div>
 
-  // Geolocation data for demo purposes (Expanded)
-  const MOCK_GEO = {
-    "Villas Otoch Paraíso": { lat: 21.2100, lng: -86.8800 },
-    "El Crucero": { lat: 21.1730, lng: -86.8250 },
-    "Zona Hotelera": { lat: 21.1500, lng: -86.8000 },
-    "Plaza Las Américas": { lat: 21.1450, lng: -86.8240 },
-    "Aeropuerto": { lat: 21.0400, lng: -86.8740 },
-    "Aeropuerto Terminal 2": { lat: 21.0417, lng: -86.8761 },
-    "Aeropuerto Terminal 4": { lat: 21.0400, lng: -86.8750 },
-    "Muelle Ultramar (Puerto Juárez)": { lat: 21.2070, lng: -86.8020 },
-    "Playa Delfines (El Mirador)": { lat: 21.0850, lng: -86.7750 },
-    "Playa del Carmen Centro": { lat: 20.6296, lng: -87.0739 },
-    "Walmart": { lat: 21.1595, lng: -86.8365 },
-    "Hospital General (Av. Kabah)": { lat: 21.1500, lng: -86.8400 },
-  };
+<script lang="ts">
+  import { WasmLoader } from "../utils/WasmLoader";
+  import { coordinatesStore } from "../utils/CoordinatesStore";
+  import { showToast } from "../utils/toast";
+  import { normalizeString } from "../utils/utils";
+  import { initWasm } from "../lib/initWasm";
 
-  const TRANSLATIONS = {
-    es: {
-      title: 'Brújula Urbana',
-      warning: 'Saldo insuficiente. Recarga tu cuenta ($180 MXN).',
-      calculate: 'TRAZAR RUTA',
-      calculating: 'CALCULANDO...',
-      suggested: 'Mejor Opción',
-      cashOnly: 'Solo Efectivo',
-      instructions: 'Pasos a seguir'
-    },
-    en: {
-      title: 'Urban Compass',
-      warning: 'Insufficient balance. Top up required ($180 MXN).',
-      calculate: 'FIND ROUTE',
-      calculating: 'ROUTING...',
-      suggested: 'Best Option',
-      cashOnly: 'Cash Only',
-      instructions: 'Steps'
-    }
-  };
+  const i18nDataEl = document.getElementById('i18n-data');
+  const ui = i18nDataEl ? JSON.parse(i18nDataEl.dataset.ui || '{}') : {};
 
-  let currentLang = 'es';
-  let balance = 0;
-  let hasBalance = false;
+  let find_route: ((o: string, d: string) => any) | null = null;
   let wasmLoaded = false;
-  let wasmModule = null;
 
-  const btn = document.getElementById('calculate-btn');
-  const resultsContainer = document.getElementById('results-container');
-  const langToggle = document.getElementById('lang-toggle');
-  const balanceBadge = document.getElementById('balance-badge');
-  const balanceWarning = document.getElementById('balance-warning');
-  const btnSpinner = document.getElementById('btn-spinner');
-  const btnText = document.getElementById('btn-text');
-  const calculationLoader = document.getElementById('calculation-loader');
+  async function startCalculator() {
+      const btn = document.getElementById('search-route-btn');
+      const originInput = document.getElementById('origin-input');
+      const destInput = document.getElementById('dest-input');
+      const datalist = document.getElementById('stops-datalist');
+      const swapBtn = document.getElementById('swap-stops-btn');
 
-  // Quick Actions
-  document.querySelectorAll('.quick-action-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const dest = (e.currentTarget).dataset.dest;
-        const destInput = document.getElementById('destination-input');
-        if (destInput) destInput.value = dest;
-    });
-  });
+      if (!btn || !originInput || !destInput) return;
 
-  async function updateBalance() {
-    const db = await openDB('cancunmueve-db', 2, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains('wallet-status')) {
-          db.createObjectStore('wallet-status');
-        }
-      },
-    });
-    let currentBalance = await db.get('wallet-status', 'driver_current');
-    if (currentBalance === undefined) {
-      currentBalance = 180.0;
-      await db.put('wallet-status', currentBalance, 'driver_current');
-    }
-    balance = currentBalance;
+      // WASM Initialization via initWasm
+      try {
+          const success = await initWasm();
+          if (success) {
+            const module = await WasmLoader.getModule();
+            // find_route is exported by the WASM module
+            // It might return a string that needs JSON.parse
+            find_route = (o, d) => {
+                const raw = module.find_route(o, d);
+                return raw ? JSON.parse(raw) : [];
+            };
+            wasmLoaded = true;
+            console.log("[RouteCalculator] WASM Ready and Catalog Loaded");
+          }
+      } catch (e) {
+          console.error("[RouteCalculator] WASM Failed:", e);
+      }
 
-    if (wasmLoaded && wasmModule) {
-        try {
-            hasBalance = wasmModule.validate_operator_funds(balance);
-        } catch (e) {
-            hasBalance = balance >= 180.0;
-        }
-    } else {
-        hasBalance = balance >= 180.0;
-    }
+      // Load Datalist
+      await coordinatesStore.init();
+      const stops = coordinatesStore.getDB();
+      if (datalist && stops) {
+          datalist.innerHTML = Array.from(stops.keys())
+              .map(name => `<option value="${coordinatesStore.getOriginalName(name) || name}">`)
+              .join('');
+      }
 
-    if (balanceBadge) {
-        balanceBadge.textContent = `$${balance.toFixed(0)}`;
-        if (hasBalance) {
-            balanceBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-green-100 text-green-700 font-mono";
-        } else {
-            balanceBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-red-100 text-red-700 font-mono";
-        }
-    }
+      // Swap Logic
+      swapBtn?.addEventListener('click', () => {
+          const temp = originInput.value;
+          originInput.value = destInput.value;
+          destInput.value = temp;
+          swapBtn.classList.toggle('rotate-180');
+      });
 
-    if (balanceWarning) {
-      balanceWarning.classList.toggle('hidden', hasBalance);
-    }
+      // Search Logic
+      btn.addEventListener('click', async () => {
+          const origin = originInput.value.trim();
+          const dest = destInput.value.trim();
 
-    if (btn) (btn as HTMLButtonElement).disabled = !hasBalance || !wasmLoaded;
+          if (!origin || !dest) {
+              showToast("Por favor ingresa origen y destino", "warning");
+              return;
+          }
+
+          if (!wasmLoaded) {
+              showToast("Iniciando motor de búsqueda...", "info");
+              return;
+          }
+
+          btn.disabled = true;
+          document.getElementById('search-spinner')?.classList.remove('hidden');
+          document.getElementById('btn-text')?.classList.add('hidden');
+
+          try {
+              console.log(`🔍 Searching: ${origin} -> ${dest}`);
+              const results = find_route(normalizeString(origin), normalizeString(dest));
+
+              console.log("🔍 Search Results:", results);
+              if (results && results.length > 0) {
+                  window.dispatchEvent(new CustomEvent('ROUTE_CALCULATED'));
+                  renderResults(results);
+              } else {
+                  showToast("No se encontró una ruta directa o con 1 transbordo", "warning");
+              }
+          } catch (e) {
+              console.error("Search Error", e);
+              showToast("Error al calcular ruta", "error");
+          } finally {
+              btn.disabled = false;
+              document.getElementById('search-spinner')?.classList.add('hidden');
+              document.getElementById('btn-text')?.classList.remove('hidden');
+          }
+      });
+
+      window.addEventListener('MAP_SET_STOP', (e) => {
+          if (e.detail.type === 'origin') originInput.value = e.detail.name;
+          if (e.detail.type === 'dest') destInput.value = e.detail.name;
+          document.querySelector('.calculator-wrapper')?.scrollIntoView({ behavior: 'smooth' });
+      });
   }
 
-  function updateUI() {
-    const t = TRANSLATIONS[currentLang];
-    const titleText = document.getElementById('title-text');
-    if (titleText) titleText.textContent = t.title;
+  function renderResults(results: any[]) {
+      const container = document.getElementById('results-container');
+      const info = document.getElementById('results-info');
+      if (!container || !info) return;
 
-    if (btnText && !(btn as HTMLButtonElement).disabled) btnText.textContent = t.calculate;
+      info.classList.remove('hidden');
+      container.innerHTML = '';
 
-    if (langToggle) langToggle.textContent = currentLang === 'es' ? 'EN' : 'ES';
+      results.forEach((r) => {
+          const card = document.createElement('div');
+          card.className = 'bg-white p-4 rounded-3xl shadow-md border border-slate-100 flex flex-col gap-2 animate-fade-in';
+
+          const header = document.createElement('div');
+          header.className = 'flex justify-between items-center';
+
+          const typeSpan = document.createElement('span');
+          typeSpan.className = 'text-xs font-black text-slate-400 uppercase tracking-widest';
+          typeSpan.textContent = (r.type || 'Directo') + '';
+
+          const priceSpan = document.createElement('span');
+          priceSpan.className = 'text-lg font-black text-slate-900';
+          priceSpan.textContent = '$' + (r.total_price != null ? r.total_price : 10);
+
+          header.appendChild(typeSpan);
+          header.appendChild(priceSpan);
+
+          const legsContainer = document.createElement('div');
+          legsContainer.className = 'flex flex-col gap-1';
+
+          if (Array.isArray(r.legs)) {
+              r.legs.forEach((leg) => {
+                  const legRow = document.createElement('div');
+                  legRow.className = 'flex items-center gap-2';
+
+                  const dot = document.createElement('div');
+                  dot.className = 'w-2 h-2 rounded-full bg-primary-500';
+
+                  const routeSpan = document.createElement('span');
+                  routeSpan.className = 'text-sm font-bold text-slate-700';
+                  routeSpan.textContent = (leg && leg.route_id != null ? leg.route_id : '') + '';
+
+                  const stopsSpan = document.createElement('span');
+                  stopsSpan.className = 'text-xxs text-slate-400';
+                  const stopsCount = leg && Array.isArray(leg.stops) ? leg.stops.length : 0;
+                  stopsSpan.textContent = '→ ' + stopsCount + ' paradas';
+
+                  legRow.appendChild(dot);
+                  legRow.appendChild(routeSpan);
+                  legRow.appendChild(stopsSpan);
+
+                  legsContainer.appendChild(legRow);
+              });
+          }
+
+          const button = document.createElement('button');
+          button.className = 'mt-2 w-full py-2 bg-slate-50 rounded-xl text-xs font-bold text-primary-600 hover:bg-primary-50 transition-colors';
+          button.textContent = 'Ver en Mapa';
+          button.setAttribute('type', 'button');
+          button.dataset.journey = JSON.stringify(r);
+
+          card.appendChild(header);
+          card.appendChild(legsContainer);
+          card.appendChild(button);
+
+          container.appendChild(card);
+      });
+
+      container.querySelectorAll('button[data-journey]').forEach(b => {
+          b.addEventListener('click', () => {
+              const journeyAttr = b.getAttribute('data-journey') || '{}';
+              const journey = JSON.parse(journeyAttr);
+              window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey } }));
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+      });
   }
 
-  async function start() {
-    try {
-      console.log("Starting WASM import...");
-      wasmModule = await import('../wasm/route_calculator.js');
-      console.log("WASM imported, initializing...");
-      await wasmModule.default();
-      console.log("WASM initialized.");
-      wasmLoaded = true;
-      await updateBalance();
-      console.log("Balance updated.");
-      updateUI();
-    } catch (e) {
-      console.error("WASM Load Critical Error:", e);
-    }
+  document.addEventListener('astro:page-load', startCalculator);
+
+  if (document.readyState === 'complete') {
+      startCalculator();
+  } else {
+      window.addEventListener('load', startCalculator);
   }
-
-  langToggle?.addEventListener('click', () => {
-    currentLang = currentLang === 'es' ? 'en' : 'es';
-    updateUI();
-  });
-
-  const swapBtn = document.getElementById('swap-btn');
-  swapBtn?.addEventListener('click', () => {
-     const origin = document.getElementById('origin-input');
-     const dest = document.getElementById('destination-input');
-     const temp = origin.value;
-     origin.value = dest.value;
-     dest.value = temp;
-  });
-
-  btn?.addEventListener('click', async () => {
-    if (!wasmLoaded || !wasmModule || !hasBalance) return;
-
-    const fromVal = (document.getElementById('origin-input') as HTMLInputElement).value;
-    const toVal = (document.getElementById('destination-input') as HTMLInputElement).value;
-
-    // AIRPORT BLOCK
-    if (toVal.toLowerCase().includes("aeropuerto") && fromVal.toLowerCase().includes("walmart")) {
-         renderError("Ruta restringida hacia el Aeropuerto desde Walmart (Solo Taxis/ADO).");
-         return;
-    }
-
-    if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculating;
-    if (btnSpinner) btnSpinner.classList.remove('hidden');
-    if (calculationLoader) calculationLoader.classList.remove('hidden');
-    if (resultsContainer) resultsContainer.innerHTML = ''; // Clear prev results
-    (btn as HTMLButtonElement).disabled = true;
-
-    // Simulate network delay for UX (Skeleton)
-    await new Promise(r => setTimeout(r, 800));
-
-    try {
-      const res = wasmModule.find_route(fromVal, toVal);
-      console.log('Route Result:', res);
-
-      renderResults(res);
-
-    } catch (error) {
-      console.error(error);
-      renderError("System Error: " + (error.message || error));
-    } finally {
-      if (btnText) btnText.textContent = TRANSLATIONS[currentLang].calculate;
-      if (btnSpinner) btnSpinner.classList.add('hidden');
-      if (calculationLoader) calculationLoader.classList.add('hidden');
-      (btn as HTMLButtonElement).disabled = false;
-    }
-  });
-
-  function renderResults(routes) {
-    if (!resultsContainer) return;
-    resultsContainer.innerHTML = ''; // Ensure clear
-
-    if (!routes || routes.length === 0) {
-        renderError("No se encontraron rutas. Intenta 'Villas Otoch Paraíso' a 'Zona Hotelera'.");
-        return;
-    }
-
-    routes.forEach(route => {
-        // Handle badge serialization if needed
-        const badgesHtml = route.badges.map(b => `<span class="text-xs bg-slate-100 px-1 rounded">${b}</span>`).join('');
-
-        const html = `
-          <div class="p-4 bg-white rounded-lg shadow-sm border border-slate-100 active:scale-98 transition-transform mb-3 animate-slide-up">
-            <div class="flex justify-between items-start">
-              <div>
-                <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mb-1">
-                  ${route.transport_type}
-                </span>
-                <h3 class="font-bold text-slate-800">${route.name}</h3>
-                <div class="flex gap-2 mt-2 flex-wrap">
-                   ${badgesHtml}
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="text-lg font-bold text-primary">$${route.price}</p>
-                <p class="text-xs text-slate-500">${route.duration}</p>
-              </div>
-            </div>
-            <div class="mt-2 text-xs text-slate-400">
-                ${route.origin_hub} ➔ ${route.dest_hub}
-            </div>
-          </div>
-        `;
-        resultsContainer.innerHTML += html;
-    });
-
-    if (window.showToast) window.showToast(`${routes.length} rutas encontradas`, 'success');
-  }
-
-  function renderError(msg) {
-    if (!resultsContainer) return;
-    resultsContainer.innerHTML = `
-        <div class="bg-red-50 p-4 rounded-xl border border-red-100 text-red-700 font-bold text-sm flex items-center gap-2 animate-slide-up">
-            <span>❌</span> ${msg}
-        </div>
-    `;
-    if (window.showToast) window.showToast(msg, 'error');
-  }
-
-  start();
 </script>
+
+<style>
+    .calculator-wrapper {
+        isolation: isolate;
+        z-index: 50;
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.3s ease-out;
+    }
+
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .text-xxs {
+        font-size: 0.65rem;
+    }
+
+    .rotate-180 {
+        transform: rotate(180deg) translateY(50%) !important;
+        top: 50%;
+    }
+</style>

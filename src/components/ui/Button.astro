@@ -8,19 +8,119 @@ interface Props {
 }
 
 const { variant = 'primary', type = 'button', id, class: className, disabled = false } = Astro.props;
-
-const baseStyles = "min-h-[44px] px-6 py-3 rounded-2xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 select-none";
-
-const variants = {
-  primary: "bg-primary-500 text-white shadow-lg hover:bg-primary-600",
-  secondary: "bg-sky-500 text-white shadow-lg hover:bg-sky-600",
-  ghost: "bg-transparent text-gray-600 hover:bg-gray-100 border border-transparent",
-  danger: "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
-};
-
-const styles = `${baseStyles} ${variants[variant]} ${className || ''}`;
 ---
 
-<button type={type} id={id} class={styles} disabled={disabled}>
+<button
+  type={type}
+  id={id}
+  class={`graffiti-btn ${className || ''}`}
+  disabled={disabled}
+  data-variant={variant}
+>
   <slot />
 </button>
+
+<style>
+  /*
+   * GRAFFITI WARRIOR: CSS5 LOGIC
+   * Pure CSS Variables & Nesting with Global Tropical Tokens
+   */
+  .graffiti-btn {
+    /* Layout & Box Model */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.75rem 1.5rem; /* px-6 py-3 */
+    border-radius: var(--radius-lg); /* rounded-lg */
+    border: 1px solid transparent;
+
+    /* Typography */
+    font-weight: 700;
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+
+    /* Interaction Defaults */
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Default Variables (Primary) */
+    --btn-bg: var(--color-sunset);
+    --btn-text: white;
+    --btn-border: transparent;
+    --btn-hover-bg: #EA580C; /* Sunset Darker */
+    --btn-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.35);
+
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border-color: var(--btn-border);
+    box-shadow: var(--btn-shadow);
+
+    /* --- VARIANTS --- */
+
+    &[data-variant="primary"] {
+      --btn-bg: var(--color-sunset);
+      --btn-text: white;
+      --btn-hover-bg: #EA580C;
+      --btn-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.35);
+    }
+
+    &[data-variant="secondary"] {
+      --btn-bg: var(--color-turquoise);
+      --btn-text: white;
+      --btn-hover-bg: #0284C7; /* Turquoise Darker */
+      --btn-shadow: 0 4px 14px -2px rgba(14, 165, 233, 0.35);
+    }
+
+    &[data-variant="ghost"] {
+      --btn-bg: transparent;
+      --btn-text: var(--text-secondary); /* slate-500 */
+      --btn-hover-bg: var(--surface-elevated);
+      --btn-shadow: none;
+      --btn-border: transparent;
+
+      &:hover {
+        border-color: var(--border-light);
+      }
+    }
+
+    &[data-variant="danger"] {
+      --btn-bg: #FEF2F2; /* coral-50 equivalent */
+      --btn-text: var(--color-coral);
+      --btn-border: #FECACA; /* coral-200 equivalent */
+      --btn-hover-bg: #FEE2E2; /* coral-100 equivalent */
+      --btn-shadow: none;
+    }
+
+    /* --- STATES --- */
+
+    &:hover:not(:disabled) {
+      background-color: var(--btn-hover-bg);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+      filter: grayscale(1);
+
+      &:active {
+        transform: none;
+      }
+    }
+
+    /* Focus Visible */
+    &:focus-visible {
+      outline: 2px solid var(--btn-bg);
+      outline-offset: 2px;
+    }
+  }
+</style>

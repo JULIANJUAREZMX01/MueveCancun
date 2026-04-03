@@ -1,0 +1,296 @@
+---
+export function getStaticPaths() {
+  return [
+    { params: { lang: "es" } },
+    { params: { lang: "en" } },
+  ];
+}
+
+import MainLayout from '../../layouts/MainLayout.astro';
+import ReportTypeSelector from '../../components/ui/ReportTypeSelector.astro';
+import Input from '../../components/ui/Input.astro';
+
+const { lang } = Astro.params;
+const isEs = lang === 'es';
+
+const reportOptions = [
+  { value: 'nueva',     label: isEs ? 'Ruta Nueva'         : 'New Route',       icon: '🗺️' },
+  { value: 'precio',    label: isEs ? 'Cambio de Tarifa'   : 'Fare Change',     icon: '💰' },
+  { value: 'seguridad', label: isEs ? 'Problema de Seguridad' : 'Safety Issue', icon: '⚠️' },
+  { value: 'horario',   label: isEs ? 'Cambio de Horario'  : 'Schedule Change', icon: '🕐' },
+  { value: 'otro',      label: isEs ? 'Otro'               : 'Other',           icon: '📝' },
+];
+---
+
+<MainLayout title={isEs ? "Ayúdanos a Mejorar" : "Help Us Improve"}>
+  <div class="max-w-2xl mx-auto px-4 py-6 pb-28">
+
+    <!-- Header -->
+    <header class="mb-8 text-center">
+      <div class="inline-flex items-center justify-center w-14 h-14 bg-primary-500/10 rounded-2xl mb-4">
+        <svg class="w-7 h-7 text-primary-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-display font-black text-slate-900 dark:text-white mb-2">
+        {isEs ? "Ayúdanos a Mejorar" : "Help Us Improve"}
+      </h1>
+      <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-md mx-auto">
+        {isEs
+          ? "Si conoces una ruta nueva, un cambio de tarifa o cualquier problema con el transporte, repórtalo aquí. Cada reporte mejora la app para toda la ciudad."
+          : "Know about a new route, fare change, or any transit issue? Report it here. Every report improves the app for the whole city."
+        }
+      </p>
+    </header>
+
+    <!-- Form Card -->
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <form id="contribution-form" class="p-6 space-y-5" novalidate>
+
+        <!-- Type Selector -->
+        <ReportTypeSelector
+          name="reportType"
+          label={isEs ? "Tipo de Reporte" : "Report Type"}
+          options={reportOptions}
+        />
+
+        <!-- Route Name -->
+        <div>
+          <label for="route-name" class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+            {isEs ? "Ruta Afectada" : "Affected Route"} <span class="text-slate-300 font-normal normal-case">{isEs ? "(opcional)" : "(optional)"}</span>
+          </label>
+          <input
+            id="route-name"
+            name="routeName"
+            type="text"
+            placeholder={isEs ? "Ej: R-27, Combi Puerto Juárez..." : "E.g. R-27, Combi..."}
+            maxlength="80"
+            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+          />
+        </div>
+
+        <!-- Details -->
+        <div>
+          <label for="details" class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+            {isEs ? "Descripción" : "Description"} <span class="text-red-400">*</span>
+          </label>
+          <textarea
+            id="details"
+            name="details"
+            rows="4"
+            placeholder={isEs ? "Describe el problema o cambio con el mayor detalle posible..." : "Describe the issue or change in as much detail as possible..."}
+            required
+            maxlength="500"
+            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all resize-none"
+          ></textarea>
+          <div class="flex justify-end mt-1">
+            <span id="char-count" class="text-[10px] text-slate-400 font-bold">0/500</span>
+          </div>
+        </div>
+
+        <!-- Optional: Location -->
+        <div>
+          <label for="location" class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+            {isEs ? "Ubicación" : "Location"} <span class="text-slate-300 font-normal normal-case">{isEs ? "(opcional)" : "(optional)"}</span>
+          </label>
+          <input
+            id="location"
+            name="location"
+            type="text"
+            placeholder={isEs ? "Ej: El Crucero, Zona Hotelera Km 12..." : "E.g. El Crucero, Zona Hotelera Km 12..."}
+            maxlength="100"
+            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+          />
+        </div>
+
+        <!-- Feedback area -->
+        <div id="form-feedback" class="hidden"></div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          id="submit-btn"
+          class="w-full bg-primary-600 hover:bg-primary-700 active:scale-95 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg shadow-primary-500/20 flex items-center justify-center gap-2"
+        >
+          <span id="submit-text">{isEs ? "Enviar Reporte" : "Send Report"}</span>
+          <svg id="submit-spinner" class="w-5 h-5 animate-spin hidden" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+          </svg>
+        </button>
+
+        <p class="text-center text-[11px] text-slate-400">
+          {isEs
+            ? "Tus reportes se envían como issues de GitHub y son revisados antes de publicarse."
+            : "Reports are sent as GitHub issues and reviewed before publishing."
+          }
+        </p>
+
+      </form>
+    </div>
+
+    <!-- Success state (hidden) -->
+    <div id="success-state" class="hidden mt-6 text-center py-10">
+      <div class="text-5xl mb-4">🎉</div>
+      <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2">
+        {isEs ? "¡Gracias!" : "Thank you!"}
+      </h2>
+      <p class="text-slate-500 text-sm mb-6">
+        {isEs ? "Tu reporte fue recibido y será revisado pronto." : "Your report was received and will be reviewed soon."}
+      </p>
+      <button id="btn-new-report" class="bg-primary-500 text-white px-6 py-3 rounded-2xl font-black text-sm uppercase tracking-wider shadow-lg shadow-primary-500/20 hover:scale-105 active:scale-95 transition-all">
+        {isEs ? "Enviar otro reporte" : "Send another report"}
+      </button>
+    </div>
+
+  </div>
+</MainLayout>
+
+<script define:vars={{ lang }}>
+  const isEs = lang === 'es';
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+
+  function setup() {
+    const form        = document.getElementById('contribution-form');
+    const btn         = document.getElementById('submit-btn');
+    const btnText     = document.getElementById('submit-text');
+    const spinner     = document.getElementById('submit-spinner');
+    const feedback    = document.getElementById('form-feedback');
+    const successState= document.getElementById('success-state');
+    const newReportBtn= document.getElementById('btn-new-report');
+    const textarea    = document.getElementById('details');
+    const charCount   = document.getElementById('char-count');
+
+    if (!form || !btn) return;
+
+    // Character counter
+    textarea?.addEventListener('input', () => {
+      const len = (textarea as HTMLTextAreaElement).value.length;
+      if (charCount) charCount.textContent = `${len}/500`;
+    });
+
+    // New report button
+    newReportBtn?.addEventListener('click', () => {
+      form.classList.remove('hidden');
+      successState?.classList.add('hidden');
+      (form as HTMLFormElement).reset();
+      if (charCount) charCount.textContent = '0/500';
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form as HTMLFormElement);
+      const tipo     = formData.get('reportType') as string || 'otro';
+      const ruta     = formData.get('routeName') as string || '';
+      const desc     = formData.get('details') as string || '';
+      const loc      = formData.get('location') as string || '';
+
+      if (!desc.trim()) {
+        showFeedback(isEs ? 'Por favor describe el problema.' : 'Please describe the issue.', 'error');
+        return;
+      }
+
+      // Loading state
+      btn.disabled = true;
+      if (btnText) btnText.classList.add('hidden');
+      if (spinner) spinner.classList.remove('hidden');
+      hideFeedback();
+
+      // Build GitHub Issue body
+      const issueTitle = `[${tipo.toUpperCase()}] ${ruta ? `Ruta: ${ruta} — ` : ''}${desc.substring(0, 60)}${desc.length > 60 ? '...' : ''}`;
+      const issueBody = [
+        `**Tipo:** ${escapeHtml(tipo)}`,
+        ruta ? `**Ruta:** ${escapeHtml(ruta)}` : null,
+        `**Descripción:** ${escapeHtml(desc)}`,
+        loc  ? `**Ubicación:** ${escapeHtml(loc)}` : null,
+        `**Idioma:** ${lang}`,
+        `**Timestamp:** ${new Date().toISOString()}`,
+        `**User-Agent:** ${navigator.userAgent.substring(0, 100)}`,
+      ].filter(Boolean).join('\n');
+
+      // Try to get config from ReportWidget
+      const configEl = document.getElementById('rw-config');
+      const token = configEl?.getAttribute('data-token') || '';
+
+      if (!token) {
+        // No token: save to localStorage queue for later sync
+        try {
+          const queue = JSON.parse(localStorage.getItem('contrib_queue') || '[]');
+          queue.push({ issueTitle, issueBody, ts: Date.now() });
+          localStorage.setItem('contrib_queue', JSON.stringify(queue));
+        } catch { /* ignore */ }
+
+        // Show success anyway — report is queued
+        form.classList.add('hidden');
+        successState?.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `https://api.github.com/repos/JULIANJUAREZMX01/MueveCancun/issues`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/vnd.github.v3+json',
+            },
+            body: JSON.stringify({
+              title: issueTitle,
+              body: issueBody,
+              labels: ['citizen-report', tipo],
+            }),
+          }
+        );
+
+        if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+
+        form.classList.add('hidden');
+        successState?.classList.remove('hidden');
+
+      } catch (err) {
+        console.error('[Contribuir] Submit error:', err);
+        // Save to queue
+        try {
+          const queue = JSON.parse(localStorage.getItem('contrib_queue') || '[]');
+          queue.push({ issueTitle, issueBody, ts: Date.now() });
+          localStorage.setItem('contrib_queue', JSON.stringify(queue));
+        } catch { /* ignore */ }
+        showFeedback(
+          isEs ? 'Sin conexión. El reporte fue guardado y se enviará automáticamente.' : 'No connection. Report saved and will be sent automatically.',
+          'info'
+        );
+      } finally {
+        btn.disabled = false;
+        if (btnText) btnText.classList.remove('hidden');
+        if (spinner) spinner.classList.add('hidden');
+      }
+    });
+  }
+
+  function showFeedback(msg, type) {
+    const el = document.getElementById('form-feedback');
+    if (!el) return;
+    el.className = `p-4 rounded-xl text-sm font-bold text-center ${
+      type === 'error' ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400' :
+      type === 'info'  ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400' :
+                         'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
+    }`;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  function hideFeedback() {
+    document.getElementById('form-feedback')?.classList.add('hidden');
+  }
+
+  document.addEventListener('astro:page-load', setup);
+  setup();
+</script>

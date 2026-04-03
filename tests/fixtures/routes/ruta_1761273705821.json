@@ -1,0 +1,153 @@
+{
+  "id": "ruta_1761273705821",
+  "nombre": "RUTA 510",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1761273705821_s_1",
+      "nombre": "Parada RUTA 510 #1",
+      "lat": 21.165178197719115,
+      "lng": -86.93047463893892,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_2",
+      "nombre": "Parada RUTA 510 #2",
+      "lat": 21.161051034217238,
+      "lng": -86.91945075988771,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_3",
+      "nombre": "Parada RUTA 510 #3",
+      "lat": 21.151060320830794,
+      "lng": -86.91937029361726,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_4",
+      "nombre": "Parada RUTA 510 #4",
+      "lat": 21.15490760074678,
+      "lng": -86.91155433654785,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_5",
+      "nombre": "Parada RUTA 510 #5",
+      "lat": 21.15153560789633,
+      "lng": -86.9075256586075,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_6",
+      "nombre": "Parada RUTA 510 #6",
+      "lat": 21.144631288043154,
+      "lng": -86.9036900997162,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_7",
+      "nombre": "Parada RUTA 510 #7",
+      "lat": 21.13701615051534,
+      "lng": -86.90135121345521,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_8",
+      "nombre": "Parada RUTA 510 #8",
+      "lat": 21.14034344337313,
+      "lng": -86.8945223093033,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_9",
+      "nombre": "Parada RUTA 510 #9",
+      "lat": 21.140168324558974,
+      "lng": -86.88807964324953,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_10",
+      "nombre": "Parada RUTA 510 #10",
+      "lat": 21.138967504258186,
+      "lng": -86.88266158103943,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_11",
+      "nombre": "Parada RUTA 510 #11",
+      "lat": 21.137071189049962,
+      "lng": -86.86805963516237,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_12",
+      "nombre": "Parada RUTA 510 #12",
+      "lat": 21.13529493511796,
+      "lng": -86.86018466949464,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_13",
+      "nombre": "Parada RUTA 510 #13",
+      "lat": 21.13723630453121,
+      "lng": -86.85579657554626,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_14",
+      "nombre": "Parada RUTA 510 #14",
+      "lat": 21.151425541553724,
+      "lng": -86.83952093124391,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_15",
+      "nombre": "Parada RUTA 510 #15",
+      "lat": 21.15495762973619,
+      "lng": -86.83416187763216,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_16",
+      "nombre": "Parada RUTA 510 #16",
+      "lat": 21.15601824033373,
+      "lng": -86.82907104492189,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_17",
+      "nombre": "Parada RUTA 510 #17",
+      "lat": 21.150650071821335,
+      "lng": -86.82510137557983,
+      "orden": 17,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1761273705821_s_18",
+      "nombre": "Parada RUTA 510 #18",
+      "lat": 21.147132890386654,
+      "lng": -86.82299852371216,
+      "orden": 18,
+      "landmarks": ""
+    }
+  ]
+}

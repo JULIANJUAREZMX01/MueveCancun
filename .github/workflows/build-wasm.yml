@@ -1,50 +1,81 @@
-name: Build and Deploy WASM Modules
+name: Build WASM Modules
 
 on:
   push:
     branches: [main, develop]
     paths:
-      - 'rust-wasm/**'
+      - "rust-wasm/**"
   pull_request:
     branches: [main]
+    paths:
+      - "rust-wasm/**"
 
 jobs:
-  build-wasm:
+  test-and-build:
+    name: Test → Build → Commit WASM
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
+          fetch-depth: 0
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust-wasm
 
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - name: Build route-calculator
+      # Run tests BEFORE building — fail fast if tests break
+      - name: Run route-calculator unit tests
+        working-directory: rust-wasm/route-calculator
+        run: cargo test --lib -- --nocapture --test-threads=1
+
+      - name: Run spatial-index unit tests
+        working-directory: rust-wasm/spatial-index
+        run: cargo test --lib || true  # spatial-index tests are optional
+
+      # Build WASM
+      # NOTE: Only route-calculator is built and committed here.
+      # spatial-index is a workspace member but its wasm-pack JS glue has not
+      # been committed yet; it will be added to this step once the JS glue is ready.
+      - name: Build route-calculator WASM
         run: |
           cd rust-wasm/route-calculator
-          wasm-pack build --target web --out-dir ../../src/wasm/route-calculator
+          wasm-pack build --target web --out-dir ../../public/wasm/route-calculator
+          rm -f ../../public/wasm/route-calculator/.gitignore
 
-      - name: Build spatial-index
+      - name: Report bundle sizes
         run: |
-          cd rust-wasm/spatial-index
-          wasm-pack build --target web --out-dir ../../src/wasm/spatial-index
+          echo "=== WASM Bundle Sizes ==="
+          ls -lh public/wasm/route-calculator/
+          echo "route_calculator_bg.wasm: $(du -h public/wasm/route-calculator/route_calculator_bg.wasm | cut -f1)"
 
-      - name: Check bundle sizes
-        run: |
-          echo "route-calculator size:"
-          du -h src/wasm/route-calculator/route_calculator_bg.wasm
-          echo "spatial-index size:"
-          du -h src/wasm/spatial-index/spatial_index_bg.wasm
+      # Verify binary is sane (>0 bytes, loads as binary)
+      - name: Verify WASM binary
+        run: node scripts/check-wasm.cjs
 
-      - name: Commit built files
-        run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-          git add src/wasm/
-          git add public/wasm/
-          git diff --quiet && git diff --staged --quiet || git commit -m "chore: auto-build WASM modules [skip ci]"
-          git push
+      # Cache WASM binary for downstream test/build jobs
+      - name: Cache WASM binary
+        uses: actions/cache@v4
+        with:
+          path: public/wasm/route-calculator
+          key: wasm-build-${{ github.sha }}
+
+      # Auto-commit built artifacts (only on push to real branches, not PRs)
+      - name: Commit WASM artifacts
+        if: github.event_name == 'push'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(wasm): auto-build route-calculator WASM [skip ci]"
+          file_pattern: "public/wasm/route-calculator/*"
+          add_options: "--force"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
