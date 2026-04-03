@@ -19,7 +19,6 @@ import type { APIRoute } from 'astro';
 import { handleStripeWebhook } from '../../../lib/stripe';
 import { saveGuardian, recordPayment } from '../../../lib/guardians';
 
-export const prerender = false;
 
 export const POST: APIRoute = async (context) => {
   const sig  = context.request.headers.get('stripe-signature');
