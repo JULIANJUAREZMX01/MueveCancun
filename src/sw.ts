@@ -74,8 +74,9 @@ self.addEventListener('install', (event: ExtendableEvent) => {
         console.log('[SW] Caching critical assets');
         return Promise.allSettled(
           CRITICAL_ASSETS.map(url =>
-            cache.add(url).catch((e: unknown) =>
-              console.warn(`[SW] Skip cache (non-critical): ${url}`, (e as Error)?.message ?? e)
+            cache.add(url).then(
+              () => {},
+              (e: unknown) => console.warn(`[SW] Skip cache (non-critical): ${url}`, (e as Error)?.message ?? e)
             )
           )
         );
@@ -113,7 +114,10 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
   if (event.data?.type === 'CACHE_USER_ROUTE' && event.data.url) {
     const url = event.data.url as string;
     if (USER_ROUTE_PATTERN.test(url)) {
-      caches.open(CACHE_NAME).then(cache => cache.add(url)).catch(() => {});
+      caches.open(CACHE_NAME).then(cache => cache.add(url)).catch((e: unknown) => {
+        console.warn('[SW] CACHE_USER_ROUTE failed:', url, (e as Error)?.message ?? e);
+        event.source?.postMessage({ type: 'CACHE_USER_ROUTE_ERROR', url });
+      });
     }
   }
   // Health check ping
@@ -223,7 +227,7 @@ async function networkFirstWithCache(request: Request): Promise<Response> {
     return response;
   } catch {
     const cached = await caches.match(request);
-    return cached ?? new Response('{}', { status: 503, headers: { 'Content-Type': 'application/json' } });
+    return cached ?? new Response('{"error":"offline","message":"Route data unavailable"}', { status: 503, headers: { 'Content-Type': 'application/json' } });
   }
 }
 
@@ -235,7 +239,7 @@ async function staleWhileRevalidate(request: Request): Promise<Response> {
     if (response?.ok) cache.put(request, response.clone());
     return response;
   }).catch((): Response => {
-    return cached ?? new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+    return cached ?? new Response('{"error":"offline","message":"Data unavailable"}', { status: 503, headers: { 'Content-Type': 'application/json' } });
   });
 
   return cached ?? fetchPromise;
