@@ -1,5 +1,30 @@
 # 🏗️ Architecture Manifest — Nexus Transfer Engine v3.3+
 
+<!--
+  OBJETO DE ESTUDIO — DECISIONES DE ARQUITECTURA
+  ================================================
+  Este documento refleja el estado arquitectónico vigente del proyecto MueveCancun tras
+  el merge de PR #365 (Jules — 2026-03-28). Cada sección tiene una ADR de respaldo.
+
+  REGISTRO DE CAMBIOS ARQUITECTÓNICOS:
+  - PR #365 (Jules, 2026-03-28): Hardening estricto TS/WASM FFI → ADR 003
+      · WasmLoader.ts ahora usa RouteCalculatorModule interface (sin `any`)
+      · Journey, RouteLeg, RouteStop consolidados en src/types.ts
+      · src/lib/CoordinatesStore.ts (duplicado) eliminado
+      · public/sw.js → src/sw.ts (Service Worker tipado con WebWorker libs)
+      · public/js/*.js → src/scripts/*.ts (scripts cliente tipados y bundleados)
+  - PR copilot/fix-pr-365-conflicts (Copilot, 2026-03-28): Resolución de conflictos #365
+
+  DECISIONES VIGENTES:
+  · "Zero Any" policy en todos los archivos que interactúan con WASM
+  · WASM artifacts (public/wasm/**) están en .gitignore — NO commitear
+  · spatial-index crate usa rstar = "0.12" (no 0.11)
+  · scripts/build-wasm.mjs compila: route-calculator + spatial-index
+
+  → Ver docs/adr/ para todas las decisiones de arquitectura registradas.
+  → Ver docs/AGENT_TRACKING.md para historial de PRs de agentes.
+-->
+
 ## 🛡️ Type-Safety & Strict Boundaries
 
 The project enforces a strict "Zero Any" policy across the codebase to ensure industrial-grade reliability and maintainability.
