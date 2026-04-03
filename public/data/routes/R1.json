@@ -5,7 +5,6 @@
       "tipo": "Bus_Urbano",
       "nombre": "Crucero - Zona Hotelera",
       "color": "#FF6B6B",
-      "tipo": "Bus_Urban",
       "tarifa": 12,
       "paradas": [
         {
@@ -33,3 +32,4 @@
     }
   ]
 }
+

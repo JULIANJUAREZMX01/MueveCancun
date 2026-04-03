@@ -128,7 +128,9 @@ export const initDB = async (): Promise<IDBPDatabase> => {
             if (!db.objectStoreNames.contains('pending-reports')) {
               db.createObjectStore('pending-reports', { keyPath: 'id', autoIncrement: true });
             }
-            db.createObjectStore('security-keys');
+            if (!db.objectStoreNames.contains('security-keys')) {
+              db.createObjectStore('security-keys');
+            }
           }
         },
       });
@@ -171,11 +173,6 @@ export const getWalletBalance = async (): Promise<{ id: string; amount: number; 
   await readTx.done;
 
   if (balance) {
-    // Check if we are in a migration state (v4 key is new)
-    const securityTx = db.transaction('security-keys', 'readonly');
-    const hmacKey = await securityTx.objectStore('security-keys').get('hmac-key');
-    await securityTx.done;
-
     // If there's no signature, it's a legacy record (pre-v3)
     if (!balance.signature) {
       console.log('[DB] Legacy record found without signature. Backfilling.');
