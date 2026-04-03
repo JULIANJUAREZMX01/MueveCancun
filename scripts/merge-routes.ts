@@ -154,7 +154,7 @@ for (const file of routeFiles) {
 
     // Normalize field names (paradas is canonical)
     if (!route.paradas && route.stops) {
-      route.paradas = route.stops;
+      route.paradas = route.stops as RouteRecord[];
       delete route.stops;
     }
 
