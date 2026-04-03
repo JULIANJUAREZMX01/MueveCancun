@@ -162,11 +162,6 @@ jobs:
 
       - name: Post status comment (on PR if applicable)
         if: github.event.workflow_run.event == 'pull_request'
-        env:
-          HEAD_BRANCH: ${{ needs.detect-failure.outputs.head_branch }}
-          WORKFLOW_NAME: ${{ needs.detect-failure.outputs.workflow_name }}
-          FAILED_JOB: ${{ steps.fetch-logs.outputs.failed_job_name }}
-          RUN_URL: ${{ needs.detect-failure.outputs.run_url }}
         uses: actions/github-script@v7
         env:
           HEAD_BRANCH: ${{ needs.detect-failure.outputs.head_branch }}
@@ -179,7 +174,7 @@ jobs:
             const prs = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head: `${context.repo.owner}:${process.env.HEAD_BRANCH}`,
+              head: `${context.repo.owner}:${HEAD_BRANCH}`,
               state: 'open',
             });
             if (prs.data.length > 0) {
@@ -190,11 +185,6 @@ jobs:
                 body: [
                   '🤖 **Jules CI Fixer** fue invocado automáticamente.',
                   '',
-                  `> Workflow **${process.env.WORKFLOW_NAME}** falló en el job \`${process.env.FAILED_JOB_NAME}\`.`,
-                  '',
-                  'Jules está analizando los logs y preparando un fix. Un PR con la corrección aparecerá próximamente.',
-                  '',
-                  `[Ver run fallido](${process.env.RUN_URL})`,
                   `> Workflow **${WORKFLOW_NAME}** falló en el job \`${FAILED_JOB_NAME}\`.`,
                   '',
                   'Jules está analizando los logs y preparando un fix. Un PR con la corrección aparecerá próximamente.',
