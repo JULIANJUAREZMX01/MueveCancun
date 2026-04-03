@@ -19,15 +19,19 @@ export const POST: APIRoute = async (context) => {
     const body = await context.request.json();
     const { route_id, issue_type, description, location, lat, lng } = body;
 
-    // Validaciones
-    if (!issue_type || !description) {
+    // Validate and coerce required fields to strings
+    if (typeof issue_type !== 'string' || !issue_type.trim() ||
+        typeof description !== 'string' || !description.trim()) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: issue_type, description', code: 'INVALID_INPUT' }),
+        JSON.stringify({ error: 'Missing required fields: issue_type, description must be non-empty strings', code: 'INVALID_INPUT' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    if (description.length > 500) {
+    const issueType = issue_type.trim();
+    const desc = description.trim();
+
+    if (desc.length > 500) {
       return new Response(
         JSON.stringify({ error: 'Description too long (max 500 chars)', code: 'TOO_LONG' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -51,15 +55,20 @@ export const POST: APIRoute = async (context) => {
     }
 
     // Construir Issue
-    const titleSnippet = description.substring(0, 60);
-    const issueTitle = `[${issue_type.toUpperCase()}]${route_id ? ` ${route_id}` : ''} — ${titleSnippet}${description.length > 60 ? '...' : ''}`;
+    const titleSnippet = desc.substring(0, 60);
+    const issueTitle = `[${issueType.toUpperCase()}]${route_id ? ` ${route_id}` : ''} — ${titleSnippet}${desc.length > 60 ? '...' : ''}`;
+
+    // Validate coordinates: use null/undefined checks and verify finite numbers
+    const latNum = typeof lat === 'number' ? lat : parseFloat(lat);
+    const lngNum = typeof lng === 'number' ? lng : parseFloat(lng);
+    const hasCoords = lat != null && lng != null && isFinite(latNum) && isFinite(lngNum);
 
     const issueParts = [
-      `**Tipo:** ${issue_type}`,
-      route_id   ? `**Ruta:** ${route_id}`          : null,
-      `**Descripción:** ${description}`,
-      location   ? `**Ubicación:** ${location}`      : null,
-      (lat && lng) ? `**Coordenadas:** ${lat}, ${lng}` : null,
+      `**Tipo:** ${issueType}`,
+      route_id   ? `**Ruta:** ${route_id}`            : null,
+      `**Descripción:** ${desc}`,
+      location   ? `**Ubicación:** ${location}`        : null,
+      hasCoords  ? `**Coordenadas:** ${latNum}, ${lngNum}` : null,
       `**Timestamp:** ${new Date().toISOString()}`,
     ].filter(Boolean);
 
@@ -75,7 +84,7 @@ export const POST: APIRoute = async (context) => {
         body: JSON.stringify({
           title:  issueTitle,
           body:   issueParts.join('\n'),
-          labels: ['citizen-report', issue_type],
+          labels: ['citizen-report', issueType],
         }),
       }
     );

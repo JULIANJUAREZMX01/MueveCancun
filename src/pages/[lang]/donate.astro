@@ -194,68 +194,45 @@ const t = translations[lang] || translations.es;
 </MainLayout>
 
 <script>
-  async function loadMRR() {
-    // In a real app, this would fetch from our /api/stats
-    // For now, it might be mocked
-    try {
-      const res = await fetch('/api/checkout'); // Just checking if API is there
-      // Mocked data for display
-      const mrr = 0;
-      const subs = 0;
+  function loadMRR() {
+    // Static site: use placeholder values (no server-side stats endpoint available)
+    const mrr = 0;
+    const subs = 0;
 
-      const mrrEl = document.getElementById('mrr-amount');
-      const subsEl = document.getElementById('subs-count');
-      if (mrrEl) mrrEl.textContent = `$${mrr}`;
-      if (subsEl) subsEl.textContent = String(subs);
+    const mrrEl = document.getElementById('mrr-amount');
+    const subsEl = document.getElementById('subs-count');
+    if (mrrEl) mrrEl.textContent = `$${mrr}`;
+    if (subsEl) subsEl.textContent = String(subs);
 
-      document.querySelectorAll('.milestone-item').forEach(item => {
-        const goal = parseInt(item.getAttribute('data-goal') || '1');
-        const bar = item.querySelector('.milestone-bar');
-        const currentLabel = item.querySelector('.milestone-current');
-        const pct = Math.min((mrr / goal) * 100, 100);
-        if (bar) (bar as HTMLElement).style.width = `${pct}%`;
-        if (currentLabel) currentLabel.textContent = `$${mrr} / $${goal}`;
-      });
-    } catch { /* Fail silently */ }
+    document.querySelectorAll('.milestone-item').forEach(item => {
+      const goal = parseInt(item.getAttribute('data-goal') || '1');
+      const bar = item.querySelector('.milestone-bar');
+      const currentLabel = item.querySelector('.milestone-current');
+      const pct = Math.min((mrr / goal) * 100, 100);
+      if (bar) (bar as HTMLElement).style.width = `${pct}%`;
+      if (currentLabel) currentLabel.textContent = `$${mrr} / $${goal}`;
+    });
   }
 
   function setupDonateButtons() {
     document.querySelectorAll('.donate-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
+        btn.addEventListener('click', (e) => {
             const target = e.currentTarget as HTMLButtonElement;
             const tier = target.dataset.tier;
+            const isEn = window.location.pathname.startsWith('/en');
 
-            try {
-                target.disabled = true;
-                const originalText = target.textContent;
-                target.textContent = '⏳ Cargando...';
+            // Static deployments use Stripe Buy Button or direct Stripe Checkout links.
+            // Redirect to the appropriate Stripe payment link based on tier.
+            const stripeLinks: Record<string, string> = {
+              shield: import.meta.env.PUBLIC_STRIPE_SHIELD_LINK || '#',
+              architect: import.meta.env.PUBLIC_STRIPE_ARCHITECT_LINK || '#',
+            };
 
-                const email = prompt(window.location.pathname.startsWith('/en') ? 'Your email:' : 'Tu email:');
-                if (!email) {
-                    target.disabled = false;
-                    target.textContent = originalText;
-                    return;
-                }
-
-                const res = await fetch('/api/checkout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tier, email })
-                });
-
-                const data = await res.json();
-                if (data.url) {
-                    window.location.href = data.url;
-                } else {
-                    alert('Error: ' + data.error);
-                    target.disabled = false;
-                    target.textContent = originalText;
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Error en checkout');
-                target.disabled = false;
-                target.textContent = 'Suscribirme';
+            const link = tier ? stripeLinks[tier] : '#';
+            if (link && link !== '#') {
+              window.location.href = link;
+            } else {
+              alert(isEn ? 'Payment link not configured.' : 'Enlace de pago no configurado.');
             }
         });
     });

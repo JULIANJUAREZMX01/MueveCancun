@@ -143,7 +143,7 @@ export function getI18N(lang: string | undefined) {
         // Simple mock of t for the wallet's keys which aren't in ui yet
         // In a real app, these should be in ui above
         const keys: any = {
-            'wallet.title': { es: 'Mi Carjeta', en: 'My Wallet' },
+            'wallet.title': { es: 'Mi Tarjeta', en: 'My Wallet' },
             'wallet.current_balance': { es: 'Saldo Actual', en: 'Current Balance' },
             'wallet.operator_section': { es: 'Sección Operador', en: 'Operator Section' },
             'wallet.pilot_registration': { es: 'Registro de Piloto', en: 'Pilot Registration' },

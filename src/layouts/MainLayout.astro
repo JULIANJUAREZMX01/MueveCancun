@@ -58,6 +58,9 @@ const isDev = process.env.NODE_ENV === 'development';
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#0284c7" />
 
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.cartocdn.com https://querutamellevacancun.onrender.com; connect-src 'self' https://api.github.com https://api.stripe.com https://*.cartocdn.com https://www.google-analytics.com; frame-src https://js.stripe.com;" />
+
     {googleVerification && <meta name="google-site-verification" content={googleVerification} />}
 
     <title>{title} | CancúnMueve</title>
@@ -78,8 +81,8 @@ const isDev = process.env.NODE_ENV === 'development';
     <meta property="twitter:image" content={new URL('/og-image.png', Astro.url)} />
 
     <!-- PWA -->
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icons/pwa-192x192.png" />
 
     <!-- Global Scripts -->
     <script is:inline>
@@ -225,7 +228,7 @@ const isDev = process.env.NODE_ENV === 'development';
          <!-- Unified Balance Badge -->
          <a href={getRelativeLocaleUrl(lang, "wallet")} id="header-balance-badge" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 no-underline transition-all hover:scale-105 active:scale-95 group" aria-label="Wallet balance">
             <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" aria-hidden="true"></span>
-            <span id="header-balance-amount" class="text-xs font-black text-slate-700 dark:text-slate-300">80.00</span>
+            <span id="header-balance-amount" class="text-xs font-black text-slate-700 dark:text-slate-300">$0.00</span>
          </a>
 
          <button class="theme-toggle w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
