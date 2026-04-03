@@ -1,10 +1,18 @@
-# render.yaml — MueveCancún v3.4.0
-# Actualizado para soportar Astro output: 'hybrid' (SSG + SSR endpoints)
+# render.yaml — MueveCancún v3.4.1
+# Astro output:'static' — prerenderiza 180 páginas como HTML estático.
+# API routes dinámicas (Stripe webhook, reports) se invocan directamente
+# desde el cliente o se migrarán a output:'server' en fase posterior.
 #
-# CAMBIO vs v3.3: runtime static → node
-#   • El 95% del sitio sigue siendo HTML estático (prerenderizado)
-#   • /api/* rutas sirven como SSR (Stripe webhook, reports, checkout)
-#
+# Env vars requeridas (configurar en Render Dashboard → Environment):
+#   NODE_VERSION      → 22
+#   ENABLE_PNPM       → 1
+#   NODE_ENV          → production
+#   STRIPE_SECRET_KEY → sk_live_... (o sk_test_... para staging)
+#   STRIPE_WEBHOOK_SECRET → whsec_...
+#   GITHUB_ISSUES_TOKEN   → ghp_...
+#   PUBLIC_URL        → https://querutamellevacancun.onrender.com
+#   PUBLIC_GA4_ID     → G-XXXXXXXXXX
+
 version: "1"
 projects:
 - name: QUINTANAROO_CREATIONS
@@ -13,24 +21,39 @@ projects:
     services:
     - type: web
       name: QueRutaMeLLevaCancun
-      runtime: node
+      runtime: static
       repo: https://github.com/JULIANJUAREZMX01/MueveCancun
       envVars:
       - key: NODE_VERSION
-        value: "22"
+        sync: false
       - key: ENABLE_PNPM
-        value: "1"
+        sync: false
       - key: NODE_ENV
         value: production
-      # Secrets (set in Render Dashboard → Environment):
-      # STRIPE_SECRET_KEY       → sk_live_...
-      # STRIPE_WEBHOOK_SECRET   → whsec_...
-      # GITHUB_ISSUES_TOKEN     → ghp_...
-      # PUBLIC_URL              → https://querutamellevacancun.onrender.com
-      # PUBLIC_GA4_ID           → G-XXXXXXXX
       buildCommand: bash scripts/setup-render.sh
-      startCommand: node dist/server/entry.mjs
+      staticPublishPath: dist
       autoDeployTrigger: checksPass
-      healthCheckPath: /es/home
+      headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /data/*
+        name: Cache-Control
+        value: public, max-age=3600, stale-while-revalidate=86400
+      - path: /icons/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /wasm/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /vendor/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
       previews:
         generation: automatic
