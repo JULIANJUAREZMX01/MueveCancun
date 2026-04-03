@@ -1,14 +1,44 @@
 const fs = require('fs');
-const content = fs.readFileSync('astro.config.mjs', 'utf8');
 
-let newContent = content.replace(
-  'import tailwind from "@astrojs/tailwind"',
-  'import tailwind from "@astrojs/tailwind"\nimport lit from "@astrojs/lit"'
-);
+function findAstroConfigPath() {
+  const candidates = [
+    'astro.config.ts',
+    'astro.config.mjs',
+    'astro.config.js',
+    'astro.config.mts',
+    'astro.config.cjs'
+  ];
 
-newContent = newContent.replace(
-  'tailwind({ applyBaseStyles: false })',
-  'tailwind({ applyBaseStyles: false }),\n    lit()'
-);
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
 
-fs.writeFileSync('astro.config.mjs', newContent);
+  throw new Error(
+    `Unable to find an Astro config file. Checked: ${candidates.join(', ')}`
+  );
+}
+
+const astroConfigPath = findAstroConfigPath();
+const content = fs.readFileSync(astroConfigPath, 'utf8');
+
+let newContent = content;
+
+if (!newContent.includes('import lit from "@astrojs/lit"')) {
+  newContent = newContent.replace(
+    'import tailwind from "@astrojs/tailwind"',
+    'import tailwind from "@astrojs/tailwind"\nimport lit from "@astrojs/lit"'
+  );
+}
+
+if (!newContent.includes('lit()')) {
+  newContent = newContent.replace(
+    'tailwind({ applyBaseStyles: false })',
+    'tailwind({ applyBaseStyles: false }),\n    lit()'
+  );
+}
+
+if (newContent !== content) {
+  fs.writeFileSync(astroConfigPath, newContent);
+}

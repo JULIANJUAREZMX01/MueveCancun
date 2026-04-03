@@ -37,9 +37,15 @@ jobs:
     steps:
       - name: Check if branch is fixable
         id: check
+        env:
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
         run: |
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-          CONCLUSION="${{ github.event.workflow_run.conclusion }}"
+          BRANCH="$HEAD_BRANCH"
+          CONCLUSION="$WORKFLOW_CONCLUSION"
           echo "Branch: $BRANCH"
           echo "Conclusion: $CONCLUSION"
 
@@ -49,9 +55,9 @@ jobs:
 
           echo "should_fix=$SHOULD_FIX" >> "$GITHUB_OUTPUT"
           echo "head_branch=$BRANCH" >> "$GITHUB_OUTPUT"
-          echo "head_sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
-          echo "workflow_name=${{ github.event.workflow_run.name }}" >> "$GITHUB_OUTPUT"
-          echo "run_url=${{ github.event.workflow_run.html_url }}" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          echo "workflow_name=$WORKFLOW_NAME" >> "$GITHUB_OUTPUT"
+          echo "run_url=$RUN_URL" >> "$GITHUB_OUTPUT"
 
   fetch-logs-and-fix:
     name: Fetch Failed Logs → Jules Fix

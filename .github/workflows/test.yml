@@ -102,7 +102,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: public/wasm/route-calculator
-          key: wasm-build-${{ github.sha }}
+          key: wasm-build-${{ runner.os }}-${{ hashFiles('rust-wasm/**', 'Cargo.lock') }}
+          restore-keys: |
+            wasm-build-${{ runner.os }}-
 
       - name: Build WASM fallback (if cache miss)
         if: steps.cache-wasm.outputs.cache-hit != 'true'
