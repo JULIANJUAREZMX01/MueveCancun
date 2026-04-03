@@ -1,0 +1,155 @@
+---
+export function getStaticPaths() {
+  return [
+    { params: { lang: "es" } },
+    { params: { lang: "en" } },
+  ];
+}
+
+import MainLayout from '../../layouts/MainLayout.astro';
+import InteractiveMap from '../../components/InteractiveMap.astro';
+import RouteCalculator from '../../components/RouteCalculator.astro';
+import Icon from '../../components/ui/Icon.astro';
+
+const { lang } = Astro.params;
+const title = lang === 'es' ? "Inicio" : "Home";
+---
+
+<MainLayout title={title}>
+    <!-- Full-screen Background Map -->
+    <div class="fixed inset-0 z-0 h-full w-full">
+        <InteractiveMap center={[21.1619, -86.8515]} zoom={13} />
+    </div>
+
+    <!-- Floating Mini-Game Button -->
+    <a
+      href={`/${lang}/guess`}
+      class="fixed top-20 right-4 z-30 p-3 bg-teal-500 text-white rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all animate-bounce-slow flex items-center gap-2 group overflow-hidden max-w-[48px] hover:max-w-[200px] duration-500 no-underline"
+      aria-label={lang === 'es' ? "Jugar Adivina Dónde Estoy" : "Play Guess Where I Am"}
+    >
+        <Icon name="camera-game" class="w-6 h-6 flex-shrink-0" />
+        <span class="font-bold text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300" data-i18n="mini-game-label">
+            {lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am"}
+        </span>
+    </a>
+
+    <!-- Dashboard Overlay -->
+    <div class="dashboard-container pointer-events-none">
+        <div class="glass-panel-wrapper animate-fade-in-up pointer-events-auto flex flex-col items-center">
+
+            <!-- Hero Headline -->
+            <div class="hero-headline mb-3 text-center px-2">
+                <h1 class="hero-title font-display font-black text-xl sm:text-2xl md:text-3xl tracking-tight leading-tight">
+                    ¿Qué Ruta Me Lleva?
+                </h1>
+                <p class="hero-destination font-display font-bold text-sm sm:text-base mt-0.5">
+                    en <span class="destination-cycler">
+                        <span class="destination-text" style="--cycle-index: 0;">Cancún</span>
+                        <span class="destination-text" style="--cycle-index: 1;">Puerto Morelos</span>
+                        <span class="destination-text" style="--cycle-index: 2;">Isla Mujeres</span>
+                        <span class="destination-text" style="--cycle-index: 3;">Playa del Carmen</span>
+                        <span class="destination-text" style="--cycle-index: 4;">Zona Hotelera</span>
+                    </span>
+                </p>
+            </div>
+
+            <RouteCalculator />
+        </div>
+    </div>
+
+</MainLayout>
+
+<script>
+    window.addEventListener('VIEW_STATE_CHANGE', (e) => {
+        const state = (e as CustomEvent).detail;
+        const container = document.querySelector('.dashboard-container');
+        if (!container) return;
+
+        container.classList.remove('map-mode', 'map-maximized');
+
+        if (state === 'MAP_ACTIVE' || state === 'map') {
+            container.classList.add('map-mode');
+        } else if (state === 'MAP_MAXIMIZED') {
+            container.classList.add('map-maximized');
+        }
+    });
+</script>
+
+<style>
+.dashboard-container {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0.5rem;
+    padding-top: calc(var(--header-h) + 0.25rem);
+    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 0.5rem);
+    pointer-events: none;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.glass-panel-wrapper {
+    width: 100%;
+    max-width: 440px;
+    margin: auto auto 0;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto;
+}
+
+/* Hero Headline */
+.hero-headline {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.hero-title {
+    color: #1e293b;
+    text-shadow: 0 1px 12px rgba(255,255,255,0.9);
+    filter: drop-shadow(0 1px 3px rgba(255,255,255,0.7));
+}
+
+.dark .hero-title {
+    color: #f1f5f9;
+    text-shadow: 0 1px 12px rgba(0,0,0,0.8);
+    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.6));
+}
+
+/* Destination cycler animation */
+.destination-cycler { position: relative; display: inline-block; }
+.destination-text {
+    display: inline-block;
+    color: var(--color-teal, #0d9488);
+    font-weight: 900;
+    animation: cycle-dest 12.5s infinite;
+    animation-delay: calc(var(--cycle-index) * 2.5s);
+    position: absolute;
+    left: 0;
+    opacity: 0;
+    white-space: nowrap;
+}
+.destination-text:first-child { position: relative; }
+
+@keyframes cycle-dest {
+    0%, 16%   { opacity: 0; transform: translateY(4px); }
+    4%, 14%   { opacity: 1; transform: translateY(0); }
+    16%, 100% { opacity: 0; transform: translateY(-4px); }
+}
+
+/* Map mode: hide headline, collapse panel */
+.dashboard-container.map-mode .hero-headline { opacity: 0; pointer-events: none; transform: translateY(-8px); }
+.dashboard-container.map-maximized .glass-panel-wrapper { opacity: 0; pointer-events: none; transform: translateY(20px); }
+
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@keyframes bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+.animate-bounce-slow { animation: bounce-slow 2.5s ease-in-out infinite; }
+</style>

@@ -1,8 +1,8 @@
 [workspace]
 members = [
     "route-calculator",
-    "spatial-index",
     "shared-types",
+    "spatial-index",
 ]
 resolver = "2"
 
@@ -10,3 +10,4 @@ resolver = "2"
 opt-level = "z"
 lto = true
 codegen-units = 1
+panic = "abort"

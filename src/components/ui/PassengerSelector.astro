@@ -1,0 +1,227 @@
+---
+interface Props {
+  id?: string;
+  initialCount?: number;
+}
+
+const { id = 'passenger-selector', initialCount = 1 } = Astro.props;
+---
+
+<div class="passenger-wrapper">
+    <button class="passengers-selector" popovertarget={`${id}-popover`} style={`anchor-name: --${id}-anchor`} aria-label="Select number of passengers">
+        <label data-i18n="calc.passengers">PASSENGERS</label>
+        <div class="selector-value">
+            <span id={`${id}-display`}>{initialCount} Passengers</span>
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+        </div>
+    </button>
+
+    <div id={`${id}-popover`} popover class="passenger-popover" style={`position-anchor: --${id}-anchor`}>
+        <div class="counter-control">
+            <button type="button" class="circle-btn decrement" aria-label="Menos pasajeros">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13H5v-2h14v2z"/></svg>
+            </button>
+            <span class="count-display" data-value={initialCount}>{initialCount}</span>
+            <button type="button" class="circle-btn increment" aria-label="Más pasajeros">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
+        </div>
+        <p class="help-text" data-i18n="calc.max_passengers">Maximum 10 passengers</p>
+    </div>
+</div>
+
+<style>
+    .passenger-wrapper {
+        flex: 1;
+        display: contents;
+    }
+
+    /* Reuse existing styles for the trigger */
+    .passengers-selector {
+        flex: 1;
+        background-color: #f1f5f9;
+        border: 2px solid transparent;
+        border-radius: var(--radius-full);
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        text-align: left;
+        width: 100%;
+        transition: all 0.2s;
+    }
+
+    .passengers-selector:hover {
+        background-color: #e2e8f0;
+    }
+
+    .passengers-selector label {
+        font-size: 10px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        display: block;
+        pointer-events: none;
+    }
+
+    .selector-value {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        pointer-events: none;
+        gap: 0.5rem; /* Add gap to prevent overlap */
+    }
+
+    .selector-value span {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .selector-value .arrow {
+        color: var(--text-tertiary);
+        flex-shrink: 0;
+    }
+
+    /* Popover Styles */
+    .passenger-popover {
+        border: none;
+        background: transparent;
+        padding: 0;
+        margin: 0; /* Reset default popover margin */
+        inset: auto; /* Reset default popover inset */
+        overflow: visible;
+
+        /* Anchor Positioning */
+        position: absolute; /* Ensure it can be positioned */
+        position-area: bottom span-right; /* New standard */
+        inset-area: bottom span-right; /* Fallback/Old standard */
+        position-try-options: flip-block;
+        margin-top: 0.5rem;
+
+        /* Animation Base */
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.2s, transform 0.2s, display 0.2s allow-discrete;
+    }
+
+    .passenger-popover:popover-open {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @starting-style {
+        .passenger-popover:popover-open {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+    }
+
+    .passenger-popover::backdrop {
+        background-color: transparent;
+    }
+
+    /* Content Styling */
+    .counter-control {
+        background: var(--surface-card);
+        border: 1px solid var(--border-light);
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        min-width: 180px;
+        justify-content: space-between;
+    }
+
+    .circle-btn {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        border: 1px solid var(--border-light);
+        background: var(--surface-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.1s;
+    }
+
+    .circle-btn:hover {
+        background: var(--border-subtle);
+        border-color: var(--border-light);
+        color: var(--text-primary);
+    }
+
+    .circle-btn:active {
+        transform: scale(0.95);
+        background: var(--border-light);
+    }
+
+    .count-display {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        width: 1.5rem;
+        text-align: center;
+    }
+
+    .help-text {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-align: center;
+        margin-top: 0.5rem;
+        background: var(--surface-elevated);
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-light);
+    }
+</style>
+
+<script define:vars={{ id }}>
+    {
+        const popover = document.getElementById(`${id}-popover`);
+
+        // Safety check in case component is not rendered (though it should be)
+        if (popover) {
+            const displayEl = document.getElementById(`${id}-display`);
+            const countEl = popover.querySelector('.count-display');
+            const incBtn = popover.querySelector('.increment');
+            const decBtn = popover.querySelector('.decrement');
+
+            let count = parseInt(countEl.dataset.value);
+
+            const updateDisplay = () => {
+                countEl.textContent = count;
+                countEl.dataset.value = count;
+                const lang = window.currentLang || 'en';
+                const noun = lang === 'en'
+                    ? (count === 1 ? 'Passenger' : 'Passengers')
+                    : (count === 1 ? 'Pasajero' : 'Pasajeros');
+                displayEl.textContent = `${count} ${noun}`;
+            };
+
+            window.addEventListener('LANGUAGE_CHANGE', (e) => {
+                 updateDisplay();
+            });
+
+            incBtn.addEventListener('click', () => {
+                if (count < 10) {
+                    count++;
+                    updateDisplay();
+                }
+            });
+
+            decBtn.addEventListener('click', () => {
+                if (count > 1) {
+                    count--;
+                    updateDisplay();
+                }
+            });
+        }
+    }
+</script>

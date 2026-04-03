@@ -1,159 +1,214 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import RouteCalculator from '../components/RouteCalculator.astro';
-import InteractiveMap from '../components/InteractiveMap.astro';
+
+// The tutorial is only shown if it hasn't been completed.
+// Redirect logic is handled client-side in static builds.
 ---
 
-<MainLayout title="Inicio">
-  <!-- View Manager Container -->
-  <div id="view-manager" class="view-search relative min-h-[calc(100vh-80px)]">
+<MainLayout title="Bienvenido | ¿Qué Ruta Me Lleva?" hideNav={true}>
+	<div class="welcome-shell">
+		<div class="bg-gradient"></div>
+		<div class="bg-grid">
+			<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+						<path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="0.5" class="text-teal-500/10"></path>
+					</pattern>
+				</defs>
+				<rect width="100%" height="100%" fill="url(#grid-pattern)"></rect>
+			</svg>
+		</div>
 
-    <!-- Hero & Search State -->
-    <div id="search-view" class="space-y-8 animate-fade-in transition-all duration-500">
-      <!-- Hero / Greeting -->
-      <section class="text-center pt-6 pb-2">
-        <h1 class="text-3xl font-display font-black text-deep-navy tracking-tight mb-2 flex justify-center">
-          <span class="brand-container" data-original="true">Cancún<span class="text-primary-500">Mueve</span></span>
-        </h1>
-        <p class="text-slate-500 font-medium">
-          Encuentra la mejor ruta en transporte público.
-        </p>
-      </section>
+		<div class="lang-switch-top animate-fade-in">
+			<button id="set-es" class="lang-btn active">ES</button>
+			<button id="set-en" class="lang-btn">EN</button>
+		</div>
 
-      <!-- Calculator Widget -->
-      <section class="relative z-10">
-        <RouteCalculator />
-      </section>
+		<div class="onboarding-container">
+			<div id="tutorial-slider" class="tutorial-slider">
+				<section class="step active" data-step="1">
+					<div class="icon-hero animate-float">
+						<div class="logo-box">
+							<span class="logo-text">QC</span>
+						</div>
+					</div>
+					<h1 class="step-title" data-i18n="welcome.step1.title">Bienvenido a CancúnMueve</h1>
+					<p class="step-desc" data-i18n="welcome.step1.desc">La guía definitiva de transporte público. Rutas, mapas y tarifas actualizadas.</p>
+				</section>
 
-      <!-- Catalog Link -->
-      <section class="text-center pt-2">
-        <a href="/rutas" class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-primary-600 transition-colors border-b border-transparent hover:border-primary-600 pb-0.5">
-          <span>🚌</span> Ver todas las rutas
-        </a>
-      </section>
+				<section class="step" data-step="2">
+					<div class="icon-hero">
+						<div class="glass-icon-circle bg-emerald-500/20 text-emerald-500">
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+							</svg>
+						</div>
+					</div>
+					<h1 class="step-title" data-i18n="welcome.step2.title">Funciona Sin Internet</h1>
+					<p class="step-desc" data-i18n="welcome.step2.desc">Una vez instalada, no necesitas señal. El motor de búsqueda y los mapas viven en tu dispositivo.</p>
+				</section>
 
-      <!-- Promo / Info (Subtle) -->
-      <section class="text-center py-8 opacity-60">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Powered by RouteEngine™ v2.2 WASM
-        </p>
-      </section>
-    </div>
+				<section class="step" data-step="3">
+					<div class="icon-hero">
+						<div class="glass-icon-circle bg-amber-500/20 text-amber-500">
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+							</svg>
+						</div>
+					</div>
+					<h1 class="step-title" data-i18n="welcome.step3.title">Billetera Digital</h1>
+					<p class="step-desc" data-i18n="welcome.step3.desc">Recarga saldo, paga tus viajes y obtén beneficios exclusivos como conductor o pasajero.</p>
+				</section>
 
-    <!-- Map State (Hidden initially) -->
-    <div id="map-view" class="hidden absolute inset-0 z-0 bg-slate-50 pt-2 flex-col h-full animate-fade-in">
-       <div class="flex-1 relative w-full h-full">
-          <InteractiveMap />
-       </div>
-       <!-- Floating Close Button for Map View -->
-       <button id="close-map-btn" class="absolute bottom-24 right-4 z-[1001] bg-white text-slate-800 p-3 rounded-full shadow-xl border border-slate-200 font-bold flex items-center gap-2 hover:bg-slate-50 active:scale-95 transition-transform">
-          <span>❌</span> Cerrar Mapa
-       </button>
-    </div>
+				<section class="step" data-step="4">
+					<div class="icon-hero">
+						<div class="glass-icon-circle bg-orange-500/20 text-orange-500">
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+							</svg>
+						</div>
+					</div>
+					<h1 class="step-title" data-i18n="welcome.step4.title">Señales Sociales</h1>
+					<p class="step-desc" data-i18n="welcome.step4.desc">Información real de la calle: bloqueos, tráfico y avisos de última hora.</p>
+				</section>
+			</div>
 
-  </div>
+			<div class="onboarding-controls">
+				<div class="dots-container">
+					<div class="dot active" data-go="1"></div>
+					<div class="dot" data-go="2"></div>
+					<div class="dot" data-go="3"></div>
+					<div class="dot" data-go="4"></div>
+				</div>
 
-  <script is:inline>
-    // View Manager Logic
-    window.handleViewChange = window.handleViewChange || ((state) => {
-        const searchView = document.getElementById('search-view');
-        const mapView = document.getElementById('map-view');
-        const mainContainer = document.querySelector('main'); // Astro main container
+				<div class="buttons-stack">
+					<button id="btn-next" class="btn-primary">
+						<span class="btn-text">Siguiente</span>
+					</button>
+					<div class="start-options hidden">
+						<button id="start-es" class="btn-start btn-teal">Comenzar en Español</button>
+						<button id="start-en" class="btn-start btn-orange">Start in English</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
-        if (state === 'MAP') {
-            searchView.classList.add('hidden');
-            mapView.classList.remove('hidden');
-            mapView.classList.add('flex'); // Enable flex layout
+		<div class="bottom-bar"></div>
+	</div>
 
-            // Expand main container
-            if (mainContainer) mainContainer.classList.add('!max-w-none', '!px-0', '!pt-16');
+	<style>
+		.welcome-shell { position: fixed; inset: 0; background: #0f172a; color: white; overflow: hidden; display: flex; flex-direction: column; z-index: 1000; }
+		.bg-gradient { position: absolute; inset: 0; background: radial-gradient(circle at 50% -20%, #1e293b 0%, #0f172a 100%); z-index: 1; }
+		.bg-grid { position: absolute; inset: 0; z-index: 2; opacity: 0.5; }
+		.lang-switch-top { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 50; display: flex; gap: 0.5rem; background: rgba(255, 255, 255, 0.05); padding: 0.25rem; border-radius: 9999px; backdrop-filter: blur(8px); }
+		.lang-btn { padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 800; border-radius: 9999px; transition: all 0.3s ease; color: rgba(255, 255, 255, 0.5); }
+		.lang-btn.active { background: white; color: #0f172a; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+		.onboarding-container { position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; max-width: 24rem; margin: 0 auto; padding: 2rem; width: 100%; }
+		.tutorial-slider { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+		.step { display: none; flex-direction: column; align-items: center; animation: slide-up 0.5s ease-out; }
+		.step.active { display: flex; }
+		.icon-hero { margin-bottom: 2rem; }
+		.logo-box { width: 80px; height: 80px; background: linear-gradient(135deg, #0ea5e9, #2dd4bf); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(45, 212, 191, 0.3); }
+		.logo-text { font-size: 2.5rem; font-weight: 900; letter-spacing: -2px; }
+		.glass-icon-circle { width: 80px; height: 80px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+		.step-title { font-size: 1.75rem; font-weight: 900; margin-bottom: 1rem; line-height: 1.2; background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+		.step-desc { color: #94a3b8; line-height: 1.6; font-size: 1rem; }
+		.onboarding-controls { padding-bottom: 2rem; }
+		.dots-container { display: flex; justify-content: center; gap: 0.75rem; margin-bottom: 2rem; }
+		.dot { width: 8px; height: 8px; background: rgba(255, 255, 255, 0.2); border-radius: 9999px; transition: all 0.3s ease; cursor: pointer; }
+		.dot.active { width: 24px; background: #2dd4bf; box-shadow: 0 0 12px rgba(45, 212, 191, 0.5); }
+		.buttons-stack { display: flex; flex-direction: column; gap: 0.75rem; }
+		.btn-primary { background: white; color: #0f172a; padding: 1rem; border-radius: 12px; font-weight: 800; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+		.btn-primary:active { transform: scale(0.95); }
+		.start-options { display: flex; flex-direction: column; gap: 0.75rem; animation: fade-in 0.4s ease; }
+		.start-options.hidden { display: none; }
+		.logo-box { width: 80px; height: 80px; background: linear-gradient(135deg, #0ea5e9, #2dd4bf); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(45, 212, 191, 0.3); }
+		.btn-teal { background: #14b8a6; box-shadow: 0 4px 14px rgba(20, 184, 166, 0.4); }
+		.btn-orange { background: #f97316; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4); }
+		.bottom-bar { height: 6px; background: linear-gradient(to right, #0ea5e9, #2dd4bf, #f97316); z-index: 100; }
+		.hidden { display: none !important; }
+		@keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+		@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+		@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+		.animate-float { animation: float 3s ease-in-out infinite; }
+	</style>
 
-            // Trigger Map Resize
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-                // Specific event for InteractiveMap if needed, but resize usually handles Leaflet
-                const mapContainer = document.getElementById('map-container');
-                if (mapContainer && window.map) {
-                   window.map.invalidateSize();
-                }
-            }, 100);
+	<script>
+		import { enforceGuards, setTutorialCompleted, type Locale } from "../utils/auth";
 
-        } else { // SEARCH
-            mapView.classList.add('hidden');
-            mapView.classList.remove('flex');
-            searchView.classList.remove('hidden');
+		let currentStep = 1;
+		const totalSteps = 4;
+		let currentLang: Locale = 'es';
+		const steps = document.querySelectorAll('.step');
+		const dots = document.querySelectorAll('.dot');
+		const btnNext = document.getElementById('btn-next');
+		const startOptions = document.querySelector('.start-options');
 
-            // Restore main container
-            if (mainContainer) mainContainer.classList.remove('!max-w-none', '!px-0', '!pt-16');
-        }
-    });
+		function updateTutorialUI(lang: string) {
+			const translationsEl = document.getElementById('i18n-translations');
+			if (!translationsEl) return;
+			const all = JSON.parse(translationsEl.getAttribute('data-translations') || '{}');
+			const t = all[lang];
+			if (!t) return;
 
-    // Event Listeners for State Changes
-    document.addEventListener('astro:page-load', () => {
-        window.addEventListener('CHANGE_VIEW', (e) => {
-            window.handleViewChange(e.detail.state);
-        });
+			document.querySelectorAll('[data-i18n]').forEach(el => {
+				const key = el.getAttribute('data-i18n');
+				if (t[key]) {
+					(el as HTMLElement).innerText = t[key];
+				}
+			});
+		}
 
-        document.getElementById('close-map-btn')?.addEventListener('click', () => {
-            window.handleViewChange('SEARCH');
-        });
+		function goToStep(stepNum: number) {
+			if (stepNum > totalSteps) return;
+			steps.forEach(s => s.classList.remove('active'));
+			dots.forEach(d => d.classList.remove('active'));
+			const activeStep = document.querySelector(`.step[data-step="${stepNum}"]`);
+			const activeDot = document.querySelector(`.dot[data-go="${stepNum}"]`);
+			if (activeStep) activeStep.classList.add('active');
+			if (activeDot) activeDot.classList.add('active');
+			if (stepNum === totalSteps) {
+				btnNext?.classList.add('hidden');
+				startOptions?.classList.remove('hidden');
+			} else {
+				btnNext?.classList.remove('hidden');
+				startOptions?.classList.add('hidden');
+			}
+			currentStep = stepNum;
+		}
 
-        // Intercept SHOW_ROUTE_ON_MAP to switch view automatically
-        window.addEventListener('SHOW_ROUTE_ON_MAP', () => {
-             window.handleViewChange('MAP');
-        });
-    });
+		function finishTutorial(lang: Locale) {
+			setTutorialCompleted(lang);
+			window.location.replace(`/${lang}/home`);
+		}
 
-    // ---------------------------------------------------------
-    // Legacy Brand Update Logic (Preserved & Globalized)
-    // ---------------------------------------------------------
-    window.handleBrandUpdate = window.handleBrandUpdate || ((e) => {
-        const phase = e.detail.phase;
-        const containers = document.querySelectorAll('.brand-container');
+		btnNext?.addEventListener('click', () => { if (currentStep < totalSteps) goToStep(currentStep + 1); });
+		document.getElementById('start-es')?.addEventListener('click', () => finishTutorial('es'));
+		document.getElementById('start-en')?.addEventListener('click', () => finishTutorial('en'));
 
-        containers.forEach(container => {
-            if (phase === 1) {
-                if (container.dataset.phase === '1') return;
-                container.innerHTML = `Cancún<span class="text-[#006847] animate-pop-in inline-block mx-[1px]">EN</span><span class="text-primary-500">Mueve</span>`;
-                container.dataset.phase = '1';
-            } else if (phase === 2) {
-                if (container.dataset.phase === '2') return;
-                container.innerHTML = `Cancún<span class="text-[#006847] mx-[1px]">EN</span><span class="text-primary-500">Mueve</span><span class="text-[#CE1126] animate-pop-in inline-block">TE</span>`;
-                container.dataset.phase = '2';
-            } else if (phase === 3) {
-                if (container.dataset.phase === '3') return;
-                container.innerHTML = `
-                  <div class="flex items-center gap-1.5 leading-none">
-                      <span class="text-[#006847] animate-tetris-1">¡MUEVETE</span>
-                      <span class="text-slate-900 bg-white border border-slate-900 px-1 rounded text-[0.8em] animate-tetris-2 self-center">EN</span>
-                      <span class="text-[#CE1126] animate-tetris-3">CANCUN!</span>
-                  </div>
-                `;
-                container.dataset.phase = '3';
-            }
-        });
-    });
+		document.getElementById('set-es')?.addEventListener('click', (e) => {
+			currentLang = 'es';
+			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+			(e.target as HTMLElement).classList.add('active');
+			updateTutorialUI('es');
+		});
+		document.getElementById('set-en')?.addEventListener('click', (e) => {
+			currentLang = 'en';
+			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+			(e.target as HTMLElement).classList.add('active');
+			updateTutorialUI('en');
+		});
 
-    document.addEventListener('astro:page-load', () => {
-        window.removeEventListener('BRAND_UPDATE', window.handleBrandUpdate);
-        window.addEventListener('BRAND_UPDATE', window.handleBrandUpdate);
-    });
-  </script>
+		dots.forEach(dot => {
+			dot.addEventListener('click', () => {
+				const target = parseInt(dot.getAttribute('data-go') || '1');
+				goToStep(target);
+			});
+		});
 
-  <style is:global>
-    @keyframes pop-in {
-      0% { transform: scale(0); opacity: 0; }
-      80% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(1); }
-    }
-    .animate-pop-in { animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-    @keyframes fall-down {
-      0% { transform: translateY(-20px); opacity: 0; }
-      100% { transform: translateY(0); opacity: 1; }
-    }
-    .animate-tetris-1 { animation: fall-down 0.5s ease-out forwards; display: inline-block; }
-    .animate-tetris-2 { animation: fall-down 0.5s ease-out 0.2s forwards; opacity: 0; display: inline-block; }
-    .animate-tetris-3 { animation: fall-down 0.5s ease-out 0.4s forwards; opacity: 0; display: inline-block; }
-  </style>
+        // Run guards
+        enforceGuards();
+        document.addEventListener('astro:after-swap', enforceGuards);
+	</script>
 </MainLayout>

@@ -1,0 +1,121 @@
+{
+  "id": "ruta_1760462813166",
+  "nombre": "RUTA CENTRAL ABASTOS",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1760462813166_s_1",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #1",
+      "lat": 21.170630879665527,
+      "lng": -86.82564318180086,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_2",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #2",
+      "lat": 21.16407763203878,
+      "lng": -86.8261206150055,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_3",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #3",
+      "lat": 21.15737901261427,
+      "lng": -86.82551980018617,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_4",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #4",
+      "lat": 21.150750132660143,
+      "lng": -86.82510673999788,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_5",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #5",
+      "lat": 21.144871443701252,
+      "lng": -86.82464003562929,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_6",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #6",
+      "lat": 21.140053246368414,
+      "lng": -86.8253481388092,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_7",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #7",
+      "lat": 21.122975653159287,
+      "lng": -86.83365225791933,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_8",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #8",
+      "lat": 21.114573736214354,
+      "lng": -86.83780431747438,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_9",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #9",
+      "lat": 21.107332393303302,
+      "lng": -86.83970332145691,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_10",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #10",
+      "lat": 21.10083640292821,
+      "lng": -86.8407654762268,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_11",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #11",
+      "lat": 21.09093672776495,
+      "lng": -86.84223532676698,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_12",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #12",
+      "lat": 21.084209777283217,
+      "lng": -86.843318939209,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_13",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #13",
+      "lat": 21.05644787610703,
+      "lng": -86.84769630432129,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813166_s_14",
+      "nombre": "Parada RUTA CENTRAL ABASTOS #14",
+      "lat": 21.043010577150227,
+      "lng": -86.84973478317262,
+      "orden": 14,
+      "landmarks": ""
+    }
+  ]
+}

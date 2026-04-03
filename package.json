@@ -1,45 +1,77 @@
 {
   "name": "cancunmueve-pwa",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22.6"
+  },
+  "pnpm": {
+    "overrides": {
+      "tar": "^7.5.4",
+      "axios": "^1.7.9"
+    }
+  },
   "scripts": {
-    "dev": "astro dev",
-    "dev:network": "astro dev --host",
-    "build": "pnpm run build:wasm && pnpm run check-wasm && astro build",
-    "build:wasm": "cd rust-wasm/route-calculator && wasm-pack build --target web --out-dir ../../public/wasm/route-calculator && rm ../../public/wasm/route-calculator/.gitignore && mkdir -p ../../src/wasm && cp ../../public/wasm/route-calculator/* ../../src/wasm/",
+    "merge-routes": "node --experimental-strip-types scripts/merge-routes.ts",
+    "optimize-json": "node --experimental-strip-types scripts/optimize-json.ts",
+    "validate-routes": "node --experimental-strip-types scripts/validate-routes.ts",
+    "geocode-stops": "node --experimental-strip-types scripts/geocode-stops.ts --dry-run",
+    "geocode-stops:run": "node --experimental-strip-types scripts/geocode-stops.ts",
+    "generate-og": "node --experimental-strip-types scripts/generate_og_image.ts",
+    "update-stats": "node --experimental-strip-types scripts/update-stats.ts",
+    "prepare-data": "node --experimental-strip-types scripts/merge-routes.ts && node --experimental-strip-types scripts/optimize-json.ts",
+    "dev": "pnpm run prepare-data && astro dev",
+    "dev:network": "pnpm run prepare-data && astro dev --host",
+    "build": "pnpm prepare-data && node --experimental-strip-types scripts/validate-routes.ts && node --experimental-strip-types scripts/build-wasm.ts && node scripts/check-wasm.cjs && tsc -p tsconfig.client.json && tsc -p tsconfig.sw.json && astro build",
+    "build:wasm": "node --experimental-strip-types scripts/build-wasm.ts",
+    "compile-client": "tsc -p tsconfig.client.json",
+    "compile-sw": "tsc -p tsconfig.sw.json",
     "astro": "astro",
     "lint": "eslint .",
     "preview": "astro preview",
     "test": "vitest",
-    "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('./public/wasm/route-calculator/route_calculator_bg.wasm')) { console.error('❌ WASM binary missing! Run build:wasm first.'); process.exit(1); } else { console.log('✅ WASM binaries found.'); }\""
+    "check-wasm": "node scripts/check-wasm.cjs",
+    "validate-catalog": "node --experimental-strip-types scripts/validate-catalog.ts",
+    "bench": "vitest bench",
+    "generate-roadmap": "node --experimental-strip-types scripts/generate-roadmap-doc.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
     "@astrojs/rss": "^4.0.5",
-    "@astrojs/sitemap": "^3.2.1",
     "@astrojs/tailwind": "^5.1.0",
+    "@rollup/rollup-linux-x64-gnu": "^4.57.1",
     "@tailwindcss/typography": "^0.5.10",
+    "@types/node": "^24.10.1",
+    "@vercel/analytics": "^2.0.1",
     "astro": "^5.16.15",
-    "clsx": "^2.1.0",
+    "autoprefixer": "^10.4.23",
+    "clsx": "^2.1.1",
+    "docx": "^9.6.1",
     "fuse.js": "^7.0.0",
     "idb": "^8.0.3",
-    "sharp": "^0.33.2",
-    "tailwind-merge": "^2.2.1",
-    "tailwindcss": "^3.4.0"
+    "jiti": "^2.6.1",
+    "postcss": "^8.5.6",
+    "serve": "^14.2.5",
+    "sharp": "^0.33.5",
+    "stripe": "^22.0.0",
+    "tailwind-merge": "^2.6.1",
+    "tailwindcss": "^3.4.0",
+    "vite": "^6.3.1",
+    "wasm-pack": "^0.14.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.6",
     "@eslint/js": "^9.39.1",
-    "@types/node": "^24.10.1",
-    "autoprefixer": "^10.4.23",
+    "@playwright/test": "^1.58.2",
+    "cheerio": "^1.2.0",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
+    "http-server": "^14.1.1",
     "jsdom": "^27.4.0",
     "playwright": "^1.58.1",
-    "postcss": "^8.5.6",
-    "typescript": "^5.9.2",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.51.0",
-    "vite": "^6.3.1",
-    "vitest": "^4.0.1",
-    "wasm-pack": "^0.14.0"
+    "vitest": "^4.0.1"
   }
 }

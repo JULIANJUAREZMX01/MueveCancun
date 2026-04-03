@@ -1,0 +1,230 @@
+{
+  "id": "POLYLINE_1760462813166",
+  "nombre": "RUTA CENTRAL ABASTOS",
+  "tarifa": 12,
+  "tipo": "Bus_Urbano",
+  "paradas": [
+    {
+      "nombre": "Stop 1 - RUTA CENTRAL ABASTOS",
+      "lat": 21.170630879665527,
+      "lng": -86.82564318180086,
+      "orden": 1
+    },
+    {
+      "nombre": "Stop 2 - RUTA CENTRAL ABASTOS",
+      "lat": 21.17053083226521,
+      "lng": -86.8258684873581,
+      "orden": 2
+    },
+    {
+      "nombre": "Stop 3 - RUTA CENTRAL ABASTOS",
+      "lat": 21.170460799044754,
+      "lng": -86.82656586170198,
+      "orden": 3
+    },
+    {
+      "nombre": "Stop 4 - RUTA CENTRAL ABASTOS",
+      "lat": 21.16407763203878,
+      "lng": -86.8261206150055,
+      "orden": 4
+    },
+    {
+      "nombre": "Stop 5 - RUTA CENTRAL ABASTOS",
+      "lat": 21.163382270412434,
+      "lng": -86.8261742591858,
+      "orden": 5
+    },
+    {
+      "nombre": "Stop 6 - RUTA CENTRAL ABASTOS",
+      "lat": 21.162922029265793,
+      "lng": -86.82584166526796,
+      "orden": 6
+    },
+    {
+      "nombre": "Stop 7 - RUTA CENTRAL ABASTOS",
+      "lat": 21.15737901261427,
+      "lng": -86.82551980018617,
+      "orden": 7
+    },
+    {
+      "nombre": "Stop 8 - RUTA CENTRAL ABASTOS",
+      "lat": 21.15672864506997,
+      "lng": -86.82554125785829,
+      "orden": 8
+    },
+    {
+      "nombre": "Stop 9 - RUTA CENTRAL ABASTOS",
+      "lat": 21.156203346121554,
+      "lng": -86.82537496089937,
+      "orden": 9
+    },
+    {
+      "nombre": "Stop 10 - RUTA CENTRAL ABASTOS",
+      "lat": 21.15607827466865,
+      "lng": -86.82550370693208,
+      "orden": 10
+    },
+    {
+      "nombre": "Stop 11 - RUTA CENTRAL ABASTOS",
+      "lat": 21.150750132660143,
+      "lng": -86.82510673999788,
+      "orden": 11
+    },
+    {
+      "nombre": "Stop 12 - RUTA CENTRAL ABASTOS",
+      "lat": 21.1503598950065,
+      "lng": -86.8252032995224,
+      "orden": 12
+    },
+    {
+      "nombre": "Stop 13 - RUTA CENTRAL ABASTOS",
+      "lat": 21.15021480638589,
+      "lng": -86.82561099529266,
+      "orden": 13
+    },
+    {
+      "nombre": "Stop 14 - RUTA CENTRAL ABASTOS",
+      "lat": 21.15023481861786,
+      "lng": -86.82605624198914,
+      "orden": 14
+    },
+    {
+      "nombre": "Stop 15 - RUTA CENTRAL ABASTOS",
+      "lat": 21.149964653257896,
+      "lng": -86.82624399662018,
+      "orden": 15
+    },
+    {
+      "nombre": "Stop 16 - RUTA CENTRAL ABASTOS",
+      "lat": 21.148333644505215,
+      "lng": -86.82497262954713,
+      "orden": 16
+    },
+    {
+      "nombre": "Stop 17 - RUTA CENTRAL ABASTOS",
+      "lat": 21.144871443701252,
+      "lng": -86.82464003562929,
+      "orden": 17
+    },
+    {
+      "nombre": "Stop 18 - RUTA CENTRAL ABASTOS",
+      "lat": 21.144180995134885,
+      "lng": -86.82480096817018,
+      "orden": 18
+    },
+    {
+      "nombre": "Stop 19 - RUTA CENTRAL ABASTOS",
+      "lat": 21.143760720518966,
+      "lng": -86.82471513748169,
+      "orden": 19
+    },
+    {
+      "nombre": "Stop 20 - RUTA CENTRAL ABASTOS",
+      "lat": 21.14297020074914,
+      "lng": -86.82452201843263,
+      "orden": 20
+    },
+    {
+      "nombre": "Stop 21 - RUTA CENTRAL ABASTOS",
+      "lat": 21.142099623463995,
+      "lng": -86.82460784912111,
+      "orden": 21
+    },
+    {
+      "nombre": "Stop 22 - RUTA CENTRAL ABASTOS",
+      "lat": 21.140978872760765,
+      "lng": -86.8250048160553,
+      "orden": 22
+    },
+    {
+      "nombre": "Stop 23 - RUTA CENTRAL ABASTOS",
+      "lat": 21.140828771576448,
+      "lng": -86.82505309581758,
+      "orden": 23
+    },
+    {
+      "nombre": "Stop 24 - RUTA CENTRAL ABASTOS",
+      "lat": 21.14064864995453,
+      "lng": -86.82503163814546,
+      "orden": 24
+    },
+    {
+      "nombre": "Stop 25 - RUTA CENTRAL ABASTOS",
+      "lat": 21.140053246368414,
+      "lng": -86.8253481388092,
+      "orden": 25
+    },
+    {
+      "nombre": "Stop 26 - RUTA CENTRAL ABASTOS",
+      "lat": 21.13945784038986,
+      "lng": -86.82580947875977,
+      "orden": 26
+    },
+    {
+      "nombre": "Stop 27 - RUTA CENTRAL ABASTOS",
+      "lat": 21.13889745610692,
+      "lng": -86.82591676712038,
+      "orden": 27
+    },
+    {
+      "nombre": "Stop 28 - RUTA CENTRAL ABASTOS",
+      "lat": 21.122975653159287,
+      "lng": -86.83365225791933,
+      "orden": 28
+    },
+    {
+      "nombre": "Stop 29 - RUTA CENTRAL ABASTOS",
+      "lat": 21.114573736214354,
+      "lng": -86.83780431747438,
+      "orden": 29
+    },
+    {
+      "nombre": "Stop 30 - RUTA CENTRAL ABASTOS",
+      "lat": 21.112456918547412,
+      "lng": -86.83881282806398,
+      "orden": 30
+    },
+    {
+      "nombre": "Stop 31 - RUTA CENTRAL ABASTOS",
+      "lat": 21.11068537416878,
+      "lng": -86.83918833732606,
+      "orden": 31
+    },
+    {
+      "nombre": "Stop 32 - RUTA CENTRAL ABASTOS",
+      "lat": 21.107332393303302,
+      "lng": -86.83970332145691,
+      "orden": 32
+    },
+    {
+      "nombre": "Stop 33 - RUTA CENTRAL ABASTOS",
+      "lat": 21.10083640292821,
+      "lng": -86.8407654762268,
+      "orden": 33
+    },
+    {
+      "nombre": "Stop 34 - RUTA CENTRAL ABASTOS",
+      "lat": 21.09093672776495,
+      "lng": -86.84223532676698,
+      "orden": 34
+    },
+    {
+      "nombre": "Stop 35 - RUTA CENTRAL ABASTOS",
+      "lat": 21.084209777283217,
+      "lng": -86.843318939209,
+      "orden": 35
+    },
+    {
+      "nombre": "Stop 36 - RUTA CENTRAL ABASTOS",
+      "lat": 21.05644787610703,
+      "lng": -86.84769630432129,
+      "orden": 36
+    },
+    {
+      "nombre": "Stop 37 - RUTA CENTRAL ABASTOS",
+      "lat": 21.043010577150227,
+      "lng": -86.84973478317262,
+      "orden": 37
+    }
+  ]
+}

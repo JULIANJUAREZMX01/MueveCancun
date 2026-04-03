@@ -1,0 +1,37 @@
+:root {
+  /* Colors - Enhanced Contrast */
+  --color-primary: #0284c7; /* Sky-600 (Darker for better visibility on Slate-50) */
+  --color-secondary: #ea580c; /* Orange-600 */
+  --color-accent: #0d9488; /* Teal-600 */
+
+  /* Surface */
+  --surface-bg: #f8fafc; /* Slate-50 */
+  --surface-card: #ffffff;
+  --surface-elevated: #ffffff;
+
+  /* Text - High Contrast */
+  --text-primary: #020617; /* Slate-950 (True black-ish) */
+  --text-secondary: #334155; /* Slate-700 */
+  --text-tertiary: #64748b; /* Slate-500 */
+
+  /* Border */
+  --border-light: #e2e8f0; /* Slate-200 (Darker for visibility) */
+  --border-medium: #cbd5e1; /* Slate-300 */
+
+  /* Dimensions */
+  --header-h: 3.5rem;
+  --bottom-nav-h: 4rem;
+}
+
+:global(.dark) {
+  --surface-bg: #020617; /* Slate-950 */
+  --surface-card: #0f172a; /* Slate-900 */
+  --surface-elevated: #1e293b; /* Slate-800 */
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+
+  --border-light: #1e293b;
+  --border-medium: #334155;
+}

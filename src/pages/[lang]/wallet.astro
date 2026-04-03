@@ -1,0 +1,371 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getI18N } from "../../utils/i18n";
+import Card from "../../components/ui/Card.astro";
+import Button from "../../components/ui/Button.astro";
+import Icon from "../../components/ui/Icon.astro";
+
+export function getStaticPaths() {
+  return [
+    { params: { lang: 'es' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const { lang } = Astro.params;
+const { t } = getI18N(lang);
+const isEs = lang === 'es';
+
+const quickRecharges = [
+  { amount: 20, label: '$20' },
+  { amount: 50, label: '$50', popular: true },
+  { amount: 100, label: '$100' },
+  { amount: 200, label: '$200' },
+];
+---
+
+<MainLayout title={t('wallet.title')}>
+  <div class="px-4 pt-6 pb-20 max-w-md mx-auto space-y-8">
+
+    <!-- Balance Card -->
+    <Card class="relative overflow-hidden bg-slate-900 border-none shadow-2xl shadow-slate-900/20">
+      <div class="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+        <Icon name="bus" class="w-32 h-32 text-white" />
+      </div>
+
+      <div class="relative p-8 flex flex-col gap-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div id="wallet-loading-dot" class="w-2.5 h-2.5 rounded-full bg-primary-500 animate-pulse"></div>
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('wallet.current_balance')}</span>
+          </div>
+          <button id="btn-history" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+            <Icon name="credit-card" class="w-5 h-5 text-slate-300" />
+          </button>
+        </div>
+
+        <div>
+          <h2 id="balance-amount" class="text-5xl font-black text-white tracking-tighter">$0.00</h2>
+          <p class="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest">MXN • Pesos Mexicanos</p>
+        </div>
+
+        <div class="flex gap-3">
+          <button popovertarget="recharge-popover" class="flex-1 bg-primary-500 hover:bg-primary-600 text-white py-4 rounded-2xl font-black text-sm shadow-xl shadow-primary-500/20 active:scale-95 transition-all uppercase tracking-widest">
+            {isEs ? "Recargar Saldo" : "Top Up"}
+          </button>
+          <a href="#promo" class="w-14 h-14 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center transition-colors">
+            <Icon name="swap" class="w-6 h-6 text-slate-300" />
+          </a>
+        </div>
+      </div>
+    </Card>
+
+    <!-- Conductor / Operator Access -->
+    <div class="space-y-4">
+      <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">{t('wallet.operator_section')}</h3>
+      <Card class="bg-emerald-500/5 border-emerald-500/10 dark:bg-emerald-500/10">
+        <div class="p-6 flex items-center justify-between gap-4">
+          <div class="flex-1">
+            <p class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">{t('wallet.pilot_registration')}</p>
+            <p class="text-xs text-slate-500 font-bold mt-0.5">{t('wallet.pilot_benefit')}</p>
+          </div>
+          <Button id="register-pilot" variant="secondary" class="bg-emerald-500 hover:bg-emerald-600 text-white border-none px-6 py-3 rounded-xl h-auto text-xs font-black">
+            {t('wallet.register_cta')}
+          </Button>
+        </div>
+      </Card>
+    </div>
+
+    <!-- Promo Code Section -->
+    <div id="promo" class="space-y-4">
+      <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">{t('wallet.promo_title')}</h3>
+      <div class="flex gap-2">
+        <input
+          id="promo-code"
+          type="text"
+          placeholder="EJ: MUEVECANCUN2026"
+          class="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 font-bold text-sm outline-none focus:border-primary-500 transition-colors uppercase"
+        />
+        <button id="apply-promo" class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">
+          {t('wallet.apply_promo')}
+        </button>
+      </div>
+    </div>
+
+    <!-- Transaction History Panel (Hidden by default) -->
+    <div id="history-panel" class="hidden animate-fade-in space-y-4">
+       <div class="flex items-center justify-between px-2">
+         <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Últimos Movimientos</h3>
+         <button id="close-history" class="text-[10px] font-bold text-primary-500 uppercase tracking-widest">Cerrar</button>
+       </div>
+       <Card class="divide-y divide-slate-100 dark:divide-slate-800">
+         <div id="history-list" class="max-h-[300px] overflow-y-auto">
+           <!-- History rows go here -->
+         </div>
+       </Card>
+    </div>
+
+  </div>
+
+  <!-- Recharge Popover (Native) -->
+  <div id="recharge-popover" popover class="recharge-popover-anim bg-white dark:bg-slate-900 border-none rounded-[2.5rem] p-8 shadow-2xl w-full max-w-sm">
+    <div class="space-y-6">
+      <div class="text-center">
+        <h4 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Selecciona Monto</h4>
+        <p class="text-xs text-slate-400 font-bold mt-1">Recarga segura vía Stripe / MercadoPago</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 recharge-radio-group">
+        {quickRecharges.map(r => (
+          <label class="amount-label">
+            <input type="radio" name="recharge-amount" value={r.amount} class="sr-only amount-radio" checked={r.amount === 50} />
+            <div class="amount-text">
+              <span class="text-base">{r.label}</span>
+              {r.popular && <span class="block text-[8px] opacity-60">POPULAR</span>}
+            </div>
+          </label>
+        ))}
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <button id="confirm-recharge" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all uppercase tracking-widest">
+          {isEs ? "Confirmar" : "Confirm"}
+        </button>
+        <button id="close-recharge" popovertarget="recharge-popover" popovertargetaction="hide" class="w-full text-slate-400 py-2 font-bold text-xs uppercase tracking-widest">
+          {isEs ? "Cancelar" : "Cancel"}
+        </button>
+      </div>
+    </div>
+  </div>
+</MainLayout>
+
+<script>
+  import { showToast } from '../../utils/toast';
+  import { getWalletBalance, setWalletBalance } from '../../utils/db';
+
+  // Transaction history stored in localStorage
+  const TX_KEY = 'wallet_transactions';
+
+  function getTxHistory(): Array<{ type: string; amount: number; label: string; ts: number }> {
+    try { return JSON.parse(localStorage.getItem(TX_KEY) || '[]'); }
+    catch { return []; }
+  }
+
+  function addTx(type: string, amount: number, label: string) {
+    const history = getTxHistory();
+    history.unshift({ type, amount, label, ts: Date.now() });
+    localStorage.setItem(TX_KEY, JSON.stringify(history.slice(0, 50)));
+  }
+
+  function formatTxDate(ts: number): string {
+    const d = new Date(ts);
+    return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('history-list');
+    if (!list) return;
+    const history = getTxHistory();
+    if (history.length === 0) {
+      list.innerHTML = '<div class="px-4 py-8 text-center text-xs text-slate-400 font-bold">Sin movimientos aún</div>';
+      return;
+    }
+    // Clear existing items
+    while (list.firstChild) {
+      list.removeChild(list.firstChild);
+    }
+
+    history.forEach(tx => {
+      const item = document.createElement('div');
+      item.className = 'flex items-center justify-between px-4 py-3';
+
+      const left = document.createElement('div');
+
+      const labelEl = document.createElement('p');
+      labelEl.className = 'text-sm font-bold text-slate-800 dark:text-white';
+      labelEl.textContent = tx.label;
+
+      const dateEl = document.createElement('p');
+      dateEl.className = 'text-[10px] text-slate-400 font-medium';
+      dateEl.textContent = formatTxDate(tx.ts);
+
+      left.appendChild(labelEl);
+      left.appendChild(dateEl);
+
+      const amountEl = document.createElement('span');
+      amountEl.className = 'font-black text-sm ' + (tx.type === 'credit' ? 'text-emerald-500' : 'text-red-500');
+      const sign = tx.type === 'credit' ? '+' : '-';
+      amountEl.textContent = `${sign}$${tx.amount.toFixed(2)}`;
+
+      item.appendChild(left);
+      item.appendChild(amountEl);
+
+      list.appendChild(item);
+    });
+  }
+
+  async function setupWallet() {
+    const balanceAmount  = document.getElementById('balance-amount');
+    const loadingDot     = document.getElementById('wallet-loading-dot');
+    const confirmBtn     = document.getElementById('confirm-recharge');
+    const popover        = document.getElementById('recharge-popover');
+    const applyPromoBtn  = document.getElementById('apply-promo');
+    const promoInput     = document.getElementById('promo-code') as HTMLInputElement;
+    const registerPilotBtn = document.getElementById('register-pilot') as HTMLButtonElement;
+    const historyBtn     = document.getElementById('btn-history');
+    const historyPanel   = document.getElementById('history-panel');
+    const closeHistoryBtn= document.getElementById('close-history');
+
+    async function updateBalanceUI() {
+      const walletData = await getWalletBalance();
+      const balance = walletData?.amount ?? 0.00;
+      if (balanceAmount) balanceAmount.textContent = `$${balance.toFixed(2)}`;
+      const headerBalance = document.getElementById('header-balance-amount');
+      if (headerBalance) headerBalance.textContent = `$${balance.toFixed(2)}`;
+      if (loadingDot) { loadingDot.classList.remove('animate-pulse'); loadingDot.classList.add('bg-emerald-500'); }
+    }
+
+    await updateBalanceUI();
+
+    // Listen for balance updates
+    window.addEventListener('BALANCE_UPDATED', updateBalanceUI);
+
+    // Restore operator registration state
+    if (registerPilotBtn && localStorage.getItem('operator_registered') === 'true') {
+      registerPilotBtn.textContent = 'YA REGISTRADO ✓';
+      registerPilotBtn.disabled = true;
+      registerPilotBtn.classList.add('opacity-60', 'cursor-not-allowed');
+    }
+
+    // Recharge confirm
+    confirmBtn?.addEventListener('click', async () => {
+      const selectedRadio = document.querySelector('input[name="recharge-amount"]:checked') as HTMLInputElement;
+      const selectedAmount = selectedRadio ? parseInt(selectedRadio.value) : 50;
+      const walletData = await getWalletBalance();
+      const currentBalance = walletData?.amount ?? 0.00;
+      await setWalletBalance(currentBalance + selectedAmount);
+      addTx('credit', selectedAmount, `Recarga +$${selectedAmount}`);
+      await updateBalanceUI();
+      // @ts-ignore
+      if (popover && popover.matches(':popover-open')) popover.hidePopover();
+      showToast(`¡Recarga exitosa! +$${selectedAmount}`, 'success');
+    });
+
+    // Promo code
+    applyPromoBtn?.addEventListener('click', async () => {
+      const code = promoInput?.value.trim().toUpperCase();
+      if (!code) return;
+      let redeemedCodes: string[] = [];
+      try { redeemedCodes = JSON.parse(localStorage.getItem('redeemed_promo_codes') || '[]'); } catch { /* */ }
+      if (!Array.isArray(redeemedCodes)) redeemedCodes = [];
+
+      if (code === 'MUEVECANCUN2026') {
+        if (redeemedCodes.includes(code)) { showToast('Este código ya fue utilizado', 'error'); return; }
+        const walletData = await getWalletBalance();
+        const currentBalance = walletData?.amount ?? 0.00;
+        await setWalletBalance(currentBalance + 50.00);
+        addTx('credit', 50, 'Código promo: MUEVECANCUN2026');
+        await updateBalanceUI();
+        redeemedCodes.push(code);
+        localStorage.setItem('redeemed_promo_codes', JSON.stringify(redeemedCodes));
+        showToast('¡Código aplicado! +$50.00', 'success');
+        if (promoInput) promoInput.value = '';
+      } else {
+        showToast('Código inválido o expirado', 'error');
+      }
+    });
+
+    // Conductor registration
+    registerPilotBtn?.addEventListener('click', async () => {
+      if (localStorage.getItem('operator_registered') === 'true') {
+        showToast('Ya estás registrado como conductor', 'error');
+        return;
+      }
+      const walletData = await getWalletBalance();
+      const currentBalance = walletData?.amount ?? 0.00;
+      await setWalletBalance(currentBalance + 180.00);
+      addTx('credit', 180, 'Bono de bienvenida conductor');
+      await updateBalanceUI();
+      localStorage.setItem('operator_registered', 'true');
+      registerPilotBtn.textContent = 'YA REGISTRADO ✓';
+      registerPilotBtn.disabled = true;
+      registerPilotBtn.classList.add('opacity-60', 'cursor-not-allowed');
+      showToast('¡Registro exitoso! +$180.00 MXN', 'success');
+    });
+
+    // History toggle
+    historyBtn?.addEventListener('click', () => {
+      historyPanel?.classList.toggle('hidden');
+      if (!historyPanel?.classList.contains('hidden')) renderHistory();
+    });
+    closeHistoryBtn?.addEventListener('click', () => historyPanel?.classList.add('hidden'));
+  }
+
+  document.addEventListener('astro:page-load', setupWallet);
+  setupWallet();
+</script>
+
+<style>
+  .recharge-popover-anim {
+    margin: auto;
+    opacity: 0;
+    transform: translateY(1rem) scale(0.96);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                overlay 0.25s allow-discrete, display 0.25s allow-discrete;
+  }
+  .recharge-popover-anim:popover-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    @starting-style { opacity: 0; transform: translateY(1rem) scale(0.96); }
+  }
+  .recharge-popover-anim::backdrop {
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.25s ease, overlay 0.25s allow-discrete, display 0.25s allow-discrete;
+  }
+  .recharge-popover-anim:popover-open::backdrop {
+    opacity: 1;
+    @starting-style { opacity: 0; }
+  }
+
+  .recharge-radio-group .amount-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 0;
+    border-radius: 0.75rem;
+    border: 2px solid #f1f5f9;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  :global(.dark) .recharge-radio-group .amount-label { border-color: #1e293b; }
+  .recharge-radio-group .amount-label:hover { border-color: #f97316; }
+  .recharge-radio-group .amount-label:has(.amount-radio:checked) {
+    border-color: #f97316;
+    background-color: rgba(249,115,22,0.08);
+  }
+  :global(.dark) .recharge-radio-group .amount-label:has(.amount-radio:checked) {
+    background-color: rgba(249,115,22,0.18);
+  }
+  .amount-text {
+    font-weight: 900;
+    color: #475569;
+    font-size: 0.9rem;
+  }
+  :global(.dark) .amount-text { color: #94a3b8; }
+  .recharge-radio-group .amount-label:has(.amount-radio:checked) .amount-text { color: #ea580c; }
+  :global(.dark) .recharge-radio-group .amount-label:has(.amount-radio:checked) .amount-text { color: #fb923c; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0;
+    margin: -1px; overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border-width: 0;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+</style>

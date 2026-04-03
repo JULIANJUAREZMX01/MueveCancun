@@ -1,0 +1,300 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getLangFromUrl } from '../../utils/i18n';
+
+export function getStaticPaths() {
+  return [
+    { params: { lang: "es" } },
+    { params: { lang: "en" } },
+  ];
+}
+
+const lang = getLangFromUrl(Astro.url);
+
+const translations = {
+  es: {
+    title: 'MueveCancún Guardians',
+    subtitle: 'Niveles de apoyo y recompensas',
+    description: 'Únete a la élite de ciudadanos que hacen posible que esta plataforma siga operando 24/7 sin publicidad y con datos gratuitos.',
+    recurringTitle: 'Suscripciones Mensuales',
+    oneTimeTitle: 'Donaciones de Guardián',
+    mrrTitle: 'Progreso de la Comunidad',
+    directLinkText: 'Enlace directo',
+    qrText: 'Escaneame para donar',
+    plans: {
+      starter: {
+        name: 'Agente IA (Starter)',
+        price: '$16',
+        period: '/mes',
+        features: [
+          'Agente IA personal en MueveCancún',
+          'Consultas de rutas inteligentes',
+          'Reportes ciudadanos asistidos',
+          'Tips de transporte en tiempo real',
+          'Soporte directo vía chat'
+        ],
+        link: 'https://buy.stripe.com/dRm00c4kygCicKUdTt7AI04'
+      },
+      elite: {
+        name: 'Elite Guardian',
+        price: '$160',
+        period: '/mes',
+        features: [
+          'Todo lo del plan Starter',
+          'Automatizaciones avanzadas',
+          'Skills personalizados',
+          'Backend functions dedicadas',
+          'Soporte prioritario 24/7'
+        ],
+        link: 'https://buy.stripe.com/8x214g8AO99QbGQ2aL7AI05',
+        recommended: true
+      }
+    },
+    tiers: {
+      shield: {
+        name: 'Shield Guardian',
+        price: '$3',
+        period: '/única vez',
+        features: ['Notificaciones de rutas alteradas', 'Datos históricos', 'Features beta'],
+        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
+        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02',
+        qr: '/qr-shield.png'
+      },
+      architect: {
+        name: 'Nexus Architect',
+        price: '$10',
+        period: '/única vez',
+        features: ['Todo lo anterior', 'Votación en prioridades', 'Comunidad privada'],
+        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB',
+        link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03',
+        qr: '/qr-architect.png'
+      }
+    },
+    milestones: [
+      { label: 'Fase 1', goal: 16, emoji: '🎯' },
+      { label: 'Fase 2', goal: 160, emoji: '⚡' },
+    ]
+  },
+  en: {
+    title: 'MueveCancún Guardians',
+    subtitle: 'Support levels and rewards',
+    description: 'Join the elite of citizens who make it possible for this platform to continue operating 24/7 without ads and with free data.',
+    recurringTitle: 'Monthly Subscriptions',
+    oneTimeTitle: 'Guardian Donations',
+    mrrTitle: 'Community Progress',
+    directLinkText: 'Direct link',
+    qrText: 'Scan to donate',
+    plans: {
+      starter: {
+        name: 'AI Agent (Starter)',
+        price: '$16',
+        period: '/mo',
+        features: [
+          'Personal AI Agent in MueveCancún',
+          'Smart route queries',
+          'Assisted citizen reports',
+          'Real-time transport tips',
+          'Direct chat support'
+        ],
+        link: 'https://buy.stripe.com/dRm00c4kygCicKUdTt7AI04'
+      },
+      elite: {
+        name: 'Elite Guardian',
+        price: '$160',
+        period: '/mo',
+        features: [
+          'Everything in Starter',
+          'Advanced automations',
+          'Custom skills',
+          'Dedicated backend functions',
+          '24/7 Priority support'
+        ],
+        link: 'https://buy.stripe.com/8x214g8AO99QbGQ2aL7AI05',
+        recommended: true
+      }
+    },
+    tiers: {
+      shield: {
+        name: 'Shield Guardian',
+        price: '$3',
+        period: '/one-time',
+        features: ['Altered route notifications', 'Historical data', 'Beta features'],
+        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
+        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02',
+        qr: '/qr-shield.png'
+      },
+      architect: {
+        name: 'Nexus Architect',
+        price: '$10',
+        period: '/one-time',
+        features: ['Everything above', 'Priority voting', 'Private community'],
+        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB',
+        link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03',
+        qr: '/qr-architect.png'
+      }
+    },
+    milestones: [
+      { label: 'Phase 1', goal: 16, emoji: '🎯' },
+      { label: 'Phase 2', goal: 160, emoji: '⚡' },
+    ]
+  }
+};
+
+const t = translations[lang] || translations.es;
+---
+
+<MainLayout title={t.title}>
+  <div class="max-w-4xl mx-auto px-4 py-12 space-y-16">
+
+    <!-- Header -->
+    <header class="text-center space-y-4 animate-fade-in">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-500/10 text-primary-500 text-xs font-black uppercase tracking-widest border border-primary-500/20">
+        🛡️ {t.title}
+      </div>
+      <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">{t.subtitle}</h1>
+      <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">{t.description}</p>
+    </header>
+
+    <!-- Progress Dashboard -->
+    <section class="bg-slate-900 rounded-[2.5rem] p-8 md:p-10 shadow-2xl relative overflow-hidden group border border-white/5 animate-fade-in" style="animation-delay: 0.1s;">
+      <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+        <svg width="120" height="120" viewBox="0 0 24 24" fill="white"><path d="M12 21.593c-.425-.394-8.993-7.817-8.993-12.097C3.007 5.48 7.016 2 12 2s8.993 3.48 8.993 7.496c0 4.28-8.568 11.703-8.993 12.097z"/></svg>
+      </div>
+
+      <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+        <div>
+          <h2 class="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-2">{t.mrrTitle}</h2>
+          <div class="flex items-baseline gap-2">
+            <span id="mrr-amount" class="text-4xl font-black text-emerald-400">$0</span>
+            <span class="text-slate-500 text-sm font-bold">/MRR</span>
+          </div>
+        </div>
+        <div class="text-center md:text-right">
+          <p id="subs-count" class="text-3xl font-black text-white">0</p>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">{lang === 'es' ? 'Guardianes Activos' : 'Active Guardians'}</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {t.milestones.map((ms, i) => (
+          <div class="milestone-item space-y-2" data-goal={ms.goal}>
+            <div class="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              <span>{ms.emoji} {ms.label}</span>
+              <span class="text-emerald-400 milestone-current">$0 / ${ms.goal}</span>
+            </div>
+            <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+              <div class="milestone-bar h-full bg-emerald-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Monthly Tiers -->
+    <section class="space-y-8 animate-fade-in" style="animation-delay: 0.2s;">
+      <h2 class="text-2xl font-black text-slate-900 dark:text-white text-center">{t.recurringTitle}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {Object.entries(t.plans).map(([key, plan]) => (
+          <div class:list={[
+            "relative bg-white dark:bg-slate-900 rounded-[2rem] p-8 border-2 transition-all hover:translate-y-[-4px]",
+            (plan as any).recommended ? "border-primary-500 shadow-2xl shadow-primary-500/10" : "border-slate-100 dark:border-slate-800"
+          ]}>
+            <div class="space-y-6">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="text-xl font-black text-slate-900 dark:text-white">{(plan as any).name}</h3>
+                  <p class="text-3xl font-black text-primary-500 mt-1">{(plan as any).price}<span class="text-sm font-bold opacity-50">{(plan as any).period}</span></p>
+                </div>
+                {(plan as any).recommended && (
+                  <span class="bg-primary-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Recomendado</span>
+                )}
+              </div>
+              <ul class="space-y-3">
+                {(plan as any).features.map((f: string) => (
+                  <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400 leading-tight">
+                    <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <a href={(plan as any).link} target="_blank" class="block w-full py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-center font-black text-sm uppercase tracking-widest hover:opacity-90 transition-opacity no-underline">
+                Suscribirme
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- One-time Tiers -->
+    <section class="space-y-8 animate-fade-in" style="animation-delay: 0.3s;">
+      <h2 class="text-2xl font-black text-slate-900 dark:text-white text-center">{t.oneTimeTitle}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {Object.entries(t.tiers).map(([key, tier]) => (
+          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center text-center">
+             <div class="space-y-6 w-full">
+              <div class="flex flex-col items-center gap-4">
+                { (tier as any).qr && (
+                  <div class="p-2 bg-white rounded-2xl shadow-inner border border-slate-100">
+                    <img src={(tier as any).qr} alt={t.qrText} class="w-32 h-32" />
+                    <p class="mt-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">{t.qrText}</p>
+                  </div>
+                )}
+                <div>
+                  <h3 class="text-xl font-black text-slate-900 dark:text-white">{(tier as any).name}</h3>
+                  <p class="text-2xl font-black text-slate-600 dark:text-slate-400">{(tier as any).price}<span class="text-sm font-bold opacity-50">{(tier as any).period}</span></p>
+                </div>
+              </div>
+              <ul class="space-y-3 text-left">
+                {(tier as any).features.map((f: string) => (
+                  <li class="flex items-start gap-3 text-sm text-slate-500 dark:text-slate-400">
+                    <svg class="w-4 h-4 text-emerald-500/50 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <div class="pt-4 flex flex-col items-center gap-4">
+                 <stripe-buy-button
+                    buy-button-id={(tier as any).buyButtonId}
+                    publishable-key="pk_live_51T6oKE2dM2f4HRxoh2mpjFg4MHpHXxqc65ulAos4p22xPpD3v55ejGpiGx1Y8vdK5doYMTPGvTPi6RzsqdVv2xvE000caSvFag"
+                  ></stripe-buy-button>
+                  <a href={(tier as any).link} class="text-[10px] font-bold text-slate-400 hover:text-primary-500 transition-colors uppercase tracking-widest no-underline">{t.directLinkText}</a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+  </div>
+</MainLayout>
+
+<script is:inline src="https://js.stripe.com/v3/buy-button.js" async></script>
+<script define:vars={{ lang }}>
+  async function loadMRR() {
+    const STARTER_PRICE = 16;
+    try {
+      const res = await fetch('https://api.github.com/repos/JULIANJUAREZMX01/MueveCancun/issues?labels=stripe-subscriber&state=open');
+      const issues = await res.json();
+      const subs = Array.isArray(issues) ? issues.length : 0;
+      const mrr = subs * STARTER_PRICE;
+
+      const mrrEl = document.getElementById('mrr-amount');
+      const subsEl = document.getElementById('subs-count');
+      if (mrrEl) mrrEl.textContent = `$${mrr}`;
+      if (subsEl) subsEl.textContent = String(subs);
+
+      document.querySelectorAll('.milestone-item').forEach(item => {
+        const goal = parseInt(item.getAttribute('data-goal') || '1');
+        const bar = item.querySelector('.milestone-bar');
+        const currentLabel = item.querySelector('.milestone-current');
+        const pct = Math.min((mrr / goal) * 100, 100);
+        if (bar) (bar as HTMLElement).style.width = `${pct}%`;
+        if (currentLabel) currentLabel.textContent = `$${mrr} / $${goal}`;
+      });
+    } catch { /* Fail silently */ }
+  }
+
+  document.addEventListener('astro:page-load', loadMRR);
+  loadMRR();
+</script>
