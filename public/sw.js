@@ -62,7 +62,7 @@ self.addEventListener('install', (event) => {
     event.waitUntil(caches.open(CACHE_NAME)
         .then(cache => {
         console.log('[SW] Caching critical assets');
-        return Promise.allSettled(CRITICAL_ASSETS.map(url => cache.add(url).catch((e) => console.warn(`[SW] Skip cache (non-critical): ${url}`, e?.message ?? e))));
+        return Promise.allSettled(CRITICAL_ASSETS.map(url => cache.add(url).then(() => { }, (e) => console.warn(`[SW] Skip cache (non-critical): ${url}`, e?.message ?? e))));
     })
         .then(() => {
         console.log(`[SW] Install complete — ${CACHE_VERSION}`);
@@ -90,7 +90,10 @@ self.addEventListener('message', (event) => {
     if (event.data?.type === 'CACHE_USER_ROUTE' && event.data.url) {
         const url = event.data.url;
         if (USER_ROUTE_PATTERN.test(url)) {
-            caches.open(CACHE_NAME).then(cache => cache.add(url)).catch(() => { });
+            caches.open(CACHE_NAME).then(cache => cache.add(url)).catch((e) => {
+                console.warn('[SW] CACHE_USER_ROUTE failed:', url, e?.message ?? e);
+                event.source?.postMessage({ type: 'CACHE_USER_ROUTE_ERROR', url });
+            });
         }
     }
     // Health check ping
@@ -193,7 +196,7 @@ async function networkFirstWithCache(request) {
     }
     catch {
         const cached = await caches.match(request);
-        return cached ?? new Response('{}', { status: 503, headers: { 'Content-Type': 'application/json' } });
+        return cached ?? new Response('{"error":"offline","message":"Route data unavailable"}', { status: 503, headers: { 'Content-Type': 'application/json' } });
     }
 }
 async function staleWhileRevalidate(request) {
@@ -204,7 +207,7 @@ async function staleWhileRevalidate(request) {
             cache.put(request, response.clone());
         return response;
     }).catch(() => {
-        return cached ?? new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+        return cached ?? new Response('{"error":"offline","message":"Data unavailable"}', { status: 503, headers: { 'Content-Type': 'application/json' } });
     });
     return cached ?? fetchPromise;
 }
