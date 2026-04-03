@@ -7,7 +7,7 @@ import { defineMiddleware } from 'astro:middleware';
  * All routing logic is migrated to client-side scripts in src/utils/auth.ts.
  */
 
-export const onRequest = defineMiddleware(async ({ request: _request, redirect, cookies, url }, next) => {
+export const onRequest = defineMiddleware(async (_, next) => {
   // Pass through all requests in static mode.
   // Routing logic is now handled in MainLayout.astro and index.astro via JS.
   return next();

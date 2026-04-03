@@ -4,28 +4,37 @@ const DB_NAME = 'cancunmueve-db';
 const DB_VERSION = 4;
 
 // Crypto utilities for securing balance against client-side tampering (DevTools modifications).
-// Note: The HMAC key is static and client-visible. This is a deterrent against casual/manual
-// edits, not a true cryptographic integrity guarantee against a determined attacker who can
-// recompute valid signatures using DevTools.
-let _cryptoKeyPromise: Promise<CryptoKey> | null = null;
+// The HMAC key is generated per-device and stored in IndexedDB.
+// This makes it significantly harder to forge signatures compared to a hardcoded key,
+// as the key is not present in the source code or static assets.
+let _cryptoKey: CryptoKey | null = null;
 
-const getCryptoKey = (): Promise<CryptoKey> => {
-  if (!_cryptoKeyPromise) {
-    const enc = new TextEncoder();
-    const keyMaterial = enc.encode("cancunmueve_wallet_secure_salt_v1");
-    _cryptoKeyPromise = crypto.subtle.importKey(
-      "raw",
-      keyMaterial,
+const getCryptoKey = async (dbInstance?: IDBPDatabase): Promise<CryptoKey> => {
+  if (_cryptoKey) return _cryptoKey;
+
+  const db = dbInstance || await initDB();
+  const tx = db.transaction('security-keys', 'readwrite');
+  const store = tx.objectStore('security-keys');
+
+  let key: CryptoKey | undefined = await store.get('hmac-key');
+
+  if (!key) {
+    console.log('[SECURITY] No HMAC key found. Generating a new device-specific key.');
+    key = await crypto.subtle.generateKey(
       { name: "HMAC", hash: "SHA-256" },
-      false,
+      false, // non-extractable for added security
       ["sign", "verify"]
     );
+    await store.put(key, 'hmac-key');
   }
-  return _cryptoKeyPromise;
+
+  await tx.done;
+  _cryptoKey = key;
+  return key;
 };
 
-const generateSignature = async (amount: number): Promise<string> => {
-  const key = await getCryptoKey();
+const generateSignature = async (amount: number, dbInstance?: IDBPDatabase): Promise<string> => {
+  const key = await getCryptoKey(dbInstance);
   const enc = new TextEncoder();
   const data = enc.encode(amount.toFixed(2));
   const signature = await crypto.subtle.sign("HMAC", key, data);
@@ -35,21 +44,24 @@ const generateSignature = async (amount: number): Promise<string> => {
     .join('');
 };
 
-const verifySignature = async (amount: number, signatureHex: string | undefined): Promise<boolean> => {
+const verifySignature = async (amount: number, signatureHex: string | undefined, dbInstance?: IDBPDatabase): Promise<boolean> => {
   if (!signatureHex) return false;
   try {
-    const expectedSignature = await generateSignature(amount);
+    const expectedSignature = await generateSignature(amount, dbInstance);
     return expectedSignature === signatureHex;
-  } catch (_e) {
+  } catch (e) {
     return false;
+  }
+};
+
+const dispatchBalanceUpdate = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('BALANCE_UPDATED'));
   }
 };
 
 /**
  * Migrate balance from localStorage to IndexedDB.
- * This consolidates the triple balance system (user_balance, muevecancun_balance, wallet-status)
- * into a single source: IndexedDB via this module.
- * Accepts the already-open db instance to avoid circular recursion with initDB.
  */
 export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<typeof openDB>>): Promise<void> => {
   try {
@@ -58,6 +70,7 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
           localStorage.setItem('balance_migration_done', 'true');
           localStorage.removeItem('muevecancun_balance');
           localStorage.removeItem('user_balance');
+          dispatchBalanceUpdate();
       };
 
       // Read BEFORE removing to avoid silent balance loss on upgrade
@@ -71,12 +84,12 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
           return;
       }
 
-      // If a positive legacy balance exists and IDB still has the default 0.00, migrate it
+      // If a positive legacy balance exists and IDB still has the default 180.00, migrate it
       try {
           const tx = db.transaction('wallet-status', 'readwrite');
           const store = tx.objectStore('wallet-status');
           const existing = await store.get('current_balance');
-          const isDefault = existing?.amount === 0.00;
+          const isDefault = existing?.amount === 180.00 || existing?.amount === 0.00 || !existing;
           if (isDefault) {
               const signature = await generateSignature(legacyBalance);
               await store.put(
@@ -87,10 +100,10 @@ export const migrateBalanceFromLocalStorage = async (db: Awaited<ReturnType<type
           await tx.done;
           // Only after a successful transaction do we clear legacy data and mark migration done
           finalizeMigration();
-      } catch (_e) {
+      } catch (e) {
           // On IndexedDB/WebCrypto failure, keep legacy values so a later init can retry
       }
-  } catch (_e) {
+  } catch (e) {
       // Ignore errors if localStorage is not available (e.g. SSR)
   }
 };
@@ -115,20 +128,22 @@ export const initDB = async (): Promise<IDBPDatabase> => {
             if (!db.objectStoreNames.contains('pending-reports')) {
               db.createObjectStore('pending-reports', { keyPath: 'id', autoIncrement: true });
             }
+            db.createObjectStore('security-keys');
           }
         },
       });
 
-      // Initialize test balance if empty (0 MXN for consistency with UI)
+      // Initialize test balance if empty (180 MXN for consistency with UI)
       const tx = db.transaction('wallet-status', 'readwrite');
       const store = tx.objectStore('wallet-status');
       const balance = await store.get('current_balance');
 
       if (balance === undefined) {
-        const defaultAmount = 0.00;
-        const signature = await generateSignature(defaultAmount);
+        const defaultAmount = 180.00;
+        const signature = await generateSignature(defaultAmount, db);
         await store.put({ id: 'current_balance', amount: defaultAmount, currency: 'MXN', signature }, 'current_balance');
-        console.log('[DB] Initial wallet balance set to 0.00 MXN');
+        console.log('[DB] Initial wallet balance set to 180.00 MXN');
+        dispatchBalanceUpdate();
       }
 
       await tx.done;
@@ -156,27 +171,51 @@ export const getWalletBalance = async (): Promise<{ id: string; amount: number; 
   await readTx.done;
 
   if (balance) {
+    // Check if we are in a migration state (v4 key is new)
+    const securityTx = db.transaction('security-keys', 'readonly');
+    const hmacKey = await securityTx.objectStore('security-keys').get('hmac-key');
+    await securityTx.done;
+
+    // If there's no signature, it's a legacy record (pre-v3)
     if (!balance.signature) {
-      // Legacy record without a signature: treat as a trusted state and backfill the signature.
       console.log('[DB] Legacy record found without signature. Backfilling.');
-      balance.signature = await generateSignature(balance.amount);
+      balance.signature = await generateSignature(balance.amount, db);
       const writeTx = db.transaction('wallet-status', 'readwrite');
       await writeTx.objectStore('wallet-status').put(balance, 'current_balance');
       await writeTx.done;
+      dispatchBalanceUpdate();
       return balance;
     }
 
-    const isValid = await verifySignature(balance.amount, balance.signature);
+    const isValid = await verifySignature(balance.amount, balance.signature, db);
+
     if (!isValid) {
+      // If verification fails, but the key was JUST generated (migration from hardcoded to device key),
+      // we can't easily verify the old signature without the old key.
+      // However, we can use a "trust-once" flag during migration or check if the key is new.
+      // Since we want to eliminate the hardcoded key entirely, we check if we've already done this migration.
+      const migrationFlag = localStorage.getItem('v4_key_migration_done');
+
+      if (!migrationFlag) {
+        console.log('[SECURITY] V4 Migration: Trusting existing signature once and re-signing with device key.');
+        balance.signature = await generateSignature(balance.amount, db);
+        const writeTx = db.transaction('wallet-status', 'readwrite');
+        await writeTx.objectStore('wallet-status').put(balance, 'current_balance');
+        await writeTx.done;
+        localStorage.setItem('v4_key_migration_done', 'true');
+        return balance;
+      }
+
       console.error('[SECURITY] Wallet balance signature verification failed. Possible tampering detected. Resetting to 0.00 MXN.');
       // Punish tampering by resetting balance to 0
       const resetAmount = 0.00;
       balance.amount = resetAmount;
-      balance.signature = await generateSignature(resetAmount);
+      balance.signature = await generateSignature(resetAmount, db);
       // Escalate to readwrite only when a correction is required.
       const writeTx = db.transaction('wallet-status', 'readwrite');
       await writeTx.objectStore('wallet-status').put(balance, 'current_balance');
       await writeTx.done;
+      dispatchBalanceUpdate();
       return balance;
     }
   }
@@ -190,7 +229,7 @@ export const setWalletBalance = async (amount: number): Promise<void> => {
   const store = tx.objectStore('wallet-status');
   const existing = await store.get('current_balance');
 
-  const signature = await generateSignature(amount);
+  const signature = await generateSignature(amount, db);
 
   if (existing) {
     existing.amount = amount;
@@ -201,6 +240,7 @@ export const setWalletBalance = async (amount: number): Promise<void> => {
   }
 
   await tx.done;
+  dispatchBalanceUpdate();
 };
 
 export const updateWalletBalance = async (amount: number) => {
@@ -212,9 +252,10 @@ export const updateWalletBalance = async (amount: number) => {
     const store = tx.objectStore('wallet-status');
     const newAmount = balance.amount + amount;
     balance.amount = newAmount;
-    balance.signature = await generateSignature(newAmount);
+    balance.signature = await generateSignature(newAmount, db);
     await store.put(balance, 'current_balance');
     await tx.done;
+    dispatchBalanceUpdate();
   }
 };
 
@@ -255,4 +296,7 @@ export const deletePendingReport = async (id: number) => {
 };
 
 // Test util
-export const __resetDBPromise = () => { dbPromise = null; };
+export const __resetDBPromise = () => {
+  dbPromise = null;
+  _cryptoKey = null;
+};

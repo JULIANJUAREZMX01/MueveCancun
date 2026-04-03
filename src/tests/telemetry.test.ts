@@ -8,8 +8,8 @@ vi.mock('../lib/idb', () => ({
 }));
 
 describe('Telemetry', () => {
-  let watchPositionMock: any;
-  let clearWatchMock: any;
+  let watchPositionMock: MockInstance;
+  let clearWatchMock: MockInstance;
   let dispatchEventSpy: MockInstance;
   let consoleErrorSpy: MockInstance;
   let consoleWarnSpy: MockInstance;
@@ -20,33 +20,30 @@ describe('Telemetry', () => {
     watchPositionMock = vi.fn();
     clearWatchMock = vi.fn();
 
-    // Setup global navigator and window for testing environment
+    // Ensure we are in a "browser-like" environment for the test
     if (typeof globalThis.navigator === 'undefined') {
-      (globalThis as any).navigator = {
-        geolocation: {
-          watchPosition: watchPositionMock,
-          clearWatch: clearWatchMock,
-        }
-      };
-    } else {
-      (globalThis.navigator as any).geolocation = {
-        watchPosition: watchPositionMock,
-        clearWatch: clearWatchMock,
-      };
+      (globalThis as any).navigator = {};
     }
+
+    (globalThis.navigator as any).geolocation = {
+      watchPosition: watchPositionMock,
+      clearWatch: clearWatchMock,
+    };
 
     if (typeof globalThis.window === 'undefined') {
        (globalThis as any).window = {
          dispatchEvent: vi.fn(),
          CustomEvent: class CustomEvent {
            type: string;
-           detail: unknown;
-           constructor(type: string, options: { detail: unknown }) {
+           detail: any;
+           constructor(type: string, options: any) {
              this.type = type;
              this.detail = options.detail;
            }
          }
        };
+    } else {
+      vi.spyOn(window, 'dispatchEvent').mockImplementation(() => true);
     }
 
     dispatchEventSpy = vi.spyOn(globalThis.window, 'dispatchEvent');
@@ -55,22 +52,23 @@ describe('Telemetry', () => {
   });
 
   afterEach(() => {
+    // Reset the module state by calling stopTracking
     stopTracking();
     vi.restoreAllMocks();
   });
 
   it('should start tracking and handle success path', async () => {
-    let successCallback: GeolocationPositionCallback | undefined;
-    watchPositionMock.mockImplementation((success: GeolocationPositionCallback) => {
+    let successCallback: any;
+    watchPositionMock.mockImplementation((success: any) => {
       successCallback = success;
-      return 123;
+      return 123; // mock watchId
     });
 
     startTracking();
 
     expect(watchPositionMock).toHaveBeenCalled();
 
-    const mockPos: any = {
+    const mockPos = {
       coords: {
         latitude: 21.1619,
         longitude: -86.8515,
@@ -79,9 +77,9 @@ describe('Telemetry', () => {
       timestamp: 1625097600000,
     };
 
-    vi.mocked(put).mockResolvedValue(undefined as any);
+    vi.mocked(put).mockResolvedValue(undefined);
 
-    await successCallback!(mockPos);
+    await successCallback(mockPos);
 
     expect(put).toHaveBeenCalledWith('tracking', {
       lat: 21.1619,
@@ -92,7 +90,7 @@ describe('Telemetry', () => {
     });
 
     expect(dispatchEventSpy).toHaveBeenCalled();
-    const event = dispatchEventSpy.mock.calls[0][0] as any;
+    const event = dispatchEventSpy.mock.calls[0][0];
     expect(event.type).toBe('mc:position');
     expect(event.detail).toEqual({
       lat: 21.1619,
@@ -103,15 +101,15 @@ describe('Telemetry', () => {
   });
 
   it('should log error when IDB put fails', async () => {
-    let successCallback: GeolocationPositionCallback | undefined;
-    watchPositionMock.mockImplementation((success: GeolocationPositionCallback) => {
+    let successCallback: any;
+    watchPositionMock.mockImplementation((success: any) => {
       successCallback = success;
       return 123;
     });
 
     startTracking();
 
-    const mockPos: any = {
+    const mockPos = {
       coords: { latitude: 0, longitude: 0, accuracy: 0 },
       timestamp: 123456789,
     };
@@ -119,13 +117,13 @@ describe('Telemetry', () => {
     const error = new Error('IDB Failure');
     vi.mocked(put).mockRejectedValue(error);
 
-    await successCallback!(mockPos);
+    await successCallback(mockPos);
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to store tracking point:', error);
   });
 
   it('should log warning when GPS error occurs', () => {
-    let errorCallback: GeolocationPositionErrorCallback | undefined;
+    let errorCallback: any;
     watchPositionMock.mockImplementation((_success: any, error: any) => {
       errorCallback = error;
       return 123;
@@ -133,8 +131,8 @@ describe('Telemetry', () => {
 
     startTracking();
 
-    const gpsError = { code: 1, message: 'User denied Geolocation' } as any;
-    errorCallback!(gpsError);
+    const gpsError = { code: 1, message: 'User denied Geolocation' };
+    errorCallback(gpsError);
 
     expect(consoleWarnSpy).toHaveBeenCalledWith('GPS error:', gpsError);
   });

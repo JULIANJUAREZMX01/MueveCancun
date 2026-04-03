@@ -1,0 +1,9 @@
+{
+  "precios": {
+    "zona_hotelera": { "precio": 12, "moneda": "MXN" },
+    "zona_urbana": { "precio": 10, "moneda": "MXN" },
+    "combis": { "precio": 10, "moneda": "MXN" },
+    "costa_mujeres": { "precio": 15, "moneda": "MXN" },
+    "playa_express": { "precio": 20, "moneda": "MXN" }
+  }
+}

@@ -35,7 +35,7 @@ export const ui = {
         'calc.tourist': 'Tourist',
         'calc.btn': 'CALCULATE ROUTE',
         'calc.balance.warning': 'Insufficient Balance',
-        'calc.balance.msg': 'A minimum balance is required to operate. Please add funds to your wallet.',
+        'calc.balance.msg': 'Requires $180 MXN to operate.',
         'calc.gps': 'Use my location',
         'calc.map': 'Select on map',
         'calc.reset': 'EDIT',
@@ -92,7 +92,7 @@ export const ui = {
         'calc.tourist': 'Turista',
         'calc.btn': 'TRAZAR RUTA',
         'calc.balance.warning': 'Saldo Insuficiente',
-        'calc.balance.msg': 'Requiere saldo mínimo para operar.',
+        'calc.balance.msg': 'Requiere $180 MXN para operar.',
         'calc.gps': 'Usar mi ubicación',
         'calc.map': 'Seleccionar en mapa',
         'calc.reset': 'EDITAR',
@@ -135,4 +135,24 @@ export function useTranslations(lang: keyof typeof ui) {
     return function t(key: keyof typeof ui['en']) {
         return ui[lang]?.[key] || ui[defaultLang]?.[key] || ui['en']?.[key];
     }
+}
+
+export function getI18N(lang: string | undefined) {
+    const l = (lang && lang in ui) ? lang as keyof typeof ui : defaultLang;
+    const t = (key: string) => {
+        // Simple mock of t for the wallet's keys which aren't in ui yet
+        // In a real app, these should be in ui above
+        const keys: any = {
+            'wallet.title': { es: 'Mi Carjeta', en: 'My Wallet' },
+            'wallet.current_balance': { es: 'Saldo Actual', en: 'Current Balance' },
+            'wallet.operator_section': { es: 'Sección Operador', en: 'Operator Section' },
+            'wallet.pilot_registration': { es: 'Registro de Piloto', en: 'Pilot Registration' },
+            'wallet.pilot_benefit': { es: 'Obtén beneficios exclusivos', en: 'Get exclusive benefits' },
+            'wallet.register_cta': { es: 'Registrar', en: 'Register' },
+            'wallet.promo_title': { es: 'Código Promocional', en: 'Promo Code' },
+            'wallet.apply_promo': { es: 'Aplicar', en: 'Apply' },
+        };
+        return keys[key]?.[l] || key;
+    };
+    return { t, isEs: l === 'es' };
 }
