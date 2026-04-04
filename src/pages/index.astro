@@ -134,6 +134,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 		.animate-float { animation: float 3s ease-in-out infinite; }
 	</style>
 
+
 	<script>
 		let currentStep = 1;
 		const totalSteps = 4;
@@ -142,7 +143,6 @@ import MainLayout from '../layouts/MainLayout.astro';
 		const dots = document.querySelectorAll('.dot');
 		const btnNext = document.getElementById('btn-next');
 		const startOptions = document.querySelector('.start-options');
-		const skipBtn = document.getElementById('btn-skip');
 
 		function updateTutorialUI(lang: string) {
 			const translationsEl = document.getElementById('i18n-translations');
@@ -178,12 +178,12 @@ import MainLayout from '../layouts/MainLayout.astro';
 		}
 
 		function finishTutorial(lang: string) {
-			// Set cookie for 1 year
-			document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
-			document.cookie = `locale=${encodeURIComponent(lang)}; path=/; max-age=31536000; SameSite=Lax`;
-            // Store preference in localStorage as well
-            localStorage.setItem('lang', lang);
-			window.location.href = `/${lang}/home`;
+			const expiry = "; path=/; max-age=31536000; SameSite=Lax";
+			document.cookie = "tutorial_completed=true" + expiry;
+			document.cookie = "locale=" + encodeURIComponent(lang) + expiry;
+			localStorage.setItem('lang', lang);
+			localStorage.setItem('tutorial_completed', 'true');
+			window.location.replace(`/${lang}/home`);
 		}
 
 		btnNext?.addEventListener('click', () => { if (currentStep < totalSteps) goToStep(currentStep + 1); });
@@ -209,17 +209,23 @@ import MainLayout from '../layouts/MainLayout.astro';
 				goToStep(target);
 			});
 		});
-		// Initial Check
+
         function checkTutorial() {
-            // Only act when on the tutorial root page ("/")
-            const isRoot = window.location.pathname === '/';
+            const path = window.location.pathname;
+            const isRoot = path === "/" || path === "" || path === "/index.html";
             if (!isRoot) return;
-            if (document.cookie.includes('tutorial_completed=true')) {
+            const hasCookie = document.cookie.includes('tutorial_completed=true');
+            const hasStorage = localStorage.getItem('tutorial_completed') === 'true';
+            if (hasCookie || hasStorage) {
                 const savedLang = localStorage.getItem('lang') || 'es';
-                window.location.href = `/${savedLang}/home`;
+                if (hasStorage && !hasCookie) {
+                    const expiry = "; path=/; max-age=31536000; SameSite=Lax";
+                    document.cookie = "tutorial_completed=true" + expiry;
+                    document.cookie = "locale=" + encodeURIComponent(savedLang) + expiry;
+                }
+                window.location.replace("/" + savedLang + "/home");
             }
         }
-
         checkTutorial();
         document.addEventListener('astro:after-swap', checkTutorial);
 	</script>

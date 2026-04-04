@@ -454,16 +454,24 @@ const navItems = [
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
     </style>
+
     <script>
       function enforceTutorial() {
-        const isTutorialPage = window.location.pathname === "/" || window.location.pathname === "";
-        const isStaticAsset = window.location.pathname.includes(".") || window.location.pathname.startsWith("/_astro");
-
-        if (!isTutorialPage && !isStaticAsset && !document.cookie.includes("tutorial_completed=true")) {
-          window.location.href = "/";
+        const path = window.location.pathname;
+        const isTutorialPage = path === "/" || path === "" || path === "/index.html";
+        const isStaticAsset = path.includes(".") || path.startsWith("/_astro") || path.startsWith("/data/");
+        if (isTutorialPage || isStaticAsset) return;
+        const hasCookie = document.cookie.includes("tutorial_completed=true");
+        const hasStorage = localStorage.getItem("tutorial_completed") === "true";
+        if (!hasCookie && !hasStorage) {
+          window.location.replace("/");
+        } else if (hasStorage && !hasCookie) {
+          const savedLang = localStorage.getItem('lang') || 'es';
+          const expiry = "; path=/; max-age=31536000; SameSite=Lax";
+          document.cookie = "tutorial_completed=true" + expiry;
+          document.cookie = "locale=" + encodeURIComponent(savedLang) + expiry;
         }
       }
-
       enforceTutorial();
       document.addEventListener("astro:after-swap", enforceTutorial);
     </script>

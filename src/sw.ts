@@ -2,12 +2,24 @@
 export type {}; // Makes this file a TS module so `declare const self` can shadow the global
 declare const self: ServiceWorkerGlobalScope;
 
-const CACHE_VERSION = 'v3.3.1-fix';
+const CACHE_VERSION = 'v3.3.2-fix';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 
 // Critical assets for offline-first PWA
 const CRITICAL_ASSETS: string[] = [
   '/',
+  '/en/about',
+  '/es/about',
+  '/en/community',
+  '/es/community',
+  '/en/wallet',
+  '/es/wallet',
+  '/en/mapa',
+  '/es/mapa',
+  '/en/rutas',
+  '/es/rutas',
+  '/en/home',
+  '/es/home',
   '/home',
   '/rutas',
   '/mapa',

@@ -27,22 +27,15 @@ export const onRequest = defineMiddleware(({ request: _request, redirect, cookie
     return 'es'; // default
   };
 
+
   // 1. Root redirect
   if (path === '/' || path === '') {
     const tutorialCompleted = cookies.get('tutorial_completed')?.value === 'true';
     if (tutorialCompleted) {
-      return redirect(`/${getPreferredLocale()}/home`, 302);
+      const preferred = getPreferredLocale();
+      return redirect(`/${preferred}/home`, 302);
     }
     return next();
-  }
-
-  // Para otras rutas, verificamos si se ha completado el tutorial
-  const isStatic = path.includes('.') || path.startsWith('/_astro') || path.startsWith('/data/');
-  if (!isStatic) {
-    const tutorialCompleted = cookies.get('tutorial_completed')?.value === 'true';
-    if (!tutorialCompleted && (path.includes('/home') || path.includes('/rutas'))) {
-      return redirect('/', 302);
-    }
   }
 
   // 2. Unlocalized top-level paths (e.g., /home -> /es/home)
@@ -55,5 +48,11 @@ export const onRequest = defineMiddleware(({ request: _request, redirect, cookie
     return redirect(`/${getPreferredLocale()}/ruta/${parts[1]}`, 302);
   }
 
+  // 4. Tutorial check (Only for unlocalized paths or if we are SURE)
+  // We avoid redirecting localized paths back to / to prevent loops
+  // when cookies and localStorage are out of sync.
+  // The client-side enforceTutorial() will handle the final check.
+
   return next();
+
 });

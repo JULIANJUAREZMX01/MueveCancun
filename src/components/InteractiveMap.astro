@@ -1,4 +1,5 @@
 ---
+import { getRelativeLocaleUrl } from "astro:i18n";
 /*
  * GRAFFITI WARRIOR: Interactive Map (Leaflet)
  * Strictly Static. Vanilla JS. View Transitions Lifecycle.
@@ -225,7 +226,8 @@
           showToast(`Destino: ${name}`, 'success');
           map?.closePopup();
       } else if (action === 'routes') {
-          window.location.href = `/rutas?search=${safeUrl(name)}`;
+          const currentLang = document.documentElement.lang || "es";
+          window.location.href = `/${currentLang}/rutas?search=${safeUrl(name)}`;
       }
   }
 

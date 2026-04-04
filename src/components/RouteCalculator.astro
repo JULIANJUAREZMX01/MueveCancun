@@ -876,7 +876,8 @@ const ui = uiTranslations[currentLang];
       const mapPickerBtn = document.getElementById('map-picker-btn');
       if (mapPickerBtn) {
           mapPickerBtn.addEventListener('click', () => {
-              window.location.href = '/mapa?picker=dest';
+              const currentLang = document.documentElement.lang || 'es';
+              window.location.href = `/${currentLang}/mapa?picker=dest`;
           });
       }
 
