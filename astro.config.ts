@@ -1,6 +1,7 @@
 import { defineConfig } from "astro/config"
 import mdx from "@astrojs/mdx"
 import tailwind from "@astrojs/tailwind"
+import node from "@astrojs/node"
 import path from "path"
 import { fileURLToPath } from "url"
 
@@ -10,7 +11,10 @@ const isDev = process.env.NODE_ENV === 'development';
 
 export default defineConfig({
   site: "https://querutamellevacancun.onrender.com",
-  output: 'static',
+  // Sprint 2: output:server activa API routes dinámicas (Stripe webhook, checkout)
+  // @astrojs/node 9.5.5 — compatible con astro ^5.17.3
+  output: 'server',
+  adapter: node({ mode: 'standalone' }),
   integrations: [
     mdx(),
     tailwind({ applyBaseStyles: false })

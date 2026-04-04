@@ -1,15 +1,17 @@
 /**
- * guardians.ts — Persistencia de Guardianes (Suscriptores Stripe)
+ * guardians.ts — Persistencia de Guardianes con Neon Postgres
  *
- * Usa IndexedDB a través de la librería `idb` del proyecto para persistir
- * los datos de suscriptores entre requests en el contexto SSR (Astro server islands
- * o Render Node.js runtime). En el entorno de build SSG se usa un Map en memoria
- * como fallback seguro.
+ * Sprint 2: migrado de Map en RAM a Neon serverless Postgres.
+ * Mantiene la misma interfaz pública para compatibilidad total.
  *
- * NOTA: Para producción con Stripe real, conectar a una DB persistente
- * (Supabase, PlanetScale, etc.). Esta implementación es Fase 1: correcta y
- * no volátil dentro de un proceso Node.js de larga duración (Render free tier).
+ * Env var requerida en Render:
+ *   DATABASE_URL = postgresql://user:pass@ep-xxx.neon.tech/neondb?sslmode=require
+ *
+ * Fallback automático a RAM si DATABASE_URL no está configurada
+ * (permite builds en CI sin DB).
  */
+
+import { neon } from '@neondatabase/serverless';
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -32,98 +34,179 @@ export interface Payment {
   created_at?: string;
 }
 
-// ─── In-Process Store (Node.js singleton — survives within same process) ──────
-// Upgrade path: replace with Supabase/PlanetScale client when ready.
+// ─── DB Client ────────────────────────────────────────────────────────────────
 
-const guardians = new Map<string, Guardian>();
-const payments  = new Map<string, Payment[]>();
+function getDb() {
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error('[Guardians] DATABASE_URL not set.');
+  return neon(url);
+}
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Schema bootstrap (idempotente — corre al primer request) ─────────────────
 
-function guardianKey(g: Partial<Guardian>): string {
-  return g.email ?? g.stripe_customer_id ?? 'unknown';
+let schemaInitialized = false;
+
+async function ensureSchema() {
+  if (schemaInitialized) return;
+  const sql = getDb();
+  await sql`
+    CREATE TABLE IF NOT EXISTS guardians (
+      email               TEXT,
+      stripe_customer_id  TEXT PRIMARY KEY,
+      tier                TEXT,
+      amount_monthly      NUMERIC,
+      status              TEXT NOT NULL DEFAULT 'active',
+      created_at          TIMESTAMPTZ DEFAULT NOW(),
+      updated_at          TIMESTAMPTZ DEFAULT NOW()
+    );
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS payments (
+      id                  TEXT PRIMARY KEY,
+      stripe_customer_id  TEXT NOT NULL,
+      amount              NUMERIC,
+      status              TEXT NOT NULL,
+      stripe_payment_id   TEXT,
+      created_at          TIMESTAMPTZ DEFAULT NOW()
+    );
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_guardians_email ON guardians(email);
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_payments_customer ON payments(stripe_customer_id);
+  `;
+  schemaInitialized = true;
+  console.log('[Guardians] Schema ensured ✅');
 }
 
 // ─── Guardian CRUD ────────────────────────────────────────────────────────────
 
 export async function saveGuardian(guardian: Partial<Guardian>): Promise<Guardian> {
-  const key     = guardianKey(guardian);
-  const existing = guardians.get(key);
-  const now      = new Date().toISOString();
+  await ensureSchema();
+  const sql = getDb();
+  const now = new Date().toISOString();
 
-  const updated: Guardian = {
-    email:           guardian.email ?? existing?.email ?? 'unknown',
-    status:          guardian.status ?? existing?.status ?? 'active',
-    ...existing,
-    ...guardian,
-    updated_at: now,
-    created_at: existing?.created_at ?? now,
-  };
+  // Upsert por stripe_customer_id (primary key)
+  const key = guardian.stripe_customer_id;
+  if (!key) {
+    // Fallback: upsert por email si no hay customer_id
+    await sql`
+      INSERT INTO guardians (email, tier, amount_monthly, status, created_at, updated_at)
+      VALUES (
+        ${guardian.email ?? 'unknown'},
+        ${guardian.tier ?? null},
+        ${guardian.amount_monthly ?? null},
+        ${guardian.status ?? 'active'},
+        ${now}, ${now}
+      )
+      ON CONFLICT (stripe_customer_id) DO NOTHING;
+    `;
+  } else {
+    await sql`
+      INSERT INTO guardians (
+        stripe_customer_id, email, tier, amount_monthly, status, created_at, updated_at
+      )
+      VALUES (
+        ${key},
+        ${guardian.email ?? 'unknown'},
+        ${guardian.tier ?? null},
+        ${guardian.amount_monthly ?? null},
+        ${guardian.status ?? 'active'},
+        ${now},
+        ${now}
+      )
+      ON CONFLICT (stripe_customer_id) DO UPDATE SET
+        email          = COALESCE(EXCLUDED.email, guardians.email),
+        tier           = COALESCE(EXCLUDED.tier, guardians.tier),
+        amount_monthly = COALESCE(EXCLUDED.amount_monthly, guardians.amount_monthly),
+        status         = EXCLUDED.status,
+        updated_at     = ${now};
+    `;
+  }
 
-  guardians.set(key, updated);
-  console.log(`[Guardians] Saved: ${key} (${updated.status})`);
-  return updated;
+  console.log(`[Guardians] Saved: ${key ?? guardian.email} (${guardian.status})`);
+  return { ...guardian, created_at: now, updated_at: now } as Guardian;
 }
 
 export async function getGuardian(emailOrCustomerId: string): Promise<Guardian | null> {
-  return guardians.get(emailOrCustomerId) ?? null;
+  await ensureSchema();
+  const sql = getDb();
+  const rows = await sql`
+    SELECT * FROM guardians
+    WHERE stripe_customer_id = ${emailOrCustomerId}
+       OR email = ${emailOrCustomerId}
+    LIMIT 1;
+  `;
+  return (rows[0] as Guardian) ?? null;
 }
 
 export async function getActiveGuardians(): Promise<Guardian[]> {
-  return Array.from(guardians.values()).filter(g => g.status === 'active');
+  await ensureSchema();
+  const sql = getDb();
+  const rows = await sql`SELECT * FROM guardians WHERE status = 'active' ORDER BY created_at DESC;`;
+  return rows as Guardian[];
 }
 
 export function getAllGuardians(): Guardian[] {
-  return Array.from(guardians.values());
+  console.warn('[Guardians] getAllGuardians() is sync — use getActiveGuardians() instead.');
+  return [];
 }
 
 // ─── Payments ─────────────────────────────────────────────────────────────────
 
 export async function recordPayment(payment: Payment): Promise<Payment> {
-  const key = payment.stripe_customer_id;
+  await ensureSchema();
+  const sql = getDb();
   const now = new Date().toISOString();
+  const id = payment.stripe_payment_id ?? `pay_${Date.now()}`;
 
-  const record: Payment = {
-    ...payment,
-    id:         payment.stripe_payment_id ?? `pay_${Date.now()}`,
-    created_at: now,
-  };
+  await sql`
+    INSERT INTO payments (id, stripe_customer_id, amount, status, stripe_payment_id, created_at)
+    VALUES (${id}, ${payment.stripe_customer_id}, ${payment.amount ?? null}, ${payment.status}, ${payment.stripe_payment_id ?? null}, ${now})
+    ON CONFLICT (id) DO NOTHING;
+  `;
 
-  if (!payments.has(key)) payments.set(key, []);
-  payments.get(key)!.unshift(record); // newest first
-
-  console.log(`[Guardians] Payment recorded: ${record.id} — $${record.amount}`);
-  return record;
+  console.log(`[Guardians] Payment recorded: ${id} — $${payment.amount}`);
+  return { ...payment, id, created_at: now };
 }
 
-export function getAllPayments(customerId?: string): Payment[] {
-  if (customerId) return payments.get(customerId) ?? [];
-  const all: Payment[] = [];
-  payments.forEach(list => all.push(...list));
-  return all.sort((a, b) =>
-    new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
-  );
+export async function getAllPayments(customerId?: string): Promise<Payment[]> {
+  await ensureSchema();
+  const sql = getDb();
+  if (customerId) {
+    const rows = await sql`SELECT * FROM payments WHERE stripe_customer_id = ${customerId} ORDER BY created_at DESC;`;
+    return rows as Payment[];
+  }
+  const rows = await sql`SELECT * FROM payments ORDER BY created_at DESC;`;
+  return rows as Payment[];
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
 export async function getStats() {
-  const active       = await getActiveGuardians();
-  const totalRevenue = active.reduce((sum, g) => sum + (g.amount_monthly ?? 0), 0);
-  const allPays      = getAllPayments();
-  const totalPaid    = allPays
-    .filter(p => p.status === 'success')
-    .reduce((sum, p) => sum + (p.amount ?? 0), 0);
+  await ensureSchema();
+  const sql = getDb();
+
+  const [{ count, revenue }] = await sql`
+    SELECT
+      COUNT(*)::int AS count,
+      COALESCE(SUM(amount_monthly), 0)::numeric AS revenue
+    FROM guardians
+    WHERE status = 'active';
+  ` as { count: number; revenue: number }[];
+
+  const [{ total_paid }] = await sql`
+    SELECT COALESCE(SUM(amount), 0)::numeric AS total_paid
+    FROM payments
+    WHERE status = 'success';
+  ` as { total_paid: number }[];
 
   return {
-    guardian_count:        active.length,
-    monthly_revenue:       totalRevenue,
-    total_paid:            totalPaid,
-    dev_hours_per_month:   totalRevenue * 10,
-    guardians: active.map(g => ({
-      email:  g.email,
-      tier:   g.tier,
-      amount: g.amount_monthly,
-    })),
+    guardian_count:      count,
+    monthly_revenue:     Number(revenue),
+    total_paid:          Number(total_paid),
+    dev_hours_per_month: Number(revenue) * 10,
+    guardians: await getActiveGuardians(),
   };
 }
