@@ -1,15 +1,6 @@
-# render.yaml — MueveCancún v3.5.0
-# Sprint 2: Astro output:'server' + @astrojs/node (standalone)
-# Render Web Service (Node.js) en lugar de Static Site.
-#
-# Env vars requeridas (Render Dashboard → Environment):
-#   NODE_VERSION          → 22
-#   ENABLE_PNPM           → 1
-#   NODE_ENV              → production
-#   STRIPE_SECRET_KEY     → sk_live_...
-#   STRIPE_WEBHOOK_SECRET → whsec_RuI63mC55cDzXUr2PW4lrcHxY98ZXrRm
-#   DATABASE_URL          → postgresql://...@ep-xxx.neon.tech/neondb?sslmode=require
-#   PUBLIC_URL            → https://querutamellevacancun.onrender.com
+# render.yaml — MueveCancún v3.6.0
+# Output: static (Astro SSG) — servido como Static Site en Render
+# No requiere Node runtime — archivos estáticos desde dist/
 
 version: "1"
 projects:
@@ -19,27 +10,10 @@ projects:
     services:
     - type: web
       name: QueRutaMeLLevaCancun
-      # ⚠️  CAMBIO SPRINT 2: static → node (habilita API routes dinámicas)
-      runtime: node
+      runtime: static
       repo: https://github.com/JULIANJUAREZMX01/MueveCancun
-      envVars:
-      - key: NODE_VERSION
-        sync: false
-      - key: ENABLE_PNPM
-        sync: false
-      - key: NODE_ENV
-        value: production
-      - key: STRIPE_SECRET_KEY
-        sync: false
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false
-      - key: DATABASE_URL
-        sync: false
-      - key: PUBLIC_URL
-        value: https://querutamellevacancun.onrender.com
       buildCommand: bash scripts/setup-render.sh
-      startCommand: node dist/server/entry.mjs
-      healthCheckPath: /api/health
+      staticPublishPath: dist
       headers:
       - path: /*
         name: X-Frame-Options
@@ -50,6 +24,15 @@ projects:
       - path: /*
         name: Referrer-Policy
         value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-XSS-Protection
+        value: 1; mode=block
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
+      - path: /sw.js
+        name: Service-Worker-Allowed
+        value: /
       - path: /data/*
         name: Cache-Control
         value: public, max-age=3600, stale-while-revalidate=86400
@@ -62,5 +45,22 @@ projects:
       - path: /vendor/*
         name: Cache-Control
         value: public, max-age=31536000, immutable
+      routes:
+      - type: rewrite
+        source: /api/*
+        destination: /404.html
       previews:
         generation: automatic
+      envVars:
+      - key: NODE_VERSION
+        sync: false
+      - key: ENABLE_PNPM
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: PUBLIC_URL
+        value: https://querutamellevacancun.onrender.com
