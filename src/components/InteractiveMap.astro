@@ -247,7 +247,7 @@
           showToast(`Destino: ${name}`, 'success');
           map?.closePopup();
       } else if (action === 'routes') {
-          window.location.href = `/rutas?search=${safeUrl(name)}`;
+          const currentLang = (document.querySelector(".map-wrapper") as HTMLElement)?.dataset.lang || "es"; window.location.href = `/${currentLang}/rutas?search=${safeUrl(name)}`;
       }
   }
 
