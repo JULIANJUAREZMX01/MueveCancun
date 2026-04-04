@@ -1,31 +1,52 @@
 /**
  * src/pages/api/health.ts
  * Health check endpoint para Render.
- * Verifica conectividad con Neon DB si DATABASE_URL está configurada.
+ * Verifica conectividad con Neon DB (default) o Supabase según DATABASE_PROVIDER.
  */
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async () => {
+  const dbProvider = (process.env.DATABASE_PROVIDER ?? 'neon') as 'neon' | 'supabase';
+
   const status: Record<string, unknown> = {
     status: 'ok',
     timestamp: new Date().toISOString(),
     version: '3.5.0',
     env: process.env.NODE_ENV ?? 'unknown',
+    db_provider: dbProvider,
   };
 
-  // Ping rápido a Neon si está configurado
-  if (process.env.DATABASE_URL) {
-    try {
-      const { neon } = await import('@neondatabase/serverless');
-      const sql = neon(process.env.DATABASE_URL);
-      await sql`SELECT 1`;
-      status.db = 'connected';
-    } catch (e) {
-      status.db = 'error';
-      status.db_error = e instanceof Error ? e.message : String(e);
+  if (dbProvider === 'supabase') {
+    // Ping a Supabase si está configurado
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+      try {
+        const { getSupabaseClient } = await import('../../lib/supabase');
+        const sb = getSupabaseClient();
+        const { error } = await sb.from('guardians').select('stripe_customer_id').limit(1);
+        status.db = error ? 'error' : 'connected';
+        if (error) status.db_error = error.message;
+      } catch (e) {
+        status.db = 'error';
+        status.db_error = e instanceof Error ? e.message : String(e);
+      }
+    } else {
+      status.db = 'not_configured';
     }
   } else {
-    status.db = 'not_configured';
+    // Ping rápido a Neon si está configurado
+    if (process.env.DATABASE_URL) {
+      try {
+        const { neon } = await import('@neondatabase/serverless');
+        const sql = neon(process.env.DATABASE_URL);
+        await sql`SELECT 1`;
+        status.db = 'connected';
+      } catch (e) {
+        status.db = 'error';
+        status.db_error = e instanceof Error ? e.message : String(e);
+      }
+    } else {
+      status.db = 'not_configured';
+    }
   }
 
   const isHealthy = status.db !== 'error';
