@@ -1,33 +1,32 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
-**Fecha:** 2026-04-02
-**Versión:** 1.2.4 (Nexus Prime v3.3.6)
-**Estado General:** 🟢 OPERATIVO — Estabilización de Motor Core Completada
+**Fecha:** 2026-04-04
+**Versión:** 1.0.1 (Nexus Prime v3.6.0)
+**Estado General:** 🟢 OPERATIVO — Estabilización de Despliegue Completada
 
 ---
 
 ## 🎯 Resumen Ejecutivo
 
-Audit de Estabilización (Abril 2026) finalizado. Se han resuelto cuellos de botella críticos en la carga de WASM y el mapa, se ha sincronizado el balance de la wallet en toda la app y se han corregido errores de compilación en entornos Windows/CI. La app ha alcanzado un estado de alta resiliencia.
+Audit de Estabilización (Abril 2026) finalizado. Se han resuelto errores críticos de despliegue en Render causados por desincronización del lockfile y discrepancias de versiones en el ecosistema Astro. La app ahora cuenta con un flujo de CI/CD verificado y resiliente.
 
-### Logros Acumulados (v3.3.6)
+### Logros Acumulados (v3.6.0)
 
 | Área | Estado | Mejora |
 |------|--------|--------|
+| Despliegue | ✅ Render Sync | Lockfile sincronizado; corrección de error `ERR_PNPM_OUTDATED_LOCKFILE` |
+| Ecosistema | ✅ Astro Aligned | Versiones de Astro y @astrojs/node alineadas (v5.18.1 / v9.5.5) |
 | Motor WASM | ✅ Timeout 5s | Fallback a modo compatibilidad + Timeout de seguridad |
 | Mapa (Leaflet) | ✅ Desbloqueado | Carga independiente de WASM; UX inmediata |
-| Wallet | ✅ Sincronizada | Evento `BALANCE_UPDATED` asegura consistencia en UI |
 | Build (WASM) | ✅ Flexible | Flag `--skip-wasm` permite builds en Windows usando artefactos pre-existentes |
-| Estabilidad | ✅ Corregido | View Transitions desactivadas en Dev para evitar SyntaxError |
 
 ---
 
 ## 📁 Estructura del Proyecto (Sincronizada)
 
-- **src/utils/WasmLoader.ts**: Ahora con protección de timeout de 5 segundos.
+- **pnpm-lock.yaml**: Sincronizado con package.json para despliegues deterministas.
+- **package.json**: Dependencias actualizadas para compatibilidad con el servidor de producción.
+- **src/utils/WasmLoader.ts**: Protección de timeout de 5 segundos.
 - **src/lib/initWasm.ts**: Manejo de errores con toast de modo compatibilidad.
-- **src/components/InteractiveMap.astro**: Inicialización robusta sin deadlock.
-- **src/utils/db.ts**: Despachador central de eventos de balance.
-- **src/lib/stripe.ts**: Inicialización segura para entornos de build estáticos.
 
 ---
 
@@ -37,17 +36,16 @@ Audit de Estabilización (Abril 2026) finalizado. Se han resuelto cuellos de bot
 |---------|----------------|-----------|
 | `route-calculator` | Tests de Rust (cargo test) | ✅ PASS |
 | `master_routes.json` | Validación de catálogo | ✅ PASS |
-| `pnpm run build` | Build estática completa | ✅ SUCCESS |
-| `Wallet Sync` | Playwright Verification | ✅ VERIFIED |
+| `pnpm run build` | Build estática/servidor completa | ✅ SUCCESS |
+| `Type Safety` | tsc --noEmit | ✅ 0 ERRORS |
 
 ---
 
 ## 🔐 Seguridad & Rendimiento
 
-- **UX Resilience**: El mapa ya no espera indefinidamente al motor de búsqueda, mejorando el TTI percibido.
-- **Build Integrity**: Se previene el crash de Stripe durante el build estático cuando faltan llaves secretas.
-- **Dev Mode DX**: Se eliminan los errores de sintaxis de módulos importados en el router de Astro.
+- **Resiliencia de Build**: Se previene el fallo de despliegue mediante la alineación estricta de dependencias y validación previa al commit.
+- **UX Consistency**: El mapa y el buscador operan de forma desacoplada para garantizar disponibilidad inmediata.
 
 ---
 
-**Última actualización:** 2026-04-02 (Jules - Tactical Codebase Operator)
+**Última actualización:** 2026-04-04 (Jules - Tactical Codebase Operator)
