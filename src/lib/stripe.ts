@@ -1,99 +1,88 @@
+/**
+ * stripe.ts — Cliente Stripe para MueveCancún
+ *
+ * Usa Price IDs reales de la cuenta live de Stripe.
+ * Los Payment Links son la estrategia principal (funciona con output:static).
+ * El checkout dinámico via API requiere output:server (Fase 2 / Sprint 2).
+ *
+ * PAYMENT LINKS ACTIVOS (Stripe Dashboard):
+ *   shield:    https://buy.stripe.com/4gM5kw4ky1Ho12ccPp7AI02  → MXN $60/mes
+ *   architect: https://buy.stripe.com/9B6fZaaIWfyefX62aL7AI03  → MXN $200/mes
+ *
+ * PRICE IDs (para checkout dinámico futuro):
+ *   shield:    price_1THXsL2dM2f4HRxoguzdYtAA  → MXN $60/mes
+ *   architect: price_1THXz62dM2f4HRxorlJHnhIA  → MXN $200/mes
+ */
+
 import Stripe from 'stripe';
+
+// ─── Singleton del cliente ────────────────────────────────────────────────────
 
 let _stripe: Stripe | null = null;
 
 function getStripe(): Stripe {
-  if (typeof window !== 'undefined') throw new Error('Stripe must be initialized server-side. Ensure this function is called from an API route or server component.');
+  if (typeof window !== 'undefined') {
+    throw new Error('[Stripe] Must be initialized server-side only.');
+  }
   if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error('[Stripe] STRIPE_SECRET_KEY environment variable is not set. Ensure it is configured in your deployment environment.');
+    throw new Error('[Stripe] STRIPE_SECRET_KEY not set.');
   }
   if (!_stripe) {
-    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-03-31.basil',
+    });
   }
   return _stripe;
 }
 
-export async function createCheckoutSession(
-  tier: 'shield' | 'architect',
-  email: string
-) {
+// ─── Price IDs reales (live) ──────────────────────────────────────────────────
+
+export const PRICE_IDS = {
+  shield:    'price_1THXsL2dM2f4HRxoguzdYtAA',  // MXN $60/mes
+  architect: 'price_1THXz62dM2f4HRxorlJHnhIA',  // MXN $200/mes
+} as const;
+
+// ─── Payment Links directos (funciona en output:static sin API) ───────────────
+
+export const PAYMENT_LINKS = {
+  shield:    'https://buy.stripe.com/4gM5kw4ky1Ho12ccPp7AI02',
+  architect: 'https://buy.stripe.com/9B6fZaaIWfyefX62aL7AI03',
+} as const;
+
+export type Tier = keyof typeof PRICE_IDS;
+
+// ─── Checkout dinámico (requiere output:server — Sprint 2) ────────────────────
+
+export async function createCheckoutSession(tier: Tier, email: string) {
   const stripe = getStripe();
-  try {
-    const prices: any = {
-      shield: 300,      // .00 en centavos
-      architect: 1000,  // 0.00
-    };
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: tier === 'shield' ? 'Shield Guardian' : 'Nexus Architect',
-              description: tier === 'shield'
-                ? 'Monthly support for MueveCancún'
-                : 'Architect tier with API access',
-              images: ['https://querutamellevacancun.onrender.com/logo.png'],
-            },
-            unit_amount: prices[tier],
-          },
-          quantity: 1,
-        },
-      ],
-      mode: 'subscription',
-      billing_cycle_anchor: Math.floor(Date.now() / 1000),
-      subscription_data: {
-        metadata: {
-          tier, email,
-          source: 'muevecancun-donate',
-          city: 'cancun',
-        },
-      },
-      success_url: `${import.meta.env.PUBLIC_URL}/donate?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${import.meta.env.PUBLIC_URL}/donate?canceled=true`,
-      customer_email: email,
-      locale: 'es',
-    });
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: [{ price: PRICE_IDS[tier], quantity: 1 }],
+    mode: 'subscription',
+    subscription_data: {
+      metadata: { tier, email, source: 'muevecancun-donate', city: 'cancun' },
+    },
+    success_url: `${process.env.PUBLIC_URL || 'https://querutamellevacancun.onrender.com'}/es/donate?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url:  `${process.env.PUBLIC_URL || 'https://querutamellevacancun.onrender.com'}/es/donate?canceled=true`,
+    customer_email: email,
+    locale: 'es',
+  });
 
-    return {
-      url: session.url,
-      sessionId: session.id,
-      success: !!session.url,
-    };
-  } catch (error) {
-    console.error('Stripe session creation failed:', error);
-    throw error;
-  }
+  return { url: session.url, sessionId: session.id, success: !!session.url };
 }
 
-export async function handleStripeWebhook(
-  body: string,
-  sig: string | undefined
-) {
+// ─── Webhook ──────────────────────────────────────────────────────────────────
+
+export async function handleStripeWebhook(body: string, sig: string | undefined) {
   const stripe = getStripe();
-  if (!sig) {
-    throw new Error('No signature provided');
+
+  if (!sig) throw new Error('[Stripe Webhook] Missing stripe-signature header.');
+
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret || webhookSecret === 'whsec_mock') {
+    throw new Error('[Stripe Webhook] STRIPE_WEBHOOK_SECRET not configured.');
   }
 
-  try {
-    const event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET || 'whsec_mock'
-    );
-
-    return event;
-  } catch (error) {
-    console.error('Webhook construction error:', error);
-    throw error;
-  }
-}
-
-export function getStripeProductIds() {
-  return {
-    shield: import.meta.env.STRIPE_SHIELD_PRICE_ID || 'price_shield_test',
-    architect: import.meta.env.STRIPE_ARCHITECT_PRICE_ID || 'price_architect_test',
-  };
+  return stripe.webhooks.constructEvent(body, sig, webhookSecret);
 }
