@@ -14,14 +14,14 @@
 
 export type { Guardian, Payment } from './guardians';
 
-function provider() {
-  return (process.env.DATABASE_PROVIDER ?? 'neon') as 'neon' | 'supabase';
-}
+// Cache provider at module init — DATABASE_PROVIDER doesn't change at runtime
+import { getDbProvider } from './supabase';
+const _provider = getDbProvider();
 
 export async function saveGuardian(
   ...args: Parameters<typeof import('./guardians').saveGuardian>
 ) {
-  if (provider() === 'supabase') {
+  if (_provider === 'supabase') {
     const m = await import('./guardians-supabase');
     return m.saveGuardian(...args);
   }
@@ -32,7 +32,7 @@ export async function saveGuardian(
 export async function getGuardian(
   ...args: Parameters<typeof import('./guardians').getGuardian>
 ) {
-  if (provider() === 'supabase') {
+  if (_provider === 'supabase') {
     const m = await import('./guardians-supabase');
     return m.getGuardian(...args);
   }
@@ -41,7 +41,7 @@ export async function getGuardian(
 }
 
 export async function getActiveGuardians() {
-  if (provider() === 'supabase') {
+  if (_provider === 'supabase') {
     const m = await import('./guardians-supabase');
     return m.getActiveGuardians();
   }
@@ -52,7 +52,7 @@ export async function getActiveGuardians() {
 export async function recordPayment(
   ...args: Parameters<typeof import('./guardians').recordPayment>
 ) {
-  if (provider() === 'supabase') {
+  if (_provider === 'supabase') {
     const m = await import('./guardians-supabase');
     return m.recordPayment(...args);
   }
@@ -61,7 +61,7 @@ export async function recordPayment(
 }
 
 export async function getAllPayments(customerId?: string) {
-  if (provider() === 'supabase') {
+  if (_provider === 'supabase') {
     const m = await import('./guardians-supabase');
     return m.getAllPayments(customerId);
   }
@@ -70,7 +70,7 @@ export async function getAllPayments(customerId?: string) {
 }
 
 export async function getStats() {
-  if (provider() === 'supabase') {
+  if (_provider === 'supabase') {
     const m = await import('./guardians-supabase');
     return m.getStats();
   }

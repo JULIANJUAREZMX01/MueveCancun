@@ -4,9 +4,10 @@
  * Verifica conectividad con Neon DB (default) o Supabase según DATABASE_PROVIDER.
  */
 import type { APIRoute } from 'astro';
+import { getDbProvider } from '../../lib/supabase';
 
 export const GET: APIRoute = async () => {
-  const dbProvider = (process.env.DATABASE_PROVIDER ?? 'neon') as 'neon' | 'supabase';
+  const dbProvider = getDbProvider();
 
   const status: Record<string, unknown> = {
     status: 'ok',
@@ -24,10 +25,10 @@ export const GET: APIRoute = async () => {
         const sb = getSupabaseClient();
         const { error } = await sb.from('guardians').select('stripe_customer_id').limit(1);
         status.db = error ? 'error' : 'connected';
-        if (error) status.db_error = error.message;
-      } catch (e) {
+        if (error) status.db_error = 'DB query failed';
+      } catch {
         status.db = 'error';
-        status.db_error = e instanceof Error ? e.message : String(e);
+        status.db_error = 'DB connection failed';
       }
     } else {
       status.db = 'not_configured';
@@ -40,9 +41,9 @@ export const GET: APIRoute = async () => {
         const sql = neon(process.env.DATABASE_URL);
         await sql`SELECT 1`;
         status.db = 'connected';
-      } catch (e) {
+      } catch {
         status.db = 'error';
-        status.db_error = e instanceof Error ? e.message : String(e);
+        status.db_error = 'DB connection failed';
       }
     } else {
       status.db = 'not_configured';
