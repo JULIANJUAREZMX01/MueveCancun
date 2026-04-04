@@ -51,10 +51,13 @@ export function isSupabaseConfigured(): boolean {
   return !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
 }
 
+const VALID_PROVIDERS = new Set(['neon', 'supabase']);
+
 /**
- * Retorna el proveedor de DB activo.
+ * Retorna el proveedor de DB activo con validación.
  * Por defecto usa Neon para mantener backwards compatibility.
  */
 export function getDbProvider(): 'supabase' | 'neon' {
-  return (process.env.DATABASE_PROVIDER as 'supabase' | 'neon') ?? 'neon';
+  const raw = process.env.DATABASE_PROVIDER ?? 'neon';
+  return VALID_PROVIDERS.has(raw) ? (raw as 'supabase' | 'neon') : 'neon';
 }

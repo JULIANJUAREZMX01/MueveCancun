@@ -37,10 +37,10 @@ export async function saveGuardian(guardian: Partial<Guardian>): Promise<Guardia
   };
 
   if (!record.stripe_customer_id) {
-    // Sin customer_id: insert sin upsert por email
+    // Sin customer_id: insert con ID aleatorio
     const { error } = await sb
       .from('guardians')
-      .insert({ ...record, stripe_customer_id: `anon_${Date.now()}` });
+      .insert({ ...record, stripe_customer_id: crypto.randomUUID() });
     if (error) throw new Error(`[Supabase] saveGuardian insert: ${error.message}`);
   } else {
     const { error } = await sb
@@ -56,15 +56,25 @@ export async function saveGuardian(guardian: Partial<Guardian>): Promise<Guardia
 export async function getGuardian(emailOrCustomerId: string): Promise<Guardian | null> {
   const sb = getSupabaseClient();
 
-  const { data, error } = await sb
+  // Try by stripe_customer_id first, then by email — avoids string interpolation in .or()
+  const byCustomerId = await sb
     .from('guardians')
     .select('*')
-    .or(`stripe_customer_id.eq.${emailOrCustomerId},email.eq.${emailOrCustomerId}`)
+    .eq('stripe_customer_id', emailOrCustomerId)
+    .maybeSingle();
+
+  if (byCustomerId.error) throw new Error(`[Supabase] getGuardian (by id): ${byCustomerId.error.message}`);
+  if (byCustomerId.data) return byCustomerId.data as Guardian;
+
+  const byEmail = await sb
+    .from('guardians')
+    .select('*')
+    .eq('email', emailOrCustomerId)
     .limit(1)
     .maybeSingle();
 
-  if (error) throw new Error(`[Supabase] getGuardian: ${error.message}`);
-  return data as Guardian | null;
+  if (byEmail.error) throw new Error(`[Supabase] getGuardian (by email): ${byEmail.error.message}`);
+  return byEmail.data as Guardian | null;
 }
 
 export async function getActiveGuardians(): Promise<Guardian[]> {
