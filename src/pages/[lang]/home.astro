@@ -21,24 +21,28 @@ const title = lang === 'es' ? "Inicio" : "Home";
         <InteractiveMap center={[21.1619, -86.8515]} zoom={13} />
     </div>
 
-    <!-- Floating Mini-Game Button (Compact Industrial Style) -->
-    <a href={`/${lang}/guess`} class="fixed top-20 right-4 z-30 p-3 bg-teal-500 text-white rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all animate-bounce-slow flex items-center gap-2 group overflow-hidden max-w-[48px] hover:max-w-[200px] duration-500 no-underline" aria-label={lang === 'es' ? "Jugar Adivina Dónde Estoy" : "Play Guess Where I Am"}>
+    <!-- Floating Mini-Game Button -->
+    <a
+      href={`/${lang}/guess`}
+      class="fixed top-20 right-4 z-30 p-3 bg-teal-500 text-white rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all animate-bounce-slow flex items-center gap-2 group overflow-hidden max-w-[48px] hover:max-w-[200px] duration-500 no-underline"
+      aria-label={lang === 'es' ? "Jugar Adivina Dónde Estoy" : "Play Guess Where I Am"}
+    >
         <Icon name="camera-game" class="w-6 h-6 flex-shrink-0" />
-        <span class="font-bold text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300" data-i18n="game.title">
+        <span class="font-bold text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300" data-i18n="mini-game-label">
             {lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am"}
         </span>
     </a>
 
     <!-- Dashboard Overlay -->
-	<div class="dashboard-container pointer-events-none">
-		<div class="glass-panel-wrapper animate-fade-in-up pointer-events-auto flex flex-col items-center">
+    <div class="dashboard-container pointer-events-none">
+        <div class="glass-panel-wrapper animate-fade-in-up pointer-events-auto flex flex-col items-center">
 
-            <!-- Hero Headline — compact, doesn't overlap header -->
-            <div class="hero-headline mb-4 text-center px-2">
-                <h1 class="hero-title font-display font-black text-2xl sm:text-3xl md:text-4xl tracking-tight leading-tight">
+            <!-- Hero Headline -->
+            <div class="hero-headline mb-3 text-center px-2">
+                <h1 class="hero-title font-display font-black text-xl sm:text-2xl md:text-3xl tracking-tight leading-tight">
                     ¿Qué Ruta Me Lleva?
                 </h1>
-                <p class="hero-destination font-display font-bold text-base sm:text-lg mt-1">
+                <p class="hero-destination font-display font-bold text-sm sm:text-base mt-0.5">
                     en <span class="destination-cycler">
                         <span class="destination-text" style="--cycle-index: 0;">Cancún</span>
                         <span class="destination-text" style="--cycle-index: 1;">Puerto Morelos</span>
@@ -49,14 +53,13 @@ const title = lang === 'es' ? "Inicio" : "Home";
                 </p>
             </div>
 
-			<RouteCalculator />
-		</div>
+            <RouteCalculator />
+        </div>
     </div>
 
 </MainLayout>
 
 <script>
-    // Handle View Switching (Minimize/Maximize UI)
     window.addEventListener('VIEW_STATE_CHANGE', (e) => {
         const state = (e as CustomEvent).detail;
         const container = document.querySelector('.dashboard-container');
@@ -73,7 +76,6 @@ const title = lang === 'es' ? "Inicio" : "Home";
 </script>
 
 <style>
-/* Dashboard Shell */
 .dashboard-container {
     position: fixed;
     inset: 0;
@@ -81,8 +83,8 @@ const title = lang === 'es' ? "Inicio" : "Home";
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding: 0.75rem;
-    padding-top: calc(var(--header-h) + 0.5rem);
+    padding: 0.5rem;
+    padding-top: calc(var(--header-h) + 0.25rem);
     padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 0.5rem);
     pointer-events: none;
     overflow-y: auto;
@@ -97,135 +99,57 @@ const title = lang === 'es' ? "Inicio" : "Home";
     pointer-events: auto;
 }
 
-/* Hero Headline Styles */
+/* Hero Headline */
 .hero-headline {
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .hero-title {
-    color: #F97316;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.15);
-    animation: hero-bounce-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    color: #1e293b;
+    text-shadow: 0 1px 12px rgba(255,255,255,0.9);
+    filter: drop-shadow(0 1px 3px rgba(255,255,255,0.7));
 }
 
-.hero-destination {
-    color: var(--text-secondary);
-    text-shadow: 0 1px 6px rgba(255, 255, 255, 0.6);
+.dark .hero-title {
+    color: #f1f5f9;
+    text-shadow: 0 1px 12px rgba(0,0,0,0.8);
+    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.6));
 }
 
-.dark .hero-destination {
-    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
-}
-
-.destination-cycler {
-    display: inline-grid;
-    grid-template-areas: 'cycler';
-    text-align: left;
+/* Destination cycler animation */
+.destination-cycler { position: relative; display: inline-block; }
+.destination-text {
+    display: inline-block;
+    color: var(--color-teal, #0d9488);
+    font-weight: 900;
+    animation: cycle-dest 12.5s infinite;
+    animation-delay: calc(var(--cycle-index) * 2.5s);
+    position: absolute;
+    left: 0;
+    opacity: 0;
     white-space: nowrap;
 }
+.destination-text:first-child { position: relative; }
 
-.destination-text {
-    grid-area: cycler;
-    color: #0d9488;
-    font-weight: 800;
-    opacity: 0;
-    /* 5 items * 3s = 15s total cycle */
-    animation: cycle-destinations 15s infinite;
-    animation-delay: calc(var(--cycle-index) * 3s);
+@keyframes cycle-dest {
+    0%, 16%   { opacity: 0; transform: translateY(4px); }
+    4%, 14%   { opacity: 1; transform: translateY(0); }
+    16%, 100% { opacity: 0; transform: translateY(-4px); }
 }
 
-@keyframes cycle-destinations {
-    0% { opacity: 0; transform: translateY(8px); }
-    2% { opacity: 1; transform: translateY(0); }
-    18% { opacity: 1; transform: translateY(0); }
-    20% { opacity: 0; transform: translateY(-8px); }
-    100% { opacity: 0; transform: translateY(-8px); }
-}
+/* Map mode: hide headline, collapse panel */
+.dashboard-container.map-mode .hero-headline { opacity: 0; pointer-events: none; transform: translateY(-8px); }
+.dashboard-container.map-maximized .glass-panel-wrapper { opacity: 0; pointer-events: none; transform: translateY(20px); }
 
-@keyframes hero-bounce-in {
-    0%   { opacity: 0; transform: scale(0.9) translateY(12px); }
-    60%  { transform: scale(1.02) translateY(-2px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* Map Mode Adjustments */
-.dashboard-container.map-mode .hero-headline {
-    opacity: 0;
-    transform: translateY(-20px);
-    pointer-events: none;
-    height: 0;
-    margin: 0;
-    overflow: hidden;
-}
-
-.dashboard-container.map-mode .glass-panel-wrapper {
-    transform: translateY(10%) scale(0.95);
-    opacity: 0.95;
-}
-
-.dashboard-container.map-maximized .glass-panel-wrapper {
-    transform: translateY(40%) scale(0.9);
-    opacity: 0.8;
-}
-
-@media (min-width: 768px) {
-    .dashboard-container {
-        justify-content: center;
-        align-items: flex-start;
-        padding: 2rem;
-        padding-top: calc(var(--header-h) + 2rem);
-        padding-bottom: 2rem;
-        overflow-y: auto;
-    }
-
-    .glass-panel-wrapper {
-        margin: auto auto 0 2rem;
-        max-width: 420px;
-    }
-}
-
-@media (min-width: 1280px) {
-    .dashboard-container {
-        padding-left: 4rem;
-    }
-
-    .glass-panel-wrapper {
-        margin: auto auto 0 3rem;
-    }
-}
-
-/* Animations */
 @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
-
-.animate-fade-in-up {
-    animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Search card subtle scale entrance */
-.search-card {
-    animation: card-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
-}
-
-@keyframes card-enter {
-    from {
-        opacity: 0;
-        transform: scale(0.96) translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
+.animate-fade-in-up { animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 @keyframes bounce-slow {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-4px); }
 }
-
-.animate-bounce-slow {
-    animation: bounce-slow 3s ease-in-out infinite;
-}
+.animate-bounce-slow { animation: bounce-slow 2.5s ease-in-out infinite; }
 </style>

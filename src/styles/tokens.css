@@ -1,22 +1,22 @@
 :root {
-  /* Colors */
-  --color-primary: #0ea5e9; /* Sky-500 */
-  --color-secondary: #f97316; /* Orange-500 */
-  --color-accent: #2dd4bf; /* Teal-400 */
+  /* Colors - Enhanced Contrast */
+  --color-primary: #0284c7; /* Sky-600 (Darker for better visibility on Slate-50) */
+  --color-secondary: #ea580c; /* Orange-600 */
+  --color-accent: #0d9488; /* Teal-600 */
 
   /* Surface */
   --surface-bg: #f8fafc; /* Slate-50 */
   --surface-card: #ffffff;
   --surface-elevated: #ffffff;
 
-  /* Text */
-  --text-primary: #0f172a; /* Slate-900 */
-  --text-secondary: #475569; /* Slate-600 */
-  --text-tertiary: #94a3b8; /* Slate-400 */
+  /* Text - High Contrast */
+  --text-primary: #020617; /* Slate-950 (True black-ish) */
+  --text-secondary: #334155; /* Slate-700 */
+  --text-tertiary: #64748b; /* Slate-500 */
 
   /* Border */
-  --border-light: #f1f5f9; /* Slate-100 */
-  --border-medium: #e2e8f0; /* Slate-200 */
+  --border-light: #e2e8f0; /* Slate-200 (Darker for visibility) */
+  --border-medium: #cbd5e1; /* Slate-300 */
 
   /* Dimensions */
   --header-h: 3.5rem;
@@ -30,7 +30,7 @@
 
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-tertiary: #64748b;
+  --text-tertiary: #94a3b8;
 
   --border-light: #1e293b;
   --border-medium: #334155;

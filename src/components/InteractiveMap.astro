@@ -11,7 +11,7 @@
       <div id="map-fallback" class="absolute inset-0 bg-slate-100 flex items-center justify-center z-0">
           <div class="flex flex-col items-center gap-3">
               <div class="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Cargando Mapa...</p>
+              <p id="map-loading-text" class="text-xs font-bold text-slate-400 uppercase tracking-widest">Cargando Mapa...</p>
           </div>
       </div>
 
@@ -38,11 +38,13 @@
 <script lang="ts">
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { showToast } from "../utils/toast";
+  import { loadLeaflet } from "../utils/leafletLoader";
+  import { normalizeString } from "../utils/utils";
 
-  let map: any = null;
-  let layerGroup: any = null;
-  let stopMarkersLayer: any = null;
-  let coordinatesDB: Map<string, [number, number]> = new Map();
+  let map = null;
+  let layerGroup = null;
+  let stopMarkersLayer = null;
+  let coordinatesDB = new Map();
 
   function escapeHtml(unsafe: string) {
       return unsafe
@@ -57,32 +59,52 @@
       return encodeURIComponent(name);
   }
 
-  function drawRoute(mapInstance: any, journey: any, currentLayerGroup: any, coords: Map<string, [number, number]>) {
-      if (!mapInstance || !journey) return null;
-      if (currentLayerGroup) mapInstance.removeLayer(currentLayerGroup);
+  function drawRoute(mapInstance, journey, existingLayerGroup, coordinatesDB) {
+      if (existingLayerGroup) {
+          existingLayerGroup.clearLayers();
+      }
 
-      const newLayers: any[] = [];
-      const polylineCoords: any[] = [];
+      const L = window.L;
+      const newLayers = [];
+      const polylineCoords = [];
 
-      journey.legs.forEach((leg: any) => {
-          const legCoords = leg.stops
-              .map((s: any) => coords.get(s.nombre.toLowerCase().trim()))
-              .filter(Boolean);
+      journey.legs?.forEach((leg, index) => {
+          const legCoords = leg.stops?.map(s => {
+              const name = normalizeString(s.name);
+              const coords = coordinatesDB.get(name);
+              return coords ? [coords[0], coords[1]] : null;
+          }).filter(c => c !== null);
 
-          if (legCoords.length > 1) {
-              const color = leg.transport_type === 'Bus_HotelZone' ? '#F97316' : '#0EA5E9';
-              const poly = (window as any).L.polyline(legCoords, {
-                  color,
+          if (legCoords && legCoords.length > 1) {
+              const poly = L.polyline(legCoords, {
+                  color: index === 0 ? '#F97316' : '#0EA5E9',
                   weight: 6,
                   opacity: 0.8,
-                  lineJoin: 'round'
+                  lineJoin: 'round',
+                  className: 'animated-route-line'
               });
               newLayers.push(poly);
               polylineCoords.push(...legCoords);
+
+              if (index === 0) {
+                  newLayers.push(L.circleMarker(legCoords[0], {
+                      radius: 8, fillColor: '#FFFFFF', color: '#F97316', weight: 3, opacity: 1, fillOpacity: 1
+                  }).bindPopup("<b>Inicio</b>"));
+              }
+
+              if (index === journey.legs.length - 1) {
+                  newLayers.push(L.circleMarker(legCoords[legCoords.length - 1], {
+                      radius: 8, fillColor: '#FFFFFF', color: '#0EA5E9', weight: 3, opacity: 1, fillOpacity: 1
+                  }).bindPopup("<b>Destino</b>"));
+              } else {
+                  newLayers.push(L.circleMarker(legCoords[legCoords.length - 1], {
+                      radius: 6, fillColor: '#FFFFFF', color: '#64748b', weight: 2, opacity: 1, fillOpacity: 1
+                  }).bindPopup("<b>Transbordo</b>"));
+              }
           }
       });
 
-      const lg = (window as any).L.layerGroup(newLayers).addTo(mapInstance);
+      const lg = L.layerGroup(newLayers).addTo(mapInstance);
       if (polylineCoords.length > 0) {
           mapInstance.fitBounds(polylineCoords, { padding: [40, 40] });
       }
@@ -93,88 +115,89 @@
     if (map) return;
 
     const container = document.getElementById('map');
+    const fallback = document.getElementById('map-fallback');
     if (!container) return;
 
-    // Load dependencies from global scope (assumes Leaflet is in MainLayout head)
-    if (!(window as any).L) {
-        console.warn("[Map] Leaflet not found in window");
+    try {
+        await loadLeaflet();
+        if (fallback) fallback.classList.add('hidden');
+    } catch (e) {
+        console.error("[Map] Failed to load Leaflet", e);
+        const loadingText = document.getElementById('map-loading-text');
+        if (loadingText) loadingText.textContent = "Error al cargar Leaflet";
         return;
     }
 
-    await coordinatesStore.init();
-    coordinatesDB = coordinatesStore.getAll();
+    const L = window.L;
 
-    // Cancun Center
-    map = (window as any).L.map('map', {
+    await coordinatesStore.init();
+    coordinatesDB = coordinatesStore.getDB();
+
+    map = L.map('map', {
         center: [21.1619, -86.8515],
         zoom: 13,
         zoomControl: false,
         attributionControl: false
     });
 
-    // CartoDB Voyager (No labels for cleaner look, or standard for refs)
-    (window as any).L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: 19
     }).addTo(map);
 
-    layerGroup = (window as any).L.layerGroup().addTo(map);
+    layerGroup = L.layerGroup().addTo(map);
 
-    // Initial check for pending routes
+    // Fetch and draw stops from paradas.json
+    try {
+        const res = await fetch('/data/routes/paradas.json');
+        if (res.ok) {
+            const data = await res.json();
+            const newLayers = [];
+            data.paradas.forEach(p => {
+                const marker = L.circleMarker([p.lat, p.lng], {
+                    radius: 8,
+                    fillColor: '#0EA5E9',
+                    color: '#FFFFFF',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).bindPopup(`
+                    <div class="p-1 min-w-[160px]">
+                        <p class="font-black text-slate-900 text-sm mb-1">${escapeHtml(p.nombre)}</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">📍 Parada</p>
+                        <div class="flex flex-col gap-1">
+                            <button data-stop-name="${escapeHtml(p.nombre)}" data-action="origin" class="js-map-stop-action w-full text-xs bg-orange-500 text-white rounded-lg py-1.5 font-bold">🟠 Salgo de aquí</button>
+                            <button data-stop-name="${escapeHtml(p.nombre)}" data-action="dest" class="js-map-stop-action w-full text-xs bg-sky-500 text-white rounded-lg py-1.5 font-bold">🔵 Voy aquí</button>
+                            <button data-stop-name="${escapeHtml(p.nombre)}" data-action="routes" class="js-map-stop-action w-full text-xs bg-slate-800 text-white rounded-lg py-1.5 font-bold">Ver rutas</button>
+                        </div>
+                    </div>
+                `);
+                newLayers.push(marker);
+            });
+            stopMarkersLayer = L.layerGroup(newLayers).addTo(map);
+            console.log("✅ Map initialized with paradas.json");
+        }
+    } catch (e) {
+        console.error("Error loading paradas.json", e);
+    }
+
     const pendingRoute = localStorage.getItem('pending_route');
     if (pendingRoute) {
         try {
             const data = JSON.parse(pendingRoute);
-            const newLg = drawRoute(map, data, layerGroup, coordinatesDB);
-            if (newLg) layerGroup = newLg;
+            layerGroup = drawRoute(map, data, layerGroup, coordinatesDB);
             localStorage.removeItem('pending_route');
         } catch (e) {
             console.error("Error parsing pending route", e);
         }
     }
 
-    // --- Draw all stops as markers ---
-    const allStops = Array.from(coordinatesDB.entries());
-
-    if (allStops.length > 0 && allStops.length <= 200) {
-        const newLayers: any[] = [];
-        allStops.forEach(([key, coords]) => {
-            const displayName = coordinatesStore.getOriginalName(key) || key;
-            const isHub = (window as any).__PREFERRED_HUBS?.some((h: string) => displayName.includes(h)) ?? false;
-
-            const marker = (window as any).L.circleMarker(coords, {
-                radius: isHub ? 8 : 5,
-                fillColor: isHub ? '#F97316' : '#0EA5E9',
-                color: '#FFFFFF',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.9
-            }).bindPopup(`
-                <div class="p-1 min-w-[160px]">
-                    <p class="font-black text-slate-900 text-sm mb-1">${escapeHtml(displayName)}</p>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">${isHub ? '🔀 Hub de conexión' : '📍 Parada'}</p>
-                    <div class="flex flex-col gap-1">
-                        <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action w-full text-xs bg-orange-500 text-white rounded-lg py-1.5 font-bold">🟠 Salgo de aquí</button>
-                        <button data-stop-name="${escapeHtml(displayName)}" data-action="dest" class="js-map-stop-action w-full text-xs bg-sky-500 text-white rounded-lg py-1.5 font-bold">🔵 Voy aquí</button>
-                        <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action w-full text-xs bg-slate-800 text-white rounded-lg py-1.5 font-bold">Ver rutas</button>
-                    </div>
-                </div>
-            `);
-            newLayers.push(marker);
-        });
-
-        if (newLayers.length > 0) {
-            stopMarkersLayer = (window as any).L.layerGroup(newLayers).addTo(map);
-            const allCoords = allStops.map(([, c]) => c);
-            setTimeout(() => map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 14 }), 100);
+    window.addEventListener('SHOW_ROUTE_ON_MAP', (e) => {
+        if (e.detail && e.detail.journey) {
+            layerGroup = drawRoute(map, e.detail.journey, layerGroup, coordinatesDB);
         }
-    } else if (allStops.length > 200) {
-        console.warn(`[Map] ${allStops.length} stops — using cluster-free optimized view (zoom to see stops)`);
-        const allCoords = allStops.map(([, c]) => c);
-        setTimeout(() => map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 13 }), 100);
-    }
+    });
 
-    // --- Map click ---
-    map.on('click', (e: any) => {
+    map.on('click', (e) => {
         const { lat, lng } = e.latlng;
         const result = coordinatesStore.findNearestWithDistance(lat, lng);
 
@@ -182,10 +205,10 @@
             return;
         }
 
-        (window as any).L.popup()
+        L.popup()
             .setLatLng([
-                coordinatesDB.get(result.name.toLowerCase().trim())?.[0] ?? lat,
-                coordinatesDB.get(result.name.toLowerCase().trim())?.[1] ?? lng,
+                coordinatesDB.get(normalizeString(result.name))?.[0] ?? lat,
+                coordinatesDB.get(normalizeString(result.name))?.[1] ?? lng,
             ])
             .setContent(`
                 <div class="p-1 min-w-[170px]">
@@ -201,13 +224,12 @@
             .openOn(map);
     });
 
-    // Final measure to prevent small square
     setTimeout(() => {
-        map.invalidateSize();
+        map?.invalidateSize();
     }, 500);
   }
 
-  function handleMapAction(e: any) {
+  function handleMapAction(e) {
       const btn = e.target?.closest('.js-map-stop-action');
       if (!btn) return;
 
@@ -236,6 +258,9 @@
           return;
       }
       mapEl.dataset.initialized = 'true';
+
+      // The map no longer waits for WASM indefinitely.
+      // It initializes as soon as possible.
       initMap();
       setupGPS();
   }
@@ -252,9 +277,10 @@
               btn.classList.remove('animate-pulse', 'text-primary-500');
               const { latitude, longitude } = pos.coords;
               if (map) {
+                  const L = window.L;
                   map.setView([latitude, longitude], 16);
-                  (window as any).L.marker([latitude, longitude], {
-                      icon: (window as any).L.divIcon({
+                  L.marker([latitude, longitude], {
+                      icon: L.divIcon({
                           className: 'user-location-marker',
                           html: '<div class="pulse-ring"></div><div class="dot"></div>',
                           iconSize: [24, 24]
@@ -268,7 +294,6 @@
       });
   }
 
-  // Lifecycle
   document.addEventListener('astro:page-load', scheduleInit);
   document.addEventListener('click', handleMapAction);
 
@@ -281,7 +306,6 @@
       if (mapEl) delete mapEl.dataset.initialized;
   });
 
-  // Initial Run
   if (document.readyState === 'complete') {
       scheduleInit();
   } else {
@@ -333,5 +357,16 @@
   @keyframes map-marker-pulse {
       0% { transform: scale(0.5); opacity: 1; }
       100% { transform: scale(2.5); opacity: 0; }
+  }
+
+  .animated-route-line {
+    stroke-dasharray: 12;
+    animation: dash-flow 2s linear infinite;
+  }
+
+  @keyframes dash-flow {
+    to {
+      stroke-dashoffset: -24;
+    }
   }
 </style>

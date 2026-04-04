@@ -87,7 +87,8 @@ function validateCatalog(filePath: string): boolean {
         console.log(`✅ Schema valid. Evaluated ${data.rutas ? data.rutas.length : 0} routes.`);
         return true;
     } catch (err: unknown) {
-        console.error(`❌ Failed to parse or read JSON: ${(err as Error).message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error(`❌ Failed to parse or read JSON: ${errorMessage}`);
         return false;
     }
 }

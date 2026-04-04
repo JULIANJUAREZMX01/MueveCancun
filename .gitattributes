@@ -2,3 +2,5 @@
 *.txt  linguist-documentation=true
 *.md   linguist-documentation=true
 public/data/*.json linguist-generated=true
+public/data/routes/*.json linguist-generated=true
+public/data/routes-index.json linguist-generated=true
