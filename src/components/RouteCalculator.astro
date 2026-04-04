@@ -7,288 +7,78 @@ import Icon from './ui/Icon.astro';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-
-const searchUrl = `/api/search`;
 ---
 
-<div class="calculator-wrapper relative z-20 -mt-12 px-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
-  <Card className="p-6 md:p-8 shadow-2xl shadow-slate-900/10 border-slate-100/50 backdrop-blur-xl bg-white/90">
-    <div class="space-y-6">
-      <!-- Input Group -->
-      <div class="relative space-y-3">
-        <div class="relative group">
-          <div class="absolute left-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)] z-10"></div>
-          <Input
-            id="origin-input"
-            type="text"
-            placeholder={t('search.origin_placeholder')}
-            className="pl-10 h-14 text-sm font-bold bg-slate-50 border-transparent focus:bg-white focus:border-orange-500/30 transition-all rounded-2xl"
-            list="stops-datalist"
-          />
-        </div>
-
-        <!-- Swap Button -->
-        <button id="swap-stops-btn" class="absolute right-8 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white shadow-lg border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-primary-500 transition-all active:scale-90">
-          <Icon name="swap" className="w-4 h-4" />
-        </button>
-
-        <div class="relative group">
-          <div class="absolute left-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary-500 shadow-[0_0_10px_rgba(14,165,233,0.5)] z-10"></div>
-          <Input
-            id="dest-input"
-            type="text"
-            placeholder={t('search.destination_placeholder')}
-            className="pl-10 h-14 text-sm font-bold bg-slate-50 border-transparent focus:bg-white focus:border-primary-500/30 transition-all rounded-2xl"
-            list="stops-datalist"
-          />
-        </div>
-      </div>
-
-      <datalist id="stops-datalist"></datalist>
-
-      <!-- Action Button -->
-      <Button
-        id="search-route-btn"
-        className="w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-primary-500/20 active:scale-[0.98] transition-all group"
-      >
+<div class="calculator-wrapper relative z-20 -mt-12 px-4">
+  <Card className="p-6 shadow-2xl border-slate-100/50 backdrop-blur-xl bg-white/90">
+    <div class="space-y-4">
+      <Input id="origin-input" type="text" placeholder={t('calc.placeholder.origin')} className="h-14 font-bold bg-slate-50 rounded-2xl" />
+      <Input id="dest-input" type="text" placeholder={t('calc.placeholder.dest')} className="h-14 font-bold bg-slate-50 rounded-2xl" />
+      <Button id="search-route-btn" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest shadow-xl">
         <span id="btn-text" class="flex items-center justify-center gap-2">
-          {t('search.cta')}
-          <Icon name="arrow-right" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          {t('calc.btn')} <Icon name="arrow-right" className="w-4 h-4" />
         </span>
-        <div id="search-spinner" class="hidden">
-           <Icon name="spinner" className="w-5 h-5 animate-spin mx-auto" />
-        </div>
       </Button>
     </div>
   </Card>
 
-  <!-- Results Preview Area -->
-  <div id="results-info" class="hidden mt-8 space-y-4">
-    <div class="flex items-center justify-between px-2">
-      <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('search.results_title')}</h3>
-      <button id="btn-report-results" class="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest flex items-center gap-1">
-        ⚠️ {t('search.report_error')}
-      </button>
-    </div>
-    <div id="results-container" class="grid grid-cols-1 gap-4 pb-12">
-      <!-- Dynamic results go here -->
-    </div>
+  <div id="results-info" class="hidden mt-6 space-y-4">
+    <h3 id="results-title" class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">{t('calc.options')}</h3>
+    <div id="results-container" class="grid grid-cols-1 gap-3 pb-10"></div>
   </div>
 </div>
 
-<div id="i18n-data" data-ui={JSON.stringify(t('ui'))}></div>
-
-<script lang="ts">
+<script>
   import { WasmLoader } from "../utils/WasmLoader";
-  import { coordinatesStore } from "../utils/CoordinatesStore";
-  import { showToast } from "../utils/toast";
-  import { normalizeString } from "../utils/utils";
   import { initWasm } from "../lib/initWasm";
 
-  const i18nDataEl = document.getElementById('i18n-data');
-  const ui = i18nDataEl ? JSON.parse(i18nDataEl.dataset.ui || '{}') : {};
+  async function start() {
+      const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
+      const originInput = document.getElementById('origin-input') as HTMLInputElement;
+      const destInput = document.getElementById('dest-input') as HTMLInputElement;
+      const resultsInfo = document.getElementById('results-info');
+      const resultsContainer = document.getElementById('results-container');
+      if (!btn || !originInput || !destInput || !resultsInfo || !resultsContainer) return;
 
-  let find_route: ((o: string, d: string) => any) | null = null;
-  let wasmLoaded = false;
+      console.log("[RouteCalculator] Component starting...");
 
-  async function startCalculator() {
-      const btn = document.getElementById('search-route-btn');
-      const originInput = document.getElementById('origin-input');
-      const destInput = document.getElementById('dest-input');
-      const datalist = document.getElementById('stops-datalist');
-      const swapBtn = document.getElementById('swap-stops-btn');
+      btn.onclick =('click', async () => {
+          const oVal = originInput.value.trim();
+          const dVal = destInput.value.trim();
+          if (!oVal || !dVal) return;
 
-      if (!btn || !originInput || !destInput) return;
-
-      // WASM Initialization via initWasm
-      try {
-          const success = await initWasm();
-          if (success) {
-            const module = await WasmLoader.getModule();
-            // find_route is exported by the WASM module
-            // It might return a string that needs JSON.parse
-            find_route = (o, d) => {
-                const raw = module.find_route(o, d);
-                return raw ? JSON.parse(raw) : [];
-            };
-            wasmLoaded = true;
-            console.log("[RouteCalculator] WASM Ready and Catalog Loaded");
-          }
-      } catch (e) {
-          console.error("[RouteCalculator] WASM Failed:", e);
-      }
-
-      // Load Datalist
-      await coordinatesStore.init();
-      const stops = coordinatesStore.getDB();
-      if (datalist && stops) {
-          datalist.innerHTML = Array.from(stops.keys())
-              .map(name => `<option value="${coordinatesStore.getOriginalName(name) || name}">`)
-              .join('');
-      }
-
-      // Swap Logic
-      swapBtn?.addEventListener('click', () => {
-          const temp = originInput.value;
-          originInput.value = destInput.value;
-          destInput.value = temp;
-          swapBtn.classList.toggle('rotate-180');
-      });
-
-      // Search Logic
-      btn.addEventListener('click', async () => {
-          const origin = originInput.value.trim();
-          const dest = destInput.value.trim();
-
-          if (!origin || !dest) {
-              showToast("Por favor ingresa origen y destino", "warning");
-              return;
-          }
-
-          if (!wasmLoaded) {
-              showToast("Iniciando motor de búsqueda...", "info");
-              return;
-          }
-
+          console.log(`[RouteCalculator] Search requested: "${oVal}" -> "${dVal}"`);
           btn.disabled = true;
-          document.getElementById('search-spinner')?.classList.remove('hidden');
-          document.getElementById('btn-text')?.classList.add('hidden');
 
           try {
-              console.log(`🔍 Searching: ${origin} -> ${dest}`);
-              const results = find_route(normalizeString(origin), normalizeString(dest));
+              await initWasm();
+              const module = await WasmLoader.getModule();
+              const results = module.find_route(oVal, dVal);
+              console.log(`[RouteCalculator] Results found: ${results?.length}`);
 
-              console.log("🔍 Search Results:", results);
+              resultsInfo.classList.remove('hidden');
+              resultsContainer.innerHTML = '';
+
               if (results && results.length > 0) {
-                  window.dispatchEvent(new CustomEvent('ROUTE_CALCULATED'));
-                  renderResults(results);
+                  results.forEach((r: any) => {
+                      const card = document.createElement('div');
+                      card.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100';
+                      card.innerHTML = `<div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">${r.type}</span><span class="text-lg font-black text-slate-900">$${r.total_price} MXN</span></div>`;
+                      resultsContainer.appendChild(card);
+                  });
               } else {
-                  showToast("No se encontró una ruta directa o con 1 transbordo", "warning");
+                  resultsContainer.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold">No se encontraron rutas</div>';
               }
           } catch (e) {
-              console.error("Search Error", e);
-              showToast("Error al calcular ruta", "error");
+              console.error('[RouteCalculator] SEARCH ERROR', e);
+              resultsInfo.classList.remove('hidden');
+              resultsContainer.innerHTML = '<div class="p-4 text-red-500 text-center font-bold">Error motor</div>';
           } finally {
               btn.disabled = false;
-              document.getElementById('search-spinner')?.classList.add('hidden');
-              document.getElementById('btn-text')?.classList.remove('hidden');
           }
       });
-
-      window.addEventListener('MAP_SET_STOP', (e) => {
-          if (e.detail.type === 'origin') originInput.value = e.detail.name;
-          if (e.detail.type === 'dest') destInput.value = e.detail.name;
-          document.querySelector('.calculator-wrapper')?.scrollIntoView({ behavior: 'smooth' });
-      });
   }
 
-  function renderResults(results: any[]) {
-      const container = document.getElementById('results-container');
-      const info = document.getElementById('results-info');
-      if (!container || !info) return;
-
-      info.classList.remove('hidden');
-      container.innerHTML = '';
-
-      results.forEach((r) => {
-          const card = document.createElement('div');
-          card.className = 'bg-white p-4 rounded-3xl shadow-md border border-slate-100 flex flex-col gap-2 animate-fade-in';
-
-          const header = document.createElement('div');
-          header.className = 'flex justify-between items-center';
-
-          const typeSpan = document.createElement('span');
-          typeSpan.className = 'text-xs font-black text-slate-400 uppercase tracking-widest';
-          typeSpan.textContent = (r.type || 'Directo') + '';
-
-          const priceSpan = document.createElement('span');
-          priceSpan.className = 'text-lg font-black text-slate-900';
-          priceSpan.textContent = '$' + (r.total_price != null ? r.total_price : 10);
-
-          header.appendChild(typeSpan);
-          header.appendChild(priceSpan);
-
-          const legsContainer = document.createElement('div');
-          legsContainer.className = 'flex flex-col gap-1';
-
-          if (Array.isArray(r.legs)) {
-              r.legs.forEach((leg) => {
-                  const legRow = document.createElement('div');
-                  legRow.className = 'flex items-center gap-2';
-
-                  const dot = document.createElement('div');
-                  dot.className = 'w-2 h-2 rounded-full bg-primary-500';
-
-                  const routeSpan = document.createElement('span');
-                  routeSpan.className = 'text-sm font-bold text-slate-700';
-                  routeSpan.textContent = (leg && leg.route_id != null ? leg.route_id : '') + '';
-
-                  const stopsSpan = document.createElement('span');
-                  stopsSpan.className = 'text-xxs text-slate-400';
-                  const stopsCount = leg && Array.isArray(leg.stops) ? leg.stops.length : 0;
-                  stopsSpan.textContent = '→ ' + stopsCount + ' paradas';
-
-                  legRow.appendChild(dot);
-                  legRow.appendChild(routeSpan);
-                  legRow.appendChild(stopsSpan);
-
-                  legsContainer.appendChild(legRow);
-              });
-          }
-
-          const button = document.createElement('button');
-          button.className = 'mt-2 w-full py-2 bg-slate-50 rounded-xl text-xs font-bold text-primary-600 hover:bg-primary-50 transition-colors';
-          button.textContent = 'Ver en Mapa';
-          button.setAttribute('type', 'button');
-          button.dataset.journey = JSON.stringify(r);
-
-          card.appendChild(header);
-          card.appendChild(legsContainer);
-          card.appendChild(button);
-
-          container.appendChild(card);
-      });
-
-      container.querySelectorAll('button[data-journey]').forEach(b => {
-          b.addEventListener('click', () => {
-              const journeyAttr = b.getAttribute('data-journey') || '{}';
-              const journey = JSON.parse(journeyAttr);
-              window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey } }));
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-          });
-      });
-  }
-
-  document.addEventListener('astro:page-load', startCalculator);
-
-  if (document.readyState === 'complete') {
-      startCalculator();
-  } else {
-      window.addEventListener('load', startCalculator);
-  }
+  document.addEventListener('astro:page-load', start);
+  start();
 </script>
-
-<style>
-    .calculator-wrapper {
-        isolation: isolate;
-        z-index: 50;
-    }
-
-    .animate-fade-in {
-        animation: fade-in 0.3s ease-out;
-    }
-
-    @keyframes fade-in {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .text-xxs {
-        font-size: 0.65rem;
-    }
-
-    .rotate-180 {
-        transform: rotate(180deg) translateY(50%) !important;
-        top: 50%;
-    }
-</style>

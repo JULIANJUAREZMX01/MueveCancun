@@ -4,32 +4,26 @@ import { savePendingReport, getPendingReports, deletePendingReport, __resetDBPro
 // Mock the idb library
 vi.mock('idb', () => {
   let stores: Record<string, any> = {
-    'pending-reports': [],
-    'wallet-status': { current_balance: { amount: 180.00, signature: 'mock' } }
+    'pending-reports': {},
+    'wallet-status': { current_balance: { amount: 180.00, currency: 'MXN' } },
+    'security-keys': {}
   };
 
-  const mockTx = {
-    objectStore: (name: string) => ({
-      add: async (val: any) => {
-        const id = stores[name].length + 1;
-        stores[name].push({ ...val, id });
-      },
-      delete: async (id: number) => {
-        stores[name] = stores[name].filter((item: any) => item.id !== id);
-      },
-      getAll: async () => stores[name],
-      get: async (key: string) => stores[name][key],
-      put: async (val: any, key: string) => { stores[name][key] = val; },
-    }),
-    done: Promise.resolve(),
-  };
-
-  const mockDb = {
-    transaction: (storeName: string, mode?: string) => mockTx,
-    getAll: async (storeName: string) => stores[storeName],
+  const mockDb: any = {
+    get: async (store: string, key: string) => stores[store][key],
+    put: async (store: string, val: any, key: string) => {
+        const k = key || val.id || 'auto_' + Math.random();
+        if (store === 'pending-reports' && !val.id) val.id = Math.floor(Math.random() * 1000);
+        stores[store][val.id || k] = val;
+        return val.id || k;
+    },
+    getAll: async (store: string) => Object.values(stores[store]),
+    delete: async (store: string, id: any) => {
+        delete stores[store][id];
+    },
     _clearStore: () => {
-        stores['pending-reports'] = [];
-        stores['wallet-status'] = { current_balance: { amount: 180.00, signature: 'mock' } };
+        stores['pending-reports'] = {};
+        stores['wallet-status'] = { 'current_balance': { amount: 180.00, currency: 'MXN' } };
     }
   };
 
@@ -38,7 +32,6 @@ vi.mock('idb', () => {
   };
 });
 
-// Since we use Web Crypto API, we need to ensure it's available in the test environment.
 import { webcrypto } from 'crypto';
 if (!globalThis.crypto) {
   Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true, writable: false });

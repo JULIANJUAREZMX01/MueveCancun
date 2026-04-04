@@ -38,17 +38,9 @@ interface CatalogData {
     [key: string]: unknown;
 }
 
-function stripVolatileMeta(obj: CatalogData): CatalogData {
-    const c = JSON.parse(JSON.stringify(obj)) as CatalogData;
-    if (c.metadata) {
-        delete c.metadata.last_optimized;
-        delete c.metadata.last_merged;
-    }
-    return c;
-}
-
 try {
     const rawData = fs.readFileSync(inputPath, 'utf-8');
+    // JSON.parse in JS handles duplicate keys by keeping the last one.
     const data = JSON.parse(rawData) as CatalogData;
 
     // 1. Promote Version
@@ -78,51 +70,43 @@ try {
                 }
             }
 
-            // Ensure Tipo
-            if (!route.tipo && !route.tipo_transporte) {
-                route.tipo = 'Bus_Urbano';
+            // --- STRICT DUPLICATE PREVENTION ---
+            const newRoute: any = { ...route };
+
+            // Map tipo_transporte to tipo if tipo is missing
+            if (newRoute.tipo_transporte && !newRoute.tipo) {
+                newRoute.tipo = newRoute.tipo_transporte;
+            }
+            // Always remove tipo_transporte to avoid confusion/duplicates
+            delete newRoute.tipo_transporte;
+
+            // Default tipo
+            if (!newRoute.tipo) {
+                newRoute.tipo = 'Bus_Urbano';
             }
 
             // Normalize frecuencia_minutos to Number (WASM expectations u32)
-            if (route.frecuencia_minutos !== undefined && route.frecuencia_minutos !== null) {
-                const val = parseInt(String(route.frecuencia_minutos));
+            if (newRoute.frecuencia_minutos !== undefined && newRoute.frecuencia_minutos !== null) {
+                const val = parseInt(String(newRoute.frecuencia_minutos));
                 if (!isNaN(val)) {
-                    route.frecuencia_minutos = val;
+                    newRoute.frecuencia_minutos = val;
                 } else {
-                    delete route.frecuencia_minutos;
+                    delete newRoute.frecuencia_minutos;
                 }
             }
 
-            return route;
+            return newRoute;
         });
     }
 
     // 3. Mark as Optimized
     if (!data.metadata) data.metadata = {};
     data.metadata.optimized = true;
+    data.metadata.last_optimized = new Date().toISOString();
 
-    let needsWrite = true;
-
-    if (fs.existsSync(outputPath)) {
-        try {
-            const previousRaw = fs.readFileSync(outputPath, 'utf-8');
-            const previousData = JSON.parse(previousRaw) as CatalogData;
-
-            if (JSON.stringify(stripVolatileMeta(data)) === JSON.stringify(stripVolatileMeta(previousData)) &&
-                previousData.metadata &&
-                typeof previousData.metadata.last_optimized === 'string') {
-                needsWrite = false;
-            }
-        } catch { /* fall through: rewrite if output is missing or malformed */ }
-    }
-
-    if (!needsWrite) {
-        console.log(`✅ JSON Optimized! (content unchanged — not rewritten)`);
-    } else {
-        data.metadata.last_optimized = new Date().toISOString();
-        fs.writeFileSync(outputPath, JSON.stringify(data));
-        console.log(`✅ JSON Optimized! Saved to ${outputPath}`);
-    }
+    // Serialize with NO indentation to minimize size and ensure clean output
+    fs.writeFileSync(outputPath, JSON.stringify(data));
+    console.log(`✅ JSON Optimized! Saved to ${outputPath}`);
 
 } catch (err: unknown) {
     console.error('❌ Error optimizing JSON:', err);

@@ -16,15 +16,6 @@ export function formatDate(date: Date) {
 }
 
 export function readingTime(html: string) {
-<<<<<<< revert-46-ui-hierarchy-branding-v2-4-8861746919044972121
-  let textOnly = html;
-  let prev: string;
-  do {
-    prev = textOnly;
-    textOnly = textOnly.replace(/<[^>]*>/g, "");
-  } while (prev !== textOnly);
-  const wordCount = textOnly.split(/\s+/).length
-=======
   let textOnly = ""
 
   // Prefer DOM-based text extraction to avoid incomplete tag stripping.
@@ -39,11 +30,9 @@ export function readingTime(html: string) {
   }
 
   const wordCount = textOnly.trim().split(/\s+/).filter(Boolean).length
->>>>>>> main
   const readingTimeMinutes = ((wordCount / 200) + 1).toFixed()
   return `${readingTimeMinutes} min read`
 }
-
 
 export function truncateText(str: string, maxLength: number): string {
   const ellipsis = '…';
@@ -140,7 +129,7 @@ let _catalogCache: RouteData[] | null = null;
 export async function getClosestLandmark(lat: number, lng: number) {
     try {
         if (!_catalogCache) {
-            const response = await fetch('/data/master_routes.json');
+            const response = await fetch('/data/master_routes.optimized.json');
             if (!response.ok) throw new Error(`Failed to load routes: ${response.statusText}`);
             const data = await response.json();
             _catalogCache = data.rutas || [];
