@@ -27,7 +27,10 @@ const lang = getLangFromUrl(Astro.url);
       const theme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
       document.documentElement.classList.toggle("dark", theme === "dark");
     </script>
-  </head>
+  
+  <!-- impact.com STAT Tag -->
+  <script>(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('https://utt.impactcdn.com/P-A7155313-a1aa-4e8b-8664-478df8ea50a01.js','script','impactStat',document,window);impactStat('transformLinks');impactStat('trackImpression');</script>
+</head>
   <body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100">
     {!hideNav && (
       <header class="fixed top-0 inset-x-0 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b z-50 px-6 flex items-center justify-between">
