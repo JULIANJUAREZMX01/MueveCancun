@@ -181,8 +181,9 @@ import MainLayout from '../layouts/MainLayout.astro';
 			// Set cookie for 1 year
 			document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
 			document.cookie = `locale=${encodeURIComponent(lang)}; path=/; max-age=31536000; SameSite=Lax`;
-            // Store preference in localStorage as well
+            // Store preference and completion in localStorage as well
             localStorage.setItem('lang', lang);
+            localStorage.setItem('tutorial_completed', 'true');
 			window.location.href = `/${lang}/home`;
 		}
 
@@ -210,17 +211,27 @@ import MainLayout from '../layouts/MainLayout.astro';
 			});
 		});
 		// Initial Check
+        document.addEventListener('astro:after-swap', checkTutorial);
+        checkTutorial();
         function checkTutorial() {
-            // Only act when on the tutorial root page ("/")
-            const isRoot = window.location.pathname === '/';
+            const path = window.location.pathname;
+            const isRoot = path === "/" || path === "" || path === "/index.html" || path.endsWith("/index.html");
             if (!isRoot) return;
-            if (document.cookie.includes('tutorial_completed=true')) {
+
+            const hasCookie = document.cookie.includes('tutorial_completed=true');
+            const hasStorage = localStorage.getItem('tutorial_completed') === 'true';
+
+            if (hasCookie || hasStorage) {
                 const savedLang = localStorage.getItem('lang') || 'es';
-                window.location.href = `/${savedLang}/home`;
+
+                // Sync state to prevent loops if one is missing
+                if (hasStorage && !hasCookie) {
+                    document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
+                    document.cookie = "locale=" + encodeURIComponent(savedLang) + "; path=/; max-age=31536000; SameSite=Lax";
+                }
+
+                window.location.href = "/" + savedLang + "/home";
             }
         }
-
-        checkTutorial();
-        document.addEventListener('astro:after-swap', checkTutorial);
 	</script>
 </MainLayout>

@@ -454,12 +454,19 @@ const navItems = [
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
     </style>
+    <BrowserDetection />
     <script>
       function enforceTutorial() {
-        const isTutorialPage = window.location.pathname === "/" || window.location.pathname === "";
-        const isStaticAsset = window.location.pathname.includes(".") || window.location.pathname.startsWith("/_astro");
+        const path = window.location.pathname;
+        const isTutorialPage = path === "/" || path === "" || path === "/index.html" || path.endsWith("/index.html");
+        const isStaticAsset = (path.includes(".") && !path.endsWith(".html")) || path.startsWith("/_astro") || path.startsWith("/data/");
 
-        if (!isTutorialPage && !isStaticAsset && !document.cookie.includes("tutorial_completed=true")) {
+        if (isTutorialPage || isStaticAsset) return;
+
+        const isCompleted = document.cookie.includes("tutorial_completed=true") || localStorage.getItem("tutorial_completed") === "true";
+
+        if (!isCompleted) {
+          console.warn("[MueveCancun] Tutorial not completed, redirecting to root.");
           window.location.href = "/";
         }
       }
@@ -467,7 +474,6 @@ const navItems = [
       enforceTutorial();
       document.addEventListener("astro:after-swap", enforceTutorial);
     </script>
-    <BrowserDetection />
     <DonateNudge />
     <ReportWidget />
   </body>

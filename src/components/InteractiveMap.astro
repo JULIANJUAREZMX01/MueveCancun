@@ -37,7 +37,7 @@
 
 <script lang="ts">
   import { coordinatesStore } from "../utils/CoordinatesStore";
-  import { showToast } from "../utils/utils";
+  import { showToast } from "../utils/toast";
 
   let map: any = null;
   let layerGroup: any = null;
@@ -225,7 +225,7 @@
           showToast(`Destino: ${name}`, 'success');
           map?.closePopup();
       } else if (action === 'routes') {
-          window.location.href = `/rutas?search=${safeUrl(name)}`;
+          const currentLang = (document.querySelector(".map-wrapper") as HTMLElement)?.dataset.lang || "es"; window.location.href = `/${currentLang}/rutas?search=${safeUrl(name)}`;
       }
   }
 
