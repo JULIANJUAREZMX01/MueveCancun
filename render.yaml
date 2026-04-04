@@ -1,17 +1,15 @@
-# render.yaml — MueveCancún v3.4.1
-# Astro output:'static' — prerenderiza 180 páginas como HTML estático.
-# API routes dinámicas (Stripe webhook, reports) se invocan directamente
-# desde el cliente o se migrarán a output:'server' en fase posterior.
+# render.yaml — MueveCancún v3.5.0
+# Sprint 2: Astro output:'server' + @astrojs/node (standalone)
+# Render Web Service (Node.js) en lugar de Static Site.
 #
-# Env vars requeridas (configurar en Render Dashboard → Environment):
-#   NODE_VERSION      → 22
-#   ENABLE_PNPM       → 1
-#   NODE_ENV          → production
-#   STRIPE_SECRET_KEY → sk_live_... (o sk_test_... para staging)
-#   STRIPE_WEBHOOK_SECRET → whsec_...
-#   GITHUB_ISSUES_TOKEN   → ghp_...
-#   PUBLIC_URL        → https://querutamellevacancun.onrender.com
-#   PUBLIC_GA4_ID     → G-XXXXXXXXXX
+# Env vars requeridas (Render Dashboard → Environment):
+#   NODE_VERSION          → 22
+#   ENABLE_PNPM           → 1
+#   NODE_ENV              → production
+#   STRIPE_SECRET_KEY     → sk_live_...
+#   STRIPE_WEBHOOK_SECRET → whsec_RuI63mC55cDzXUr2PW4lrcHxY98ZXrRm
+#   DATABASE_URL          → postgresql://...@ep-xxx.neon.tech/neondb?sslmode=require
+#   PUBLIC_URL            → https://querutamellevacancun.onrender.com
 
 version: "1"
 projects:
@@ -21,7 +19,8 @@ projects:
     services:
     - type: web
       name: QueRutaMeLLevaCancun
-      runtime: static
+      # ⚠️  CAMBIO SPRINT 2: static → node (habilita API routes dinámicas)
+      runtime: node
       repo: https://github.com/JULIANJUAREZMX01/MueveCancun
       envVars:
       - key: NODE_VERSION
@@ -30,9 +29,17 @@ projects:
         sync: false
       - key: NODE_ENV
         value: production
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: PUBLIC_URL
+        value: https://querutamellevacancun.onrender.com
       buildCommand: bash scripts/setup-render.sh
-      staticPublishPath: dist
-      autoDeployTrigger: checksPass
+      startCommand: node dist/server/entry.mjs
+      healthCheckPath: /api/health
       headers:
       - path: /*
         name: X-Frame-Options
