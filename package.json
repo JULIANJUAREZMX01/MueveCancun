@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
-    "@astrojs/node": "^10.0.4",
+    "@astrojs/node": "^9.5.5",
     "@astrojs/rss": "^4.0.5",
     "@astrojs/tailwind": "^5.1.0",
     "@neondatabase/serverless": "^1.0.2",
@@ -47,7 +47,7 @@
     "@tailwindcss/typography": "^0.5.10",
     "@types/node": "^24.10.1",
     "@vercel/analytics": "^2.0.1",
-    "astro": "^5.16.15",
+    "astro": "^5.18.1",
     "autoprefixer": "^10.4.23",
     "clsx": "^2.1.1",
     "docx": "^9.6.1",
