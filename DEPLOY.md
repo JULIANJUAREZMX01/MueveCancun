@@ -1,23 +1,20 @@
 # Deployment Guide
 
-This project is deployed on **Vercel**.
+This project is deployed on **Render**.
 
-## Vercel Configuration
+## Render Configuration
 
-1. Connect your GitHub repository to Vercel.
-2. Select the **Astro** framework preset.
+1. Connect your GitHub repository to Render.
+2. Create a new **Static Site**.
 3. Configure the settings as follows:
    - **Build Command:**
      `pnpm install && pnpm run build`
-   - **Output Directory:**
+   - **Publish Directory:**
      `dist`
 
 ### Environment Variables
-Ensure the following are set in the Vercel dashboard:
-- `DATABASE_URL`: Your Neon Postgres connection string.
-- `DATABASE_PROVIDER`: `neon` (default) or `supabase`.
-- `STRIPE_SECRET_KEY`: For payments.
-- `STRIPE_WEBHOOK_SECRET`: For payment verification.
+Ensure the following are set in the Render dashboard:
+- `NODE_VERSION`: `20`
 
 ## Manual Trigger
-To trigger a manual build, push a commit to the `main` branch or use the "Deploy" button in the Vercel dashboard.
+To trigger a manual build, push a commit to the `main` branch or use the "Manual Deploy" button in the Render dashboard.

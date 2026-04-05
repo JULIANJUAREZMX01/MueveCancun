@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { renderBestResultHtml, renderTransferCardHtml } from '../utils/routeVerceler';
+import { renderBestResultHtml, renderTransferCardHtml } from '../utils/routeRenderer';
 
 const mockUi = {
     'calc.best': '¡MEJOR!',

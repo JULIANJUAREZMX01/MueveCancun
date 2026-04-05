@@ -1,7 +1,7 @@
 import { defineConfig } from "astro/config"
 import mdx from "@astrojs/mdx"
 import tailwind from "@astrojs/tailwind"
-import vercel from "@astrojs/vercel"
+import node from "@astrojs/node"
 import path from "path"
 import { fileURLToPath } from "url"
 
@@ -10,12 +10,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const isDev = process.env.NODE_ENV === 'development';
 
 export default defineConfig({
-  // URL actualizada para Vercel (placeholder si no se conoce, pero removemos la de render)
-  site: "https://mueve-cancun.vercel.app",
+  site: "https://querutamellevacancun.onrender.com",
+  // Sprint 2: output:server activa API routes dinámicas (Stripe webhook, checkout)
+  // @astrojs/node 9.5.5 — compatible con astro ^5.17.3
   output: 'server',
-  adapter: vercel({
-    webAnalytics: { enabled: true }
-  }),
+  adapter: node({ mode: 'standalone' }),
   integrations: [
     mdx(),
     tailwind({ applyBaseStyles: false })

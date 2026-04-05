@@ -80,8 +80,3 @@ test_browser*.js
 *.astro.bak
 *.astro.new
 path/
-.vercel
-dist
-target
-rust-wasm/*/target
-.vercel
