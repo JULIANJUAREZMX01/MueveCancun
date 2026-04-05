@@ -4,7 +4,7 @@
  * Sprint 2: migrado de Map en RAM a Neon serverless Postgres.
  * Mantiene la misma interfaz pública para compatibilidad total.
  *
- * Env var requerida en Vercel:
+ * Env var requerida en Render:
  *   DATABASE_URL = postgresql://user:pass@ep-xxx.neon.tech/neondb?sslmode=require
  *
  * Fallback automático a RAM si DATABASE_URL no está configurada

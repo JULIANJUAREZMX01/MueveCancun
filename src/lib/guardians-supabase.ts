@@ -5,7 +5,7 @@
  * Expone la MISMA interfaz pública: saveGuardian, getGuardian,
  * getActiveGuardians, recordPayment, getAllPayments, getStats.
  *
- * Para activar: establecer DATABASE_PROVIDER=supabase en Vercel.
+ * Para activar: establecer DATABASE_PROVIDER=supabase en Render.
  * El archivo guardians.ts (Neon) permanece intacto.
  *
  * Env vars requeridas:

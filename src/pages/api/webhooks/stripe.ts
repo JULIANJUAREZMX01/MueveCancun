@@ -7,7 +7,7 @@
  *   En el modo actual (output:'static'), este endpoint NO se ejecuta
  *   como servidor en producción. Los webhooks llegan pero no son procesados.
  *
- *   SOLUCIÓN Sprint 2: migrar a output:'server' + @astrojs/node en Vercel.
+ *   SOLUCIÓN Sprint 2: migrar a output:'server' + @astrojs/node en Render.
  *   Hasta entonces, los guardians se pueden gestionar manualmente desde
  *   el Stripe Dashboard → Customers.
  *
@@ -22,7 +22,7 @@
  *     - invoice.payment_succeeded
  *     - invoice.payment_failed
  *
- * Env vars requeridas en Vercel:
+ * Env vars requeridas en Render:
  *   STRIPE_SECRET_KEY=sk_live_...
  *   STRIPE_WEBHOOK_SECRET=whsec_RuI63mC55cDzXUr2PW4lrcHxY98ZXrRm
  */
