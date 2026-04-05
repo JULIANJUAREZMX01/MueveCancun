@@ -2,7 +2,7 @@
  * supabase.ts — Cliente Supabase Server-Side
  *
  * Integración paralela a Neon (rama: claude/supabase-integration).
- * Para activar Supabase en producción, configura en Render:
+ * Para activar Supabase en producción, configura en Vercel:
  *   SUPABASE_URL        = https://xxxx.supabase.co
  *   SUPABASE_SERVICE_KEY = service_role key (NO la anon key)
  *
@@ -29,7 +29,7 @@ export function getSupabaseClient(): SupabaseClient<Database> {
   if (!url || !key) {
     throw new Error(
       '[Supabase] SUPABASE_URL y SUPABASE_SERVICE_KEY son requeridas. ' +
-      'Configúralas en el Dashboard de Render o en tu .env local.'
+      'Configúralas en el Dashboard de Vercel o en tu .env local.'
     );
   }
 
