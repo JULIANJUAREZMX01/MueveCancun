@@ -1,6 +1,6 @@
 /**
  * src/pages/api/health.ts
- * Health check endpoint para Render.
+ * Health check endpoint para Vercel.
  * Verifica conectividad con Neon DB (default) o Supabase según DATABASE_PROVIDER.
  */
 import type { APIRoute } from 'astro';
