@@ -17,7 +17,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
 
@@ -27,7 +27,7 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@23bce300efd9da534f3ed9ca0b7a9c394f1c9d60
+        uses: Swatinem/rust-cache@823b5ca084baad149bc27f54c9c1b979207e4c27
         with:
           workspaces: rust-wasm
 
@@ -65,7 +65,7 @@ jobs:
 
       # Cache WASM binary for downstream test/build jobs
       - name: Cache WASM binary
-        uses: actions/cache@0c45773b623bec8c74a465ec46ee06132a67bc6c
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf
         with:
           path: public/wasm/route-calculator
           key: wasm-build-${{ github.sha }}
@@ -74,7 +74,7 @@ jobs:
       # Do not force-add generated files; this preserves .gitignore/repo policy.
       - name: Commit WASM artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: stefanzweifel/git-auto-commit-action@8621497c1d39c0187a03d0097a88fab0d1a9d191
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72305609d93224dbf73bc4
         with:
           commit_message: "chore(wasm): auto-build route-calculator WASM [skip ci]"
           file_pattern: "public/wasm/route-calculator/*"

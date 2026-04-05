@@ -27,17 +27,17 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
 
       - name: Setup Node 22
-        uses: actions/setup-node@60edb5dd545a775178f5252478337817d2918461
+        uses: actions/setup-node@1d429da20474c46469af3ad516f8d16717f863b7
         with:
           node-version: "22"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5df2
+        uses: pnpm/action-setup@a34848ad9613149a460456102ce69e5d41f5a91a
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@87d00f7e447df178b022203ed48e42657e29780c
@@ -45,7 +45,7 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@23bce300efd9da534f3ed9ca0b7a9c394f1c9d60
+        uses: Swatinem/rust-cache@823b5ca084baad149bc27f54c9c1b979207e4c27
         with:
           workspaces: rust-wasm
 
@@ -114,7 +114,7 @@ jobs:
 
       # --- Step 8: Auto-commit any changes ---
       - name: Commit auto-healed artifacts
-        uses: stefanzweifel/git-auto-commit-action@8621497c1d39c0187a03d0097a88fab0d1a9d191
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72305609d93224dbf73bc4
         id: auto_commit
         with:
           commit_message: |

@@ -45,10 +45,10 @@ jobs:
 
       # Checkout the default branch only — trusted code.
       # The untrusted PR branch is never checked out; its diff is fetched via API below.
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Node 22
-        uses: actions/setup-node@60edb5dd545a775178f5252478337817d2918461
+        uses: actions/setup-node@1d429da20474c46469af3ad516f8d16717f863b7
         with:
           node-version: "22"
 
