@@ -21,15 +21,15 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.label.name == 'jules'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
 
       - name: Setup Node 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f5252478337817d2918461
         with:
           node-version: "20"
 
       - name: Post acknowledgement comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: |
             await github.rest.issues.createComment({
@@ -48,7 +48,7 @@ jobs:
 
       - name: Get repository default branch
         id: repo-info
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: |
             const repo = await github.rest.repos.get({
@@ -75,7 +75,7 @@ jobs:
 
       - name: Post follow-up comment on failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: |
             await github.rest.issues.createComment({
