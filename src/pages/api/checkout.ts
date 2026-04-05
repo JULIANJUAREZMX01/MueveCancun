@@ -4,7 +4,7 @@
  * Crea sesiones de pago Stripe.
  *
  * Astro v5 + output:'static': este endpoint se compila como SSG.
- * Para servir como endpoint dinámico en producción, Render debe
+ * Para servir como endpoint dinámico en producción, Vercel debe
  * correr Node.js con output:'server' + @astrojs/node (migración futura).
  * Por ahora, las páginas de donate usan Stripe Checkout links directos.
  *
