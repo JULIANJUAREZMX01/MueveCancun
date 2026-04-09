@@ -128,6 +128,6 @@ try {
     console.log(`PR URL: ${session.pullRequestUrl || session.pullRequest?.url}`);
   }
 } catch (err) {
-  console.error('❌ Failed to create Jules session:', err.message);
+  console.error('❌ Failed to create Jules session:', err instanceof Error ? err.message : String(err));
   process.exit(1);
 }

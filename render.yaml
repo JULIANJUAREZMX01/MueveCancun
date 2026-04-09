@@ -1,4 +1,7 @@
-# Exported from Render on 2026-02-18T03:54:09Z
+# render.yaml — MueveCancún v3.6.0
+# Output: static (Astro SSG) — servido como Static Site en Render
+# No requiere Node runtime — archivos estáticos desde dist/
+
 version: "1"
 projects:
 - name: QUINTANAROO_CREATIONS
@@ -9,13 +12,55 @@ projects:
       name: QueRutaMeLLevaCancun
       runtime: static
       repo: https://github.com/JULIANJUAREZMX01/MueveCancun
+      buildCommand: bash scripts/setup-render.sh
+      staticPublishPath: dist
+      headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-XSS-Protection
+        value: 1; mode=block
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
+      - path: /sw.js
+        name: Service-Worker-Allowed
+        value: /
+      - path: /data/*
+        name: Cache-Control
+        value: public, max-age=3600, stale-while-revalidate=86400
+      - path: /icons/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /wasm/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /vendor/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      routes:
+      - type: rewrite
+        source: /api/*
+        destination: /404.html
+      previews:
+        generation: automatic
       envVars:
       - key: NODE_VERSION
         sync: false
       - key: ENABLE_PNPM
         sync: false
-      buildCommand: bash scripts/setup-render.sh
-      staticPublishPath: dist
-      autoDeployTrigger: checksPass
-      previews:
-        generation: automatic
+      - key: NODE_ENV
+        value: production
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: PUBLIC_URL
+        value: https://querutamellevacancun.onrender.com

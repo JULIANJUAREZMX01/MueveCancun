@@ -1,9 +1,9 @@
 {
   "metadata": {
     "last_updated": "2026-02-17T07:09:33.432854",
-    "source": "merge-routes.ts (78 routes from 41 files)",
+    "source": "merge-routes.ts (78 routes from 43 files)",
     "version": "3.2.0",
-    "last_merged": "2026-04-02T07:03:52.504Z"
+    "last_merged": "2026-04-03T14:13:00.283Z"
   },
   "social_alerts": [
     "Retraso en Zona Hotelera por obra pública"
@@ -434,7 +434,7 @@
       "id": "ruta_1753801260218",
       "nombre": "RUTA 31",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -533,12 +533,13 @@
           "orden": 12,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1753802299281",
       "nombre": "RUTA 81",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 10,
       "empresa": "Transporte Público",
       "paradas": [
@@ -656,13 +657,14 @@
           "lng": -86.8515,
           "orden": 19
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1759506708808",
       "nombre": "RUTA 30",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -833,13 +835,14 @@
           "orden": 21,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761456676914",
       "nombre": "RUTA 44",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1010,13 +1013,14 @@
           "orden": 21,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761458818964",
       "nombre": "RUTA 71",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1155,13 +1159,14 @@
           "orden": 17,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1754576044305",
       "nombre": "RUTA 33",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1276,13 +1281,14 @@
           "orden": 14,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1756850089371",
       "nombre": "RUTA 29",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1397,13 +1403,14 @@
           "orden": 14,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1759866849505",
       "nombre": "RUTA 79",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1566,13 +1573,14 @@
           "orden": 20,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1758230498578",
       "nombre": "RUTA 19",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1663,13 +1671,14 @@
           "orden": 11,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1759866137331",
       "nombre": "RUTA 18-A",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1792,13 +1801,14 @@
           "orden": 15,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760327653692",
       "nombre": "RUTA 28",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -1953,13 +1963,14 @@
           "orden": 19,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1759952771720",
       "nombre": "RUTA 44 COMBI",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2098,13 +2109,14 @@
           "orden": 17,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760338237012",
       "nombre": "RUTA 235-227 ",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2283,13 +2295,14 @@
           "orden": 22,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760340184559",
       "nombre": "RUTA 234",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2452,13 +2465,14 @@
           "orden": 20,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761273705821",
       "nombre": "RUTA 510",
       "tarifa": 10,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2605,13 +2619,14 @@
           "orden": 18,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760328606309",
       "nombre": "RUTA 17",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2782,13 +2797,14 @@
           "orden": 21,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760414609200",
       "nombre": "RUTA 13",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -2943,13 +2959,14 @@
           "orden": 19,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760462813166",
       "nombre": "RUTA CENTRAL ABASTOS",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3064,13 +3081,14 @@
           "orden": 14,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760462813165",
       "nombre": "RUTA 70",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3185,13 +3203,14 @@
           "orden": 14,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761460735535",
       "nombre": "RUTA 5",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3282,13 +3301,14 @@
           "orden": 11,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760989478537",
       "nombre": "RUTA 21",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3403,13 +3423,14 @@
           "orden": 14,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1464274794329",
       "nombre": "RUTA 2 TORITO",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -3716,13 +3737,14 @@
           "orden": 38,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1653475759991",
       "nombre": "RUTA 2 VILLAS DEL MAR",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -4037,13 +4059,14 @@
           "orden": 39,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760333218631",
       "nombre": "RUTA 2 LA JOYA",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -4382,13 +4405,14 @@
           "orden": 42,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761276380950",
       "nombre": "RUTA 2 CHACMOOL-PORTILLO",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -4711,13 +4735,14 @@
           "orden": 40,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761277331648",
       "nombre": "RUTA 2-15",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -5072,13 +5097,14 @@
           "orden": 44,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761277780965",
       "nombre": "RUTA 1 REHOYADA",
       "tarifa": 12,
-      "tipo": "Autobús",
+      "tipo": "Bus_Urbano",
       "empresa": "Transporte Público",
       "paradas": [
         {
@@ -5353,14 +5379,14 @@
           "orden": 34,
           "landmarks": ""
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R1",
       "tipo": "Bus_Urbano",
       "nombre": "Crucero - Zona Hotelera",
       "color": "#FF6B6B",
-      "tipo": "Bus_Urbano",
       "tarifa": 12,
       "paradas": [
         {
@@ -5391,7 +5417,6 @@
       "tipo": "Bus_Urbano",
       "nombre": "Walmart - Puerto Juárez",
       "color": "#4ECDC4",
-      "tipo": "Bus_Urbano",
       "tarifa": 10,
       "paradas": [
         {
@@ -5413,7 +5438,7 @@
     {
       "id": "R10_AEROPUERTO",
       "nombre": "R-10 Las Américas - Aeropuerto (Trabajadores)",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 15,
       "horario": {
         "inicio": "04:00-23:00"
@@ -5479,7 +5504,8 @@
           "lng": -86.8515,
           "orden": 10
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R6_WALMART_001",
@@ -5531,7 +5557,7 @@
     {
       "id": "R29_OUTLET_001",
       "nombre": "R-29 ADO - Plaza Outlet",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 12,
       "horario": {
         "inicio": "06:30 - 23:00"
@@ -5575,12 +5601,13 @@
           "lng": -86.8515,
           "orden": 6
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R17_LAKIN_001",
       "nombre": "R-17 Tierra Maya - Lak'in",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 12,
       "horario": {
         "inicio": "05:00 - 23:30"
@@ -5618,12 +5645,13 @@
           "lng": -86.8515,
           "orden": 5
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R21_AMERICAS_001",
       "nombre": "R-21 Las Américas - Kabah",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 12,
       "horario": {
         "inicio": "06:00 - 22:00"
@@ -5661,12 +5689,13 @@
           "lng": -86.8515,
           "orden": 5
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R44_CENTRO_001",
       "nombre": "R-44 Centro - Plaza Las Américas",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 13,
       "horario": {
         "inicio": "05:45 - 23:00"
@@ -5710,12 +5739,13 @@
           "lng": -86.8515,
           "orden": 6
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R5_HEROES_001",
       "nombre": "R-5 Los Héroes - Crucero",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 12,
       "horario": {
         "inicio": "06:00 - 22:00"
@@ -5753,7 +5783,8 @@
           "lng": -86.8515,
           "orden": 5
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R27_TIERRA_MAYA_001",
@@ -5808,7 +5839,7 @@
     {
       "id": "R237_RANCHO_001",
       "nombre": "R-237 Rancho Viejo - Crucero",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 12,
       "horario": {
         "inicio": "06:00 - 22:00"
@@ -5846,12 +5877,13 @@
           "lng": -86.8515,
           "orden": 5
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R71_RESIDENCIAL_001",
       "nombre": "R-71 Polígono Sur - Centro",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 13,
       "horario": {
         "inicio": "06:00 - 22:00"
@@ -5889,12 +5921,13 @@
           "lng": -86.8515,
           "orden": 5
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R31_UNIVERSIDAD_001",
       "nombre": "R-31 Universidad del Caribe - Centro",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 12,
       "horario": {
         "inicio": "07:00 - 21:00"
@@ -5932,12 +5965,13 @@
           "lng": -86.8515,
           "orden": 5
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R30_REG103_001",
       "nombre": "R-30 Región 103 - Zona Hotelera",
-      "tipo": "Bus_Urban",
+      "tipo": "Bus_Urbano",
       "tarifa": 15,
       "horario": {
         "inicio": "05:00 - 23:00"
@@ -5975,7 +6009,8 @@
           "lng": -86.8515,
           "orden": 5
         }
-      ]
+      ],
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R33_REG102_001",

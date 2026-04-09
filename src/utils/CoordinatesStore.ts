@@ -1,6 +1,7 @@
 import { getDistance } from "./geometry";
 import type { RoutesCatalog, RouteData } from "../types";
 import { SpatialHash } from "./SpatialHash";
+import { normalizeString } from "./utils";
 
 // Define Types
 type Coordinate = { name: string; lat: number; lng: number };
@@ -63,8 +64,8 @@ export class CoordinatesStore {
                             const lat = stop.lat ?? stop.latitude;
                             const lng = stop.lng ?? stop.longitude ?? stop.lon;
                             if (lat == null || lng == null || typeof lat !== 'number' || typeof lng !== 'number') return;
-                            // Normalize Key (lowercase for case-insensitive lookup)
-                            const key = stop.nombre.toLowerCase().trim();
+                            // Normalize Key (accent-insensitive lookup)
+                            const key = normalizeString(stop.nombre);
                             if (this.db) this.db.set(key, [lat, lng]);
                             // Preserve original casing for display
                             this.originalNames.set(key, stop.nombre.trim());
@@ -93,7 +94,7 @@ export class CoordinatesStore {
 
     getCoordinates(stopName: string) {
         if (!this.db) return null;
-        const key = stopName.toLowerCase().trim();
+        const key = normalizeString(stopName);
         return this.db.get(key) || null;
     }
 
@@ -103,7 +104,7 @@ export class CoordinatesStore {
 
     /** Returns the original-cased stop name for a given key (lowercase lookup). */
     getOriginalName(key: string): string | undefined {
-        return this.originalNames.get(key.toLowerCase().trim());
+        return this.originalNames.get(normalizeString(key));
     }
 
     /** Returns the full map of lowercase key → original-cased name. */

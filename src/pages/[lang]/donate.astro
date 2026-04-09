@@ -1,220 +1,202 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-export function getStaticPaths() { return [{ params: { lang: 'es' } }, { params: { lang: 'en' } }]; }
-import { getLangFromUrl, ui } from '../../utils/i18n';
+import { getLangFromUrl } from '../../utils/i18n';
+import { PAYMENT_LINKS } from '../../lib/stripe';
+
+export function getStaticPaths() {
+  return [
+    { params: { lang: 'es' } },
+    { params: { lang: 'en' } },
+  ];
+}
 
 const lang = getLangFromUrl(Astro.url);
+const isEs = lang === 'es';
 
-const translations = {
-  es: {
-    title: 'Escudo de Cancún',
-    subtitle: 'Sustenta el transporte de tu ciudad',
-    description: 'MueveCancún es 100% gratis porque creemos que el transporte es un derecho. Pero mantenerlo vivo cuesta. Apoya con lo que puedas.',
-    qrText: 'Escaneame para donar',
-    directLinkText: '¿El botón no funciona? Usa este enlace directo',
-    tiers: {
-      free: {
-        name: 'Libre',
-        price: '$0',
-        features: ['Búsqueda de rutas', 'Offline-first', 'Precios exactos', 'Transbordos'],
-        cta: 'Ya lo tienes'
-      },
-      shield: {
-        name: 'Shield Guardian',
-        price: '$3/mes',
-        features: ['Todo lo anterior', 'Notificaciones de rutas alteradas', 'Datos históricos', 'Acceso a features beta', 'Soporte prioritario'],
-        cta: 'Apoyar MueveCancún',
-        recommended: true,
-        qr: '/qr-shield.png',
-        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
-        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02'
-      },
-      architect: {
-        name: 'Nexus Architect',
-        price: '$10/mes',
-        features: ['Todo lo anterior', 'Votación en prioridades', 'Comunidad privada', 'API beta access', 'Créditos en el proyecto'],
-        cta: 'Construir el futuro',
-        qr: '/qr-architect.png',
-        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB',
-        link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03'
-      }
-    },
-    impact: {
-      title: 'Tu impacto',
-      stats: [
-        { label: 'Guardianes', value: '7' },
-        { label: 'Ingreso mensual', value: '$21' },
-        { label: 'Horas dev/mes', value: '210' }
-      ]
-    }
+/**
+ * ARQUITECTURA DE PAGOS (output:static)
+ *
+ * Los botones apuntan a Payment Links de Stripe directamente.
+ * No hay llamada a /api/checkout (no existe en static mode).
+ * PAYMENT_LINKS viene de src/lib/stripe.ts → fuente única de verdad.
+ *
+ * Sprint 2: migrar a output:server habilita el checkout dinámico
+ * con PRICE_IDS reales y gestión de sesiones server-side.
+ */
+
+const plans = {
+  shield: {
+    name: isEs ? 'Shield Guardian' : 'Shield Guardian',
+    price: 'MX$60',
+    period: isEs ? '/mes' : '/mo',
+    currency: 'MXN',
+    link: PAYMENT_LINKS.shield,
+    recommended: false,
+    features: isEs
+      ? ['Notificaciones de rutas alteradas', 'Acceso a datos históricos', 'Insignia Guardian en la App', 'Soporte prioritario']
+      : ['Altered route notifications', 'Historical data access', 'Guardian badge in App', 'Priority support'],
   },
-  en: {
-    title: 'Shield of Cancun',
-    subtitle: 'Sustain your city\'s transport',
-    description: 'MueveCancún is 100% free because we believe transport is a right. But keeping it alive costs money. Support with what you can.',
-    qrText: 'Scan me to donate',
-    directLinkText: 'Button not working? Use this direct link',
-    tiers: {
-      free: {
-        name: 'Free',
-        price: '$0',
-        features: ['Route search', 'Offline-first', 'Exact pricing', 'Transfers'],
-        cta: 'Already active'
-      },
-      shield: {
-        name: 'Shield Guardian',
-        price: '$3/mo',
-        features: ['Everything above', 'Altered route alerts', 'Historical data', 'Beta feature access', 'Priority support'],
-        cta: 'Support MueveCancún',
-        recommended: true,
-        qr: '/qr-shield.png',
-        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
-        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02'
-      },
-      architect: {
-        name: 'Nexus Architect',
-        price: '$10/mo',
-        features: ['Everything above', 'Priority voting', 'Private community', 'API beta access', 'Project credits'],
-        cta: 'Build the future',
-        qr: '/qr-architect.png',
-        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB',
-        link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03'
-      }
-    },
-    impact: {
-      title: 'Your impact',
-      stats: [
-        { label: 'Guardians', value: '7' },
-        { label: 'Monthly Revenue', value: '$21' },
-        { label: 'Dev hours/mo', value: '210' }
-      ]
-    }
-  }
+  architect: {
+    name: isEs ? 'Nexus Architect' : 'Nexus Architect',
+    price: 'MX$200',
+    period: isEs ? '/mes' : '/mo',
+    currency: 'MXN',
+    link: PAYMENT_LINKS.architect,
+    recommended: true,
+    features: isEs
+      ? ['Todo lo anterior', 'Voto en nuevas funcionalidades', 'Comunidad privada', 'Acceso a la API de MueveCancún', 'Tu nombre en los créditos']
+      : ['Everything above', 'Vote on new features', 'Private community', 'MueveCancún API access', 'Your name in credits'],
+  },
 };
 
-const t = translations[lang] || translations.es;
+const milestones = isEs
+  ? [{ label: 'Fase 1: Servidores', goal: 960, emoji: '🎯' }, { label: 'Fase 2: Desarrollo', goal: 3200, emoji: '⚡' }]
+  : [{ label: 'Phase 1: Servers', goal: 960, emoji: '🎯' }, { label: 'Phase 2: Development', goal: 3200, emoji: '⚡' }];
 ---
 
-<MainLayout title={t.title}>
-  <!-- Stripe script -->
-  <script async src="https://js.stripe.com/v3/buy-button.js"></script>
-
+<MainLayout title={isEs ? 'Apoya el Proyecto' : 'Support the Project'}>
   <div class="max-w-4xl mx-auto px-4 py-12 space-y-16">
 
-    <!-- Hero -->
-    <header class="text-center space-y-4">
-      <div class="inline-flex items-center justify-center w-20 h-20 bg-primary-500 rounded-2xl shadow-xl shadow-primary-500/20 mb-4 animate-bounce">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
+    <!-- Header -->
+    <header class="text-center space-y-4 animate-fade-in">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-500/10 text-primary-500 text-xs font-black uppercase tracking-widest border border-primary-500/20">
+        🛡️ {isEs ? 'Apoya el Proyecto' : 'Support the Project'}
       </div>
-      <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">{t.title}</h1>
-      <p class="text-xl text-primary-600 font-bold">{t.subtitle}</p>
-      <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-        {t.description}
+      <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+        {isEs ? 'MueveCancún es posible gracias a ti' : 'MueveCancún is possible thanks to you'}
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+        {isEs
+          ? 'Proyecto independiente sin fines de lucro. Tu apoyo mantiene los servidores y mejora los algoritmos de rutas para toda la comunidad de Cancún.'
+          : 'Independent non-profit project. Your support keeps servers running and improves routing algorithms for the entire Cancún community.'}
       </p>
     </header>
 
-    <!-- Impact Stats -->
-    <section class="bg-slate-100 dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700">
-      <h2 class="text-center text-sm font-black uppercase tracking-widest text-slate-500 mb-8">{t.impact.title}</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {t.impact.stats.map(stat => (
-          <div class="text-center space-y-1">
-            <p class="text-3xl font-black text-slate-900 dark:text-white">{stat.value}</p>
-            <p class="text-sm font-bold text-slate-500">{stat.label}</p>
+    <!-- Progress Dashboard -->
+    <section class="bg-slate-900 rounded-[2.5rem] p-8 md:p-10 shadow-2xl relative overflow-hidden group border border-white/5 animate-fade-in" style="animation-delay: 0.1s;">
+      <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+        <svg width="120" height="120" viewBox="0 0 24 24" fill="white"><path d="M12 21.593c-.425-.394-8.993-7.817-8.993-12.097C3.007 5.48 7.016 2 12 2s8.993 3.48 8.993 7.496c0 4.28-8.568 11.703-8.993 12.097z"/></svg>
+      </div>
+      <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+        <div>
+          <h2 class="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-2">
+            {isEs ? 'Progreso de Fondos (MXN)' : 'Funding Progress (MXN)'}
+          </h2>
+          <div class="flex items-baseline gap-2">
+            <span id="mrr-amount" class="text-4xl font-black text-emerald-400">$0</span>
+            <span class="text-slate-500 text-sm font-bold">/MRR</span>
+          </div>
+        </div>
+        <div class="text-center md:text-right">
+          <p id="subs-count" class="text-3xl font-black text-white">0</p>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            {isEs ? 'Guardianes Activos' : 'Active Guardians'}
+          </p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {milestones.map((ms) => (
+          <div class="milestone-item space-y-2" data-goal={ms.goal}>
+            <div class="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              <span>{ms.emoji} {ms.label}</span>
+              <span class="text-emerald-400 milestone-current">MX$0 / MX${ms.goal}</span>
+            </div>
+            <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+              <div class="milestone-bar h-full bg-emerald-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+            </div>
           </div>
         ))}
       </div>
     </section>
 
     <!-- Tiers -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-      {Object.entries(t.tiers).map(([key, tier]) => (
-        <div class:list={[
-          "relative bg-white dark:bg-slate-900 rounded-3xl p-8 border-2 transition-all hover:scale-[1.02]",
-          tier.recommended ? "border-primary-500 shadow-xl shadow-primary-500/10 scale-105 z-10" : "border-slate-200 dark:border-slate-800"
-        ]}>
-          {tier.recommended && (
-            <span class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full">
-              Recomendado
-            </span>
-          )}
-          <div class="space-y-6">
-            <div class="text-center space-y-2">
-              <h3 class="text-xl font-black text-slate-900 dark:text-white">{tier.name}</h3>
-              <p class="text-3xl font-black text-primary-600">{tier.price}</p>
-            </div>
-            <ul class="space-y-3">
-              {tier.features.map(feature => (
-                <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                  </svg>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-
-            {tier.buyButtonId ? (
-              <div class="space-y-6">
-                <div class="flex justify-center">
-                  <stripe-buy-button
-                    buy-button-id={tier.buyButtonId}
-                    publishable-key="pk_live_51T6oKE2dM2f4HRxoh2mpjFg4MHpHXxqc65ulAos4p22xPpD3v55ejGpiGx1Y8vdK5doYMTPGvTPi6RzsqdVv2xvE000caSvFag"
-                  >
-                  </stripe-buy-button>
+    <section class="space-y-8 animate-fade-in" style="animation-delay: 0.2s;">
+      <h2 class="text-2xl font-black text-slate-900 dark:text-white text-center">
+        {isEs ? 'Suscripciones Mensuales' : 'Monthly Subscriptions'}
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {Object.entries(plans).map(([key, plan]) => (
+          <div class:list={[
+            "relative bg-white dark:bg-slate-900 rounded-[2rem] p-8 border-2 transition-all hover:translate-y-[-4px]",
+            plan.recommended ? "border-primary-500 shadow-2xl shadow-primary-500/10" : "border-slate-100 dark:border-slate-800"
+          ]}>
+            <div class="space-y-6">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="text-xl font-black text-slate-900 dark:text-white">{plan.name}</h3>
+                  <p class="text-3xl font-black text-primary-500 mt-1">
+                    {plan.price}<span class="text-sm font-bold opacity-50">{plan.period}</span>
+                  </p>
+                  <p class="text-xs text-slate-400 mt-0.5 font-bold">{plan.currency}</p>
                 </div>
-
-                {tier.link && (
-                  <div class="text-center">
-                    <a href={tier.link} class="text-[10px] text-primary-500 hover:underline font-bold transition-all">
-                      {t.directLinkText}
-                    </a>
-                  </div>
-                )}
-
-                {tier.qr && (
-                  <div class="flex flex-col items-center gap-2">
-                    <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-md border border-slate-100">
-                      <img src={tier.qr} alt={t.qrText} class="w-full h-full object-contain" />
-                    </div>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{t.qrText}</p>
-                  </div>
+                {plan.recommended && (
+                  <span class="bg-primary-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                    {isEs ? 'Recomendado' : 'Recommended'}
+                  </span>
                 )}
               </div>
-            ) : (
-              <button class:list={[
-                "w-full py-4 rounded-2xl font-black text-sm transition-all cursor-default opacity-50",
-                tier.recommended
-                  ? "bg-primary-500 text-white shadow-lg shadow-primary-500/30"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white"
-              ]}>
-                {tier.cta}
-              </button>
-            )}
+              <ul class="space-y-3">
+                {plan.features.map((f) => (
+                  <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400 leading-tight">
+                    <svg class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <!-- Enlace directo a Stripe — funciona en output:static sin API dinámica -->
+              <a
+                href={plan.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block w-full py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-center font-black text-sm uppercase tracking-widest hover:opacity-90 transition-opacity no-underline"
+              >
+                {isEs ? 'Suscribirme' : 'Subscribe'}
+              </a>
+              <p class="text-center text-[10px] text-slate-400 font-bold">
+                {isEs ? 'Pago seguro vía Stripe · Cancela cuando quieras' : 'Secure payment via Stripe · Cancel anytime'}
+              </p>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+    </section>
+
+    <!-- Success / Cancel banners -->
+    <div id="payment-success" class="hidden bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6 text-center space-y-2 animate-fade-in">
+      <p class="text-2xl">🎉</p>
+      <h3 class="font-black text-emerald-600 dark:text-emerald-400 text-lg">
+        {isEs ? '¡Gracias por tu apoyo!' : 'Thank you for your support!'}
+      </h3>
+      <p class="text-sm text-slate-500">
+        {isEs ? 'Recibirás un correo de confirmación de Stripe.' : 'You will receive a confirmation email from Stripe.'}
+      </p>
+    </div>
+    <div id="payment-canceled" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 text-center space-y-2 animate-fade-in">
+      <p class="text-2xl">😔</p>
+      <h3 class="font-black text-amber-600 dark:text-amber-400">
+        {isEs ? 'Pago cancelado' : 'Payment canceled'}
+      </h3>
+      <p class="text-sm text-slate-500">
+        {isEs ? 'Sin problema. Puedes volver cuando quieras.' : 'No problem. You can come back anytime.'}
+      </p>
     </div>
 
-    <!-- Trust -->
-    <footer class="text-center space-y-6 pt-12 border-top border-slate-100 dark:border-slate-800">
-      <p class="text-sm text-slate-500 italic">
-        "Este no es un proyecto de código. Es un proyecto de confianza."
-      </p>
-      <div class="flex justify-center gap-4">
-        <div class="flex -space-x-2">
-          {[1,2,3,4,5,6,7].map(i => (
-            <div class="w-8 h-8 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold">
-              G{i}
-            </div>
-          ))}
-        </div>
-        <p class="text-xs text-slate-400 flex items-center gap-2">
-           7 Guardianes sostienen MueveCancún
-        </p>
-      </div>
-    </footer>
   </div>
 </MainLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === 'true') {
+      document.getElementById('payment-success')?.classList.remove('hidden');
+      // Scroll suave al banner
+      document.getElementById('payment-success')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    if (params.get('canceled') === 'true') {
+      document.getElementById('payment-canceled')?.classList.remove('hidden');
+      document.getElementById('payment-canceled')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+</script>
