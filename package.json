@@ -48,6 +48,7 @@
     "@tailwindcss/typography": "^0.5.10",
     "@types/node": "^24.10.1",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "astro": "^5.18.1",
     "autoprefixer": "^10.4.23",
     "clsx": "^2.1.1",
