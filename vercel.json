@@ -1,4 +1,6 @@
 {
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm prepare-data && node scripts/validate-routes.ts && node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && tsc -p tsconfig.client.json && astro build",
   "headers": [
     {
       "source": "/(.*)",
