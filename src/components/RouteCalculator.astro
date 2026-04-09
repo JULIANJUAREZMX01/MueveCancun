@@ -31,6 +31,7 @@ const t = useTranslations(lang);
 <script>
   import { WasmLoader } from "../utils/WasmLoader";
   import { initWasm } from "../lib/initWasm";
+  import { escapeHtml } from "../utils/utils";
 
   async function start() {
       const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
@@ -63,7 +64,7 @@ const t = useTranslations(lang);
                   results.forEach((r: any) => {
                       const card = document.createElement('div');
                       card.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100';
-                      card.innerHTML = `<div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">${r.type}</span><span class="text-lg font-black text-slate-900">$${r.total_price} MXN</span></div>`;
+                      card.innerHTML = `<div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">${escapeHtml(r.type)}</span><span class="text-lg font-black text-slate-900">$${escapeHtml(r.total_price)} MXN</span></div>`;
                       resultsContainer.appendChild(card);
                   });
               } else {
