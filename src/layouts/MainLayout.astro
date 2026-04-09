@@ -15,6 +15,7 @@ import BrowserDetection from '../components/ui/BrowserDetection.astro';
 import DonateNudge from '../components/ui/DonateNudge.astro';
 import { ui as uiTranslations, getLangFromUrl } from '../utils/i18n';
 import { safeJsonStringify, getRelativeLocaleUrl } from '../utils/utils';
+import SpeedInsights from '@vercel/speed-insights/astro';
 import '../styles/tokens.css';
 import '../styles/main.css';
 import '../index.css';
@@ -69,7 +70,7 @@ const navItems = [
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         img-src 'self' data: https://*.cartocdn.com https://*.openstreetmap.org https://www.google-analytics.com;
         font-src 'self' https://fonts.gstatic.com;
-        connect-src 'self' https://*.cartocdn.com https://www.google-analytics.com;
+        connect-src 'self' https://*.cartocdn.com https://www.google-analytics.com https://vitals.vercel-analytics.com;
         worker-src 'self' blob:;
         object-src 'none';
         base-uri 'self';
@@ -331,6 +332,7 @@ const navItems = [
     </>
     )}
     <ClientRouter />
+    <SpeedInsights />
   </head>
   <body id="top" class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
