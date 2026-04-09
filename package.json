@@ -23,7 +23,7 @@
     "prepare-data": "node --experimental-strip-types scripts/merge-routes.ts && node --experimental-strip-types scripts/optimize-json.ts",
     "dev": "pnpm run prepare-data && astro dev",
     "dev:network": "pnpm run prepare-data && astro dev --host",
-    "build": "pnpm prepare-data && node --experimental-strip-types scripts/validate-routes.ts && node --experimental-strip-types scripts/build-wasm.ts && node scripts/check-wasm.cjs && tsc -p tsconfig.client.json && tsc -p tsconfig.sw.json && astro build",
+    "build": "pnpm prepare-data && node scripts/validate-routes.ts && node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && tsc -p tsconfig.client.json && tsc -p tsconfig.sw.json && astro build",
     "build:wasm": "node --experimental-strip-types scripts/build-wasm.ts",
     "compile-client": "tsc -p tsconfig.client.json",
     "compile-sw": "tsc -p tsconfig.sw.json",
