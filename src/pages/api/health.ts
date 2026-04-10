@@ -1,10 +1,12 @@
 /**
  * src/pages/api/health.ts
- * Health check endpoint para Vercel.
+ * Health check endpoint para Render/Render.
  * Verifica conectividad con Neon DB (default) o Supabase según DATABASE_PROVIDER.
  */
 import type { APIRoute } from 'astro';
 import { getDbProvider } from '../../lib/supabase';
+
+export const prerender = false;
 
 export const GET: APIRoute = async () => {
   const dbProvider = getDbProvider();
@@ -12,13 +14,12 @@ export const GET: APIRoute = async () => {
   const status: Record<string, unknown> = {
     status: 'ok',
     timestamp: new Date().toISOString(),
-    version: '3.5.0',
+    version: '3.6.2',
     env: process.env.NODE_ENV ?? 'unknown',
     db_provider: dbProvider,
   };
 
   if (dbProvider === 'supabase') {
-    // Ping a Supabase si está configurado
     if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
       try {
         const { getSupabaseClient } = await import('../../lib/supabase');
@@ -26,24 +27,23 @@ export const GET: APIRoute = async () => {
         const { error } = await sb.from('guardians').select('stripe_customer_id').limit(1);
         status.db = error ? 'error' : 'connected';
         if (error) status.db_error = 'DB query failed';
-      } catch {
+      } catch (e) {
         status.db = 'error';
-        status.db_error = 'DB connection failed';
+        status.db_error = e instanceof Error ? e.message : 'DB connection failed';
       }
     } else {
       status.db = 'not_configured';
     }
   } else {
-    // Ping rápido a Neon si está configurado
     if (process.env.DATABASE_URL) {
       try {
         const { neon } = await import('@neondatabase/serverless');
         const sql = neon(process.env.DATABASE_URL);
         await sql`SELECT 1`;
         status.db = 'connected';
-      } catch {
+      } catch (e) {
         status.db = 'error';
-        status.db_error = 'DB connection failed';
+        status.db_error = e instanceof Error ? e.message : 'DB connection failed';
       }
     } else {
       status.db = 'not_configured';

@@ -1,10 +1,10 @@
 ---
+export const prerender = true;
 import MainLayout from '../../../layouts/MainLayout.astro';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { getLangFromUrl, useTranslations } from '../../../utils/i18n';
 
-export const prerender = true;
 
 export async function getStaticPaths() {
   const routesPath = path.resolve('./public/data/master_routes.json');

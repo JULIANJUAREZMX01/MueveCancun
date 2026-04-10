@@ -8,10 +8,9 @@ import BrowserDetection from '../components/ui/BrowserDetection.astro';
 import DonateNudge from '../components/ui/DonateNudge.astro';
 import { ui as uiTranslations } from '../utils/i18n';
 import { safeJsonStringify } from '../utils/utils';
-import SpeedInsights from '@vercel/speed-insights/astro';
-import { Analytics } from '@vercel/analytics/astro';
 import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
+import { ClientRouter } from 'astro:transitions';
 import '../styles/tokens.css';
 import '../styles/main.css';
 import '../index.css';
@@ -23,6 +22,11 @@ interface Props {
 
 const { title = "CancúnMueve", hideNav = false } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
+
+// SEO & Analytics
+const googleVerification = "";
+const bingVerification = "";
+const ga4Id = "";
 ---
 <!DOCTYPE html>
 <html lang={lang}>
@@ -37,7 +41,7 @@ const lang = getLangFromUrl(Astro.url);
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         img-src 'self' data: https://*.cartocdn.com https://*.openstreetmap.org https://www.google-analytics.com;
         font-src 'self' https://fonts.gstatic.com;
-        connect-src 'self' https://*.cartocdn.com https://www.google-analytics.com https://vitals.vercel-analytics.com https://va.vercel-scripts.com;
+        connect-src 'self' https://*.cartocdn.com https://www.google-analytics.com;
         worker-src 'self' blob:;
         object-src 'none';
         base-uri 'self';
@@ -58,45 +62,23 @@ const lang = getLangFromUrl(Astro.url);
       document.documentElement.classList.toggle("dark", theme === "dark");
     </script>
     <link rel="apple-touch-icon" href="/icons/pwa-192x192.png" />
+    <link rel="manifest" href="/manifest.json" />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
-
-    <!-- Preload Critical Data -->
-    <link rel="preload" href="/data/master_routes.optimized.json" as="fetch" crossorigin />
-
-    <!-- Leaflet Optimization: Lazy Loaded via InteractiveMap -->
-    <link rel="preconnect" href="https://basemaps.cartocdn.com" />
-    <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
+    <script define:vars={{ translations: uiTranslations }}>
+      // Inline translations for critical UI components
+      window.UI_TRANSLATIONS = translations;
+    </script>
 
     <script>
       import { getWalletBalance } from '../utils/db';
       
-      // 1. Theme Initialization
       function applyTheme() {
-          const theme = localStorage.getItem("theme");
-          if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-            document.documentElement.classList.add("dark");
-          } else {
-            document.documentElement.classList.remove("dark");
-          }
+          const theme = localStorage.getItem('theme') || 'light';
+          document.documentElement.classList.toggle('dark', theme === 'dark');
       }
-      
-      // 2. I18n Initialization
-      function applyLanguage() {
-          const stored = localStorage.getItem('lang');
-          if (stored) {
-              updateTranslations(stored);
-              return;
-          }
 
-          // Auto-detect browser language
-          const navLang = navigator.language.split('-')[0];
-          const supported = ['es', 'en'];
-          const lang = supported.includes(navLang) ? navLang : 'es';
-          
+      function applyLanguage() {
+          const lang = document.documentElement.lang || 'es';
           localStorage.setItem('lang', lang);
           updateTranslations(lang);
       }
@@ -112,77 +94,32 @@ const lang = getLangFromUrl(Astro.url);
           const translations: Record<string, string> = allTranslations[lang] ?? allTranslations['es'] ?? {};
 
           // Update simple text elements
-          document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
+          document.querySelectorAll('[data-i18n]').forEach(el => {
               const key = el.getAttribute('data-i18n');
               const text = key ? translations[key] : undefined;
-              if (text) {
-                  // Update lang toggle visual state
-                  const langToggles = document.querySelectorAll<HTMLElement>('.lang-toggle-btn');
+              if (text && el instanceof HTMLElement) {
+                  const langToggles = document.querySelectorAll('.lang-toggle-btn');
                   langToggles.forEach(btn => {
                       btn.textContent = lang.toUpperCase();
                   });
 
-                  if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                       // handled by data-i18n-placeholder
-                  } else {
+                  if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') {
                       el.textContent = text;
                   }
               }
-          });
-
-          // Custom Input Labels
-          document.querySelectorAll<HTMLElement>('[data-i18n-label]').forEach(el => {
-              const key = el.getAttribute('data-i18n-label');
-              const text = key ? translations[key] : undefined;
-              if (text) {
-                 if (el.tagName === 'INPUT') {
-                     const id = el.id;
-                     if (id) {
-                         const label = document.querySelector(`label[for="${id}"]`);
-                         if (label) label.textContent = text;
-                     }
-                 } else {
-                     const labelSpan = el.querySelector('.label-text');
-                     if (labelSpan) labelSpan.textContent = text;
-                 }
-              }
-          });
-          
-          // Placeholders
-          document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-i18n-placeholder]').forEach(el => {
-               const key = el.getAttribute('data-i18n-placeholder');
-               const text = key ? translations[key] : undefined;
-               if (text && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
-                   el.placeholder = text;
-               }
-          });
-
-          // Quick Action Buttons (HTML content)
-          document.querySelectorAll<HTMLElement>('[data-i18n-html]').forEach(el => {
-             const key = el.getAttribute('data-i18n-html');
-             const text = key ? translations[key] : undefined;
-             // Preserves icon if we replace innerText carefully or just update text node
-             // For quick actions: <span icon></span> Text
-             if (text) {
-                 const icon = el.querySelector('span');
-                 el.innerHTML = '';
-                 if (icon) el.appendChild(icon);
-                 el.appendChild(document.createTextNode(' ' + text));
-             }
           });
       }
 
       applyTheme();
       applyLanguage();
       
-      // 3. Global Balance Sync
       async function syncGlobalBalance() {
           try {
             const walletData = await getWalletBalance();
             const balance = walletData?.amount ?? 0.00;
             const balanceEl = document.getElementById('header-balance-amount');
             if (balanceEl) balanceEl.textContent = `$${balance.toFixed(2)}`;
-          } catch (e: unknown) {
+          } catch (e) {
             console.warn("[MainLayout] Balance sync failed", e);
           }
       }
@@ -196,121 +133,81 @@ const lang = getLangFromUrl(Astro.url);
       });
 
       window.addEventListener('BALANCE_UPDATED', () => {
-          console.log("[MainLayout] Balance update event received");
           syncGlobalBalance();
       });
 
-      window.addEventListener('LANGUAGE_CHANGE', (e: Event) => {
+      window.addEventListener('LANGUAGE_CHANGE', (e) => {
           updateTranslations((e as CustomEvent<string>).detail);
       });
     </script>
     {ga4Id && (
     <>
-    <!-- Google Analytics 4 -->
     <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
     <script define:vars={{ ga4Id }} is:inline>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', ga4Id);
-
-      // Global Event Dispatchers
-      window.mueveTrackers = {
-        routeSearch: (origin, destination, isOffline) => {
-          gtag('event', 'route_search', {
-            event_category: 'Routing_WASM',
-            origin: origin,
-            destination: destination,
-            network_status: isOffline ? 'offline' : 'online'
-          });
-          console.log('[Analytics] route_search dispatched');
-        },
-        offlineUsage: () => {
-          gtag('event', 'offline_usage', {
-            event_category: 'PWA_ServiceWorker',
-            action: 'served_from_cache'
-          });
-          console.log('[Analytics] offline_usage dispatched');
-        },
-        pwaInstall: () => {
-          gtag('event', 'pwa_install', {
-            event_category: 'PWA_Lifecycle',
-            action: 'accepted_prompt'
-          });
-          console.log('[Analytics] pwa_install dispatched');
-        }
-      };
-
-      window.addEventListener('appinstalled', () => {
-        window.mueveTrackers.pwaInstall();
-      });
     </script>
     </>
     )}
     <ClientRouter />
-    <Analytics />
-    <SpeedInsights />
-  <!-- impact.com STAT Tag -->
-  <script>(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})("https://utt.impactcdn.com/P-A7155313-a1aa-4e8b-8664-478df8ea50a01.js","script","impactStat",document,window);impactStat("transformLinks");impactStat("trackImpression");</script>
+    <div id="i18n-translations" data-translations={safeJsonStringify(uiTranslations)} style="display: none;"></div>
   </head>
   <body id="top" class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
-    <!-- ═══ Unified Header (Responsive) ═══ -->
     { !hideNav && (
     <header class="fixed top-0 left-0 right-0 z-40 h-14 md:h-16 px-4 md:px-6 flex items-center justify-between transition-colors duration-300 app-header">
-
       <a href={getRelativeLocaleUrl(lang, "home")} class="flex items-center gap-2.5 no-underline group outline-none" aria-label="CancúnMueve - Inicio">
         <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
         </div>
-      </header>
+        <span class="font-bold text-lg tracking-tight hidden sm:block">Cancún<span class="text-primary-600 dark:text-primary-400">Mueve</span></span>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <div class="hidden md:flex items-center bg-slate-100 dark:bg-slate-800/50 rounded-full px-3 py-1 border border-slate-200 dark:border-slate-700/50 shadow-sm">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400 mr-2 uppercase tracking-wider" data-i18n="wallet.balance">Saldo</span>
+            <span id="header-balance-amount" class="text-sm font-bold text-primary-600 dark:text-primary-400">$0.00</span>
+        </div>
+
+        <button id="theme-toggle" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700/50" aria-label="Cambiar tema">
+          <svg class="sun-icon hidden dark:block" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <svg class="moon-icon block dark:hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </div>
+    </header>
     )}
-    <main class:list={["w-full min-h-screen", !hideNav && "pt-16"]}>
+
+    <main class:list={["w-full min-h-screen", !hideNav && "pt-14 md:pt-16"]}>
       <slot />
     </main>
+
     {!hideNav && <div class="md:hidden"><BottomNav /></div>}
-    <Toast /><PwaReload /><BrowserDetection /><DonateNudge /><ReportWidget />
-    <script>
-      import { enforceGuards } from "../utils/auth";
-      import { getWalletBalance } from "../utils/db";
 
-      async function sync() {
-          try {
-            const b = await getWalletBalance();
-            const el = document.getElementById("header-balance");
-            if (el) el.textContent = `$${b.amount.toFixed(2)}`;
-          } catch (e) {}
-      }
-
-      function setup() {
-          sync();
-          enforceGuards();
-          document.getElementById("theme-toggle")?.addEventListener("click", () => {
-              const isDark = document.documentElement.classList.toggle("dark");
-              localStorage.setItem("theme", isDark ? "dark" : "light");
-          });
-      }
-
-      if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', setup);
-      } else {
-          setup();
-      }
-      document.addEventListener("astro:page-load", setup);
-      window.addEventListener("BALANCE_UPDATED", sync);
-    </script>
+    <Toast />
+    <PwaReload />
+    <BrowserDetection />
+    <DonateNudge />
+    <ReportWidget />
 
     <style>
       .app-header {
-        background: var(--surface-card);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-bottom: 1px solid var(--border-light);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      :global(.dark) .app-header {
+        background: rgba(15, 23, 42, 0.8);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       }
     </style>
 
     <script>
+      import { enforceGuards } from "../utils/auth";
+      enforceGuards();
+
       function enforceTutorial() {
         const path = window.location.pathname;
         const isTutorialPage = path === "/" || path === "" || path === "/index.html";
@@ -329,6 +226,11 @@ const lang = getLangFromUrl(Astro.url);
       }
       enforceTutorial();
       document.addEventListener("astro:after-swap", enforceTutorial);
+
+      document.getElementById("theme-toggle")?.addEventListener("click", () => {
+          const isDark = document.documentElement.classList.toggle("dark");
+          localStorage.setItem("theme", isDark ? "dark" : "light");
+      });
     </script>
   </body>
 </html>

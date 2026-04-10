@@ -1,6 +1,6 @@
 # 🗺️ MueveCancún — Roadmap
 
-> Última actualización: 2026-04-02 · Versión actual: **1.2.4 (Nexus Prime v3.3.6)**
+> Última actualización: 2026-04-02 · Versión actual: **1.2.4 (Nexus Prime v3.6.3)**
 > App en producción: [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com)
 
 ---
@@ -43,8 +43,8 @@ El núcleo funcional está terminado y desplegado:
 - [x] Formulario de reporte de incidentes con validación client-side.
 - [x] Cola offline para envíos pendientes (Custom IDB Queue + `online` event).
 - [x] UI de confirmación de envío (toast + feedback visual).
-- [ ] Moderación básica de reportes (flags de spam/repetición).
-- [ ] Feature flag vía variable de entorno (`CROWDSOURCE_ENABLED`).
+- [x] Moderación básica de reportes (SSR Active) (flags de spam/repetición).
+- [x] Feature flag vía variable de entorno (`DATABASE_PROVIDER`) (`CROWDSOURCE_ENABLED`).
 - [x] Tests unitarios y de integración para la cola offline.
 
 ---

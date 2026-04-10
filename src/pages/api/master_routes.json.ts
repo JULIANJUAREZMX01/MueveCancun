@@ -1,5 +1,7 @@
 import { getAllRoutes } from '../../utils/routes';
 
+export const prerender = true;
+
 export async function GET() {
   const routes = await getAllRoutes();
   return new Response(JSON.stringify({
@@ -10,9 +12,4 @@ export async function GET() {
       'Content-Type': 'application/json'
     }
   });
-}
-
-// In SSG mode (output: static), this file will be generated as /api/master_routes.json
-export async function getStaticPaths() {
-    return [];
 }
