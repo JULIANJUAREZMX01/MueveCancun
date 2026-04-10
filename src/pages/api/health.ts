@@ -1,62 +1,53 @@
 /**
  * src/pages/api/health.ts
- * Health check endpoint para Vercel.
- * Verifica conectividad con Neon DB (default) o Supabase según DATABASE_PROVIDER.
+ * Health check para Vercel — verifica conectividad Neon DB
+ * GET /api/health → { status, db, latency_ms, ... }
  */
-import type { APIRoute } from 'astro';
-import { getDbProvider } from '../../lib/supabase';
+import type { APIRoute } from "astro";
+
+export const prerender = false;
 
 export const GET: APIRoute = async () => {
-  const dbProvider = getDbProvider();
+  const start = Date.now();
+  const dbProvider = process.env.DATABASE_PROVIDER ?? "neon";
 
   const status: Record<string, unknown> = {
-    status: 'ok',
+    status: "ok",
     timestamp: new Date().toISOString(),
-    version: '3.5.0',
-    env: process.env.NODE_ENV ?? 'unknown',
+    version: "3.6.0",
+    env: process.env.NODE_ENV ?? "unknown",
     db_provider: dbProvider,
+    deploy: process.env.VERCEL_ENV ?? "local",
+    region: process.env.VERCEL_REGION ?? "unknown",
   };
 
-  if (dbProvider === 'supabase') {
-    // Ping a Supabase si está configurado
-    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
-      try {
-        const { getSupabaseClient } = await import('../../lib/supabase');
-        const sb = getSupabaseClient();
-        const { error } = await sb.from('guardians').select('stripe_customer_id').limit(1);
-        status.db = error ? 'error' : 'connected';
-        if (error) status.db_error = 'DB query failed';
-      } catch {
-        status.db = 'error';
-        status.db_error = 'DB connection failed';
-      }
+  // Ping a Neon DB
+  if (dbProvider === "neon") {
+    const url = process.env.DATABASE_URL;
+    if (!url) {
+      status.db = "error";
+      status.db_error = "DATABASE_URL not set";
     } else {
-      status.db = 'not_configured';
-    }
-  } else {
-    // Ping rápido a Neon si está configurado
-    if (process.env.DATABASE_URL) {
       try {
-        const { neon } = await import('@neondatabase/serverless');
-        const sql = neon(process.env.DATABASE_URL);
+        const { neon } = await import("@neondatabase/serverless");
+        const sql = neon(url);
         await sql`SELECT 1`;
-        status.db = 'connected';
-      } catch {
-        status.db = 'error';
-        status.db_error = 'DB connection failed';
+        status.db = "connected";
+        status.db_latency_ms = Date.now() - start;
+      } catch (e: any) {
+        status.db = "error";
+        status.db_error = e?.message ?? String(e);
       }
-    } else {
-      status.db = 'not_configured';
     }
   }
 
-  const isHealthy = status.db !== 'error';
+  const isOk = status.db !== "error";
 
-  return new Response(
-    JSON.stringify(status),
-    {
-      status: isHealthy ? 200 : 503,
-      headers: { 'Content-Type': 'application/json' }
-    }
-  );
+  return new Response(JSON.stringify(status), {
+    status: isOk ? 200 : 503,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+    },
+  });
 };
