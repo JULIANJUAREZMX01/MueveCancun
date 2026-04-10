@@ -1,7 +1,6 @@
 import { defineConfig } from "astro/config"
 import mdx from "@astrojs/mdx"
 import tailwind from "@astrojs/tailwind"
-import vercel from "@astrojs/vercel"
 import path from "path"
 import { fileURLToPath } from "url"
 
@@ -11,10 +10,7 @@ const isDev = process.env.NODE_ENV === 'development';
 
 export default defineConfig({
   site: "https://mueve-cancun.vercel.app",
-  output: 'server',
-  adapter: vercel({
-    webAnalytics: { enabled: true }
-  }),
+  output: 'static',
   integrations: [
     mdx(),
     tailwind({ applyBaseStyles: false })

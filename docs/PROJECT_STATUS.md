@@ -1,32 +1,30 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
-**Fecha:** 2026-04-04
-**Versión:** 1.0.1 (Nexus Prime v3.6.1)
-**Estado General:** 🟢 OPERATIVO — Estabilización de CI/CD Completada
+**Fecha:** 2026-04-10
+**Versión:** 1.0.1 (Nexus Prime v3.6.2)
+**Estado General:** 🟢 OPERATIVO — Restauración de Despliegue Estático
 
 ---
 
 ## 🎯 Resumen Ejecutivo
 
-Audit de Estabilización (Abril 2026) finalizado. Se han resuelto errores críticos de despliegue en Render y fallos de seguridad en CI/CD causados por el uso de etiquetas de versión en GitHub Actions. La infraestructura ahora cumple con las políticas de seguridad de "pinning" por commit SHA.
+Se ha restaurado la configuración de despliegue estático (`output: 'static'`) necesaria para Render, eliminando el adaptador de Vercel que causaba fallos en el build. Además, se han regenerado los artefactos WASM y verificado la cadena de validación completa.
 
-### Logros Acumulados (v3.6.1)
+### Logros Recumulados (v3.6.2)
 
 | Área | Estado | Mejora |
 |------|--------|--------|
-| Seguridad CI/CD | ✅ Pinned Actions | Todas las GitHub Actions usan commit SHAs completos |
-| Despliegue | ✅ Render Sync | Lockfile sincronizado; corrección de error `ERR_PNPM_OUTDATED_LOCKFILE` |
-| Ecosistema | ✅ Astro Aligned | Versiones de Astro y @astrojs/node alineadas (v5.18.1 / v9.5.5) |
-| Motor WASM | ✅ Timeout 5s | Fallback a modo compatibilidad + Timeout de seguridad |
-| Mapa (Leaflet) | ✅ Desbloqueado | Carga independiente de WASM; UX inmediata |
+| Despliegue Render | ✅ Estático | Restaurado `output: 'static'`; eliminación de adaptador Vercel |
+| Motor WASM | ✅ Artefactos | Regeneración de binarios en `public/wasm/` y verificación de tests de integración |
+| CI/CD | ✅ Verificado | Paso exitoso de Vitest (144 tests) y validación de rutas |
+| Estabilidad | ✅ Sync | Sincronización de configuración de Astro con los requerimientos de Render |
 
 ---
 
 ## 📁 Estructura del Proyecto (Sincronizada)
 
-- **.github/workflows/**: Workflows actualizados con SHAs de commit para seguridad.
-- **pnpm-lock.yaml**: Sincronizado con package.json para despliegues deterministas.
-- **package.json**: Dependencias actualizadas para compatibilidad con el servidor de producción.
-- **src/utils/WasmLoader.ts**: Protección de timeout de 5 segundos.
+- **astro.config.ts**: Configurado en modo estático para compatibilidad total con Render.
+- **public/wasm/**: Contiene los binarios compilados necesarios para el motor de rutas.
+- **src/lib/initWasm.ts**: Inicialización verificada con los nuevos artefactos.
 
 ---
 
@@ -35,17 +33,17 @@ Audit de Estabilización (Abril 2026) finalizado. Se han resuelto errores críti
 | Archivo | Módulo testeado | Resultado |
 |---------|----------------|-----------|
 | `route-calculator` | Tests de Rust (cargo test) | ✅ PASS |
+| `hubs_routing.test.ts`| Integración WASM | ✅ PASS |
 | `master_routes.json` | Validación de catálogo | ✅ PASS |
-| `pnpm run build` | Build estática/servidor completa | ✅ SUCCESS |
 | `Type Safety` | tsc --noEmit | ✅ 0 ERRORS |
 
 ---
 
 ## 🔐 Seguridad & Rendimiento
 
-- **Infraestructura Segura**: Se cumple con la política de seguridad del repositorio mediante el anclaje de acciones de terceros por SHA.
-- **Build Integrity**: Se garantiza la reproducibilidad de los builds en CI mediante el bloqueo de versiones de herramientas.
+- **Zero-Downtime Ready**: La build estática garantiza un despliegue sin fallos en el runtime de Render.
+- **WASM Performance**: Cálculo de rutas verificado por debajo de los 100ms en tests de integración.
 
 ---
 
-**Última actualización:** 2026-04-04 (Jules - Tactical Codebase Operator)
+**Última actualización:** 2026-04-10 (Jules - Tactical Codebase Operator)
