@@ -38,9 +38,10 @@ El núcleo funcional está terminado y desplegado:
 ## v3.5 — Crowdsourcing y Formularios Offline
 **Objetivo:** Permitir que los usuarios reporten rutas y alertas desde el campo.  
 **Estado:** Parcialmente completado (v3.3.3)
+| v3.3.4 | 2026-04-10 | Fix blocked screen & missing /api/reports endpoint; CI workflow stabilization |
 
 ### Tareas
-- [x] Formulario de reporte de incidentes con validación client-side.
+- [x] Sistema de reporte completo (Formulario + API + Offline) con validación client-side.
 - [x] Cola offline para envíos pendientes (Custom IDB Queue + `online` event).
 - [x] UI de confirmación de envío (toast + feedback visual).
 - [ ] Moderación básica de reportes (flags de spam/repetición).
@@ -103,6 +104,7 @@ Estas tareas están identificadas pero aún no tienen sprint asignado. Se irán 
 | Versión | Fecha | Cambios principales |
 |---------|-------|---------------------|
 | v3.3.3 | 2026-04-02 | Tier 1 Reporting: Migrated to client-side GitHub API; Added offline queuing with IndexedDB v4; Resolved Render deploy failure |
+| v3.3.4 | 2026-04-10 | Fix blocked screen & missing /api/reports endpoint; CI workflow stabilization |
 | v3.3.2 | 2026-04-02 | Fix infinite redirect loop in static build; remove build-time middleware redirects; client-side tutorial enforcement |
 | v3.3.1 | 2026-03-29 | Strictly Static Stabilization; Client-side redirects for CDN compatibility; Localization utility implementation |
 | v3.3 | 2026-03-10 | Nexus Transfer Engine; GPS → parada; mapa interactivo con popups; balance IndexedDB unificado; 11 test files; 6 workflows CI/CD |
