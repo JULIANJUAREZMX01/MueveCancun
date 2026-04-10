@@ -3,7 +3,10 @@ import en from '../i18n/en.json';
 
 export const languages = {
     en: 'English',
-    es: 'Español'
+    es: 'Español',
+    fr: 'Français',
+    pt: 'Português',
+    my: 'Maya'
 };
 
 export const defaultLang = 'es';
@@ -20,6 +23,8 @@ export const ui = {
         'pwa.update': 'Update Available',
         'pwa.new_version': 'New version ready.',
         'pwa.refresh': 'UPDATE',
+        'calc.question.origin': 'Which route takes me to?',
+        'calc.question.dest': 'Where are we going?',
         'calc.title': 'Which Route Takes Me?',
         'calc.origin': 'Origin',
         'calc.dest': 'Destination',
@@ -59,6 +64,7 @@ export const ui = {
         'calc.fastest_label': 'FASTEST: ',
         'calc.toggle.hide': 'Hide',
         'calc.toggle.show': 'Show',
+        'calc.export_gmaps': 'Open in Google Maps',
         'transport.Bus': 'Bus',
         'transport.Combi': 'Combi',
         'transport.Van': 'Van',
@@ -77,6 +83,8 @@ export const ui = {
         'pwa.update': 'Actualización disponible',
         'pwa.new_version': 'Nueva versión lista.',
         'pwa.refresh': 'ACTUALIZAR',
+        'calc.question.origin': '¿Qué ruta me lleva a?',
+        'calc.question.dest': '¿A dónde nos vamos?',
         'calc.title': '¿Qué Ruta Me Lleva?',
         'calc.origin': 'Origen',
         'calc.dest': 'Destino',
@@ -116,12 +124,46 @@ export const ui = {
         'calc.fastest_label': 'MÁS RÁPIDA: ',
         'calc.toggle.hide': 'Ocultar',
         'calc.toggle.show': 'Mostrar',
+        'calc.export_gmaps': 'Ver en Google Maps',
         'transport.Bus': 'Autobús',
         'transport.Combi': 'Combi',
         'transport.Van': 'Van / Colectivo',
         'transport.ADO': 'ADO',
         'transport.PlayaExpress': 'Playa Express',
         'calc.max_passengers': 'Máximo 10 pasajeros'
+    },
+    fr: {
+        'nav.home': 'Accueil',
+        'nav.routes': 'Itinéraires',
+        'nav.map': 'Carte',
+        'nav.wallet': 'Portefeuille',
+        'nav.community': 'Forum',
+        'nav.about': 'À propos',
+        'calc.question.origin': "Quel itinéraire m'emmène à?",
+        'calc.question.dest': 'Où allons-nous?',
+        'calc.btn': "CALCULER L'ITINÉRAIRE",
+        'calc.export_gmaps': 'Ouvrir dans Google Maps'
+    },
+    pt: {
+        'nav.home': 'Início',
+        'nav.routes': 'Rotas',
+        'nav.map': 'Mapa',
+        'nav.wallet': 'Carteira',
+        'nav.community': 'Fórum',
+        'nav.about': 'Sobre nós',
+        'calc.question.origin': 'Qual rota me leva para?',
+        'calc.question.dest': 'Para onde vamos?',
+        'calc.btn': 'CALCULAR ROTA',
+        'calc.export_gmaps': 'Abrir no Google Maps'
+    },
+    my: {
+        'nav.home': 'U kúuchil',
+        'nav.routes': "Bejo'ob",
+        'nav.map': 'Mapa',
+        'calc.question.origin': 'Báax bej ku bisiken?',
+        'calc.question.dest': "Tu'ux k-bin?",
+        'calc.btn': 'KAXAN BEJ',
+        'calc.export_gmaps': 'Il ichil Google Maps'
     }
 };
 
@@ -140,8 +182,6 @@ export function useTranslations(lang: keyof typeof ui) {
 export function getI18N(lang: string | undefined) {
     const l = (lang && lang in ui) ? lang as keyof typeof ui : defaultLang;
     const t = (key: string) => {
-        // Simple mock of t for the wallet's keys which aren't in ui yet
-        // In a real app, these should be in ui above
         const keys: any = {
             'wallet.title': { es: 'Mi Tarjeta', en: 'My Wallet' },
             'wallet.current_balance': { es: 'Saldo Actual', en: 'Current Balance' },

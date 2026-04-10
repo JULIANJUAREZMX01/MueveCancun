@@ -1,4 +1,5 @@
 import { defineConfig } from "astro/config"
+
 import mdx from "@astrojs/mdx"
 import tailwind from "@astrojs/tailwind"
 import vercel from "@astrojs/vercel"
@@ -25,16 +26,17 @@ export default defineConfig({
   adapter: getAdapter(),
   integrations: [
     mdx(),
-    tailwind({ applyBaseStyles: false })
+    tailwind({ applyBaseStyles: false }),
   ],
+
   vite: {
-    define: { 'process.env.IS_DEV': JSON.stringify(isDev) },
+    define: { "process.env.IS_DEV": JSON.stringify(isDev) },
     build: {
       rollupOptions: {
         external: [
-          "/wasm/route-calculator/route_calculator.js"
-        ]
-      }
+          "/wasm/route-calculator/route_calculator.js",
+        ],
+      },
     },
     resolve: {
       alias: {
@@ -42,8 +44,15 @@ export default defineConfig({
         "@layouts":    path.resolve(__dirname, "src/layouts"),
         "@utils":      path.resolve(__dirname, "src/utils"),
         "@consts":     path.resolve(__dirname, "src/consts.ts"),
-        "@types":      path.resolve(__dirname, "src/types.ts")
-      }
-    }
-  }
+        "@types":      path.resolve(__dirname, "src/types.ts"),
+      },
+    },
+    ssr: {
+      // Neon serverless necesita bundling explícito en SSR
+      noExternal: ["@neondatabase/serverless"],
+    },
+    optimizeDeps: {
+      exclude: ["@neondatabase/serverless"],
+    },
+  },
 })

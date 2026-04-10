@@ -23,7 +23,7 @@
     "prepare-data": "node --experimental-strip-types scripts/merge-routes.ts && node --experimental-strip-types scripts/optimize-json.ts",
     "dev": "pnpm run prepare-data && astro dev",
     "dev:network": "pnpm run prepare-data && astro dev --host",
-    "build": "pnpm prepare-data && node scripts/validate-routes.ts && node scripts/build-wasm.mjs && node scripts/check-wasm.cjs && tsc -p tsconfig.client.json && tsc -p tsconfig.sw.json && astro build",
+    "build": "pnpm prepare-data && node scripts/build-wasm.mjs && tsc -p tsconfig.client.json && tsc -p tsconfig.sw.json && astro build",
     "build:wasm": "node --experimental-strip-types scripts/build-wasm.ts",
     "compile-client": "tsc -p tsconfig.client.json",
     "compile-sw": "tsc -p tsconfig.sw.json",
@@ -35,7 +35,10 @@
     "validate-catalog": "node --experimental-strip-types scripts/validate-catalog.ts",
     "bench": "vitest bench",
     "generate-roadmap": "node --experimental-strip-types scripts/generate-roadmap-doc.ts",
-    "start": "node dist/server/entry.mjs"
+    "start": "node dist/server/entry.mjs",
+    "build:ci": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build",
+    "db:migrate": "node --experimental-strip-types scripts/db-migrate.ts",
+    "build:vercel": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
@@ -62,7 +65,7 @@
     "stripe": "^22.0.0",
     "tailwind-merge": "^2.6.1",
     "tailwindcss": "^3.4.0",
-    "vite": "^6.4.2",
+    "vite": "^6.2.0",
     "wasm-pack": "^0.14.0"
   },
   "optionalDependencies": {

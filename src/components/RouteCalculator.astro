@@ -2,42 +2,44 @@
 import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../utils/i18n';
 import { safeJsonStringify } from '../utils/utils';
 import Input from './ui/Input.astro';
-import Switch from './ui/Switch.astro';
-import PassengerSelector from './ui/PassengerSelector.astro';
 import Icon from './ui/Icon.astro';
 
 const currentLang = getLangFromUrl(Astro.url);
 const t = useTranslations(currentLang);
 const ui = uiTranslations[currentLang];
+
+const questions = {
+  origin: {
+    es: "¿Qué ruta me lleva a?",
+    en: "Which route takes me to?",
+    fr: "Quel itinéraire m'emmène à?",
+    pt: "Qual rota me leva para?",
+    my: "Báax bej ku bisiken?"
+  },
+  dest: {
+    es: "¿A dónde nos vamos?",
+    en: "Where are we going?",
+    fr: "Où allons-nous?",
+    pt: "Para onde vamos?",
+    my: "Tu'ux k-bin?"
+  }
+};
 ---
 
 <div class="calculator-wrapper">
+  <!-- Animated Questions Header -->
+  <div class="search-header mb-8">
+    <div class="question-container origin-question">
+      <h2 id="animated-origin-question" class="text-3xl md:text-4xl font-black tracking-tighter text-gradient-caribbean animate-text-reveal">
+        {questions.origin.es}
+      </h2>
+    </div>
+  </div>
 
   <!-- Search Card -->
   <div class="glass-card search-card" id="search-card">
-
-    <!-- Summary Bar (Hidden by default) -->
-    <div id="summary-bar" class="summary-bar hidden">
-       <div class="summary-info">
-          <div class="summary-route">
-              <div class="summary-point">
-                  <div class="dot origin"></div>
-                  <span id="summary-origin" class="summary-text">Origin</span>
-              </div>
-              <div class="connector"></div>
-              <div class="summary-point">
-                  <div class="dot dest"></div>
-                  <span id="summary-dest" class="summary-text">Destination</span>
-              </div>
-          </div>
-       </div>
-       <button id="edit-search-btn" class="btn-edit" data-i18n="calc.edit" aria-label="Edit search">EDIT</button>
-    </div>
-
     <!-- Form Area -->
     <div id="search-form" class="search-form">
-
-      <!-- Inputs -->
       <div class="inputs-group">
         <div class="relative z-20">
           <Input
@@ -53,19 +55,22 @@ const ui = uiTranslations[currentLang];
             data-i18n-placeholder="calc.placeholder.origin"
             maxlength={100}
           >
-            <!-- GPS Button inside Input -->
-            <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --gps-btn" aria-describedby="gps-tooltip" aria-label="Use my location">
-               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+            <button slot="action" id="gps-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary-500 transition-colors" aria-label="Use my location">
+               <span class="material-symbols-rounded" style="font-size: 20px;">my_location</span>
             </button>
-            <div slot="action" id="gps-tooltip" class="graffiti-tooltip bottom" style="position-anchor: --gps-btn" data-i18n="calc.gps">Use my location</div>
           </Input>
         </div>
 
-        <!-- Swap Button -->
         <div class="swap-btn-container">
-          <button id="swap-btn" class="swap-btn" type="button" aria-label="Intercambiar origen y destino">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
+          <button id="swap-btn" class="swap-btn" type="button" aria-label="Swap">
+            <span class="material-symbols-rounded">swap_vert</span>
           </button>
+        </div>
+
+        <div class="dest-question-container mb-2 hidden animate-fade-in">
+           <h2 id="animated-dest-question" class="text-xl font-black tracking-tight text-slate-400">
+             {questions.dest.es}
+           </h2>
         </div>
 
         <div class="relative z-0">
@@ -82,1181 +87,287 @@ const ui = uiTranslations[currentLang];
             data-i18n-placeholder="calc.placeholder.dest"
             maxlength={100}
           >
-            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" style="anchor-name: --map-btn" aria-describedby="map-tooltip" aria-label="Select on map">
-              <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
-              </svg>
+            <button slot="action" id="map-picker-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-primary-500 transition-colors" aria-label="Select on map">
+              <span class="material-symbols-rounded" style="font-size: 20px;">map</span>
             </button>
-            <div slot="action" id="map-tooltip" class="graffiti-tooltip top" style="position-anchor: --map-btn" data-i18n="calc.map">Select on map</div>
           </Input>
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="quick-actions-wrapper">
-        <div class="quick-actions-list flex gap-2 overflow-x-auto pb-1 no-scrollbar snap-x">
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Walmart" data-i18n-html="calc.home" aria-label="Navigate home">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Home
-          </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Plaza Las Américas" data-i18n-html="calc.work" aria-label="Navigate to work">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg> Work
-          </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Aeropuerto Terminal 2" data-i18n-html="calc.airport" aria-label="Navigate to airport">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg> Airport
-          </button>
-          <button class="quick-action-btn chip snap-start flex-shrink-0" data-dest="Playa Delfines (El Mirador)" data-i18n-html="calc.beach" aria-label="Navigate to beach">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.127 14.56l1.43-1.43 6.44 6.443L19.57 21zm.68-6.2C14.9 9.46 16.34 10 18 10c.43 0 .84-.04 1.24-.11C18.77 8.61 17.47 7.74 16 7.24l-2.19 1.12zm-1.78 1.78l-2.12-2.12c-.56-.56-1.47-.56-2.03 0l-.71.71 2.83 2.83.71-.71c.55-.57.55-1.49.01-2.04l1.31.33zM2 20l3-3h9l-1.5-1.5-5.36-5.36-.71.71c-.56.56-1.47.56-2.03 0L2.58 9.03c-.56-.56-.56-1.47 0-2.03l.71-.71c.56-.56 1.47-.56 2.03 0l1.83 1.83 2.19-1.12C8.75 5.32 8.37 3.76 8.35 2H10c.16 1.97.79 3.71 1.82 5.12l2.12 2.12 6.36 6.36c.56.56.56 1.47 0 2.03l-.71.71c-.56.56-1.47.56-2.03 0l-1.83-1.83L13 20H2z"/></svg> Beach
-          </button>
+      <div class="quick-actions-wrapper mt-4">
+        <div class="quick-actions-list flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <button class="quick-action-btn chip flex-shrink-0" data-dest="Walmart">🏠 Home</button>
+          <button class="quick-action-btn chip flex-shrink-0" data-dest="Plaza Las Américas">💼 Work</button>
+          <button class="quick-action-btn chip flex-shrink-0" data-dest="Aeropuerto Terminal 2">✈️ Airport</button>
+          <button class="quick-action-btn chip flex-shrink-0" data-dest="Playa Delfines (El Mirador)">🏖️ Beach</button>
         </div>
       </div>
 
-
-
-      <button id="search-btn" class="btn-primary btn-lg w-full" disabled aria-label="Calculate route">
-        <span id="btn-text" class="uppercase tracking-wider" data-i18n="calc.loading">Cargando rutas...</span>
-        <span class="spinner" id="btn-spinner" aria-hidden="true"></span>
+      <button id="search-btn" class="btn-primary btn-lg w-full mt-6" disabled>
+        <span id="btn-text" class="font-black uppercase tracking-widest" data-i18n="calc.loading">Cargando rutas...</span>
+        <span class="spinner hidden" id="btn-spinner"></span>
       </button>
-
     </div>
-
-    <!-- Loading State (Skeleton Screens) -->
-    <div id="calculation-loader" class="hidden p-5 space-y-3" style="border-top: 1px solid var(--border-light); background: var(--surface-bg);" aria-label="Loading results" role="status">
-        <div class="skeleton h-6 w-2/3 rounded-lg"></div>
-        <div class="skeleton h-24 rounded-xl"></div>
-        <div class="skeleton h-12 rounded-xl"></div>
-        <div class="skeleton h-12 rounded-xl"></div>
-    </div>
-
   </div>
 
-    <!-- Results Area -->
-    <div id="results-info" class="mb-4 hidden animate-fade-in group" aria-live="polite">
-        <div class="glass-card flex items-center justify-between px-4 py-3">
-            <div class="flex flex-col">
-                <span class="text-xxs font-black uppercase tracking-widest mb-0.5" style="color: var(--text-tertiary);" id="results-count-label" aria-live="polite"></span>
-                <span class="badge-success font-mono" id="results-time-badge" aria-live="polite"></span>
-            </div>
-            
-            <label for="results-toggle" class="chip cursor-pointer" aria-label="Toggle results list">
-                <input type="checkbox" id="results-toggle" class="sr-only" checked />
-                <span class="text-xs font-bold toggle-hide-text" data-i18n="calc.toggle.hide">Hide</span>
-                <span class="text-xs font-bold toggle-show-text hidden" data-i18n="calc.toggle.show">Show</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="toggle-icon transition-transform duration-300" aria-hidden="true"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
-            </label>
-        </div>
-    </div>
-    <div id="best-result-area" class="mb-6 space-y-4 empty:hidden">
-        <!-- Best match card injected here -->
-    </div>
-
-    <div id="rw-results-cta" class="hidden mt-6 pb-4">
-      <button id="btn-report-results" class="w-full btn-secondary btn-md border-dashed border-2 opacity-80 hover:opacity-100 transition-all">
-        ¿Algo está mal con esta ruta?
-      </button>
-    </div>
-    <div id="results-container" class="space-y-4 empty:hidden transition-all duration-500 origin-top">
-        <!-- Other results injected here -->
-    </div>
+  <div id="results-info" class="mt-8 hidden animate-fade-in">
+      <div class="flex items-center justify-between px-2 mb-4">
+          <span class="text-xxs font-black uppercase tracking-widest text-slate-400" id="results-count-label"></span>
+          <span class="badge-success font-mono" id="results-time-badge"></span>
+      </div>
+      <div id="best-result-area" class="space-y-4"></div>
+      <div id="results-container" class="mt-4 space-y-4"></div>
+  </div>
 
   <datalist id="locations">
     <option value="El Crucero Hub"></option>
     <option value="ADO Centro / Terminal"></option>
     <option value="Plaza Las Américas"></option>
     <option value="Aeropuerto Terminal 2"></option>
-    <option value="Aeropuerto Terminal 4"></option>
-    <option value="Muelle Ultramar (Puerto Juárez)"></option>
     <option value="Playa Delfines (El Mirador)"></option>
-    <option value="Playa del Carmen Centro"></option>
-    <option value="Walmart"></option>
-    <option value="Villas Otoch Paraíso"></option>
-    <option value="Hospital General (Av. Kabah)"></option>
   </datalist>
-
 </div>
 
-<div id="i18n-data" data-ui={safeJsonStringify(ui)} class="hidden"></div>
+<div id="i18n-data" data-ui={safeJsonStringify(ui)} data-questions={safeJsonStringify(questions)} class="hidden"></div>
+
 <script>
   import { showToast } from '../utils/toast';
   import { coordinatesStore } from '../utils/CoordinatesStore';
   import { CoordinateFinder } from '../utils/CoordinateFinder';
   import { escapeHtml, safeJsonStringify, normalizeString } from '../utils/utils';
-  import { getWalletBalance, setWalletBalance } from '../utils/db';
+  import { getWalletBalance } from '../utils/db';
   import { getTransportLabel } from '../utils/transport';
   import { WasmLoader } from '../utils/WasmLoader';
 
-  let currentLang = document.documentElement.lang || 'es';
   const i18nDataEl = document.getElementById('i18n-data');
   const ui = i18nDataEl ? JSON.parse(i18nDataEl.dataset.ui || '{}') : {};
+  const questions = i18nDataEl ? JSON.parse(i18nDataEl.dataset.questions || '{}') : {};
 
-  // DOM Elements
-  const balanceBadge = document.getElementById('balance-badge');
-  const searchBtn = document.getElementById('search-btn'); // Renamed from btn for clarity, but keeping logic
-  const resultsContainer = document.getElementById('results-container');
-
-
-  // Sentinel Fix: Event Delegation for Map Buttons (Feature Fix + Security)
-  if (typeof document !== 'undefined') {
-      document.addEventListener('click', (e) => {
-          const target = e.target;
-          if (!target || !target.closest) return;
-
-          const btn = target.closest('.view-map-btn');
-          if (btn) {
-              try {
-                  const raw = btn.dataset.journey;
-                  if (raw) {
-                      const journey = JSON.parse(raw);
-                      window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey } }));
-                      window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_ACTIVE' }));
-                  }
-              } catch (err) {
-                  console.error("Invalid journey data", err);
-              }
-          }
-
-          // Sentinel Security Fix: Retry Button Delegation
-          if (target.closest('.js-retry-search-btn')) {
-              setTimeout(() => document.getElementById('origin-input')?.focus(), 50);
-          }
-      });
-  }
-
-  // State
-  let balance = 0;
-  let hasBalance = false;
   let wasmLoaded = false;
-  let finder; // Global Coordinate Finder instance
   let find_route;
-  let validate_operator_funds;
   let load_catalog;
+  let finder;
 
-  const btn = document.getElementById('search-btn');
+  // Animation Logic
+  function setupQuestionAnimations() {
+    const originEl = document.getElementById('animated-origin-question');
+    const destEl = document.getElementById('animated-dest-question');
+    const langs = ['es', 'en', 'fr', 'pt', 'my'];
+    let idx = 0;
 
-  // Normalize WASM journey output: map Spanish field names to English for rendering
-  function normalizeJourney(journey) {
-      return {
-          ...journey,
-          total_price: journey.total_price ?? 0,
-          duration_minutes: (journey.duration_minutes ?? (journey.legs || []).reduce((acc, l) => acc + (l.duration_minutes || 0), 0)) || 0,
-          legs: (journey.legs || []).map(leg => {
-              const paradas = leg.paradas || [];
-              const firstStop = paradas.length > 0 ? paradas[0] : null;
-              const lastStop = paradas.length > 0 ? paradas[paradas.length - 1] : null;
-              // Normalize paradas to always have a `name` field (WASM uses `nombre`)
-              // Explicitly map known fields to avoid propagating unexpected data
-              const normalizedParadas = paradas.map(p => ({
-                  nombre: p.nombre || p.name || '',
-                  name: p.nombre || p.name || '',
-                  lat: p.lat ?? 0,
-                  lng: p.lng ?? 0,
-                  orden: p.orden ?? 0,
-              }));
-              return {
-                  ...leg,
-                  name: leg.name || leg.nombre || '',
-                  transport_type: leg.transport_type || leg.tipo || 'Bus_Urbano',
-                  operator: leg.operator || leg.operador || '',
-                  frequency: leg.frequency || (leg.frecuencia_minutos ? `${leg.frecuencia_minutos} min` : ''),
-                  duration_minutes: leg.duration_minutes || leg.frecuencia_minutos || 0,
-                  duration: leg.duration || (leg.frecuencia_minutos ? `${leg.frecuencia_minutos} min` : ""),
-                  badges: leg.badges || [],
-                  origin_hub: leg.origin_hub || firstStop?.nombre || '',
-                  dest_hub: leg.dest_hub || lastStop?.nombre || '',
-                  // Keep stops as objects with `name` field for stopsPreview and map rendering
-                  stops: normalizedParadas.length > 0 ? normalizedParadas : (leg.stops || []),
-                  paradas: normalizedParadas,
-              };
-          })
-      };
+    setInterval(() => {
+      idx = (idx + 1) % langs.length;
+      const lang = langs[idx];
+
+      if (originEl) {
+        originEl.style.opacity = '0';
+        setTimeout(() => {
+          originEl.textContent = questions.origin[lang];
+          originEl.style.opacity = '1';
+        }, 300);
+      }
+
+      if (destEl) {
+        destEl.style.opacity = '0';
+        setTimeout(() => {
+          destEl.textContent = questions.dest[lang];
+          destEl.style.opacity = '1';
+        }, 300);
+      }
+    }, 4000);
   }
 
-  // --- Initialization ---
+  // Google Maps Export
+  function getGmapsLink(journey) {
+    if (!journey || !journey.legs || journey.legs.length === 0) return '#';
+    const firstLeg = journey.legs[0];
+    const lastLeg = journey.legs[journey.legs.length - 1];
 
-  async function updateBalance() {
-    try {
-        // Use IndexedDB (via db.ts) as the single source of truth
-        const walletData = await getWalletBalance();
-        if (walletData && walletData.amount !== undefined) {
-            balance = walletData.amount;
-            console.log("[RouteCalculator] Balance loaded from IndexedDB:", balance);
-        } else {
-            // Fallback: initialize to 0.0 if no balance found
-            balance = 0.0;
-            await setWalletBalance(balance);
-            console.log("[RouteCalculator] Balance initialized to 0.0 in IndexedDB");
-        }
-    } catch (e) {
-        console.warn("[RouteCalculator] IndexedDB Error, using default balance:", e);
-        balance = 0.0;
+    // Use first stop of first leg and last stop of last leg
+    const start = firstLeg.paradas?.[0] || firstLeg.stops?.[0];
+    const end = lastLeg.paradas?.[lastLeg.paradas.length - 1] || lastLeg.stops?.[lastLeg.stops.length - 1];
+
+    if (start && end) {
+      return `https://www.google.com/maps/dir/?api=1&origin=${start.lat},${start.lng}&destination=${end.lat},${end.lng}&travelmode=transit`;
     }
-
-    if (wasmLoaded && typeof validate_operator_funds === 'function') {
-        try {
-            hasBalance = validate_operator_funds(balance);
-        } catch (e) {
-            console.warn("WASM validation failed, fallback to strict check", e);
-            hasBalance = balance >= 0.0;
-        }
-    } else {
-        hasBalance = balance >= 0.0;
-    }
-
-    if (balanceBadge) {
-        balanceBadge.textContent = `$${balance.toFixed(0)}`;
-        if (hasBalance) {
-            balanceBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-green-100 text-green-700 font-mono";
-        } else {
-            balanceBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-red-100 text-red-700 font-mono";
-        }
-    }
+    return '#';
   }
-
-  // Listen for global balance updates
-  window.addEventListener('BALANCE_UPDATED', () => {
-      console.log("[RouteCalculator] Global balance update received");
-      updateBalance();
-  });
-
-  // Listen for map stop selections (from InteractiveMap popup buttons)
-  // Note: registered once at top level; handler is idempotent so duplicates are safe.
-  // The guard is on the window flag to avoid duplicate registration across view transitions.
-  if (!(window as any).__mapSetStopListenerAttached) {
-      (window as any).__mapSetStopListenerAttached = true;
-      window.addEventListener('MAP_SET_STOP', (event: any) => {
-          const { type, name } = event.detail || {};
-          if (!name) return;
-          if (type === 'origin') {
-              const originInput = document.getElementById('origin-input') as HTMLInputElement;
-              if (originInput) {
-                  originInput.value = name;
-                  originInput.dispatchEvent(new Event('input', { bubbles: true }));
-              }
-          } else if (type === 'dest') {
-              const destInput = document.getElementById('destination-input') as HTMLInputElement;
-              if (destInput) {
-                  destInput.value = name;
-                  destInput.dispatchEvent(new Event('input', { bubbles: true }));
-              }
-          }
-      });
-  }
-
-
-
-  async function start() {
-    let jsonData = null;
-    // Timeout Promise (8s)
-    const timeoutMs = 8000;
-    const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error(`Timeout initializing engine (${timeoutMs}ms)`)), timeoutMs)
-    );
-
-    try {
-      console.log("Initializing WASM...");
-
-
-      // 1. Load WASM Module with Timeout
-      const modulePromise = WasmLoader.getModule();
-
-      const module = await Promise.race([modulePromise, timeoutPromise]);
-
-      find_route = module.find_route;
-      window.find_route = find_route; // Expose for debugging/testing
-      validate_operator_funds = module.validate_operator_funds;
-      load_catalog = module.load_catalog;
-
-      console.log("WASM initialized.");
-      wasmLoaded = true;
-
-      // 2. Load Data Catalog with Timeout
-      if (typeof load_catalog === 'function') {
-          console.log("📦 Loading route catalog via CoordinatesStore...");
-          console.time("WASM Load");
-
-          const dataPromise = coordinatesStore.init();
-          const { text: catalogString, data: resolvedData } = await Promise.race([dataPromise, timeoutPromise]);
-          jsonData = resolvedData;
-
-          let payload = catalogString;
-
-          // ⚡ Speedy Gonzalez: Smart Normalization
-          // Only normalize if using un-optimized fallback data.
-          if (jsonData.metadata?.optimized) {
-              console.log("⚡ [RouteCalculator] Using pre-optimized JSON (Skipped Runtime Normalization)");
-          } else {
-              console.warn("⚠️ [RouteCalculator] Data not optimized. Running runtime normalization (Slow).");
-              const normalized = { ...jsonData };
-
-              // 1. Root Version
-              if (!normalized.version && normalized.metadata?.version) {
-                  normalized.version = normalized.metadata.version;
-              }
-              if (!normalized.version) {
-                  normalized.version = "1.0.0";
-              }
-
-              // 2. Normalize Routes
-              if (normalized.rutas) {
-                  normalized.rutas = normalized.rutas.map((r) => {
-                      const route = { ...r };
-                      // Convert string horario to Schedule object
-                      if (typeof route.horario === 'string') {
-                          const parts = route.horario.split('-');
-                          route.horario = { inicio: parts[0]?.trim() || '', fin: parts[1]?.trim() || '' };
-                      } else if (route.horario && typeof route.horario === 'object') {
-                          // Normalize inicio_oficial/fin_oficial to inicio/fin
-                          if (!route.horario.inicio && route.horario.inicio_oficial) {
-                              route.horario = { inicio: route.horario.inicio_oficial, fin: route.horario.fin_oficial || '' };
-                          }
-                      }
-                      // Ensure required 'tipo' field exists
-                      if (!route.tipo && !route.tipo_transporte) {
-                          route.tipo = 'Bus_Urbano';
-                      }
-                      return route;
-                  });
-              }
-              payload = JSON.stringify(normalized);
-          }
-
-          // ⚡ Autonomy: merge user-created routes from routes-index.json (non-blocking)
-          try {
-              const indexResp = await fetch('/data/routes-index.json');
-              if (indexResp.ok) {
-                  const index = await indexResp.json();
-                  const parsedPayload = JSON.parse(payload);
-                  const existingIds = new Set((parsedPayload.rutas || []).map((r: any) => r.id));
-                  let merged = 0;
-                  for (const entry of (index.files || [])) {
-                      try {
-                          const rResp = await fetch(`/data/${entry.file}`);
-                          if (!rResp.ok) continue;
-                          const routeData = await rResp.json();
-                          const routes: any[] = Array.isArray(routeData) ? routeData
-                              : (routeData.rutas ? routeData.rutas : (routeData.id ? [routeData] : []));
-                          for (const r of routes) {
-                              if (r?.id && !existingIds.has(r.id) && (r.paradas || r.stops || []).length > 0) {
-                                  parsedPayload.rutas.push(r);
-                                  existingIds.add(r.id);
-                                  merged++;
-                              }
-                          }
-                          // Tell SW to cache this route file for offline use
-                          navigator.serviceWorker?.controller?.postMessage({ type: 'CACHE_USER_ROUTE', url: `/data/${entry.file}` });
-                      } catch { /* skip individual file errors silently */ }
-                  }
-                  if (merged > 0) {
-                      payload = JSON.stringify(parsedPayload);
-                      console.log(`⚡ [RouteCalculator] Merged ${merged} user routes from routes-index`);
-                  }
-              }
-          } catch { /* routes-index.json may not exist yet (first build) — silently skip */ }
-
-          // Sentinel: Enforce 10MB limit
-          if (payload.length > 10 * 1024 * 1024) {
-             throw new Error("Catalog too large (DoS protection)");
-          }
-
-          load_catalog(payload);
-          console.timeEnd("WASM Load");
-          const _routeCount = (() => { try { return JSON.parse(payload)?.rutas?.length || 0; } catch { return 0; } })();
-          console.log("✅ Catalog loaded into WASM:", _routeCount, "routes");
-
-          // UI Ready State
-          const searchBtn = document.getElementById("search-btn");
-          const spinner = document.getElementById("btn-spinner");
-          const txt = document.getElementById("btn-text");
-          
-          if (searchBtn) searchBtn.disabled = false;
-          if (spinner) spinner.classList.add("hidden");
-          if (txt) {
-              txt.setAttribute("data-i18n", "calc.btn");
-              txt.textContent = "CALCULATE ROUTE";
-          }
-      }
-    } catch (e) {
-      console.error("WASM Load Critical Error:", e);
-
-      // UI Error State
-      const searchBtn = document.getElementById("search-btn");
-      const spinner = document.getElementById("btn-spinner");
-      const txt = document.getElementById("btn-text");
-
-      if (searchBtn) {
-          searchBtn.disabled = true;
-          // Apply error styles safely
-          searchBtn.classList.add('bg-red-50', 'text-red-600', 'border-red-200');
-          searchBtn.style.opacity = '1';
-      }
-      if (spinner) spinner.classList.add("hidden");
-      if (txt) txt.textContent = "System Offline";
-
-      renderError(`System Error: ${e.message || "Initialization failed"}`);
-    } finally {
-      // Setup event listeners immediately — don't let async operations block this
-      setupEventListeners();
-
-      // Handle Query Params (e.g., from "Trazar Ruta Aquí")
-      const urlParams = new URLSearchParams(window.location.search);
-      const selectedStop = urlParams.get('selected_stop');
-      if (selectedStop) {
-          const destInput = document.getElementById('destination-input');
-          if (destInput) {
-              destInput.value = selectedStop;
-              destInput.dispatchEvent(new Event('input', { bubbles: true }));
-              
-              const originInput = document.getElementById('origin-input');
-              if (originInput) originInput.focus();
-          }
-      }
-
-      // Balance update (non-blocking)
-      updateBalance().catch(e => console.warn("[RouteCalculator] Balance update failed:", e));
-
-      // Initialize shared coordinates store and Finder
-      try {
-        await coordinatesStore.init(jsonData);
-        const db = coordinatesStore.getDB();
-        
-        if (db) {
-            finder = new CoordinateFinder(db, coordinatesStore.getOriginalNames());
-            console.log("Coordinate Finder Ready");
-
-            // Setup Autocomplete
-            setupAutocomplete('origin-input');
-            setupAutocomplete('destination-input');
-        }
-
-      } catch (e) {
-        console.warn("GPS/Finder features might be unavailable", e);
-      }
-      // Initialize GPS logic regardless of data state (it handles nulls)
-      if (typeof initGPSLogic === 'function') initGPSLogic();
-    }
-  }
-
-  function setupAutocomplete(inputId) {
-      const input = document.getElementById(inputId);
-      const container = input?.parentElement; // Input wrapper
-      if (!input || !container) return;
-
-      // Create Dropdown Element (Native Popover)
-      const list = document.createElement('ul');
-      list.className = 'graffiti-dropdown divide-y divide-slate-50';
-      list.id = `${inputId}-suggestions`;
-      list.style.pointerEvents = 'auto'; // Ensure clicks are captured
-
-      // GraffitiWarrior: Native Popover API
-      try {
-        list.popover = "auto";
-      } catch (e) {
-        console.warn("Popover API not fully supported, fallback behavior may be degraded.");
-      }
-
-      // GraffitiWarrior: CSS Anchor Positioning
-      const anchorName = `--${inputId}`;
-      input.style.setProperty('anchor-name', anchorName);
-      list.style.setProperty('position-anchor', anchorName);
-
-      container.appendChild(list);
-
-      const updateList = () => {
-          const val = input.value;
-          if (!finder || val.length < 2) {
-              try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
-              return;
-          }
-
-          const results = finder.search(val, 6); // Limit to 6 suggestions
-          
-          if (results.length > 0) {
-              list.replaceChildren();
-              results.forEach(res => {
-                  const li = document.createElement('li');
-                  li.className = 'px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors flex items-center gap-3 group';
-
-                  const iconDiv = document.createElement('div');
-                  iconDiv.className = 'w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-500 transition-colors';
-                  const svgFragment = document.createRange().createContextualFragment('<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>');
-                  iconDiv.appendChild(svgFragment);
-
-                  const contentDiv = document.createElement('div');
-                  contentDiv.className = 'flex-1';
-
-                  const nameP = document.createElement('p');
-                  nameP.className = 'text-sm font-bold text-slate-700 group-hover:text-primary-700';
-                  nameP.textContent = res.name;
-
-                  const coordP = document.createElement('p');
-                  coordP.className = 'text-[10px] text-slate-500 font-mono';
-                  coordP.textContent = `COORD: ${res.coords[0].toFixed(4)}, ${res.coords[1].toFixed(4)}`;
-
-                  contentDiv.appendChild(nameP);
-                  contentDiv.appendChild(coordP);
-                  li.appendChild(iconDiv);
-                  li.appendChild(contentDiv);
-
-                  li.addEventListener('click', () => {
-                      input.value = res.name;
-                      try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
-                      // Trigger any blur/update logic
-                      input.dispatchEvent(new Event('blur'));
-                  });
-                  list.appendChild(li);
-              });
-
-              try {
-                list.showPopover();
-              } catch(e) {
-                list.style.display = 'block';
-              }
-          } else {
-              try { list.hidePopover(); } catch(e) { list.style.display = 'none'; }
-          }
-      };
-
-      // Input Handler
-      input.addEventListener('input', updateList);
-
-      // Focus Handler (Re-open if valid)
-      input.addEventListener('focus', updateList);
-  }
-
-  function initGPSLogic() {
-      const gpsBtn = document.getElementById('gps-btn');
-      if (!gpsBtn) return;
-
-      gpsBtn.addEventListener('click', () => {
-         if (!navigator.geolocation) {
-             showToast(ui['error.no_gps'], 'error');
-             return;
-         }
-
-         gpsBtn.classList.add('animate-pulse', 'text-primary-500');
-         navigator.geolocation.getCurrentPosition(
-             (pos) => {
-                 const { latitude, longitude } = pos.coords;
-                 const originInput = document.getElementById('origin-input');
-                 if (originInput && finder) {
-                     // Reverse Geocode: resolve GPS coords to nearest registered stop
-                     const gpsResult = coordinatesStore.findNearestWithDistance(latitude, longitude);
-                     if (gpsResult && gpsResult.distanceKm < 1.0) {
-                         originInput.value = gpsResult.name;
-                         const meters = Math.round(gpsResult.distanceKm * 1000);
-                         showToast(`GPS: ${gpsResult.name} (${meters} m)`, 'success');
-                     } else {
-                         // No registered stop within 1 km — ask user to search manually
-                         showToast('No hay paradas registradas cerca. Escribe tu ubicación manualmente.', 'warning');
-                         originInput.focus();
-                     }
-                 }
-                 gpsBtn.classList.remove('animate-pulse');
-             },
-             (err) => {
-                 console.error(err);
-                 gpsBtn.classList.remove('animate-pulse', 'text-primary-500');
-                 showToast("GPS Error", 'error');
-             }
-         );
-      });
-  }
-
-  // --- Rendering Functions ---
 
   function renderBestResultHtml(journey, isBest = false) {
-        const route = journey.legs[0];
-        const badgesHtml = route.badges ? route.badges.map(b => `<span class="badge-primary" style="font-size: 0.5625rem;">${escapeHtml(b)}</span>`).join('') : '';
+    const route = journey.legs[0];
+    const gmapsLink = getGmapsLink(journey);
 
-        let stopsPreview = `${escapeHtml(route.origin_hub)} → ${escapeHtml(route.dest_hub)}`;
-        if (route.stops && route.stops.length > 0) {
-             // Access .name because stops are objects {name, lat, lng...}
-             stopsPreview = `${escapeHtml(route.stops[0].name)} → ${escapeHtml(route.stops[route.stops.length - 1].name)}`;
-        }
-
-        const html = `
-          <div class="glass-card active:scale-[0.98] transition-all duration-300 mb-4 animate-slide-up relative overflow-hidden group hover:-translate-y-0.5 ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
-            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${escapeHtml(ui['calc.best'])}</div>` : ''}
-            <div class="flex justify-between items-start">
-              <div class="flex-1 min-w-0 pr-2">
-                <span class="badge-primary mb-2">
-                  ${escapeHtml(getTransportLabel(route.transport_type))}
-                </span>
-                <h3 class="font-display font-black text-base leading-tight tracking-tight group-hover:text-primary-500 transition-colors truncate" style="color: var(--text-primary);">${escapeHtml(route.name)}</h3>
-
-                <div class="mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5 text-xxs font-bold uppercase tracking-widest" style="color: var(--text-tertiary);">
-                    ${route.operator ? `<div class="flex items-center gap-1"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg> <span>${escapeHtml(route.operator)}</span></div>` : ''}
-                    ${route.frequency ? `<div class="flex items-center gap-1"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg> <span>${escapeHtml(route.frequency)}</span></div>` : ''}
-                </div>
-
-                <div class="flex gap-1.5 mt-3 flex-wrap">
-                   ${badgesHtml}
-                </div>
-              </div>
-              <div class="text-right shrink-0 flex flex-col items-end pl-3" style="border-left: 1px solid var(--border-light);">
-                <span class="price-tag">
-                    $${(journey.total_price || 0).toFixed(2)}
-                </span>
-                <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration || '')}</p>
-
-                <button class="btn-primary btn-sm mt-3 whitespace-nowrap view-map-btn" data-journey='${safeJsonStringify(journey)}'>
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg> <span data-i18n="calc.results.map">${escapeHtml(ui['calc.results.map'] || 'Ver Mapa')}</span>
-                </button>
-              </div>
-            </div>
-            <div class="mt-3 pt-3 text-xxs font-bold flex items-center gap-2 uppercase tracking-widest" style="border-top: 1px solid var(--border-light); color: var(--text-tertiary);">
-                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/></svg> <span class="truncate flex-1">${stopsPreview}</span>
-            </div>
-          </div>
-        `;
-        return document.createRange().createContextualFragment(html);
-  }
-
-  function renderTransferCardHtml(journey, isBest = false) {
-      const leg1 = journey.legs[0];
-      const leg2 = journey.legs[1];
-      const transferPoint = journey.transfer_point;
-
-      const html = `
-          <div class="glass-card active:scale-[0.98] transition-all mb-3 animate-slide-up relative overflow-hidden group ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
-            <div class="absolute top-0 right-0 bg-accent-500 text-white px-3 py-1 rounded-bl-xl text-xxs font-black uppercase tracking-widest ${isBest ? 'mr-24' : ''}">
-               ${escapeHtml(ui['calc.transfer'])}
-            </div>
-            ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${escapeHtml(ui['calc.best'])}</div>` : ''}
-
-            <div class="flex flex-col gap-3 mt-5">
-                <!-- Leg 1 -->
-                <div class="flex items-center gap-3">
-                    <div class="flex-shrink-0 w-8 text-center">
-                        <span class="w-3 h-3 rounded-full bg-success-500 border-2 border-white dark:border-slate-900 shadow-md mx-auto block"></span>
-                        <div class="h-6 w-0.5 mx-auto my-0.5 rounded-full" style="background: var(--border-light);"></div>
-                    </div>
-                    <div>
-                         <span class="badge-primary" style="font-size: 0.5rem;">
-                            ${escapeHtml(getTransportLabel(leg1.transport_type))}
-                         </span>
-                         <h4 class="font-display font-black text-sm leading-tight tracking-tight" style="color: var(--text-primary);">${escapeHtml(leg1.name)}</h4>
-                    </div>
-                </div>
-
-                <!-- Transfer point -->
-                <div class="flex items-center gap-3 -mt-2">
-                    <div class="flex-shrink-0 w-8 text-center flex justify-center">
-                        <div class="w-2.5 h-2.5 rounded-full bg-accent-500 border-2 border-white dark:border-slate-900 shadow-md ring-2 ring-accent-500/20 animate-pulse"></div>
-                    </div>
-                    <div class="chip text-xxs">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
-                        <span data-i18n="calc.results.transfer_at">${escapeHtml(ui['calc.results.transfer_at'] || 'Transfer at')}</span> <span class="text-primary-500 font-black ml-1">${escapeHtml(transferPoint)}</span>
-                    </div>
-                </div>
-
-                <!-- Leg 2 -->
-                <div class="flex items-center gap-3 -mt-2">
-                    <div class="flex-shrink-0 w-8 text-center">
-                        <div class="h-6 w-0.5 mx-auto my-0.5 rounded-full" style="background: var(--border-light);"></div>
-                        <span class="w-3 h-3 rounded-full bg-danger-500 border-2 border-white dark:border-slate-900 shadow-md mx-auto block"></span>
-                    </div>
-                    <div>
-                         <span class="badge-accent" style="font-size: 0.5rem;">
-                            ${escapeHtml(getTransportLabel(leg2.transport_type))}
-                         </span>
-                         <h4 class="font-display font-black text-sm leading-tight tracking-tight" style="color: var(--text-primary);">${escapeHtml(leg2.name)}</h4>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-4 pt-3 flex justify-between items-center" style="border-top: 1px solid var(--border-light);">
-                <span class="price-tag">
-                    $${(journey.total_price || 0).toFixed(2)}
-                </span>
-
-                <button class="btn-primary btn-sm view-map-btn"
-                    data-journey='${safeJsonStringify(journey)}'>
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg> <span data-i18n="calc.view_route">${escapeHtml(ui['calc.view_route'])}</span>
-                </button>
-            </div>
-          </div>
-      `;
-      return document.createRange().createContextualFragment(html);
-  }
-
-  function renderWasmError() {
-    if (!resultsContainer) return;
     const html = `
-        <div class="glass-card text-center animate-slide-up">
-            <svg class="w-10 h-10 mx-auto mb-3" viewBox="0 0 24 24" fill="var(--text-tertiary)" aria-hidden="true"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h.71C7.37 7.69 9.48 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3s-1.34 3-3 3zM8 13h2.55v3h2.9v-3H16l-4-4z"/></svg>
-            <h3 class="font-display font-black text-base mb-2" style="color: var(--text-primary);">${escapeHtml(ui['calc.offline'])}</h3>
-            <p class="text-sm mb-4" style="color: var(--text-secondary);">${escapeHtml(ui['calc.offline_msg'])}</p>
-            <a href="/rutas" class="btn-secondary btn-sm inline-flex items-center gap-2">
-               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> ${escapeHtml(ui['calc.view_all'])}
-            </a>
-        </div>
-    `;
-    resultsContainer.replaceChildren(document.createRange().createContextualFragment(html));
-  }
-
-  function renderError(msg) {
-    if (!resultsContainer) return;
-    const fragment = document.createRange().createContextualFragment(`
-        <div class="glass-card flex items-center gap-3 animate-slide-up" style="border-left: 3px solid var(--color-sunset);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--color-sunset)" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-            <span class="font-bold text-sm js-error-msg" style="color: var(--text-secondary);"></span>
-        </div>
-    `);
-    const errorMsgSpan = fragment.querySelector('.js-error-msg');
-    if (errorMsgSpan) errorMsgSpan.textContent = String(msg);
-    resultsContainer.replaceChildren(fragment);
-    showToast(msg, 'error');
-  }
-
-  function renderEmptyState() {
-      if (!resultsContainer) return;
-      const html = `
-          <div class="glass-card text-center animate-slide-up py-10 px-6">
-              <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                  <svg class="w-10 h-10 text-slate-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.71 5.71L18.29 2.29a1 1 0 00-1.41 0l-.71.71L12 7.17l-1.29-1.29a1 1 0 00-1.42 0L2.29 12.88a1 1 0 000 1.41l3.42 3.42a1 1 0 001.41 0l.71-.71L12 12.83l1.29 1.29a1 1 0 001.42 0l7-7a1 1 0 000-1.41z"/></svg>
-              </div>
-              <h3 class="font-display font-black text-xl mb-3" style="color: var(--text-primary);" data-i18n="calc.no_route">${escapeHtml(ui['calc.no_route'] || 'No routes found')}</h3>
-              <p class="text-sm mb-8 max-w-[260px] mx-auto leading-relaxed" style="color: var(--text-secondary);" data-i18n="calc.no_route_msg">
-                  ${escapeHtml(ui['calc.no_route_msg'] || 'Try changing your origin or destination, or walking to a main avenue.')}
-              </p>
-               <button class="btn-primary btn-md w-full js-retry-search-btn uppercase tracking-widest" data-i18n="calc.retry">
-                  ${escapeHtml(ui['calc.retry'] || 'Try Again')}
-              </button>
+      <div class="glass-card mb-4 animate-slide-up relative overflow-hidden ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
+        <div class="flex justify-between items-start">
+          <div class="flex-1 min-w-0 pr-2">
+            <span class="badge-primary mb-2">${escapeHtml(getTransportLabel(route.transport_type))}</span>
+            <h3 class="font-black text-lg leading-tight text-slate-900 dark:text-white truncate">${escapeHtml(route.name)}</h3>
+            <p class="text-xxs font-bold text-slate-400 mt-1 uppercase tracking-widest">${escapeHtml(route.origin_hub)} → ${escapeHtml(route.dest_hub)}</p>
           </div>
-      `;
-      resultsContainer.replaceChildren(document.createRange().createContextualFragment(html));
+          <div class="text-right flex flex-col items-end">
+            <span class="text-xl font-black text-primary-500">$${(journey.total_price || 0).toFixed(2)}</span>
+            <span class="text-[10px] font-black text-slate-400 uppercase">${journey.duration_minutes || ''} min</span>
+
+            <div class="flex gap-2 mt-4">
+              <a href="${gmapsLink}" target="_blank" class="btn-secondary btn-sm flex items-center gap-1 opacity-70 hover:opacity-100 transition-all" title="${ui['calc.export_gmaps']}">
+                <span class="material-symbols-rounded" style="font-size: 16px;">near_me</span>
+              </a>
+              <button class="btn-primary btn-sm view-map-btn" data-journey='${safeJsonStringify(journey)}'>
+                <span class="material-symbols-rounded" style="font-size: 16px;">map</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    return document.createRange().createContextualFragment(html);
   }
 
-  // --- Search Logic ---
+  // --- Core Logic ---
+  async function start() {
+    try {
+      const module = await WasmLoader.getModule();
+      find_route = module.find_route;
+      load_catalog = module.load_catalog;
+      wasmLoaded = true;
 
-  // --- Event Listeners ---
+      const { text: catalogString, data: jsonData } = await coordinatesStore.init();
+      load_catalog(catalogString);
+
+      const db = coordinatesStore.getDB();
+      if (db) {
+          finder = new CoordinateFinder(db, coordinatesStore.getOriginalNames());
+      }
+
+      const searchBtn = document.getElementById("search-btn");
+      const txt = document.getElementById("btn-text");
+      if (searchBtn) searchBtn.disabled = false;
+      if (txt) {
+          txt.setAttribute("data-i18n", "calc.btn");
+          txt.textContent = ui['calc.btn'] || "CALCULATE ROUTE";
+      }
+
+      setupEventListeners();
+      setupQuestionAnimations();
+    } catch (e) {
+      console.error("WASM Load Error:", e);
+    }
+  }
 
   function setupEventListeners() {
-      // Swap Button Logic
-      const swapBtn = document.getElementById('swap-btn');
-      if (swapBtn && !swapBtn.dataset.initialized) {
-          swapBtn.dataset.initialized = "true";
-          swapBtn.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
+    const originInput = document.getElementById('origin-input') as HTMLInputElement;
+    const destInput = document.getElementById('destination-input') as HTMLInputElement;
+    const destQuestion = document.querySelector('.dest-question-container');
 
-              const originInput = document.getElementById('origin-input');
-              const destInput = document.getElementById('destination-input');
-              if (originInput && destInput) {
-                  const temp = originInput.value;
-                  originInput.value = destInput.value;
-                  destInput.value = temp;
+    originInput?.addEventListener('focus', () => {
+      destQuestion?.classList.remove('hidden');
+    });
 
-                  // Rotate animation
-                  swapBtn.classList.toggle('rotated');
+    document.getElementById('search-btn')?.addEventListener('click', async () => {
+      const origin = originInput?.value;
+      const dest = destInput?.value;
+      if (!origin || !dest) return;
 
-                  // Trigger input events
-                  originInput.dispatchEvent(new Event('input'));
-                  destInput.dispatchEvent(new Event('input'));
-              }
+      const results = find_route(normalizeString(origin), normalizeString(dest));
+      const container = document.getElementById('results-container');
+      const bestArea = document.getElementById('best-result-area');
+      const info = document.getElementById('results-info');
+
+      if (container && bestArea) {
+        container.replaceChildren();
+        bestArea.replaceChildren();
+
+        if (results && results.length > 0) {
+          info?.classList.remove('hidden');
+          bestArea.appendChild(renderBestResultHtml(results[0], true));
+          results.slice(1).forEach(r => container.appendChild(renderBestResultHtml(r)));
+
+          document.querySelectorAll('.view-map-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+               const j = JSON.parse((btn as HTMLElement).dataset.journey);
+               window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey: j } }));
+            });
           });
+        }
       }
+    });
 
-      // Quick Action Buttons (Home, Work, Airport, Beach)
-      document.querySelectorAll('.quick-action-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-              const dest = btn.dataset.dest;
-              if (dest) {
-                  const destInput = document.getElementById('destination-input');
-                  if (destInput) {
-                      destInput.value = dest;
-                      destInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  }
-              }
-          });
-      });
-
-
-      // Map Picker Button
-      const mapPickerBtn = document.getElementById('map-picker-btn');
-      if (mapPickerBtn) {
-          mapPickerBtn.addEventListener('click', () => {
-              const currentLang = document.documentElement.lang || 'es';
-              window.location.href = `/${currentLang}/mapa?picker=dest`;
-          });
-      }
-
-      const btn = document.getElementById('search-btn');
-      
-      // Remove existing listener to prevent duplicates if any
-      const newBtn = btn?.cloneNode(true);
-      if (btn && newBtn) {
-          btn.parentNode.replaceChild(newBtn, btn);
-      }
-      
-      const searchButton = document.getElementById('search-btn');
-
-      searchButton?.addEventListener('click', async () => {
-          const originInput = document.getElementById('origin-input');
-          const destInput = document.getElementById('destination-input');
-          const origin = originInput?.value;
-          const dest = destInput?.value;
-          
-          if (!origin || !dest) {
-              renderError(ui?.['calc.error.empty'] || "Please fill in both fields");
-              return;
-          }
-
-          const spinner = document.getElementById('btn-spinner');
-          const btnText = document.getElementById('btn-text');
-          const resultsContainer = document.getElementById('results-container');
-
-          if (searchButton) searchButton.disabled = true;
-          spinner?.classList.remove('hidden');
-
-          btnText?.classList.add('hidden');
-          
-          // Clear previous results badges
-          const countLabel = document.getElementById('results-count-label');
-          if (countLabel) countLabel.textContent = '';
-          const timeBadge = document.getElementById('results-time-badge');
-          if (timeBadge) timeBadge.textContent = '';
-
-
-          if (resultsContainer) resultsContainer.replaceChildren();
-          const bestResultArea = document.getElementById('best-result-area');
-          if (bestResultArea) bestResultArea.replaceChildren();
-          document.getElementById('results-info')?.classList.add('hidden');
-          document.getElementById('rw-results-cta')?.classList.add('hidden');
-
-          try {
-              if (!wasmLoaded || typeof find_route !== 'function') {
-                  throw new Error("WASM not ready or find_route not defined");
-              }
-
-              console.log(`🔍 Searching: ${origin} -> ${dest}`);
-              const results = find_route(normalizeString(origin), normalizeString(dest));
-
-              console.log("🔍 Raw Results:", results);
-
-              if (!results || results.length === 0) {
-                  renderEmptyState();
-              } else {
-                 // Normalize WASM output (Spanish → English field mapping)
-                 const normalized = results.map(normalizeJourney);
-
-                 normalized.sort((a, b) => {
-                     // Prioritize Direct routes
-                     if (a.type === 'Direct' && b.type !== 'Direct') return -1;
-                     if (b.type === 'Direct' && a.type !== 'Direct') return 1;
-                     return a.total_price - b.total_price;
-                 });
-
-                 const best = normalized[0];
-                 const others = normalized.slice(1);
-
-                  // Prepare UI Data
-                 const optionsLabel = ui['calc.results.options'] || 'OPCIONES';
-                 const fastestLabel = ui['calc.results.fastest'] || 'MÁS RÁPIDA';
-                 const countText = `${normalized.length} ${optionsLabel}`;
-                 let timeText = '';
-                 let showTimeBadge = false;
-
-                 if (best) {
-                     let duration = best.duration_minutes || 0;
-                     timeText = `${fastestLabel}: ${duration}min`;
-                     showTimeBadge = true;
-                 }
-
-                 // ATOMIC DOM UPDATE
-                 const countLabel = document.getElementById('results-count-label');
-                 const timeBadge = document.getElementById('results-time-badge');
-                 
-                 if (countLabel) {
-                     countLabel.textContent = countText;
-                     countLabel.classList.remove('hidden');
-                 }
-                 
-                 if (timeBadge) {
-                     timeBadge.textContent = timeText;
-                     if (showTimeBadge) {
-                         timeBadge.classList.remove('hidden');
-                         timeBadge.style.display = 'inline-flex';
-                     } else {
-                         timeBadge.classList.add('hidden');
-                         timeBadge.style.display = 'none';
-                     }
-                 }
-
-                 // Show Info Bar NOW
-                 document.getElementById('results-info')?.classList.remove('hidden');
-                 document.getElementById('rw-results-cta')?.classList.remove('hidden');
-
-                 // Render Cards
-                 if (bestResultArea) {
-                     bestResultArea.replaceChildren(best.type === 'Transfer' ? renderTransferCardHtml(best, true) : renderBestResultHtml(best, true));
-                 }
-
-                 if (others.length > 0 && resultsContainer) {
-                     others.forEach(r => {
-                         resultsContainer.appendChild(r.type === 'Transfer' ? renderTransferCardHtml(r) : renderBestResultHtml(r));
-                     });
-                 }
-                 
-                 // Re-attach map buttons
-                 document.getElementById('btn-report-results')?.addEventListener('click', () => {
-                     // @ts-ignore - Nexus Global API
-                     window.rwOpenReport?.();
-                 });
-
-                 document.querySelectorAll('.view-map-btn').forEach(btn => {
-                     btn.addEventListener('click', (e) => {
-                         try {
-                             const journeyData = JSON.parse(btn.dataset.journey);
-                             window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', {
-                                detail: { journey: journeyData }
-                             }));
-                             // Also trigger view state change to map
-                             window.dispatchEvent(new CustomEvent('VIEW_STATE_CHANGE', { detail: 'MAP_MAXIMIZED' }));
-                         } catch (err) {
-                             console.error("Error parsing journey data for map:", err);
-                         }
-                     });
-                 });
-              }
-
-          } catch (e) {
-              console.error("❌ Search Error:", e);
-              renderError(`Error: ${e.message || "Calculation failed"}`);
-          } finally {
-              if (searchButton) searchButton.disabled = false;
-              spinner?.classList.add('hidden');
-              btnText?.classList.remove('hidden');
-          }
-      });
+    document.getElementById('gps-btn')?.addEventListener('click', () => {
+       navigator.geolocation.getCurrentPosition(
+         pos => {
+           const res = coordinatesStore.findNearestWithDistance(pos.coords.latitude, pos.coords.longitude);
+           if (res && originInput) {
+              originInput.value = res.name;
+              showToast(`GPS: ${res.name}`, 'success');
+           }
+         },
+         error => {
+           let errorMessage = 'Unable to access location';
+           if (error.code === error.PERMISSION_DENIED) {
+             errorMessage = 'Location permission denied. Enable location access in settings.';
+           } else if (error.code === error.POSITION_UNAVAILABLE) {
+             errorMessage = 'Location information unavailable.';
+           } else if (error.code === error.TIMEOUT) {
+             errorMessage = 'Location request timed out.';
+           }
+           showToast(errorMessage, 'error');
+         },
+         {
+           timeout: 10000,
+           enableHighAccuracy: false,
+           maximumAge: 300000
+         }
+       );
+    });
   }
 
   document.addEventListener('astro:page-load', start);
-
 </script>
 
 <style>
-  /* GraffitiWarrior: CSS Anchor Positioning Tooltips */
-  .graffiti-tooltip {
-    position: absolute;
-    background: #1e293b; /* slate-800 */
-    color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 700;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), translate 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 50;
-    white-space: nowrap;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  .search-header {
+    perspective: 1000px;
   }
 
-  /* Position Logic */
-  .graffiti-tooltip.bottom {
-    top: anchor(bottom);
-    right: anchor(right); /* Align right edges to prevent clipping */
-    translate: 0 10px;
+  #animated-origin-question, #animated-dest-question {
+    transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
-  .graffiti-tooltip.top {
-    bottom: anchor(top);
-    right: anchor(right); /* Align right edges to prevent clipping */
-    translate: 0 -10px;
-  }
-
-  /* Reveal Logic - Sibling Selector inside Slot */
-  button:hover + .graffiti-tooltip,
-  button:focus-visible + .graffiti-tooltip {
-    opacity: 1;
-    translate: 0 6px; /* Offset for bottom */
-  }
-
-  button:hover + .graffiti-tooltip.top,
-  button:focus-visible + .graffiti-tooltip.top {
-    translate: 0 -6px; /* Offset for top */
-  }
-
-  /* Swap Button Logic */
-  .inputs-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    position: relative;
-    isolation: isolate;
+  .search-card {
+    border-radius: 2rem;
+    padding: 1.5rem;
   }
 
   .swap-btn-container {
-    position: absolute;
-    inset-inline-end: 1rem;
-    top: 50%;
-    translate: 0 -50%;
+    display: flex;
+    justify-content: center;
+    margin: -1rem 0;
     z-index: 30;
-    pointer-events: none;
   }
 
   .swap-btn {
-    pointer-events: auto;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 50%;
-    background: var(--surface-elevated);
+    background: var(--surface-card);
     border: 1px solid var(--border-light);
-    box-shadow: var(--glass-shadow);
-    color: var(--text-secondary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, color 0.2s;
+    box-shadow: var(--glass-shadow);
+    color: var(--text-secondary);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   .swap-btn:hover {
-    background-color: var(--surface-card);
+    transform: rotate(180deg) scale(1.1);
     color: var(--color-primary);
-    transform: scale(1.15);
-    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
   }
 
-  .swap-btn:active {
-    transform: scale(0.9);
+  .text-gradient-caribbean {
+    background: linear-gradient(135deg, #0284c7, #2dd4bf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
-
-  .swap-btn.rotated {
-    transform: rotate(180deg);
-  }
-
-  /* GraffitiWarrior: Scroll-Driven Shadows for Quick Actions */
-  /* Disable shadow pseudo-elements by default to avoid non-functional overlays */
-  .quick-actions-wrapper::before,
-  .quick-actions-wrapper::after {
-    content: none;
-  }
-
-  @supports (scroll-timeline: --scroll-x inline) and (animation-timeline: auto) {
-    .quick-actions-wrapper {
-      position: relative;
-      /* Allows ::before/::after to respond to child's scroll */
-      timeline-scope: --scroll-x;
-    }
-
-    .quick-actions-list {
-      scroll-timeline: --scroll-x inline;
-    }
-
-    /* Shadow Masks */
-    .quick-actions-wrapper::before,
-    .quick-actions-wrapper::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 40px;
-      z-index: 10;
-      pointer-events: none;
-      opacity: 0;
-      /* Use 'auto' duration for scroll-driven animations */
-      animation-duration: auto;
-      animation-fill-mode: both;
-      animation-timeline: --scroll-x;
-    }
-
-    /* Left Shadow: Appears when scrolled right */
-    .quick-actions-wrapper::before {
-      left: 0;
-      background: linear-gradient(to right, var(--surface-bg, #f8fafc), transparent);
-      animation-name: gw-fade-in;
-      animation-range: 0px 20px;
-    }
-
-    /* Right Shadow: Disappears when scrolled to end */
-    .quick-actions-wrapper::after {
-      right: 0;
-      background: linear-gradient(to left, var(--surface-bg, #f8fafc), transparent);
-      animation-name: gw-fade-out;
-      animation-range: calc(100% - 20px) 100%;
-    }
-  }
-
-  @keyframes gw-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes gw-fade-out {
-    from { opacity: 1; }
-    to { opacity: 0; }
-  }
-
-  /* GraffitiWarrior: Native CSS Toggle Logic */
-  .calculator-wrapper:has(#results-toggle:not(:checked)) #best-result-area,
-  .calculator-wrapper:has(#results-toggle:not(:checked)) #results-container {
-      display: none;
-  }
-
-  .calculator-wrapper:has(#results-toggle:not(:checked)) .toggle-hide-text {
-      display: none;
-  }
-
-  .calculator-wrapper:has(#results-toggle:not(:checked)) .toggle-show-text {
-      display: inline;
-  }
-
-  .calculator-wrapper:has(#results-toggle:not(:checked)) .toggle-icon {
-      transform: rotate(180deg);
-  }
-</style>
-
-<style is:global>
-  /*
-   * GRAFFITI WARRIOR: Native Popover Dropdown
-   * No Z-Index. No JS Positioning. Pure CSS5 Magic.
-   */
-  .graffiti-dropdown {
-    /* Popover Reset */
-    position: fixed; /* Explicit for anchor positioning */
-    margin: 0;
-    padding: 0;
-    border: none;
-    inset: auto; /* Reset default inset */
-
-    /* Box Model */
-    background: white;
-    border: 1px solid #cbd5e1; /* slate-200 */
-    border-radius: 0.75rem; /* rounded-xl */
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    max-height: 15rem;
-    overflow-y: auto;
-    z-index: 50; /* Fallback */
-
-    /* Anchor Positioning Logic */
-    top: anchor(bottom);
-    left: anchor(left);
-    width: anchor-size(width);
-    translate: 0 0.5rem; /* mt-2 equivalent */
-
-    /* Animation: Entry */
-    opacity: 0;
-    transform: translateY(-0.5rem);
-    transition:
-      opacity 0.2s ease-out,
-      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-      display 0.2s allow-discrete,
-      overlay 0.2s allow-discrete;
-
-    &:popover-open {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    @starting-style {
-      &:popover-open {
-        opacity: 0;
-        transform: translateY(-0.5rem);
-      }
-    }
-  }
-
-  /* Dark mode support if needed, but we stick to light for now as per design */
 </style>

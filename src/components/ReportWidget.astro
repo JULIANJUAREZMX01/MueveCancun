@@ -403,7 +403,12 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
       return {
         title: "[REPORTE] " + typeLabel + titleSuffix,
         labels: TIPO_LABELS[data.tipo] || ["reporte", "estado:pendiente"],
-        body: body
+        body: body,
+        descripcion: data.descripcion,
+        ruta: data.ruta,
+        lat: data.lat,
+        lng: data.lng,
+        location: data.ruta || undefined
       };
     }
 

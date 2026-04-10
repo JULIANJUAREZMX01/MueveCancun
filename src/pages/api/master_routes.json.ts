@@ -1,18 +1,11 @@
+export const prerender = true;
+import type { APIRoute } from 'astro';
 import { getAllRoutes } from '../../utils/routes';
 
-export async function GET() {
+export const GET: APIRoute = async () => {
   const routes = await getAllRoutes();
-  return new Response(JSON.stringify({
-    version: "2.3.0-aggregated",
-    rutas: routes
-  }), {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-}
-
-// In SSG mode (output: static), this file will be generated as /api/master_routes.json
-export async function getStaticPaths() {
-    return [];
-}
+  return new Response(
+    JSON.stringify({ rutas: routes, metadata: { version: "3.7.0", generated: new Date().toISOString() } }),
+    { status: 200, headers: { 'Content-Type': 'application/json' } }
+  );
+};

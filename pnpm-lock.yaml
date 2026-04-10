@@ -85,7 +85,7 @@ importers:
         specifier: ^3.4.0
         version: 3.4.19(yaml@2.8.2)
       vite:
-        specifier: ^6.4.2
+        specifier: ^6.2.0
         version: 6.4.2(@types/node@24.12.0)(jiti@2.6.1)(yaml@2.8.2)
       wasm-pack:
         specifier: ^0.14.0
@@ -158,6 +158,9 @@ packages:
 
   '@astrojs/compiler@2.13.1':
     resolution: {integrity: sha512-f3FN83d2G/v32ipNClRKgYv30onQlMZX1vCeZMjPsMMPl1mDpmbl0+N5BYo4S/ofzqJyS5hvwacEo0CCVDn/Qg==}
+
+  '@astrojs/internal-helpers@0.7.4':
+    resolution: {integrity: sha512-lDA9MqE8WGi7T/t2BMi+EAXhs4Vcvr94Gqx3q15cFEz8oFZMO4/SFBqYr/UcmNlvW+35alowkVj+w9VhLvs5Cw==}
 
   '@astrojs/internal-helpers@0.7.6':
     resolution: {integrity: sha512-GOle7smBWKfMSP8osUIGOlB5kaHdQLV3foCsf+5Q9Wsuu+C6Fs3Ez/ttXmhjZ1HkSgsogcM1RXSjjOVieHq16Q==}
@@ -4294,6 +4297,8 @@ snapshots:
       - prettier-plugin-astro
 
   '@astrojs/compiler@2.13.1': {}
+
+  '@astrojs/internal-helpers@0.7.4': {}
 
   '@astrojs/internal-helpers@0.7.6': {}
 
