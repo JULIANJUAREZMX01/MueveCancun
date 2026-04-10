@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 export function getStaticPaths() {
   return [
     { params: { lang: "es" } },
@@ -8,6 +9,7 @@ export function getStaticPaths() {
 
 import MainLayout from '../../layouts/MainLayout.astro';
 ---
+export const prerender = true;
 
 <MainLayout title="Acerca de - La Verdad de la Calle">
   <div class="max-w-3xl mx-auto space-y-12 py-12 px-6">

@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 export function getStaticPaths() {
   return [
     { params: { lang: "es" } },
@@ -13,6 +14,7 @@ const isEs = lang === 'es';
 const title = isEs ? "Comunidad" : "Community";
 const subtitle = isEs ? "Reportes ciudadanos en tiempo real" : "Real-time citizen reports";
 ---
+export const prerender = true;
 
 <MainLayout title={title}>
   <div class="pb-28 pt-4 px-4 max-w-lg mx-auto md:max-w-2xl">
