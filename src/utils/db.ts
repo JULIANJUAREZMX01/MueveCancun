@@ -53,40 +53,31 @@ export const initDB = async (): Promise<IDBPDatabase> => {
 };
 
 export const getWalletBalance = async () => {
-  try {
-    const db = await initDB();
-    const balance = await db.get('wallet-status', 'current_balance');
-    if (balance) {
-      const key = await getCryptoKey(db);
-      if (!balance.signature) {
-        balance.signature = await generateSignature(balance.amount, key);
+  const db = await initDB();
+  const balance = await db.get('wallet-status', 'current_balance');
+  if (balance) {
+    const key = await getCryptoKey(db);
+    if (!balance.signature) {
+      balance.signature = await generateSignature(balance.amount, key);
+      await db.put('wallet-status', balance, 'current_balance');
+    } else {
+      const valid = await verifySignature(balance.amount, balance.signature, key);
+      if (!valid) {
+        balance.amount = 0;
+        balance.signature = await generateSignature(0, key);
         await db.put('wallet-status', balance, 'current_balance');
-      } else {
-        const valid = await verifySignature(balance.amount, balance.signature, key);
-        if (!valid) {
-          balance.amount = 0;
-          balance.signature = await generateSignature(0, key);
-          await db.put('wallet-status', balance, 'current_balance');
-        }
       }
     }
-    return balance;
-  } catch (e) {
-    console.warn("[DB] Failed to get wallet balance:", e);
-    return { amount: 0, currency: 'MXN' };
   }
+  return balance;
 };
 
 export const setWalletBalance = async (amount: number) => {
-  try {
-    const db = await initDB();
-    const key = await getCryptoKey(db);
-    const signature = await generateSignature(amount, key);
-    await db.put('wallet-status', { id: 'current_balance', amount, currency: 'MXN', signature }, 'current_balance');
-    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('BALANCE_UPDATED'));
-  } catch (e) {
-    console.error("[DB] Failed to set wallet balance:", e);
-  }
+  const db = await initDB();
+  const key = await getCryptoKey(db);
+  const signature = await generateSignature(amount, key);
+  await db.put('wallet-status', { id: 'current_balance', amount, currency: 'MXN', signature }, 'current_balance');
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('BALANCE_UPDATED'));
 };
 
 export const updateWalletBalance = async (amount: number) => {
@@ -95,31 +86,12 @@ export const updateWalletBalance = async (amount: number) => {
 };
 
 export const savePendingReport = async (r: any) => {
-  try {
-    const db = await initDB();
-    return await db.put('pending-reports', { ...r, timestamp: Date.now() });
-  } catch (e) {
-    console.error("[DB] Failed to save pending report:", e);
-    throw e; // Re-throw to let UI handle the error feedback
-  }
+  const db = await initDB();
+  return db.put('pending-reports', { ...r, timestamp: Date.now() });
 };
 
-export const getPendingReports = async () => {
-  try {
-    return await (await initDB()).getAll('pending-reports');
-  } catch (e) {
-    console.warn("[DB] Failed to get pending reports:", e);
-    return [];
-  }
-};
-
-export const deletePendingReport = async (id: number) => {
-  try {
-    return await (await initDB()).delete('pending-reports', id);
-  } catch (e) {
-    console.error("[DB] Failed to delete pending report:", e);
-  }
-};
+export const getPendingReports = async () => (await initDB()).getAll('pending-reports');
+export const deletePendingReport = async (id: number) => (await initDB()).delete('pending-reports', id);
 
 export const __resetDBPromise = () => {
   _dbPromise = null;

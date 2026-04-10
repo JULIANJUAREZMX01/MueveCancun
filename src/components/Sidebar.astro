@@ -1,15 +1,16 @@
 ---
 import { getLangFromUrl } from "../utils/i18n";
 import { getRelativeLocaleUrl } from "../utils/utils";
+import Icon from "./ui/Icon.astro";
 const pathname = Astro.url.pathname;
 const lang = getLangFromUrl(Astro.url);
 
 const navItems = [
   { href: getRelativeLocaleUrl(lang, 'home'), icon: 'home', label: 'Inicio', activePattern: /^\/(es|en)\/home/ },
-  { href: getRelativeLocaleUrl(lang, 'rutas'), icon: 'directions_bus', label: 'Rutas', activePattern: /^\/(es|en)\/rutas/ },
-  { href: getRelativeLocaleUrl(lang, 'community'), icon: 'forum', label: 'Comunidad', activePattern: /^\/(es|en)\/community/ },
-  { href: getRelativeLocaleUrl(lang, 'wallet'), icon: 'account_balance_wallet', label: 'Billetera', activePattern: /^\/(es|en)\/wallet/ },
-  { href: getRelativeLocaleUrl(lang, 'about'), icon: 'info', label: 'Nosotros', activePattern: /^\/(es|en)\/about/ },
+  { href: getRelativeLocaleUrl(lang, 'rutas'), icon: 'bus', label: 'Rutas', activePattern: /^\/(es|en)\/rutas/ },
+  { href: getRelativeLocaleUrl(lang, 'community'), icon: 'users', label: 'Comunidad', activePattern: /^\/(es|en)\/community/ },
+  { href: getRelativeLocaleUrl(lang, 'wallet'), icon: 'credit-card', label: 'Billetera', activePattern: /^\/(es|en)\/wallet/ },
+  { href: getRelativeLocaleUrl(lang, 'about'), icon: 'alert', label: 'Nosotros', activePattern: /^\/(es|en)\/about/ },
 ];
 
 const donateHref = getRelativeLocaleUrl(lang, 'donate');
@@ -28,7 +29,7 @@ const isDonateActive = /^\/(es|en)\/donate/.test(pathname);
       const isActive = item.activePattern.test(pathname);
       return (
         <a href={item.href} class:list={["nav-link", { active: isActive }]} aria-current={isActive ? 'page' : undefined}>
-          <span class="material-symbols-rounded">{item.icon}</span>
+          <Icon name={item.icon} class="w-6 h-6" />
           <span class="nav-label">{item.label}</span>
           {isActive && <div class="active-indicator" transition:name="sidebar-indicator"></div>}
         </a>
@@ -38,11 +39,11 @@ const isDonateActive = /^\/(es|en)\/donate/.test(pathname);
 
   <div class="sidebar-footer">
     <a href={donateHref} class:list={["donate-link", { active: isDonateActive }]} aria-label="Donar">
-      <span class="material-symbols-rounded">favorite</span>
+      <Icon name="palm-tree" class="w-6 h-6" />
     </a>
     <button id="theme-toggle-sidebar" class="theme-toggle" aria-label="Cambiar tema">
-      <span class="material-symbols-rounded dark-icon">dark_mode</span>
-      <span class="material-symbols-rounded light-icon">light_mode</span>
+       <div class="dark-icon"><Icon name="swap" class="w-6 h-6" /></div>
+       <div class="light-icon"><Icon name="swap" class="w-6 h-6" /></div>
     </button>
   </div>
 </aside>
