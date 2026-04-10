@@ -23,8 +23,8 @@ let _client: SupabaseClient<Database> | null = null;
 export function getSupabaseClient(): SupabaseClient<Database> {
   if (_client) return _client;
 
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY;
+  const url = process.env.SUPABASE_URL || import.meta.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY || import.meta.env.SUPABASE_SERVICE_KEY;
 
   if (!url || !key) {
     throw new Error(
@@ -58,6 +58,6 @@ const VALID_PROVIDERS = new Set(['neon', 'supabase']);
  * Por defecto usa Neon para mantener backwards compatibility.
  */
 export function getDbProvider(): 'supabase' | 'neon' {
-  const raw = process.env.DATABASE_PROVIDER ?? 'neon';
+  const raw = process.env.DATABASE_PROVIDER || import.meta.env.DATABASE_PROVIDER || 'neon';
   return VALID_PROVIDERS.has(raw) ? (raw as 'supabase' | 'neon') : 'neon';
 }

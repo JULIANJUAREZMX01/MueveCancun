@@ -37,7 +37,7 @@ export interface Payment {
 // ─── DB Client ────────────────────────────────────────────────────────────────
 
 function getDb() {
-  const url = process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL || import.meta.env.DATABASE_URL;
   if (!url) throw new Error('[Guardians] DATABASE_URL not set.');
   return neon(url);
 }
