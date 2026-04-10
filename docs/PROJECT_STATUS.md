@@ -1,30 +1,30 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
 **Fecha:** 2026-04-10
-**Versión:** 1.0.1 (Nexus Prime v3.6.2)
-**Estado General:** 🟢 OPERATIVO — Restauración de Despliegue Estático
+**Versión:** 1.1.0 (Nexus Prime v3.7.0)
+**Estado General:** 🔵 OPERATIVO — Transición a SSR (Server-Side Rendering)
 
 ---
 
 ## 🎯 Resumen Ejecutivo
 
-Se ha restaurado la configuración de despliegue estático (`output: 'static'`) necesaria para Render, eliminando el adaptador de Vercel que causaba fallos en el build. Además, se han regenerado los artefactos WASM y verificado la cadena de validación completa.
+La aplicación ha sido migrada exitosamente de un modelo estático a SSR para habilitar funcionalidades dinámicas y mayor seguridad en el manejo de datos. Se han configurado los adaptadores para Vercel y Render (Node.js).
 
-### Logros Recumulados (v3.6.2)
+### Logros Recumulados (v3.7.0)
 
 | Área | Estado | Mejora |
 |------|--------|--------|
-| Despliegue Render | ✅ Estático | Restaurado `output: 'static'`; eliminación de adaptador Vercel |
-| Motor WASM | ✅ Artefactos | Regeneración de binarios en `public/wasm/` y verificación de tests de integración |
-| CI/CD | ✅ Verificado | Paso exitoso de Vitest (144 tests) y validación de rutas |
-| Estabilidad | ✅ Sync | Sincronización de configuración de Astro con los requerimientos de Render |
+| Arquitectura | ✅ SSR | Migración a `output: 'server'` con soporte para Vercel y Node. |
+| Seguridad | ✅ Reforzada | Token de GitHub movido al servidor; reportes vía API endpoint. |
+| Base de Datos | ✅ Sincronizada | Conectividad con Neon/Supabase verificada en entorno SSR. |
+| Infraestructura | ✅ Multi-cloud | Configuración optimizada para despliegue simultáneo en Vercel y Render. |
 
 ---
 
 ## 📁 Estructura del Proyecto (Sincronizada)
 
-- **astro.config.ts**: Configurado en modo estático para compatibilidad total con Render.
-- **public/wasm/**: Contiene los binarios compilados necesarios para el motor de rutas.
-- **src/lib/initWasm.ts**: Inicialización verificada con los nuevos artefactos.
+- **astro.config.ts**: Configurado en modo SSR con detección automática de entorno.
+- **src/pages/api/reports.ts**: Nuevo endpoint seguro para procesamiento de reportes.
+- **src/lib/db-provider.ts**: Soporta variables de entorno dinámicas en SSR.
 
 ---
 
@@ -32,17 +32,17 @@ Se ha restaurado la configuración de despliegue estático (`output: 'static'`) 
 
 | Archivo | Módulo testeado | Resultado |
 |---------|----------------|-----------|
-| `route-calculator` | Tests de Rust (cargo test) | ✅ PASS |
-| `hubs_routing.test.ts`| Integración WASM | ✅ PASS |
-| `master_routes.json` | Validación de catálogo | ✅ PASS |
+| `Reports API` | Endpoint SSR | ✅ PASS |
 | `Type Safety` | tsc --noEmit | ✅ 0 ERRORS |
+| `WASM Engine` | Carga de Catálogo | ✅ PASS |
+| `Frontend` | Verificación UI | ✅ OK |
 
 ---
 
 ## 🔐 Seguridad & Rendimiento
 
-- **Zero-Downtime Ready**: La build estática garantiza un despliegue sin fallos en el runtime de Render.
-- **WASM Performance**: Cálculo de rutas verificado por debajo de los 100ms en tests de integración.
+- **Secret Management**: Se han eliminado las fugas de tokens en el DOM del cliente.
+- **Dynamic Routing**: El sistema de reportes ahora es resiliente y seguro.
 
 ---
 
