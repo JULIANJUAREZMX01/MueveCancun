@@ -9,7 +9,8 @@ import DonateNudge from '../components/ui/DonateNudge.astro';
 import { ui as uiTranslations } from '../utils/i18n';
 import { safeJsonStringify } from '../utils/utils';
 import SpeedInsights from '@vercel/speed-insights/astro';
-import { Analytics } from '@vercel/analytics/astro';
+import Analytics from '@vercel/analytics/astro';
+import { ClientRouter } from 'astro:transitions';
 import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import '../styles/tokens.css';
@@ -23,6 +24,11 @@ interface Props {
 
 const { title = "CancúnMueve", hideNav = false } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
+
+// SEO and Analytics environment variables
+const googleVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
+const bingVerification = import.meta.env.PUBLIC_BING_SITE_VERIFICATION;
+const ga4Id = import.meta.env.PUBLIC_GA4_ID;
 ---
 <!DOCTYPE html>
 <html lang={lang}>
@@ -248,7 +254,6 @@ const lang = getLangFromUrl(Astro.url);
     </>
     )}
     <ClientRouter />
-    <Analytics />
     <SpeedInsights />
   <!-- impact.com STAT Tag -->
   <script>(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})("https://utt.impactcdn.com/P-A7155313-a1aa-4e8b-8664-478df8ea50a01.js","script","impactStat",document,window);impactStat("transformLinks");impactStat("trackImpression");</script>
@@ -330,5 +335,6 @@ const lang = getLangFromUrl(Astro.url);
       enforceTutorial();
       document.addEventListener("astro:after-swap", enforceTutorial);
     </script>
+    <Analytics />
   </body>
 </html>
