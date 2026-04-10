@@ -1,0 +1,368 @@
+/**
+ * 🌴 CaribbeanShowcase.astro
+ * Componente de demostración del sistema de diseño caribeño-mexicano
+ * 
+ * Uso: <CaribbeanShowcase />
+ * 
+ * Muestra todos los elementos del design system en acción
+ */
+
+interface Props {
+ title?: string;
+ showAllExamples?: boolean;
+}
+
+const { 
+ title = "MueveCancún Design System", 
+ showAllExamples = false 
+} = Astro.props;
+---
+
+<div class="caribbean-showcase">
+ <!-- Hero Section -->
+ <section class="hero hero-caribbean">
+ <div class="hero-content">
+ <h1 class="hero-title text-gradient-caribbean">
+ {title}
+ </h1>
+ <p class="hero-subtitle">
+ Sistema de diseño tropical con identidad caribeña y mexicana
+ </p>
+ <div class="hero-cta">
+ <button class="btn btn-primary btn-lg">
+ <span>🚍</span>
+ Explorar Rutas
+ </button>
+ <button class="btn btn-mexico btn-lg">
+ <span>🇲🇽</span>
+ Ver México
+ </button>
+ </div>
+ </div>
+ </section>
+
+ {showAllExamples && (
+ <div class="container">
+ <!-- Buttons Section -->
+ <section class="section">
+ <h2 class="section-title">Botones</h2>
+ <div class="cluster">
+ <button class="btn btn-primary">
+ Primary Caribbean
+ </button>
+ <button class="btn btn-mexico">
+ México Rojo
+ </button>
+ <button class="btn btn-tropical">
+ Sol Tropical
+ </button>
+ <button class="btn btn-ghost">
+ Ghost
+ </button>
+ <button class="btn btn-glass">
+ Glass
+ </button>
+ </div>
+ 
+ <div class="cluster mt-lg">
+ <button class="btn btn-primary btn-sm">Small</button>
+ <button class="btn btn-primary">Regular</button>
+ <button class="btn btn-primary btn-lg">Large</button>
+ <button class="btn btn-primary btn-icon">
+ <span>🔍</span>
+ </button>
+ </div>
+ </section>
+
+ <!-- Cards Section -->
+ <section class="section">
+ <h2 class="section-title">Tarjetas</h2>
+ <div class="grid-tropical">
+ <div class="card card-caribbean card-interactive">
+ <h3 class="text-gradient-caribbean">Card Caribbean</h3>
+ <p class="text-muted">
+ Tarjeta con temática del mar Caribe. Hover para ver efecto.
+ </p>
+ <div class="badge badge-caribbean">Nuevo</div>
+ </div>
+
+ <div class="card card-mexico card-interactive">
+ <h3 class="text-gradient-mexico">Card México</h3>
+ <p class="text-muted">
+ Tarjeta con acento rojo mexicano. Incluye borde superior.
+ </p>
+ <div class="badge badge-mexico">Destacado</div>
+ </div>
+
+ <div class="card card-glass">
+ <h3>Card Glass</h3>
+ <p class="text-muted">
+ Efecto de vidrio esmerilado con backdrop-filter.
+ </p>
+ <div class="badge badge-success">Activo</div>
+ </div>
+ </div>
+ </section>
+
+ <!-- Alerts Section -->
+ <section class="section">
+ <h2 class="section-title">Alertas</h2>
+ <div class="stack">
+ <div class="alert alert-info">
+ <span>ℹ️</span>
+ <div>
+ <strong>Información:</strong> La ruta R-2-94 tiene servicio especial de madrugada.
+ </div>
+ </div>
+
+ <div class="alert alert-success">
+ <span>✅</span>
+ <div>
+ <strong>Éxito:</strong> Tu ruta favorita ha sido guardada.
+ </div>
+ </div>
+
+ <div class="alert alert-warning">
+ <span>⚠️</span>
+ <div>
+ <strong>Advertencia:</strong> Tráfico pesado en Av. Tulum.
+ </div>
+ </div>
+
+ <div class="alert alert-danger">
+ <span>🚫</span>
+ <div>
+ <strong>Alerta:</strong> Ruta bloqueada temporalmente.
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <!-- Progress Bars -->
+ <section class="section">
+ <h2 class="section-title">Barras de Progreso</h2>
+ <div class="stack">
+ <div>
+ <p class="text-sm text-muted mb-sm">Caribbean Progress (75%)</p>
+ <div class="progress">
+ <div class="progress-bar" style="width: 75%"></div>
+ </div>
+ </div>
+
+ <div>
+ <p class="text-sm text-muted mb-sm">México Progress (60%)</p>
+ <div class="progress">
+ <div class="progress-bar progress-bar-mexico" style="width: 60%"></div>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <!-- Badges -->
+ <section class="section">
+ <h2 class="section-title">Insignias</h2>
+ <div class="cluster">
+ <div class="badge badge-caribbean">Caribbean</div>
+ <div class="badge badge-mexico">México</div>
+ <div class="badge badge-success">Success</div>
+ <div class="badge badge-warning">Warning</div>
+ <div class="badge badge-caribbean badge-pulse">Live</div>
+ </div>
+ </section>
+
+ <!-- Tabs -->
+ <section class="section">
+ <h2 class="section-title">Pestañas</h2>
+ <div class="tabs">
+ <button class="tab tab-active">Todas las Rutas</button>
+ <button class="tab">Favoritas</button>
+ <button class="tab">Recientes</button>
+ <button class="tab">Urbanas</button>
+ </div>
+ </section>
+
+ <!-- Feature Cards -->
+ <section class="section">
+ <h2 class="section-title text-center">Características</h2>
+ <div class="feature-grid">
+ <div class="feature-card">
+ <div class="feature-icon">🚍</div>
+ <h3 class="feature-title">Rutas Actualizadas</h3>
+ <p class="feature-description">
+ Información en tiempo real de todas las rutas de Cancún.
+ </p>
+ </div>
+
+ <div class="feature-card">
+ <div class="feature-icon">📡</div>
+ <h3 class="feature-title">Funciona Offline</h3>
+ <p class="feature-description">
+ Motor Rust/WASM que funciona sin conexión a internet.
+ </p>
+ </div>
+
+ <div class="feature-card">
+ <div class="feature-icon">⚡</div>
+ <h3 class="feature-title">Ultrarrápido</h3>
+ <p class="feature-description">
+ Cálculos en menos de 100ms con búsqueda espacial O(1).
+ </p>
+ </div>
+ </div>
+ </section>
+
+ <!-- Patterns Background -->
+ <section class="section pattern-waves">
+ <div class="container-glow p-2xl">
+ <h2 class="section-title text-center">Patrones Decorativos</h2>
+ <p class="text-center text-muted">
+ Esta sección tiene patrón de olas en el fondo
+ </p>
+ </div>
+ </section>
+
+ <!-- Animations -->
+ <section class="section">
+ <h2 class="section-title">Animaciones</h2>
+ <div class="grid-cols-3">
+ <div class="card text-center">
+ <div class="animate-float" style="font-size: 3rem;">🌊</div>
+ <p class="mt-md">Float</p>
+ </div>
+
+ <div class="card text-center">
+ <div class="animate-pulse" style="font-size: 3rem;">💫</div>
+ <p class="mt-md">Pulse</p>
+ </div>
+
+ <div class="card text-center">
+ <div class="animate-wave" style="font-size: 3rem;">🏝️</div>
+ <p class="mt-md">Wave</p>
+ </div>
+ </div>
+ </section>
+
+ <!-- Loading States -->
+ <section class="section">
+ <h2 class="section-title">Estados de Carga</h2>
+ <div class="stack">
+ <div class="flex-center">
+ <div class="spinner-caribbean"></div>
+ </div>
+
+ <div class="skeleton" style="height: 60px;"></div>
+ <div class="skeleton" style="height: 40px; width: 70%;"></div>
+ </div>
+ </section>
+ </div>
+ )}
+
+<!-- Quick Feature Showcase (Always visible) -->
+ {!showAllExamples && (
+ <div class="container">
+ <section class="section">
+ <div class="feature-grid">
+ <div class="feature-card animate-float">
+ <div class="feature-icon">🌴</div>
+ <h3 class="feature-title">Estilo Caribeño</h3>
+ <p class="feature-description">
+ Paleta de colores inspirada en el mar turquesa del Caribe mexicano.
+ </p>
+ </div>
+
+ <div class="feature-card animate-float animate-delay-200">
+ <div class="feature-icon">🇲🇽</div>
+ <h3 class="feature-title">Acento Mexicano</h3>
+ <p class="feature-description">
+ Rojo vibrante de la bandera mexicana como color de acento.
+ </p>
+ </div>
+
+ <div class="feature-card animate-float animate-delay-300">
+ <div class="feature-icon">✨</div>
+ <h3 class="feature-title">Animaciones Fluidas</h3>
+ <p class="feature-description">
+ Microinteracciones y transiciones suaves inspiradas en olas.
+ </p>
+ </div>
+ </div>
+ </section>
+ </div>
+ )}
+</div>
+
+<style>
+ .caribbean-showcase {
+ min-height: 100vh;
+ }
+
+ .section-title {
+ margin-bottom: var(--space-2xl);
+ font-size: var(--text-3xl);
+ }
+
+ .section-title.text-center {
+ text-align: center;
+ }
+
+ /* Animaciones personalizadas para este componente */
+ .feature-card {
+ animation: fadeInScale 0.6s var(--ease-smooth) both;
+ }
+
+ .feature-card:nth-child(1) {
+ animation-delay: 0.1s;
+ }
+
+ .feature-card:nth-child(2) {
+ animation-delay: 0.2s;
+ }
+
+ .feature-card:nth-child(3) {
+ animation-delay: 0.3s;
+ }
+</style>
+
+<script>
+ // Ejemplo de interactividad con las tabs
+ document.addEventListener('DOMContentLoaded', () => {
+ const tabs = document.querySelectorAll('.tab');
+ 
+ tabs.forEach(tab => {
+ tab.addEventListener('click', () => {
+ // Remover active de todos
+ tabs.forEach(t => t.classList.remove('tab-active'));
+ // Agregar active al clickeado
+ tab.classList.add('tab-active');
+ });
+ });
+
+ // Agregar efecto ripple a los botones
+ const buttons = document.querySelectorAll('.btn');
+ 
+ buttons.forEach(button => {
+ button.addEventListener('click', function(e) {
+ const rect = this.getBoundingClientRect();
+ const x = e.clientX - rect.left;
+ const y = e.clientY - rect.top;
+ 
+ const ripple = document.createElement('span');
+ ripple.style.cssText = `
+ position: absolute;
+ left: ${x}px;
+ top: ${y}px;
+ width: 0;
+ height: 0;
+ border-radius: 50%;
+ background: rgba(255, 255, 255, 0.5);
+ transform: translate(-50%, -50%);
+ animation: ripple 0.6s ease-out;
+ `;
+ 
+ this.appendChild(ripple);
+ 
+ setTimeout(() => ripple.remove(), 600);
+ });
+ });
+ });
+</script>
