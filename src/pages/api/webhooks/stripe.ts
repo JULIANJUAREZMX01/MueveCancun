@@ -1,142 +1,122 @@
 /**
  * src/pages/api/webhooks/stripe.ts
+ * Recibe eventos de Stripe y actualiza Neon DB
+ * POST /api/webhooks/stripe
  *
- * Webhook de Stripe para eventos de suscripción y pagos.
- *
- * ⚠️  IMPORTANTE (output:static):
- *   En el modo actual (output:'static'), este endpoint NO se ejecuta
- *   como servidor en producción. Los webhooks llegan pero no son procesados.
- *
- *   SOLUCIÓN Sprint 2: migrar a output:'server' + @astrojs/node en Vercel.
- *   Hasta entonces, los guardians se pueden gestionar manualmente desde
- *   el Stripe Dashboard → Customers.
- *
- * Webhook configurado en Stripe:
- *   ID:  we_1TIGCA2dM2f4HRxoK4r2ad96
- *   URL: https://querutamellevacancun.onrender.com/api/webhooks/stripe
- *   Eventos:
- *     - checkout.session.completed
- *     - customer.subscription.created
- *     - customer.subscription.updated
- *     - customer.subscription.deleted
- *     - invoice.payment_succeeded
- *     - invoice.payment_failed
- *
- * Env vars requeridas en Vercel:
- *   STRIPE_SECRET_KEY=sk_live_...
- *   STRIPE_WEBHOOK_SECRET=whsec_RuI63mC55cDzXUr2PW4lrcHxY98ZXrRm
+ * Configurar en Stripe Dashboard:
+ *   Endpoint: https://mueve-cancun.vercel.app/api/webhooks/stripe
+ *   Eventos:  checkout.session.completed
+ *             customer.subscription.updated
+ *             customer.subscription.deleted
+ *             invoice.payment_failed
  */
+import type { APIRoute } from "astro";
+import Stripe from "stripe";
+import { saveGuardian, recordPayment } from "../../../lib/db-provider";
 
-import type { APIRoute } from 'astro';
-import { handleStripeWebhook } from '../../../lib/stripe';
-import { saveGuardian, recordPayment } from '../../../lib/guardians';
+export const prerender = false;
 
-export const POST: APIRoute = async (context) => {
-  const sig  = context.request.headers.get('stripe-signature') ?? undefined;
-  const body = await context.request.text();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
+  apiVersion: "2025-01-27.acacia",
+});
 
-  if (!sig) {
-    return new Response(
-      JSON.stringify({ error: 'Missing stripe-signature header' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
-    );
+export const POST: APIRoute = async ({ request }) => {
+  const sig = request.headers.get("stripe-signature");
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!sig || !secret) {
+    return new Response(JSON.stringify({ error: "Firma Stripe requerida" }), {
+      status: 400,
+    });
   }
 
-  let event: Awaited<ReturnType<typeof handleStripeWebhook>>;
-
+  let event: Stripe.Event;
   try {
-    event = await handleStripeWebhook(body, sig);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Webhook verification failed';
-    console.error('[Stripe Webhook] Signature verification failed:', msg);
-    return new Response(
-      JSON.stringify({ error: msg }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
-    );
+    const body = await request.text();
+    event = stripe.webhooks.constructEvent(body, sig, secret);
+  } catch (err: any) {
+    console.error("[webhook] Firma inválida:", err.message);
+    return new Response(JSON.stringify({ error: "Firma inválida" }), {
+      status: 400,
+    });
   }
 
-  console.log(`[Stripe Webhook] ✅ Event: ${event.type}`);
+  console.log(`[webhook] Evento: ${event.type}`);
 
   try {
     switch (event.type) {
-
-      case 'checkout.session.completed': {
-        const session = event.data.object as Record<string, unknown>;
-        console.log(`[Stripe Webhook] Checkout completed: ${session.id}`);
-        break;
-      }
-
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated': {
-        const sub = event.data.object as Record<string, unknown>;
-        const meta = (sub.metadata as Record<string, string>) ?? {};
-        const priceUnit = (sub as any).items?.data?.[0]?.price?.unit_amount ?? 6000;
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const email = session.customer_details?.email ?? session.customer_email ?? "";
+        const customerId = String(session.customer ?? "");
+        const tier = (session.metadata?.tier ?? "shield") as "shield" | "architect";
+        const amount = (session.amount_total ?? 0) / 100;
 
         await saveGuardian({
-          email:              meta.email ?? 'unknown',
-          stripe_customer_id: String(sub.customer),
-          tier:               (meta.tier as 'shield' | 'architect') ?? 'shield',
-          amount_monthly:     priceUnit / 100,
-          status:             (sub.status as string) === 'active' ? 'active' : 'failed',
+          email,
+          stripe_customer_id: customerId,
+          tier,
+          amount_monthly: amount,
+          status: "active",
         });
-        console.log(`[Stripe Webhook] Guardian upserted: ${sub.customer}`);
-        break;
-      }
 
-      case 'customer.subscription.deleted': {
-        const sub = event.data.object as Record<string, unknown>;
-        await saveGuardian({
-          stripe_customer_id: String(sub.customer),
-          status: 'cancelled',
-        });
-        console.log(`[Stripe Webhook] Guardian cancelled: ${sub.customer}`);
-        break;
-      }
-
-      case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Record<string, unknown>;
         await recordPayment({
-          stripe_customer_id: String(invoice.customer),
-          amount:             Number(invoice.amount_paid ?? 0) / 100,
-          status:             'success',
-          stripe_payment_id:  String(invoice.id),
+          stripe_customer_id: customerId,
+          amount,
+          status: "success",
+          stripe_payment_id: session.payment_intent as string,
         });
-        console.log(`[Stripe Webhook] Payment succeeded: ${invoice.id}`);
+
+        console.log(`[webhook] ✅ Guardián activado: ${email} | tier:${tier}`);
         break;
       }
 
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object as Record<string, unknown>;
-        await recordPayment({
-          stripe_customer_id: String(invoice.customer),
-          amount:             Number(invoice.amount_due ?? 0) / 100,
-          status:             'failed',
-          stripe_payment_id:  String(invoice.id),
-        });
+      case "customer.subscription.updated": {
+        const sub = event.data.object as Stripe.Subscription;
+        const customerId = String(sub.customer);
+        const status = sub.status === "active" ? "active" : "cancelled";
         await saveGuardian({
-          stripe_customer_id: String(invoice.customer),
-          status: 'failed',
+          stripe_customer_id: customerId,
+          email: "",
+          status,
         });
-        console.log(`[Stripe Webhook] Payment failed: ${invoice.id}`);
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const sub = event.data.object as Stripe.Subscription;
+        await saveGuardian({
+          stripe_customer_id: String(sub.customer),
+          email: "",
+          status: "cancelled",
+        });
+        console.log(`[webhook] ❌ Suscripción cancelada: ${sub.customer}`);
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const inv = event.data.object as Stripe.Invoice;
+        await recordPayment({
+          stripe_customer_id: String(inv.customer),
+          amount: (inv.amount_due ?? 0) / 100,
+          status: "failed",
+          stripe_payment_id: String(inv.payment_intent ?? ""),
+        });
         break;
       }
 
       default:
-        console.log(`[Stripe Webhook] Unhandled event: ${event.type}`);
+        console.log(`[webhook] Evento ignorado: ${event.type}`);
     }
-
-    return new Response(
-      JSON.stringify({ received: true, type: event.type }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Handler error';
-    console.error(`[Stripe Webhook] Handler error for ${event.type}:`, err);
-    // 200 para evitar reintentos de Stripe por errores de lógica interna
-    return new Response(
-      JSON.stringify({ received: true, error: msg }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
+  } catch (err: any) {
+    console.error("[webhook] Error procesando evento:", err.message);
+    return new Response(JSON.stringify({ error: "Error interno" }), {
+      status: 500,
+    });
   }
+
+  return new Response(JSON.stringify({ received: true }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 };
