@@ -416,11 +416,8 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
       // Enviar al endpoint interno de SSR
       const apiPayload = {
         issue_type: payload.labels[0].replace('reporte:', ''),
-        description: payload.descripcion,
-        route_id: payload.ruta || '',
-        location: payload.location || undefined,
-        lat: payload.lat || undefined,
-        lng: payload.lng || undefined
+        description: payload.body,
+        route_id: payload.title.split('\u2014')[1]?.trim() || ''
       };
 
       const res = await fetch("/api/reports", {

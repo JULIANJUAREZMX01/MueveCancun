@@ -8,7 +8,7 @@ import path from "path"
 import { fileURLToPath } from "url"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const isDev = process.env.NODE_ENV === "development"
+const isDev = process.env.NODE_ENV === 'development';
 
 // Select adapter based on environment
 const getAdapter = () => {
@@ -21,14 +21,9 @@ const getAdapter = () => {
 };
 
 export default defineConfig({
-  site: "https://querutamellevacancun.onrender.com",
-
-  // output:server → API routes dinámicas (Neon DB, Stripe webhooks)
-  output: "static",
-
-  // Adapter Vercel — config mínima para evitar bugs de subpath exports en Vite 6.4
-
-
+  site: "https://mueve-cancun.vercel.app",
+  output: 'server',
+  adapter: getAdapter(),
   integrations: [
     mdx(),
     tailwind({ applyBaseStyles: false }),
