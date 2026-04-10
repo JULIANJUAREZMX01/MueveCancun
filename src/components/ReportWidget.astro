@@ -99,159 +99,225 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
   :root {
     --rw-primary: #0d9488;
     --rw-primary-hover: #0f766e;
-    --rw-bg: rgba(255, 255, 255, 0.95);
-    --rw-text: #1e293b;
-    --rw-text-muted: #64748b;
-    --rw-border: rgba(0, 0, 0, 0.1);
-    --rw-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    --rw-radius: 20px;
-  }
-
-  .dark {
-    --rw-bg: rgba(15, 23, 42, 0.95);
-    --rw-text: #f1f5f9;
+    --rw-bg: rgba(15, 23, 42, 0.85);
+    --rw-text: #f8fafc;
     --rw-text-muted: #94a3b8;
-    --rw-border: rgba(255, 255, 255, 0.1);
   }
 
-  /* FAB */
+  /* Botón flotante */
   .rw-fab {
     position: fixed;
-    bottom: 80px; /* Sobre el BottomNav */
-    right: 16px;
+    bottom: 5.5rem;
+    right: 1.25rem;
     z-index: 45;
     background: var(--rw-primary);
     color: white;
-    padding: 10px 16px;
+    padding: 0.75rem 1.25rem;
     border-radius: 9999px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
+    gap: 0.5rem;
+    box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.4);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
     font-weight: 700;
-    user-select: none;
   }
 
-  .rw-fab:hover { transform: scale(1.05); background: var(--rw-primary-hover); }
-  .rw-fab:active { transform: scale(0.95); }
+  @media (min-width: 768px) {
+    .rw-fab { bottom: 2rem; right: 2rem; }
+  }
+
+  .rw-fab:hover {
+    background: var(--rw-primary-hover);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 15px 30px -5px rgba(13, 148, 136, 0.5);
+  }
+
+  .rw-fab-label { display: none; }
+  @media (min-width: 640px) { .rw-fab-label { display: inline; } }
 
   .rw-queue-badge {
     position: absolute;
-    top: -4px;
-    left: -4px;
+    top: -5px;
+    right: -5px;
     background: #ef4444;
     color: white;
     font-size: 10px;
-    width: 18px;
+    font-weight: 900;
+    min-width: 18px;
     height: 18px;
-    border-radius: 50%;
+    border-radius: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid white;
-    font-weight: 800;
+    padding: 0 4px;
+    border: 2px solid #0f172a;
   }
 
-  /* Modal */
+  /* Overlay */
   .rw-overlay {
     position: fixed;
     inset: 0;
+    background: rgba(2, 6, 23, 0.8);
+    backdrop-filter: blur(8px);
     z-index: 100;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding: 1rem;
+    animation: rw-fade 0.2s ease-out;
   }
 
+  @keyframes rw-fade { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Modal */
   .rw-modal {
     width: 100%;
     max-width: 480px;
-    background: var(--rw-bg);
-    border-top-left-radius: var(--rw-radius);
-    border-top-right-radius: var(--rw-radius);
-    padding: 24px;
-    box-shadow: var(--rw-shadow);
-    border: 1px solid var(--rw-border);
-    animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+    padding: 1.75rem;
+    color: white;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: rw-slide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes rw-slide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-  .rw-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .rw-modal-title-group { display: flex; align-items: center; gap: 10px; }
-  .rw-modal-icon { font-size: 24px; }
-  .rw-modal-header h2 { font-size: 1.25rem; font-weight: 900; margin: 0; color: var(--rw-text); }
-  .rw-close { background: none; border: none; font-size: 28px; color: var(--rw-text-muted); cursor: pointer; padding: 4px; line-height: 1; }
-  .rw-modal-subtitle { color: var(--rw-text-muted); font-size: 0.875rem; margin: 0 0 20px 0; }
+  .rw-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+  .rw-modal-title-group { display: flex; align-items: center; gap: 0.75rem; }
+  .rw-modal-icon { font-size: 1.5rem; }
+  .rw-modal-title-group h2 { font-size: 1.25rem; font-weight: 800; color: white; margin: 0; }
+
+  .rw-close { background: none; border: none; color: #94a3b8; font-size: 1.75rem; cursor: pointer; padding: 0.25rem; line-height: 1; }
+  .rw-close:hover { color: white; }
+
+  .rw-modal-subtitle { color: #94a3b8; font-size: 0.875rem; margin-bottom: 1.5rem; font-weight: 500; }
 
   /* Form */
-  .rw-field { margin-bottom: 16px; }
-  .rw-field label { display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rw-text-muted); margin-bottom: 6px; }
-  .rw-field input, .rw-field select, .rw-field textarea {
-    width: 100%;
-    background: rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--rw-border);
-    border-radius: 12px;
-    padding: 10px 12px;
-    font-size: 0.95rem;
-    color: var(--rw-text);
-    transition: border-color 0.2s;
-  }
-  .dark .rw-field input, .dark .rw-field select, .dark .rw-field textarea { background: rgba(255, 255, 255, 0.05); }
-  .rw-field input:focus, .rw-field select:focus, .rw-field textarea:focus { outline: none; border-color: var(--rw-primary); background: transparent; }
+  .rw-form { display: flex; flex-direction: column; gap: 1.25rem; }
+  .rw-field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .rw-field label { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; }
 
-  .rw-char-count { text-align: right; font-size: 10px; color: var(--rw-text-muted); margin-top: 4px; }
-
-  /* Geo */
-  .rw-geo-section { margin-bottom: 20px; }
-  .rw-geo-btn {
-    display: flex; align-items: center; gap: 8px;
-    background: none; border: 1px dashed var(--rw-text-muted);
-    color: var(--rw-text-muted); padding: 8px 12px; border-radius: 10px;
-    font-size: 0.8rem; font-weight: 600; cursor: pointer; width: 100%;
+  .rw-form select, .rw-form input, .rw-form textarea {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    color: white;
+    font-size: 0.9375rem;
     transition: all 0.2s;
   }
-  .rw-geo-btn:hover { background: rgba(0, 0, 0, 0.03); border-color: var(--rw-text); color: var(--rw-text); }
-  .rw-geo-active { border-style: solid; border-color: #22c55e; color: #22c55e; background: rgba(34, 197, 94, 0.05); }
+
+  .rw-form select:focus, .rw-form input:focus, .rw-form textarea:focus {
+    outline: none;
+    border-color: var(--rw-primary);
+    background: rgba(30, 41, 59, 0.8);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+  }
+
+  .rw-char-count { align-self: flex-end; font-size: 0.75rem; color: #475569; font-weight: 600; margin-top: -0.25rem; }
+
+  /* Geo Section */
+  .rw-geo-section { display: flex; flex-direction: column; gap: 0.5rem; }
+  .rw-geo-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .rw-geo-btn:hover { background: rgba(30, 41, 59, 0.8); border-color: rgba(255, 255, 255, 0.3); color: white; }
+  .rw-geo-active { border-style: solid; border-color: #10b981; color: #10b981; background: rgba(16, 185, 129, 0.05); }
   .rw-geo-error { border-color: #ef4444; color: #ef4444; }
-  .rw-geo-status { font-size: 10px; margin-top: 4px; padding-left: 4px; color: var(--rw-text-muted); }
+  .rw-geo-status { font-size: 0.75rem; color: #64748b; padding-left: 0.5rem; font-family: monospace; }
 
   /* Feedback */
-  .rw-feedback { padding: 10px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 16px; font-weight: 600; }
-  .rw-feedback.success { background: rgba(34, 197, 94, 0.1); color: #15803d; border: 1px solid rgba(34, 197, 94, 0.2); }
+  .rw-feedback {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .rw-feedback.success { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
   .rw-feedback.error { background: rgba(239, 68, 68, 0.1); color: #b91c1c; border: 1px solid rgba(239, 68, 68, 0.2); }
-  .rw-feedback.info { background: rgba(59, 130, 246, 0.1); color: #1d4ed8; border: 1px solid rgba(59, 130, 246, 0.2); }
+  .rw-feedback.info { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.2); }
 
   /* Footer */
-  .rw-modal-footer { display: flex; gap: 12px; }
-  .rw-btn-secondary { flex: 1; background: none; border: 1px solid var(--rw-border); color: var(--rw-text-muted); padding: 12px; border-radius: 14px; font-weight: 700; cursor: pointer; }
-  .rw-btn-primary { flex: 2; background: var(--rw-primary); color: white; border: none; padding: 12px; border-radius: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .rw-modal-footer { display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-top: 0.5rem; }
+
+  .rw-btn-primary {
+    background: var(--rw-primary);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+  }
+  .rw-btn-primary:hover:not(:disabled) { background: var(--rw-primary-hover); transform: translateY(-1px); }
   .rw-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
-  .rw-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: rw-spin 0.8s linear infinite; }
-  @keyframes rw-spin { to { transform: rotate(360deg); } }
-
-  @media (min-width: 640px) {
-    .rw-overlay { align-items: center; padding: 20px; }
-    .rw-modal { border-radius: var(--rw-radius); border-bottom: 1px solid var(--rw-border); }
+  .rw-btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
   }
+  .rw-btn-secondary:hover { background: rgba(255, 255, 255, 0.1); color: white; }
+
+  .rw-spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: rw-spin 0.8s linear infinite;
+  }
+  @keyframes rw-spin { to { transform: rotate(360deg); } }
 </style>
 
 <script>
-  import { savePendingReport, getPendingReports, deletePendingReport, type PendingReport } from "../utils/db";
+  import { getPendingReports, savePendingReport, deletePendingReport } from "../utils/db";
 
-  // Extend window interface for global function access
+  interface PendingReport {
+    id?: number;
+    tipo: string;
+    ruta?: string;
+    descripcion: string;
+    lat?: string;
+    lng?: string;
+    timestamp: number;
+    userAgent: string;
+    url: string;
+  }
+
   declare global {
     interface Window {
       rwOpenReport: () => void;
     }
   }
 
-  (() => {
+  function initReportWidget() {
     // ── Config ───────────────────────────────────────────────────
     const configEl = document.getElementById("rw-config") as HTMLDivElement;
     if (!configEl) return;
@@ -514,9 +580,18 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
           console.error("[ReportWidget] IDB Error:", dbErr);
           showFeedback("Error cr\u00edtico al guardar reporte local.", "error");
           setSubmitting(false);
+          // Auto-close after a while even on error to unblock screen
+          setTimeout(closeModal, 5000);
         }
       }
     });
+  }
 
-  })();
+  // Support both standard load and Astro View Transitions
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReportWidget);
+  } else {
+    initReportWidget();
+  }
+  document.addEventListener('astro:page-load', initReportWidget);
 </script>
