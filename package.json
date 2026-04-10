@@ -37,7 +37,8 @@
     "generate-roadmap": "node --experimental-strip-types scripts/generate-roadmap-doc.ts",
     "start": "node dist/server/entry.mjs",
     "build:ci": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build",
-    "db:migrate": "node --experimental-strip-types scripts/db-migrate.ts"
+    "db:migrate": "node --experimental-strip-types scripts/db-migrate.ts",
+    "build:vercel": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
