@@ -403,7 +403,12 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
       return {
         title: "[REPORTE] " + typeLabel + titleSuffix,
         labels: TIPO_LABELS[data.tipo] || ["reporte", "estado:pendiente"],
-        body: body
+        body: body,
+        descripcion: data.descripcion,
+        ruta: data.ruta,
+        lat: data.lat,
+        lng: data.lng,
+        location: data.ruta || undefined
       };
     }
 
@@ -411,8 +416,11 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
       // Enviar al endpoint interno de SSR
       const apiPayload = {
         issue_type: payload.labels[0].replace('reporte:', ''),
-        description: payload.body,
-        route_id: payload.title.split('\u2014')[1]?.trim() || ''
+        description: payload.descripcion,
+        route_id: payload.ruta || '',
+        location: payload.location || undefined,
+        lat: payload.lat || undefined,
+        lng: payload.lng || undefined
       };
 
       const res = await fetch("/api/reports", {
