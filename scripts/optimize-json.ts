@@ -39,7 +39,7 @@ interface CatalogData {
 }
 
 try {
-    const rawData = fs.readFileSync(inputPath, 'utf-8');
+    const rawData = fs.readFileSync(inputPath, 'utf-8').trim();
     // JSON.parse in JS handles duplicate keys by keeping the last one.
     const data = JSON.parse(rawData) as CatalogData;
 
@@ -104,8 +104,9 @@ try {
     data.metadata.optimized = true;
     data.metadata.last_optimized = new Date().toISOString();
 
-    // Serialize with NO indentation to minimize size and ensure clean output
-    fs.writeFileSync(outputPath, JSON.stringify(data));
+    // Serialize with NO indentation and NO trailing characters
+    const outputContent = JSON.stringify(data);
+    fs.writeFileSync(outputPath, outputContent, { encoding: 'utf8', flag: 'w' });
     console.log(`✅ JSON Optimized! Saved to ${outputPath}`);
 
 } catch (err: unknown) {
