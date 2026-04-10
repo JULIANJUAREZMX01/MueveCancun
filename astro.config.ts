@@ -1,5 +1,5 @@
 import { defineConfig } from "astro/config"
-import vercel from "@astrojs/vercel"
+
 import mdx from "@astrojs/mdx"
 import tailwind from "@astrojs/tailwind"
 import vercel from "@astrojs/vercel"
@@ -21,13 +21,13 @@ const getAdapter = () => {
 };
 
 export default defineConfig({
-  site: "https://mueve-cancun.vercel.app",
+  site: "https://querutamellevacancun.onrender.com",
 
   // output:server → API routes dinámicas (Neon DB, Stripe webhooks)
-  output: "server",
+  output: "static",
 
   // Adapter Vercel — config mínima para evitar bugs de subpath exports en Vite 6.4
-  adapter: vercel(),
+
 
   integrations: [
     mdx(),

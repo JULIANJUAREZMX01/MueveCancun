@@ -39,8 +39,8 @@ jobs:
     if: |
       github.event_name == 'pull_request' && (
         github.event.action == 'synchronize' ||
-        github.event.action == 'opened' ||
-        github.event.action == 'reopened'
+        github.event_name == 'pull_request' && github.event.action == 'opened' ||
+        github.event_name == 'pull_request' && github.event.action == 'reopened'
       )
     runs-on: ubuntu-latest
     steps:
@@ -70,36 +70,38 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Aplicar schema a branch Neon del PR
-        # Ejecuta el schema bootstrap de guardians.ts contra el branch del PR
-        # El schema se crea automáticamente en el primer request (ensureSchema)
-        # pero lo forzamos aquí para validar la conexión
         run: |
-          node --input-type=module << 'EOF'
+          node --input-type=module << 'NODE_EOF'
           import { neon } from "@neondatabase/serverless";
           const sql = neon(process.env.DATABASE_URL);
-          await sql\`
-            CREATE TABLE IF NOT EXISTS guardians (
-              email               TEXT,
-              stripe_customer_id  TEXT PRIMARY KEY,
-              tier                TEXT,
-              amount_monthly      NUMERIC,
-              status              TEXT NOT NULL DEFAULT 'active',
-              created_at          TIMESTAMPTZ DEFAULT NOW(),
-              updated_at          TIMESTAMPTZ DEFAULT NOW()
-            )
-          \`;
-          await sql\`
-            CREATE TABLE IF NOT EXISTS payments (
-              id                  TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-              stripe_customer_id  TEXT NOT NULL,
-              amount              NUMERIC,
-              status              TEXT NOT NULL DEFAULT 'pending',
-              stripe_payment_id   TEXT,
-              created_at          TIMESTAMPTZ DEFAULT NOW()
-            )
-          \`;
-          console.log("✅ Schema aplicado al branch Neon del PR");
-          EOF
+          try {
+            await sql`
+              CREATE TABLE IF NOT EXISTS guardians (
+                email               TEXT,
+                stripe_customer_id  TEXT PRIMARY KEY,
+                tier                TEXT,
+                amount_monthly      NUMERIC,
+                status              TEXT NOT NULL DEFAULT 'active',
+                created_at          TIMESTAMPTZ DEFAULT NOW(),
+                updated_at          TIMESTAMPTZ DEFAULT NOW()
+              )
+            `;
+            await sql`
+              CREATE TABLE IF NOT EXISTS payments (
+                id                  TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+                stripe_customer_id  TEXT NOT NULL,
+                amount              NUMERIC,
+                status              TEXT NOT NULL DEFAULT 'pending',
+                stripe_payment_id   TEXT,
+                created_at          TIMESTAMPTZ DEFAULT NOW()
+              )
+            `;
+            console.log("✅ Schema aplicado al branch Neon del PR");
+          } catch (e) {
+            console.error("❌ Fallo al aplicar schema:", e);
+            process.exit(1);
+          }
+          NODE_EOF
         env:
           DATABASE_URL: ${{ steps.create_branch.outputs.db_url_with_pooler }}
 
