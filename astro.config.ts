@@ -2,23 +2,11 @@ import { defineConfig } from "astro/config"
 
 import mdx from "@astrojs/mdx"
 import tailwind from "@astrojs/tailwind"
-import vercel from "@astrojs/vercel"
-import node from "@astrojs/node"
 import path from "path"
 import { fileURLToPath } from "url"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const isDev = process.env.NODE_ENV === "development"
-
-// Select adapter based on environment
-const getAdapter = () => {
-  if (process.env.VERCEL) {
-    return vercel();
-  }
-  return node({
-    mode: "standalone"
-  });
-};
 
 export default defineConfig({
   site: "https://querutamellevacancun.onrender.com",

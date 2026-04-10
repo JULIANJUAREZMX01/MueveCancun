@@ -73,7 +73,12 @@ jobs:
         run: |
           node --input-type=module << 'NODE_EOF'
           import { neon } from "@neondatabase/serverless";
-          const sql = neon(process.env.DATABASE_URL);
+          const dbUrl = process.env.DATABASE_URL;
+          if (!dbUrl) {
+            console.error("❌ DATABASE_URL is not set. create_branch outputs:", process.env.DEBUG_OUTPUTS);
+            process.exit(1);
+          }
+          const sql = neon(dbUrl);
           try {
             await sql`
               CREATE TABLE IF NOT EXISTS guardians (
@@ -103,7 +108,8 @@ jobs:
           }
           NODE_EOF
         env:
-          DATABASE_URL: ${{ steps.create_branch.outputs.db_url_with_pooler }}
+          DATABASE_URL: ${{ steps.create_branch.outputs.db_url_with_pooler || steps.create_branch.outputs.db_url }}
+          DEBUG_OUTPUTS: ${{ toJson(steps.create_branch.outputs) }}
 
       - name: Comentar en PR con URL del branch Neon
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7

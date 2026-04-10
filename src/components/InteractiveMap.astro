@@ -36,9 +36,9 @@ import { getRelativeLocaleUrl } from "astro:i18n";
   </div>
 </div>
 
-<script>
+<script lang="ts">
   import { coordinatesStore } from "../utils/CoordinatesStore";
-  import { showToast } from "../utils/toast";
+  import { showToast } from "../utils/utils";
 
   let map: any = null;
   let layerGroup: any = null;

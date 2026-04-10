@@ -5,7 +5,7 @@
 
 ---
 
-## Estado Actual — v3.7 ✅
+## Estado Actual — v3.3 ✅
 
 El núcleo funcional está terminado y desplegado:
 
