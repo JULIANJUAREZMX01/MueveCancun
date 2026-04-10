@@ -8,6 +8,8 @@
  *
  * Requiere env var: GITHUB_ISSUES_TOKEN
  */
+export const prerender = false;
+
 import type { APIRoute } from 'astro';
 
 
