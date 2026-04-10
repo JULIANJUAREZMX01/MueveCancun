@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getLangFromUrl } from '../../utils/i18n';
 import { PAYMENT_LINKS } from '../../lib/stripe';
@@ -44,6 +45,7 @@ const titles = {
   en: "Support MueveCancún"
 };
 ---
+export const prerender = true;
 
 <MainLayout title={titles[lang]}>
   <div class="max-w-4xl mx-auto px-4 py-12">

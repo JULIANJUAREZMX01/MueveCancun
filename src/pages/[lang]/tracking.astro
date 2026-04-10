@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 export function getStaticPaths() {
   return [
     { params: { lang: "es" } },
@@ -8,6 +9,7 @@ export function getStaticPaths() {
 
 import MainLayout from '../../layouts/MainLayout.astro';
 ---
+export const prerender = true;
 
 <MainLayout title="Tracking - CancúnMueve">
 	<div class="tracking-page">

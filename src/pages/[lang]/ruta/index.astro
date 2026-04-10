@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import { getRelativeLocaleUrl } from '../../../utils/utils';
 
 export function getStaticPaths() {
@@ -11,3 +12,4 @@ export function getStaticPaths() {
 const { lang } = Astro.params;
 return Astro.redirect(getRelativeLocaleUrl(lang, 'rutas'));
 ---
+export const prerender = true;

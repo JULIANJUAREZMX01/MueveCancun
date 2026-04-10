@@ -98,153 +98,46 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
   /* Variables de diseño */
   :root {
     --rw-primary: #0d9488;
-    --rw-primary-hover: #0f766e;
     --rw-bg: rgba(255, 255, 255, 0.95);
     --rw-text: #1e293b;
-    --rw-text-muted: #64748b;
-    --rw-border: rgba(0, 0, 0, 0.1);
-    --rw-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    --rw-radius: 20px;
   }
-
-  .dark {
-    --rw-bg: rgba(15, 23, 42, 0.95);
-    --rw-text: #f1f5f9;
-    --rw-text-muted: #94a3b8;
-    --rw-border: rgba(255, 255, 255, 0.1);
-  }
-
-  /* FAB */
-  .rw-fab {
-    position: fixed;
-    bottom: 80px; /* Sobre el BottomNav */
-    right: 16px;
-    z-index: 45;
-    background: var(--rw-primary);
-    color: white;
-    padding: 10px 16px;
-    border-radius: 9999px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    font-weight: 700;
-    user-select: none;
-  }
-
-  .rw-fab:hover { transform: scale(1.05); background: var(--rw-primary-hover); }
-  .rw-fab:active { transform: scale(0.95); }
-
-  .rw-queue-badge {
-    position: absolute;
-    top: -4px;
-    left: -4px;
-    background: #ef4444;
-    color: white;
-    font-size: 10px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid white;
-    font-weight: 800;
-  }
-
-  /* Modal */
-  .rw-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  .rw-modal {
-    width: 100%;
-    max-width: 480px;
-    background: var(--rw-bg);
-    border-top-left-radius: var(--rw-radius);
-    border-top-right-radius: var(--rw-radius);
-    padding: 24px;
-    box-shadow: var(--rw-shadow);
-    border: 1px solid var(--rw-border);
-    animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-  .rw-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .rw-modal-title-group { display: flex; align-items: center; gap: 10px; }
-  .rw-modal-icon { font-size: 24px; }
-  .rw-modal-header h2 { font-size: 1.25rem; font-weight: 900; margin: 0; color: var(--rw-text); }
-  .rw-close { background: none; border: none; font-size: 28px; color: var(--rw-text-muted); cursor: pointer; padding: 4px; line-height: 1; }
-  .rw-modal-subtitle { color: var(--rw-text-muted); font-size: 0.875rem; margin: 0 0 20px 0; }
-
-  /* Form */
-  .rw-field { margin-bottom: 16px; }
-  .rw-field label { display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rw-text-muted); margin-bottom: 6px; }
-  .rw-field input, .rw-field select, .rw-field textarea {
-    width: 100%;
-    background: rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--rw-border);
-    border-radius: 12px;
-    padding: 10px 12px;
-    font-size: 0.95rem;
-    color: var(--rw-text);
-    transition: border-color 0.2s;
-  }
-  .dark .rw-field input, .dark .rw-field select, .dark .rw-field textarea { background: rgba(255, 255, 255, 0.05); }
-  .rw-field input:focus, .rw-field select:focus, .rw-field textarea:focus { outline: none; border-color: var(--rw-primary); background: transparent; }
-
-  .rw-char-count { text-align: right; font-size: 10px; color: var(--rw-text-muted); margin-top: 4px; }
-
-  /* Geo */
-  .rw-geo-section { margin-bottom: 20px; }
-  .rw-geo-btn {
-    display: flex; align-items: center; gap: 8px;
-    background: none; border: 1px dashed var(--rw-text-muted);
-    color: var(--rw-text-muted); padding: 8px 12px; border-radius: 10px;
-    font-size: 0.8rem; font-weight: 600; cursor: pointer; width: 100%;
-    transition: all 0.2s;
-  }
-  .rw-geo-btn:hover { background: rgba(0, 0, 0, 0.03); border-color: var(--rw-text); color: var(--rw-text); }
-  .rw-geo-active { border-style: solid; border-color: #22c55e; color: #22c55e; background: rgba(34, 197, 94, 0.05); }
-  .rw-geo-error { border-color: #ef4444; color: #ef4444; }
-  .rw-geo-status { font-size: 10px; margin-top: 4px; padding-left: 4px; color: var(--rw-text-muted); }
-
-  /* Feedback */
-  .rw-feedback { padding: 10px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 16px; font-weight: 600; }
-  .rw-feedback.success { background: rgba(34, 197, 94, 0.1); color: #15803d; border: 1px solid rgba(34, 197, 94, 0.2); }
-  .rw-feedback.error { background: rgba(239, 68, 68, 0.1); color: #b91c1c; border: 1px solid rgba(239, 68, 68, 0.2); }
-  .rw-feedback.info { background: rgba(59, 130, 246, 0.1); color: #1d4ed8; border: 1px solid rgba(59, 130, 246, 0.2); }
-
-  /* Footer */
-  .rw-modal-footer { display: flex; gap: 12px; }
-  .rw-btn-secondary { flex: 1; background: none; border: 1px solid var(--rw-border); color: var(--rw-text-muted); padding: 12px; border-radius: 14px; font-weight: 700; cursor: pointer; }
-  .rw-btn-primary { flex: 2; background: var(--rw-primary); color: white; border: none; padding: 12px; border-radius: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .rw-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  .rw-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: rw-spin 0.8s linear infinite; }
-  @keyframes rw-spin { to { transform: rotate(360deg); } }
-
-  @media (min-width: 640px) {
-    .rw-overlay { align-items: center; padding: 20px; }
-    .rw-modal { border-radius: var(--rw-radius); border-bottom: 1px solid var(--rw-border); }
-  }
+  .rw-fab { position: fixed; bottom: 5.5rem; right: 1.5rem; z-index: 45; display: flex; align-items: center; gap: 0.5rem; background: var(--rw-primary); color: white; padding: 0.75rem 1rem; border-radius: 9999px; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.4); transition: all 0.3s ease; }
+  .rw-fab:hover { transform: translateY(-3px) scale(1.05); }
+  .rw-fab-label { font-weight: 800; font-size: 0.875rem; }
+  .rw-overlay[hidden] { display: none !important; }
+  .rw-overlay:not([hidden]) { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .rw-modal { background: var(--rw-bg); width: 100%; max-width: 400px; border-radius: 24px; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+  .rw-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+  .rw-modal-title-group { display: flex; align-items: center; gap: 0.75rem; }
+  .rw-modal-icon { font-size: 1.5rem; }
+  #rw-modal-title { margin: 0; font-size: 1.25rem; font-weight: 900; color: var(--rw-text); }
+  .rw-close { background: transparent; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
+  .rw-modal-subtitle { font-size: 0.875rem; color: #64748b; margin-bottom: 1.5rem; }
+  .rw-field { margin-bottom: 1.25rem; }
+  .rw-field label { display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+  .rw-field select, .rw-field input, .rw-field textarea { width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.875rem; font-weight: 600; color: var(--rw-text); transition: all 0.2s; }
+  .rw-field select:focus, .rw-field input:focus, .rw-field textarea:focus { outline: none; border-color: var(--rw-primary); box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1); }
+  .rw-char-count { text-align: right; font-size: 10px; color: #94a3b8; margin-top: 0.25rem; font-weight: bold; }
+  .rw-geo-section { margin-bottom: 1.5rem; }
+  .rw-geo-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-radius: 12px; border: 2px dashed #e2e8f0; background: transparent; font-size: 0.875rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s; }
+  .rw-geo-active { border-color: #10b981; color: #059669; background: #f0fdf4; }
+  .rw-geo-error { border-color: #f43f5e; color: #e11d48; }
+  .rw-feedback { padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.8125rem; font-weight: 700; margin-bottom: 1.25rem; }
+  .rw-feedback.success { background: #f0fdf4; color: #166534; }
+  .rw-feedback.error { background: #fef2f2; color: #991b1b; }
+  .rw-feedback.info { background: #eff6ff; color: #1e40af; }
+  .rw-modal-footer { display: flex; gap: 0.75rem; margin-top: 2rem; }
+  .rw-btn-primary, .rw-btn-secondary { flex: 1; padding: 0.875rem; border-radius: 12px; font-size: 0.875rem; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+  .rw-btn-primary { background: var(--rw-primary); color: white; border: none; box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3); }
+  .rw-btn-secondary { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+  .rw-spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .rw-queue-badge { position: absolute; top: -5px; right: -5px; background: #f43f5e; color: white; font-size: 10px; font-weight: 900; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 </style>
 
 <script>
   import { savePendingReport, getPendingReports, deletePendingReport, type PendingReport } from "../utils/db";
 
-  // Extend window interface for global function access
   declare global {
     interface Window {
       rwOpenReport: () => void;
@@ -252,16 +145,9 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
   }
 
   (() => {
-    // ── Config ───────────────────────────────────────────────────
     const configEl = document.getElementById("rw-config") as HTMLDivElement;
     if (!configEl) return;
 
-    const config = {
-      owner: configEl.dataset.owner || "",
-      repo:  configEl.dataset.repo || ""
-    };
-
-    // ── Referencias DOM ──────────────────────────────────────────
     const fab      = document.getElementById("rw-fab");
     const badge    = document.getElementById("rw-queue-badge");
     const overlay  = document.getElementById("rw-overlay");
@@ -282,7 +168,6 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
 
     if (!fab || !overlay || !form || !submitBtn || !textarea || !charCount) return;
 
-    // ── UI Logic ────────────────────────────────────────────────
     const openModal = () => {
       overlay.hidden = false;
       document.body.style.overflow = "hidden";
@@ -319,7 +204,6 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
       setSubmitting(false);
     };
 
-    // ── Events ───────────────────────────────────────────────────
     fab.addEventListener("click", openModal);
     closeBtn?.addEventListener("click", closeModal);
     cancelBtn?.addEventListener("click", closeModal);
@@ -331,7 +215,6 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
       charCount.textContent = textarea.value.length.toString();
     });
 
-    // ── Geo ──────────────────────────────────────────────────────
     geoBtn?.addEventListener("click", () => {
       if (latInput.value) {
         latInput.value = ""; lngInput.value = "";
@@ -363,69 +246,12 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
       );
     });
 
-    // ── Submission Logic ─────────────────────────────────────────
-    const TIPO_LABELS: Record<string, string[]> = {
-      precio:     ["reporte:precio",    "estado:pendiente"],
-      ruta:       ["reporte:ruta",      "estado:pendiente"],
-      nueva:      ["reporte:nueva-ruta","estado:pendiente"],
-      cancelada:  ["reporte:cancelada", "estado:pendiente"],
-      comentario: ["reporte:info",      "estado:pendiente"],
-    };
-
-    const TIPO_TITLES: Record<string, string> = {
-      precio:     "Precio incorrecto",
-      ruta:       "Ruta / destino mal",
-      nueva:      "Ruta nueva no listada",
-      cancelada:  "Ruta cancelada",
-      comentario: "Otro comentario",
-    };
-
-    function buildPayload(data: PendingReport) {
-      const typeLabel = TIPO_TITLES[data.tipo] || data.tipo;
-      const titleSuffix = data.ruta ? (" \u2014 " + data.ruta) : "";
-      const dateStr = new Date(data.timestamp).toLocaleString("es-MX", { timeZone: "America/Cancun" });
-
-      let body = "## \ud83d\udccb Reporte ciudadano \u2014 MueveCancun\n\n";
-      body += "**Tipo:** " + typeLabel + "\n";
-      body += "**Ruta:** " + (data.ruta || "_No especificada_") + "\n";
-      body += "**Fecha:** " + dateStr + "\n\n";
-      body += "## \ud83d\udcdd Descripci\u00f3n\n" + data.descripcion + "\n\n";
-
-      if (data.lat && data.lng) {
-        body += "**\ud83d\udccd Ubicaci\u00f3n:** [" + data.lat + ", " + data.lng + "](https://www.openstreetmap.org/?mlat=" + data.lat + "&mlon=" + data.lng + "#map=16/" + data.lat + "/" + data.lng + ")\n\n";
-      }
-
-      body += "---\n";
-      body += "_Dispositivo: " + data.userAgent + "_\n";
-      body += "_URL: " + data.url + "_\n";
-      body += "Nexus Protocol v1.2 (Offline-First)\n";
-
-      return {
-        title: "[REPORTE] " + typeLabel + titleSuffix,
-        labels: TIPO_LABELS[data.tipo] || ["reporte", "estado:pendiente"],
-        body: body,
-        descripcion: data.descripcion,
-        ruta: data.ruta,
-        lat: data.lat,
-        lng: data.lng,
-        location: data.ruta || undefined
-      };
-    }
-
     const sendToGitHub = async (payload: any) => {
-      // Enviar al endpoint interno de SSR
-      const apiPayload = {
-        issue_type: payload.labels[0].replace('reporte:', ''),
-        description: payload.body,
-        route_id: payload.title.split('\u2014')[1]?.trim() || ''
-      };
-
       const res = await fetch("/api/reports", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(apiPayload)
+        body: JSON.stringify(payload)
       });
-
       if (!res.ok) throw new Error("API Error: " + res.status);
       return res.json();
     };
@@ -434,31 +260,26 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
     const syncOfflineReports = async () => {
       if (isSyncing || !navigator.onLine) return;
       isSyncing = true;
-
       const reports = await getPendingReports();
       if (badge) {
         badge.textContent = reports.length.toString();
         badge.hidden = reports.length === 0;
       }
-
       if (reports.length === 0) {
         isSyncing = false;
         return;
       }
-
-      console.log("[ReportWidget] Sincronizando reportes pendientes...");
-
       for (const r of reports) {
         try {
-          const payload = buildPayload(r);
-          await sendToGitHub(payload);
+          await sendToGitHub({
+            issue_type: r.tipo,
+            description: r.descripcion,
+            route_id: r.ruta,
+            location: (r.lat && r.lng) ? `${r.lat}, ${r.lng}` : undefined
+          });
           if (r.id !== undefined) await deletePendingReport(r.id);
-        } catch (err) {
-          console.warn("[ReportWidget] Fallo al sincronizar reporte:", err);
-          break;
-        }
+        } catch (err) { break; }
       }
-
       const updated = await getPendingReports();
       if (badge) {
         badge.textContent = updated.length.toString();
@@ -487,36 +308,36 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
       if (data.descripcion.length < 10) { showFeedback("La descripción es muy corta.", "error"); return; }
 
       setSubmitting(true);
-      if (feedback) feedback.hidden = true;
 
-      const fullData: PendingReport = { ...data, timestamp: Date.now() };
+      // Safety auto-unblock (5 seconds)
+      const safetyTimeout = setTimeout(() => {
+        if (overlay.hidden) return;
+        showFeedback("La operación está tardando. Guardando localmente...", "info");
+        savePendingReport(data).then(() => setTimeout(closeModal, 1500));
+      }, 5000);
 
       try {
         if (!navigator.onLine) throw new Error("Offline");
-
-        const payload = buildPayload(fullData);
-        const res = await sendToGitHub(payload);
-        showFeedback("\u00a1Gracias! Reporte enviado (#" + (res.report_id || "ok") + ")", "success");
-        setTimeout(closeModal, 2500);
+        await sendToGitHub({
+          issue_type: data.tipo,
+          description: data.descripcion,
+          route_id: data.ruta,
+          location: (data.lat && data.lng) ? `${data.lat}, ${data.lng}` : undefined
+        });
+        clearTimeout(safetyTimeout);
+        showFeedback("¡Gracias! Reporte enviado.", "success");
+        setTimeout(closeModal, 2000);
       } catch (err) {
-        console.warn("[ReportWidget] Submission failed, queuing offline:", err);
-
-        try {
-          await savePendingReport(data);
-          showFeedback("Sin conexi\u00f3n. Reporte guardado localmente, se enviar\u00e1 cuando recuperes se\u00f1al. \u2713", "info");
-          if (badge) {
-            const count = (await getPendingReports()).length;
-            badge.textContent = count.toString();
-            badge.hidden = false;
-          }
-          setTimeout(closeModal, 4000);
-        } catch (dbErr) {
-          console.error("[ReportWidget] IDB Error:", dbErr);
-          showFeedback("Error cr\u00edtico al guardar reporte local.", "error");
-          setSubmitting(false);
+        clearTimeout(safetyTimeout);
+        await savePendingReport(data);
+        showFeedback("Reporte guardado localmente (sin conexión).", "info");
+        if (badge) {
+          const count = (await getPendingReports()).length;
+          badge.textContent = count.toString();
+          badge.hidden = false;
         }
+        setTimeout(closeModal, 2000);
       }
     });
-
   })();
 </script>

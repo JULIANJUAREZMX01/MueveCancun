@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 export function getStaticPaths() {
   return [
     { params: { lang: "es" } },
@@ -66,6 +67,7 @@ const transformRoute = (raw: any): UIRoute => {
 
 const routes: UIRoute[] = rawRoutes.map(transformRoute);
 ---
+export const prerender = true;
 
 <MainLayout title="Catálogo de Rutas">
   <div class="space-y-6 animate-fade-in pb-20">

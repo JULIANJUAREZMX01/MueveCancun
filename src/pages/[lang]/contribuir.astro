@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 export function getStaticPaths() {
   return [
     { params: { lang: "es" } },
@@ -21,6 +22,7 @@ const reportOptions = [
   { value: 'otro',      label: isEs ? 'Otro'               : 'Other',           icon: '📝' },
 ];
 ---
+export const prerender = true;
 
 <MainLayout title={isEs ? "Ayúdanos a Mejorar" : "Help Us Improve"}>
   <div class="max-w-2xl mx-auto px-4 py-6 pb-28">

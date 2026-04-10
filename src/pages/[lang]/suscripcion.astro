@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getLangFromUrl } from '../../utils/i18n';
 
@@ -142,6 +143,7 @@ const translations = {
 
 const t = translations[lang] || translations.es;
 ---
+export const prerender = true;
 
 <MainLayout title={t.title}>
   <div class="max-w-4xl mx-auto px-4 py-12 space-y-16">

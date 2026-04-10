@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 export function getStaticPaths() {
   return [
     { params: { lang: "es" } },
@@ -14,6 +15,7 @@ import Icon from '../../components/ui/Icon.astro';
 const { lang } = Astro.params;
 const title = lang === 'es' ? "Inicio" : "Home";
 ---
+export const prerender = true;
 
 <MainLayout title={title}>
     <!-- Full-screen Background Map -->
