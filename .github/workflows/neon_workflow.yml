@@ -34,13 +34,12 @@ jobs:
     name: "Crear branch Neon para PR #${{ github.event.number }}"
     outputs:
       db_url: ${{ steps.create_branch.outputs.db_url }}
-      db_url_pooled: ${{ steps.create_branch.outputs.db_url_with_pooler }}
     needs: setup
     if: |
       github.event_name == 'pull_request' && (
-        github.event.action == 'synchronize' ||
-        github.event_name == 'pull_request' && github.event.action == 'opened' ||
-        github.event_name == 'pull_request' && github.event.action == 'reopened'
+        github.event.action == 'opened' ||
+        github.event.action == 'reopened' ||
+        github.event.action == 'synchronize'
       )
     runs-on: ubuntu-latest
     steps:
@@ -73,7 +72,12 @@ jobs:
         run: |
           node --input-type=module << 'NODE_EOF'
           import { neon } from "@neondatabase/serverless";
-          const sql = neon(process.env.DATABASE_URL);
+          const dsn = process.env.DATABASE_URL;
+          if (!dsn) {
+            console.error("❌ Error: DATABASE_URL is empty or undefined.");
+            process.exit(1);
+          }
+          const sql = neon(dsn);
           try {
             await sql`
               CREATE TABLE IF NOT EXISTS guardians (
@@ -103,7 +107,7 @@ jobs:
           }
           NODE_EOF
         env:
-          DATABASE_URL: ${{ steps.create_branch.outputs.db_url_with_pooler }}
+          DATABASE_URL: ${{ steps.create_branch.outputs.db_url }}
 
       - name: Comentar en PR con URL del branch Neon
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
