@@ -98,14 +98,22 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
   /* Variables de diseño */
   :root {
     --rw-primary: #0d9488;
-    --rw-bg: rgba(255, 255, 255, 0.95);
-    --rw-text: #1e293b;
+    --rw-bg: #ffffff;
+    --rw-text: #0f172a;
   }
-  .rw-fab { position: fixed; bottom: 5.5rem; right: 1.5rem; z-index: 45; display: flex; align-items: center; gap: 0.5rem; background: var(--rw-primary); color: white; padding: 0.75rem 1rem; border-radius: 9999px; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.4); transition: all 0.3s ease; }
-  .rw-fab:hover { transform: translateY(-3px) scale(1.05); }
-  .rw-fab-label { font-weight: 800; font-size: 0.875rem; }
+  :global(.dark) :root {
+    --rw-bg: #1e293b;
+    --rw-text: #f8fafc;
+  }
+
+  .rw-fab { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50; display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; background: var(--rw-primary); color: white; border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.4); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid rgba(255, 255, 255, 0.1); }
+  .rw-fab:hover { transform: scale(1.05) translateY(-2px); box-shadow: 0 15px 30px -5px rgba(13, 148, 136, 0.5); }
+  .rw-fab-label { font-size: 0.875rem; font-weight: 800; letter-spacing: 0.025em; }
+
+  /* Corregido: Display none tiene precedencia absoluta cuando está hidden */
   .rw-overlay[hidden] { display: none !important; }
   .rw-overlay:not([hidden]) { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+
   .rw-modal { background: var(--rw-bg); width: 100%; max-width: 400px; border-radius: 24px; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
   .rw-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
   .rw-modal-title-group { display: flex; align-items: center; gap: 0.75rem; }
@@ -144,7 +152,7 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
     }
   }
 
-  (() => {
+  function initReportWidget() {
     const configEl = document.getElementById("rw-config") as HTMLDivElement;
     if (!configEl) return;
 
@@ -167,6 +175,9 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
     const charCount= document.getElementById("rw-chars");
 
     if (!fab || !overlay || !form || !submitBtn || !textarea || !charCount) return;
+
+    // Asegurar estado inicial cerrado
+    overlay.hidden = true;
 
     const openModal = () => {
       overlay.hidden = false;
@@ -204,47 +215,55 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
       setSubmitting(false);
     };
 
-    fab.addEventListener("click", openModal);
-    closeBtn?.addEventListener("click", closeModal);
-    cancelBtn?.addEventListener("click", closeModal);
-    overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !overlay.hidden) closeModal(); });
+    // Remover listeners previos para evitar duplicados si init se llama varias veces
+    fab.onclick = openModal;
+    if (closeBtn) closeBtn.onclick = closeModal;
+    if (cancelBtn) cancelBtn.onclick = closeModal;
+
+    overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+
+    document.onkeydown = (e) => {
+      if (e.key === "Escape" && !overlay.hidden) closeModal();
+    };
+
     window.rwOpenReport = openModal;
 
-    textarea.addEventListener("input", () => {
+    textarea.oninput = () => {
       charCount.textContent = textarea.value.length.toString();
-    });
+    };
 
-    geoBtn?.addEventListener("click", () => {
-      if (latInput.value) {
-        latInput.value = ""; lngInput.value = "";
-        geoBtn.classList.remove("rw-geo-active", "rw-geo-error");
-        geoText.textContent = "Agregar ubicación (opcional)";
-        geoStatus.textContent = "";
-        return;
-      }
-      if (!navigator.geolocation) {
-        geoBtn.classList.add("rw-geo-error");
-        geoText.textContent = "GPS no disponible";
-        return;
-      }
-      geoText.textContent = "Obteniendo...";
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          latInput.value = pos.coords.latitude.toFixed(6);
-          lngInput.value = pos.coords.longitude.toFixed(6);
-          geoBtn.classList.add("rw-geo-active");
-          geoText.textContent = "Ubicación capturada \u2713";
-          geoStatus.textContent = pos.coords.latitude.toFixed(4) + ", " + pos.coords.longitude.toFixed(4);
-        },
-        err => {
+    if (geoBtn) {
+      geoBtn.onclick = () => {
+        if (latInput.value) {
+          latInput.value = ""; lngInput.value = "";
+          geoBtn.classList.remove("rw-geo-active", "rw-geo-error");
+          if (geoText) geoText.textContent = "Agregar ubicación (opcional)";
+          if (geoStatus) geoStatus.textContent = "";
+          return;
+        }
+        if (!navigator.geolocation) {
           geoBtn.classList.add("rw-geo-error");
-          geoText.textContent = "Error de GPS";
-          geoStatus.textContent = err.code === 1 ? "Permiso denegado" : "Fallo de GPS";
-        },
-        { timeout: 8000 }
-      );
-    });
+          if (geoText) geoText.textContent = "GPS no disponible";
+          return;
+        }
+        if (geoText) geoText.textContent = "Obteniendo...";
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            latInput.value = pos.coords.latitude.toFixed(6);
+            lngInput.value = pos.coords.longitude.toFixed(6);
+            geoBtn.classList.add("rw-geo-active");
+            if (geoText) geoText.textContent = "Ubicación capturada \u2713";
+            if (geoStatus) geoStatus.textContent = pos.coords.latitude.toFixed(4) + ", " + pos.coords.longitude.toFixed(4);
+          },
+          err => {
+            geoBtn.classList.add("rw-geo-error");
+            if (geoText) geoText.textContent = "Error de GPS";
+            if (geoStatus) geoStatus.textContent = err.code === 1 ? "Permiso denegado" : "Fallo de GPS";
+          },
+          { timeout: 8000 }
+        );
+      };
+    }
 
     const sendToGitHub = async (payload: any) => {
       const res = await fetch("/api/reports", {
@@ -260,38 +279,43 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
     const syncOfflineReports = async () => {
       if (isSyncing || !navigator.onLine) return;
       isSyncing = true;
-      const reports = await getPendingReports();
-      if (badge) {
-        badge.textContent = reports.length.toString();
-        badge.hidden = reports.length === 0;
-      }
-      if (reports.length === 0) {
+      try {
+        const reports = await getPendingReports();
+        if (badge) {
+          badge.textContent = reports.length.toString();
+          badge.hidden = reports.length === 0;
+        }
+        if (reports.length === 0) {
+          isSyncing = false;
+          return;
+        }
+        for (const r of reports) {
+          try {
+            await sendToGitHub({
+              issue_type: r.tipo,
+              description: r.descripcion,
+              route_id: r.ruta,
+              location: (r.lat && r.lng) ? `${r.lat}, ${r.lng}` : undefined
+            });
+            if (r.id !== undefined) await deletePendingReport(r.id);
+          } catch (err) { break; }
+        }
+        const updated = await getPendingReports();
+        if (badge) {
+          badge.textContent = updated.length.toString();
+          badge.hidden = updated.length === 0;
+        }
+      } catch (e) {
+        console.warn("[ReportWidget] IndexedDB sync failed", e);
+      } finally {
         isSyncing = false;
-        return;
       }
-      for (const r of reports) {
-        try {
-          await sendToGitHub({
-            issue_type: r.tipo,
-            description: r.descripcion,
-            route_id: r.ruta,
-            location: (r.lat && r.lng) ? `${r.lat}, ${r.lng}` : undefined
-          });
-          if (r.id !== undefined) await deletePendingReport(r.id);
-        } catch (err) { break; }
-      }
-      const updated = await getPendingReports();
-      if (badge) {
-        badge.textContent = updated.length.toString();
-        badge.hidden = updated.length === 0;
-      }
-      isSyncing = false;
     };
 
     window.addEventListener("online", syncOfflineReports);
     syncOfflineReports();
 
-    form.addEventListener("submit", async (e) => {
+    form.onsubmit = async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
       const data: Omit<PendingReport, "timestamp"> = {
@@ -313,7 +337,7 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
       const safetyTimeout = setTimeout(() => {
         if (overlay.hidden) return;
         showFeedback("La operación está tardando. Guardando localmente...", "info");
-        savePendingReport(data).then(() => setTimeout(closeModal, 1500));
+        savePendingReport(data).then(() => setTimeout(closeModal, 1500)).catch(() => setSubmitting(false));
       }, 5000);
 
       try {
@@ -329,15 +353,27 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
         setTimeout(closeModal, 2000);
       } catch (err) {
         clearTimeout(safetyTimeout);
-        await savePendingReport(data);
-        showFeedback("Reporte guardado localmente (sin conexión).", "info");
-        if (badge) {
-          const count = (await getPendingReports()).length;
-          badge.textContent = count.toString();
-          badge.hidden = false;
+        try {
+          await savePendingReport(data);
+          showFeedback("Reporte guardado localmente (sin conexión).", "info");
+          if (badge) {
+            const count = (await getPendingReports()).length;
+            badge.textContent = count.toString();
+            badge.hidden = false;
+          }
+        } catch (dbErr) {
+          showFeedback("Error al guardar reporte. Intenta de nuevo.", "error");
         }
         setTimeout(closeModal, 2000);
       }
-    });
-  })();
+    };
+  }
+
+  // Soporte para Astro View Transitions y carga inicial
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReportWidget);
+  } else {
+    initReportWidget();
+  }
+  document.addEventListener("astro:page-load", initReportWidget);
 </script>
