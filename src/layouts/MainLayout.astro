@@ -13,6 +13,7 @@ import SpeedInsights from '@vercel/speed-insights/astro';
 import Analytics from '@vercel/analytics/astro';
 import { ClientRouter } from 'astro:transitions';
 import ReportWidget from '../components/ReportWidget.astro';
+import RouteContributeModal from '../components/RouteContributeModal.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import '../styles/tokens.css';
 import '../styles/main.css';
@@ -346,5 +347,6 @@ const ga4Id = import.meta.env.PUBLIC_GA4_ID;
       document.addEventListener("astro:after-swap", enforceTutorial);
     </script>
     <Analytics />
-  </body>
+    <RouteContributeModal />
+</body>
 </html>
