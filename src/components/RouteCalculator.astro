@@ -144,181 +144,300 @@ const questions = {
   const questions = i18nDataEl ? JSON.parse(i18nDataEl.dataset.questions || '{}') : {};
 
   let wasmLoaded = false;
-  let find_route;
-  let load_catalog;
-  let finder;
+  let find_route: any;
+  let load_catalog: any;
+  let finder: any;
+  let currentResults: any[] = [];
 
-  // Animation Logic
+  // ── Animación de preguntas ────────────────────────────────────────────────
   function setupQuestionAnimations() {
     const originEl = document.getElementById('animated-origin-question');
-    const destEl = document.getElementById('animated-dest-question');
+    const destEl   = document.getElementById('animated-dest-question');
     const langs = ['es', 'en', 'fr', 'pt', 'my'];
     let idx = 0;
-
     setInterval(() => {
       idx = (idx + 1) % langs.length;
       const lang = langs[idx];
-
-      if (originEl) {
-        originEl.style.opacity = '0';
-        setTimeout(() => {
-          originEl.textContent = questions.origin[lang];
-          originEl.style.opacity = '1';
-        }, 300);
-      }
-
-      if (destEl) {
-        destEl.style.opacity = '0';
-        setTimeout(() => {
-          destEl.textContent = questions.dest[lang];
-          destEl.style.opacity = '1';
-        }, 300);
-      }
+      if (originEl) { originEl.style.opacity = '0'; setTimeout(() => { originEl.textContent = questions.origin?.[lang] || originEl.textContent; originEl.style.opacity = '1'; }, 300); }
+      if (destEl)   { destEl.style.opacity   = '0'; setTimeout(() => { destEl.textContent   = questions.dest?.[lang]   || destEl.textContent;   destEl.style.opacity   = '1'; }, 300); }
     }, 4000);
   }
 
-  // Google Maps Export
-  function getGmapsLink(journey) {
-    if (!journey || !journey.legs || journey.legs.length === 0) return '#';
+  // ── Google Maps link ──────────────────────────────────────────────────────
+  function getGmapsLink(journey: any) {
+    if (!journey?.legs?.length) return '#';
     const firstLeg = journey.legs[0];
-    const lastLeg = journey.legs[journey.legs.length - 1];
-
-    // Use first stop of first leg and last stop of last leg
-    const start = firstLeg.paradas?.[0] || firstLeg.stops?.[0];
-    const end = lastLeg.paradas?.[lastLeg.paradas.length - 1] || lastLeg.stops?.[lastLeg.stops.length - 1];
-
-    if (start && end) {
-      return `https://www.google.com/maps/dir/?api=1&origin=${start.lat},${start.lng}&destination=${end.lat},${end.lng}&travelmode=transit`;
+    const lastLeg  = journey.legs[journey.legs.length - 1];
+    const start = firstLeg.paradas?.[0] || firstLeg.stops_info?.[0] || firstLeg.stops?.[0];
+    const end   = lastLeg.paradas?.[lastLeg.paradas?.length - 1]
+                || lastLeg.stops_info?.[lastLeg.stops_info?.length - 1]
+                || lastLeg.stops?.[lastLeg.stops?.length - 1];
+    if (start?.lat && end?.lat) {
+      const slat = start.lat, slng = start.lng || start.lon;
+      const elat = end.lat,   elng = end.lng   || end.lon;
+      return `https://www.google.com/maps/dir/?api=1&origin=${slat},${slng}&destination=${elat},${elng}&travelmode=transit`;
     }
     return '#';
   }
 
-  function renderBestResultHtml(journey, isBest = false) {
-    const route = journey.legs[0];
+  // ── Compartir ruta ────────────────────────────────────────────────────────
+  async function shareJourney(journey: any) {
+    const leg    = journey.legs?.[0];
+    const origin = leg?.origin_hub || leg?.paradas?.[0]?.nombre || '?';
+    const dest   = leg?.dest_hub   || leg?.paradas?.[leg?.paradas?.length - 1]?.nombre || '?';
+    const price  = journey.total_price ? `$${Number(journey.total_price).toFixed(2)}` : '';
+    const dur    = journey.duration_minutes ? `${journey.duration_minutes} min` : '';
+
+    const text = [
+      '🚌 MueveCancún — Te encontré una ruta',
+      `📍 ${origin} → ${dest}`,
+      price ? `💰 Tarifa: ${price}` : '',
+      dur   ? `⏱️ Tiempo estimado: ${dur}` : '',
+      '',
+      '🔗 ' + window.location.href,
+      '#MueveCancún #TransporteCancún',
+    ].filter(Boolean).join('\n');
+
+    if (navigator.share) {
+      try { await navigator.share({ title: 'MueveCancún', text, url: window.location.href }); return; } catch(_) {}
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Ruta copiada al portapapeles 📋', 'success');
+    } catch(_) {
+      showToast('No se pudo copiar', 'error');
+    }
+  }
+
+  // ── Render de resultado ───────────────────────────────────────────────────
+  function renderBestResultHtml(journey: any, isBest = false) {
+    const route     = journey.legs?.[0] || {};
     const gmapsLink = getGmapsLink(journey);
+    const price     = journey.total_price ? `$${Number(journey.total_price).toFixed(2)}` : '$?';
+    const dur       = journey.duration_minutes ? `${journey.duration_minutes} min` : '';
 
-    const html = `
+    const originStr = route.origin_hub || route.paradas?.[0]?.nombre || '';
+    const destStr   = route.dest_hub   || route.paradas?.[route.paradas?.length-1]?.nombre || '';
+
+    return `
       <div class="glass-card mb-4 animate-slide-up relative overflow-hidden ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
-        <div class="flex justify-between items-start">
-          <div class="flex-1 min-w-0 pr-2">
-            <span class="badge-primary mb-2">${escapeHtml(getTransportLabel(route.transport_type))}</span>
-            <h3 class="font-black text-lg leading-tight text-slate-900 dark:text-white truncate">${escapeHtml(route.name)}</h3>
-            <p class="text-xxs font-bold text-slate-400 mt-1 uppercase tracking-widest">${escapeHtml(route.origin_hub)} → ${escapeHtml(route.dest_hub)}</p>
+        ${isBest ? '<div style="position:absolute;top:0;right:0;background:#0ea5e9;color:#fff;font-size:10px;font-weight:900;padding:4px 12px;border-radius:0 0 0 12px;letter-spacing:.05em;text-transform:uppercase">MEJOR RUTA</div>' : ''}
+        <div class="flex justify-between items-start gap-2">
+          <div class="flex-1 min-w-0">
+            <span class="badge-primary mb-2">${escapeHtml(getTransportLabel(route.transport_type || ''))}</span>
+            <h3 class="font-black text-base leading-tight text-slate-900 dark:text-white truncate">${escapeHtml(route.name || 'Ruta')}</h3>
+            <p class="text-xxs font-bold text-slate-400 mt-1 uppercase tracking-widest">${escapeHtml(originStr)} → ${escapeHtml(destStr)}</p>
           </div>
-          <div class="text-right flex flex-col items-end">
-            <span class="text-xl font-black text-primary-500">$${(journey.total_price || 0).toFixed(2)}</span>
-            <span class="text-[10px] font-black text-slate-400 uppercase">${journey.duration_minutes || ''} min</span>
+          <div class="text-right flex flex-col items-end flex-shrink-0">
+            <span class="text-xl font-black text-primary-500">${price}</span>
+            ${dur ? `<span class="text-[10px] font-bold text-slate-400 uppercase">${dur}</span>` : ''}
 
-            <div class="flex gap-2 mt-4">
-              <a href="${gmapsLink}" target="_blank" class="btn-secondary btn-sm flex items-center gap-1 opacity-70 hover:opacity-100 transition-all" title="${ui['calc.export_gmaps']}">
-                <span class="material-symbols-rounded" style="font-size: 16px;">near_me</span>
+            <div class="flex gap-2 mt-3">
+              <!-- Google Maps -->
+              <a href="${gmapsLink}" target="_blank" rel="noopener"
+                 class="btn-secondary btn-sm flex items-center gap-1 opacity-70 hover:opacity-100 transition-all"
+                 title="Abrir en Google Maps">
+                <span class="material-symbols-rounded" style="font-size:16px">near_me</span>
               </a>
-              <button class="btn-primary btn-sm view-map-btn" data-journey='${safeJsonStringify(journey)}'>
-                <span class="material-symbols-rounded" style="font-size: 16px;">map</span>
+              <!-- Ver en mapa interno -->
+              <button class="btn-primary btn-sm view-map-btn"
+                      data-journey='${safeJsonStringify(journey)}'
+                      title="Ver en el mapa">
+                <span class="material-symbols-rounded" style="font-size:16px">map</span>
+              </button>
+              <!-- Compartir -->
+              <button class="btn-secondary btn-sm share-route-btn"
+                      data-journey='${safeJsonStringify(journey)}'
+                      title="Compartir ruta">
+                <span class="material-symbols-rounded" style="font-size:16px">share</span>
               </button>
             </div>
           </div>
         </div>
       </div>
     `;
-    return document.createRange().createContextualFragment(html);
   }
 
-  // --- Core Logic ---
+  // ── Poblar datalist con paradas reales ───────────────────────────────────
+  function populateDatalist(db: Map<string, [number,number]>, originalNames: Map<string, string>) {
+    const datalist = document.getElementById('locations');
+    if (!datalist) return;
+    const existing = new Set(Array.from(datalist.querySelectorAll('option')).map((o: any) => o.value));
+    const fragment = document.createDocumentFragment();
+    originalNames.forEach((name) => {
+      if (!existing.has(name)) {
+        const opt = document.createElement('option');
+        opt.value = name;
+        fragment.appendChild(opt);
+      }
+    });
+    datalist.appendChild(fragment);
+  }
+
+  // ── Lógica principal ──────────────────────────────────────────────────────
   async function start() {
     try {
       const module = await WasmLoader.getModule();
-      find_route = module.find_route;
-      load_catalog = module.load_catalog;
-      wasmLoaded = true;
+      find_route   = module.find_route.bind(module);
+      load_catalog = module.load_catalog.bind(module);
+      wasmLoaded   = true;
 
-      const { text: catalogString, data: jsonData } = await coordinatesStore.init();
+      const { text: catalogString } = await coordinatesStore.init();
       load_catalog(catalogString);
 
       const db = coordinatesStore.getDB();
+      const names = coordinatesStore.getOriginalNames();
       if (db) {
-          finder = new CoordinateFinder(db, coordinatesStore.getOriginalNames());
+        finder = new CoordinateFinder(db, names);
+        populateDatalist(db, names);
       }
 
-      const searchBtn = document.getElementById("search-btn");
-      const txt = document.getElementById("btn-text");
+      const searchBtn = document.getElementById('search-btn') as HTMLButtonElement | null;
+      const txt       = document.getElementById('btn-text');
       if (searchBtn) searchBtn.disabled = false;
-      if (txt) {
-          txt.setAttribute("data-i18n", "calc.btn");
-          txt.textContent = ui['calc.btn'] || "CALCULATE ROUTE";
-      }
+      if (txt) { txt.setAttribute('data-i18n', 'calc.btn'); txt.textContent = ui['calc.btn'] || 'Buscar Ruta'; }
 
       setupEventListeners();
       setupQuestionAnimations();
     } catch (e) {
-      console.error("WASM Load Error:", e);
+      console.error('[RouteCalc] WASM Error:', e);
+      const txt = document.getElementById('btn-text');
+      if (txt) txt.textContent = 'Error al cargar — recarga la página';
     }
   }
 
+  // ── Listeners ─────────────────────────────────────────────────────────────
   function setupEventListeners() {
-    const originInput = document.getElementById('origin-input') as HTMLInputElement;
-    const destInput = document.getElementById('destination-input') as HTMLInputElement;
+    const originInput = document.getElementById('origin-input') as HTMLInputElement | null;
+    const destInput   = document.getElementById('destination-input') as HTMLInputElement | null;
     const destQuestion = document.querySelector('.dest-question-container');
 
-    originInput?.addEventListener('focus', () => {
-      destQuestion?.classList.remove('hidden');
+    originInput?.addEventListener('focus', () => destQuestion?.classList.remove('hidden'));
+
+    // Swap
+    document.getElementById('swap-btn')?.addEventListener('click', () => {
+      if (!originInput || !destInput) return;
+      const tmp = originInput.value;
+      originInput.value = destInput.value;
+      destInput.value   = tmp;
     });
 
+    // Quick actions
+    document.querySelectorAll('.quick-action-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const dest = (btn as HTMLElement).dataset.dest;
+        if (destInput && dest) destInput.value = dest;
+        destQuestion?.classList.remove('hidden');
+      });
+    });
+
+    // GPS
+    document.getElementById('gps-btn')?.addEventListener('click', () => {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const res = coordinatesStore.findNearestWithDistance?.(pos.coords.latitude, pos.coords.longitude);
+          if (res && originInput) { originInput.value = res.name; showToast(`📍 ${res.name}`, 'success'); }
+        },
+        err => {
+          const msgs: Record<number,string> = {
+            1: 'Permiso de ubicación denegado',
+            2: 'Ubicación no disponible',
+            3: 'Tiempo agotado'
+          };
+          showToast(msgs[err.code] || 'Error de ubicación', 'error');
+        },
+        { timeout: 10000, enableHighAccuracy: false, maximumAge: 300000 }
+      );
+    });
+
+    // Map picker → set destination from map click
+    document.getElementById('map-picker-btn')?.addEventListener('click', () => {
+      showToast('Toca una parada en el mapa para seleccionarla como destino', 'info');
+      window.dispatchEvent(new CustomEvent('MAP_PICKER_MODE', { detail: { field: 'dest' } }));
+    });
+
+    // MAP_SET_STOP → rellenar inputs desde el mapa
+    window.addEventListener('MAP_SET_STOP', (e: any) => {
+      const { type, name } = e.detail || {};
+      if (type === 'origin' && originInput) originInput.value = name;
+      if (type === 'dest'   && destInput)   destInput.value   = name;
+    });
+
+    // BUSCAR RUTA
     document.getElementById('search-btn')?.addEventListener('click', async () => {
-      const origin = originInput?.value;
-      const dest = destInput?.value;
-      if (!origin || !dest) return;
+      const origin = originInput?.value?.trim();
+      const dest   = destInput?.value?.trim();
+      if (!origin || !dest) { showToast('Ingresa origen y destino', 'warning'); return; }
+      if (!wasmLoaded) { showToast('El motor de rutas aún no está listo, espera un momento', 'warning'); return; }
 
-      const results = find_route(normalizeString(origin), normalizeString(dest));
-      const container = document.getElementById('results-container');
-      const bestArea = document.getElementById('best-result-area');
-      const info = document.getElementById('results-info');
+      const spinner = document.getElementById('btn-spinner');
+      const txt     = document.getElementById('btn-text');
+      if (spinner) spinner.classList.remove('hidden');
+      if (txt)     txt.classList.add('hidden');
 
-      if (container && bestArea) {
-        container.replaceChildren();
-        bestArea.replaceChildren();
+      try {
+        const t0      = performance.now();
+        const rawResults = find_route(normalizeString(origin), normalizeString(dest));
+        const elapsed = (performance.now() - t0).toFixed(0);
 
-        if (results && results.length > 0) {
-          info?.classList.remove('hidden');
-          bestArea.appendChild(renderBestResultHtml(results[0], true));
-          results.slice(1).forEach(r => container.appendChild(renderBestResultHtml(r)));
+        const results: any[] = Array.isArray(rawResults)
+          ? rawResults
+          : (typeof rawResults === 'string' ? JSON.parse(rawResults) : []);
 
+        const container  = document.getElementById('results-container');
+        const bestArea   = document.getElementById('best-result-area');
+        const info       = document.getElementById('results-info');
+        const countLabel = document.getElementById('results-count-label');
+        const timeBadge  = document.getElementById('results-time-badge');
+
+        if (container) container.innerHTML = '';
+        if (bestArea)  bestArea.innerHTML  = '';
+
+        if (results?.length > 0) {
+          currentResults = results;
+          if (info)       info.classList.remove('hidden');
+          if (countLabel) countLabel.textContent = `${results.length} ruta${results.length > 1 ? 's' : ''} encontrada${results.length > 1 ? 's' : ''}`;
+          if (timeBadge)  timeBadge.textContent  = `${elapsed}ms`;
+
+          if (bestArea)  bestArea.innerHTML  = renderBestResultHtml(results[0], true);
+          if (container) container.innerHTML = results.slice(1).map(r => renderBestResultHtml(r)).join('');
+
+          // Listeners en botones generados dinámicamente
           document.querySelectorAll('.view-map-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-               const j = JSON.parse((btn as HTMLElement).dataset.journey);
-               window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey: j } }));
+              const j = JSON.parse((btn as HTMLElement).dataset.journey || '{}');
+              window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey: j } }));
+              showToast('Trazando ruta en el mapa...', 'info');
             });
           });
-        }
-      }
-    });
 
-    document.getElementById('gps-btn')?.addEventListener('click', () => {
-       navigator.geolocation.getCurrentPosition(
-         pos => {
-           const res = coordinatesStore.findNearestWithDistance(pos.coords.latitude, pos.coords.longitude);
-           if (res && originInput) {
-              originInput.value = res.name;
-              showToast(`GPS: ${res.name}`, 'success');
-           }
-         },
-         error => {
-           let errorMessage = 'Unable to access location';
-           if (error.code === error.PERMISSION_DENIED) {
-             errorMessage = 'Location permission denied. Enable location access in settings.';
-           } else if (error.code === error.POSITION_UNAVAILABLE) {
-             errorMessage = 'Location information unavailable.';
-           } else if (error.code === error.TIMEOUT) {
-             errorMessage = 'Location request timed out.';
-           }
-           showToast(errorMessage, 'error');
-         },
-         {
-           timeout: 10000,
-           enableHighAccuracy: false,
-           maximumAge: 300000
-         }
-       );
+          document.querySelectorAll('.share-route-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const j = JSON.parse((btn as HTMLElement).dataset.journey || '{}');
+              shareJourney(j);
+            });
+          });
+
+          // Auto-trazar el mejor resultado en el mapa
+          window.dispatchEvent(new CustomEvent('SHOW_ROUTE_ON_MAP', { detail: { journey: results[0] } }));
+
+        } else {
+          if (info) info.classList.remove('hidden');
+          if (bestArea) bestArea.innerHTML = `
+            <div class="glass-card text-center py-8">
+              <div style="font-size:40px">🗺️</div>
+              <p class="font-black text-slate-700 dark:text-white mt-2">Sin resultados</p>
+              <p class="text-sm text-slate-400 mt-1">No encontramos conexión directa entre estas paradas.</p>
+              <p class="text-xs text-slate-400 mt-2">Intenta con paradas cercanas o hubs principales.</p>
+            </div>`;
+        }
+      } catch (err) {
+        console.error('[search]', err);
+        showToast('Error al buscar la ruta. Intenta de nuevo.', 'error');
+      } finally {
+        if (spinner) spinner.classList.add('hidden');
+        if (txt)     txt.classList.remove('hidden');
+      }
     });
   }
 
