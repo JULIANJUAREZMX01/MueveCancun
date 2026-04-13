@@ -1,302 +1,282 @@
 ---
 export const prerender = true;
-import MainLayout from '../../layouts/MainLayout.astro';
-import { getLangFromUrl } from '../../utils/i18n';
-
 export function getStaticPaths() {
-  return [
-    { params: { lang: "es" } },
-    { params: { lang: "en" } },
-  ];
+  return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
 }
+import MainLayout from "../../layouts/MainLayout.astro";
+const { lang } = Astro.params;
+const isEs = lang === "es";
 
-const lang = getLangFromUrl(Astro.url);
-
-const translations = {
-  es: {
-    title: 'MueveCancún Guardians',
-    subtitle: 'Niveles de apoyo y recompensas',
-    description: 'Únete a la élite de ciudadanos que hacen posible que esta plataforma siga operando 24/7 sin publicidad y con datos gratuitos.',
-    recurringTitle: 'Suscripciones Mensuales',
-    oneTimeTitle: 'Donaciones de Guardián',
-    mrrTitle: 'Progreso de la Comunidad',
-    directLinkText: 'Enlace directo',
-    qrText: 'Escaneame para donar',
-    plans: {
-      starter: {
-        name: 'Agente IA (Starter)',
-        price: '$16',
-        period: '/mes',
-        features: [
-          'Agente IA personal en MueveCancún',
-          'Consultas de rutas inteligentes',
-          'Reportes ciudadanos asistidos',
-          'Tips de transporte en tiempo real',
-          'Soporte directo vía chat'
-        ],
-        link: 'https://buy.stripe.com/dRm00c4kygCicKUdTt7AI04'
-      },
-      elite: {
-        name: 'Elite Guardian',
-        price: '$160',
-        period: '/mes',
-        features: [
-          'Todo lo del plan Starter',
-          'Automatizaciones avanzadas',
-          'Skills personalizados',
-          'Backend functions dedicadas',
-          'Soporte prioritario 24/7'
-        ],
-        link: 'https://buy.stripe.com/8x214g8AO99QbGQ2aL7AI05',
-        recommended: true
-      }
-    },
-    tiers: {
-      shield: {
-        name: 'Shield Guardian',
-        price: '$3',
-        period: '/única vez',
-        features: ['Notificaciones de rutas alteradas', 'Datos históricos', 'Features beta'],
-        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
-        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02',
-        qr: '/qr-shield.png'
-      },
-      architect: {
-        name: 'Nexus Architect',
-        price: '$10',
-        period: '/única vez',
-        features: ['Todo lo anterior', 'Votación en prioridades', 'Comunidad privada'],
-        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB',
-        link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03',
-        qr: '/qr-architect.png'
-      }
-    },
-    milestones: [
-      { label: 'Fase 1', goal: 16, emoji: '🎯' },
-      { label: 'Fase 2', goal: 160, emoji: '⚡' },
-    ]
+const plans = [
+  {
+    id: "starter",
+    name: isEs ? "Agente IA Starter" : "AI Agent Starter",
+    price: "$16",
+    period: isEs ? "/mes" : "/mo",
+    color: "teal",
+    link: "https://buy.stripe.com/dRm00c4kygCicKUdTt7AI04",
+    features: isEs
+      ? ["Agente IA personal","Consultas de rutas inteligentes","Reportes ciudadanos asistidos","Tips en tiempo real","Soporte vía chat"]
+      : ["Personal AI Agent","Smart route queries","Assisted citizen reports","Real-time tips","Chat support"],
   },
-  en: {
-    title: 'MueveCancún Guardians',
-    subtitle: 'Support levels and rewards',
-    description: 'Join the elite of citizens who make it possible for this platform to continue operating 24/7 without ads and with free data.',
-    recurringTitle: 'Monthly Subscriptions',
-    oneTimeTitle: 'Guardian Donations',
-    mrrTitle: 'Community Progress',
-    directLinkText: 'Direct link',
-    qrText: 'Scan to donate',
-    plans: {
-      starter: {
-        name: 'AI Agent (Starter)',
-        price: '$16',
-        period: '/mo',
-        features: [
-          'Personal AI Agent in MueveCancún',
-          'Smart route queries',
-          'Assisted citizen reports',
-          'Real-time transport tips',
-          'Direct chat support'
-        ],
-        link: 'https://buy.stripe.com/dRm00c4kygCicKUdTt7AI04'
-      },
-      elite: {
-        name: 'Elite Guardian',
-        price: '$160',
-        period: '/mo',
-        features: [
-          'Everything in Starter',
-          'Advanced automations',
-          'Custom skills',
-          'Dedicated backend functions',
-          '24/7 Priority support'
-        ],
-        link: 'https://buy.stripe.com/8x214g8AO99QbGQ2aL7AI05',
-        recommended: true
-      }
-    },
-    tiers: {
-      shield: {
-        name: 'Shield Guardian',
-        price: '$3',
-        period: '/one-time',
-        features: ['Altered route notifications', 'Historical data', 'Beta features'],
-        buyButtonId: 'buy_btn_1THXtT2dM2f4HRxoMj7g4bnI',
-        link: 'https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02',
-        qr: '/qr-shield.png'
-      },
-      architect: {
-        name: 'Nexus Architect',
-        price: '$10',
-        period: '/one-time',
-        features: ['Everything above', 'Priority voting', 'Private community'],
-        buyButtonId: 'buy_btn_1THY6Z2dM2f4HRxoh7vBIRkB',
-        link: 'https://donate.stripe.com/9B6fZaaIWfyefX62aL7AI03',
-        qr: '/qr-architect.png'
-      }
-    },
-    milestones: [
-      { label: 'Phase 1', goal: 16, emoji: '🎯' },
-      { label: 'Phase 2', goal: 160, emoji: '⚡' },
-    ]
-  }
-};
+  {
+    id: "elite",
+    name: isEs ? "Elite Guardian" : "Elite Guardian",
+    price: "$160",
+    period: isEs ? "/mes" : "/mo",
+    color: "gradient",
+    link: "https://buy.stripe.com/8x214g8AO99QbGQ2aL7AI05",
+    recommended: true,
+    features: isEs
+      ? ["Todo lo del Starter","Automatizaciones avanzadas","Skills personalizados","Backend functions dedicadas","Soporte prioritario 24/7","Acceso API","Voto en roadmap"]
+      : ["Everything in Starter","Advanced automations","Custom skills","Dedicated backend functions","24/7 priority support","API access","Roadmap voting"],
+  },
+];
 
-const t = translations[lang] || translations.es;
+const oneTimeTiers = [
+  {
+    id: "shield",
+    name: "Shield Guardian",
+    price: "$3",
+    period: isEs ? "/única vez" : "/one-time",
+    link: "https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02",
+    features: isEs
+      ? ["Notificaciones de rutas","Datos históricos","Features beta"]
+      : ["Route notifications","Historical data","Beta features"],
+  },
+  {
+    id: "architect",
+    name: "Nexus Architect",
+    price: "$10",
+    period: isEs ? "/única vez" : "/one-time",
+    link: "https://donate.stripe.com/dRm00c4kygCi5eobX37AI03",
+    features: isEs
+      ? ["Todo lo anterior","Voto en prioridades","Comunidad privada","Tu nombre en créditos"]
+      : ["Everything above","Priority voting","Private community","Name in credits"],
+  },
+];
 ---
-export const prerender = true;
 
-<MainLayout title={t.title}>
-  <div class="max-w-4xl mx-auto px-4 py-12 space-y-16">
+<MainLayout title={isEs ? "Guardians — MueveCancún" : "Guardians — MueveCancún"}>
+  <div class="page-content px-4" style="max-width:44rem;margin-inline:auto">
 
-    <!-- Header -->
-    <header class="text-center space-y-4 animate-fade-in">
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-500/10 text-primary-500 text-xs font-black uppercase tracking-widest border border-primary-500/20">
-        🛡️ {t.title}
+    <!-- Hero -->
+    <div class="pricing-hero">
+      <div class="pricing-hero__badge">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        MueveCancún Guardians
       </div>
-      <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">{t.subtitle}</h1>
-      <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">{t.description}</p>
-    </header>
+      <h1 class="pricing-hero__title">
+        {isEs ? "Elige tu nivel de apoyo" : "Choose your support level"}
+      </h1>
+      <p class="pricing-hero__sub">
+        {isEs
+          ? "Sin publicidad, sin datos vendidos. Solo ciudadanos que creen en el transporte libre."
+          : "No ads, no sold data. Just citizens who believe in free transit information."
+        }
+      </p>
+    </div>
 
-    <!-- Progress Dashboard -->
-    <section class="bg-slate-900 rounded-[2.5rem] p-8 md:p-10 shadow-2xl relative overflow-hidden group border border-white/5 animate-fade-in" style="animation-delay: 0.1s;">
-      <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-        <svg width="120" height="120" viewBox="0 0 24 24" fill="white"><path d="M12 21.593c-.425-.394-8.993-7.817-8.993-12.097C3.007 5.48 7.016 2 12 2s8.993 3.48 8.993 7.496c0 4.28-8.568 11.703-8.993 12.097z"/></svg>
-      </div>
+    <!-- Planes mensuales -->
+    <div class="section-label mb-4">
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 5v4l3 3-1.5 1.5L10 13V7h2z"/></svg>
+      {isEs ? "Planes mensuales" : "Monthly plans"}
+    </div>
 
-      <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
-        <div>
-          <h2 class="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-2">{t.mrrTitle}</h2>
-          <div class="flex items-baseline gap-2">
-            <span id="mrr-amount" class="text-4xl font-black text-emerald-400">$0</span>
-            <span class="text-slate-500 text-sm font-bold">/MRR</span>
+    <div class="plans-grid">
+      {plans.map(plan => (
+        <div class={"plan-card" + (plan.recommended ? " plan-card--featured" : "")}>
+          {plan.recommended && (
+            <div class="plan-card__recommended">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              {isEs ? "Recomendado" : "Recommended"}
+            </div>
+          )}
+
+          <div class="plan-card__header">
+            <div>
+              <h3 class="plan-card__name">{plan.name}</h3>
+            </div>
+            <div class="plan-card__price-wrap">
+              <span class="plan-card__price">{plan.price}</span>
+              <span class="plan-card__period">{plan.period}</span>
+            </div>
           </div>
+
+          <ul class="plan-card__features">
+            {plan.features.map(f => (
+              <li class="plan-feature">
+                <svg class="w-4 h-4 plan-feature__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                {f}
+              </li>
+            ))}
+          </ul>
+
+          <a
+            href={plan.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            class={"btn btn-lg plan-card__cta " + (plan.recommended ? "btn-primary" : "btn-ghost")}
+          >
+            {isEs ? "Suscribirme" : "Subscribe"}
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+          </a>
         </div>
-        <div class="text-center md:text-right">
-          <p id="subs-count" class="text-3xl font-black text-white">0</p>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">{lang === 'es' ? 'Guardianes Activos' : 'Active Guardians'}</p>
+      ))}
+    </div>
+
+    <!-- Donaciones únicas -->
+    <div class="section-label mb-4" style="margin-top:2rem">
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+      {isEs ? "Donaciones únicas" : "One-time donations"}
+    </div>
+
+    <div class="tiers-grid">
+      {oneTimeTiers.map(tier => (
+        <a href={tier.link} target="_blank" rel="noopener noreferrer" class="tier-card">
+          <div class="tier-card__top">
+            <h3 class="tier-card__name">{tier.name}</h3>
+            <div class="tier-card__price">
+              {tier.price}<span class="tier-card__period"> {tier.period}</span>
+            </div>
+          </div>
+          <ul class="tier-card__features">
+            {tier.features.map(f => (
+              <li>
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                {f}
+              </li>
+            ))}
+          </ul>
+          <span class="tier-card__action">
+            {isEs ? "Donar ahora" : "Donate now"}
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+          </span>
+        </a>
+      ))}
+    </div>
+
+    <!-- Garantia -->
+    <div class="trust-bar">
+      {[
+        { icon:"🔒", label: isEs ? "Pago seguro vía Stripe" : "Secure payment via Stripe" },
+        { icon:"🚫", label: isEs ? "Sin contratos" : "No contracts" },
+        { icon:"↩️", label: isEs ? "Cancela cuando quieras" : "Cancel anytime" },
+      ].map(t => (
+        <div class="trust-item">
+          <span aria-hidden="true">{t.icon}</span>
+          <span>{t.label}</span>
         </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {t.milestones.map((ms, i) => (
-          <div class="milestone-item space-y-2" data-goal={ms.goal}>
-            <div class="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest">
-              <span>{ms.emoji} {ms.label}</span>
-              <span class="text-emerald-400 milestone-current">$0 / ${ms.goal}</span>
-            </div>
-            <div class="h-2 bg-white/5 rounded-full overflow-hidden">
-              <div class="milestone-bar h-full bg-emerald-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <!-- Monthly Tiers -->
-    <section class="space-y-8 animate-fade-in" style="animation-delay: 0.2s;">
-      <h2 class="text-2xl font-black text-slate-900 dark:text-white text-center">{t.recurringTitle}</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {Object.entries(t.plans).map(([key, plan]) => (
-          <div class:list={[
-            "relative bg-white dark:bg-slate-900 rounded-[2rem] p-8 border-2 transition-all hover:translate-y-[-4px]",
-            (plan as any).recommended ? "border-primary-500 shadow-2xl shadow-primary-500/10" : "border-slate-100 dark:border-slate-800"
-          ]}>
-            <div class="space-y-6">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h3 class="text-xl font-black text-slate-900 dark:text-white">{(plan as any).name}</h3>
-                  <p class="text-3xl font-black text-primary-500 mt-1">{(plan as any).price}<span class="text-sm font-bold opacity-50">{(plan as any).period}</span></p>
-                </div>
-                {(plan as any).recommended && (
-                  <span class="bg-primary-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Recomendado</span>
-                )}
-              </div>
-              <ul class="space-y-3">
-                {(plan as any).features.map((f: string) => (
-                  <li class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400 leading-tight">
-                    <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <a href={(plan as any).link} target="_blank" class="block w-full py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-center font-black text-sm uppercase tracking-widest hover:opacity-90 transition-opacity no-underline">
-                Suscribirme
-              </a>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <!-- One-time Tiers -->
-    <section class="space-y-8 animate-fade-in" style="animation-delay: 0.3s;">
-      <h2 class="text-2xl font-black text-slate-900 dark:text-white text-center">{t.oneTimeTitle}</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {Object.entries(t.tiers).map(([key, tier]) => (
-          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center text-center">
-             <div class="space-y-6 w-full">
-              <div class="flex flex-col items-center gap-4">
-                { (tier as any).qr && (
-                  <div class="p-2 bg-white rounded-2xl shadow-inner border border-slate-100">
-                    <img src={(tier as any).qr} alt={t.qrText} class="w-32 h-32" />
-                    <p class="mt-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">{t.qrText}</p>
-                  </div>
-                )}
-                <div>
-                  <h3 class="text-xl font-black text-slate-900 dark:text-white">{(tier as any).name}</h3>
-                  <p class="text-2xl font-black text-slate-600 dark:text-slate-400">{(tier as any).price}<span class="text-sm font-bold opacity-50">{(tier as any).period}</span></p>
-                </div>
-              </div>
-              <ul class="space-y-3 text-left">
-                {(tier as any).features.map((f: string) => (
-                  <li class="flex items-start gap-3 text-sm text-slate-500 dark:text-slate-400">
-                    <svg class="w-4 h-4 text-emerald-500/50 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div class="pt-4 flex flex-col items-center gap-4">
-                 <stripe-buy-button
-                    buy-button-id={(tier as any).buyButtonId}
-                    publishable-key="pk_live_51T6oKE2dM2f4HRxoh2mpjFg4MHpHXxqc65ulAos4p22xPpD3v55ejGpiGx1Y8vdK5doYMTPGvTPi6RzsqdVv2xvE000caSvFag"
-                  ></stripe-buy-button>
-                  <a href={(tier as any).link} class="text-[10px] font-bold text-slate-400 hover:text-primary-500 transition-colors uppercase tracking-widest no-underline">{t.directLinkText}</a>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
+      ))}
+    </div>
 
   </div>
 </MainLayout>
 
-<script is:inline src="https://js.stripe.com/v3/buy-button.js" async></script>
-<script define:vars={{ lang }}>
-  async function loadMRR() {
-    const STARTER_PRICE = 16;
-    try {
-      const res = await fetch('https://api.github.com/repos/JULIANJUAREZMX01/MueveCancun/issues?labels=stripe-subscriber&state=open');
-      const issues = await res.json();
-      const subs = Array.isArray(issues) ? issues.length : 0;
-      const mrr = subs * STARTER_PRICE;
-
-      const mrrEl = document.getElementById('mrr-amount');
-      const subsEl = document.getElementById('subs-count');
-      if (mrrEl) mrrEl.textContent = `$${mrr}`;
-      if (subsEl) subsEl.textContent = String(subs);
-
-      document.querySelectorAll('.milestone-item').forEach(item => {
-        const goal = parseInt(item.getAttribute('data-goal') || '1');
-        const bar = item.querySelector('.milestone-bar');
-        const currentLabel = item.querySelector('.milestone-current');
-        const pct = Math.min((mrr / goal) * 100, 100);
-        if (bar) (bar as HTMLElement).style.width = `${pct}%`;
-        if (currentLabel) currentLabel.textContent = `$${mrr} / $${goal}`;
-      });
-    } catch { /* Fail silently */ }
+<style>
+  /* ── Hero ── */
+  .pricing-hero { text-align:center; padding: 1.5rem 0 1.25rem; }
+  .pricing-hero__badge {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    padding: 0.3rem 0.875rem; margin-bottom: 1rem;
+    background: var(--teal-xlight); color: var(--teal-dark);
+    border-radius: var(--r-full); font-size: 0.72rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .dark .pricing-hero__badge { background: rgba(13,148,136,0.15); color: #5eead4; }
+  .pricing-hero__title {
+    font-family: var(--font-display); font-size: clamp(1.75rem,5vw,2.5rem);
+    font-weight: 900; color: var(--text-primary); letter-spacing: -0.04em;
+    line-height: 1.05; margin: 0 0 0.75rem; text-wrap: balance;
+  }
+  .pricing-hero__sub {
+    font-size: 0.9rem; color: var(--text-secondary); line-height: 1.65; margin: 0;
   }
 
-  document.addEventListener('astro:page-load', loadMRR);
-  loadMRR();
-</script>
+  /* ── Planes mensuales ── */
+  .plans-grid {
+    display: grid; gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 480px) { .plans-grid { grid-template-columns: repeat(2,1fr); } }
+
+  .plan-card {
+    position: relative; padding: 1.5rem;
+    background: var(--surface-card);
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--r-2xl);
+    box-shadow: var(--shadow-sm);
+    display: flex; flex-direction: column; gap: 1rem;
+    transition: box-shadow var(--t-base) var(--ease), transform var(--t-base) var(--ease);
+  }
+  .plan-card:hover { box-shadow: var(--shadow-xl); transform: translateY(-2px); }
+  .plan-card--featured {
+    border-color: var(--color-primary);
+    background: linear-gradient(160deg, var(--teal-xlight) 0%, var(--surface-card) 40%);
+    box-shadow: var(--shadow-teal);
+  }
+  .dark .plan-card--featured { background: linear-gradient(160deg, rgba(13,148,136,0.08) 0%, var(--surface-card) 40%); }
+
+  .plan-card__recommended {
+    position: absolute; top: -1px; right: 1.25rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    padding: 0.25rem 0.75rem;
+    background: var(--gradient-primary); color: white;
+    border-radius: 0 0 var(--r-md) var(--r-md);
+    font-size: 0.65rem; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    box-shadow: 0 4px 12px rgba(13,148,136,0.3);
+  }
+
+  .plan-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+  .plan-card__name { font-family: var(--font-display); font-size: 1rem; font-weight: 900; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
+  .plan-card__price-wrap { text-align: right; flex-shrink: 0; }
+  .plan-card__price { font-family: var(--font-display); font-size: 1.75rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.04em; line-height: 1; }
+  .plan-card__period { font-size: 0.72rem; font-weight: 700; color: var(--text-tertiary); }
+
+  .plan-card__features { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+  .plan-feature { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; line-height: 1.4; }
+  .plan-feature__icon { color: var(--jungle); flex-shrink: 0; margin-top: 0.1rem; }
+
+  .plan-card__cta { width: 100%; justify-content: center; }
+
+  /* ── Donaciones únicas ── */
+  .tiers-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.75rem; }
+
+  .tier-card {
+    display: flex; flex-direction: column; gap: 0.75rem;
+    padding: 1.125rem 1rem;
+    background: var(--surface-card); border: 1.5px solid var(--border-light);
+    border-radius: var(--r-xl); text-decoration: none; color: inherit;
+    transition: all var(--t-base) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tier-card:hover { border-color: var(--color-primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .tier-card:active { transform: scale(0.97); }
+  .tier-card__top { display: flex; flex-direction: column; gap: 0.25rem; }
+  .tier-card__name { font-family: var(--font-display); font-size: 0.9rem; font-weight: 900; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
+  .tier-card__price { font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; color: var(--color-primary); letter-spacing: -0.04em; }
+  .tier-card__period { font-size: 0.65rem; font-weight: 700; color: var(--text-tertiary); }
+  .tier-card__features { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
+  .tier-card__features li { display: flex; align-items: flex-start; gap: 0.35rem; font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; }
+  .tier-card__features li > svg { color: var(--jungle); flex-shrink: 0; margin-top: 0.15rem; }
+  .tier-card__action {
+    display: flex; align-items: center; gap: 0.25rem;
+    font-size: 0.75rem; font-weight: 800; color: var(--color-primary);
+    margin-top: auto;
+  }
+
+  /* ── Garantia ── */
+  .trust-bar {
+    display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center;
+    padding: 1.25rem; margin-top: 1.5rem;
+    background: var(--surface-bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--r-xl);
+    margin-bottom: 1rem;
+  }
+  .trust-item {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.75rem; font-weight: 700; color: var(--text-secondary);
+  }
+</style>
