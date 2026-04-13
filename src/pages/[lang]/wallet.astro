@@ -273,7 +273,7 @@ const transactions = [
 </style>
 
 <script>
-  import { getWalletBalance, addTransaction } from "../../utils/db";
+  import { getWalletBalance, updateWalletBalance } from "../../utils/db";
 
   async function syncBalance() {
     try {
@@ -285,8 +285,8 @@ const transactions = [
   syncBalance();
 
   // Recarga panel toggle
-  const rechargeBtn = document.getElementById("btn-recharge");
-  const rechargePanel = document.getElementById("recharge-panel");
+  const rechargeBtn  = document.getElementById("btn-recharge");
+  const rechargePanel= document.getElementById("recharge-panel");
   rechargeBtn?.addEventListener("click", () => {
     if (rechargePanel) {
       rechargePanel.hidden = !rechargePanel.hidden;
@@ -309,15 +309,15 @@ const transactions = [
     const input = document.getElementById("custom-amount") as HTMLInputElement;
     const amount = parseFloat(input?.value || "0");
     if (!amount || amount < 10) {
-      window.dispatchEvent(new CustomEvent("SHOW_TOAST", { detail: { message: "Monto mínimo: $10", type: "error" } }));
+      window.dispatchEvent(new CustomEvent("SHOW_TOAST", { detail: { message: "Monto minimo: $10", type: "error" } }));
       return;
     }
     try {
-      await addTransaction({ type: "recharge", amount, description: "Recarga manual" });
+      await updateWalletBalance(amount);
       await syncBalance();
       if (rechargePanel) rechargePanel.hidden = true;
       window.dispatchEvent(new CustomEvent("SHOW_TOAST", { detail: { message: "Recarga exitosa: $" + amount.toFixed(2), type: "success" } }));
-    } catch (e) {
+    } catch {
       window.dispatchEvent(new CustomEvent("SHOW_TOAST", { detail: { message: "Error al recargar", type: "error" } }));
     }
   });
