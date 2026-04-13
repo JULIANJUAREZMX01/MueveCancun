@@ -251,6 +251,15 @@ const questions = {
                       title="Compartir ruta">
                 <span class="material-symbols-rounded" style="font-size:16px">share</span>
               </button>
+              <!-- Contribuir al sistema -->
+              <button class="btn-secondary btn-sm contribute-route-btn"
+                      data-journey='${safeJsonStringify(journey)}'
+                      data-origin="${escapeHtml(originStr)}"
+                      data-dest="${escapeHtml(destStr)}"
+                      title="Contribuir esta ruta al sistema"
+                      style="background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;border:none">
+                <span class="material-symbols-rounded" style="font-size:16px">volunteer_activism</span>
+              </button>
             </div>
           </div>
         </div>
@@ -415,6 +424,15 @@ const questions = {
             btn.addEventListener('click', () => {
               const j = JSON.parse((btn as HTMLElement).dataset.journey || '{}');
               shareJourney(j);
+            });
+          });
+
+          document.querySelectorAll('.contribute-route-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const j     = JSON.parse((btn as HTMLElement).dataset.journey || '{}');
+              const org   = (btn as HTMLElement).dataset.origin || '';
+              const dst   = (btn as HTMLElement).dataset.dest   || '';
+              window.dispatchEvent(new CustomEvent('CONTRIBUTE_ROUTE', { detail: { journey: j, origin: org, dest: dst } }));
             });
           });
 
