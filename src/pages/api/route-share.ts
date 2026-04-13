@@ -1,7 +1,6 @@
 /**
  * POST /api/route-share
- * Recibe una ruta trazada por el usuario y la registra como contribución
- * ciudadana en GitHub Issues.
+ * Contribucion ciudadana de rutas
  */
 import type { APIRoute } from "astro";
 
@@ -34,33 +33,29 @@ export const POST: APIRoute = async ({ request }) => {
     // Serializar tramos
     let legsMarkdown = "_No disponible_";
     if (Array.isArray(journey?.legs) && journey.legs.length > 0) {
-      legsMarkdown = journey.legs
-        .map((leg: any, i: number) => {
-          const stops: any[] = leg.paradas || leg.stops_info || leg.stops || [];
-          const stopsStr = stops.length > 0
-            ? stops.map((s: any) => String(s.nombre || s.name || s)).join(" → ")
-            : `${leg.origin_hub || "?"} → ${leg.dest_hub || "?"}`;
-          return `**Tramo ${i + 1}:** ${leg.name || "Ruta"} (${leg.transport_type || "?"})
-${stopsStr}`;
-        })
-        .join("
-
-");
+      const parts: string[] = journey.legs.map((leg: any, i: number) => {
+        const stops: any[] = leg.paradas || leg.stops_info || leg.stops || [];
+        const stopsStr = stops.length > 0
+          ? stops.map((s: any) => String(s.nombre || s.name || s)).join(" > ")
+          : String(leg.origin_hub || "?") + " > " + String(leg.dest_hub || "?");
+        return "**Tramo " + (i + 1) + ":** " + String(leg.name || "Ruta") + " (" + String(leg.transport_type || "?") + ")" + "\n" + stopsStr;
+      });
+      legsMarkdown = parts.join("\n\n");
     }
 
     const locationStr = userLocation
-      ? `[${userLocation.lat.toFixed(5)}, ${userLocation.lng.toFixed(5)}](https://maps.google.com?q=${userLocation.lat},${userLocation.lng})`
+      ? "[" + userLocation.lat.toFixed(5) + ", " + userLocation.lng.toFixed(5) + "](https://maps.google.com?q=" + userLocation.lat + "," + userLocation.lng + ")"
       : "No disponible";
 
-    const lines = [
+    const issueLines = [
       "## Ruta compartida por usuario",
       "",
-      `**Origen:** ${origin}`,
-      `**Destino:** ${dest}`,
-      `**Tarifa:** $${(journey?.total_price || 0).toFixed(2)} MXN`,
-      `**Duración estimada:** ${journey?.duration_minutes || "?"} min`,
-      `**Fecha/Hora:** ${timestamp || new Date().toISOString()}`,
-      `**Ubicación del usuario:** ${locationStr}`,
+      "**Origen:** " + origin,
+      "**Destino:** " + dest,
+      "**Tarifa:** $" + ((journey?.total_price || 0) as number).toFixed(2) + " MXN",
+      "**Duracion estimada:** " + String(journey?.duration_minutes || "?") + " min",
+      "**Fecha/Hora:** " + (timestamp || new Date().toISOString()),
+      "**Ubicacion del usuario:** " + locationStr,
       "",
       "---",
       "",
@@ -70,19 +65,18 @@ ${stopsStr}`;
       "---",
       "",
       "### Nota del usuario",
-      userNote ? `> ${userNote}` : "_Sin nota_",
+      userNote ? "> " + userNote : "_Sin nota_",
     ];
-    const issueBody = lines.join("
-");
-    const issueTitle = `[Ruta Ciudadana] ${origin} → ${dest} — ${new Date().toLocaleDateString("es-MX")}`;
+    const issueBody = issueLines.join("\n");
+    const issueTitle = "[Ruta Ciudadana] " + origin + " -> " + dest + " - " + new Date().toLocaleDateString("es-MX");
 
     if (token) {
       const ghRes = await fetch(
-        `https://api.github.com/repos/${owner}/${repoName}/issues`,
+        "https://api.github.com/repos/" + owner + "/" + repoName + "/issues",
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: "Bearer " + token,
             Accept: "application/vnd.github+json",
             "Content-Type": "application/json",
           },
@@ -99,7 +93,7 @@ ${stopsStr}`;
         return new Response(
           JSON.stringify({
             ok: true,
-            message: "¡Gracias por contribuir! Tu ruta fue registrada.",
+            message: "Tu ruta fue registrada.",
             issueNumber: issue.number,
             issueUrl: issue.html_url,
           }),
@@ -110,7 +104,7 @@ ${stopsStr}`;
     }
 
     return new Response(
-      JSON.stringify({ ok: true, message: "¡Gracias! Tu aportación fue registrada." }),
+      JSON.stringify({ ok: true, message: "Aportacion registrada." }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (err: any) {
