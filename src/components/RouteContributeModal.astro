@@ -1,0 +1,119 @@
+---
+/**
+ * RouteContributeModal.astro
+ * Modal para que el usuario agregue una nota antes de contribuir su ruta
+ * al sistema como dato ciudadano.
+ */
+---
+
+<!-- Modal oculto por defecto -->
+<div id="contribute-modal" class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4" role="dialog" aria-modal="true">
+  <!-- Backdrop -->
+  <div id="contribute-backdrop" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+
+  <!-- Panel -->
+  <div class="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-6 animate-slide-up">
+    <!-- Icono -->
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-2xl">🙌</div>
+      <div>
+        <h2 class="font-black text-lg text-slate-900 dark:text-white">Contribuir esta ruta</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Ayuda a mejorar MueveCancún</p>
+      </div>
+    </div>
+
+    <!-- Info de la ruta -->
+    <div id="contribute-route-info" class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 mb-4 text-sm text-slate-700 dark:text-slate-300 font-medium">
+    </div>
+
+    <!-- Nota del usuario -->
+    <div class="mb-4">
+      <label class="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2" for="contribute-note">
+        Tu nota (opcional)
+      </label>
+      <textarea
+        id="contribute-note"
+        rows="3"
+        maxlength="300"
+        placeholder="¿Algo que quieras agregar? Ej: 'Esta ruta no pasa los domingos', 'La tarifa cambió'..."
+        class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm p-3 text-slate-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+      ></textarea>
+    </div>
+
+    <!-- Aviso privacidad -->
+    <p class="text-[10px] text-slate-400 mb-5 leading-relaxed">
+      Al contribuir, acepta que los datos de la ruta (sin información personal) se usen para mejorar el sistema. No se guarda tu identidad.
+    </p>
+
+    <!-- Botones -->
+    <div class="flex gap-3">
+      <button id="contribute-cancel" class="flex-1 btn-secondary py-3 rounded-2xl font-black">
+        Cancelar
+      </button>
+      <button id="contribute-send" class="flex-2 btn-primary py-3 px-6 rounded-2xl font-black flex items-center justify-center gap-2">
+        <span class="material-symbols-rounded" style="font-size:18px">upload</span>
+        Enviar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { contributeRoute } from '../utils/shareRoute';
+  import { showToast } from '../utils/toast';
+
+  let pendingJourney: any = null;
+  let pendingOrigin  = '';
+  let pendingDest    = '';
+
+  function openModal(journey: any, origin: string, dest: string) {
+    pendingJourney = journey;
+    pendingOrigin  = origin;
+    pendingDest    = dest;
+
+    const leg   = journey?.legs?.[0];
+    const price = journey?.total_price ? `$${Number(journey.total_price).toFixed(2)}` : '?';
+    const dur   = journey?.duration_minutes ? `${journey.duration_minutes} min` : '';
+
+    const info = document.getElementById('contribute-route-info');
+    if (info) {
+      info.innerHTML = `
+        <div class="font-black text-base mb-1">🚌 ${leg?.name || 'Ruta'}</div>
+        <div class="text-slate-500 text-xs">${origin} → ${dest}</div>
+        <div class="flex gap-3 mt-2 text-xs">
+          <span class="font-bold text-primary-500">${price} MXN</span>
+          ${dur ? `<span class="text-slate-400">⏱️ ${dur}</span>` : ''}
+        </div>
+      `;
+    }
+
+    const note = document.getElementById('contribute-note') as HTMLTextAreaElement | null;
+    if (note) note.value = '';
+
+    document.getElementById('contribute-modal')?.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('contribute-modal')?.classList.add('hidden');
+    pendingJourney = null;
+  }
+
+  document.getElementById('contribute-backdrop')?.addEventListener('click', closeModal);
+  document.getElementById('contribute-cancel')?.addEventListener('click', closeModal);
+
+  document.getElementById('contribute-send')?.addEventListener('click', async () => {
+    if (!pendingJourney) return;
+    const note = (document.getElementById('contribute-note') as HTMLTextAreaElement)?.value || '';
+    const btn  = document.getElementById('contribute-send');
+    if (btn) { btn.setAttribute('disabled',''); btn.textContent = 'Enviando…'; }
+    await contributeRoute(pendingJourney, pendingOrigin, pendingDest, note, showToast);
+    if (btn) { btn.removeAttribute('disabled'); btn.innerHTML = '<span class="material-symbols-rounded" style="font-size:18px">upload</span> Enviar'; }
+    closeModal();
+  });
+
+  // Escuchar evento para abrir el modal
+  window.addEventListener('CONTRIBUTE_ROUTE', (e: any) => {
+    const { journey, origin, dest } = e.detail || {};
+    if (journey) openModal(journey, origin, dest);
+  });
+</script>

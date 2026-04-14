@@ -1,7 +1,6 @@
 ---
-import { getLangFromUrl, useTranslations } from '../utils/i18n';
-import Card from './ui/Card.astro';
-import Button from './ui/Button.astro';
+import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../utils/i18n';
+import { safeJsonStringify } from '../utils/utils';
 import Input from './ui/Input.astro';
 import Icon from './ui/Icon.astro';
 
@@ -26,11 +25,29 @@ const t = useTranslations(lang);
     <h3 id="results-title" class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">{t('calc.options')}</h3>
     <div id="results-container" class="grid grid-cols-1 gap-3 pb-10"></div>
   </div>
+
+  <div id="results-info" class="mt-8 hidden animate-fade-in">
+      <div class="flex items-center justify-between px-2 mb-4">
+          <span class="text-xxs font-black uppercase tracking-widest text-slate-400" id="results-count-label"></span>
+          <span class="badge-success font-mono" id="results-time-badge"></span>
+      </div>
+      <div id="best-result-area" class="space-y-4"></div>
+      <div id="results-container" class="mt-4 space-y-4"></div>
+  </div>
+
+  <datalist id="locations">
+    <option value="El Crucero Hub"></option>
+    <option value="ADO Centro / Terminal"></option>
+    <option value="Plaza Las Américas"></option>
+    <option value="Aeropuerto Terminal 2"></option>
+    <option value="Playa Delfines (El Mirador)"></option>
+  </datalist>
 </div>
 
 <script>
   import { WasmLoader } from "../utils/WasmLoader";
   import { initWasm } from "../lib/initWasm";
+  import { escapeHtml } from "../utils/utils";
 
   async function start() {
       const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
@@ -42,7 +59,7 @@ const t = useTranslations(lang);
 
       console.log("[RouteCalculator] Component starting...");
 
-      btn.onclick =('click', async () => {
+      btn.addEventListener('click', async () => {
           const oVal = originInput.value.trim();
           const dVal = destInput.value.trim();
           if (!oVal || !dVal) return;

@@ -37,14 +37,9 @@ jobs:
     steps:
       - name: Check if branch is fixable
         id: check
-        env:
-          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
-          RUN_URL: ${{ github.event.workflow_run.html_url }}
-          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
-          BRANCH="$HEAD_BRANCH"
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          CONCLUSION="${{ github.event.workflow_run.conclusion }}"
           echo "Branch: $BRANCH"
           echo "Conclusion: $CONCLUSION"
 
@@ -54,9 +49,9 @@ jobs:
 
           echo "should_fix=$SHOULD_FIX" >> "$GITHUB_OUTPUT"
           echo "head_branch=$BRANCH" >> "$GITHUB_OUTPUT"
-          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
-          echo "workflow_name=$WORKFLOW_NAME" >> "$GITHUB_OUTPUT"
-          echo "run_url=$RUN_URL" >> "$GITHUB_OUTPUT"
+          echo "head_sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          echo "workflow_name=${{ github.event.workflow_run.name }}" >> "$GITHUB_OUTPUT"
+          echo "run_url=${{ github.event.workflow_run.html_url }}" >> "$GITHUB_OUTPUT"
 
   fetch-logs-and-fix:
     name: Fetch Failed Logs → Jules Fix
@@ -66,18 +61,18 @@ jobs:
     steps:
       # Checkout the default branch only — trusted code.
       # The untrusted head SHA is never checked out; its diff is fetched via API below.
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
-      - name: Setup Node 22
-        uses: actions/setup-node@1d429da20474c46469af3ad516f8d16717f863b7
+      - name: Setup Node 24
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
-          node-version: "22"
+          node-version: "24"
 
       # Fetch the git diff of the failing commit via GitHub REST API (no code execution).
       # The diff is passed as plain text to Jules so it has full context of the changes.
       - name: Fetch commit diff via GitHub API
         id: fetch-diff
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const headSha = '${{ needs.detect-failure.outputs.head_sha }}';
@@ -106,7 +101,7 @@ jobs:
 
       - name: Fetch failed job logs
         id: fetch-logs
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const runId = ${{ github.event.workflow_run.id }};
@@ -162,7 +157,12 @@ jobs:
 
       - name: Post status comment (on PR if applicable)
         if: github.event.workflow_run.event == 'pull_request'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        env:
+          HEAD_BRANCH: ${{ needs.detect-failure.outputs.head_branch }}
+          WORKFLOW_NAME: ${{ needs.detect-failure.outputs.workflow_name }}
+          FAILED_JOB: ${{ steps.fetch-logs.outputs.failed_job_name }}
+          RUN_URL: ${{ needs.detect-failure.outputs.run_url }}
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
           HEAD_BRANCH: ${{ needs.detect-failure.outputs.head_branch }}
           WORKFLOW_NAME: ${{ needs.detect-failure.outputs.workflow_name }}
@@ -170,11 +170,10 @@ jobs:
           RUN_URL: ${{ needs.detect-failure.outputs.run_url }}
         with:
           script: |
-            const { HEAD_BRANCH, WORKFLOW_NAME, FAILED_JOB_NAME, RUN_URL } = process.env;
             const prs = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head: `${context.repo.owner}:${HEAD_BRANCH}`,
+              head: `${context.repo.owner}:${{ needs.detect-failure.outputs.head_branch }}`,
               state: 'open',
             });
             if (prs.data.length > 0) {
@@ -185,11 +184,11 @@ jobs:
                 body: [
                   '🤖 **Jules CI Fixer** fue invocado automáticamente.',
                   '',
-                  `> Workflow **${WORKFLOW_NAME}** falló en el job \`${FAILED_JOB_NAME}\`.`,
+                  `> Workflow **${{ needs.detect-failure.outputs.workflow_name }}** falló en el job \`${{ steps.fetch-logs.outputs.failed_job_name }}\`.`,
                   '',
                   'Jules está analizando los logs y preparando un fix. Un PR con la corrección aparecerá próximamente.',
                   '',
-                  `[Ver run fallido](${RUN_URL})`,
+                  `[Ver run fallido](${{ needs.detect-failure.outputs.run_url }})`,
                 ].join('\n'),
               });
             }

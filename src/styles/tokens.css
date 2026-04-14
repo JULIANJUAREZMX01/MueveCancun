@@ -1,37 +1,123 @@
+/* ═══════════════════════════════════════════════
+   MueveCancún — Design Tokens v3 "Caribe Urbano"
+   Fuente única de verdad para colores, espaciado,
+   tipografía, sombras y animaciones.
+   ═══════════════════════════════════════════════ */
+
 :root {
-  /* Colors - Enhanced Contrast */
-  --color-primary: #0284c7; /* Sky-600 (Darker for better visibility on Slate-50) */
-  --color-secondary: #ea580c; /* Orange-600 */
-  --color-accent: #0d9488; /* Teal-600 */
+  /* ── Colores primarios ── */
+  --teal:          #0d9488;
+  --teal-bright:   #14b8a6;
+  --teal-dark:     #0f766e;
+  --teal-light:    #ccfbf1;
+  --teal-xlight:   #f0fdfa;
 
-  /* Surface */
-  --surface-bg: #f8fafc; /* Slate-50 */
-  --surface-card: #ffffff;
-  --surface-elevated: #ffffff;
+  /* ── Acento / Alerta ── */
+  --sunset:        #f97316;
+  --sunset-light:  #ffedd5;
+  --coral:         #ef4444;
+  --coral-light:   #fee2e2;
+  --jungle:        #22c55e;
+  --jungle-light:  #dcfce7;
+  --turquoise:     #06b6d4;
+  --turquoise-light: #e0f2fe;
+  --amber:         #f59e0b;
+  --amber-light:   #fef3c7;
 
-  /* Text - High Contrast */
-  --text-primary: #020617; /* Slate-950 (True black-ish) */
-  --text-secondary: #334155; /* Slate-700 */
-  --text-tertiary: #64748b; /* Slate-500 */
+  /* ── Semánticos ── */
+  --color-primary:        var(--teal);
+  --color-primary-hover:  var(--teal-bright);
+  --color-primary-light:  var(--teal-light);
+  --color-accent:         var(--sunset);
+  --color-success:        var(--jungle);
+  --color-warning:        var(--amber);
+  --color-danger:         var(--coral);
+  --color-info:           var(--turquoise);
 
-  /* Border */
-  --border-light: #e2e8f0; /* Slate-200 (Darker for visibility) */
-  --border-medium: #cbd5e1; /* Slate-300 */
+  /* ── Superficies Light ── */
+  --surface-bg:        #f8fafc;
+  --surface-card:      #ffffff;
+  --surface-elevated:  #ffffff;
+  --surface-overlay:   rgba(0,0,0,0.45);
 
-  /* Dimensions */
-  --header-h: 3.5rem;
-  --bottom-nav-h: 4rem;
+  /* ── Texto Light (WCAG AA) ── */
+  --text-primary:   #0f172a;
+  --text-secondary: #334155;
+  --text-tertiary:  #64748b;
+  --text-inverse:   #ffffff;
+
+  /* ── Bordes ── */
+  --border-light:  #e2e8f0;
+  --border-medium: #cbd5e1;
+
+  /* ── Gradientes ── */
+  --gradient-primary: linear-gradient(135deg, var(--teal) 0%, var(--teal-bright) 100%);
+  --gradient-hero:    linear-gradient(160deg, #0f172a 0%, #0d3d38 50%, #0f766e 100%);
+  --gradient-card:    linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(13,148,136,0.06) 100%);
+
+  /* ── Glassmorphism ── */
+  --glass-bg:     rgba(255,255,255,0.88);
+  --glass-border: rgba(255,255,255,0.5);
+  --glass-shadow: 0 8px 32px rgba(0,0,0,0.08);
+
+  /* ── Sombras ── */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.04);
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.10);
+  --shadow-xl:  0 16px 48px rgba(0,0,0,0.12);
+  --shadow-teal: 0 4px 14px -2px rgba(13,148,136,0.35);
+  --shadow-teal-lg: 0 8px 24px -4px rgba(13,148,136,0.45);
+
+  /* ── Radios ── */
+  --r-xs:   6px;
+  --r-sm:   10px;
+  --r-md:   14px;
+  --r-lg:   20px;
+  --r-xl:   28px;
+  --r-2xl:  36px;
+  --r-full: 9999px;
+
+  /* ── Tipografía ── */
+  --font-sans:    "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Poppins", "Inter", sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  /* ── Layout ── */
+  --header-h:      56px;
+  --bottom-nav-h:  68px;
+  --sidebar-w:     72px;
+
+  /* ── Transiciones ── */
+  --ease:      cubic-bezier(0.4,0,0.2,1);
+  --ease-out:  cubic-bezier(0,0,0.2,1);
+  --ease-in:   cubic-bezier(0.4,0,1,1);
+  --ease-back: cubic-bezier(0.34,1.56,0.64,1);
+  --t-fast:    120ms;
+  --t-base:    220ms;
+  --t-slow:    380ms;
 }
 
-:global(.dark) {
-  --surface-bg: #020617; /* Slate-950 */
-  --surface-card: #0f172a; /* Slate-900 */
-  --surface-elevated: #1e293b; /* Slate-800 */
+/* ── Dark Mode ── */
+.dark {
+  --surface-bg:       #030712;
+  --surface-card:     #0f172a;
+  --surface-elevated: #1e293b;
 
-  --text-primary: #f8fafc;
+  --text-primary:   #f1f5f9;
   --text-secondary: #cbd5e1;
-  --text-tertiary: #94a3b8;
+  --text-tertiary:  #94a3b8;
+  --text-inverse:   #0f172a;
 
-  --border-light: #1e293b;
+  --border-light:  #1e293b;
   --border-medium: #334155;
+
+  --glass-bg:     rgba(15,23,42,0.90);
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-shadow: 0 8px 32px rgba(0,0,0,0.30);
+
+  --teal-light:  rgba(13,148,136,0.18);
+  --teal-xlight: rgba(13,148,136,0.08);
+  --sunset-light: rgba(249,115,22,0.15);
+  --jungle-light: rgba(34,197,94,0.15);
 }

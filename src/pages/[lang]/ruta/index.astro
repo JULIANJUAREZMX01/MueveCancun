@@ -1,0 +1,15 @@
+---
+export const prerender = true;
+import { getRelativeLocaleUrl } from '../../../utils/utils';
+
+export function getStaticPaths() {
+  return [
+    { params: { lang: "es" } },
+    { params: { lang: "en" } },
+  ];
+}
+
+const { lang } = Astro.params;
+return Astro.redirect(getRelativeLocaleUrl(lang, 'rutas'));
+---
+export const prerender = true;

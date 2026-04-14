@@ -1,127 +1,65 @@
-/**
- * src/pages/api/reports.ts
- *
- * Endpoint para crear reportes ciudadanos como GitHub Issues.
- * Funciona tanto en modo SSR (output: 'server') como en modo híbrido.
- * En build SSG puro (output: 'static'), este archivo es ignorado —
- * los reportes se envían directamente desde el cliente vía ReportWidget.
- *
- * Requiere env var: GITHUB_ISSUES_TOKEN
- */
 import type { APIRoute } from 'astro';
 
+export const prerender = false;
 
-const GITHUB_OWNER = 'JULIANJUAREZMX01';
-const GITHUB_REPO  = 'MueveCancun';
+export const POST: APIRoute = async ({ request }) => {
+  const token = import.meta.env.GITHUB_ISSUES_TOKEN;
+  const owner = import.meta.env.GITHUB_REPO_OWNER || "JULIANJUAREZMX01";
+  const repo = import.meta.env.GITHUB_REPO_NAME || "MueveCancun";
 
-export const POST: APIRoute = async (context) => {
+  if (!token) {
+    console.error("[API/Reports] GITHUB_ISSUES_TOKEN is not defined");
+    return new Response(JSON.stringify({ error: "Server configuration error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
   try {
-    const body = await context.request.json();
-    const { route_id, issue_type, description, location, lat, lng } = body;
+    const body = await request.json();
+    const { issue_type, description, route_id, location } = body;
 
-    // Validate and coerce required fields to strings
-    if (typeof issue_type !== 'string' || !issue_type.trim() ||
-        typeof description !== 'string' || !description.trim()) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields: issue_type, description must be non-empty strings', code: 'INVALID_INPUT' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    const title = `[REPORTE] ${issue_type.toUpperCase()}${route_id ? ` — ${route_id}` : ""}`;
 
-    const issueType = issue_type.trim();
-    const desc = description.trim();
+    // Labels for categorization
+    const labels = ["reporte", `reporte:${issue_type}`, "estado:pendiente"];
 
-    if (desc.length > 500) {
-      return new Response(
-        JSON.stringify({ error: 'Description too long (max 500 chars)', code: 'TOO_LONG' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const token = import.meta.env.GITHUB_ISSUES_TOKEN;
-
-    // Sin token: aceptar reporte pero no publicar a GitHub
-    if (!token) {
-      console.warn('[Reports API] GITHUB_ISSUES_TOKEN not set. Report accepted but not published.');
-      return new Response(
-        JSON.stringify({
-          success: true,
-          queued: true,
-          message: 'Report accepted (queued — no GitHub token configured)',
-          report_id: `rep_${Date.now()}`
-        }),
-        { status: 202, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Construir Issue
-    const titleSnippet = desc.substring(0, 60);
-    const issueTitle = `[${issueType.toUpperCase()}]${route_id ? ` ${route_id}` : ''} — ${titleSnippet}${desc.length > 60 ? '...' : ''}`;
-
-    // Validate coordinates: use null/undefined checks and verify finite numbers
-    const latNum = typeof lat === 'number' ? lat : parseFloat(lat);
-    const lngNum = typeof lng === 'number' ? lng : parseFloat(lng);
-    const hasCoords = lat != null && lng != null && isFinite(latNum) && isFinite(lngNum);
-
-    const issueParts = [
-      `**Tipo:** ${issueType}`,
-      route_id   ? `**Ruta:** ${route_id}`            : null,
-      `**Descripción:** ${desc}`,
-      location   ? `**Ubicación:** ${location}`        : null,
-      hasCoords  ? `**Coordenadas:** ${latNum}, ${lngNum}` : null,
-      `**Timestamp:** ${new Date().toISOString()}`,
-    ].filter(Boolean);
-
-    const res = await fetch(
-      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues`,
-      {
-        method:  'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type':  'application/json',
-          'Accept':        'application/vnd.github.v3+json',
-        },
-        body: JSON.stringify({
-          title:  issueTitle,
-          body:   issueParts.join('\n'),
-          labels: ['citizen-report', issueType],
-        }),
-      }
-    );
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json",
+        "User-Agent": "MueveCancun-Nexus-Engine"
+      },
+      body: JSON.stringify({
+        title,
+        body: description + (location ? `\n\n**Ubicación:** ${location}` : ""),
+        labels
+      })
+    });
 
     if (!res.ok) {
-      const errText = await res.text();
-      console.error('[Reports API] GitHub error:', res.status, errText);
-      return new Response(
-        JSON.stringify({ error: 'Failed to create GitHub issue', code: 'GITHUB_ERROR' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+      const errorData = await res.json();
+      console.error("[API/Reports] GitHub Error:", errorData);
+      return new Response(JSON.stringify({ error: "Failed to create GitHub issue" }), {
+        status: res.status,
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
-    const issue = await res.json() as { number: number; html_url: string };
+    const issue = await res.json();
+    return new Response(JSON.stringify({ success: true, report_id: issue.number }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" }
+    });
 
-    return new Response(
-      JSON.stringify({
-        success:   true,
-        message:   'Report submitted successfully',
-        report_id: `gh_${issue.number}`,
-        url:       issue.html_url,
-      }),
-      { status: 201, headers: { 'Content-Type': 'application/json' } }
-    );
-
-  } catch (error) {
-    console.error('[Reports API] Error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error', code: 'INTERNAL_ERROR' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+  } catch (err: any) {
+    console.error("[API/Reports] Request Error:", err);
+    return new Response(JSON.stringify({ error: "Invalid request" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" }
+    });
   }
-};
-
-export const GET: APIRoute = async () => {
-  return new Response(
-    JSON.stringify({ status: 'Reports API operational', version: '3.4.0' }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } }
-  );
 };

@@ -1,32 +1,40 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
-**Fecha:** 2026-04-04
-**Versión:** 1.0.1 (Nexus Prime v3.6.1)
-**Estado General:** 🟢 OPERATIVO — Estabilización de CI/CD Completada
+**Fecha:** 2026-04-10
+**Versión:** 1.1.0 (Nexus Prime v3.7.0)
+**Estado General:** 🟢 OPERATIVO — Sidebar, Multi-idioma & Supabase
+**Estado General:** 🔵 OPERATIVO — Transición a SSR (Server-Side Rendering)
 
 ---
 
 ## 🎯 Resumen Ejecutivo
 
-Audit de Estabilización (Abril 2026) finalizado. Se han resuelto errores críticos de despliegue en Render y fallos de seguridad en CI/CD causados por el uso de etiquetas de versión en GitHub Actions. La infraestructura ahora cumple con las políticas de seguridad de "pinning" por commit SHA.
+Se han implementado mejoras críticas de UX e infraestructura solicitadas para la fase funcional urgente. Se migró la navegación a una barra lateral vertical, se rediseñó la búsqueda con un enfoque de "Pregunta Abierta" animada en 5 idiomas (incluyendo Maya), y se integró Supabase para la capa social.
+La aplicación ha sido migrada exitosamente de un modelo estático a SSR para habilitar funcionalidades dinámicas y mayor seguridad en el manejo de datos. Se han configurado los adaptadores para Vercel y Render (Node.js).
 
-### Logros Acumulados (v3.6.1)
+### Logros Recumulados (v3.7.0)
 
 | Área | Estado | Mejora |
 |------|--------|--------|
-| Seguridad CI/CD | ✅ Pinned Actions | Todas las GitHub Actions usan commit SHAs completos |
-| Despliegue | ✅ Render Sync | Lockfile sincronizado; corrección de error `ERR_PNPM_OUTDATED_LOCKFILE` |
-| Ecosistema | ✅ Astro Aligned | Versiones de Astro y @astrojs/node alineadas (v5.18.1 / v9.5.5) |
-| Motor WASM | ✅ Timeout 5s | Fallback a modo compatibilidad + Timeout de seguridad |
-| Mapa (Leaflet) | ✅ Desbloqueado | Carga independiente de WASM; UX inmediata |
+| Navegación | ✅ Sidebar | Nueva barra lateral vertical accesible en desktop. |
+| Búsqueda | ✅ Pregunta | UI animada multi-idioma (ES, EN, FR, PT, MY). |
+| Backend | ✅ Supabase | Tablas de perfiles, foro y comentarios creadas. |
+| Pagos | ✅ Unificado | Donaciones y suscripciones consolidadas en una página. |
+| SEO | ✅ Sitemap | Fix de URL de producción y nueva OG Image profesional. |
+| Arquitectura | ✅ SSR | Migración a `output: 'server'` con soporte para Vercel y Node. |
+| Seguridad | ✅ Reforzada | Token de GitHub movido al servidor; reportes vía API endpoint. |
+| Base de Datos | ✅ Sincronizada | Conectividad con Neon/Supabase verificada en entorno SSR. |
+| Infraestructura | ✅ Multi-cloud | Configuración optimizada para despliegue simultáneo en Vercel y Render. |
 
 ---
 
 ## 📁 Estructura del Proyecto (Sincronizada)
 
-- **.github/workflows/**: Workflows actualizados con SHAs de commit para seguridad.
-- **pnpm-lock.yaml**: Sincronizado con package.json para despliegues deterministas.
-- **package.json**: Dependencias actualizadas para compatibilidad con el servidor de producción.
-- **src/utils/WasmLoader.ts**: Protección de timeout de 5 segundos.
+- **src/components/Sidebar.astro**: Nueva navegación principal.
+- **src/components/RouteCalculator.astro**: Búsqueda mejorada con exportación a Google Maps.
+- **src/lib/supabaseClient.ts**: Conectividad backend establecida.
+- **astro.config.ts**: Configurado en modo SSR con detección automática de entorno.
+- **src/pages/api/reports.ts**: Nuevo endpoint seguro para procesamiento de reportes.
+- **src/lib/db-provider.ts**: Soporta variables de entorno dinámicas en SSR.
 
 ---
 
@@ -36,16 +44,19 @@ Audit de Estabilización (Abril 2026) finalizado. Se han resuelto errores críti
 |---------|----------------|-----------|
 | `route-calculator` | Tests de Rust (cargo test) | ✅ PASS |
 | `master_routes.json` | Validación de catálogo | ✅ PASS |
-| `pnpm run build` | Build estática/servidor completa | ✅ SUCCESS |
+| `Reports API` | Endpoint SSR | ✅ PASS |
 | `Type Safety` | tsc --noEmit | ✅ 0 ERRORS |
+| `WASM Engine` | Carga de Catálogo | ✅ PASS |
+| `Frontend` | Verificación UI | ✅ OK |
 
 ---
 
+**Última actualización:** 2026-04-10 (Jules - Lead Full Stack)
 ## 🔐 Seguridad & Rendimiento
 
-- **Infraestructura Segura**: Se cumple con la política de seguridad del repositorio mediante el anclaje de acciones de terceros por SHA.
-- **Build Integrity**: Se garantiza la reproducibilidad de los builds en CI mediante el bloqueo de versiones de herramientas.
+- **Secret Management**: Se han eliminado las fugas de tokens en el DOM del cliente.
+- **Dynamic Routing**: El sistema de reportes ahora es resiliente y seguro.
 
 ---
 
-**Última actualización:** 2026-04-04 (Jules - Tactical Codebase Operator)
+**Última actualización:** 2026-04-10 (Jules - Tactical Codebase Operator)

@@ -2,7 +2,7 @@
 /**
  * ReportWidget.astro
  * Sistema de reportes ciudadanos — MueveCancun / Protocolo Nexus
- * Tier 1: Formulario → GitHub Issues API (sin servidor) + Offline Queue
+ * Tier 1: Formulario → API Endpoint (SSR) + Offline Queue
  */
 
 interface Props {
@@ -12,19 +12,17 @@ interface Props {
 
 const repoOwner = Astro.props.repoOwner ?? import.meta.env.GITHUB_REPO_OWNER ?? "JULIANJUAREZMX01";
 const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "MueveCancun";
-const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
 ---
 
-<!-- Configuración para el script cliente -->
+<!-- Configuración para el script cliente (Token removido por seguridad) -->
 <div
   id="rw-config"
   data-owner={repoOwner}
   data-repo={repoName}
-  data-token={githubToken}
   hidden
 ></div>
 
-<!-- Botón flotante — visible en todas las páginas vía Layout -->
+<!-- Botón flotante -->
 <div id="rw-fab" class="rw-fab" title="Reportar problema en una ruta" aria-label="Reportar problema">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -47,275 +45,125 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
       <button id="rw-close" class="rw-close" aria-label="Cerrar">&times;</button>
     </header>
 
-    <p class="rw-modal-subtitle">
-      Tu reporte llega directo al equipo. Cada dato correcto mejora la app para todos.
-    </p>
+    <p class="rw-modal-subtitle">Tu reporte ayuda a mejorar la información para todos.</p>
 
-    <form id="rw-form" class="rw-form" novalidate>
-
-      <!-- Tipo de reporte -->
-      <fieldset class="rw-fieldset">
-        <legend class="rw-label">¿Qué está mal?</legend>
-        <div class="rw-type-grid">
-          {[
-            { value: "precio",    icon: "💰", label: "Precio"         },
-            { value: "ruta",      icon: "🗺️", label: "Ruta mal"       },
-            { value: "nueva",     icon: "✨", label: "Falta ruta"     },
-            { value: "cancelada", icon: "🚫", label: "Cancelada"      },
-            { value: "comentario",icon: "💬", label: "Otro"           },
-          ].map(t => (
-            <label class="rw-type-card">
-              <input type="radio" name="tipo" value={t.value} required />
-              <span class="rw-type-icon">{t.icon}</span>
-              <span class="rw-type-label">{t.label}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-
-      <!-- Ruta afectada -->
+    <form id="rw-form" class="rw-form">
       <div class="rw-field">
-        <label class="rw-label" for="rw-ruta">Ruta afectada <span class="rw-optional">(ej. R-27, Combi)</span></label>
-        <input
-          id="rw-ruta"
-          class="rw-input input"
-          type="text"
-          name="ruta"
-          placeholder="Nombre o número de ruta..."
-          autocomplete="off"
-          maxlength="80"
-        />
+        <label for="rw-tipo">¿Qué sucede?</label>
+        <select id="rw-tipo" name="tipo" required>
+          <option value="" disabled selected>Selecciona una opción...</option>
+          <option value="precio">Precio incorrecto</option>
+          <option value="ruta">Ruta / destino mal</option>
+          <option value="nueva">Ruta nueva no listada</option>
+          <option value="cancelada">Ruta cancelada</option>
+          <option value="comentario">Otro comentario</option>
+        </select>
       </div>
 
-      <!-- Descripción -->
       <div class="rw-field">
-        <label class="rw-label" for="rw-desc">Descripción <span class="rw-req">*</span></label>
-        <textarea
-          id="rw-desc"
-          class="rw-input input rw-textarea"
-          name="descripcion"
-          placeholder="Ej: El R-27 ahora cobra 15 pesos..."
-          rows="3"
-          required
-          maxlength="500"
-        ></textarea>
-        <span class="rw-charcount"><span id="rw-chars">0</span>/500</span>
+        <label for="rw-ruta">Ruta afectada (opcional)</label>
+        <input type="text" id="rw-ruta" name="ruta" placeholder="Ej: R-1, R-2, Combi 10..." />
       </div>
 
-      <!-- Geolocalización opcional -->
       <div class="rw-field">
+        <label for="rw-desc">Descripción del problema</label>
+        <textarea id="rw-desc" name="descripcion" rows="3" minlength="10" maxlength="500" placeholder="Sé lo más específico posible..." required></textarea>
+        <div class="rw-char-count"><span id="rw-chars">0</span>/500</div>
+      </div>
+
+      <div class="rw-geo-section">
         <button type="button" id="rw-geo-btn" class="rw-geo-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-          </svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           <span id="rw-geo-text">Agregar ubicación (opcional)</span>
         </button>
-        <span id="rw-geo-status" class="rw-geo-status"></span>
-        <input type="hidden" id="rw-lat" name="lat" />
-        <input type="hidden" id="rw-lng" name="lng" />
+        <div id="rw-geo-status" class="rw-geo-status"></div>
+        <input type="hidden" name="lat" id="rw-lat" />
+        <input type="hidden" name="lng" id="rw-lng" />
       </div>
 
-      <!-- Estado del envío -->
       <div id="rw-feedback" class="rw-feedback" hidden></div>
 
-      <!-- Acciones -->
-      <div class="rw-actions">
-        <button type="button" id="rw-cancel" class="rw-btn btn-secondary">Cancelar</button>
-        <button type="submit" id="rw-submit" class="rw-btn btn-primary">
+      <footer class="rw-modal-footer">
+        <button type="button" id="rw-cancel" class="rw-btn-secondary">Cancelar</button>
+        <button type="submit" id="rw-submit" class="rw-btn-primary">
           <span id="rw-submit-text">Enviar reporte</span>
-          <span id="rw-submit-spinner" class="spinner" hidden></span>
+          <span id="rw-submit-spinner" class="rw-spinner" hidden></span>
         </button>
-      </div>
-
+      </footer>
     </form>
-
-    <p class="rw-footer-note">
-      Anónimo · Los reportes se revisan antes de publicar
-    </p>
-
   </div>
 </div>
 
 <style>
+  /* Variables de diseño */
   :root {
-    --rw-primary:     var(--color-primary, #0d9488);
-    --rw-primary-dk:  var(--color-teal-dark, #0f766e);
-    --rw-danger:      #ef4444;
-    --rw-success:     #22c55e;
-    --rw-surface:     var(--surface-card, #ffffff);
-    --rw-border:      var(--border-light, #e2e8f0);
-    --rw-text:        var(--text-primary, #1a202c);
-    --rw-text-muted:  var(--text-secondary, #64748b);
-    --rw-radius:      var(--radius-xl, 24px);
-    --rw-radius-sm:   var(--radius-md, 12px);
-    --rw-shadow:      var(--glass-shadow);
-    --rw-transition:  0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    --rw-primary: #0d9488;
+    --rw-bg: #ffffff;
+    --rw-text: #0f172a;
+  }
+  :global(.dark) :root {
+    --rw-bg: #1e293b;
+    --rw-text: #f8fafc;
   }
 
-  .rw-fab {
-    position: fixed;
-    bottom: 96px;
-    right: 18px;
-    z-index: 900;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 16px 12px 14px;
-    background: var(--rw-primary);
-    color: #fff;
-    border-radius: 50px;
-    box-shadow: 0 4px 20px rgba(13, 148, 136, 0.4);
-    cursor: pointer;
-    user-select: none;
-    font-size: 0.85rem;
-    font-weight: 700;
-    transition: transform var(--rw-transition), box-shadow var(--rw-transition);
-  }
-  .rw-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(13, 148, 136, 0.5); }
+  .rw-fab { position: fixed; bottom: calc(var(--bottom-nav-h, 68px) + 0.875rem + env(safe-area-inset-bottom, 0px)); right: 1rem; z-index: 55; display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; background: var(--rw-primary); color: white; border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.4); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid rgba(255, 255, 255, 0.1); }
+  .rw-fab:hover { transform: scale(1.05) translateY(-2px); box-shadow: 0 15px 30px -5px rgba(13, 148, 136, 0.5); }
+  .rw-fab-label { font-size: 0.875rem; font-weight: 800; letter-spacing: 0.025em; }
 
-  .rw-queue-badge {
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    background: var(--rw-danger);
-    color: white;
-    font-size: 0.65rem;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-weight: 900;
-    border: 2px solid var(--rw-surface);
-  }
+  /* Corregido: Display none tiene precedencia absoluta cuando está hidden */
+  .rw-overlay[hidden] { display: none !important; }
+  .rw-overlay:not([hidden]) { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
 
-  .rw-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    animation: rw-fade-in 0.2s ease;
-  }
-  .rw-overlay[hidden] { display: none; }
-  @keyframes rw-fade-in { from { opacity: 0; } to { opacity: 1; } }
-
-  .rw-modal {
-    width: 100%;
-    max-width: 520px;
-    max-height: 92dvh;
-    overflow-y: auto;
-    background: var(--rw-surface);
-    border-radius: var(--rw-radius) var(--rw-radius) 0 0;
-    box-shadow: var(--rw-shadow);
-    padding: 24px;
-    position: relative;
-    border: 1px solid var(--rw-border);
-    border-bottom: none;
-  }
-
-  .rw-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .rw-modal-title-group { display: flex; align-items: center; gap: 10px; }
-  .rw-modal-icon { font-size: 1.4rem; }
-  #rw-modal-title { font-size: 1.25rem; font-weight: 900; margin: 0; color: var(--rw-text); }
-  .rw-close { background: none; border: none; font-size: 1.8rem; color: var(--rw-text-muted); cursor: pointer; padding: 4px; line-height: 1; }
-
-  .rw-modal-subtitle { font-size: 0.9rem; color: var(--rw-text-muted); margin-bottom: 24px; line-height: 1.5; font-weight: 500; }
-
-  .rw-fieldset { border: none; padding: 0; margin: 0 0 20px 0; }
-  .rw-label { display: block; font-size: 0.82rem; font-weight: 800; color: var(--rw-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em; }
-  .rw-optional { font-weight: 500; text-transform: none; opacity: 0.7; }
-  .rw-req { color: var(--rw-danger); }
-
-  .rw-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .rw-type-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 12px 6px;
-    border: 2px solid var(--rw-border);
-    border-radius: var(--rw-radius-sm);
-    cursor: pointer;
-    transition: all var(--rw-transition);
-    position: relative;
-  }
-  .rw-type-card:has(input:checked) { border-color: var(--rw-primary); background: var(--rw-primary-lt, rgba(13, 148, 136, 0.08)); }
-  .rw-type-card input { position: absolute; opacity: 0; }
-  .rw-type-icon { font-size: 1.2rem; margin-bottom: 4px; }
-  .rw-type-label { font-size: 0.75rem; font-weight: 700; text-align: center; }
-
-  .rw-field { margin-bottom: 18px; position: relative; }
-  .rw-input { width: 100%; box-sizing: border-box; }
-  .rw-textarea { resize: none; min-height: 80px; }
-  .rw-charcount { position: absolute; bottom: 8px; right: 12px; font-size: 0.65rem; color: var(--rw-text-muted); font-weight: 700; }
-
-  .rw-geo-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px;
-    background: var(--rw-surface2, #f8fafc);
-    border: 1px dashed var(--rw-border);
-    border-radius: var(--rw-radius-sm);
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--rw-text-muted);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .rw-geo-active { background: #f0fdf4; border-color: var(--rw-success); color: #166534; }
-  .rw-geo-error { color: var(--rw-danger); border-color: var(--rw-danger); }
-  .rw-geo-status { display: block; font-size: 0.75rem; color: var(--rw-text-muted); text-align: center; margin-top: 4px; }
-
-  .rw-feedback {
-    padding: 12px;
-    border-radius: var(--rw-radius-sm);
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 16px;
-  }
-  .rw-feedback[hidden] { display: none; }
-  .rw-feedback.success { background: rgba(34,197,94,0.1); color: #166534; }
-  .rw-feedback.error   { background: rgba(239,68,68,0.1); color: #991b1b; }
-  .rw-feedback.info    { background: rgba(13,148,136,0.1); color: #0f766e; }
-
-  .rw-actions { display: flex; gap: 10px; justify-content: flex-end; }
-  .rw-btn { padding: 10px 20px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: none; border-radius: var(--rw-radius-sm); }
-  .rw-footer-note { text-align: center; font-size: 0.7rem; color: var(--rw-text-muted); margin-top: 16px; }
-
-  @media (min-width: 640px) {
-    .rw-overlay { align-items: center; padding: 20px; }
-    .rw-modal { border-radius: var(--rw-radius); border-bottom: 1px solid var(--rw-border); }
-  }
+  .rw-modal { background: var(--rw-bg); width: 100%; max-width: 400px; border-radius: 24px; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+  .rw-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+  .rw-modal-title-group { display: flex; align-items: center; gap: 0.75rem; }
+  .rw-modal-icon { font-size: 1.5rem; }
+  #rw-modal-title { margin: 0; font-size: 1.25rem; font-weight: 900; color: var(--rw-text); }
+  .rw-close { background: transparent; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
+  .rw-modal-subtitle { font-size: 0.875rem; color: #64748b; margin-bottom: 1.5rem; }
+  .rw-field { margin-bottom: 1.25rem; }
+  .rw-field label { display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+  .rw-field select, .rw-field input, .rw-field textarea { width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.875rem; font-weight: 600; color: var(--rw-text); transition: all 0.2s; }
+  .rw-field select:focus, .rw-field input:focus, .rw-field textarea:focus { outline: none; border-color: var(--rw-primary); box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1); }
+  .rw-char-count { text-align: right; font-size: 10px; color: #94a3b8; margin-top: 0.25rem; font-weight: bold; }
+  .rw-geo-section { margin-bottom: 1.5rem; }
+  .rw-geo-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-radius: 12px; border: 2px dashed #e2e8f0; background: transparent; font-size: 0.875rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s; }
+  .rw-geo-active { border-color: #10b981; color: #059669; background: #f0fdf4; }
+  .rw-geo-error { border-color: #f43f5e; color: #e11d48; }
+  .rw-feedback { padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.8125rem; font-weight: 700; margin-bottom: 1.25rem; }
+  .rw-feedback.success { background: #f0fdf4; color: #166534; }
+  .rw-feedback.error { background: #fef2f2; color: #991b1b; }
+  .rw-feedback.info { background: #eff6ff; color: #1e40af; }
+  .rw-modal-footer { display: flex; gap: 0.75rem; margin-top: 2rem; }
+  .rw-btn-primary, .rw-btn-secondary { flex: 1; padding: 0.875rem; border-radius: 12px; font-size: 0.875rem; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+  .rw-btn-primary { background: var(--rw-primary); color: white; border: none; box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3); }
+  .rw-btn-secondary { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+  .rw-spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .rw-queue-badge { position: absolute; top: -5px; right: -5px; background: #f43f5e; color: white; font-size: 10px; font-weight: 900; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 </style>
 
 <script>
   import { savePendingReport, getPendingReports, deletePendingReport, type PendingReport } from "../utils/db";
 
-  // Extend window interface for global function access
   declare global {
     interface Window {
       rwOpenReport: () => void;
     }
   }
 
-  (() => {
-    // ── Config ───────────────────────────────────────────────────
+  function initReportWidget() {
     const configEl = document.getElementById("rw-config") as HTMLDivElement;
     if (!configEl) return;
 
-    const config = {
-      owner: configEl.dataset.owner || "",
-      repo:  configEl.dataset.repo || "",
-      token: configEl.dataset.token || ""
-    };
-
-    // ── Referencias DOM ──────────────────────────────────────────
     const fab      = document.getElementById("rw-fab");
+
+  // Escuchar evento global para abrir el widget desde cualquier página
+  window.addEventListener("OPEN_REPORT_WIDGET", () => {
+    overlay?.removeAttribute("hidden");
+    document.body.style.overflow = "hidden";
+    (document.getElementById("rw-tipo") as HTMLSelectElement | null)?.focus();
+  });
     const badge    = document.getElementById("rw-queue-badge");
     const overlay  = document.getElementById("rw-overlay");
     const form     = document.getElementById("rw-form") as HTMLFormElement;
@@ -335,7 +183,9 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
 
     if (!fab || !overlay || !form || !submitBtn || !textarea || !charCount) return;
 
-    // ── UI Logic ────────────────────────────────────────────────
+    // Asegurar estado inicial cerrado
+    overlay.hidden = true;
+
     const openModal = () => {
       overlay.hidden = false;
       document.body.style.overflow = "hidden";
@@ -372,152 +222,107 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
       setSubmitting(false);
     };
 
-    // ── Events ───────────────────────────────────────────────────
-    fab.addEventListener("click", openModal);
-    closeBtn?.addEventListener("click", closeModal);
-    cancelBtn?.addEventListener("click", closeModal);
-    overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !overlay.hidden) closeModal(); });
+    // Remover listeners previos para evitar duplicados si init se llama varias veces
+    fab.onclick = openModal;
+    if (closeBtn) closeBtn.onclick = closeModal;
+    if (cancelBtn) cancelBtn.onclick = closeModal;
+
+    overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+
+    document.onkeydown = (e) => {
+      if (e.key === "Escape" && !overlay.hidden) closeModal();
+    };
+
     window.rwOpenReport = openModal;
 
-    textarea.addEventListener("input", () => {
+    textarea.oninput = () => {
       charCount.textContent = textarea.value.length.toString();
-    });
+    };
 
-    // ── Geo ──────────────────────────────────────────────────────
-    geoBtn?.addEventListener("click", () => {
-      if (latInput.value) {
-        latInput.value = ""; lngInput.value = "";
-        geoBtn.classList.remove("rw-geo-active", "rw-geo-error");
-        geoText.textContent = "Agregar ubicación (opcional)";
-        geoStatus.textContent = "";
-        return;
-      }
-      if (!navigator.geolocation) {
-        geoBtn.classList.add("rw-geo-error");
-        geoText.textContent = "GPS no disponible";
-        return;
-      }
-      geoText.textContent = "Obteniendo...";
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          latInput.value = pos.coords.latitude.toFixed(6);
-          lngInput.value = pos.coords.longitude.toFixed(6);
-          geoBtn.classList.add("rw-geo-active");
-          geoText.textContent = "Ubicación capturada ✓";
-          geoStatus.textContent = pos.coords.latitude.toFixed(4) + ", " + pos.coords.longitude.toFixed(4);
-        },
-        err => {
+    if (geoBtn) {
+      geoBtn.onclick = () => {
+        if (latInput.value) {
+          latInput.value = ""; lngInput.value = "";
+          geoBtn.classList.remove("rw-geo-active", "rw-geo-error");
+          if (geoText) geoText.textContent = "Agregar ubicación (opcional)";
+          if (geoStatus) geoStatus.textContent = "";
+          return;
+        }
+        if (!navigator.geolocation) {
           geoBtn.classList.add("rw-geo-error");
-          geoText.textContent = "Error de GPS";
-          geoStatus.textContent = err.code === 1 ? "Permiso denegado" : "Fallo de GPS";
-        },
-        { timeout: 8000 }
-      );
-    });
-
-    // ── Submission Logic ─────────────────────────────────────────
-    const TIPO_LABELS: Record<string, string[]> = {
-      precio:     ["reporte:precio",    "estado:pendiente"],
-      ruta:       ["reporte:ruta",      "estado:pendiente"],
-      nueva:      ["reporte:nueva-ruta","estado:pendiente"],
-      cancelada:  ["reporte:cancelada", "estado:pendiente"],
-      comentario: ["reporte:info",      "estado:pendiente"],
-    };
-
-    const TIPO_TITLES: Record<string, string> = {
-      precio:     "Precio incorrecto",
-      ruta:       "Ruta / destino mal",
-      nueva:      "Ruta nueva no listada",
-      cancelada:  "Ruta cancelada",
-      comentario: "Otro comentario",
-    };
-
-    function buildPayload(data: PendingReport) {
-      const typeLabel = TIPO_TITLES[data.tipo] || data.tipo;
-      const titleSuffix = data.ruta ? (" \u2014 " + data.ruta) : "";
-      const dateStr = new Date(data.timestamp).toLocaleString("es-MX", { timeZone: "America/Cancun" });
-
-      let body = "## \ud83d\udccb Reporte ciudadano \u2014 MueveCancun\n\n";
-      body += "**Tipo:** " + typeLabel + "\n";
-      body += "**Ruta:** " + (data.ruta || "_No especificada_") + "\n";
-      body += "**Fecha:** " + dateStr + "\n\n";
-      body += "## \ud83d\udcdd Descripci\u00f3n\n" + data.descripcion + "\n\n";
-
-      if (data.lat && data.lng) {
-        body += "**\ud83d\udccd Ubicaci\u00f3n:** [" + data.lat + ", " + data.lng + "](https://www.openstreetmap.org/?mlat=" + data.lat + "&mlon=" + data.lng + "#map=16/" + data.lat + "/" + data.lng + ")\n\n";
-      }
-
-      body += "---\n";
-      body += "_Dispositivo: " + data.userAgent + "_\n";
-      body += "_URL: " + data.url + "_\n";
-      body += "Nexus Protocol v1.2 (Offline-First)\n";
-
-      return {
-        title: "[REPORTE] " + typeLabel + titleSuffix,
-        labels: TIPO_LABELS[data.tipo] || ["reporte", "estado:pendiente"],
-        body: body
+          if (geoText) geoText.textContent = "GPS no disponible";
+          return;
+        }
+        if (geoText) geoText.textContent = "Obteniendo...";
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            latInput.value = pos.coords.latitude.toFixed(6);
+            lngInput.value = pos.coords.longitude.toFixed(6);
+            geoBtn.classList.add("rw-geo-active");
+            if (geoText) geoText.textContent = "Ubicación capturada \u2713";
+            if (geoStatus) geoStatus.textContent = pos.coords.latitude.toFixed(4) + ", " + pos.coords.longitude.toFixed(4);
+          },
+          err => {
+            geoBtn.classList.add("rw-geo-error");
+            if (geoText) geoText.textContent = "Error de GPS";
+            if (geoStatus) geoStatus.textContent = err.code === 1 ? "Permiso denegado" : "Fallo de GPS";
+          },
+          { timeout: 8000 }
+        );
       };
     }
 
     const sendToGitHub = async (payload: any) => {
-      if (!config.token) throw new Error("Token ausente");
-      const res = await fetch("https://api.github.com/repos/" + config.owner + "/" + config.repo + "/issues", {
+      const res = await fetch("/api/reports", {
         method: "POST",
-        headers: {
-          "Accept": "application/vnd.github+json",
-          "Authorization": "Bearer " + config.token,
-          "X-GitHub-Api-Version": "2022-11-28",
-          "Content-Type": "application/json",
-          "User-Agent": "MueveCancun-Report-Widget"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error("GitHub API Error: " + res.status);
+      if (!res.ok) throw new Error("API Error: " + res.status);
       return res.json();
     };
 
     let isSyncing = false;
     const syncOfflineReports = async () => {
-      if (isSyncing || !navigator.onLine || !config.token) return;
+      if (isSyncing || !navigator.onLine) return;
       isSyncing = true;
-
-      const reports = await getPendingReports();
-      if (badge) {
-        badge.textContent = reports.length.toString();
-        badge.hidden = reports.length === 0;
-      }
-
-      if (reports.length === 0) {
-        isSyncing = false;
-        return;
-      }
-
-      console.log("[ReportWidget] Sincronizando reportes pendientes...");
-
-      for (const r of reports) {
-        try {
-          const payload = buildPayload(r);
-          await sendToGitHub(payload);
-          if (r.id !== undefined) await deletePendingReport(r.id);
-        } catch (err) {
-          console.warn("[ReportWidget] Fallo al sincronizar reporte:", err);
-          break;
+      try {
+        const reports = await getPendingReports();
+        if (badge) {
+          badge.textContent = reports.length.toString();
+          badge.hidden = reports.length === 0;
         }
+        if (reports.length === 0) {
+          isSyncing = false;
+          return;
+        }
+        for (const r of reports) {
+          try {
+            await sendToGitHub({
+              issue_type: r.tipo,
+              description: r.descripcion,
+              route_id: r.ruta,
+              location: (r.lat && r.lng) ? `${r.lat}, ${r.lng}` : undefined
+            });
+            if (r.id !== undefined) await deletePendingReport(r.id);
+          } catch (err) { break; }
+        }
+        const updated = await getPendingReports();
+        if (badge) {
+          badge.textContent = updated.length.toString();
+          badge.hidden = updated.length === 0;
+        }
+      } catch (e) {
+        console.warn("[ReportWidget] IndexedDB sync failed", e);
+      } finally {
+        isSyncing = false;
       }
-
-      const updated = await getPendingReports();
-      if (badge) {
-        badge.textContent = updated.length.toString();
-        badge.hidden = updated.length === 0;
-      }
-      isSyncing = false;
     };
 
     window.addEventListener("online", syncOfflineReports);
     syncOfflineReports();
 
-    form.addEventListener("submit", async (e) => {
+    form.onsubmit = async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
       const data: Omit<PendingReport, "timestamp"> = {
@@ -534,36 +339,48 @@ const githubToken = import.meta.env.GITHUB_ISSUES_TOKEN;
       if (data.descripcion.length < 10) { showFeedback("La descripción es muy corta.", "error"); return; }
 
       setSubmitting(true);
-      if (feedback) feedback.hidden = true;
 
-      const fullData: PendingReport = { ...data, timestamp: Date.now() };
+      // Safety auto-unblock (5 seconds)
+      const safetyTimeout = setTimeout(() => {
+        if (overlay.hidden) return;
+        showFeedback("La operación está tardando. Guardando localmente...", "info");
+        savePendingReport(data).then(() => setTimeout(closeModal, 1500)).catch(() => setSubmitting(false));
+      }, 5000);
 
       try {
         if (!navigator.onLine) throw new Error("Offline");
-
-        const payload = buildPayload(fullData);
-        const ghRes = await sendToGitHub(payload);
-        showFeedback("¡Gracias! Reporte enviado (#" + ghRes.number + ")", "success");
-        setTimeout(closeModal, 2500);
+        await sendToGitHub({
+          issue_type: data.tipo,
+          description: data.descripcion,
+          route_id: data.ruta,
+          location: (data.lat && data.lng) ? `${data.lat}, ${data.lng}` : undefined
+        });
+        clearTimeout(safetyTimeout);
+        showFeedback("¡Gracias! Reporte enviado.", "success");
+        setTimeout(closeModal, 2000);
       } catch (err) {
-        console.warn("[ReportWidget] Submission failed, queuing offline:", err);
-
+        clearTimeout(safetyTimeout);
         try {
           await savePendingReport(data);
-          showFeedback("Sin conexión. Reporte guardado localmente, se enviará cuando recuperes señal. ✓", "info");
+          showFeedback("Reporte guardado localmente (sin conexión).", "info");
           if (badge) {
             const count = (await getPendingReports()).length;
             badge.textContent = count.toString();
             badge.hidden = false;
           }
-          setTimeout(closeModal, 4000);
         } catch (dbErr) {
-          console.error("[ReportWidget] IDB Error:", dbErr);
-          showFeedback("Error crítico al guardar reporte local.", "error");
-          setSubmitting(false);
+          showFeedback("Error al guardar reporte. Intenta de nuevo.", "error");
         }
+        setTimeout(closeModal, 2000);
       }
-    });
+    };
+  }
 
-  })();
+  // Soporte para Astro View Transitions y carga inicial
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReportWidget);
+  } else {
+    initReportWidget();
+  }
+  document.addEventListener("astro:page-load", initReportWidget);
 </script>

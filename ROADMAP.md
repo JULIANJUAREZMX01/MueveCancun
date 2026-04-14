@@ -5,7 +5,7 @@
 
 ---
 
-## Estado Actual — v3.3 ✅
+## Estado Actual — v3.7 ✅
 
 El núcleo funcional está terminado y desplegado:
 
@@ -71,7 +71,7 @@ El núcleo funcional está terminado y desplegado:
 ### Tareas
 - [ ] Selector de ciudad en la UI (Cancún / Playa del Carmen / Tulum).
 - [ ] Catálogos independientes por ciudad (`master_routes_playa.json`, etc.).
-- [ ] Integrar analytics real (Plausible o GA4) en reemplazo del stub actual.
+- [x] Integrar analytics real (Plausible o GA4) en reemplazo del stub actual.
 - [ ] Dashboard de métricas: rutas más buscadas, hubs más usados.
 - [ ] Política de privacidad bilingüe actualizada.
 - [ ] Despliegue blue-green en Render para releases sin downtime.
