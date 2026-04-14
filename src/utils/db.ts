@@ -124,7 +124,7 @@ export const initDB = async (): Promise<IDBPDatabase> => {
       }
     },
   });
-  const db = await _dbPromise;
+  const db = await dbPromise;
   const balance = await db.get('wallet-status', 'current_balance');
   if (balance === undefined) {
     const key = await getCryptoKey(db);
@@ -232,15 +232,10 @@ export const savePendingReport = async (report: Omit<PendingReport, 'id' | 'time
   await tx.done;
 };
 
-export const savePendingReport = async (r: any) => {
-  const db = await initDB();
-  return db.put('pending-reports', { ...r, timestamp: Date.now() });
-};
-
 export const getPendingReports = async () => (await initDB()).getAll('pending-reports');
 export const deletePendingReport = async (id: number) => (await initDB()).delete('pending-reports', id);
 
 export const __resetDBPromise = () => {
-  _dbPromise = null;
+  dbPromise = null;
   _cryptoKey = null;
 };
