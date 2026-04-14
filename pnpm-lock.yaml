@@ -23,16 +23,7 @@ importers:
         version: 4.0.17
       '@astrojs/tailwind':
         specifier: ^5.1.0
-        version: 5.1.5(astro@5.18.1(@types/node@24.12.0)(@vercel/functions@3.4.3)(jiti@2.6.1)(rollup@4.60.1)(typescript@5.9.3)(yaml@2.8.2))(tailwindcss@3.4.19(yaml@2.8.2))
-      '@astrojs/vercel':
-        specifier: ^9.0.5
-        version: 9.0.5(astro@5.18.1(@types/node@24.12.0)(@vercel/functions@3.4.3)(jiti@2.6.1)(rollup@4.60.1)(typescript@5.9.3)(yaml@2.8.2))(rollup@4.60.1)
-      '@neondatabase/serverless':
-        specifier: ^1.0.2
-        version: 1.0.2
-      '@supabase/supabase-js':
-        specifier: ^2.101.1
-        version: 2.103.0
+        version: 5.1.5(astro@5.18.1(@types/node@24.12.0)(@vercel/functions@3.4.3)(jiti@2.6.1)(rollup@4.59.0)(typescript@5.9.3)(yaml@2.8.2))(tailwindcss@3.4.19(yaml@2.8.2))
       '@tailwindcss/typography':
         specifier: ^0.5.10
         version: 0.5.19(tailwindcss@3.4.19(yaml@2.8.2))
@@ -93,7 +84,7 @@ importers:
     optionalDependencies:
       '@rollup/rollup-linux-x64-gnu':
         specifier: ^4.57.1
-        version: 4.60.1
+        version: 4.59.0
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.6
@@ -1060,8 +1051,8 @@ packages:
     cpu: [s390x]
     os: [linux]
 
-  '@rollup/rollup-linux-x64-gnu@4.60.1':
-    resolution: {integrity: sha512-77PpsFQUCOiZR9+LQEFg9GClyfkNXj1MP6wRnzYs0EeWbPcHs02AXu4xuUbM1zhwn3wqaizle3AEYg5aeoohhg==}
+  '@rollup/rollup-linux-x64-gnu@4.59.0':
+    resolution: {integrity: sha512-3AHmtQq/ppNuUspKAlvA8HtLybkDflkMuLK4DPo77DfthRb71V84/c4MlWJXixZz4uruIH4uaa07IqoAkG64fg==}
     cpu: [x64]
     os: [linux]
 
@@ -5049,7 +5040,7 @@ snapshots:
   '@rollup/rollup-linux-s390x-gnu@4.60.1':
     optional: true
 
-  '@rollup/rollup-linux-x64-gnu@4.60.1':
+  '@rollup/rollup-linux-x64-gnu@4.59.0':
     optional: true
 
   '@rollup/rollup-linux-x64-musl@4.60.1':

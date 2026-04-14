@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: Get branch name
         id: branch_name
-        uses: tj-actions/branch-names@dde14ac574a8b9b1cedc59a1cf312788af43d8d8 # v8
+        uses: tj-actions/branch-names@6871f53176ad61624f978536bbf089c574dc19a2 # v8.0.1
 
   create_neon_branch:
     name: "Crear branch Neon para PR #${{ github.event.number }}"
@@ -47,10 +47,9 @@ jobs:
 
       - name: Calcular fecha de expiración (2 semanas)
         run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
-
-      - name: Crear Neon Branch
-        id: create_branch
-        uses: neondatabase/create-branch-action@fb620d43d4c565abaf088b848a4e28e5c4ea4d9c # v6
+      - name: Create Neon Branch
+        id: create_neon_branch
+        uses: neondatabase/create-branch-action@153375631fc0f99cf0113e0cef877850452e6ca2 # v6.0.0
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
           branch_name: preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}
@@ -137,8 +136,8 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     steps:
-      - name: Eliminar Neon Branch
-        uses: neondatabase/delete-branch-action@4468d825d5a88ef4012f1705a82f02ec3072f776 # v3
+      - name: Delete Neon Branch
+        uses: neondatabase/delete-branch-action@f76e64adf2bfc40935a6027026d24ac78a3072e6 # v3.0.0
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
           branch: preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}
