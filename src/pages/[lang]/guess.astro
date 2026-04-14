@@ -13,6 +13,7 @@ export function getStaticPaths() {
 const { lang } = Astro.params;
 const title = lang === 'es' ? "Adivina Dónde Estoy" : "Guess Where I Am";
 ---
+export const prerender = true;
 
 <MainLayout title={title}>
     <div class="game-container animate-fade-in">

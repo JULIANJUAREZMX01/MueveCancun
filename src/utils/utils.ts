@@ -1,7 +1,8 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { getDistance as getDistanceKm } from "./geometry";
-import type { RouteData } from "../types";
+import type { RouteData, Stop } from "../types";
+import { SpatialHash } from "./SpatialHash";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -125,6 +126,8 @@ export function normalizeString(str: string): string {
  */
 // Module-level cache so repeated calls (e.g., retries) don't re-fetch the catalog.
 let _catalogCache: RouteData[] | null = null;
+let _spatialIndex: SpatialHash<Stop> | null = null;
+let _uniqueStops: Stop[] = [];
 
 export async function getClosestLandmark(lat: number, lng: number) {
     try {
@@ -133,19 +136,60 @@ export async function getClosestLandmark(lat: number, lng: number) {
             if (!response.ok) throw new Error(`Failed to load routes: ${response.statusText}`);
             const data = await response.json();
             _catalogCache = data.rutas || [];
+
+            _spatialIndex = new SpatialHash<Stop>(0.01);
+            _uniqueStops = [];
+            const seenStops = new Set<string>();
+
+            for (const ruta of _catalogCache) {
+                for (const parada of ruta.paradas || []) {
+                    const pLat = parada.lat ?? parada.latitude;
+                    const pLng = parada.lng ?? parada.longitude ?? parada.lon;
+
+                    if (pLat == null || pLng == null) continue;
+
+                    const stopName = (parada.nombre || 'Unknown').trim();
+                    const stopKey = `${stopName}|${pLat}|${pLng}`;
+                    if (!seenStops.has(stopKey)) {
+                        seenStops.add(stopKey);
+                        const normalizedStop = { ...parada, nombre: stopName, lat: pLat, lng: pLng };
+                        _spatialIndex.insert(pLat, pLng, normalizedStop);
+                        _uniqueStops.push(normalizedStop);
+                    }
+                }
+            }
         }
 
         let closest = null;
         let minDistKm = Infinity;
-        for (const ruta of _catalogCache) {
-            for (const parada of ruta.paradas || []) {
-                const distKm = getDistanceKm(lat, lng, parada.lat, parada.lng);
+
+        // 1. Try Spatial Hash for O(1) average case
+        if (_spatialIndex) {
+            const candidates = _spatialIndex.query(lat, lng);
+            for (const point of candidates) {
+                const distKm = getDistanceKm(lat, lng, point.lat, point.lng);
+                if (distKm < minDistKm) {
+                    minDistKm = distKm;
+                    closest = point.data;
+                }
+            }
+        }
+
+        // 2. Fallback to global search over unique stops if no candidates found
+        // or to guarantee correctness if minDistKm is still large.
+        // With 0.01 degree cells (~1.1km), a 3x3 search area guarantees the nearest
+        // point if found within ~1.1km. If minDistKm > 1.0, we scan all to be sure.
+        if (minDistKm > 1.0) {
+            for (const parada of _uniqueStops) {
+                // parada in _uniqueStops is already normalized with lat/lng
+                const distKm = getDistanceKm(lat, lng, parada.lat!, parada.lng!);
                 if (distKm < minDistKm) {
                     minDistKm = distKm;
                     closest = parada;
                 }
             }
         }
+
         return closest;
     } catch (e) {
         console.error("Error loading catalog for landmark lookup", e);

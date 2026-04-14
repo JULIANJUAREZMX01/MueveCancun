@@ -1,61 +1,83 @@
 ---
-import { getRelativeLocaleUrl } from "astro:i18n";
 /*
- * GRAFFITI WARRIOR: Interactive Map (Leaflet)
- * Strictly Static. Vanilla JS. View Transitions Lifecycle.
+ * InteractiveMap.astro — Mapa Leaflet para MueveCancún
+ * Corregido: escucha SHOW_ROUTE_ON_MAP, drawRoute compatible con WASM output,
+ *            botón de compartir ruta, feedback visual de trazado.
  */
 ---
 
 <div class="map-wrapper" transition:persist>
-  <div id="map-container" class="w-full relative overflow-hidden" style="height: calc(100dvh - var(--header-h) - var(--bottom-nav-h, 0px));">
-      <!-- Fallback / Loading -->
-      <div id="map-fallback" class="absolute inset-0 bg-slate-100 flex items-center justify-center z-0">
-          <div class="flex flex-col items-center gap-3">
-              <div class="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Cargando Mapa...</p>
-          </div>
-      </div>
+  <div id="map-container" class="map-container-fill">
 
-      <!-- Hint -->
-      <div id="tap-hint" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-          <div class="bg-slate-900/80 backdrop-blur text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-tighter flex items-center gap-2 shadow-xl border border-white/10">
-              <span class="animate-bounce">👆</span> Toca cualquier punto para ver paradas
-          </div>
+    <!-- Fallback / Loading -->
+    <div id="map-fallback" class="absolute inset-0 bg-slate-100 dark:bg-slate-900 flex items-center justify-center z-20">
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Cargando Mapa…</p>
       </div>
+    </div>
 
-      <!-- Map Instance -->
-      <div id="map" class="w-full h-full z-10"></div>
-
-      <!-- Controls Overlay -->
-      <div class="absolute right-4 bottom-24 md:bottom-8 z-30 flex flex-col gap-2">
-          <button id="gps-center-btn" class="w-12 h-12 bg-white rounded-2xl shadow-xl flex items-center justify-center text-slate-600 hover:text-primary-500 transition-all active:scale-90 outline-none border border-slate-100" aria-label="Centrar en mi ubicación">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          </button>
-          <div class="graffiti-tooltip">Mi Ubicación</div>
+    <!-- Ruta activa — banner superior -->
+    <div id="route-banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none max-w-[90vw]">
+      <div class="bg-slate-900/90 backdrop-blur text-white px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-tight flex items-center gap-2 shadow-xl border border-white/10">
+        <span id="route-banner-text">Ruta trazada</span>
+        <button id="route-clear-btn" class="pointer-events-auto ml-2 bg-white/10 hover:bg-white/20 rounded-full px-2 py-0.5 text-[10px]" aria-label="Limpiar ruta">✕</button>
       </div>
+    </div>
+
+    <!-- Hint -->
+    <div id="tap-hint" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+      <div class="bg-slate-900/80 backdrop-blur text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-tighter flex items-center gap-2 shadow-xl border border-white/10">
+        <span class="animate-bounce">👆</span> Toca cualquier punto para ver paradas
+      </div>
+    </div>
+
+    <!-- Map Instance -->
+    <div id="map" id="map" style="position:absolute;inset:0;z-index:10;"></div>
+
+    <!-- Controls Overlay -->
+    <div class="absolute right-4 bottom-24 md:bottom-8 z-30 flex flex-col gap-2">
+
+      <!-- GPS -->
+      <button id="gps-center-btn"
+        class="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl shadow-xl flex items-center justify-center text-slate-600 hover:text-primary-500 transition-all active:scale-90 outline-none border border-slate-100 dark:border-slate-700"
+        aria-label="Centrar en mi ubicación">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+      </button>
+
+      <!-- Compartir ruta (oculto hasta que haya ruta trazada) -->
+      <button id="share-route-btn"
+        class="hidden w-12 h-12 bg-primary-500 rounded-2xl shadow-xl flex items-center justify-center text-white transition-all active:scale-90 outline-none"
+        aria-label="Compartir ruta">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+      </button>
+
+      <div class="graffiti-tooltip">Mi Ubicación</div>
+    </div>
   </div>
 </div>
 
 <script>
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { showToast } from "../utils/toast";
+  import { loadLeaflet } from "../utils/leafletLoader";
 
   let map: any = null;
   let layerGroup: any = null;
   let stopMarkersLayer: any = null;
-  let coordinatesDB: Map<string, [number, number]> = new Map();
+  let activeJourney: any = null;
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
 
   function escapeHtml(unsafe: string) {
-      return unsafe
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-  }
-
-  function safeUrl(name: string) {
-      return encodeURIComponent(name);
+    return String(unsafe)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
   function drawRoute(mapInstance: any, journey: any, currentLayerGroup: any, coords: Map<string, [number, number]>) {
@@ -82,259 +104,336 @@ import { getRelativeLocaleUrl } from "astro:i18n";
               newLayers.push(poly);
               polylineCoords.push(...legCoords);
           }
-      });
+        }
+        return null;
+      }).filter(Boolean) as [number, number][];
 
-      const lg = (window as any).L.layerGroup(newLayers).addTo(mapInstance);
-      if (polylineCoords.length > 0) {
-          mapInstance.fitBounds(polylineCoords, { padding: [40, 40] });
+      if (coords.length >= 2) {
+        const poly = L.polyline(coords, { color, weight: 6, opacity: 0.85, lineJoin: "round" });
+        layers.push(poly);
+        allCoords.push(...coords);
+
+        // Markers de inicio/fin del tramo
+        if (coords[0])
+          layers.push(L.circleMarker(coords[0], { radius: 7, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2 })
+            .bindPopup(`<b>${escapeHtml(leg.origin_hub || "Inicio")}</b>`));
+        const last = coords[coords.length - 1];
+        if (last)
+          layers.push(L.circleMarker(last, { radius: 7, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2 })
+            .bindPopup(`<b>${escapeHtml(leg.dest_hub || "Fin")}</b>`));
       }
-      return lg;
+    });
+
+    if (!layers.length) return null;
+
+    const lg = L.layerGroup(layers).addTo(mapInstance);
+    if (allCoords.length > 0) {
+      mapInstance.fitBounds(allCoords, { padding: [48, 48], maxZoom: 16 });
+    }
+    return lg;
   }
+
+  // ── Inicialización del mapa ───────────────────────────────────────────────────
 
   async function initMap() {
     if (map) return;
 
-    const container = document.getElementById('map');
+    const container = document.getElementById("map");
     if (!container) return;
 
-    // Load dependencies from global scope (assumes Leaflet is in MainLayout head)
+    // Cargar Leaflet via loader dedicado
+    try {
+      await loadLeaflet();
+    } catch (err) {
+      console.error("[Map] No se pudo cargar Leaflet:", err);
+      return;
+    }
     if (!(window as any).L) {
-        console.warn("[Map] Leaflet not found in window");
-        return;
+      console.warn("[Map] Leaflet no disponible tras carga");
+      return;
     }
 
+    const L = (window as any).L;
     await coordinatesStore.init();
-    coordinatesDB = coordinatesStore.getAll();
+    const coordsDB = coordinatesStore.getAll?.() ?? coordinatesStore.getDB() ?? new Map();
 
-    // Cancun Center
-    map = (window as any).L.map('map', {
-        center: [21.1619, -86.8515],
-        zoom: 13,
-        zoomControl: false,
-        attributionControl: false
+    // Crear mapa centrado en Cancún
+    map = L.map("map", {
+      center: [21.1619, -86.8515],
+      zoom: 13,
+      zoomControl: false,
+      attributionControl: false,
     });
 
-    // CartoDB Voyager (No labels for cleaner look, or standard for refs)
-    (window as any).L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+      maxZoom: 19,
+      attribution: "© CartoDB",
     }).addTo(map);
 
-    layerGroup = (window as any).L.layerGroup().addTo(map);
+    layerGroup = L.layerGroup().addTo(map);
 
-    // Initial check for pending routes
-    const pendingRoute = localStorage.getItem('pending_route');
-    if (pendingRoute) {
-        try {
-            const data = JSON.parse(pendingRoute);
-            const newLg = drawRoute(map, data, layerGroup, coordinatesDB);
-            if (newLg) layerGroup = newLg;
-            localStorage.removeItem('pending_route');
-        } catch (e) {
-            console.error("Error parsing pending route", e);
-        }
-    }
+    // ── Cargar paradas en el mapa ──────────────────────────────────────────
+    const allStops = coordsDB instanceof Map
+      ? Array.from(coordsDB.entries())
+      : Object.entries(coordsDB);
 
-    // --- Draw all stops as markers ---
-    const allStops = Array.from(coordinatesDB.entries());
+    const markerLayers: any[] = [];
+    const hubs = ["plaza las americas", "crucero", "downtown", "aeropuerto", "ado", "walmart"];
 
-    if (allStops.length > 0 && allStops.length <= 200) {
-        const newLayers: any[] = [];
-        allStops.forEach(([key, coords]) => {
-            const displayName = coordinatesStore.getOriginalName(key) || key;
-            const isHub = (window as any).__PREFERRED_HUBS?.some((h: string) => displayName.includes(h)) ?? false;
-
-            const marker = (window as any).L.circleMarker(coords, {
-                radius: isHub ? 8 : 5,
-                fillColor: isHub ? '#F97316' : '#0EA5E9',
-                color: '#FFFFFF',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.9
-            }).bindPopup(`
-                <div class="p-1 min-w-[160px]">
-                    <p class="font-black text-slate-900 text-sm mb-1">${escapeHtml(displayName)}</p>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">${isHub ? '🔀 Hub de conexión' : '📍 Parada'}</p>
-                    <div class="flex flex-col gap-1">
-                        <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action w-full text-xs bg-orange-500 text-white rounded-lg py-1.5 font-bold">🟠 Salgo de aquí</button>
-                        <button data-stop-name="${escapeHtml(displayName)}" data-action="dest" class="js-map-stop-action w-full text-xs bg-sky-500 text-white rounded-lg py-1.5 font-bold">🔵 Voy aquí</button>
-                        <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action w-full text-xs bg-slate-800 text-white rounded-lg py-1.5 font-bold">Ver rutas</button>
-                    </div>
-                </div>
-            `);
-            newLayers.push(marker);
-        });
-
-        if (newLayers.length > 0) {
-            stopMarkersLayer = (window as any).L.layerGroup(newLayers).addTo(map);
-            const allCoords = allStops.map(([, c]) => c);
-            setTimeout(() => map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 14 }), 100);
-        }
-    } else if (allStops.length > 200) {
-        console.warn(`[Map] ${allStops.length} stops — using cluster-free optimized view (zoom to see stops)`);
-        const allCoords = allStops.map(([, c]) => c);
-        setTimeout(() => map.fitBounds(allCoords, { padding: [50, 50], maxZoom: 13 }), 100);
-    }
-
-    // --- Map click ---
-    map.on('click', (e: any) => {
-        const { lat, lng } = e.latlng;
-        const result = coordinatesStore.findNearestWithDistance(lat, lng);
-
-        if (!result || result.distanceKm > 0.8) {
-            return;
-        }
-
-        (window as any).L.popup()
-            .setLatLng([
-                coordinatesDB.get(result.name.toLowerCase().trim())?.[0] ?? lat,
-                coordinatesDB.get(result.name.toLowerCase().trim())?.[1] ?? lng,
-            ])
-            .setContent(`
-                <div class="p-1 min-w-[170px]">
-                    <p class="font-black text-slate-900 text-sm mb-1">${escapeHtml(result.name)}</p>
-                    <p class="text-[10px] text-slate-400 mb-2">${(result.distanceKm * 1000).toFixed(0)} m</p>
-                    <div class="flex flex-col gap-1">
-                        <button data-stop-name="${escapeHtml(result.name)}" data-action="origin" class="js-map-stop-action w-full text-xs bg-orange-500 text-white rounded-lg py-1.5 font-bold">🟠 Salgo de aquí</button>
-                        <button data-stop-name="${escapeHtml(result.name)}" data-action="dest" class="js-map-stop-action w-full text-xs bg-sky-500 text-white rounded-lg py-1.5 font-bold">🔵 Voy aquí</button>
-                        <button data-stop-name="${escapeHtml(result.name)}" data-action="routes" class="js-map-stop-action w-full text-xs bg-slate-800 text-white rounded-lg py-1.5 font-bold">Ver rutas</button>
-                    </div>
-                </div>
-            `)
-            .openOn(map);
+    allStops.forEach(([key, coords]: any) => {
+      const displayName = coordinatesStore.getOriginalName?.(key) || key;
+      const isHub = hubs.some(h => String(key).toLowerCase().includes(h));
+      markerLayers.push(
+        L.circleMarker(coords, {
+          radius: isHub ? 9 : 5,
+          fillColor: isHub ? "#F97316" : "#0EA5E9",
+          color: "#FFFFFF",
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.9,
+        }).bindPopup(`
+          <div style="min-width:160px;padding:4px">
+            <p style="font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px">${escapeHtml(displayName)}</p>
+            <p style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
+            </div>
+          </div>
+        `)
+      );
     });
 
-    // Final measure to prevent small square
-    setTimeout(() => {
-        map.invalidateSize();
-    }, 500);
+    if (markerLayers.length) {
+      stopMarkersLayer = L.layerGroup(markerLayers).addTo(map);
+      const coords = allStops.map(([, c]: any) => c);
+      setTimeout(() => map.fitBounds(coords, { padding: [50, 50], maxZoom: 14 }), 200);
+    }
+
+    // ── Ocultar fallback ────────────────────────────────────────────────────
+    const fallback = document.getElementById("map-fallback");
+    if (fallback) fallback.style.display = "none";
+
+    // ── Tap en mapa → parada más cercana ──────────────────────────────────
+    map.on("click", (e: any) => {
+      const { lat, lng } = e.latlng;
+      const result = coordinatesStore.findNearestWithDistance?.(lat, lng);
+      if (!result || result.distanceKm > 0.8) return;
+
+      const c = (coordsDB instanceof Map ? coordsDB.get(result.name.toLowerCase().trim()) : coordsDB[result.name.toLowerCase().trim()]) || [lat, lng];
+      L.popup()
+        .setLatLng(c as any)
+        .setContent(`
+          <div style="min-width:170px;padding:4px">
+            <p style="font-weight:900;color:#0f172a;font-size:13px;margin:0 0 2px">${escapeHtml(result.name)}</p>
+            <p style="font-size:10px;color:#94a3b8;margin:0 0 8px">${(result.distanceKm * 1000).toFixed(0)} m</p>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <button data-stop-name="${escapeHtml(result.name)}" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name="${escapeHtml(result.name)}" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name="${escapeHtml(result.name)}" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
+            </div>
+          </div>
+        `)
+        .openOn(map);
+    });
+
+    // ── Escuchar evento SHOW_ROUTE_ON_MAP desde RouteCalculator ──────────
+    window.addEventListener("SHOW_ROUTE_ON_MAP", (e: any) => {
+      const journey = e.detail?.journey;
+      if (!journey) return;
+
+      activeJourney = journey;
+      const newLg = drawRoute(map, journey, layerGroup, coordsDB as any);
+      if (newLg) {
+        layerGroup = newLg;
+        // Mostrar banner con nombre de ruta
+        const banner = document.getElementById("route-banner");
+        const bannerText = document.getElementById("route-banner-text");
+        const shareBtn = document.getElementById("share-route-btn");
+        if (banner) banner.classList.remove("hidden");
+        if (bannerText) {
+          const leg = journey.legs?.[0];
+          bannerText.textContent = leg?.name
+            ? `🚌 ${leg.name}`
+            : "Ruta trazada";
+        }
+        if (shareBtn) shareBtn.classList.remove("hidden");
+        showToast("Ruta trazada en el mapa ✅", "success");
+      } else {
+        showToast("No se pudieron obtener las coordenadas de la ruta", "warning");
+      }
+    });
+
+    // ── Limpiar ruta al pulsar ✕ ──────────────────────────────────────────
+    document.getElementById("route-clear-btn")?.addEventListener("click", () => {
+      if (layerGroup) { map.removeLayer(layerGroup); layerGroup = L.layerGroup().addTo(map); }
+      activeJourney = null;
+      document.getElementById("route-banner")?.classList.add("hidden");
+      document.getElementById("share-route-btn")?.classList.add("hidden");
+    });
+
+    // ── Compartir ruta ────────────────────────────────────────────────────
+    document.getElementById("share-route-btn")?.addEventListener("click", async () => {
+      if (!activeJourney) return;
+      const leg = activeJourney.legs?.[0];
+      const origin = leg?.origin_hub || leg?.paradas?.[0]?.nombre || "?";
+      const dest   = leg?.dest_hub   || leg?.paradas?.[leg?.paradas?.length - 1]?.nombre || "?";
+      const price  = activeJourney.total_price ? `$${Number(activeJourney.total_price).toFixed(2)}` : "";
+
+      const shareText = [
+        `🚌 MueveCancún — Ruta encontrada`,
+        `📍 ${origin} → ${dest}`,
+        price ? `💰 Tarifa: ${price}` : "",
+        `🗺️ Ver en el mapa: ${window.location.href}`,
+        ``,
+        `#MueveCancún #TransporteCancún`,
+      ].filter(Boolean).join("\n");
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: "MueveCancún", text: shareText, url: window.location.href });
+          showToast("Ruta compartida ✅", "success");
+        } catch (_) { /* cancelado */ }
+      } else {
+        await navigator.clipboard.writeText(shareText);
+        showToast("Ruta copiada al portapapeles 📋", "success");
+      }
+    });
+
+    // ── Acción de ruta pendiente (desde localStorage) ──────────────────
+    const pendingRoute = localStorage.getItem("pending_route");
+    if (pendingRoute) {
+      try {
+        const data = JSON.parse(pendingRoute);
+        const newLg = drawRoute(map, data, layerGroup, coordsDB as any);
+        if (newLg) layerGroup = newLg;
+        localStorage.removeItem("pending_route");
+      } catch (_) {}
+    }
+
+    setTimeout(() => map.invalidateSize(), 600);
   }
+
+  // ── Handlers de acción (popup botones) ──────────────────────────────────
 
   function handleMapAction(e: any) {
-      const btn = e.target?.closest('.js-map-stop-action');
-      if (!btn) return;
+    const btn = (e.target as HTMLElement)?.closest(".js-map-stop-action") as HTMLElement | null;
+    if (!btn) return;
+    const name   = btn.dataset.stopName;
+    const action = btn.dataset.action;
+    if (!name) return;
 
-      const name = btn.dataset.stopName;
-      const action = btn.dataset.action;
-
-      if (!name) return;
-
-      if (action === 'origin') {
-          window.dispatchEvent(new CustomEvent('MAP_SET_STOP', { detail: { type: 'origin', name } }));
-          showToast(`Origen: ${name}`, 'success');
-          map?.closePopup();
-      } else if (action === 'dest') {
-          window.dispatchEvent(new CustomEvent('MAP_SET_STOP', { detail: { type: 'dest', name } }));
-          showToast(`Destino: ${name}`, 'success');
-          map?.closePopup();
-      } else if (action === 'routes') {
-          const currentLang = document.documentElement.lang || "es";
-          window.location.href = `/${currentLang}/rutas?search=${safeUrl(name)}`;
-      }
+    if (action === "origin") {
+      window.dispatchEvent(new CustomEvent("MAP_SET_STOP", { detail: { type: "origin", name } }));
+      showToast(`Origen: ${name}`, "success");
+      map?.closePopup();
+    } else if (action === "dest") {
+      window.dispatchEvent(new CustomEvent("MAP_SET_STOP", { detail: { type: "dest", name } }));
+      showToast(`Destino: ${name}`, "success");
+      map?.closePopup();
+    } else if (action === "routes") {
+      const lang = document.documentElement.lang || "es";
+      window.location.href = `/${lang}/rutas?search=${safeUrl(name)}`;
+    }
   }
 
-  function scheduleInit() {
-      const mapEl = document.getElementById('map-container');
-      if (!mapEl || mapEl.dataset.initialized) {
-          if (map) map.invalidateSize();
-          return;
-      }
-      mapEl.dataset.initialized = 'true';
-      initMap();
-      setupGPS();
-  }
+  // ── GPS ───────────────────────────────────────────────────────────────────
 
   function setupGPS() {
-      const btn = document.getElementById('gps-center-btn');
-      if (!btn) return;
-
-      btn.addEventListener('click', () => {
-          if (!navigator.geolocation) return;
-          btn.classList.add('animate-pulse', 'text-primary-500');
-
-          navigator.geolocation.getCurrentPosition(pos => {
-              btn.classList.remove('animate-pulse', 'text-primary-500');
-              const { latitude, longitude } = pos.coords;
-              if (map) {
-                  map.setView([latitude, longitude], 16);
-                  (window as any).L.marker([latitude, longitude], {
-                      icon: (window as any).L.divIcon({
-                          className: 'user-location-marker',
-                          html: '<div class="pulse-ring"></div><div class="dot"></div>',
-                          iconSize: [24, 24]
-                      })
-                  }).addTo(map);
-              }
-          }, () => {
-              btn.classList.remove('animate-pulse', 'text-primary-500');
-              showToast("No se pudo obtener tu ubicación", "warning");
-          });
-      });
+    const btn = document.getElementById("gps-center-btn");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      if (!navigator.geolocation) return;
+      btn.classList.add("animate-pulse", "text-primary-500");
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          btn.classList.remove("animate-pulse", "text-primary-500");
+          const { latitude, longitude } = pos.coords;
+          if (map) {
+            map.setView([latitude, longitude], 16);
+            const L = (window as any).L;
+            L.marker([latitude, longitude], {
+              icon: L.divIcon({ className: "user-location-marker", html: "<div class=\"pulse-ring\"></div><div class=\"dot\"></div>", iconSize: [24, 24] }),
+            }).addTo(map);
+          }
+        },
+        () => {
+          btn.classList.remove("animate-pulse", "text-primary-500");
+          showToast("No se pudo obtener tu ubicación", "warning");
+        }
+      );
+    });
   }
 
-  // Lifecycle
-  document.addEventListener('astro:page-load', scheduleInit);
-  document.addEventListener('click', handleMapAction);
+  // ── Lifecycle ────────────────────────────────────────────────────────────
 
-  document.addEventListener('astro:before-swap', () => {
-      if (map) {
-          map.remove();
-          map = null;
-      }
-      const mapEl = document.getElementById('map-container');
-      if (mapEl) delete mapEl.dataset.initialized;
+  function scheduleInit() {
+    const mapEl = document.getElementById("map-container");
+    if (!mapEl || mapEl.dataset.initialized) {
+      if (map) map.invalidateSize();
+      return;
+    }
+    mapEl.dataset.initialized = "true";
+    initMap();
+    setupGPS();
+  }
+
+  document.addEventListener("astro:page-load", scheduleInit);
+  document.addEventListener("click", handleMapAction);
+
+  document.addEventListener("astro:before-swap", () => {
+    if (map) { map.remove(); map = null; }
+    const mapEl = document.getElementById("map-container");
+    if (mapEl) delete mapEl.dataset.initialized;
   });
 
-  // Initial Run
-  if (document.readyState === 'complete') {
-      scheduleInit();
-  } else {
-      window.addEventListener('load', scheduleInit);
-  }
+  if (document.readyState === "complete") scheduleInit();
+  else window.addEventListener("load", scheduleInit);
 </script>
 
 <style>
   .graffiti-tooltip {
-    position: absolute;
-    margin: 0;
-    padding: 6px 12px;
-    background: #1e293b;
-    color: white;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 700;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
+    position: absolute; margin: 0; padding: 6px 12px;
+    background: #1e293b; color: white; border-radius: 8px;
+    font-size: 11px; font-weight: 700; white-space: nowrap;
+    pointer-events: none; opacity: 0; transition: opacity 0.2s;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    z-index: 50;
-    right: 60px;
-    top: 12px;
+    z-index: 50; right: 60px; top: 12px;
   }
-
-  #gps-center-btn:hover + .graffiti-tooltip {
-    opacity: 1;
-  }
+  #gps-center-btn:hover + .graffiti-tooltip { opacity: 1; }
 </style>
 
 <style is:global>
+  /* ── Contenedor del mapa — siempre llena su padre ── */
+  .map-wrapper {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+  .map-container-fill {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  /* Leaflet: asegurar que los tiles rendericen */
+  .leaflet-container {
+    background: #e8f4f8 !important;
+    font-family: inherit !important;
+  }
+  .leaflet-tile-pane { will-change: transform; }
+
   .user-location-marker .dot {
-      width: 12px;
-      height: 12px;
-      background: #3B82F6;
-      border: 2px solid white;
-      border-radius: 50%;
+    width: 12px; height: 12px;
+    background: #3B82F6; border: 2px solid white; border-radius: 50%;
   }
   .user-location-marker .pulse-ring {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      background: rgba(59, 130, 246, 0.4);
-      border-radius: 50%;
-      animation: map-marker-pulse 2s infinite;
+    position: absolute; width: 30px; height: 30px;
+    background: rgba(59, 130, 246, 0.4); border-radius: 50%;
+    animation: map-marker-pulse 2s infinite;
   }
   @keyframes map-marker-pulse {
-      0% { transform: scale(0.5); opacity: 1; }
-      100% { transform: scale(2.5); opacity: 0; }
+    0% { transform: scale(0.5); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
   }
 </style>

@@ -102,6 +102,11 @@ export class CoordinatesStore {
         return this.db;
     }
 
+    /** Returns all coordinates as a Map (alias para compatibilidad con InteractiveMap). */
+    getAll(): Map<string, [number, number]> {
+        return this.db ?? new Map();
+    }
+
     /** Returns the original-cased stop name for a given key (lowercase lookup). */
     getOriginalName(key: string): string | undefined {
         return this.originalNames.get(normalizeString(key));
