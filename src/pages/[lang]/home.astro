@@ -62,17 +62,7 @@ const isEs = lang === "es";
 
   </div>
 
-  <!-- FAB: Report -->
-  <button
-    id="btn-report-fab"
-    class="report-fab"
-    aria-label={isEs ? "Reportar incidencia en tiempo real" : "Report live incident"}
-    title={isEs ? "Reportar incidencia" : "Report incident"}
-  >
-    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-    </svg>
-  </button>
+  <!-- FAB de reporte gestionado por ReportWidget global -->
 </MainLayout>
 
 <style>
@@ -183,7 +173,7 @@ const isEs = lang === "es";
   /* ── Bottom Sheet (calculadora) ── */
   .calculator-sheet {
     position: fixed;
-    bottom: var(--bottom-nav-h);
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
     left: 0;
     right: 0;
     z-index: 20;
@@ -219,8 +209,7 @@ const isEs = lang === "es";
   .report-fab {
     position: fixed;
     right: 1rem;
-    /* Justo encima del bottom sheet + bottom nav */
-    bottom: calc(var(--bottom-nav-h) + 70px + env(safe-area-inset-bottom));
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 70px);
     z-index: 25;
     width: 44px;
     height: 44px;
@@ -265,13 +254,6 @@ const isEs = lang === "es";
     });
   }
 
-  // Boton FAB reporte — abrir ReportWidget
-  const reportFab = document.getElementById("btn-report-fab");
-  if (reportFab) {
-    reportFab.addEventListener("click", () => {
-      window.dispatchEvent(new CustomEvent("OPEN_REPORT_WIDGET"));
-    });
-  }
-
-  // El mapa debe escuchar MAP_FLY_TO (lo manejamos en InteractiveMap)
+  // El mapa escucha MAP_FLY_TO desde InteractiveMap
+  // El FAB de reporte está en ReportWidget global
 </script>
