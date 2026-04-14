@@ -32,7 +32,6 @@ export class WasmLoader {
       return this.wasmModule;
     } finally {
       this.loading = null;
-      (window as any).WASM_READY = true;
     }
   }
 
