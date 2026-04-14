@@ -73,6 +73,7 @@ import { getRelativeLocaleUrl } from "astro:i18n";
           if (legCoords.length > 1) {
               const color = leg.transport_type === 'Bus_HotelZone' ? '#F97316' : '#0EA5E9';
               const poly = (window as any).L.polyline(legCoords, {
+                  className: 'animated-route-line',
                   color,
                   weight: 6,
                   opacity: 0.8,

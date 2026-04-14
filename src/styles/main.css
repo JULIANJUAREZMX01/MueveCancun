@@ -56,3 +56,14 @@
     margin-right: auto;
     width: 100%;
 }
+
+/* Animated Route Line */
+.animated-route-line {
+  stroke-dasharray: 20, 10;
+  animation: line-flow 30s linear infinite;
+}
+
+@keyframes line-flow {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
