@@ -131,113 +131,53 @@ const questions = {
 <div id="i18n-data" data-ui={safeJsonStringify(ui)} data-questions={safeJsonStringify(questions)} class="hidden"></div>
 
 <script>
-  import { showToast } from '../utils/toast';
-  import { coordinatesStore } from '../utils/CoordinatesStore';
-  import { CoordinateFinder } from '../utils/CoordinateFinder';
-  import { escapeHtml, safeJsonStringify, normalizeString } from '../utils/utils';
-  import { getWalletBalance } from '../utils/db';
-  import { getTransportLabel } from '../utils/transport';
-  import { WasmLoader } from '../utils/WasmLoader';
+  import { WasmLoader } from "../utils/WasmLoader";
+  import { initWasm } from "../lib/initWasm";
+  import { escapeHtml } from "../utils/utils";
 
-  const i18nDataEl = document.getElementById('i18n-data');
-  const ui = i18nDataEl ? JSON.parse(i18nDataEl.dataset.ui || '{}') : {};
-  const questions = i18nDataEl ? JSON.parse(i18nDataEl.dataset.questions || '{}') : {};
+  async function start() {
+      const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
+      const originInput = document.getElementById('origin-input') as HTMLInputElement;
+      const destInput = document.getElementById('dest-input') as HTMLInputElement;
+      const resultsInfo = document.getElementById('results-info');
+      const resultsContainer = document.getElementById('results-container');
+      if (!btn || !originInput || !destInput || !resultsInfo || !resultsContainer) return;
 
-  let wasmLoaded = false;
-  let find_route: any;
-  let load_catalog: any;
-  let finder: any;
-  let currentResults: any[] = [];
-  let catalogRoutes: any[] = []; // Rutas del catálogo para enriquecer resultados WASM
+      console.log("[RouteCalculator] Component starting...");
 
-  // ── Animación de preguntas ────────────────────────────────────────────────
-  function setupQuestionAnimations() {
-    const originEl = document.getElementById('animated-origin-question');
-    const destEl   = document.getElementById('animated-dest-question');
-    const langs = ['es', 'en', 'fr', 'pt', 'my'];
-    let idx = 0;
-    setInterval(() => {
-      idx = (idx + 1) % langs.length;
-      const lang = langs[idx];
-      if (originEl) { originEl.style.opacity = '0'; setTimeout(() => { originEl.textContent = questions.origin?.[lang] || originEl.textContent; originEl.style.opacity = '1'; }, 300); }
-      if (destEl)   { destEl.style.opacity   = '0'; setTimeout(() => { destEl.textContent   = questions.dest?.[lang]   || destEl.textContent;   destEl.style.opacity   = '1'; }, 300); }
-    }, 4000);
-  }
+      btn.onclick =('click', async () => {
+          const oVal = originInput.value.trim();
+          const dVal = destInput.value.trim();
+          if (!oVal || !dVal) return;
 
-  // ── Google Maps link ──────────────────────────────────────────────────────
-  function getGmapsLink(journey: any) {
-    if (!journey?.legs?.length) return '#';
-    const firstLeg = journey.legs[0];
-    const lastLeg  = journey.legs[journey.legs.length - 1];
-    const start = firstLeg.paradas?.[0] || firstLeg.stops_info?.[0] || firstLeg.stops?.[0];
-    const end   = lastLeg.paradas?.[lastLeg.paradas?.length - 1]
-                || lastLeg.stops_info?.[lastLeg.stops_info?.length - 1]
-                || lastLeg.stops?.[lastLeg.stops?.length - 1];
-    if (start?.lat && end?.lat) {
-      const slat = start.lat, slng = start.lng || start.lon;
-      const elat = end.lat,   elng = end.lng   || end.lon;
-      return `https://www.google.com/maps/dir/?api=1&origin=${slat},${slng}&destination=${elat},${elng}&travelmode=transit`;
-    }
-    return '#';
-  }
+          console.log(`[RouteCalculator] Search requested: "${oVal}" -> "${dVal}"`);
+          btn.disabled = true;
 
-  // ── Compartir ruta ────────────────────────────────────────────────────────
-  async function shareJourney(journey: any) {
-    const leg    = journey.legs?.[0];
-    const origin = leg?.origin_hub || leg?.paradas?.[0]?.nombre || '?';
-    const dest   = leg?.dest_hub   || leg?.paradas?.[leg?.paradas?.length - 1]?.nombre || '?';
-    const price  = journey.total_price ? `$${Number(journey.total_price).toFixed(2)}` : '';
-    const dur    = journey.duration_minutes ? `${journey.duration_minutes} min` : '';
+          try {
+              await initWasm();
+              const module = await WasmLoader.getModule();
+              const results = module.find_route(oVal, dVal);
+              console.log(`[RouteCalculator] Results found: ${results?.length}`);
 
-    const text = [
-      '🚌 MueveCancún — Te encontré una ruta',
-      `📍 ${origin} → ${dest}`,
-      price ? `💰 Tarifa: ${price}` : '',
-      dur   ? `⏱️ Tiempo estimado: ${dur}` : '',
-      '',
-      '🔗 ' + window.location.href,
-      '#MueveCancún #TransporteCancún',
-    ].filter(Boolean).join('\n');
+              resultsInfo.classList.remove('hidden');
+              resultsContainer.innerHTML = '';
 
-    if (navigator.share) {
-      try { await navigator.share({ title: 'MueveCancún', text, url: window.location.href }); return; } catch(_) {}
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      showToast('Ruta copiada al portapapeles 📋', 'success');
-    } catch(_) {
-      showToast('No se pudo copiar', 'error');
-    }
-  }
-
-  // ── Enriquecer legs del WASM con coordenadas del catálogo ────────────────
-  // El WASM devuelve: { route_id, route_name, origin_stop, dest_stop, price }
-  // Esta función añade el array .paradas con { nombre, lat, lng } para el mapa
-  function enrichLegsWithCoords(results: any[], catalogRoutes: any[]): any[] {
-    return results.map((res: any) => ({
-      ...res,
-      legs: (res.legs || []).map((leg: any) => {
-        // Buscar la ruta completa en el catálogo
-        const ruta = catalogRoutes.find((r: any) => r.id === leg.route_id);
-        let paradas: any[] = ruta?.paradas || [];
-
-        if (paradas.length > 0) {
-          const oKey = (leg.origin_stop || '').toLowerCase().trim();
-          const dKey = (leg.dest_stop   || '').toLowerCase().trim();
-
-          // Matching fuzzy: buscar índices por nombre parcial
-          const match = (nombre: string, key: string) => {
-            const n = nombre.toLowerCase();
-            return n === key || n.includes(key) || key.includes(n);
-          };
-
-          const oIdx = paradas.findIndex((p: any) => match(p.nombre || '', oKey));
-          const dIdx = paradas.findIndex((p: any) => match(p.nombre || '', dKey));
-
-          if (oIdx >= 0 && dIdx >= 0) {
-            const from = Math.min(oIdx, dIdx);
-            const to   = Math.max(oIdx, dIdx);
-            paradas = paradas.slice(from, to + 1);
+              if (results && results.length > 0) {
+                  results.forEach((r: any) => {
+                      const card = document.createElement('div');
+                      card.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100';
+                      card.innerHTML = `<div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">${escapeHtml(r.type)}</span><span class="text-lg font-black text-slate-900">$${escapeHtml(r.total_price)} MXN</span></div>`;
+                      resultsContainer.appendChild(card);
+                  });
+              } else {
+                  resultsContainer.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold">No se encontraron rutas</div>';
+              }
+          } catch (e) {
+              console.error('[RouteCalculator] SEARCH ERROR', e);
+              resultsInfo.classList.remove('hidden');
+              resultsContainer.innerHTML = '<div class="p-4 text-red-500 text-center font-bold">Error motor</div>';
+          } finally {
+              btn.disabled = false;
           }
           // Si no se encontraron índices, devolver todas las paradas de la ruta
         }
