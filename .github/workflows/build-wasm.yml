@@ -65,7 +65,7 @@ jobs:
 
       # Cache WASM binary for downstream test/build jobs
       - name: Cache WASM binary
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        uses: actions/cache@d4323d3314024798551101adc93946340c26274a # v4.0.2
         with:
           path: public/wasm/route-calculator
           key: wasm-build-${{ github.sha }}
