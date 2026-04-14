@@ -6,9 +6,8 @@
  */
 ---
 
-<div class="map-wrapper" transition:persist style="height:100%;min-height:100dvh;display:flex;flex-direction:column;">
-  <div id="map-container" class="w-full relative overflow-hidden"
-       style="height: 100%; min-height: 100dvh;">
+<div class="map-wrapper" transition:persist>
+  <div id="map-container" class="map-container-fill">
 
     <!-- Fallback / Loading -->
     <div id="map-fallback" class="absolute inset-0 bg-slate-100 dark:bg-slate-900 flex items-center justify-center z-20">
@@ -34,7 +33,7 @@
     </div>
 
     <!-- Map Instance -->
-    <div id="map" class="w-full h-full z-10"></div>
+    <div id="map" id="map" style="position:absolute;inset:0;z-index:10;"></div>
 
     <!-- Controls Overlay -->
     <div class="absolute right-4 bottom-24 md:bottom-8 z-30 flex flex-col gap-2">
@@ -66,6 +65,7 @@
 <script>
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { showToast } from "../utils/toast";
+  import { loadLeaflet } from "../utils/leafletLoader";
 
   let map: any = null;
   let layerGroup: any = null;
@@ -161,14 +161,15 @@
     const container = document.getElementById("map");
     if (!container) return;
 
-    // Esperar Leaflet (máx 8 segundos)
-    let waited = 0;
-    while (!(window as any).L && waited < 8000) {
-      await new Promise(r => setTimeout(r, 150));
-      waited += 150;
+    // Cargar Leaflet via loader dedicado
+    try {
+      await loadLeaflet();
+    } catch (err) {
+      console.error("[Map] No se pudo cargar Leaflet:", err);
+      return;
     }
     if (!(window as any).L) {
-      console.warn("[Map] Leaflet no disponible");
+      console.warn("[Map] Leaflet no disponible tras carga");
       return;
     }
 
@@ -424,6 +425,24 @@
 </style>
 
 <style is:global>
+  /* ── Contenedor del mapa — siempre llena su padre ── */
+  .map-wrapper {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+  .map-container-fill {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  /* Leaflet: asegurar que los tiles rendericen */
+  .leaflet-container {
+    background: #e8f4f8 !important;
+    font-family: inherit !important;
+  }
+  .leaflet-tile-pane { will-change: transform; }
+
   .user-location-marker .dot {
     width: 12px; height: 12px;
     background: #3B82F6; border: 2px solid white; border-radius: 50%;
