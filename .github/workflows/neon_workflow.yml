@@ -33,7 +33,7 @@ jobs:
   create_neon_branch:
     name: "Crear branch Neon para PR #${{ github.event.number }}"
     outputs:
-      db_url: ${{ steps.create_branch.outputs.db_url }}
+      db_url: ${{ steps.create_neon_branch.outputs.db_url }}
     needs: setup
     if: |
       github.event_name == 'pull_request' && (
@@ -54,7 +54,6 @@ jobs:
           project_id: ${{ vars.NEON_PROJECT_ID }}
           branch_name: preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}
           api_key: ${{ secrets.NEON_API_KEY }}
-          expires_at: ${{ env.EXPIRES_AT }}
 
       - name: Setup Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -106,7 +105,7 @@ jobs:
           }
           NODE_EOF
         env:
-          DATABASE_URL: ${{ steps.create_branch.outputs.db_url }}
+          DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
 
       - name: Comentar en PR con URL del branch Neon
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7

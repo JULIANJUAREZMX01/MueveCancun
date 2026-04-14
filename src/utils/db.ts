@@ -140,7 +140,7 @@ export const getWalletBalance = async () => {
   const balance = await db.get('wallet-status', 'current_balance');
   if (balance) {
     const key = await getCryptoKey(db);
-    
+
     // If there's no signature, it's a legacy record (pre-v3)
     if (!balance.signature) {
       balance.signature = await generateSignature(balance.amount, key);
