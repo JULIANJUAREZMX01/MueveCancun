@@ -84,8 +84,9 @@
       if (!mapInstance || !journey) return null;
       if (currentLayerGroup) mapInstance.removeLayer(currentLayerGroup);
 
-      const newLayers: any[] = [];
-      const polylineCoords: any[] = [];
+      const L = (window as any).L;
+      const layers: any[] = [];
+      const allCoords: [number, number][] = [];
 
       journey.legs.forEach((leg: any) => {
           const legCoords = leg.stops
@@ -94,43 +95,34 @@
 
           if (legCoords.length > 1) {
               const color = leg.transport_type === 'Bus_HotelZone' ? '#F97316' : '#0EA5E9';
-              const poly = (window as any).L.polyline(legCoords, {
+              const poly = L.polyline(legCoords, {
                   className: 'animated-route-line',
                   color,
                   weight: 6,
                   opacity: 0.8,
                   lineJoin: 'round'
               });
-              newLayers.push(poly);
-              polylineCoords.push(...legCoords);
+              layers.push(poly);
+              allCoords.push(...legCoords);
+
+              // Markers de inicio/fin del tramo
+              if (legCoords[0])
+                layers.push(L.circleMarker(legCoords[0], { radius: 7, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2 })
+                  .bindPopup(`<b>${escapeHtml(leg.origin_hub || "Inicio")}</b>`));
+              const last = legCoords[legCoords.length - 1];
+              if (last)
+                layers.push(L.circleMarker(last, { radius: 7, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2 })
+                  .bindPopup(`<b>${escapeHtml(leg.dest_hub || "Fin")}</b>`));
           }
-        }
-        return null;
-      }).filter(Boolean) as [number, number][];
+      });
 
-      if (coords.length >= 2) {
-        const poly = L.polyline(coords, { color, weight: 6, opacity: 0.85, lineJoin: "round" });
-        layers.push(poly);
-        allCoords.push(...coords);
+      if (!layers.length) return null;
 
-        // Markers de inicio/fin del tramo
-        if (coords[0])
-          layers.push(L.circleMarker(coords[0], { radius: 7, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2 })
-            .bindPopup(`<b>${escapeHtml(leg.origin_hub || "Inicio")}</b>`));
-        const last = coords[coords.length - 1];
-        if (last)
-          layers.push(L.circleMarker(last, { radius: 7, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2 })
-            .bindPopup(`<b>${escapeHtml(leg.dest_hub || "Fin")}</b>`));
+      const lg = L.layerGroup(layers).addTo(mapInstance);
+      if (allCoords.length > 0) {
+        mapInstance.fitBounds(allCoords, { padding: [48, 48], maxZoom: 16 });
       }
-    });
-
-    if (!layers.length) return null;
-
-    const lg = L.layerGroup(layers).addTo(mapInstance);
-    if (allCoords.length > 0) {
-      mapInstance.fitBounds(allCoords, { padding: [48, 48], maxZoom: 16 });
-    }
-    return lg;
+      return lg;
   }
 
   // ── Inicialización del mapa ───────────────────────────────────────────────────
