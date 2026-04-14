@@ -26,9 +26,9 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const token = process.env.GITHUB_ISSUES_TOKEN;
-    const owner = "JULIANJUAREZMX01";
-    const repoName = "MueveCancun";
+    const token = process.env.GITHUB_ISSUES_TOKEN || import.meta.env.GITHUB_ISSUES_TOKEN;
+    const owner = import.meta.env.GITHUB_REPO_OWNER || "JULIANJUAREZMX01";
+    const repoName = import.meta.env.GITHUB_REPO_NAME || "MueveCancun";
 
     // Serializar tramos
     let legsMarkdown = "_No disponible_";
