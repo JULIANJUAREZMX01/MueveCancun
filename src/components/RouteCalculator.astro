@@ -42,7 +42,7 @@ const t = useTranslations(lang);
 
       console.log("[RouteCalculator] Component starting...");
 
-      btn.onclick =('click', async () => {
+      btn.addEventListener('click', async () => {
           const oVal = originInput.value.trim();
           const dVal = destInput.value.trim();
           if (!oVal || !dVal) return;
