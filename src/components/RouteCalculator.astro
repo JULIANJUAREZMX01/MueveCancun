@@ -148,6 +148,7 @@ const questions = {
   let load_catalog: any;
   let finder: any;
   let currentResults: any[] = [];
+  let catalogRoutes: any[] = []; // Rutas del catálogo para enriquecer resultados WASM
 
   // ── Animación de preguntas ────────────────────────────────────────────────
   function setupQuestionAnimations() {
@@ -207,6 +208,43 @@ const questions = {
     } catch(_) {
       showToast('No se pudo copiar', 'error');
     }
+  }
+
+  // ── Enriquecer legs del WASM con coordenadas del catálogo ────────────────
+  // El WASM devuelve: { route_id, route_name, origin_stop, dest_stop, price }
+  // Esta función añade el array .paradas con { nombre, lat, lng } para el mapa
+  function enrichLegsWithCoords(results: any[], catalogRoutes: any[]): any[] {
+    return results.map((res: any) => ({
+      ...res,
+      legs: (res.legs || []).map((leg: any) => {
+        // Buscar la ruta completa en el catálogo
+        const ruta = catalogRoutes.find((r: any) => r.id === leg.route_id);
+        let paradas: any[] = ruta?.paradas || [];
+
+        if (paradas.length > 0) {
+          const oKey = (leg.origin_stop || '').toLowerCase().trim();
+          const dKey = (leg.dest_stop   || '').toLowerCase().trim();
+
+          // Matching fuzzy: buscar índices por nombre parcial
+          const match = (nombre: string, key: string) => {
+            const n = nombre.toLowerCase();
+            return n === key || n.includes(key) || key.includes(n);
+          };
+
+          const oIdx = paradas.findIndex((p: any) => match(p.nombre || '', oKey));
+          const dIdx = paradas.findIndex((p: any) => match(p.nombre || '', dKey));
+
+          if (oIdx >= 0 && dIdx >= 0) {
+            const from = Math.min(oIdx, dIdx);
+            const to   = Math.max(oIdx, dIdx);
+            paradas = paradas.slice(from, to + 1);
+          }
+          // Si no se encontraron índices, devolver todas las paradas de la ruta
+        }
+
+        return { ...leg, paradas };
+      })
+    }));
   }
 
   // ── Render de resultado ───────────────────────────────────────────────────
@@ -291,8 +329,10 @@ const questions = {
       load_catalog = module.load_catalog.bind(module);
       wasmLoaded   = true;
 
-      const { text: catalogString } = await coordinatesStore.init();
+      const { text: catalogString, data: catalogData } = await coordinatesStore.init();
       load_catalog(catalogString);
+      // Guardar rutas del catálogo para enriquecer resultados del WASM
+      catalogRoutes = (catalogData as any)?.rutas || [];
 
       const db = coordinatesStore.getDB();
       const names = coordinatesStore.getOriginalNames();
@@ -389,9 +429,12 @@ const questions = {
         const rawResults = find_route(normalizeString(origin), normalizeString(dest));
         const elapsed = (performance.now() - t0).toFixed(0);
 
-        const results: any[] = Array.isArray(rawResults)
+        const rawArr: any[] = Array.isArray(rawResults)
           ? rawResults
           : (typeof rawResults === 'string' ? JSON.parse(rawResults) : []);
+        
+        // Enriquecer cada leg con coordenadas reales del catálogo
+        const results: any[] = enrichLegsWithCoords(rawArr, catalogRoutes);
 
         const container  = document.getElementById('results-container');
         const bestArea   = document.getElementById('best-result-area');
