@@ -54,7 +54,7 @@ const isEs = lang === "es";
     <!-- Calculadora de rutas (tarjeta flotante) -->
     <div class="calculator-sheet" id="calculator-sheet">
       <!-- Handle de arrastre -->
-      <div class="sheet-handle" role="button" aria-label={isEs ? "Expandir busqueda" : "Expand search"} tabindex="0">
+      <div class="sheet-handle" id="sheet-handle" role="button" aria-label={isEs ? "Expandir busqueda" : "Expand search"} tabindex="0" aria-expanded="false">
         <div class="sheet-handle__bar"></div>
       </div>
       <RouteCalculator />
@@ -188,11 +188,16 @@ const isEs = lang === "es";
     border-radius: var(--r-2xl) var(--r-2xl) 0 0;
     box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
     padding-bottom: env(safe-area-inset-bottom);
-    /* Collapse por defecto en pantallas muy pequenas */
-    max-height: 70dvh;
-    overflow-y: auto;
+    /* Colapsado por defecto — solo muestra el handle + primera línea */
+    max-height: 72px;
+    overflow: hidden;
     overscroll-behavior: contain;
-    transition: transform var(--t-slow) var(--ease-out);
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+    will-change: max-height;
+  }
+  .calculator-sheet.expanded {
+    max-height: 72dvh;
+    overflow-y: auto;
   }
 
   .sheet-handle {
@@ -218,7 +223,42 @@ const isEs = lang === "es";
 </style>
 
 <script>
-  // Boton GPS — centrar mapa en ubicacion del usuario
+  // ── Bottom Sheet — toggle expand/collapse ──
+  const sheet = document.getElementById("calculator-sheet");
+  const handle = sheet?.querySelector(".sheet-handle");
+
+  function expandSheet() {
+    sheet?.classList.add("expanded");
+  }
+  function collapseSheet() {
+    sheet?.classList.remove("expanded");
+  }
+
+  // Tap en el handle o en el título expande
+  handle?.addEventListener("click", () => {
+    if (sheet?.classList.contains("expanded")) {
+      collapseSheet();
+    } else {
+      expandSheet();
+    }
+  });
+
+  // Al escribir en los inputs, expandir automáticamente
+  sheet?.addEventListener("focusin", () => expandSheet());
+
+  // Al tocar el mapa (fuera del sheet), colapsar
+  document.getElementById("calculator-sheet")?.addEventListener("click", (e) => {
+    // No colapsar si el click es dentro del sheet
+    e.stopPropagation();
+  });
+  document.querySelector(".map-backdrop")?.addEventListener("click", () => collapseSheet());
+
+  // Expandir automáticamente en tablets/desktop (pantalla ancha)
+  if (window.innerWidth >= 640) {
+    expandSheet();
+  }
+
+  // ── Boton GPS — centrar mapa en ubicacion del usuario
   const gpsBtn = document.getElementById("btn-gps-home");
   if (gpsBtn) {
     gpsBtn.addEventListener("click", () => {
