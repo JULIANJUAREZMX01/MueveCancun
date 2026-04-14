@@ -134,12 +134,11 @@ import MainLayout from '../layouts/MainLayout.astro';
 		.animate-float { animation: float 3s ease-in-out infinite; }
 	</style>
 
-	<script>
-		import { enforceGuards, setTutorialCompleted, type Locale } from "../utils/auth";
 
+	<script>
 		let currentStep = 1;
 		const totalSteps = 4;
-		let currentLang: Locale = 'es';
+		let currentLang = 'es';
 		const steps = document.querySelectorAll('.step');
 		const dots = document.querySelectorAll('.dot');
 		const btnNext = document.getElementById('btn-next');
@@ -178,28 +177,32 @@ import MainLayout from '../layouts/MainLayout.astro';
 			currentStep = stepNum;
 		}
 
-		function finishTutorial(lang: Locale) {
-			setTutorialCompleted(lang);
+		function finishTutorial(lang: string) {
+			const expiry = "; path=/; max-age=31536000; SameSite=Lax";
+			document.cookie = "tutorial_completed=true" + expiry;
+			document.cookie = "locale=" + encodeURIComponent(lang) + expiry;
+			localStorage.setItem('lang', lang);
+			localStorage.setItem('tutorial_completed', 'true');
 			window.location.replace(`/${lang}/home`);
 		}
 
 		btnNext?.addEventListener('click', () => { if (currentStep < totalSteps) goToStep(currentStep + 1); });
 		document.getElementById('start-es')?.addEventListener('click', () => finishTutorial('es'));
 		document.getElementById('start-en')?.addEventListener('click', () => finishTutorial('en'));
-
 		document.getElementById('set-es')?.addEventListener('click', (e) => {
 			currentLang = 'es';
 			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
 			(e.target as HTMLElement).classList.add('active');
+			localStorage.setItem('lang', 'es');
 			updateTutorialUI('es');
 		});
 		document.getElementById('set-en')?.addEventListener('click', (e) => {
 			currentLang = 'en';
 			document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
 			(e.target as HTMLElement).classList.add('active');
+			localStorage.setItem('lang', 'en');
 			updateTutorialUI('en');
 		});
-
 		dots.forEach(dot => {
 			dot.addEventListener('click', () => {
 				const target = parseInt(dot.getAttribute('data-go') || '1');
@@ -207,8 +210,23 @@ import MainLayout from '../layouts/MainLayout.astro';
 			});
 		});
 
-        // Run guards
-        enforceGuards();
-        document.addEventListener('astro:after-swap', enforceGuards);
+        function checkTutorial() {
+            const path = window.location.pathname;
+            const isRoot = path === "/" || path === "" || path === "/index.html";
+            if (!isRoot) return;
+            const hasCookie = document.cookie.includes('tutorial_completed=true');
+            const hasStorage = localStorage.getItem('tutorial_completed') === 'true';
+            if (hasCookie || hasStorage) {
+                const savedLang = localStorage.getItem('lang') || 'es';
+                if (hasStorage && !hasCookie) {
+                    const expiry = "; path=/; max-age=31536000; SameSite=Lax";
+                    document.cookie = "tutorial_completed=true" + expiry;
+                    document.cookie = "locale=" + encodeURIComponent(savedLang) + expiry;
+                }
+                window.location.replace("/" + savedLang + "/home");
+            }
+        }
+        checkTutorial();
+        document.addEventListener('astro:after-swap', checkTutorial);
 	</script>
 </MainLayout>

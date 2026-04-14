@@ -70,12 +70,12 @@ jobs:
           path: public/wasm/route-calculator
           key: wasm-build-${{ github.sha }}
 
-      # Auto-commit built artifacts only for direct pushes to main.
-      # Do not force-add generated files; this preserves .gitignore/repo policy.
+      # Auto-commit built artifacts (only on push to real branches, not PRs)
       - name: Commit WASM artifacts
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
         with:
           commit_message: "chore(wasm): auto-build route-calculator WASM [skip ci]"
           file_pattern: "public/wasm/route-calculator/*"
+          add_options: "--force"
           commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"

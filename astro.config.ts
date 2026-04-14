@@ -1,28 +1,42 @@
 import { defineConfig } from "astro/config"
+
 import mdx from "@astrojs/mdx"
 import tailwind from "@astrojs/tailwind"
+import vercel from "@astrojs/vercel"
+import node from "@astrojs/node"
 import path from "path"
 import { fileURLToPath } from "url"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
 const isDev = process.env.NODE_ENV === 'development';
 
+// Select adapter based on environment
+const getAdapter = () => {
+  if (process.env.VERCEL) {
+    return vercel();
+  }
+  return node({
+    mode: "standalone"
+  });
+};
+
 export default defineConfig({
-  site: "https://querutamellevacancun.onrender.com",
-  output: 'static',
+  site: "https://mueve-cancun.vercel.app",
+  output: 'server',
+  adapter: getAdapter(),
   integrations: [
     mdx(),
-    tailwind({ applyBaseStyles: false })
+    tailwind({ applyBaseStyles: false }),
   ],
+
   vite: {
-    define: { 'process.env.IS_DEV': JSON.stringify(isDev) },
+    define: { "process.env.IS_DEV": JSON.stringify(isDev) },
     build: {
       rollupOptions: {
         external: [
-          "/wasm/route-calculator/route_calculator.js"
-        ]
-      }
+          "/wasm/route-calculator/route_calculator.js",
+        ],
+      },
     },
     resolve: {
       alias: {
@@ -30,8 +44,15 @@ export default defineConfig({
         "@layouts":    path.resolve(__dirname, "src/layouts"),
         "@utils":      path.resolve(__dirname, "src/utils"),
         "@consts":     path.resolve(__dirname, "src/consts.ts"),
-        "@types":      path.resolve(__dirname, "src/types.ts")
-      }
-    }
-  }
+        "@types":      path.resolve(__dirname, "src/types.ts"),
+      },
+    },
+    ssr: {
+      // Neon serverless necesita bundling explícito en SSR
+      noExternal: ["@neondatabase/serverless"],
+    },
+    optimizeDeps: {
+      exclude: ["@neondatabase/serverless"],
+    },
+  },
 })

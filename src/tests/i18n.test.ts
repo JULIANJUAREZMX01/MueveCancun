@@ -13,7 +13,7 @@ describe('getLangFromUrl', () => {
     });
 
     it('should return defaultLang for an unsupported language', () => {
-        const url = new URL('https://example.com/fr/home');
+        const url = new URL('https://example.com/de/home');
         expect(getLangFromUrl(url)).toBe(defaultLang);
     });
 

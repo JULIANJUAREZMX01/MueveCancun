@@ -1,0 +1,52 @@
+<<<<<<< SEARCH
+		function finishTutorial(lang: string) {
+			// Set cookie for 1 year
+			document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
+			document.cookie = `locale=${encodeURIComponent(lang)}; path=/; max-age=31536000; SameSite=Lax`;
+            // Store preference in localStorage as well
+            localStorage.setItem('lang', lang);
+			window.location.href = `/${lang}/home`;
+		}
+=======
+		function finishTutorial(lang: string) {
+			// Set cookie for 1 year
+			document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
+			document.cookie = `locale=${encodeURIComponent(lang)}; path=/; max-age=31536000; SameSite=Lax`;
+            // Store preference and completion in localStorage as well
+            localStorage.setItem('lang', lang);
+            localStorage.setItem('tutorial_completed', 'true');
+			window.location.href = `/${lang}/home`;
+		}
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+		// Initial Check
+        function checkTutorial() {
+            // Only act when on the tutorial root page ("/")
+            const isRoot = window.location.pathname === '/';
+            if (!isRoot) return;
+            if (document.cookie.includes('tutorial_completed=true')) {
+                const savedLang = localStorage.getItem('lang') || 'es';
+                window.location.href = `/${savedLang}/home`;
+            }
+        }
+=======
+		// Initial Check
+        function checkTutorial() {
+            // Only act when on the tutorial root page ("/")
+            const isRoot = window.location.pathname === '/';
+            if (!isRoot) return;
+
+            const hasLocalStorage = localStorage.getItem('tutorial_completed') === 'true';
+            const hasCookie = document.cookie.includes('tutorial_completed=true');
+
+            if (hasLocalStorage || hasCookie) {
+                const savedLang = localStorage.getItem('lang') || 'es';
+                // Sync cookie if missing to prevent middleware loop
+                if (hasLocalStorage && !hasCookie) {
+                    document.cookie = "tutorial_completed=true; path=/; max-age=31536000; SameSite=Lax";
+                    document.cookie = `locale=${encodeURIComponent(savedLang)}; path=/; max-age=31536000; SameSite=Lax`;
+                }
+                window.location.href = `/${savedLang}/home`;
+            }
+        }
+>>>>>>> REPLACE

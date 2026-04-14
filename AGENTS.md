@@ -69,7 +69,7 @@
   - CI Fixer: detecta, corrige, hace commit y reenvía reparaciones automáticamente.
   - Abre PRs directamente con los cambios aplicados.
   - Entornos "repoless" para tareas efímeras (Node, Python, Rust, Bun preinstalados).
-  - Conexión MCP: Render, Supabase, Stitch, Context7.
+  - Conexión MCP: Vercel, Supabase, Stitch, Context7.
   - Hasta 5 tareas simultáneas con `--parallel`.
   - Planning Critic interno para reducir tasas de fallo.
 - **Scripts de orquestación**:
@@ -157,7 +157,7 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 <!-- Scripts de soporte SEO agregados en PR #367 (2026-03-28). Migrados a TS en PR #397. -->
 1. `node --experimental-strip-types scripts/generate_og_image.ts` — Regenera `public/og-image.png` (1200×630px).
 2. `node --experimental-strip-types scripts/update-stats.ts` — Actualiza contadores en `README.md` (commits + LOC Rust).
-3. Variables de entorno opcionales en Render: `PUBLIC_GOOGLE_SITE_VERIFICATION`, `PUBLIC_BING_SITE_VERIFICATION`.
+3. Variables de entorno opcionales en Vercel: `PUBLIC_GOOGLE_SITE_VERIFICATION`, `PUBLIC_BING_SITE_VERIFICATION`.
 4. Sitemap dinámico generado en build: `src/pages/sitemap.xml.ts` (incluye `/es/ruta/:id`, `/en/ruta/:id`).
 
 ---
@@ -206,7 +206,7 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 2. Ejecutar `pnpm run prepare-data` (merge + optimize).
 
 ### Deployment:
-El sistema está configurado para Render (SSG). El middleware maneja redirecciones de idioma y completitud de tutorial.
+El sistema está configurado para Vercel (SSG). El middleware maneja redirecciones de idioma y completitud de tutorial.
 ```
 rama claude/* → tests pasan → PR a main → CI verde → merge
 rama jules/*  → PR abierto por Jules → revisión → merge
@@ -219,7 +219,7 @@ Cada PR debe incluir: descripción del problema, fix implementado, tests que lo 
 
 ## ⭐️ Verificación y Aval Técnico de Avances (por GitHub Copilot)
 
-Este proyecto ha sido sometido a una auditoría exhaustiva de avances recientes, especialmente en torno al commit `83b3fab` (“Nexus Transfer Engine v3.3”) y branches asociados, con resultado **altamente positivo**.
+Este proyecto ha sido sometido a una auditoría exhaustiva de avances recientes, especialmente en torno al commit `83b3fab` (“Nexus Transfer Engine v3.5”) y branches asociados, con resultado **altamente positivo**.
 A continuación, se consignan los puntos clave y el dictamen técnico de calidad y legitimidad, para reforzar la transparencia y confiabilidad del desarrollo de _MueveCancun_.
 
 ### ✅ Logros verificados y legitimidad comprobada
@@ -333,3 +333,8 @@ Systematic stabilization of PWA core systems (WASM, GPS, Payments, Reporting) af
 ### [HANDOFF]
 -   Update `docs/PROJECT_STATUS.md` with version 1.2.3 (v3.3.5).
 -   Update `ROADMAP.md` marking stabilization as complete.
+
+---
+
+## Mandato de Seguridad CI (v3.5.2+)
+- **OBLIGATORIO**: Todas las GitHub Actions deben estar pineadas a un hash de commit completo (40 caracteres). No se permiten tags de versión (ej. @v4) para prevenir ataques de supply chain.

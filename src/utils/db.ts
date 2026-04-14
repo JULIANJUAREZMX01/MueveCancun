@@ -122,31 +122,22 @@ export const initDB = async (): Promise<IDBPDatabase> => {
         await store.put({ id: 'current_balance', amount: defaultAmount, currency: 'MXN', signature }, 'current_balance');
         dispatchBalanceUpdate();
       }
-
-      await tx.done;
-
-      // Run migration after DB initialization, passing db to avoid circular recursion
-      await migrateBalanceFromLocalStorage(db);
-
-      return db;
-    } catch (error) {
-      console.error('[DB] Initialization failed:', error);
-      dbPromise = null;
-      throw error;
-    }
-  })();
-
-  return dbPromise;
+    },
+  });
+  const db = await _dbPromise;
+  const balance = await db.get('wallet-status', 'current_balance');
+  if (balance === undefined) {
+    const key = await getCryptoKey(db);
+    const amount = 180.00;
+    const signature = await generateSignature(amount, key);
+    await db.put('wallet-status', { id: 'current_balance', amount, currency: 'MXN', signature }, 'current_balance');
+  }
+  return db;
 };
 
-export const getWalletBalance = async (): Promise<{ id: string; amount: number; currency: string; signature?: string } | undefined> => {
+export const getWalletBalance = async () => {
   const db = await initDB();
-
-  // Use a readonly transaction for the normal, no-tampering path.
-  const readTx = db.transaction('wallet-status', 'readonly');
-  const balance = await readTx.objectStore('wallet-status').get('current_balance');
-  await readTx.done;
-
+  const balance = await db.get('wallet-status', 'current_balance');
   if (balance) {
     const key = await getCryptoKey(db);
     
@@ -176,11 +167,10 @@ export const getWalletBalance = async (): Promise<{ id: string; amount: number; 
       return balance;
     }
   }
-
   return balance;
 };
 
-export const setWalletBalance = async (amount: number): Promise<void> => {
+export const setWalletBalance = async (amount: number) => {
   const db = await initDB();
   const tx = db.transaction('wallet-status', 'readwrite');
   const store = tx.objectStore('wallet-status');
@@ -242,20 +232,15 @@ export const savePendingReport = async (report: Omit<PendingReport, 'id' | 'time
   await tx.done;
 };
 
-export const getPendingReports = async (): Promise<PendingReport[]> => {
+export const savePendingReport = async (r: any) => {
   const db = await initDB();
-  return db.getAll('pending-reports');
+  return db.put('pending-reports', { ...r, timestamp: Date.now() });
 };
 
-export const deletePendingReport = async (id: number) => {
-  const db = await initDB();
-  const tx = db.transaction('pending-reports', 'readwrite');
-  await tx.objectStore('pending-reports').delete(id);
-  await tx.done;
-};
+export const getPendingReports = async () => (await initDB()).getAll('pending-reports');
+export const deletePendingReport = async (id: number) => (await initDB()).delete('pending-reports', id);
 
-// Test util
 export const __resetDBPromise = () => {
-  dbPromise = null;
+  _dbPromise = null;
   _cryptoKey = null;
 };

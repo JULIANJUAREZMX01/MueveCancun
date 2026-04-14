@@ -1,18 +1,4 @@
-# render.yaml — MueveCancún v3.4.1
-# Astro output:'static' — prerenderiza 180 páginas como HTML estático.
-# API routes dinámicas (Stripe webhook, reports) se invocan directamente
-# desde el cliente o se migrarán a output:'server' en fase posterior.
-#
-# Env vars requeridas (configurar en Render Dashboard → Environment):
-#   NODE_VERSION      → 22
-#   ENABLE_PNPM       → 1
-#   NODE_ENV          → production
-#   STRIPE_SECRET_KEY → sk_live_... (o sk_test_... para staging)
-#   STRIPE_WEBHOOK_SECRET → whsec_...
-#   GITHUB_ISSUES_TOKEN   → ghp_...
-#   PUBLIC_URL        → https://querutamellevacancun.onrender.com
-#   PUBLIC_GA4_ID     → G-XXXXXXXXXX
-
+# render.yaml — MueveCancún v3.6.0 (SSR Node Mode)
 version: "1"
 projects:
 - name: QUINTANAROO_CREATIONS
@@ -21,39 +7,18 @@ projects:
     services:
     - type: web
       name: QueRutaMeLLevaCancun
-      runtime: static
+      runtime: node
       repo: https://github.com/JULIANJUAREZMX01/MueveCancun
+      buildCommand: bash scripts/setup-render.sh
+      startCommand: npm start
       envVars:
       - key: NODE_VERSION
-        sync: false
-      - key: ENABLE_PNPM
-        sync: false
+        value: "22.6"
       - key: NODE_ENV
         value: production
-      buildCommand: bash scripts/setup-render.sh
-      staticPublishPath: dist
-      autoDeployTrigger: checksPass
-      headers:
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-      - path: /*
-        name: X-Content-Type-Options
-        value: nosniff
-      - path: /*
-        name: Referrer-Policy
-        value: strict-origin-when-cross-origin
-      - path: /data/*
-        name: Cache-Control
-        value: public, max-age=3600, stale-while-revalidate=86400
-      - path: /icons/*
-        name: Cache-Control
-        value: public, max-age=31536000, immutable
-      - path: /wasm/*
-        name: Cache-Control
-        value: public, max-age=31536000, immutable
-      - path: /vendor/*
-        name: Cache-Control
-        value: public, max-age=31536000, immutable
-      previews:
-        generation: automatic
+      - key: DATABASE_URL
+        sync: false
+      - key: GITHUB_ISSUES_TOKEN
+        sync: false
+      - key: PUBLIC_URL
+        value: https://querutamellevacancun.onrender.com

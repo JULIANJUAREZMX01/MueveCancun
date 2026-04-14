@@ -50,7 +50,7 @@ jobs:
       - name: Setup Node 22
         uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
-          node-version: "22"
+          node-version: "20"
 
       # Fetch PR file changes via GitHub REST API (no code execution).
       # The diff text is passed to Jules as data so it has full context of the changes.
@@ -112,7 +112,6 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
         with:
           script: |
-            const { COMMENT_BODY } = process.env;
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -120,8 +119,7 @@ jobs:
               body: [
                 '🤖 **Jules** recibió la solicitud y comenzó a trabajar.',
                 '',
-                `> \`${process.env.COMMENT_BODY}\``,
-                `> \`${COMMENT_BODY}\``,
+                `> \`${{ github.event.comment.body }}\``,
                 '',
                 'Los cambios serán commiteados directamente en esta rama. El PR se actualizará automáticamente.',
                 '',
