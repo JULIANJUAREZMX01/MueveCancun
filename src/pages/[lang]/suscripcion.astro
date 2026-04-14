@@ -1,5 +1,8 @@
 ---
 export const prerender = true;
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getLangFromUrl } from '../../utils/i18n';
+
 export function getStaticPaths() {
   return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
 }

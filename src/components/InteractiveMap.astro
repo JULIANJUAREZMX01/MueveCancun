@@ -80,49 +80,29 @@
       .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
-  function safeUrl(s: string) { return encodeURIComponent(s); }
+  function drawRoute(mapInstance: any, journey: any, currentLayerGroup: any, coords: Map<string, [number, number]>) {
+      if (!mapInstance || !journey) return null;
+      if (currentLayerGroup) mapInstance.removeLayer(currentLayerGroup);
 
-  /**
-   * drawRoute — compatible con el output real del WASM find_route():
-   *   journey.legs[].paradas[]  → { nombre, lat, lng }      (formato propio)
-   *   journey.legs[].stops[]    → { name, lat?, lng? }       (formato WASM)
-   *   journey.legs[].stops_info → { name, lat, lng }         (formato WASM extendido)
-   *
-   * También usa coordinatesDB como fallback cuando lat/lng no estén disponibles.
-   */
-  function drawRoute(mapInstance: any, journey: any, oldLayer: any, coordsDB: Map<string, [number, number]>) {
-    if (!mapInstance || !journey?.legs?.length) return null;
-    if (oldLayer) { try { mapInstance.removeLayer(oldLayer); } catch(_){} }
+      const newLayers: any[] = [];
+      const polylineCoords: any[] = [];
 
-    const L = (window as any).L;
-    if (!L) return null;
+      journey.legs.forEach((leg: any) => {
+          const legCoords = leg.stops
+              .map((s: any) => coords.get(s.nombre.toLowerCase().trim()))
+              .filter(Boolean);
 
-    const allCoords: [number, number][] = [];
-    const layers: any[] = [];
-
-    journey.legs.forEach((leg: any, legIdx: number) => {
-      const isHotelZone = leg.transport_type === "Bus_HotelZone" || leg.transport_type === "R1";
-      const color = isHotelZone ? "#F97316" : legIdx % 2 === 0 ? "#0EA5E9" : "#8B5CF6";
-
-      // Resolver paradas — varios formatos posibles
-      const rawStops: any[] = leg.paradas || leg.stops_info || leg.stops || [];
-
-      const coords: [number, number][] = rawStops.map((s: any) => {
-        // Formato 1: tiene lat/lng directos
-        const lat = s.lat ?? s.latitude ?? null;
-        const lng = s.lng ?? s.lon ?? s.longitude ?? null;
-        if (lat !== null && lng !== null && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
-          return [Number(lat), Number(lng)] as [number, number];
-        }
-        // Formato 2: solo nombre → buscar en coordinatesDB
-        const name = s.nombre ?? s.name ?? s;
-        if (typeof name === "string") {
-          const key = name.toLowerCase().trim();
-          const found = coordsDB.get(key);
-          if (found) return found;
-          // Buscar normalizado
-          for (const [k, v] of coordsDB.entries()) {
-            if (k.includes(key) || key.includes(k)) return v;
+          if (legCoords.length > 1) {
+              const color = leg.transport_type === 'Bus_HotelZone' ? '#F97316' : '#0EA5E9';
+              const poly = (window as any).L.polyline(legCoords, {
+                  className: 'animated-route-line',
+                  color,
+                  weight: 6,
+                  opacity: 0.8,
+                  lineJoin: 'round'
+              });
+              newLayers.push(poly);
+              polylineCoords.push(...legCoords);
           }
         }
         return null;

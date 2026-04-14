@@ -1,6 +1,6 @@
 # 📊 MueveCancún PWA — Estado del Proyecto
 **Fecha:** 2026-04-10
-**Versión:** 1.1.0 (Nexus Prime v3.7.0)
+**Versión:** 2.0.0 (Nexus Prime v4.0.0)
 **Estado General:** 🟢 OPERATIVO — Sidebar, Multi-idioma & Supabase
 **Estado General:** 🔵 OPERATIVO — Transición a SSR (Server-Side Rendering)
 
