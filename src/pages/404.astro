@@ -1,75 +1,49 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import { getLangFromUrl } from '../utils/i18n';
-import { getRelativeLocaleUrl } from '../utils/utils';
-
-const lang = getLangFromUrl(Astro.url);
 ---
-
-<MainLayout title="Página no encontrada">
-  <div class="min-h-[70vh] flex flex-col items-center justify-center px-4 py-12 text-center">
-
-    <!-- Icon -->
-    <div class="w-20 h-20 rounded-3xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-6 animate-scale-in">
-      <svg class="w-10 h-10 text-primary-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6.5A2.5 2.5 0 0 1 14.5 9c0 1.38-2.5 3.8-2.5 3.8S9.5 10.38 9.5 9A2.5 2.5 0 0 1 12 6.5zM12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM3.41 2.86L2 4.27l2.62 2.62C3.59 8.4 3 10.13 3 12c0 3.5 2.75 7.81 5.58 11.18L2 16.59 3.41 15.18l4.24 4.24.71-.71L3.41 2.86z"/></svg>
+<MainLayout title="404 — Página no encontrada">
+  <div class="error-page">
+    <div class="error-visual" aria-hidden="true">
+      <div class="error-bus">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/></svg>
+      </div>
+      <div class="error-code">404</div>
     </div>
-
-    <h1 class="text-2xl font-display font-black text-slate-900 dark:text-white mb-2">
-      Ruta no encontrada
-    </h1>
-    <p class="text-sm max-w-xs mx-auto mb-8" style="color: var(--text-secondary);">
-      Esta parada no existe en nuestro mapa. Te ayudamos a llegar.
-    </p>
-
-    <div class="w-full max-w-xs space-y-3">
-      <a href={getRelativeLocaleUrl(lang, 'home')} class="btn-primary btn-lg w-full no-underline">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.43 14.57L7.2 13.2l1.41-1.41 1.96 1.96 5.66-5.66 1.41 1.41-7.07 7.07z"/></svg>
-        Ir al Inicio
-      </a>
-      <a href={getRelativeLocaleUrl(lang, 'rutas')} class="btn-secondary btn-lg w-full no-underline">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.78 11.16l-1.42 1.42a7.462 7.462 0 01-1.02-2.24l1.93-.48c.17.71.44 1.37.81 1.96l-.3-.66zm8.22.84c0 2.34-1.14 4.33-2.89 5.6L14 16.49c1.3-.95 2.15-2.49 2.15-4.24 0-2.87-2.34-5.2-5.22-5.2-.39 0-.77.05-1.14.13l1.5 1.5C11.44 8.52 11.59 8.5 11.73 8.5c2.05 0 3.72 1.67 3.72 3.73l.55-.23zm-9-4L7.56 9.45 6.14 8.03l.01-.02L3.69 5.55 5.1 4.14l2.47 2.47C8.61 6.23 9.72 6 10.88 6c4.26 0 7.72 3.46 7.72 7.72 0 1.16-.26 2.27-.63 3.3l2.47 2.47-1.41 1.41-2.46-2.46c-1.03.39-2.14.63-3.3.63-4.26 0-7.72-3.46-7.72-7.72 0-1.16.26-2.27.63-3.3l.01-.01z"/></svg>
-        Ver todas las rutas
-      </a>
-    </div>
-
-    <div id="redirect-message" class="hidden mt-8 text-xxs font-bold uppercase tracking-widest animate-pulse-soft" style="color: var(--text-tertiary);">
-      Buscando rutas similares…
-    </div>
+    <h1 class="error-title">¡Esta ruta no existe!</h1>
+    <p class="error-sub">El camión que buscas no tiene parada aquí.</p>
+    <a href="/es/home" class="btn btn-primary btn-lg" style="margin-top:1.5rem;justify-content:center">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Volver al inicio
+    </a>
   </div>
-
-  <script>
-    import { getPreferredLocale } from "../utils/auth";
-
-    function handle404Redirection() {
-      const urlPath = window.location.pathname;
-      const parts = urlPath.split('/').filter(p => p);
-      const msg = document.getElementById('redirect-message');
-
-      // 1. Handle unlocalized top-level paths (e.g. /wallet -> /es/wallet)
-      const topLevelPages = ['home', 'rutas', 'tracking', 'wallet', 'community', 'about', 'guess'];
-      const firstPart = parts[0];
-      if (topLevelPages.includes(firstPart)) {
-         const locale = getPreferredLocale();
-         const { search, hash } = window.location;
-         window.location.replace(`/${locale}/${firstPart}${search || ''}${hash || ''}`);
-         return;
-      }
-
-      // 2. Handle legacy /ruta/[id] paths
-      if (parts.length >= 2 && parts[0] === 'ruta') {
-        const potentialId = parts[1];
-        const locale = getPreferredLocale();
-        if (msg) msg.classList.remove('hidden');
-        setTimeout(() => {
-          window.location.replace(`/${locale}/rutas?search=${encodeURIComponent(potentialId)}`);
-        }, 300);
-      }
-    }
-
-    // View Transitions Support
-    document.addEventListener('astro:page-load', handle404Redirection);
-
-    // Initial Run
-    handle404Redirection();
-  </script>
 </MainLayout>
+
+<style>
+  .error-page {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center;
+    min-height: calc(100dvh - var(--bottom-nav-h) - 4rem);
+    padding: 2rem 1.5rem; max-width: 360px; margin: 0 auto;
+  }
+  .error-visual { position: relative; margin-bottom: 1.5rem; }
+  .error-bus {
+    width: 96px; height: 96px; border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex; align-items: center; justify-content: center;
+    animation: float 3s ease-in-out infinite;
+    color: white;
+  }
+  .error-bus svg { width: 48px; height: 48px; }
+  .error-code {
+    position: absolute; bottom: -8px; right: -12px;
+    font-family: var(--font-display); font-size: 1.5rem; font-weight: 900;
+    color: var(--coral); background: var(--surface-bg);
+    padding: 0 0.25rem; border-radius: var(--r-sm);
+    letter-spacing: -0.05em;
+  }
+  .error-title {
+    font-family: var(--font-display); font-size: 1.5rem; font-weight: 900;
+    color: var(--text-primary); margin: 0 0 0.5rem; letter-spacing: -0.03em;
+  }
+  .error-sub { font-size: 0.9rem; color: var(--text-secondary); margin: 0; }
+</style>

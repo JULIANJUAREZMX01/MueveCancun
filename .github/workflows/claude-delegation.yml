@@ -22,7 +22,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Prepare delegation instructions
         id: prepare
@@ -40,7 +40,7 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Claude Code Base Action (plan and apply)
-        uses: anthropics/claude-code-base-action@837890098d69784384758d19d6756810a95e2634
+        uses: anthropics/claude-code-base-action@b61aa83c32e3fbf17e758fd510b9a8d9204e6e31 # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           instructions: |

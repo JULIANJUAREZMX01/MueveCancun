@@ -2,12 +2,22 @@
 import { getLangFromUrl } from '../utils/i18n';
 import { getRelativeLocaleUrl } from '../utils/utils';
 import BottomNav from '../components/BottomNav.astro';
+import Sidebar from '../components/Sidebar.astro';
 import Toast from '../components/ui/Toast.astro';
 import PwaReload from '../components/ui/PwaReload.astro';
 import BrowserDetection from '../components/ui/BrowserDetection.astro';
 import DonateNudge from '../components/ui/DonateNudge.astro';
+import { ui as uiTranslations } from '../utils/i18n';
+import { safeJsonStringify } from '../utils/utils';
+import SpeedInsights from '@vercel/speed-insights/astro';
+import Analytics from '@vercel/analytics/astro';
+import { ClientRouter } from 'astro:transitions';
 import ReportWidget from '../components/ReportWidget.astro';
+import RouteContributeModal from '../components/RouteContributeModal.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
+import '../styles/tokens.css';
+import '../styles/main.css';
+import '../index.css';
 
 interface Props {
   title?: string;
@@ -16,32 +26,256 @@ interface Props {
 
 const { title = "CancúnMueve", hideNav = false } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
+
+// SEO and Analytics environment variables
+const googleVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
+const bingVerification = import.meta.env.PUBLIC_BING_SITE_VERIFICATION;
+const ga4Id = import.meta.env.PUBLIC_GA4_ID;
 ---
 <!DOCTYPE html>
 <html lang={lang}>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+
+    <!-- 🛡️ Sentinel: Strict CSP -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://*.cartocdn.com https://www.googletagmanager.com https://www.google-analytics.com https://utt.impactcdn.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        img-src 'self' data: https://*.cartocdn.com https://*.openstreetmap.org https://www.google-analytics.com;
+        font-src 'self' https://fonts.gstatic.com;
+        connect-src 'self' https://*.cartocdn.com https://www.google-analytics.com https://vitals.vercel-analytics.com https://va.vercel-scripts.com;
+        worker-src 'self' blob:;
+        object-src 'none';
+        base-uri 'self';
+        upgrade-insecure-requests;
+    ">
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO Site Verification -->
+    {googleVerification && <meta name="google-site-verification" content={googleVerification} />}
+    {bingVerification && <meta name="msvalidate.01" content={bingVerification} />}
+
+    <!-- Primary Meta Tags -->
     <title>{title}</title>
     <script is:inline>
       const theme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
       document.documentElement.classList.toggle("dark", theme === "dark");
     </script>
-  
-  <!-- impact.com STAT Tag -->
-  <script>(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('https://utt.impactcdn.com/P-A7155313-a1aa-4e8b-8664-478df8ea50a01.js','script','impactStat',document,window);impactStat('transformLinks');impactStat('trackImpression');</script>
-</head>
-  <body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100">
-    {!hideNav && (
-      <header class="fixed top-0 inset-x-0 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b z-50 px-6 flex items-center justify-between">
-        <a href={getRelativeLocaleUrl(lang, "home")} class="flex items-center gap-2 no-underline"><BrandAnimation /></a>
-        <div class="flex items-center gap-4">
-           <span id="header-balance" class="text-xs font-black tracking-widest">himBHs-.--</span>
-           <button id="theme-toggle" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">🌓</button>
-        </div>
-      </header>
+    <link rel="apple-touch-icon" href="/icons/pwa-192x192.png" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
+
+    <!-- Preload Critical Data -->
+    <link rel="preload" href="/data/master_routes.optimized.json" as="fetch" crossorigin />
+
+    <!-- Leaflet Optimization: Lazy Loaded via InteractiveMap -->
+    <link rel="preconnect" href="https://basemaps.cartocdn.com" />
+    <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
+
+    <script>
+      import { getWalletBalance } from '../utils/db';
+      
+      // 1. Theme Initialization
+      function applyTheme() {
+          const theme = localStorage.getItem("theme");
+          if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+      }
+      
+      // 2. I18n Initialization
+      function applyLanguage() {
+          const stored = localStorage.getItem('lang');
+          if (stored) {
+              updateTranslations(stored);
+              return;
+          }
+
+          // Auto-detect browser language
+          const navLang = navigator.language.split('-')[0];
+          const supported = ['es', 'en'];
+          const lang = supported.includes(navLang) ? navLang : 'es';
+          
+          localStorage.setItem('lang', lang);
+          updateTranslations(lang);
+      }
+
+      function updateTranslations(lang: string): void {
+          const dataEl = document.getElementById('i18n-translations');
+          let allTranslations: Record<string, Record<string, string>> = {};
+          try {
+            allTranslations = dataEl ? JSON.parse(dataEl.dataset.translations ?? '{}') as Record<string, Record<string, string>> : {};
+          } catch {
+            allTranslations = {};
+          }
+          const translations: Record<string, string> = allTranslations[lang] ?? allTranslations['es'] ?? {};
+
+          // Update simple text elements
+          document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
+              const key = el.getAttribute('data-i18n');
+              const text = key ? translations[key] : undefined;
+              if (text) {
+                  // Update lang toggle visual state
+                  const langToggles = document.querySelectorAll<HTMLElement>('.lang-toggle-btn');
+                  langToggles.forEach(btn => {
+                      btn.textContent = lang.toUpperCase();
+                  });
+
+                  if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                       // handled by data-i18n-placeholder
+                  } else {
+                      el.textContent = text;
+                  }
+              }
+          });
+
+          // Custom Input Labels
+          document.querySelectorAll<HTMLElement>('[data-i18n-label]').forEach(el => {
+              const key = el.getAttribute('data-i18n-label');
+              const text = key ? translations[key] : undefined;
+              if (text) {
+                 if (el.tagName === 'INPUT') {
+                     const id = el.id;
+                     if (id) {
+                         const label = document.querySelector(`label[for="${id}"]`);
+                         if (label) label.textContent = text;
+                     }
+                 } else {
+                     const labelSpan = el.querySelector('.label-text');
+                     if (labelSpan) labelSpan.textContent = text;
+                 }
+              }
+          });
+          
+          // Placeholders
+          document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-i18n-placeholder]').forEach(el => {
+               const key = el.getAttribute('data-i18n-placeholder');
+               const text = key ? translations[key] : undefined;
+               if (text && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+                   el.placeholder = text;
+               }
+          });
+
+          // Quick Action Buttons (HTML content)
+          document.querySelectorAll<HTMLElement>('[data-i18n-html]').forEach(el => {
+             const key = el.getAttribute('data-i18n-html');
+             const text = key ? translations[key] : undefined;
+             // Preserves icon if we replace innerText carefully or just update text node
+             // For quick actions: <span icon></span> Text
+             if (text) {
+                 const icon = el.querySelector('span');
+                 el.innerHTML = '';
+                 if (icon) el.appendChild(icon);
+                 el.appendChild(document.createTextNode(' ' + text));
+             }
+          });
+      }
+
+      applyTheme();
+      applyLanguage();
+      
+      // 3. Global Balance Sync
+      async function syncGlobalBalance() {
+          try {
+            const walletData = await getWalletBalance();
+            const balance = walletData?.amount ?? 0.00;
+            const balanceEl = document.getElementById('header-balance-amount');
+            if (balanceEl) balanceEl.textContent = `$${balance.toFixed(2)}`;
+          } catch (e: unknown) {
+            console.warn("[MainLayout] Balance sync failed", e);
+          }
+      }
+
+      syncGlobalBalance();
+      
+      document.addEventListener('astro:after-swap', () => {
+        applyTheme();
+        applyLanguage();
+        syncGlobalBalance();
+      });
+
+      window.addEventListener('BALANCE_UPDATED', () => {
+          console.log("[MainLayout] Balance update event received");
+          syncGlobalBalance();
+      });
+
+      window.addEventListener('LANGUAGE_CHANGE', (e: Event) => {
+          updateTranslations((e as CustomEvent<string>).detail);
+      });
+    </script>
+    {ga4Id && (
+    <>
+    <!-- Google Analytics 4 -->
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
+    <script define:vars={{ ga4Id }} is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', ga4Id);
+
+      // Global Event Dispatchers
+      window.mueveTrackers = {
+        routeSearch: (origin, destination, isOffline) => {
+          gtag('event', 'route_search', {
+            event_category: 'Routing_WASM',
+            origin: origin,
+            destination: destination,
+            network_status: isOffline ? 'offline' : 'online'
+          });
+          console.log('[Analytics] route_search dispatched');
+        },
+        offlineUsage: () => {
+          gtag('event', 'offline_usage', {
+            event_category: 'PWA_ServiceWorker',
+            action: 'served_from_cache'
+          });
+          console.log('[Analytics] offline_usage dispatched');
+        },
+        pwaInstall: () => {
+          gtag('event', 'pwa_install', {
+            event_category: 'PWA_Lifecycle',
+            action: 'accepted_prompt'
+          });
+          console.log('[Analytics] pwa_install dispatched');
+        }
+      };
+
+      window.addEventListener('appinstalled', () => {
+        window.mueveTrackers.pwaInstall();
+      });
+    </script>
+    </>
     )}
-    <main class:list={["w-full min-h-screen", !hideNav && "pt-16"]}>
+    <ClientRouter />
+    <SpeedInsights />
+  <!-- impact.com STAT Tag -->
+  <script>(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})("https://utt.impactcdn.com/P-A7155313-a1aa-4e8b-8664-478df8ea50a01.js","script","impactStat",document,window);impactStat("transformLinks");impactStat("trackImpression");</script>
+  </head>
+  <body id="top" class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
+    {!hideNav && <Sidebar />}
+
+    <!-- ═══ Unified Header (Responsive) ═══ -->
+    { !hideNav && (
+    <header class="fixed top-0 left-0 right-0 z-[40] h-14 md:h-16 px-4 md:px-6 flex items-center justify-between transition-colors duration-300 app-header">
+
+      <a href={getRelativeLocaleUrl(lang, "home")} class="flex items-center gap-2.5 no-underline group outline-none" aria-label="CancúnMueve - Inicio">
+        <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
+        </div>
+      </a>
+    </header>
+    )}
+    <main class:list={["w-full min-h-screen", !hideNav && "pt-14 md:pt-0 md:pl-20"]}>
       <slot />
     </main>
     {!hideNav && <div class="md:hidden"><BottomNav /></div>}
@@ -75,5 +309,44 @@ const lang = getLangFromUrl(Astro.url);
       document.addEventListener("astro:page-load", setup);
       window.addEventListener("BALANCE_UPDATED", sync);
     </script>
-  </body>
+
+    <style>
+      .app-header {
+        background: var(--surface-card);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border-light);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+
+      @media (min-width: 768px) {
+        .app-header {
+          display: none;
+        }
+      }
+    </style>
+
+    <script>
+      function enforceTutorial() {
+        const path = window.location.pathname;
+        const isTutorialPage = path === "/" || path === "" || path === "/index.html";
+        const isStaticAsset = path.includes(".") || path.startsWith("/_astro") || path.startsWith("/data/");
+        if (isTutorialPage || isStaticAsset) return;
+        const hasCookie = document.cookie.includes("tutorial_completed=true");
+        const hasStorage = localStorage.getItem("tutorial_completed") === "true";
+        if (!hasCookie && !hasStorage) {
+          window.location.replace("/");
+        } else if (hasStorage && !hasCookie) {
+          const savedLang = localStorage.getItem('lang') || 'es';
+          const expiry = "; path=/; max-age=31536000; SameSite=Lax";
+          document.cookie = "tutorial_completed=true" + expiry;
+          document.cookie = "locale=" + encodeURIComponent(savedLang) + expiry;
+        }
+      }
+      enforceTutorial();
+      document.addEventListener("astro:after-swap", enforceTutorial);
+    </script>
+    <Analytics />
+    <RouteContributeModal />
+</body>
 </html>

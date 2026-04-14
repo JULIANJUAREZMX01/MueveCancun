@@ -1,62 +1,165 @@
 ---
-const { lang } = Astro.params;
+export const prerender = true;
 export function getStaticPaths() {
-  return [
-    { params: { lang: "es" } },
-    { params: { lang: "en" } },
-  ];
+  return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
 }
-
-import MainLayout from '../../layouts/MainLayout.astro';
-import { getRelativeLocaleUrl } from '../../utils/utils';
+import MainLayout from "../../layouts/MainLayout.astro";
+const { lang } = Astro.params;
+const isEs = lang === "es";
 ---
 
-<MainLayout title="Modo Sin Conexión">
-  <div class="max-w-md mx-auto flex flex-col items-center justify-center min-h-[60vh] text-center px-6 animate-fade-in">
-    <div class="relative mb-8">
-      <div class="w-24 h-24 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center animate-pulse">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-primary-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="1" y1="1" x2="23" y2="23"></line>
-          <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
-          <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
-          <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
-          <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
-          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-          <line x1="12" y1="20" x2="12.01" y2="20"></line>
+<MainLayout title={isEs ? "Sin conexión — MueveCancún" : "Offline — MueveCancún"} hideNav={false}>
+  <div class="offline-page">
+    <!-- Ilustracion animada -->
+    <div class="offline-illustration" aria-hidden="true">
+      <div class="bus-circle">
+        <svg viewBox="0 0 24 24" fill="currentColor" class="bus-icon">
+          <path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/>
         </svg>
       </div>
-      <div class="absolute -top-2 -right-2 bg-orange-500 text-white p-2 rounded-full shadow-lg">
-        <span class="text-xs font-bold">OFFLINE</span>
+      <div class="wifi-slash" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M22.99 9C19.15 5.35 13.8 3.76 8.84 4.78L11 6.94c3.13-.55 6.43.28 8.85 2.29l3.14-3.23zM15 15.95L12 13l-3 3.01L12 19l3-3.05zM1.41 1.41L0 2.82l4.39 4.39C2.6 8.08 1.28 9.11.01 10.28l3.14 3.23C4.39 12.4 5.9 11.3 7.64 10.68L19.5 22.5l1.41-1.41L1.41 1.41zm9.7 7.68l3.47 3.47c-.34-.4-.7-.78-1.11-1.13-.67-.6-1.52-1.01-2.36-1.34z"/>
+        </svg>
       </div>
     </div>
 
-    <h1 class="text-3xl font-display font-black text-deep-navy dark:text-white mb-4">
-      Sin conexión a Internet
+    <h1 class="offline-title">
+      {isEs ? "Sin conexión" : "You're offline"}
     </h1>
-    
-    <p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-      Parece que estás fuera del área de servicio digital. No te preocupes, puedes seguir consultando tus <span class="text-primary-600 font-bold">Rutas</span> si ya las has visitado recientemente.
+    <p class="offline-subtitle">
+      {isEs
+        ? "Pero no te preocupes — MueveCancún funciona completamente sin internet."
+        : "Don't worry — MueveCancún works completely offline."
+      }
     </p>
 
-    <div class="grid grid-cols-1 gap-4 w-full mb-8">
-      <a href={getRelativeLocaleUrl(lang, "rutas")} class="flex flex-col items-center p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-primary-300 transition-all">
-        <span class="text-2xl mb-2">🚌</span>
-        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase">Rutas</span>
-      </a>
+    <!-- Acciones offline disponibles -->
+    <div class="offline-actions-label">
+      {isEs ? "Disponible sin internet:" : "Available offline:"}
+    </div>
+    <div class="offline-features">
+      {[
+        { emoji:"🚌", label: isEs ? "78+ rutas guardadas"     : "78+ saved routes"    },
+        { emoji:"🗺️", label: isEs ? "Mapa sin conexión"       : "Offline map"         },
+        { emoji:"📍", label: isEs ? "Buscar paradas cercanas"  : "Find nearby stops"   },
+        { emoji:"⚡",  label: isEs ? "Motor WASM ultrarrápido" : "Ultra-fast WASM engine" },
+      ].map(f => (
+        <div class="offline-feature">
+          <span aria-hidden="true">{f.emoji}</span>
+          <span>{f.label}</span>
+        </div>
+      ))}
     </div>
 
-    <button onclick="window.location.reload()" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-4 rounded-2xl shadow-xl active:scale-95 transition-all">
-      REINTENTAR CONEXIÓN
-    </button>
+    <div class="offline-cta">
+      <a href={"/" + lang + "/ruta"} class="btn btn-primary btn-lg">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        {isEs ? "Buscar rutas offline" : "Search routes offline"}
+      </a>
+      <button id="retry-btn" class="btn btn-ghost btn-md" onclick="window.location.reload()">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        {isEs ? "Reintentar conexión" : "Retry connection"}
+      </button>
+    </div>
   </div>
 </MainLayout>
 
 <style>
-  @keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  .offline-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    min-height: calc(100dvh - var(--bottom-nav-h) - 4rem);
+    justify-content: center;
+    gap: 0;
+    max-width: 360px;
+    margin: 0 auto;
   }
-  .animate-fade-in {
-    animation: fade-in 0.6s ease-out forwards;
+
+  .offline-illustration {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1.5rem;
   }
+
+  .bus-circle {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex; align-items: center; justify-content: center;
+    animation: float 3s ease-in-out infinite;
+  }
+  .bus-icon { width: 48px; height: 48px; color: white; }
+
+  .wifi-slash {
+    position: absolute;
+    bottom: -4px; right: -4px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--coral);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    border: 3px solid var(--surface-bg);
+    box-shadow: var(--shadow-md);
+  }
+  .wifi-slash > svg { width: 18px; height: 18px; }
+
+  .offline-title {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    margin: 0 0 0.5rem;
+  }
+  .offline-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin: 0 0 1.5rem;
+  }
+
+  .offline-actions-label {
+    font-size: 0.65rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-primary);
+    margin-bottom: 0.625rem;
+    align-self: flex-start;
+  }
+
+  .offline-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: 1.75rem;
+  }
+  .offline-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--r-lg);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: left;
+  }
+  .offline-feature > span:first-child { font-size: 1.25rem; flex-shrink: 0; }
+
+  .offline-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    width: 100%;
+  }
+  .offline-cta .btn { width: 100%; justify-content: center; }
 </style>

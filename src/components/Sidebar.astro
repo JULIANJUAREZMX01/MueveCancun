@@ -1,0 +1,212 @@
+---
+import { getLangFromUrl } from "../utils/i18n";
+import { getRelativeLocaleUrl } from "../utils/utils";
+import Icon from "./ui/Icon.astro";
+const pathname = Astro.url.pathname;
+const lang = getLangFromUrl(Astro.url);
+
+const navItems = [
+  { href: getRelativeLocaleUrl(lang, 'home'), icon: 'home', label: 'Inicio', activePattern: /^\/(es|en)\/home/ },
+  { href: getRelativeLocaleUrl(lang, 'rutas'), icon: 'bus', label: 'Rutas', activePattern: /^\/(es|en)\/rutas/ },
+  { href: getRelativeLocaleUrl(lang, 'community'), icon: 'users', label: 'Comunidad', activePattern: /^\/(es|en)\/community/ },
+  { href: getRelativeLocaleUrl(lang, 'wallet'), icon: 'credit-card', label: 'Billetera', activePattern: /^\/(es|en)\/wallet/ },
+  { href: getRelativeLocaleUrl(lang, 'about'), icon: 'alert', label: 'Nosotros', activePattern: /^\/(es|en)\/about/ },
+];
+
+const donateHref = getRelativeLocaleUrl(lang, 'donate');
+const isDonateActive = /^\/(es|en)\/donate/.test(pathname);
+---
+
+<aside class="sidebar-nav" aria-label="Navegación principal">
+  <div class="sidebar-header">
+    <a href={getRelativeLocaleUrl(lang, "home")} class="logo-link">
+      <div class="logo-icon">🚌</div>
+    </a>
+  </div>
+
+  <nav class="sidebar-links">
+    {navItems.map((item) => {
+      const isActive = item.activePattern.test(pathname);
+      return (
+        <a href={item.href} class:list={["nav-link", { active: isActive }]} aria-current={isActive ? 'page' : undefined}>
+          <Icon name={item.icon} class="w-6 h-6" />
+          <span class="nav-label">{item.label}</span>
+          {isActive && <div class="active-indicator" transition:name="sidebar-indicator"></div>}
+        </a>
+      );
+    })}
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href={donateHref} class:list={["donate-link", { active: isDonateActive }]} aria-label="Donar">
+      <Icon name="palm-tree" class="w-6 h-6" />
+    </a>
+    <button id="theme-toggle-sidebar" class="theme-toggle" aria-label="Cambiar tema">
+       <div class="dark-icon"><Icon name="swap" class="w-6 h-6" /></div>
+       <div class="light-icon"><Icon name="swap" class="w-6 h-6" /></div>
+    </button>
+  </div>
+</aside>
+
+<style>
+  .sidebar-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 80px;
+    background: var(--surface-card);
+    border-right: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 0;
+    z-index: 100;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @media (min-width: 1024px) {
+    .sidebar-nav:hover {
+      width: 240px;
+      align-items: flex-start;
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
+  .sidebar-header {
+    margin-bottom: 3rem;
+  }
+
+  .logo-icon {
+    font-size: 2rem;
+  }
+
+  .sidebar-links {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    color: var(--text-tertiary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 1024px) {
+    .sidebar-nav:hover .nav-link {
+      width: 100%;
+      justify-content: flex-start;
+      padding: 0 0.75rem;
+      gap: 1rem;
+      margin: 0;
+    }
+  }
+
+  .nav-link:hover {
+    background: var(--surface-elevated);
+    color: var(--color-primary);
+  }
+
+  .nav-link.active {
+    background: var(--color-primary-alpha-10);
+    color: var(--color-primary);
+  }
+
+  .nav-label {
+    display: none;
+    font-size: 0.875rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  @media (min-width: 1024px) {
+    .sidebar-nav:hover .nav-label {
+      display: block;
+    }
+  }
+
+  .active-indicator {
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background: var(--color-primary);
+    border-radius: 0 4px 4px 0;
+  }
+
+  .sidebar-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    width: 100%;
+  }
+
+  @media (min-width: 1024px) {
+    .sidebar-nav:hover .sidebar-footer {
+      flex-direction: row;
+      justify-content: space-around;
+    }
+  }
+
+  .donate-link, .theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    transition: all 0.2s ease;
+  }
+
+  .donate-link:hover, .donate-link.active {
+    background: var(--color-sunset-alpha-10);
+    color: var(--color-sunset);
+  }
+
+  .theme-toggle:hover {
+    background: var(--surface-elevated);
+    color: var(--text-primary);
+  }
+
+  .light-icon { display: none; }
+  :global(.dark) .dark-icon { display: none; }
+  :global(.dark) .light-icon { display: block; }
+
+  /* Mobile: Hide Sidebar, use BottomNav (to be replaced later if needed) */
+  @media (max-width: 768px) {
+    .sidebar-nav {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  function setupTheme() {
+    const btn = document.getElementById('theme-toggle-sidebar');
+    btn?.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+  }
+  setupTheme();
+  document.addEventListener('astro:page-load', setupTheme);
+</script>

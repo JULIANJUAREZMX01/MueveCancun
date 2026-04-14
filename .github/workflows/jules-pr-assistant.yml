@@ -29,7 +29,7 @@ jobs:
     steps:
       - name: Fetch PR details
         id: pr-details
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const pr = await github.rest.pulls.get({
@@ -45,18 +45,18 @@ jobs:
 
       # Checkout the default branch only — trusted code.
       # The untrusted PR branch is never checked out; its diff is fetched via API below.
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Setup Node 22
-        uses: actions/setup-node@1d429da20474c46469af3ad516f8d16717f863b7
+      - name: Setup Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: "22"
+          node-version: "20"
 
       # Fetch PR file changes via GitHub REST API (no code execution).
       # The diff text is passed to Jules as data so it has full context of the changes.
       - name: Fetch PR diff via GitHub API
         id: fetch-pr-diff
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             try {
@@ -79,7 +79,7 @@ jobs:
             }
 
       - name: React to comment (acknowledge)
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             await github.rest.reactions.createForIssueComment({
@@ -105,14 +105,9 @@ jobs:
 
       - name: Post success comment
         if: success()
-        env:
-          COMMENT_BODY: ${{ github.event.comment.body }}
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
-        env:
-          COMMENT_BODY: ${{ github.event.comment.body }}
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const { COMMENT_BODY } = process.env;
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -120,7 +115,7 @@ jobs:
               body: [
                 '🤖 **Jules** recibió la solicitud y comenzó a trabajar.',
                 '',
-                `> \`${process.env.COMMENT_BODY}\``,
+                `> \`${{ github.event.comment.body }}\``,
                 '',
                 'Los cambios serán commiteados directamente en esta rama. El PR se actualizará automáticamente.',
                 '',
@@ -130,7 +125,7 @@ jobs:
 
       - name: React to comment (done)
         if: success()
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             await github.rest.reactions.createForIssueComment({
@@ -142,7 +137,7 @@ jobs:
 
       - name: Post failure comment
         if: failure()
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             await github.rest.issues.createComment({

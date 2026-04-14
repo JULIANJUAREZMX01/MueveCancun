@@ -27,25 +27,25 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
 
       - name: Setup Node 22
-        uses: actions/setup-node@1d429da20474c46469af3ad516f8d16717f863b7
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@a34848ad9613149a460456102ce69e5d41f5a91a
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
 
       - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@87d00f7e447df178b022203ed48e42657e29780c
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: wasm32-unknown-unknown
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@823b5ca084baad149bc27f54c9c1b979207e4c27
+        uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
         with:
           workspaces: rust-wasm
 
@@ -114,7 +114,7 @@ jobs:
 
       # --- Step 8: Auto-commit any changes ---
       - name: Commit auto-healed artifacts
-        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72305609d93224dbf73bc4
+        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
         id: auto_commit
         with:
           commit_message: |
@@ -135,7 +135,7 @@ jobs:
       # --- Step 9: Open an issue if critical checks failed ---
       - name: Create issue for failed checks
         if: steps.validate.outputs.ok == 'false' || steps.rust_tests.outputs.ok == 'false'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const title = '🔴 Auto-Curative: Health Check Failed';

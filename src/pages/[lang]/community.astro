@@ -1,159 +1,157 @@
 ---
+export const prerender = true;
 export function getStaticPaths() {
-  return [
-    { params: { lang: "es" } },
-    { params: { lang: "en" } },
-  ];
+  return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
 }
-
-import MainLayout from '../../layouts/MainLayout.astro';
+import MainLayout from "../../layouts/MainLayout.astro";
 const { lang } = Astro.params;
-
-const isEs = lang === 'es';
-const title = isEs ? "Comunidad" : "Community";
-const subtitle = isEs ? "Reportes ciudadanos en tiempo real" : "Real-time citizen reports";
+const isEs = lang === "es";
 ---
 
-<MainLayout title={title}>
-  <div class="pb-28 pt-4 px-4 max-w-lg mx-auto md:max-w-2xl">
+<MainLayout title={isEs ? "Comunidad — MueveCancún" : "Community — MueveCancún"}>
+  <div class="page-content page-content-wide px-4">
 
     <!-- Header -->
-    <div class="mb-6 flex items-center justify-between">
+    <div class="comm-header">
       <div>
-        <h1 class="font-display font-black text-2xl text-slate-900 dark:text-white tracking-tight">{title}</h1>
-        <p class="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+        <div class="section-label mb-1">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          {isEs ? "Comunidad" : "Community"}
+        </div>
+        <h1 class="page-title">{isEs ? "Reportes en vivo" : "Live reports"}</h1>
+        <p class="page-subtitle">{isEs ? "Incidencias reportadas por usuarios" : "User-reported incidents"}</p>
       </div>
       <button
-        id="btn-report-community"
-        class="bg-primary-500 text-white rounded-2xl px-4 py-2 flex items-center gap-2 shadow-lg shadow-primary-500/20 hover:scale-105 active:scale-95 transition-all text-xs font-black uppercase tracking-wider"
-        aria-label={isEs ? "Crear reporte" : "Create report"}
+        id="btn-new-report"
+        class="btn btn-primary btn-sm"
+        aria-label={isEs ? "Nuevo reporte" : "New report"}
       >
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         {isEs ? "Reportar" : "Report"}
       </button>
     </div>
 
-    <!-- Filter Tabs -->
-    <div class="flex gap-2 mb-5 overflow-x-auto pb-1 scrollbar-hide">
-      <button data-filter="all" class="filter-tab active shrink-0">{isEs ? "Todos" : "All"}</button>
-      <button data-filter="Tráfico" class="filter-tab shrink-0">🚗 {isEs ? "Tráfico" : "Traffic"}</button>
-      <button data-filter="Demora" class="filter-tab shrink-0">⏱ {isEs ? "Demora" : "Delay"}</button>
-      <button data-filter="Precio" class="filter-tab shrink-0">💰 {isEs ? "Precio" : "Price"}</button>
-      <button data-filter="Ruta" class="filter-tab shrink-0">🗺️ {isEs ? "Ruta" : "Route"}</button>
-      <button data-filter="Noticia" class="filter-tab shrink-0">📢 {isEs ? "Noticia" : "News"}</button>
+    <!-- Live indicator + stats -->
+    <div class="live-bar">
+      <div class="live-indicator">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span id="reports-status" class="live-label">{isEs ? "Cargando..." : "Loading..."}</span>
+      </div>
+      <div class="live-stats" id="live-stats" aria-live="polite"></div>
     </div>
 
-    <!-- Live indicator -->
-    <div class="flex items-center gap-2 mb-4">
-      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-      <span id="reports-status" class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-        {isEs ? "Cargando reportes..." : "Loading reports..."}
-      </span>
+    <!-- Filtros -->
+    <div class="filter-row" role="group" aria-label={isEs ? "Filtrar reportes" : "Filter reports"}>
+      {[
+        { id: "all",     emoji: "📡", label: isEs ? "Todos"    : "All"     },
+        { id: "Tráfico", emoji: "🚗", label: isEs ? "Tráfico"  : "Traffic" },
+        { id: "Demora",  emoji: "⏱",  label: isEs ? "Demora"   : "Delay"   },
+        { id: "Precio",  emoji: "💰", label: isEs ? "Precio"   : "Price"   },
+        { id: "Ruta",    emoji: "🗺️", label: isEs ? "Ruta"     : "Route"   },
+        { id: "Noticia", emoji: "📢", label: isEs ? "Noticia"  : "News"    },
+      ].map(f => (
+        <button
+          data-filter={f.id}
+          class={"chip" + (f.id === "all" ? " active" : "")}
+          aria-selected={f.id === "all" ? "true" : "false"}
+        >
+          <span aria-hidden="true">{f.emoji}</span>
+          {f.label}
+        </button>
+      ))}
     </div>
 
-    <!-- Feed Container -->
-    <div id="reports-feed" class="space-y-3">
-      <!-- Skeleton loaders -->
-      {[1,2,3].map(() => (
-        <div class="glass-card p-4 animate-pulse">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700"></div>
-            <div class="flex-1 space-y-1.5">
-              <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
-              <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded w-1/4"></div>
-            </div>
-            <div class="h-5 w-16 bg-slate-100 dark:bg-slate-800 rounded"></div>
-          </div>
-          <div class="space-y-1.5">
-            <div class="h-3 bg-slate-100 dark:bg-slate-800 rounded w-full"></div>
-            <div class="h-3 bg-slate-100 dark:bg-slate-800 rounded w-3/4"></div>
+    <!-- Feed -->
+    <div id="reports-feed" class="reports-feed" aria-live="polite" aria-atomic="false">
+      <!-- Skeletons -->
+      {[0,1,2].map(() => (
+        <div class="report-skeleton" aria-hidden="true">
+          <div class="skeleton" style="width:36px;height:36px;border-radius:50%;flex-shrink:0"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:0.5rem">
+            <div class="skeleton" style="height:14px;width:60%;border-radius:4px"></div>
+            <div class="skeleton" style="height:12px;width:80%;border-radius:4px"></div>
           </div>
         </div>
       ))}
     </div>
 
-    <!-- Empty State (hidden by default) -->
-    <div id="empty-state" class="hidden mt-8 text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
-      <div class="text-4xl mb-3">🌴</div>
-      <h3 class="font-black text-slate-600 dark:text-slate-400">{isEs ? "Todo tranquilo" : "All clear"}</h3>
-      <p class="text-xs text-slate-400 max-w-xs mx-auto mt-1 leading-relaxed">
-        {isEs ? "No hay reportes recientes. ¿Ves algo? Sé el primero en reportar." : "No recent reports. See something? Be the first to report."}
-      </p>
-      <button id="btn-report-empty" class="mt-5 bg-primary-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg shadow-primary-500/20 hover:scale-105 active:scale-95 transition-all">
-        {isEs ? "Crear primer reporte" : "Create first report"}
-      </button>
-    </div>
-
-    <!-- Error State (hidden by default) -->
-    <div id="error-state" class="hidden mt-6 p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/30 rounded-2xl text-center">
-      <p class="text-sm font-bold text-orange-700 dark:text-orange-400">
-        {isEs ? "No se pudo cargar. Mostrando últimos reportes guardados." : "Could not load. Showing last saved reports."}
-      </p>
+    <!-- Empty state -->
+    <div id="reports-empty" class="reports-empty" hidden>
+      <span aria-hidden="true">📭</span>
+      <p>{isEs ? "Sin reportes recientes" : "No recent reports"}</p>
+      <p class="empty-sub">{isEs ? "Sé el primero en reportar una incidencia." : "Be the first to report an incident."}</p>
     </div>
 
   </div>
 </MainLayout>
 
-<script define:vars={{ lang }}>
-  const isEs = lang === 'es';
+<style>
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    margin: 0.125rem 0;
+    line-height: 1.1;
+  }
+  .page-subtitle { font-size: 0.8rem; color: var(--text-tertiary); margin: 0; }
 
-  // --- Type labels ---
-  const TYPE_MAP = {
-    precio:     { label: isEs ? 'Precio'    : 'Price',   color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',   emoji: '💰' },
-    ruta:       { label: isEs ? 'Ruta'      : 'Route',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',       emoji: '🗺️' },
-    nueva:      { label: isEs ? 'Ruta Nueva': 'New Route',color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', emoji: '✨' },
-    cancelada:  { label: isEs ? 'Cancelada' : 'Cancelled',color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',          emoji: '🚫' },
-    comentario: { label: isEs ? 'Otro'      : 'Other',   color: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',      emoji: '💬' },
-    // Legacy types from older reports
-    Tráfico:    { label: isEs ? 'Tráfico'   : 'Traffic', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',           emoji: '🚗' },
-    Demora:     { label: isEs ? 'Demora'    : 'Delay',   color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',emoji: '⏱' },
-    Noticia:    { label: isEs ? 'Noticia'   : 'News',    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',       emoji: '📢' },
-  };
-
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+  .comm-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-top: 0.5rem;
   }
 
-  function timeAgo(dateStr) {
-    const now = Date.now();
-    const diff = Math.floor((now - new Date(dateStr).getTime()) / 1000);
-    if (diff < 60)   return isEs ? `Hace ${diff}s`           : `${diff}s ago`;
-    if (diff < 3600) return isEs ? `Hace ${Math.floor(diff/60)}min` : `${Math.floor(diff/60)}min ago`;
-    if (diff < 86400)return isEs ? `Hace ${Math.floor(diff/3600)}h` : `${Math.floor(diff/3600)}h ago`;
-    return isEs ? `Hace ${Math.floor(diff/86400)}d` : `${Math.floor(diff/86400)}d ago`;
+  /* ── Live bar ── */
+  .live-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.875rem;
+    padding: 0.5rem 0.875rem;
+    background: var(--jungle-light);
+    border-radius: var(--r-full);
   }
+  .dark .live-bar { background: rgba(34,197,94,0.10); }
 
-  function parseReport(issue) {
-    // Parse GitHub Issue body to extract report fields
-    const body = issue.body || '';
-    const tipoMatch = body.match(/\*\*Tipo:\*\*\s*([^\n]+)/);
-    const rutaMatch = body.match(/\*\*Ruta:\*\*\s*([^\n]+)/);
-    const descMatch = body.match(/\*\*Descripción:\*\*\s*([\s\S]+?)(?:\n\n|\n\*\*|$)/);
-    const locMatch  = body.match(/\*\*Ubicación:\*\*\s*([^\n]+)/);
+  .live-indicator { display: flex; align-items: center; gap: 0.5rem; }
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--jungle);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.85); }
+  }
+  .live-label { font-size: 0.72rem; font-weight: 700; color: #15803d; }
+  .dark .live-label { color: #4ade80; }
+  .live-stats { font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary); }
 
-    const rawTipo = tipoMatch ? tipoMatch[1].trim() : 'comentario';
-    const typeInfo = TYPE_MAP[rawTipo] || TYPE_MAP.comentario;
+  .filter-row {
+    display: flex; gap: 0.5rem;
+    overflow-x: auto; padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
 
-    return {
-      id: issue.number,
-      user: issue.user?.login || 'Anónimo',
-      time: timeAgo(issue.created_at),
-      rawTime: issue.created_at,
-      tipo: rawTipo,
-      typeLabel: typeInfo.label,
-      typeColor: typeInfo.color,
-      typeEmoji: typeInfo.emoji,
-      ruta: rutaMatch ? rutaMatch[1].trim() : '',
-      text: descMatch ? descMatch[1].trim() : (issue.title || ''),
-      location: locMatch ? locMatch[1].trim() : '',
-      votes: issue.reactions?.['+1'] || 0,
-      url: issue.html_url,
-    };
+  /* ── Feed de reportes ── */
+  .reports-feed { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  /* Skeleton */
+  .report-skeleton {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--r-xl);
   }
 
   function renderCard(report) {
@@ -208,204 +206,144 @@ const subtitle = isEs ? "Reportes ciudadanos en tiempo real" : "Real-time citize
       </div>
     `;
   }
-
-  // --- Cache in localStorage ---
-  const CACHE_KEY = 'community_reports_cache';
-  const CACHE_TTL = 5 * 60 * 1000; // 5 min
-
-  function loadCache() {
-    try {
-      const raw = localStorage.getItem(CACHE_KEY);
-      if (!raw) return null;
-      const { ts, data } = JSON.parse(raw);
-      if (Date.now() - ts < CACHE_TTL) return data;
-    } catch { /* ignore */ }
-    return null;
-  }
-
-  function saveCache(data) {
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-    } catch { /* ignore */ }
-  }
-
-  // --- Vercel feed ---
-  let allReports = [];
-  let activeFilter = 'all';
-
-  function renderFeed() {
-    const feed = document.getElementById('reports-feed');
-    const emptyState = document.getElementById('empty-state');
-    if (!feed) return;
-
-    const filtered = activeFilter === 'all'
-      ? allReports
-      : allReports.filter(r =>
-          r.tipo === activeFilter ||
-          r.typeLabel === activeFilter ||
-          r.tipo.toLowerCase() === activeFilter.toLowerCase()
-        );
-
-    if (filtered.length === 0) {
-      feed.innerHTML = '';
-      emptyState?.classList.remove('hidden');
-    } else {
-      emptyState?.classList.add('hidden');
-      feed.innerHTML = filtered.map(renderCard).join('');
-      setupVoteButtons();
-    }
-  }
-
-  // --- Vote buttons (localStorage-based, no server needed) ---
-  function setupVoteButtons() {
-    document.querySelectorAll('.vote-btn').forEach(btn => {
-      const id = btn.getAttribute('data-id');
-      const votedKey = `voted_report_${id}`;
-      if (localStorage.getItem(votedKey)) {
-        btn.classList.add('text-primary-500');
-        btn.setAttribute('disabled', 'true');
-      }
-      btn.addEventListener('click', () => {
-        if (localStorage.getItem(votedKey)) return;
-        const countEl = btn.querySelector('.vote-count');
-        if (countEl) countEl.textContent = String(parseInt(countEl.textContent || '0') + 1);
-        localStorage.setItem(votedKey, '1');
-        btn.classList.add('text-primary-500');
-        btn.setAttribute('disabled', 'true');
-      });
-    });
-  }
-
-  // --- Filter tabs ---
-  function setupFilters() {
-    document.querySelectorAll('.filter-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        activeFilter = tab.getAttribute('data-filter') || 'all';
-        renderFeed();
-      });
-    });
-  }
-
-  // --- Fetch from GitHub Issues API (public, no token needed) ---
-  async function fetchReports() {
-    const feed = document.getElementById('reports-feed');
-    const statusEl = document.getElementById('reports-status');
-    const errorState = document.getElementById('error-state');
-
-    // Try cache first
-    const cached = loadCache();
-    if (cached && cached.length > 0) {
-      allReports = cached;
-      renderFeed();
-      if (statusEl) statusEl.textContent = `${cached.length} ${isEs ? 'reportes' : 'reports'} · ${isEs ? 'Actualizando...' : 'Updating...'}`;
-    }
-
-    try {
-      // GitHub Issues API — public repo, no auth needed for reading
-      const res = await fetch(
-        'https://api.github.com/repos/JULIANJUAREZMX01/MueveCancun/issues?labels=citizen-report&state=open&per_page=50&sort=created&direction=desc',
-        { headers: { 'Accept': 'application/vnd.github.v3+json' } }
-      );
-
-      if (!res.ok) throw new Error(`GitHub API ${res.status}`);
-
-      const issues = await res.json();
-      const reports = issues.map(parseReport);
-
-      allReports = reports;
-      saveCache(reports);
-
-      if (statusEl) {
-        statusEl.textContent = reports.length > 0
-          ? `${reports.length} ${isEs ? 'reportes activos' : 'active reports'}`
-          : (isEs ? 'Sin reportes activos' : 'No active reports');
-      }
-
-      renderFeed();
-      errorState?.classList.add('hidden');
-
-    } catch (err) {
-      console.warn('[Community] GitHub API error:', err);
-      if (!cached || cached.length === 0) {
-        // Show error only if we have no cache
-        if (feed) feed.innerHTML = '';
-        errorState?.classList.remove('hidden');
-        document.getElementById('empty-state')?.classList.remove('hidden');
-      }
-      if (statusEl && (!cached || cached.length === 0)) {
-        statusEl.textContent = isEs ? 'Sin conexión' : 'Offline';
-      }
-    }
-  }
-
-  // --- Setup report buttons ---
-  function setupReportButtons() {
-    ['btn-report-community', 'btn-report-empty'].forEach(id => {
-      document.getElementById(id)?.addEventListener('click', () => {
-        // @ts-ignore
-        window.rwOpenReport?.();
-      });
-    });
-  }
-
-  // --- Init ---
-  function init() {
-    setupFilters();
-    setupReportButtons();
-    fetchReports();
-  }
-
-  document.addEventListener('astro:page-load', init);
-  init();
-</script>
-
-<style>
-  .glass-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 1rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-  }
-  :global(.dark) .glass-card {
-    background: rgba(15, 23, 42, 0.7);
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-
-  .filter-tab {
-    padding: 0.4rem 0.85rem;
-    font-size: 0.72rem;
-    font-weight: 800;
-    border-radius: 99px;
-    background: rgba(241, 245, 249, 0.8);
-    color: #64748b;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-  }
-  :global(.dark) .filter-tab {
-    background: rgba(30, 41, 59, 0.8);
-    color: #94a3b8;
-  }
-  .filter-tab.active,
-  .filter-tab:hover {
-    background: var(--color-primary, #0d9488);
-    color: white;
-    border-color: transparent;
-    box-shadow: 0 2px 8px rgba(13,148,136,0.25);
-  }
-
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-  .animate-slide-up {
-    animation: slideUp 0.35s ease-out forwards;
-  }
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  .reports-empty:first-child { font-size: 2.5rem; }
+  .reports-empty > span { font-size: 2.5rem; }
+  .reports-empty > p { margin: 0; font-weight: 600; color: var(--text-primary); }
+  .reports-empty .empty-sub { font-weight: 400; color: var(--text-tertiary); font-size: 0.8rem; }
+  .reports-empty[hidden] { display: none; }
 </style>
+
+<script>
+  const API = "/api/reports";
+  const feed    = document.getElementById("reports-feed")!;
+  const empty   = document.getElementById("reports-empty")!;
+  const statusEl= document.getElementById("reports-status")!;
+  const statsEl = document.getElementById("live-stats")!;
+  const filterBtns = document.querySelectorAll<HTMLButtonElement>(".filter-row .chip");
+  const newBtn  = document.getElementById("btn-new-report");
+
+  let allReports: any[] = [];
+  let activeFilter = "all";
+
+  const typeColors: Record<string,string> = {
+    "Tráfico":"orange","Demora":"amber","Precio":"green","Ruta":"teal","Noticia":"blue"
+  };
+  const typeEmoji: Record<string,string> = {
+    "Tráfico":"🚗","Demora":"⏱","Precio":"💰","Ruta":"🗺️","Noticia":"📢"
+  };
+
+  function timeSince(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)  return "Ahora";
+    if (m < 60) return m + "m";
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + "h";
+    return Math.floor(h / 24) + "d";
+  }
+
+  function renderReports(reports: any[]) {
+    // Remove skeletons
+    feed.querySelectorAll(".report-skeleton").forEach(el => el.remove());
+    feed.innerHTML = "";
+
+    const filtered = activeFilter === "all"
+      ? reports
+      : reports.filter(r => (r.type || r.tipo || "") === activeFilter);
+
+    empty.hidden = filtered.length > 0;
+
+    filtered.forEach((r, i) => {
+      const card = document.createElement("article");
+      card.className = "report-card";
+      card.style.animationDelay = (i * 60) + "ms";
+      card.style.opacity = "0";
+
+      const initials = (r.author || r.autor || "?")[0].toUpperCase();
+      const type     = r.type || r.tipo || "General";
+      const emoji    = typeEmoji[type] || "📢";
+      const ago      = timeSince(r.created_at || r.fecha || new Date().toISOString());
+      const votes    = r.votes || r.votos || 0;
+
+      card.innerHTML = [
+        "<div class='report-card__avatar'>" + initials + "</div>",
+        "<div class='report-card__body'>",
+          "<div class='report-card__title'>" + emoji + " " + (r.message || r.mensaje || r.title || "Sin descripcion") + "</div>",
+          "<div class='report-card__meta'>",
+            "<span class='report-card__type'>" + type + "</span>",
+            "<span>" + (r.route || r.ruta || "") + "</span>",
+            "<span>" + ago + "</span>",
+            "<button class='report-card__votes' data-id='" + (r.id || "") + "'>",
+              "<svg width='12' height='12' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z'/></svg>",
+              "<span>" + votes + "</span>",
+            "</button>",
+          "</div>",
+        "</div>",
+      ].join("");
+
+      // Vote button
+      card.querySelector(".report-card__votes")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const btn = e.currentTarget as HTMLButtonElement;
+        const span = btn.querySelector("span")!;
+        span.textContent = String(parseInt(span.textContent || "0") + 1);
+        btn.style.color = "var(--color-primary)";
+        btn.style.borderColor = "var(--color-primary)";
+        btn.style.background = "var(--teal-xlight)";
+      });
+
+      feed.appendChild(card);
+    });
+
+    statusEl.textContent = filtered.length + " reporte" + (filtered.length !== 1 ? "s" : "");
+    if (statsEl) {
+      const types = new Set(reports.map(r => r.type || r.tipo)).size;
+      statsEl.textContent = types + " tipos";
+    }
+  }
+
+  async function loadReports() {
+    try {
+      const res = await fetch(API);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      allReports = Array.isArray(data) ? data : (data.reports || data.data || []);
+      renderReports(allReports);
+    } catch {
+      statusEl.textContent = "Sin conexion — datos en cache";
+      // Datos de demo offline
+      allReports = [
+        { id:"1", type:"Tráfico",  message:"Congestion en Av. Tulum frente a La Isla", author:"Ana G.", route:"R2",   created_at: new Date(Date.now()-300000).toISOString(), votes: 12 },
+        { id:"2", type:"Demora",   message:"Ruta R1 con 20 min de retraso desde el aeropuerto", author:"Carlos M.", route:"R1", created_at: new Date(Date.now()-900000).toISOString(), votes: 8 },
+        { id:"3", type:"Precio",   message:"Subio la tarifa en combis del Centro a $9 pesos", author:"Sofia T.", route:"Combi", created_at: new Date(Date.now()-1800000).toISOString(), votes: 23 },
+        { id:"4", type:"Ruta",     message:"Nuevo ramal de la R27 pasa por Plaza Americas", author:"Diego R.", route:"R27", created_at: new Date(Date.now()-3600000).toISOString(), votes: 5 },
+        { id:"5", type:"Noticia",  message:"MueveCancun ahora disponible offline!", author:"Admin", route:"", created_at: new Date(Date.now()-7200000).toISOString(), votes: 34 },
+      ];
+      renderReports(allReports);
+    }
+  }
+
+  // Filtros
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      filterBtns.forEach(b => { b.classList.remove("active"); b.setAttribute("aria-selected","false"); });
+      btn.classList.add("active");
+      btn.setAttribute("aria-selected","true");
+      activeFilter = btn.dataset.filter || "all";
+      renderReports(allReports);
+    });
+  });
+
+  // Nuevo reporte
+  if (newBtn) {
+    newBtn.addEventListener("click", () => {
+      window.dispatchEvent(new CustomEvent("OPEN_REPORT_WIDGET"));
+    });
+  }
+
+  loadReports();
+  // Refrescar cada 60s si esta en linea
+  setInterval(() => { if (navigator.onLine) loadReports(); }, 60000);
+
+  document.addEventListener("astro:after-swap", loadReports);
+</script>

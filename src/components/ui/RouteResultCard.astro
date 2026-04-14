@@ -1,7 +1,4 @@
 ---
-import Card from './Card.astro';
-import Badge from './Badge.astro';
-
 interface Props {
   routeName: string;
   routeDescription?: string;
@@ -9,49 +6,181 @@ interface Props {
   duration?: string;
   isSafe?: boolean;
   isCashOnly?: boolean;
+  transportType?: string;
+  stops?: string[];
   href?: string;
+  onMap?: boolean;
 }
 
-const { routeName, routeDescription, price, duration, isSafe, isCashOnly, href } = Astro.props;
+const {
+  routeName, routeDescription, price, duration,
+  isSafe, isCashOnly, transportType = "bus",
+  stops = [], href, onMap = false
+} = Astro.props;
+
+const transportEmoji: Record<string,string> = {
+  bus: "🚌", combi: "🚐", van: "🚐", taxi: "🚕", ado: "🎒"
+};
+const emoji = transportEmoji[transportType] || "🚌";
 ---
 
-<a href={href || '#'} class="block group">
-  <Card class="transition-transform active:scale-98 hover:shadow-md border-l-4 border-l-primary-500 relative overflow-hidden">
-    <div class="flex justify-between items-start mb-2">
-      <div>
-        <div class="flex items-center gap-2 mb-1">
-          <h3 class="text-2xl font-black text-gray-900 tracking-tight group-hover:text-primary-600 transition-colors">
-            {routeName}
-          </h3>
-          {isSafe && <Badge variant="success">Segura</Badge>}
-        </div>
-        <p class="text-sm font-medium text-slate-500 line-clamp-1">
-          {routeDescription}
-        </p>
-      </div>
-      <div class="text-right">
-        <div class="text-2xl font-black text-primary-600">
-          ${price.toFixed(2)}
-        </div>
-        {duration && (
-            <div class="text-xs font-bold text-slate-400 flex items-center justify-end gap-1">
-                <span>⏱️</span> {duration}
-            </div>
-        )}
-      </div>
+<div class={"route-result-card" + (onMap ? " route-result-card--on-map" : "")}>
+  <!-- Type + Name -->
+  <div class="rrc__header">
+    <span class="rrc__transport" aria-hidden="true">{emoji}</span>
+    <div class="rrc__name-wrap">
+      <h3 class="rrc__name">{routeName}</h3>
+      {routeDescription && <p class="rrc__desc">{routeDescription}</p>}
     </div>
+    <div class="rrc__price-col">
+      {price > 0
+        ? <span class="price-tag">${price.toFixed(2)}</span>
+        : <span class="rrc__free">Gratis</span>
+      }
+      {duration && <span class="rrc__duration">{duration}</span>}
+    </div>
+  </div>
 
-    <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
-        <div class="flex gap-2">
-            {isCashOnly && (
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    💵 Solo Efectivo
-                </span>
-            )}
+  <!-- Stops preview -->
+  {stops.length > 0 && (
+    <div class="rrc__stops" aria-label="Paradas">
+      {stops.slice(0,4).map((stop, i) => (
+        <div class="rrc__stop">
+          <span class={"rrc__stop-dot" + (i === 0 ? " rrc__stop-dot--first" : i === stops.length - 1 || i === 3 ? " rrc__stop-dot--last" : "")} aria-hidden="true"></span>
+          <span class="rrc__stop-name">{String(typeof stop === "object" ? (stop as any).name || (stop as any).nombre || JSON.stringify(stop) : stop)}</span>
         </div>
-        <span class="text-primary-500 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transform duration-200">
-            Ver Ruta →
-        </span>
+      ))}
+      {stops.length > 4 && (
+        <span class="rrc__more-stops">+{stops.length - 4} paradas</span>
+      )}
     </div>
-  </Card>
-</a>
+  )}
+
+  <!-- Badges + Actions -->
+  <div class="rrc__footer">
+    <div class="rrc__badges">
+      {isSafe && <span class="badge badge-green">Verificada</span>}
+      {isCashOnly && <span class="badge badge-amber">Solo efectivo</span>}
+      {transportType === "ado" && <span class="badge badge-blue">ADO</span>}
+    </div>
+    <div class="rrc__actions">
+      <button
+        class="rrc__action-btn rrc__action-btn--map"
+        aria-label="Ver en mapa"
+        data-route-name={routeName}
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+      </button>
+      <button
+        class="rrc__action-btn rrc__action-btn--share"
+        aria-label="Compartir ruta"
+        data-route-name={routeName}
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+      </button>
+      {href && (
+        <a href={href} class="rrc__action-btn rrc__action-btn--detail" aria-label="Ver detalles">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </a>
+      )}
+    </div>
+  </div>
+</div>
+
+<style>
+  .route-result-card {
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    border-left: 4px solid var(--color-primary);
+    border-radius: var(--r-xl);
+    padding: 1rem 1rem 0.875rem;
+    box-shadow: var(--shadow-xs);
+    display: flex; flex-direction: column; gap: 0.75rem;
+    transition: box-shadow var(--t-base) var(--ease), transform var(--t-base) var(--ease);
+    animation: fade-up 0.35s var(--ease-out) forwards;
+    opacity: 0;
+  }
+  .route-result-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .route-result-card--on-map {
+    border-radius: var(--r-2xl);
+    box-shadow: var(--shadow-xl);
+  }
+
+  /* ── Header ── */
+  .rrc__header { display: flex; align-items: flex-start; gap: 0.75rem; }
+  .rrc__transport {
+    font-size: 1.5rem; width: 44px; height: 44px;
+    background: var(--teal-xlight);
+    border-radius: var(--r-lg);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .dark .rrc__transport { background: rgba(13,148,136,0.12); }
+  .rrc__name-wrap { flex: 1; min-width: 0; }
+  .rrc__name {
+    font-family: var(--font-display); font-size: 1rem; font-weight: 900;
+    color: var(--text-primary); margin: 0; line-height: 1.2;
+    letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .rrc__desc { font-size: 0.72rem; color: var(--text-tertiary); margin: 0.2rem 0 0; font-weight: 600; }
+  .rrc__price-col { display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem; flex-shrink: 0; }
+  .rrc__free { font-size: 0.72rem; font-weight: 900; color: var(--jungle); text-transform: uppercase; letter-spacing: 0.05em; }
+  .rrc__duration { font-size: 0.65rem; font-weight: 700; color: var(--text-tertiary); }
+
+  /* ── Stops ── */
+  .rrc__stops {
+    display: flex; flex-direction: column; gap: 0.3rem;
+    padding: 0.625rem 0.875rem;
+    background: var(--surface-bg);
+    border-radius: var(--r-lg);
+  }
+  .rrc__stop { display: flex; align-items: center; gap: 0.5rem; }
+  .rrc__stop-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    border: 2px solid var(--border-medium); flex-shrink: 0;
+  }
+  .rrc__stop-dot--first { background: var(--color-primary); border-color: var(--color-primary); }
+  .rrc__stop-dot--last  { background: var(--sunset); border-color: var(--sunset); }
+  .rrc__stop-name { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rrc__more-stops { font-size: 0.68rem; font-weight: 700; color: var(--text-tertiary); padding-left: 1.125rem; }
+
+  /* ── Footer ── */
+  .rrc__footer { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .rrc__badges { display: flex; gap: 0.375rem; flex-wrap: wrap; }
+  .rrc__actions { display: flex; gap: 0.375rem; }
+  .rrc__action-btn {
+    width: 32px; height: 32px; border-radius: var(--r-full);
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--border-light); background: var(--surface-elevated);
+    color: var(--text-tertiary); cursor: pointer; text-decoration: none;
+    transition: all var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .rrc__action-btn > svg { width: 14px; height: 14px; }
+  .rrc__action-btn--map:hover   { border-color: var(--turquoise); color: var(--turquoise); background: var(--turquoise-light); }
+  .rrc__action-btn--share:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--teal-xlight); }
+  .rrc__action-btn--detail:hover { border-color: var(--sunset); color: var(--sunset); background: var(--sunset-light); }
+  .rrc__action-btn:active { transform: scale(0.88); }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>(".rrc__action-btn--map").forEach(btn => {
+    btn.addEventListener("click", () => {
+      window.dispatchEvent(new CustomEvent("SHOW_ROUTE_ON_MAP", {
+        detail: { routeName: btn.dataset.routeName }
+      }));
+    });
+  });
+  document.querySelectorAll<HTMLButtonElement>(".rrc__action-btn--share").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const name = btn.dataset.routeName || "Ruta";
+      const url  = location.href;
+      if (navigator.share) {
+        await navigator.share({ title: name, text: "Ruta " + name + " en MueveCancun", url }).catch(() => {});
+      } else {
+        await navigator.clipboard.writeText(url).catch(() => {});
+        window.dispatchEvent(new CustomEvent("SHOW_TOAST", { detail: { message: "Enlace copiado", type: "success" } }));
+      }
+    });
+  });
+</script>

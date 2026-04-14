@@ -12,6 +12,7 @@
  */
 
 import { neon } from '@neondatabase/serverless';
+import { logger } from '../utils/logger';
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ export interface Payment {
 // ─── DB Client ────────────────────────────────────────────────────────────────
 
 function getDb() {
-  const url = process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL || import.meta.env.DATABASE_URL;
   if (!url) throw new Error('[Guardians] DATABASE_URL not set.');
   return neon(url);
 }
@@ -77,7 +78,7 @@ async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS idx_payments_customer ON payments(stripe_customer_id);
   `;
   schemaInitialized = true;
-  console.log('[Guardians] Schema ensured ✅');
+  logger.log('[Guardians] Schema ensured ✅');
 }
 
 // ─── Guardian CRUD ────────────────────────────────────────────────────────────
@@ -125,7 +126,7 @@ export async function saveGuardian(guardian: Partial<Guardian>): Promise<Guardia
     `;
   }
 
-  console.log(`[Guardians] Saved: ${key ?? guardian.email} (${guardian.status})`);
+  logger.log(`[Guardians] Saved: ${key ?? guardian.email} (${guardian.status})`);
   return { ...guardian, created_at: now, updated_at: now } as Guardian;
 }
 
@@ -149,7 +150,7 @@ export async function getActiveGuardians(): Promise<Guardian[]> {
 }
 
 export function getAllGuardians(): Guardian[] {
-  console.warn('[Guardians] getAllGuardians() is sync — use getActiveGuardians() instead.');
+  logger.warn('[Guardians] getAllGuardians() is sync — use getActiveGuardians() instead.');
   return [];
 }
 
@@ -167,7 +168,7 @@ export async function recordPayment(payment: Payment): Promise<Payment> {
     ON CONFLICT (id) DO NOTHING;
   `;
 
-  console.log(`[Guardians] Payment recorded: ${id} — $${payment.amount}`);
+  logger.log(`[Guardians] Payment recorded: ${id} — $${payment.amount}`);
   return { ...payment, id, created_at: now };
 }
 
