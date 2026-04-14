@@ -31,7 +31,7 @@ const lang = getLangFromUrl(Astro.url);
   </head>
   <body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100">
     {!hideNav && (
-      <header class="fixed top-0 inset-x-0 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b z-50 px-6 flex items-center justify-between">
+      <header class="fixed top-0 inset-x-0 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b z-50 px-6 flex items-center justify-between md:left-[80px]">
         <a href={getRelativeLocaleUrl(lang, "home")} class="flex items-center gap-2 no-underline"><BrandAnimation /></a>
         <div class="flex items-center gap-4">
            <span id="header-balance" class="text-xs font-black tracking-widest">himBHs-.--</span>
@@ -39,7 +39,8 @@ const lang = getLangFromUrl(Astro.url);
         </div>
       </header>
     )}
-    <main class:list={["w-full min-h-screen", !hideNav && "pt-16"]}>
+    {!hideNav && <Sidebar />}
+    <main class:list={["w-full min-h-screen", !hideNav && "pt-16 md:ml-[80px]"]}>
       <slot />
     </main>
     {!hideNav && <div class="md:hidden"><BottomNav /></div>}

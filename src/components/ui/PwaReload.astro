@@ -121,11 +121,15 @@
                 });
             });
 
-            navigator.serviceWorker.getRegistration().then(reg => {
-                if (reg && reg.waiting) {
-                    showToast();
-                }
-            });
+            // Only show once per session — avoid toast loop on every page navigation
+            if (!(window as any).pwa_toast_shown) {
+                navigator.serviceWorker.getRegistration().then(reg => {
+                    if (reg && reg.waiting) {
+                        (window as any).pwa_toast_shown = true;
+                        showToast();
+                    }
+                });
+            }
         });
     }
 </script>

@@ -408,6 +408,11 @@
   padding-bottom: calc(var(--bottom-nav-h) + 1rem + env(safe-area-inset-bottom));
   padding-top: 1rem;
 }
+@media (min-width: 768px) {
+  .page-content {
+    padding-bottom: 2rem;
+  }
+}
 .page-content-wide {
   max-width: 42rem;
   margin-inline: auto;
