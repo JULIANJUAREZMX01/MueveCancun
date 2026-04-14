@@ -106,7 +106,7 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
     --rw-text: #f8fafc;
   }
 
-  .rw-fab { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50; display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; background: var(--rw-primary); color: white; border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.4); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid rgba(255, 255, 255, 0.1); }
+  .rw-fab { position: fixed; bottom: calc(var(--bottom-nav-h, 68px) + 0.75rem + env(safe-area-inset-bottom)); right: 1rem; z-index: 45; display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; background: var(--rw-primary); color: white; border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.4); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid rgba(255, 255, 255, 0.1); }
   .rw-fab:hover { transform: scale(1.05) translateY(-2px); box-shadow: 0 15px 30px -5px rgba(13, 148, 136, 0.5); }
   .rw-fab-label { font-size: 0.875rem; font-weight: 800; letter-spacing: 0.025em; }
 
@@ -157,6 +157,13 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
     if (!configEl) return;
 
     const fab      = document.getElementById("rw-fab");
+
+  // Escuchar evento global para abrir el widget desde cualquier página
+  window.addEventListener("OPEN_REPORT_WIDGET", () => {
+    overlay?.removeAttribute("hidden");
+    document.body.style.overflow = "hidden";
+    (document.getElementById("rw-tipo") as HTMLSelectElement | null)?.focus();
+  });
     const badge    = document.getElementById("rw-queue-badge");
     const overlay  = document.getElementById("rw-overlay");
     const form     = document.getElementById("rw-form") as HTMLFormElement;
