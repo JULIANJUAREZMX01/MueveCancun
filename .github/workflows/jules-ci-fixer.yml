@@ -61,18 +61,18 @@ jobs:
     steps:
       # Checkout the default branch only — trusted code.
       # The untrusted head SHA is never checked out; its diff is fetched via API below.
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
-      - name: Setup Node 20
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - name: Setup Node 24
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
-          node-version: "20"
+          node-version: "24"
 
       # Fetch the git diff of the failing commit via GitHub REST API (no code execution).
       # The diff is passed as plain text to Jules so it has full context of the changes.
       - name: Fetch commit diff via GitHub API
         id: fetch-diff
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const headSha = '${{ needs.detect-failure.outputs.head_sha }}';
@@ -101,7 +101,7 @@ jobs:
 
       - name: Fetch failed job logs
         id: fetch-logs
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const runId = ${{ github.event.workflow_run.id }};
@@ -157,7 +157,17 @@ jobs:
 
       - name: Post status comment (on PR if applicable)
         if: github.event.workflow_run.event == 'pull_request'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          HEAD_BRANCH: ${{ needs.detect-failure.outputs.head_branch }}
+          WORKFLOW_NAME: ${{ needs.detect-failure.outputs.workflow_name }}
+          FAILED_JOB: ${{ steps.fetch-logs.outputs.failed_job_name }}
+          RUN_URL: ${{ needs.detect-failure.outputs.run_url }}
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          HEAD_BRANCH: ${{ needs.detect-failure.outputs.head_branch }}
+          WORKFLOW_NAME: ${{ needs.detect-failure.outputs.workflow_name }}
+          FAILED_JOB_NAME: ${{ steps.fetch-logs.outputs.failed_job_name }}
+          RUN_URL: ${{ needs.detect-failure.outputs.run_url }}
         with:
           script: |
             const prs = await github.rest.pulls.list({

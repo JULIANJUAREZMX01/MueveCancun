@@ -1,5 +1,11 @@
 ---
 export const prerender = true;
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getI18N } from "../../utils/i18n";
+import Card from "../../components/ui/Card.astro";
+import Button from "../../components/ui/Button.astro";
+import Icon from "../../components/ui/Icon.astro";
+
 export function getStaticPaths() {
   return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
 }
