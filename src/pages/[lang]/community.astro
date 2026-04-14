@@ -153,8 +153,39 @@ const isEs = lang === "es";
     border: 1px solid var(--border-light);
     border-radius: var(--r-xl);
   }
+  .reports-empty:first-child { font-size: 2.5rem; }
+  .reports-empty > span { font-size: 2.5rem; }
+  .reports-empty > p { margin: 0; font-weight: 600; color: var(--text-primary); }
+  .reports-empty .empty-sub { font-weight: 400; color: var(--text-tertiary); font-size: 0.8rem; }
+  .reports-empty[hidden] { display: none; }
+</style>
 
-  function renderCard(report) {
+<script>
+  const API = "/api/reports";
+  const feed    = document.getElementById("reports-feed")!;
+  const empty   = document.getElementById("reports-empty")!;
+  const statusEl= document.getElementById("reports-status")!;
+  const statsEl = document.getElementById("live-stats")!;
+  const filterBtns = document.querySelectorAll<HTMLButtonElement>(".filter-row .chip");
+  const newBtn  = document.getElementById("btn-new-report");
+
+  let allReports: any[] = [];
+  let activeFilter = "all";
+
+  const typeColors: Record<string,string> = {
+    "Tráfico":"orange","Demora":"amber","Precio":"green","Ruta":"teal","Noticia":"blue"
+  };
+  const typeEmoji: Record<string,string> = {
+    "Tráfico":"🚗","Demora":"⏱","Precio":"💰","Ruta":"🗺️","Noticia":"📢"
+  };
+
+  function escapeHtml(str: string): string {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderCard(report: any): string {
     const safeUser = escapeHtml(report.user);
     const safeText = escapeHtml(report.text);
     const safeRuta = report.ruta ? escapeHtml(report.ruta) : '';
@@ -188,7 +219,7 @@ const isEs = lang === "es";
           <button
             class="vote-btn flex items-center gap-1.5 text-slate-400 hover:text-primary-500 transition-colors text-xs font-bold"
             data-id="${escapeHtml(report.id)}"
-            aria-label="${isEs ? 'Útil' : 'Helpful'}"
+            aria-label="${lang === 'es' ? 'Útil' : 'Helpful'}"
           >
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
             <span class="vote-count">${escapeHtml(report.votes)}</span>
@@ -198,39 +229,14 @@ const isEs = lang === "es";
             target="_blank"
             rel="noopener noreferrer"
             class="text-[10px] text-slate-400 hover:text-primary-500 transition-colors font-bold ml-auto"
-            aria-label="${isEs ? 'Ver en GitHub' : 'View on GitHub'}"
+            aria-label="${lang === 'es' ? 'Ver en GitHub' : 'View on GitHub'}"
           >
-            ${isEs ? 'Ver detalle →' : 'View detail →'}
+            ${lang === 'es' ? 'Ver detalle →' : 'View detail →'}
           </a>
         </div>
       </div>
     `;
   }
-  .reports-empty:first-child { font-size: 2.5rem; }
-  .reports-empty > span { font-size: 2.5rem; }
-  .reports-empty > p { margin: 0; font-weight: 600; color: var(--text-primary); }
-  .reports-empty .empty-sub { font-weight: 400; color: var(--text-tertiary); font-size: 0.8rem; }
-  .reports-empty[hidden] { display: none; }
-</style>
-
-<script>
-  const API = "/api/reports";
-  const feed    = document.getElementById("reports-feed")!;
-  const empty   = document.getElementById("reports-empty")!;
-  const statusEl= document.getElementById("reports-status")!;
-  const statsEl = document.getElementById("live-stats")!;
-  const filterBtns = document.querySelectorAll<HTMLButtonElement>(".filter-row .chip");
-  const newBtn  = document.getElementById("btn-new-report");
-
-  let allReports: any[] = [];
-  let activeFilter = "all";
-
-  const typeColors: Record<string,string> = {
-    "Tráfico":"orange","Demora":"amber","Precio":"green","Ruta":"teal","Noticia":"blue"
-  };
-  const typeEmoji: Record<string,string> = {
-    "Tráfico":"🚗","Demora":"⏱","Precio":"💰","Ruta":"🗺️","Noticia":"📢"
-  };
 
   function timeSince(dateStr: string): string {
     const diff = Date.now() - new Date(dateStr).getTime();
