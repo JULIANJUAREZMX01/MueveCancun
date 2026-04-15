@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 const modules = ['route-calculator', 'spatial-index'];
 
-const isCI = process.env.GITHUB_ACTIONS === 'true' || process.env.VERCEL === '1';
+const isCI = process.env.GITHUB_ACTIONS === 'true' || process.env.VERCEL === '1' || process.env.RENDER === 'true';
 
 function hasPrebuilt() {
   return modules.every(m => fs.existsSync(path.join(rootDir, 'public', 'wasm', m, m.replace('-', '_') + '.wasm')));
