@@ -9,6 +9,7 @@ import BrowserDetection from '../components/ui/BrowserDetection.astro';
 import DonateNudge from '../components/ui/DonateNudge.astro';
 import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
+import { ClientRouter } from 'astro:transitions';
 
 interface Props {
   title?: string;
@@ -24,51 +25,115 @@ const lang = getLangFromUrl(Astro.url);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>{title}</title>
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="MueveCancún — App gratuita de transporte público en Cancún. 50+ rutas, precios exactos, funciona sin internet. Hecha por ciudadanos, para ciudadanos." />
-    <meta name="keywords" content="transporte Cancún, rutas Cancún, camiones Cancún, bus Cancún, app transporte, MueveCancún, rutas bus cancun, combi cancún" />
-    <meta name="author" content="MueveCancún" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://mueve-cancun.vercel.app/" />
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://mueve-cancun.vercel.app/" />
-    <meta property="og:title" content="MueveCancún — ¿Qué Ruta Me Lleva?" />
-    <meta property="og:description" content="App gratuita de transporte público en Cancún. 50+ rutas, precios exactos, sin internet." />
-    <meta property="og:image" content="https://media.base44.com/images/public/69cdfbf1e7353a49d14220f3/c33f28d77_generated_image.png" />
-    <meta property="og:locale" content="es_MX" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="MueveCancún — ¿Qué Ruta Me Lleva?" />
-    <meta name="twitter:description" content="App gratuita de transporte público en Cancún. 50+ rutas, precios exactos, sin internet." />
-    <meta name="twitter:image" content="https://media.base44.com/images/public/69cdfbf1e7353a49d14220f3/c33f28d77_generated_image.png" />
-
-    <!-- Google Search Console Verification -->
-    <meta name="google-site-verification" content="F0y5Sv7HK_ozcaAyXgd4SGOS6rFcGO8BgQwzsxU95Ig" />
-    <meta name="google-site-verification" content="RFwyuHS7-Yp1q6TO-HgYnFoqi4iCwhbyfWoZQ8Ikx_A" />
+    <link rel="stylesheet" href="/src/styles/main.scss" />
+    <ClientRouter />
     <script is:inline>
       const theme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
       document.documentElement.classList.toggle("dark", theme === "dark");
     </script>
   </head>
-  <body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100">
+  <body class="l-body">
     {!hideNav && (
-      <header class="fixed top-0 inset-x-0 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b z-50 px-6 flex items-center justify-between md:left-[80px]">
-        <a href={getRelativeLocaleUrl(lang, "home")} class="flex items-center gap-2 no-underline"><BrandAnimation /></a>
-        <div class="flex items-center gap-4">
-           <span id="header-balance" class="text-xs font-black tracking-widest">himBHs-.--</span>
-           <button id="theme-toggle" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">🌓</button>
+      <header class="c-header">
+        <a href={getRelativeLocaleUrl(lang, "home")} class="c-header__logo"><BrandAnimation /></a>
+        <div class="c-header__actions">
+           <span id="header-balance" class="c-header__balance">...</span>
+           <button id="theme-toggle" class="c-header__theme-btn">🌓</button>
         </div>
       </header>
     )}
+
     {!hideNav && <Sidebar />}
-    <main class:list={["w-full min-h-screen", !hideNav && "pt-16 md:ml-[80px]"]}>
+
+    <main class:list={["l-main", !hideNav && "l-main--with-nav"]}>
       <slot />
     </main>
-    {!hideNav && <div class="md:hidden"><BottomNav /></div>}
+
+    {!hideNav && <div class="u-mobile-only"><BottomNav /></div>}
+
     <Toast /><PwaReload /><BrowserDetection /><DonateNudge /><ReportWidget />
+
+    <style lang="scss">
+      .l-body {
+        margin: 0;
+        min-height: 100vh;
+        background-color: var(--surface-bg);
+        color: var(--text-primary);
+        transition: background-color var(--t-base) var(--ease);
+      }
+
+      .l-main {
+        width: 100%;
+        min-height: 100vh;
+
+        &--with-nav {
+          padding-top: var(--header-h);
+          @media (min-width: 769px) {
+            margin-left: var(--sidebar-w);
+            width: calc(100% - var(--sidebar-w));
+          }
+        }
+      }
+
+      .c-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--header-h);
+        background-color: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border-light);
+        z-index: 50;
+        padding: 0 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all var(--t-base) var(--ease);
+
+        @media (min-width: 769px) {
+          left: var(--sidebar-w);
+        }
+
+        &__logo {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          text-decoration: none;
+        }
+
+        &__actions {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        &__balance {
+          font-size: 0.75rem;
+          font-weight: 900;
+          letter-spacing: 0.1em;
+          font-family: var(--font-mono);
+        }
+
+        &__theme-btn {
+          padding: 0.5rem;
+          background-color: var(--surface-elevated);
+          border-radius: var(--r-sm);
+          border: 1px solid var(--border-light);
+          cursor: pointer;
+          transition: all var(--t-fast) var(--ease);
+
+          &:hover { transform: scale(1.1); }
+        }
+      }
+
+      .u-mobile-only {
+        @media (min-width: 769px) {
+          display: none;
+        }
+      }
+    </style>
+
     <script>
       import { enforceGuards } from "../utils/auth";
       import { getWalletBalance } from "../utils/db";
@@ -90,11 +155,7 @@ const lang = getLangFromUrl(Astro.url);
           });
       }
 
-      if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', setup);
-      } else {
-          setup();
-      }
+      setup();
       document.addEventListener("astro:page-load", setup);
       window.addEventListener("BALANCE_UPDATED", sync);
     </script>

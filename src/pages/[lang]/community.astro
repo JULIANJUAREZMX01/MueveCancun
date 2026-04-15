@@ -185,58 +185,31 @@ const isEs = lang === "es";
     return div.innerHTML;
   }
 
-  function renderCard(report: any): string {
-    const safeUser = escapeHtml(report.user);
-    const safeText = escapeHtml(report.text);
-    const safeRuta = report.ruta ? escapeHtml(report.ruta) : '';
-    const safeLoc  = report.location ? escapeHtml(report.location) : '';
-    const initial  = safeUser.charAt(0).toUpperCase();
+  .reports-empty:first-child { font-size: 2.5rem; }
+  .reports-empty > span { font-size: 2.5rem; }
+  .reports-empty > p { margin: 0; font-weight: 600; color: var(--text-primary); }
+  .reports-empty .empty-sub { font-weight: 400; color: var(--text-tertiary); font-size: 0.8rem; }
+  .reports-empty[hidden] { display: none; }
+</style>
 
-    return `
-      <div class="report-card glass-card p-4 animate-slide-up" data-tipo="${escapeHtml(report.tipo)}" data-label="${escapeHtml(report.typeLabel)}">
-        <div class="flex items-start justify-between gap-2">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-xs font-black text-primary-700 dark:text-primary-400 shrink-0">
-              ${initial}
-            </div>
-            <div class="min-w-0">
-              <h4 class="text-sm font-bold text-slate-900 dark:text-white leading-none truncate">${safeUser}</h4>
-              <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">
-                ${escapeHtml(report.time)}${safeLoc ? ` · ${safeLoc}` : ''}
-              </span>
-            </div>
-          </div>
-          <span class="shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${report.typeColor}">
-            ${report.typeEmoji} ${escapeHtml(report.typeLabel)}
-          </span>
-        </div>
+<script>
+  const API = "/api/reports";
+  const feed    = document.getElementById("reports-feed")!;
+  const empty   = document.getElementById("reports-empty")!;
+  const statusEl= document.getElementById("reports-status")!;
+  const statsEl = document.getElementById("live-stats")!;
+  const filterBtns = document.querySelectorAll<HTMLButtonElement>(".filter-row .chip");
+  const newBtn  = document.getElementById("btn-new-report");
 
-        ${safeRuta ? `<div class="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[10px] font-bold text-slate-600 dark:text-slate-400"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 11.16l-1.42 1.42a7.462 7.462 0 01-1.02-2.24l1.93-.48c.17.71.44 1.37.81 1.96l-.3-.66zm8.22.84c0 2.34-1.14 4.33-2.89 5.6L14 16.49c1.3-.95 2.15-2.49 2.15-4.24 0-2.87-2.34-5.2-5.22-5.2-.39 0-.77.05-1.14.13l1.5 1.5C11.44 8.52 11.59 8.5 11.73 8.5c2.05 0 3.72 1.67 3.72 3.73l.55-.23z"/></svg>${safeRuta}</div>` : ''}
+  let allReports: any[] = [];
+  let activeFilter = "all";
 
-        <p class="mt-2.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${safeText}</p>
-
-        <div class="mt-3 flex items-center gap-3 border-t border-slate-100 dark:border-slate-800 pt-2.5">
-          <button
-            class="vote-btn flex items-center gap-1.5 text-slate-400 hover:text-primary-500 transition-colors text-xs font-bold"
-            data-id="${escapeHtml(report.id)}"
-            aria-label="${lang === 'es' ? 'Útil' : 'Helpful'}"
-          >
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
-            <span class="vote-count">${escapeHtml(report.votes)}</span>
-          </button>
-          <a
-            href="${escapeHtml(report.url)}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-[10px] text-slate-400 hover:text-primary-500 transition-colors font-bold ml-auto"
-            aria-label="${lang === 'es' ? 'Ver en GitHub' : 'View on GitHub'}"
-          >
-            ${lang === 'es' ? 'Ver detalle →' : 'View detail →'}
-          </a>
-        </div>
-      </div>
-    `;
-  }
+  const typeColors: Record<string,string> = {
+    "Tráfico":"orange","Demora":"amber","Precio":"green","Ruta":"teal","Noticia":"blue"
+  };
+  const typeEmoji: Record<string,string> = {
+    "Tráfico":"🚗","Demora":"⏱","Precio":"💰","Ruta":"🗺️","Noticia":"📢"
+  };
 
   function timeSince(dateStr: string): string {
     const diff = Date.now() - new Date(dateStr).getTime();

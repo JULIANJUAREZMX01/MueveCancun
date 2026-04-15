@@ -1,47 +1,17 @@
-name: Neon Branch Preview — Create/Delete on PR
-
-# Crea una rama Neon aislada para cada PR
-# La rama tiene los mismos datos que producción pero está aislada
-# Se elimina automáticamente cuando el PR se cierra
+name: Neon Managed Infrastructure
 
 on:
   pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - closed
+    types: [opened, reopened, synchronize, closed]
 
 permissions:
   contents: read
-  pull-requests: write
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  setup:
-    name: "Setup — obtener nombre de branch"
-    outputs:
-      branch: ${{ steps.branch_name.outputs.current_branch }}
+  manage-branch:
+    name: Neon Ephemeral Environment
     runs-on: ubuntu-latest
-    steps:
-      - name: Get branch name
-        id: branch_name
-        uses: tj-actions/branch-names@6871f53176ad61624f978536bbf089c574dc19a2 # v8.0.1
-
-  create_neon_branch:
-    name: "Crear branch Neon para PR #${{ github.event.number }}"
-    outputs:
-      db_url: ${{ steps.create_neon_branch.outputs.db_url }}
-    needs: setup
-    if: |
-      github.event_name == 'pull_request' && (
-        github.event.action == 'opened' ||
-        github.event.action == 'reopened' ||
-        github.event.action == 'synchronize'
-      )
-    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
@@ -69,40 +39,10 @@ jobs:
       - name: Aplicar schema a branch Neon del PR
         run: |
           node --input-type=module << 'NODE_EOF'
-          import { neon } from "@neondatabase/serverless";
-          const dsn = process.env.DATABASE_URL;
-          if (!dsn) {
-            console.error("❌ Error: DATABASE_URL is empty or undefined.");
-            process.exit(1);
-          }
-          const sql = neon(dsn);
-          try {
-            await sql`
-              CREATE TABLE IF NOT EXISTS guardians (
-                email               TEXT,
-                stripe_customer_id  TEXT PRIMARY KEY,
-                tier                TEXT,
-                amount_monthly      NUMERIC,
-                status              TEXT NOT NULL DEFAULT 'active',
-                created_at          TIMESTAMPTZ DEFAULT NOW(),
-                updated_at          TIMESTAMPTZ DEFAULT NOW()
-              )
-            `;
-            await sql`
-              CREATE TABLE IF NOT EXISTS payments (
-                id                  TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-                stripe_customer_id  TEXT NOT NULL,
-                amount              NUMERIC,
-                status              TEXT NOT NULL DEFAULT 'pending',
-                stripe_payment_id   TEXT,
-                created_at          TIMESTAMPTZ DEFAULT NOW()
-              )
-            `;
-            console.log("✅ Schema aplicado al branch Neon del PR");
-          } catch (e) {
-            console.error("❌ Fallo al aplicar schema:", e);
-            process.exit(1);
-          }
+            import { neon } from "@neondatabase/serverless";
+            const sql = neon(process.env.DATABASE_URL);
+            await sql`CREATE TABLE IF NOT EXISTS guardians (email TEXT, stripe_customer_id TEXT PRIMARY KEY, status TEXT DEFAULT 'active')`;
+            console.log("Schema verified on ephemeral branch");
           NODE_EOF
         env:
           DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
@@ -129,11 +69,10 @@ jobs:
               ].join("\n"),
             });
 
-  delete_neon_branch:
-    name: "Eliminar branch Neon — PR #${{ github.event.number }} cerrado"
-    needs: setup
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+  cleanup:
+    name: Destroy Ephemeral Branch
     runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
     steps:
       - name: Delete Neon Branch
         uses: neondatabase/delete-branch-action@be7f3747d7b054238541a7d6569eb27bc3e5b382 # v3.0.0
@@ -141,3 +80,4 @@ jobs:
           project_id: mute-waterfall-29421911
           branch_name: preview/pr-${{ github.event.number }}-neon
           api_key: ${{ secrets.NEON_API_KEY }}
+          branch: preview/pr-${{ github.event.number }}

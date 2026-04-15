@@ -34,7 +34,7 @@ jobs:
       - name: Setup Node 22
         uses: actions/setup-node@39225597fd66c3c8bc5b94f11300945842835848 # v4.0.3
         with:
-          node-version: "22"
+          node-version: "24"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0

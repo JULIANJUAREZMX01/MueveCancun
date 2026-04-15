@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node 20
         uses: actions/setup-node@39225597fd66c3c8bc5b94f11300945842835848
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Get Repository Info
         id: repo-info
