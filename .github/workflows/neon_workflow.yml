@@ -15,8 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      - name: Calcular fecha de expiración (2 semanas)
+      - name: Calculate expiration date
         run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
+
       - name: Create Neon Branch
         id: create_neon_branch
         uses: neondatabase/create-branch-action@153375631fc0f99cf0113e0cef877850452e6ca2
@@ -33,10 +34,10 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda
 
-      - name: Instalar dependencias
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Aplicar schema a branch Neon del PR
+      - name: Apply schema to ephemeral branch
         run: |
           node --input-type=module << 'NODE_EOF'
             import { neon } from "@neondatabase/serverless";
@@ -47,7 +48,7 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
 
-      - name: Comentar en PR con URL del branch Neon
+      - name: Comment on PR
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: |
