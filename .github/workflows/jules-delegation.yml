@@ -57,12 +57,12 @@ jobs:
     name: Invoke Jules
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.1.7
+      - uses: actions/checkout@v4 # v4.1.7
         with:
           ref: ${{ github.event.inputs.target_branch }}
 
       - name: Setup Node 24
-        uses: actions/setup-node@39225597fd66c3c8bc5b94f11300945842835848 # v4.0.3
+        uses: actions/setup-node@v4 # v4.0.3
         with:
           node-version: "24"
 
