@@ -183,6 +183,6 @@ export const getPendingReports = async () => (await initDB()).getAll('pending-re
 export const deletePendingReport = async (id: number) => (await initDB()).delete('pending-reports', id);
 
 export const __resetDBPromise = () => {
-  dbPromise = null;
+  _dbPromise = null;
   _cryptoKey = null;
 };
