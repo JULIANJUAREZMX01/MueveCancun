@@ -24,6 +24,29 @@ const lang = getLangFromUrl(Astro.url);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>{title}</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="MueveCancún — App gratuita de transporte público en Cancún. 50+ rutas, precios exactos, funciona sin internet. Hecha por ciudadanos, para ciudadanos." />
+    <meta name="keywords" content="transporte Cancún, rutas Cancún, camiones Cancún, bus Cancún, app transporte, MueveCancún, rutas bus cancun, combi cancún" />
+    <meta name="author" content="MueveCancún" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://mueve-cancun.vercel.app/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mueve-cancun.vercel.app/" />
+    <meta property="og:title" content="MueveCancún — ¿Qué Ruta Me Lleva?" />
+    <meta property="og:description" content="App gratuita de transporte público en Cancún. 50+ rutas, precios exactos, sin internet." />
+    <meta property="og:image" content="https://media.base44.com/images/public/69cdfbf1e7353a49d14220f3/c33f28d77_generated_image.png" />
+    <meta property="og:locale" content="es_MX" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MueveCancún — ¿Qué Ruta Me Lleva?" />
+    <meta name="twitter:description" content="App gratuita de transporte público en Cancún. 50+ rutas, precios exactos, sin internet." />
+    <meta name="twitter:image" content="https://media.base44.com/images/public/69cdfbf1e7353a49d14220f3/c33f28d77_generated_image.png" />
+
+    <!-- Google Search Console Verification — REEMPLAZA EL CONTENT CON TU CÓDIGO -->
+    <meta name="google-site-verification" content="PENDING_VERIFICATION_CODE" />
     <script is:inline>
       const theme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
       document.documentElement.classList.toggle("dark", theme === "dark");
