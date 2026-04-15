@@ -55,3 +55,8 @@ The Service Worker is written in TypeScript (`src/sw.ts`) and uses standard WebW
 - `src/scripts/`: Bundled client-side scripts for UI interactions (theme, animation, etc.).
 - `rust-wasm/`: High-performance calculation modules written in Rust.
 - `public/data/`: Optimized JSON datasets for offline routing.
+
+### 5. Survival Audit & Network Isolation
+The Nexus Protocol mandates 100% local sovereignty. No external CDNs or APIs are allowed in the runtime.
+- **Enforcement**: `scripts/audit-survival.sh` (or `src/Audit-NexusSurvival.psm1` for PowerShell environments).
+- **Automation**: Integrated via `pnpm audit:survival`.

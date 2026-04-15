@@ -13,19 +13,30 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.action != 'closed'
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - name: Create Isolated Branch
-        id: neon-branch
-        uses: neondatabase/create-branch-action@153375631fc0f99cf0113e0cef877850452e6ca2 # v6.0.0
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Calcular fecha de expiración (2 semanas)
+        run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
+      - name: Create Neon Branch
+        id: create_neon_branch
+        uses: neondatabase/create-branch-action@63606f74a9d7b4200424564c70d4948f219504be # v6.0.0
         with:
-          project_id: ${{ vars.NEON_PROJECT_ID }}
+          project_id: mute-waterfall-29421911
+          branch_name: preview/pr-${{ github.event.number }}-neon
           api_key: ${{ secrets.NEON_API_KEY }}
-          branch_name: preview/pr-${{ github.event.number }}
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+
+      - name: Setup Node 24
+        uses: actions/setup-node@39225597fd66c3c8bc5b94f11300945842835848 # v4
         with:
-          node-version: 24
-      - run: npm install -g pnpm && pnpm install --frozen-lockfile
-      - name: Apply DB Schema
+          node-version: "24"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Aplicar schema a branch Neon del PR
         run: |
           node --input-type=module << 'NODE_EOF'
             import { neon } from "@neondatabase/serverless";
@@ -34,15 +45,39 @@ jobs:
             console.log("Schema verified on ephemeral branch");
           NODE_EOF
         env:
-          DATABASE_URL: ${{ steps.neon-branch.outputs.db_url }}
+          DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
+
+      - name: Comentar en PR con URL del branch Neon
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const branch = "preview/pr-${{ github.event.number }}-neon";
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ github.event.number }},
+              body: [
+                "## 🐘 Neon Branch creada para este PR",
+                "",
+                `**Branch:** \`${branch}\``,
+                "**Expira en:** 14 días",
+                "",
+                "El schema de Guardians + Payments fue aplicado automáticamente.",
+                "Vercel Preview usará esta DB aislada.",
+                "",
+                "> Generado automáticamente por neon_workflow.yml",
+              ].join("\n"),
+            });
 
   cleanup:
     name: Destroy Ephemeral Branch
     runs-on: ubuntu-latest
     if: github.event.action == 'closed'
     steps:
-      - uses: neondatabase/delete-branch-action@f76e64adf2bfc40935a6027026d24ac78a3072e6 # v3.0.0
+      - name: Delete Neon Branch
+        uses: neondatabase/delete-branch-action@be7f3747d7b054238541a7d6569eb27bc3e5b382 # v3.0.0
         with:
-          project_id: ${{ vars.NEON_PROJECT_ID }}
+          project_id: mute-waterfall-29421911
+          branch_name: preview/pr-${{ github.event.number }}-neon
           api_key: ${{ secrets.NEON_API_KEY }}
           branch: preview/pr-${{ github.event.number }}

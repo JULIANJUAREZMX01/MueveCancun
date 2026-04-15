@@ -13,6 +13,7 @@
     }
   },
   "scripts": {
+    "audit:survival": "./scripts/audit-survival.sh src",
     "merge-routes": "node --experimental-strip-types scripts/merge-routes.ts",
     "optimize-json": "node --experimental-strip-types scripts/optimize-json.ts",
     "validate-routes": "node --experimental-strip-types scripts/validate-routes.ts",
