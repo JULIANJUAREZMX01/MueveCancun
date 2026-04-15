@@ -4,9 +4,6 @@ on:
   pull_request:
     types: [opened, reopened, synchronize, closed]
 
-permissions:
-  contents: read
-
 jobs:
   manage-branch:
     name: Neon Ephemeral Environment
@@ -20,18 +17,24 @@ jobs:
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
           api_key: ${{ secrets.NEON_API_KEY }}
-          branch_name: preview/pr-${{ github.event.number }}
+          branch_name: preview/pr-${{ github.event.number }}-${{ github.run_id }}
       - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: 24
-      - run: npm install -g pnpm && pnpm install --frozen-lockfile
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
+      - run: pnpm install --frozen-lockfile
       - name: Apply DB Schema
         run: |
           node --input-type=module << 'NODE_EOF'
             import { neon } from "@neondatabase/serverless";
             const sql = neon(process.env.DATABASE_URL);
-            await sql`CREATE TABLE IF NOT EXISTS guardians (email TEXT, stripe_customer_id TEXT PRIMARY KEY, status TEXT DEFAULT 'active')`;
-            console.log("Schema verified on ephemeral branch");
+            try {
+              await sql`CREATE TABLE IF NOT EXISTS guardians (email TEXT, stripe_customer_id TEXT PRIMARY KEY, status TEXT DEFAULT 'active')`;
+              console.log("Schema verified on ephemeral branch");
+            } catch (e) {
+              console.error("Failed to apply schema:", e);
+              process.exit(1);
+            }
           NODE_EOF
         env:
           DATABASE_URL: ${{ steps.neon-branch.outputs.db_url }}
@@ -45,4 +48,4 @@ jobs:
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
           api_key: ${{ secrets.NEON_API_KEY }}
-          branch: preview/pr-${{ github.event.number }}
+          branch: preview/pr-${{ github.event.number }}-${{ github.run_id }}

@@ -2,21 +2,14 @@ name: Auto-Curative (Self-Healing)
 
 on:
   schedule:
-    # Run at 06:00 UTC every Monday
     - cron: "0 6 * * 1"
-  # Also run whenever route data changes
   push:
     branches: [main]
-    paths:
-      - "public/data/**"
+    paths: ["public/data/**"]
   workflow_dispatch:
     inputs:
-      reason:
-        description: "Reason for manual trigger"
-        required: false
-        default: "Manual health check"
       run_geocode:
-        description: "Run geocoder for missing coordinates (true/false)"
+        description: "Run geocoder"
         required: false
         default: "false"
 
@@ -28,166 +21,28 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node 24
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: "24"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
-
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: wasm32-unknown-unknown
-
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@54e2af0a8339c0435fa1de94002eab349a2f15ef # v2.7.3
+      - uses: Swatinem/rust-cache@54e2af0a8339c0435fa1de94002eab349a2f15ef # v2.7.3
         with:
           workspaces: rust-wasm
-
-      - name: Install Node deps
-        run: pnpm install --frozen-lockfile
-
-      # --- Step 1: Merge all route files into master catalog ---
-      - name: Merge individual routes into master catalog
-        run: node --experimental-strip-types scripts/merge-routes.ts --verbose
-        continue-on-error: false
-
-      # --- Step 2: Auto-geocode missing coordinates (optional, rate-limited) ---
-      - name: Geocode missing stop coordinates
+      - run: pnpm install --frozen-lockfile
+      - run: node --experimental-strip-types scripts/merge-routes.ts
+      - name: Geocode
         if: github.event.inputs.run_geocode == 'true'
-        run: node --experimental-strip-types scripts/geocode-stops.ts --limit=50 --verbose
-        continue-on-error: true # Network failures don't break the pipeline
-
-      # --- Step 3: Validate all route data ---
-      - name: Validate route data
-        id: validate
-        run: |
-          if node --experimental-strip-types scripts/validate-routes.ts; then
-            echo "ok=true" >> $GITHUB_OUTPUT
-          else
-            echo "ok=false" >> $GITHUB_OUTPUT
-            echo "::warning::Route validation found issues"
-          fi
-
-      # --- Step 4: Optimize JSON ---
-      - name: Optimize JSON catalog
-        run: node --experimental-strip-types scripts/optimize-json.ts
-
-      # --- Step 5: Run Rust tests ---
-      - name: Run Rust unit tests
-        id: rust_tests
-        working-directory: rust-wasm/route-calculator
-        run: |
-          if cargo test --lib 2>&1; then
-            echo "ok=true" >> $GITHUB_OUTPUT
-          else
-            echo "ok=false" >> $GITHUB_OUTPUT
-            echo "::error::Rust tests failed"
-          fi
-
-      # --- Step 6: Rebuild WASM if binary is stale or missing ---
-      - name: Check WASM binary
-        id: wasm_check
-        run: |
-          if node scripts/check-wasm.cjs; then
-            echo "ok=true" >> $GITHUB_OUTPUT
-          else
-            echo "ok=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Rebuild WASM if needed
-        if: steps.wasm_check.outputs.ok == 'false' || steps.rust_tests.outputs.ok == 'true'
-        run: node --experimental-strip-types scripts/build-wasm.ts
-
-      - name: Verify WASM after rebuild
-        run: node scripts/check-wasm.cjs
-
-      # --- Step 7: Run TS tests ---
-      - name: Run TypeScript tests
-        run: pnpm test -- --reporter=verbose
-        continue-on-error: true
-
-      # --- Step 8: Auto-commit any changes ---
-      - name: Commit auto-healed artifacts
-        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
-        id: auto_commit
+        run: node --experimental-strip-types scripts/geocode-stops.ts --limit=50
+      - run: node --experimental-strip-types scripts/validate-routes.ts
+      - run: node --experimental-strip-types scripts/optimize-json.ts
+      - working-directory: rust-wasm/route-calculator
+        run: cargo test --lib
+      - run: node scripts/check-wasm.cjs
+      - run: node --experimental-strip-types scripts/build-wasm.ts
+      - uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.0.1
         with:
-          commit_message: |
-            chore(autocurative): self-heal pipeline run [skip ci]
-
-            - merge-routes: merged individual route files into master catalog
-            - optimize-json: regenerated optimized catalog
-            - wasm: rebuilt WASM binary if stale
-          file_pattern: |
-            public/data/master_routes.json
-            public/data/master_routes.optimized.json
-            public/data/routes-index.json
-            public/wasm/route-calculator/route_calculator.js
-            public/wasm/route-calculator/route_calculator_bg.wasm
-          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
-          push_options: "--force-with-lease"
-
-      # --- Step 9: Open an issue if critical checks failed ---
-      - name: Create issue for failed checks
-        if: steps.validate.outputs.ok == 'false' || steps.rust_tests.outputs.ok == 'false'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        with:
-          script: |
-            const title = '🔴 Auto-Curative: Health Check Failed';
-            const body = [
-              '## Autocurative Health Check Failed',
-              '',
-              `**Run**: ${context.runId}`,
-              `**Date**: ${new Date().toISOString()}`,
-              '',
-              '### Failed Checks',
-              '${{ steps.validate.outputs.ok }}' === 'false' ? '- ❌ Route data validation failed' : '',
-              '${{ steps.rust_tests.outputs.ok }}' === 'false' ? '- ❌ Rust unit tests failed' : '',
-              '',
-              '**Action Required**: Please review and fix the issues above.',
-              '',
-              `[View run](${context.payload.repository.html_url}/actions/runs/${context.runId})`,
-            ].filter(Boolean).join('\n');
-
-            // Check if issue already open
-            const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'autocurative',
-            });
-
-            if (issues.data.length === 0) {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title,
-                body,
-                labels: ['autocurative', 'bug'],
-              });
-            }
-
-  report:
-    name: Health Report
-    runs-on: ubuntu-latest
-    needs: autocurative
-    if: always()
-    permissions:
-      contents: read
-    steps:
-      - name: Print health summary
-        run: |
-          echo "=========================="
-          echo " MueveCancun Health Report"
-          echo "=========================="
-          echo "Status: ${{ needs.autocurative.result }}"
-          if [ "${{ needs.autocurative.result }}" = "success" ]; then
-            echo "✅ All systems healthy"
-          else
-            echo "⚠️  Issues detected — see job logs above"
-          fi
+          commit_message: "chore(autocurative): self-heal [skip ci]"
+          file_pattern: "public/data/* public/wasm/*"

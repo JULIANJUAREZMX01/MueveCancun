@@ -1,4 +1,4 @@
-# render.yaml — MueveCancún v3.6.0 (SSR Node Mode)
+# render.yaml — MueveCancún v2.1.0 (Astro 6 / Node 24)
 version: "1"
 projects:
 - name: QUINTANAROO_CREATIONS
@@ -9,11 +9,11 @@ projects:
       name: QueRutaMeLLevaCancun
       runtime: node
       repo: https://github.com/JULIANJUAREZMX01/MueveCancun
-      buildCommand: bash scripts/setup-render.sh
-      startCommand: npm start
+      buildCommand: pnpm build:vercel
+      startCommand: pnpm start
       envVars:
       - key: NODE_VERSION
-        value: "22.6"
+        value: "24.0.0"
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL

@@ -29,4 +29,4 @@ Allow: /
 User-agent: meta-externalagent
 Allow: /
 
-Sitemap: https://mueve-cancun.vercel.app/sitemap.xml
+Sitemap: https://muevecancun.onrender.com/sitemap-index.xml

@@ -41,7 +41,6 @@ jobs:
 
       - name: Claude Code Base Action (plan and apply)
         uses: anthropics/claude-code-base-action@b61aa83c32e3fbf17e758fd510b9a8d9204e6e31 # HEAD
-        with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           instructions: |
             Perform planning and application in one run. Outline steps, assumptions, and ambiguities, then apply or propose changes via a branch/PR—not direct pushes to protected branches.

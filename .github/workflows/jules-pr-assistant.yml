@@ -30,7 +30,6 @@ jobs:
       - name: Fetch PR details
         id: pr-details
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        with:
           script: |
             const pr = await github.rest.pulls.get({
               owner: context.repo.owner,
@@ -49,7 +48,6 @@ jobs:
 
       - name: Setup Node 24
         uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
-        with:
           node-version: "24"
 
       # Fetch PR file changes via GitHub REST API (no code execution).
@@ -57,7 +55,6 @@ jobs:
       - name: Fetch PR diff via GitHub API
         id: fetch-pr-diff
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        with:
           script: |
             try {
               const files = await github.paginate(github.rest.pulls.listFiles, {
@@ -80,7 +77,6 @@ jobs:
 
       - name: React to comment (acknowledge)
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        with:
           script: |
             await github.rest.reactions.createForIssueComment({
               owner: context.repo.owner,
@@ -110,7 +106,6 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
           COMMENT_BODY: ${{ github.event.comment.body }}
-        with:
           script: |
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -130,7 +125,6 @@ jobs:
       - name: React to comment (done)
         if: success()
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        with:
           script: |
             await github.rest.reactions.createForIssueComment({
               owner: context.repo.owner,
@@ -142,7 +136,6 @@ jobs:
       - name: Post failure comment
         if: failure()
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        with:
           script: |
             await github.rest.issues.createComment({
               owner: context.repo.owner,

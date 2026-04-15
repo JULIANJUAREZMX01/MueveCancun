@@ -1,6 +1,17 @@
 /**
  * jules-issue.mjs — Bridge GitHub Issue → Jules task.
- * Optimizado para el flujo de ramas dinámicas de MueveCancun.
+ *
+ * Invocado por el workflow jules-issue-handler.yml cuando se asigna
+ * la etiqueta "jules" a un Issue.
+ *
+ * Variables de entorno requeridas:
+ *   JULES_API_KEY   — Clave de API Jules
+ *   ISSUE_NUMBER    — Número del issue
+ *   ISSUE_TITLE     — Título del issue
+ *   ISSUE_BODY      — Cuerpo del issue (truncado a 8KB)
+ *   ISSUE_LABELS    — Labels del issue (JSON array string)
+ *   ISSUE_URL       — URL del issue en GitHub
+ *   DEFAULT_BRANCH  — Rama base del repositorio (default: main)
  */
 
 import { createJulesSession } from './jules-api.mjs';
@@ -11,58 +22,18 @@ const issueBody = (process.env.ISSUE_BODY || '').slice(0, 8192);
 const issueLabels = process.env.ISSUE_LABELS || '[]';
 const issueUrl = process.env.ISSUE_URL || '';
 const defaultBranch = process.env.DEFAULT_BRANCH || 'main';
-// RECUPERAMOS LA RAMA CREADA POR EL WORKFLOW
-const workingBranch = process.env.WORKING_BRANCH || `fix/issue-${issueNumber}`; 
 
 const task = `
-## Jules Nexus Engine — MueveCancun Issue Resolution
+## Jules Issue Handler — MueveCancun
 
 **Issue**: #${issueNumber} — ${issueTitle}
 **URL**: ${issueUrl}
 **Labels**: ${issueLabels}
-**Target Branch**: ${workingBranch}
 
-### Contexto de Ingeniería
-- Estás trabajando en la rama específica: \`${workingBranch}\`.
-- Esta rama ya fue inicializada por el workflow de CI.
-- **Misión**: Analizar metadatos, verificar lógica Rust/WASM y optimizar UI.
+### Task
+Read the GitHub Issue described below and implement the requested changes or fix.
 
-### Constraints de Arquitectura
-- **Ramas**: Realiza tus commits directamente en \`${workingBranch}\`.
-- **Integridad**: No toques la rama \`${defaultBranch}\` directamente.
-- **WASM**: Si el error es de lógica de ruteo, edita \`rust-wasm/route-calculator/src/lib.rs\`.
-- **UI**: Usa CSS Scoped en componentes Astro.
-- **Seguridad**: Escapado estricto de HTML y validación de tipos en TS.
-
-### Issue Body & Metadata
-${issueBody || '(cuerpo vacío)'}
-`.trim();
-
-console.log(`🚀 Invocando a Jules para resolver Issue #${issueNumber} en rama ${workingBranch}...`);
-
-try {
-  const session = await createJulesSession({
-    task,
-    // IMPORTANTE: Ahora la sesión inicia en la rama de trabajo creada por el CI
-    branch: workingBranch, 
-    authorMode: 'CO_AUTHORED',
-    autoCommit: true,
-    openPR: true, // Esto creará un PR desde workingBranch hacia defaultBranch
-    context: {
-      triggerType: 'issue_delegation',
-      issueNumber,
-      issueTitle,
-      issueUrl,
-      workingBranch
-    },
-  });
-
-  console.log('✅ Jules session created and working on branch:', workingBranch);
-  console.log(JSON.stringify(session, null, 2));
-} catch (err) {
-  console.error('❌ Failed to create Jules session:', err.message);
-  process.exit(1);
-}
+### Project Context
 - PWA offline-first para transporte público en Cancún.
 - Stack: Astro SSG + Rust/WASM + Leaflet + IndexedDB.
 - Motor de ruteo en \`rust-wasm/route-calculator/src/lib.rs\` (compilado a WASM).
