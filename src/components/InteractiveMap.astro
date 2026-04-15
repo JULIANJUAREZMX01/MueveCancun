@@ -81,13 +81,13 @@
       }
     });
 
-    if (!layers.length) return null;
+      if (!layers.length) return null;
 
-    const lg = L.layerGroup(layers).addTo(mapInstance);
-    if (allCoords.length > 0) {
-      mapInstance.fitBounds(allCoords, { padding: [48, 48], maxZoom: 16 });
-    }
-    return lg;
+      const lg = L.layerGroup(layers).addTo(mapInstance);
+      if (allCoords.length > 0) {
+        mapInstance.fitBounds(allCoords, { padding: [48, 48], maxZoom: 16 });
+      }
+      return lg;
   }
 
   // ── Inicialización del mapa ───────────────────────────────────────────────────

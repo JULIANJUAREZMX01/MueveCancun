@@ -54,6 +54,7 @@ const t = useTranslations(lang);
   import { initWasm } from "../lib/initWasm";
   import { escapeHtml, showToast } from "../utils/utils";
 
+  // ── Lógica principal ──────────────────────────────────────────────────────
   async function start() {
       const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
       const originInput = document.getElementById('origin-input') as HTMLInputElement;

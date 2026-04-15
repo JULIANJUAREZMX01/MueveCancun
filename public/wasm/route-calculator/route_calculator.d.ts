@@ -1,20 +1,27 @@
 /* tslint:disable */
 /* eslint-disable */
 
+export function calculate_route(origin_lat: number, origin_lng: number, dest_lat: number, dest_lng: number, routes_val: any): any;
+
+export function calculate_trip_cost(distance: number, seats: number, is_tourist: boolean): any;
+
 export function find_route(origin: string, dest: string): any;
 
-export function load_catalog(json_payload: string): void;
+export function validate_operator_funds(balance: number): boolean;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
-    readonly find_route: (a: number, b: number, c: number, d: number) => [number, number, number];
-    readonly load_catalog: (a: number, b: number) => [number, number];
+    readonly calculate_route: (a: number, b: number, c: number, d: number, e: any) => any;
+    readonly calculate_trip_cost: (a: number, b: number, c: number) => any;
+    readonly find_route: (a: number, b: number, c: number, d: number) => any;
+    readonly validate_operator_funds: (a: number) => number;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+    readonly __wbindgen_exn_store: (a: number) => void;
+    readonly __externref_table_alloc: () => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;
-    readonly __externref_table_dealloc: (a: number) => void;
     readonly __wbindgen_start: () => void;
 }
 
