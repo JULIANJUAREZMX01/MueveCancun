@@ -1,24 +1,23 @@
-# render.yaml — MueveCancún v3.8.0 (SSR Node Mode)
+# render.yaml — MueveCancún v3.8.0 (Infrastructure Recovery Mode)
 version: "1"
-projects:
-- name: QUINTANAROO_CREATIONS
-  environments:
-  - name: CANCUNMUEVE
-    services:
-    - type: web
-      name: QueRutaMeLLevaCancun
-      runtime: node
-      repo: https://github.com/JULIANJUAREZMX01/MueveCancun
-      buildCommand: pnpm install && pnpm build
-      startCommand: pnpm start
-      envVars:
+services:
+  - type: web
+    name: MueveCancun-App
+    runtime: node
+    repo: https://github.com/JULIANJUAREZMX01/MueveCancun
+    buildCommand: bash scripts/setup-render.sh
+    startCommand: pnpm start
+    envVars:
       - key: NODE_VERSION
         value: "24.0.0"
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL
-        sync: false
-      - key: GITHUB_ISSUES_TOKEN
-        sync: false
-      - key: PUBLIC_URL
-        value: https://querutamellevacancun.onrender.com
+
+  - type: static_site
+    name: MueveCancun-Static
+    repo: https://github.com/JULIANJUAREZMX01/MueveCancun
+    buildCommand: bash scripts/setup-render.sh
+    publishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: "24.0.0"
