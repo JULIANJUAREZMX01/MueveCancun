@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [opened, reopened, synchronize, closed]
 
+permissions:
+  contents: read
+
 jobs:
   manage-branch:
     name: Neon Ephemeral Environment
