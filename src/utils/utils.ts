@@ -1,11 +1,12 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
 import { getDistance as getDistanceKm } from "./geometry";
 import type { RouteData, Stop } from "../types";
 import { SpatialHash } from "./SpatialHash";
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+/**
+ * Simplified class name merger.
+ */
+export function cn(...inputs: any[]) {
+  return inputs.filter(Boolean).join(' ');
 }
 
 export function formatDate(date: Date) {
@@ -18,18 +19,13 @@ export function formatDate(date: Date) {
 
 export function readingTime(html: string) {
   let textOnly = ""
-
-  // Prefer DOM-based text extraction to avoid incomplete tag stripping.
   if (typeof window !== "undefined" && typeof window.document !== "undefined") {
     const container = window.document.createElement("div")
     container.innerHTML = html
     textOnly = container.textContent || ""
   } else {
-    // Fallback for environments without a DOM (e.g., SSR). This is only used
-    // to approximate word count and MUST NOT be treated as sanitized HTML.
     textOnly = html.replace(/<[^>]+>/g, " ")
   }
-
   const wordCount = textOnly.trim().split(/\s+/).filter(Boolean).length
   const readingTimeMinutes = ((wordCount / 200) + 1).toFixed()
   return `${readingTimeMinutes} min read`
@@ -37,24 +33,14 @@ export function readingTime(html: string) {
 
 export function truncateText(str: string, maxLength: number): string {
   const ellipsis = '…';
-
   if (str.length <= maxLength) return str;
-
   const trimmed = str.trimEnd();
   if (trimmed.length <= maxLength) return trimmed;
-
   const cutoff = maxLength - ellipsis.length;
   const sliced = str.slice(0, cutoff).trimEnd();
-
   return sliced + ellipsis;
 }
 
-/**
- * Serializes an object to a JSON string that is safe to use in HTML attributes.
- * Escapes < to prevent tag injection and ' to prevent attribute breakout.
- * @param obj The object to serialize.
- * @returns The escaped JSON string.
- */
 export function safeJsonStringify(obj: unknown): string {
     const json = JSON.stringify(obj);
     const safe = json === undefined ? 'null' : json;
@@ -63,11 +49,6 @@ export function safeJsonStringify(obj: unknown): string {
         .replace(/'/g, "\\u0027");
 }
 
-/**
- * Escapes HTML characters to prevent XSS attacks when rendering user-provided content.
- * @param unsafe The string to escape.
- * @returns The escaped string.
- */
 export function escapeHtml(unsafe: unknown): string {
   if (unsafe === null || unsafe === undefined) return '';
   return String(unsafe)
@@ -78,28 +59,11 @@ export function escapeHtml(unsafe: unknown): string {
        .replace(/'/g, "&#039;");
 }
 
-/**
- * Validates and sanitizes a URL component, specifically for query parameters.
- * @param name The URL component to sanitize.
- * @returns The sanitized URL component.
- */
 export function safeUrl(name: unknown): string {
     if (typeof name !== 'string') return '';
     return encodeURIComponent(name).replace(/'/g, "%27");
 }
 
-/**
- * Normalizes a string for accent-insensitive, case-insensitive stop-name
- * comparisons.  Uses the same explicit replacement strategy as `normalize_str()`
- * in `rust-wasm/route-calculator/src/lib.rs` so that both sides produce
- * identical keys for any given stop name.
- *
- * **Must stay in sync with `normalize_str()` in lib.rs.**
- *
- * @param str The string to normalize.
- * @returns Trimmed, lowercased string with Spanish diacritics replaced and
- *   internal whitespace collapsed to a single space.
- */
 export function normalizeString(str: string): string {
     if (!str) return '';
     return str
@@ -111,20 +75,6 @@ export function normalizeString(str: string): string {
         .replace(/\s+/g, ' ');
 }
 
-/**
- * Finds the nearest transit stop to the given coordinates by scanning the
- * full route catalog.  Uses `getDistance()` from `geometry.ts` for the
- * Haversine calculation (returns km).
- *
- * **Performance note**: the catalog is loaded once and cached in the module
- * scope.  Subsequent calls reuse the cached data.
- *
- * @param lat - User latitude in decimal degrees.
- * @param lng - User longitude in decimal degrees.
- * @returns The nearest stop object (`{ nombre, lat, lng, ... }`) from
- *   `master_routes.json`, or `null` if the catalog is unavailable or empty.
- */
-// Module-level cache so repeated calls (e.g., retries) don't re-fetch the catalog.
 let _catalogCache: RouteData[] | null = null;
 let _spatialIndex: SpatialHash<Stop> | null = null;
 let _uniqueStops: Stop[] = [];
@@ -136,18 +86,14 @@ export async function getClosestLandmark(lat: number, lng: number) {
             if (!response.ok) throw new Error(`Failed to load routes: ${response.statusText}`);
             const data = await response.json();
             _catalogCache = data.rutas || [];
-
             _spatialIndex = new SpatialHash<Stop>(0.01);
             _uniqueStops = [];
             const seenStops = new Set<string>();
-
             for (const ruta of _catalogCache) {
                 for (const parada of ruta.paradas || []) {
                     const pLat = parada.lat ?? parada.latitude;
                     const pLng = parada.lng ?? parada.longitude ?? parada.lon;
-
                     if (pLat == null || pLng == null) continue;
-
                     const stopName = (parada.nombre || 'Unknown').trim();
                     const stopKey = `${stopName}|${pLat}|${pLng}`;
                     if (!seenStops.has(stopKey)) {
@@ -159,37 +105,21 @@ export async function getClosestLandmark(lat: number, lng: number) {
                 }
             }
         }
-
         let closest = null;
         let minDistKm = Infinity;
-
-        // 1. Try Spatial Hash for O(1) average case
         if (_spatialIndex) {
             const candidates = _spatialIndex.query(lat, lng);
             for (const point of candidates) {
                 const distKm = getDistanceKm(lat, lng, point.lat, point.lng);
-                if (distKm < minDistKm) {
-                    minDistKm = distKm;
-                    closest = point.data;
-                }
+                if (distKm < minDistKm) { minDistKm = distKm; closest = point.data; }
             }
         }
-
-        // 2. Fallback to global search over unique stops if no candidates found
-        // or to guarantee correctness if minDistKm is still large.
-        // With 0.01 degree cells (~1.1km), a 3x3 search area guarantees the nearest
-        // point if found within ~1.1km. If minDistKm > 1.0, we scan all to be sure.
         if (minDistKm > 1.0) {
             for (const parada of _uniqueStops) {
-                // parada in _uniqueStops is already normalized with lat/lng
                 const distKm = getDistanceKm(lat, lng, parada.lat!, parada.lng!);
-                if (distKm < minDistKm) {
-                    minDistKm = distKm;
-                    closest = parada;
-                }
+                if (distKm < minDistKm) { minDistKm = distKm; closest = parada; }
             }
         }
-
         return closest;
     } catch (e) {
         console.error("Error loading catalog for landmark lookup", e);
@@ -197,16 +127,27 @@ export async function getClosestLandmark(lat: number, lng: number) {
     }
 }
 
-/**
- * Generates a localized relative URL for the given path and language.
- * Ensures consistent URL structure (e.g., /es/home) across the application.
- *
- * @param lang The language code (e.g., 'es', 'en').
- * @param path The target path (e.g., 'home', '/rutas').
- * @returns The formatted localized relative URL.
- */
 export function getRelativeLocaleUrl(lang: string, path: string): string {
   if (!path) return `/${lang}/`;
   const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
   return `/${lang}/${normalizedPath}`;
+}
+
+export function showToast(message: string, type: 'success' | 'warning' | 'danger' | 'info' = 'info', duration: number = 3000) {
+    if (typeof window === 'undefined') return;
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'c-toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `c-toast c-toast--${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('c-toast--fade-out');
+        setTimeout(() => toast.remove(), 500);
+    }, duration);
 }

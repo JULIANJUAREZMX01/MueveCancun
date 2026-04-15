@@ -47,10 +47,10 @@ jobs:
       # The untrusted PR branch is never checked out; its diff is fetched via API below.
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
-      - name: Setup Node 22
+      - name: Setup Node 24
         uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
-          node-version: "20"
+          node-version: "24"
 
       # Fetch PR file changes via GitHub REST API (no code execution).
       # The diff text is passed to Jules as data so it has full context of the changes.
