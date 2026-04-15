@@ -43,25 +43,25 @@ jobs:
       )
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Calcular fecha de expiración (2 semanas)
         run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
       - name: Create Neon Branch
         id: create_neon_branch
-        uses: neondatabase/create-branch-action@153375631fc0f99cf0113e0cef877850452e6ca2 # v6.0.0
+        uses: neondatabase/create-branch-action@5c59720f0092955bc8b846ac0cd184b1093c27a2 # v6.0.0
         with:
-          project_id: ${{ vars.NEON_PROJECT_ID }}
-          branch_name: preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}
+          project_id: mute-waterfall-29421911
+          branch_name: preview/pr-${{ github.event.number }}-neon
           api_key: ${{ secrets.NEON_API_KEY }}
 
-      - name: Setup Node 22
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - name: Setup Node 24
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4
         with:
-          node-version: "22"
+          node-version: "24"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        uses: pnpm/action-setup@7088e561eb65bb68695d245aa206f005ef30921d # v4
 
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
@@ -111,7 +111,7 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
         with:
           script: |
-            const branch = "preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}";
+            const branch = "preview/pr-${{ github.event.number }}-neon";
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -136,8 +136,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete Neon Branch
-        uses: neondatabase/delete-branch-action@f76e64adf2bfc40935a6027026d24ac78a3072e6 # v3.0.0
+        uses: neondatabase/delete-branch-action@cc0fe5eeb96c99cd4df545047d5dfdff84c5bddb # v3.0.0
         with:
-          project_id: ${{ vars.NEON_PROJECT_ID }}
-          branch: preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}
+          project_id: mute-waterfall-29421911
+          branch_name: preview/pr-${{ github.event.number }}-neon
           api_key: ${{ secrets.NEON_API_KEY }}
