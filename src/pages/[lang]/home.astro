@@ -6,277 +6,215 @@ export function getStaticPaths() {
 import MainLayout from "../../layouts/MainLayout.astro";
 import InteractiveMap from "../../components/InteractiveMap.astro";
 import RouteCalculator from "../../components/RouteCalculator.astro";
+import Icon from "../../components/ui/Icon.astro";
 const { lang } = Astro.params;
 const isEs = lang === "es";
 ---
 
 <MainLayout title={isEs ? "Inicio — MueveCancún" : "Home — MueveCancún"}>
-  <!-- Mapa fondo full-screen -->
-  <div class="map-backdrop" role="presentation">
-    <InteractiveMap center={[21.1619, -86.8515]} zoom={13} />
-  </div>
-
-  <!-- Capa de contenido flotante -->
-  <div class="home-content">
-
-    <!-- Header flotante -->
-    <header class="home-header">
-      <div class="home-header__brand">
-        <div class="brand-dot" aria-hidden="true"></div>
-        <span class="brand-name">MueveCancún</span>
-      </div>
-      <div class="home-header__actions">
-        <!-- Indicador GPS en vivo -->
-        <button
-          id="btn-gps-home"
-          class="action-pill action-pill--gps"
-          aria-label={isEs ? "Ir a mi ubicacion" : "Go to my location"}
-        >
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
-          </svg>
-          <span class="gps-dot" aria-hidden="true"></span>
-        </button>
-
-        <!-- Boton mini-juego -->
-        <a
-          href={"/" + lang + "/guess"}
-          class="action-pill action-pill--game"
-          aria-label={isEs ? "Jugar Adivina Donde Estoy" : "Play Guess Where I Am"}
-        >
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/>
-          </svg>
-        </a>
-      </div>
-    </header>
-
-    <!-- Calculadora de rutas (tarjeta flotante) -->
-    <div class="calculator-sheet" id="calculator-sheet">
-      <!-- Handle de arrastre -->
-      <div class="sheet-handle" id="sheet-handle" role="button" aria-label={isEs ? "Expandir busqueda" : "Expand search"} tabindex="0" aria-expanded="false">
-        <div class="sheet-handle__bar"></div>
-      </div>
-      <RouteCalculator />
+  <div class="l-home">
+    <div class="l-home__map" role="presentation">
+      <InteractiveMap />
     </div>
 
-  </div>
+    <div class="l-home__overlay">
+      <header class="c-home-header">
+        <div class="c-home-header__brand">
+          <div class="c-home-header__status-dot"></div>
+          <span class="c-home-header__name">MueveCancún</span>
+        </div>
+        <div class="c-home-header__actions">
+          <button id="btn-gps-home" class="c-home-header__pill" aria-label="Mi ubicación">
+            <Icon name="gps" class="u-icon-sm" />
+            <span class="c-home-header__gps-indicator"></span>
+          </button>
+          <a href={"/" + lang + "/guess"} class="c-home-header__pill c-home-header__pill--accent" aria-label="Jugar">
+            <Icon name="swap" class="u-icon-sm" />
+          </a>
+        </div>
+      </header>
 
-  <!-- FAB de reporte gestionado por ReportWidget global -->
+      <div class="c-bottom-sheet" id="calculator-sheet">
+        <div class="c-bottom-sheet__handle" id="sheet-handle">
+          <div class="c-bottom-sheet__bar"></div>
+        </div>
+        <div class="c-bottom-sheet__content">
+          <RouteCalculator />
+        </div>
+      </div>
+    </div>
+  </div>
 </MainLayout>
 
-<style>
-  /* ── Mapa fondo ── */
-  .map-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    /* height explícito para que InteractiveMap (absolute) tenga referencia */
+<style lang="scss">
+  .l-home {
+    position: relative;
     width: 100%;
     height: 100dvh;
     overflow: hidden;
+
+    &__map {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    &__overlay {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      pointer-events: none;
+      > * { pointer-events: auto; }
+    }
   }
 
-  /* ── Capa de contenido ── */
-  .home-content {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    min-height: 100dvh;
-    pointer-events: none; /* El mapa sigue siendo interactivo por debajo */
-  }
-  .home-content > * { pointer-events: auto; }
-
-  /* ── Header flotante ── */
-  .home-header {
+  .c-home-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
-    padding-top: calc(0.75rem + env(safe-area-inset-top));
+    padding: 1rem;
+    padding-top: calc(1rem + env(safe-area-inset-top));
+
+    &__brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background-color: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-full);
+      padding: 0.5rem 1rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    &__status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      box-shadow: 0 0 10px var(--color-primary);
+      animation: pulse 2s infinite;
+    }
+
+    &__name {
+      font-family: var(--font-display);
+      font-size: var(--fs-sm);
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    &__actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    &__pill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--r-full);
+      background-color: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-md);
+      color: var(--text-secondary);
+      transition: all var(--t-base) var(--ease-back);
+      position: relative;
+
+      &:hover { transform: scale(1.1); color: var(--color-primary); }
+      &--accent { color: var(--color-accent); border-color: oklch(70% 0.2 45 / 0.3); }
+    }
+
+    &__gps-indicator {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-success);
+      border: 2px solid white;
+    }
   }
 
-  .home-header__brand {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--r-full);
-    padding: 0.375rem 0.875rem 0.375rem 0.625rem;
-    box-shadow: var(--shadow-md);
-  }
-
-  .brand-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--gradient-primary);
-    box-shadow: 0 0 0 0 rgba(13,148,136,0.6);
-    animation: brand-pulse 2.5s infinite;
-  }
-  @keyframes brand-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(13,148,136,0.5); }
-    50%       { box-shadow: 0 0 0 6px rgba(13,148,136,0); }
-  }
-
-  .brand-name {
-    font-family: var(--font-display);
-    font-size: 0.875rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-  }
-
-  .home-header__actions { display: flex; gap: 0.5rem; }
-
-  /* Action pills */
-  .action-pill {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.3rem;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--r-full);
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--shadow-md);
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all var(--t-base) var(--ease-back);
-    text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .action-pill:hover { color: var(--color-primary); transform: scale(1.08); }
-  .action-pill:active { transform: scale(0.92); }
-
-  .action-pill--gps { position: relative; }
-  .gps-dot {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--jungle);
-    border: 1.5px solid var(--surface-card);
-  }
-
-  .action-pill--game {
-    background: linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(249,115,22,0.12) 100%);
-    color: var(--sunset);
-    border-color: rgba(249,115,22,0.2);
-  }
-
-  /* ── Bottom Sheet (calculadora) ── */
-  .calculator-sheet {
+  .c-bottom-sheet {
     position: fixed;
     bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
     left: 0;
     right: 0;
-    z-index: 20;
-    background: var(--glass-bg);
-    backdrop-filter: blur(28px) saturate(1.9);
-    -webkit-backdrop-filter: blur(28px) saturate(1.9);
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(32px) saturate(1.8);
     border-top: 1px solid var(--glass-border);
     border-radius: var(--r-2xl) var(--r-2xl) 0 0;
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
-    padding-bottom: env(safe-area-inset-bottom);
-    /* Colapsado por defecto — solo muestra el handle + primera línea */
-    max-height: 72px;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.1);
+    max-height: 80px;
+    transition: max-height 0.4s var(--ease);
     overflow: hidden;
-    overscroll-behavior: contain;
-    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
     will-change: max-height;
-  }
-  .calculator-sheet.expanded {
-    max-height: 72dvh;
-    overflow-y: auto;
+
+    &.is-expanded {
+      max-height: 80dvh;
+      overflow-y: auto;
+    }
+
+    &__handle {
+      display: flex;
+      justify-content: center;
+      padding: 1rem 0;
+      cursor: grab;
+    }
+
+    &__bar {
+      width: 40px;
+      height: 5px;
+      background-color: var(--border-medium);
+      border-radius: var(--r-full);
+      opacity: 0.5;
+    }
+
+    &__content {
+      padding-bottom: 2rem;
+    }
   }
 
-  .sheet-handle {
-    display: flex;
-    justify-content: center;
-    padding: 0.5rem 0 0.25rem;
-    cursor: grab;
-  }
-  .sheet-handle__bar {
-    width: 36px;
-    height: 4px;
-    border-radius: var(--r-full);
-    background: var(--border-medium);
-    opacity: 0.6;
-  }
-
-
-
-  /* ── Dark ── */
-  :global(.dark) .calculator-sheet {
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.45);
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
   }
 </style>
 
 <script>
-  // ── Bottom Sheet — toggle expand/collapse ──
   const sheet = document.getElementById("calculator-sheet");
-  const handle = sheet?.querySelector(".sheet-handle");
+  const handle = document.getElementById("sheet-handle");
 
-  function expandSheet() {
-    sheet?.classList.add("expanded");
-  }
-  function collapseSheet() {
-    sheet?.classList.remove("expanded");
+  function toggleSheet() {
+    sheet?.classList.toggle("is-expanded");
   }
 
-  // Tap en el handle o en el título expande
-  handle?.addEventListener("click", () => {
-    if (sheet?.classList.contains("expanded")) {
-      collapseSheet();
-    } else {
-      expandSheet();
+  handle?.addEventListener("click", toggleSheet);
+  sheet?.addEventListener("focusin", () => sheet.classList.add("is-expanded"));
+
+  document.querySelector(".l-home__map")?.addEventListener("click", () => {
+    sheet?.classList.remove("is-expanded");
+  });
+
+  if (window.innerWidth >= 769) {
+    sheet?.classList.add("is-expanded");
+  }
+
+  const gpsBtn = document.getElementById("btn-gps-home");
+  gpsBtn?.addEventListener("click", () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        window.dispatchEvent(new CustomEvent("MAP_SET_STOP", {
+           detail: { type: 'origin', name: 'Mi ubicación actual' }
+        }));
+      });
     }
   });
-
-  // Al escribir en los inputs, expandir automáticamente
-  sheet?.addEventListener("focusin", () => expandSheet());
-
-  // Al tocar el mapa (fuera del sheet), colapsar
-  document.getElementById("calculator-sheet")?.addEventListener("click", (e) => {
-    // No colapsar si el click es dentro del sheet
-    e.stopPropagation();
-  });
-  document.querySelector(".map-backdrop")?.addEventListener("click", () => collapseSheet());
-
-  // Expandir automáticamente en tablets/desktop (pantalla ancha)
-  if (window.innerWidth >= 640) {
-    expandSheet();
-  }
-
-  // ── Boton GPS — centrar mapa en ubicacion del usuario
-  const gpsBtn = document.getElementById("btn-gps-home");
-  if (gpsBtn) {
-    gpsBtn.addEventListener("click", () => {
-      if (!navigator.geolocation) return;
-      gpsBtn.classList.add("loading");
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          gpsBtn.classList.remove("loading");
-          window.dispatchEvent(new CustomEvent("MAP_FLY_TO", {
-            detail: { lat: pos.coords.latitude, lng: pos.coords.longitude, zoom: 16 }
-          }));
-        },
-        () => gpsBtn.classList.remove("loading"),
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    });
-  }
-
-  // El mapa escucha MAP_FLY_TO desde InteractiveMap
-  // El FAB de reporte está en ReportWidget global
 </script>

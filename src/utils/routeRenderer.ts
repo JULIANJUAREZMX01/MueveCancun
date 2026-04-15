@@ -1,10 +1,8 @@
 import { escapeHtml, safeJsonStringify } from './utils';
 import { getTransportLabel } from './transport';
 
-/** UI translation strings keyed by dot-notation i18n keys. */
 type UIStrings = Record<string, string>;
 
-/** A single leg of a journey returned by the WASM route calculator. */
 interface JourneyLeg {
   name: string;
   transport_type: string;
@@ -17,7 +15,6 @@ interface JourneyLeg {
   duration?: string;
 }
 
-/** Journey result returned by the WASM find_route call. */
 interface Journey {
   legs: JourneyLeg[];
   total_price: number;
@@ -26,7 +23,7 @@ interface Journey {
 
 export function renderBestResultHtml(journey: Journey, isBest: boolean = false, ui: UIStrings): string {
     const route = journey.legs[0];
-    const badgesHtml = route.badges ? route.badges.map((b: string) => `<span class="badge-primary" style="font-size: 0.5625rem;">${escapeHtml(b)}</span>`).join('') : '';
+    const badgesHtml = route.badges ? route.badges.map((b: string) => `<span class="c-badge c-badge--caribbean" style="font-size: 8px;">${escapeHtml(b)}</span>`).join('') : '';
 
     let stopsPreview = `${escapeHtml(route.origin_hub)} → ${escapeHtml(route.dest_hub)}`;
     if (route.stops && route.stops.length > 0) {
@@ -34,37 +31,28 @@ export function renderBestResultHtml(journey: Journey, isBest: boolean = false, 
     }
 
     return `
-      <div class="glass-card active:scale-[0.98] transition-all duration-300 mb-4 animate-slide-up relative overflow-hidden group hover:-translate-y-0.5 ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
-        ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${ui['calc.best'] || 'BEST'}</div>` : ''}
-        <div class="flex justify-between items-start">
-          <div class="flex-1 min-w-0 pr-2">
-            <span class="badge-primary mb-2">
+      <div class="c-route-result ${isBest ? 'c-route-result--on-map' : ''} u-fade-up">
+        <div class="c-route-result__header">
+          <div class="c-route-result__icon-box">🚌</div>
+          <div class="c-route-result__info">
+            <span class="c-badge c-badge--caribbean u-margin-b-xs">
               ${escapeHtml(getTransportLabel(route.transport_type))}
             </span>
-            <h3 class="font-display font-black text-base leading-tight tracking-tight group-hover:text-primary-500 transition-colors truncate" style="color: var(--text-primary);">${escapeHtml(route.name)}</h3>
-
-            <div class="mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5 text-xxs font-bold uppercase tracking-widest" style="color: var(--text-tertiary);">
-                ${route.operator ? `<div class="flex items-center gap-1"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg> <span>${escapeHtml(route.operator)}</span></div>` : ''}
-                ${route.frequency ? `<div class="flex items-center gap-1"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg> <span>${escapeHtml(route.frequency)}</span></div>` : ''}
-            </div>
-
-            <div class="flex gap-1.5 mt-3 flex-wrap">
-               ${badgesHtml}
+            <h3 class="c-route-result__title">${escapeHtml(route.name)}</h3>
+            <div class="o-flex u-wrap" style="gap: 0.5rem; margin-top: 0.5rem;">
+                ${badgesHtml}
             </div>
           </div>
-          <div class="text-right shrink-0 flex flex-col items-end pl-3" style="border-left: 1px solid var(--border-light);">
-            <span class="price-tag">
-                $${(journey.total_price || 0).toFixed(2)}
-            </span>
-            <p class="text-xxs font-black mt-2 uppercase tracking-tight" style="color: var(--text-tertiary);">${escapeHtml(route.duration || '')}</p>
-
-            <button class="btn-primary btn-sm mt-3 whitespace-nowrap view-map-btn" data-journey='${safeJsonStringify(journey)}'>
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg> <span data-i18n="calc.results.map">${ui['calc.results.map'] || 'Ver Mapa'}</span>
+          <div class="c-route-result__price-box">
+            <span class="c-route-result__price">$${(journey.total_price || 0).toFixed(2)}</span>
+            ${route.duration ? `<span class="c-route-result__duration">${escapeHtml(route.duration)}</span>` : ''}
+            <button class="c-btn c-btn--primary view-map-btn" style="padding: 0.4rem 0.8rem; min-height: 32px; font-size: 10px; margin-top: 0.5rem;" data-journey='${safeJsonStringify(journey)}'>
+                ${ui['calc.results.map'] || 'Ver Mapa'}
             </button>
           </div>
         </div>
-        <div class="mt-3 pt-3 text-xxs font-bold flex items-center gap-2 uppercase tracking-widest" style="border-top: 1px solid var(--border-light); color: var(--text-tertiary);">
-            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/></svg> <span class="truncate flex-1">${stopsPreview}</span>
+        <div class="c-route-result__stops" style="margin-top: 1rem; font-size: 10px; font-weight: 800; color: var(--text-tertiary); text-transform: uppercase;">
+            📍 ${stopsPreview}
         </div>
       </div>
     `;
@@ -76,61 +64,29 @@ export function renderTransferCardHtml(journey: Journey, isBest: boolean = false
     const transferPoint = journey.transfer_point;
 
     return `
-      <div class="glass-card active:scale-[0.98] transition-all mb-3 animate-slide-up relative overflow-hidden group ${isBest ? 'ring-2 ring-primary-500/30' : ''}">
-        <div class="absolute top-0 right-0 bg-accent-500 text-white px-3 py-1 rounded-bl-xl text-xxs font-black uppercase tracking-widest ${isBest ? 'mr-24' : ''}">
-           ${ui['calc.transfer'] || 'TRANSFER'}
-        </div>
-        ${isBest ? `<div class="absolute top-0 right-0 bg-primary-500 text-white text-xxs font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest z-10">${ui['calc.best'] || 'BEST'}</div>` : ''}
+      <div class="c-route-result ${isBest ? 'c-route-result--on-map' : ''} u-fade-up">
+        <div style="font-size: 9px; font-weight: 900; text-transform: uppercase; color: var(--color-accent); margin-bottom: 0.5rem;">🔀 ${ui['calc.transfer'] || 'TRANSBORDO'}</div>
 
-        <div class="flex flex-col gap-3 mt-5">
-            <!-- Leg 1 -->
-            <div class="flex items-center gap-3">
-                <div class="flex-shrink-0 w-8 text-center">
-                    <span class="w-3 h-3 rounded-full bg-success-500 border-2 border-white dark:border-slate-900 shadow-md mx-auto block"></span>
-                    <div class="h-6 w-0.5 mx-auto my-0.5 rounded-full" style="background: var(--border-light);"></div>
-                </div>
-                <div>
-                     <span class="badge-primary" style="font-size: 0.5rem;">
-                        ${escapeHtml(getTransportLabel(leg1.transport_type))}
-                     </span>
-                     <h4 class="font-display font-black text-sm leading-tight tracking-tight" style="color: var(--text-primary);">${escapeHtml(leg1.name)}</h4>
-                </div>
+        <div class="o-stack" style="gap: 0.5rem;">
+            <div class="o-flex u-align-center">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-success);"></div>
+                <div class="u-fs-xs u-fw-black">${escapeHtml(leg1.name)}</div>
             </div>
 
-            <!-- Transfer point -->
-            <div class="flex items-center gap-3 -mt-2">
-                <div class="flex-shrink-0 w-8 text-center flex justify-center">
-                    <div class="w-2.5 h-2.5 rounded-full bg-accent-500 border-2 border-white dark:border-slate-900 shadow-md ring-2 ring-accent-500/20 animate-pulse"></div>
-                </div>
-                <div class="chip text-xxs">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
-                    <span data-i18n="calc.results.transfer_at">${ui['calc.results.transfer_at'] || 'Transfer at'}</span> <span class="text-primary-500 font-black ml-1">${escapeHtml(transferPoint)}</span>
-                </div>
+            <div style="padding-left: 3px; border-left: 2px dashed var(--border-medium); margin-left: 3px; padding-bottom: 0.5rem;">
+                <div class="c-badge c-badge--warning" style="font-size: 8px;">Cambio en: ${escapeHtml(transferPoint)}</div>
             </div>
 
-            <!-- Leg 2 -->
-            <div class="flex items-center gap-3 -mt-2">
-                <div class="flex-shrink-0 w-8 text-center">
-                    <div class="h-6 w-0.5 mx-auto my-0.5 rounded-full" style="background: var(--border-light);"></div>
-                    <span class="w-3 h-3 rounded-full bg-danger-500 border-2 border-white dark:border-slate-900 shadow-md mx-auto block"></span>
-                </div>
-                <div>
-                     <span class="badge-accent" style="font-size: 0.5rem;">
-                        ${escapeHtml(getTransportLabel(leg2.transport_type))}
-                     </span>
-                     <h4 class="font-display font-black text-sm leading-tight tracking-tight" style="color: var(--text-primary);">${escapeHtml(leg2.name)}</h4>
-                </div>
+            <div class="o-flex u-align-center">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-danger);"></div>
+                <div class="u-fs-xs u-fw-black">${escapeHtml(leg2.name)}</div>
             </div>
         </div>
 
-        <div class="mt-4 pt-3 flex justify-between items-center" style="border-top: 1px solid var(--border-light);">
-            <span class="price-tag">
-                $${(journey.total_price || 0).toFixed(2)}
-            </span>
-
-            <button class="btn-primary btn-sm view-map-btn"
-                data-journey='${safeJsonStringify(journey)}'>
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg> <span data-i18n="calc.view_route">${ui['calc.view_route'] || 'View Route'}</span>
+        <div class="o-flex u-justify-between u-align-center" style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light);">
+            <span class="c-route-result__price">$${(journey.total_price || 0).toFixed(2)}</span>
+            <button class="c-btn c-btn--primary view-map-btn" style="padding: 0.4rem 0.8rem; min-height: 32px; font-size: 10px;" data-journey='${safeJsonStringify(journey)}'>
+                ${ui['calc.view_route'] || 'Ver Ruta'}
             </button>
         </div>
       </div>

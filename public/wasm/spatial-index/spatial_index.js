@@ -254,12 +254,7 @@ function debugString(val) {
     if (val instanceof Error) {
         return `${val.name}: ${val.message}\n${val.stack}`;
     }
-    if (val instanceof Set) {
-        return `Set(${debugString(Array.from(val))})`;
-    }
-    if (val instanceof Map) {
-        return `Map(${debugString(Array.from(val))})`;
-    }
+    // TODO we could test for more things here, like `Set`s and `Map`s.
     return className;
 }
 
