@@ -13,25 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.action != 'closed'
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Calcular fecha de expiración (2 semanas)
         run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
       - name: Create Neon Branch
         id: create_neon_branch
-        uses: neondatabase/create-branch-action@153375631fc0f99cf0113e0cef877850452e6ca2 # v6.0.0
+        uses: neondatabase/create-branch-action@153375631fc0f99cf0113e0cef877850452e6ca2
         with:
           project_id: mute-waterfall-29421911
           branch_name: preview/pr-${{ github.event.number }}-neon
           api_key: ${{ secrets.NEON_API_KEY }}
 
       - name: Setup Node 24
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
           node-version: "24"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda
 
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
@@ -48,7 +48,7 @@ jobs:
           DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
 
       - name: Comentar en PR con URL del branch Neon
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: |
             const branch = "preview/pr-${{ github.event.number }}-neon";
@@ -75,7 +75,7 @@ jobs:
     if: github.event.action == 'closed'
     steps:
       - name: Delete Neon Branch
-        uses: neondatabase/delete-branch-action@f76e64adf2bfc40935a6027026d24ac78a3072e6 # v3.0.0
+        uses: neondatabase/delete-branch-action@f76e64adf2bfc40935a6027026d24ac78a3072e6
         with:
           project_id: mute-waterfall-29421911
           branch_name: preview/pr-${{ github.event.number }}-neon
