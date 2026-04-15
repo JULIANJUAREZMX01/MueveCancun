@@ -139,5 +139,5 @@ jobs:
         uses: neondatabase/delete-branch-action@be7f3747d7b054238541a7d6569eb27bc3e5b382 # v3.0.0
         with:
           project_id: mute-waterfall-29421911
-          branch: preview/pr-${{ github.event.number }}-neon
+          branch_name: preview/pr-${{ github.event.number }}-neon
           api_key: ${{ secrets.NEON_API_KEY }}
