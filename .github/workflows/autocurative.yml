@@ -27,25 +27,25 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.1.7
         with:
           fetch-depth: 0
 
       - name: Setup Node 22
-        uses: actions/setup-node@v4 # v4.0.3
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.0.3
         with:
           node-version: "24"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4 # v4.0.0
+        uses: pnpm/action-setup@7088e561eb65bb68695d245aa206f005ef30921d # v4.0.0
 
       - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable # stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: wasm32-unknown-unknown
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@v2 # v2.7.3
+        uses: Swatinem/rust-cache@400e7407cfd7a091e5fbb6afec01ec146c432b7c # v2.7.3
         with:
           workspaces: rust-wasm
 
@@ -114,7 +114,7 @@ jobs:
 
       # --- Step 8: Auto-commit any changes ---
       - name: Commit auto-healed artifacts
-        uses: stefanzweifel/git-auto-commit-action@v5 # v5
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5
         id: auto_commit
         with:
           commit_message: |
@@ -135,7 +135,7 @@ jobs:
       # --- Step 9: Open an issue if critical checks failed ---
       - name: Create issue for failed checks
         if: steps.validate.outputs.ok == 'false' || steps.rust_tests.outputs.ok == 'false'
-        uses: actions/github-script@v7 # v7.0.1
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const title = '🔴 Auto-Curative: Health Check Failed';
