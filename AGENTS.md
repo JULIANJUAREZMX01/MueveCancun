@@ -204,3 +204,10 @@ Cada PR debe incluir: descripción del problema, fix implementado, tests que lo 
 
 ## Mandato de Seguridad CI (v3.5.2+)
 - **OBLIGATORIO**: Todas las GitHub Actions deben estar pineadas a un hash de commit completo (40 caracteres). No se permiten tags de versión (ej. @v4) para prevenir ataques de supply chain.
+
+---
+
+## Survival & Isolation Audit
+Every significant change must pass the network isolation audit to ensure offline survival.
+- **Command**: `pnpm audit:survival`
+- **Mandate**: 0 external runtime dependencies (CDNs, Google Fonts, Maps APIs).
