@@ -18,7 +18,7 @@ jobs:
     name: Rust WASM Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.1.7
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -38,10 +38,10 @@ jobs:
     name: TypeScript Unit Tests (Vitest)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.1.7
 
       - name: Setup Node 24
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.1.7
+        uses: actions/setup-node@39225597fd66c3c8bc5b94f11300945842835848 # v4.1.7
         with:
           node-version: "24"
 
@@ -69,10 +69,10 @@ jobs:
     name: Validate Route Data
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.1.7
 
       - name: Setup Node 24
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+        uses: actions/setup-node@39225597fd66c3c8bc5b94f11300945842835848 # v4.0.3
         with:
           node-version: "24"
 
@@ -84,10 +84,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ts-tests, validate-routes, rust-tests]
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.1.7
 
       - name: Setup Node 24
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+        uses: actions/setup-node@39225597fd66c3c8bc5b94f11300945842835848 # v4.0.3
         with:
           node-version: "24"
 
