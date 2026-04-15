@@ -24,14 +24,18 @@ function Invoke-NexusSurvivalAudit {
     $ViolationsFound = $false
 
     foreach ($Pattern in $ForbiddenPatterns) {
-        # Note: PowerShell 7+ syntax for globbing in Select-String
-        $Results = Select-String -Path "$TargetDirectory**/*.*" -Pattern $Pattern -Exclude "*.md"
-
-        if ($Results) {
-            $ViolationsFound = $true
-            Write-Host "[ALERTA DE SEGURIDAD] Dependencia externa detectada que rompe la supervivencia offline:" -ForegroundColor Red
-            foreach ($Match in $Results) {
-                Write-Host " -> Archivo: $($Match.Filename) | Linea: $($Match.LineNumber) | Coincidencia: $Pattern" -ForegroundColor Yellow
+        # Recursively get all files, excluding markdown files and the audit script itself
+        $Files = Get-ChildItem -Path $TargetDirectory -Recurse -File -Exclude "*.md", "audit-survival.sh", "Audit-NexusSurvival.psm1"
+        
+        if ($Files) {
+            $Results = $Files | Select-String -Pattern $Pattern
+            
+            if ($Results) {
+                $ViolationsFound = $true
+                Write-Host "[ALERTA DE SEGURIDAD] Dependencia externa detectada que rompe la supervivencia offline:" -ForegroundColor Red
+                foreach ($Match in $Results) {
+                    Write-Host " -> Archivo: $($Match.Filename) | Linea: $($Match.LineNumber) | Coincidencia: $Pattern" -ForegroundColor Yellow
+                }
             }
         }
     }
