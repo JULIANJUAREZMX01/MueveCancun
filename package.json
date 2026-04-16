@@ -51,7 +51,6 @@
     "@astrojs/node": "^10.0.4",
     "@astrojs/rss": "^4.0.18",
     "@astrojs/vercel": "^10.0.4",
-    "@mlc-ai/web-llm": "^0.2.82",
     "@neondatabase/serverless": "^1.0.2",
     "@supabase/supabase-js": "^2.103.0",
     "@types/node": "^25.6.0",
