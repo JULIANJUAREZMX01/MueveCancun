@@ -1,8 +1,5 @@
 ---
 export const prerender = true;
-import MainLayout from '../../layouts/MainLayout.astro';
-import { getLangFromUrl } from '../../utils/i18n';
-
 export function getStaticPaths() {
   return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
 }
@@ -16,18 +13,18 @@ const plans = [
     name: isEs ? "Agente IA Starter" : "AI Agent Starter",
     price: "$16",
     period: isEs ? "/mes" : "/mo",
-    color: "teal",
+    usd: true,
     link: "https://buy.stripe.com/dRm00c4kygCicKUdTt7AI04",
     features: isEs
-      ? ["Agente IA personal","Consultas de rutas inteligentes","Reportes ciudadanos asistidos","Tips en tiempo real","Soporte vía chat"]
-      : ["Personal AI Agent","Smart route queries","Assisted citizen reports","Real-time tips","Chat support"],
+      ? ["Agente IA personal 24/7","Consultas de rutas inteligentes","Reportes ciudadanos asistidos","Tips en tiempo real","Soporte vía chat"]
+      : ["Personal AI Agent 24/7","Smart route queries","Assisted citizen reports","Real-time tips","Chat support"],
   },
   {
     id: "elite",
-    name: isEs ? "Elite Guardian" : "Elite Guardian",
+    name: "Elite Guardian",
     price: "$160",
     period: isEs ? "/mes" : "/mo",
-    color: "gradient",
+    usd: true,
     link: "https://buy.stripe.com/8x214g8AO99QbGQ2aL7AI05",
     recommended: true,
     features: isEs
@@ -39,7 +36,8 @@ const plans = [
 const oneTimeTiers = [
   {
     id: "shield",
-    name: "Shield Guardian",
+    name: "Shield",
+    emoji: "🛡️",
     price: "$3",
     period: isEs ? "/única vez" : "/one-time",
     link: "https://donate.stripe.com/4gM5kw4ky1Ho12ccPp7AI02",
@@ -49,78 +47,83 @@ const oneTimeTiers = [
   },
   {
     id: "architect",
-    name: "Nexus Architect",
+    name: "Architect",
+    emoji: "🏗️",
     price: "$10",
     period: isEs ? "/única vez" : "/one-time",
     link: "https://donate.stripe.com/dRm00c4kygCi5eobX37AI03",
     features: isEs
-      ? ["Todo lo anterior","Voto en prioridades","Comunidad privada","Tu nombre en créditos"]
+      ? ["Todo lo anterior","Voto en prioridades","Comunidad privada","Nombre en créditos"]
       : ["Everything above","Priority voting","Private community","Name in credits"],
   },
 ];
 ---
 
 <MainLayout title={isEs ? "Guardians — MueveCancún" : "Guardians — MueveCancún"}>
-  <div class="page-content px-4" style="max-width:44rem;margin-inline:auto">
+  <div class="pricing-page">
 
     <!-- Hero -->
     <div class="pricing-hero">
-      <div class="pricing-hero__badge">
+      <div class="pricing-hero__badge" aria-label="MueveCancún Guardians">
         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
         MueveCancún Guardians
       </div>
       <h1 class="pricing-hero__title">
-        {isEs ? "Elige tu nivel de apoyo" : "Choose your support level"}
+        {isEs ? "Elige tu nivel" : "Choose your tier"}
       </h1>
       <p class="pricing-hero__sub">
         {isEs
-          ? "Sin publicidad, sin datos vendidos. Solo ciudadanos que creen en el transporte libre."
-          : "No ads, no sold data. Just citizens who believe in free transit information."
+          ? "Sin publicidad. Sin datos vendidos. Solo ciudadanos que creen en el transporte libre."
+          : "No ads. No sold data. Just citizens who believe in free transit information."
         }
       </p>
+
+      <!-- Toggle Mensual/Anual -->
+      <div class="billing-toggle" role="group" aria-label={isEs ? "Periodo de facturación" : "Billing period"}>
+        <button class="billing-btn billing-btn--active" data-period="monthly" aria-pressed="true">
+          {isEs ? "Mensual" : "Monthly"}
+        </button>
+        <button class="billing-btn" data-period="annual" aria-pressed="false">
+          {isEs ? "Anual" : "Annual"}
+          <span class="billing-save">{isEs ? "−17%" : "−17%"}</span>
+        </button>
+      </div>
     </div>
 
     <!-- Planes mensuales -->
-    <div class="section-label mb-4">
-      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 5v4l3 3-1.5 1.5L10 13V7h2z"/></svg>
-      {isEs ? "Planes mensuales" : "Monthly plans"}
-    </div>
-
     <div class="plans-grid">
       {plans.map(plan => (
-        <div class={"plan-card" + (plan.recommended ? " plan-card--featured" : "")}>
+        <div class={`plan-card${plan.recommended ? " plan-card--featured" : ""}`} data-plan={plan.id}>
           {plan.recommended && (
-            <div class="plan-card__recommended">
-              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              {isEs ? "Recomendado" : "Recommended"}
+            <div class="plan-card__badge" aria-label={isEs ? "Recomendado" : "Recommended"}>
+              ⭐ {isEs ? "Recomendado" : "Recommended"}
             </div>
           )}
 
-          <div class="plan-card__header">
-            <div>
-              <h3 class="plan-card__name">{plan.name}</h3>
-            </div>
-            <div class="plan-card__price-wrap">
-              <span class="plan-card__price">{plan.price}</span>
-              <span class="plan-card__period">{plan.period}</span>
+          <div class="plan-card__head">
+            <h3 class="plan-card__name">{plan.name}</h3>
+            <div class="plan-card__pricing">
+              <span class="plan-card__price" data-monthly={plan.price} data-annual={plan.id === "starter" ? "$13" : "$133"}>
+                {plan.price}
+              </span>
+              <div class="plan-card__period-wrap">
+                <span class="plan-card__currency">USD</span>
+                <span class="plan-card__period">{plan.period}</span>
+              </div>
             </div>
           </div>
 
-          <ul class="plan-card__features">
-            {plan.features.map(f => (
-              <li class="plan-feature">
-                <svg class="w-4 h-4 plan-feature__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          <ul class="plan-card__features" aria-label={isEs ? "Características" : "Features"}>
+            {plan.features.map((f, i) => (
+              <li class={i === 0 && plan.recommended ? "plan-feature--highlight" : ""}>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
                 {f}
               </li>
             ))}
           </ul>
 
-          <a
-            href={plan.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            class={"btn btn-lg plan-card__cta " + (plan.recommended ? "btn-primary" : "btn-ghost")}
-          >
+          <a href={plan.link} target="_blank" rel="noopener noreferrer"
+            class={`btn btn-lg plan-card__cta ${plan.recommended ? "btn-primary" : "btn-ghost"}`}>
             {isEs ? "Suscribirme" : "Subscribe"}
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
           </a>
@@ -128,48 +131,63 @@ const oneTimeTiers = [
       ))}
     </div>
 
-    <!-- Donaciones únicas -->
-    <div class="section-label mb-4" style="margin-top:2rem">
-      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
-      {isEs ? "Donaciones únicas" : "One-time donations"}
+    <!-- Divider -->
+    <div class="section-divider">
+      <span>{isEs ? "O apoya con una donación única" : "Or support with a one-time donation"}</span>
     </div>
 
-    <div class="tiers-grid">
+    <!-- Donaciones únicas -->
+    <div class="onetime-grid">
       {oneTimeTiers.map(tier => (
-        <a href={tier.link} target="_blank" rel="noopener noreferrer" class="tier-card">
-          <div class="tier-card__top">
-            <h3 class="tier-card__name">{tier.name}</h3>
-            <div class="tier-card__price">
-              {tier.price}<span class="tier-card__period"> {tier.period}</span>
-            </div>
+        <a href={tier.link} target="_blank" rel="noopener noreferrer" class="onetime-card">
+          <span class="onetime-card__emoji" aria-hidden="true">{tier.emoji}</span>
+          <div class="onetime-card__info">
+            <span class="onetime-card__name">{tier.name}</span>
+            <span class="onetime-card__price">{tier.price} <em>{tier.period}</em></span>
           </div>
-          <ul class="tier-card__features">
-            {tier.features.map(f => (
-              <li>
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                {f}
-              </li>
-            ))}
+          <ul class="onetime-card__features">
+            {tier.features.map(f => <li>✓ {f}</li>)}
           </ul>
-          <span class="tier-card__action">
-            {isEs ? "Donar ahora" : "Donate now"}
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+          <span class="onetime-card__cta btn btn-ghost btn-sm">
+            {isEs ? "Donar" : "Donate"} →
           </span>
         </a>
       ))}
     </div>
 
-    <!-- Garantia -->
-    <div class="trust-bar">
+    <!-- Trust badges -->
+    <div class="trust-row" aria-label={isEs ? "Garantías" : "Guarantees"}>
       {[
-        { icon:"🔒", label: isEs ? "Pago seguro vía Stripe" : "Secure payment via Stripe" },
+        { icon:"🔒", label: isEs ? "Stripe — pago seguro" : "Stripe — secure payment" },
         { icon:"🚫", label: isEs ? "Sin contratos" : "No contracts" },
         { icon:"↩️", label: isEs ? "Cancela cuando quieras" : "Cancel anytime" },
+        { icon:"💬", label: isEs ? "Soporte real" : "Real support" },
       ].map(t => (
-        <div class="trust-item">
-          <span aria-hidden="true">{t.icon}</span>
-          <span>{t.label}</span>
-        </div>
+        <div class="trust-badge"><span aria-hidden="true">{t.icon}</span><span>{t.label}</span></div>
+      ))}
+    </div>
+
+    <!-- FAQ mínimo -->
+    <div class="faq">
+      <h2 class="faq__title">FAQ</h2>
+      {[
+        {
+          q: isEs ? "¿Puedo cancelar en cualquier momento?" : "Can I cancel anytime?",
+          a: isEs ? "Sí. Cancelas desde tu portal de Stripe, sin llamadas ni burocracia." : "Yes. Cancel from your Stripe portal, no calls required.",
+        },
+        {
+          q: isEs ? "¿La app sigue siendo gratis?" : "Is the app still free?",
+          a: isEs ? "Siempre. Los planes financian el servidor y el desarrollo." : "Always. Plans fund the server and development.",
+        },
+        {
+          q: isEs ? "¿Aceptan pago en MXN?" : "Do you accept MXN?",
+          a: isEs ? "Stripe convierte automáticamente al tipo de cambio vigente." : "Stripe automatically converts at the current exchange rate.",
+        },
+      ].map(item => (
+        <details class="faq__item">
+          <summary class="faq__question">{item.q}</summary>
+          <p class="faq__answer">{item.a}</p>
+        </details>
       ))}
     </div>
 
@@ -177,8 +195,14 @@ const oneTimeTiers = [
 </MainLayout>
 
 <style>
-  /* ── Hero ── */
-  .pricing-hero { text-align:center; padding: 1.5rem 0 1.25rem; }
+  .pricing-page {
+    max-width: 48rem; margin-inline: auto;
+    padding: 0.75rem 1rem 5rem;
+    display: flex; flex-direction: column; gap: 1.5rem;
+  }
+
+  /* Hero */
+  .pricing-hero { text-align: center; }
   .pricing-hero__badge {
     display: inline-flex; align-items: center; gap: 0.375rem;
     padding: 0.3rem 0.875rem; margin-bottom: 1rem;
@@ -188,98 +212,148 @@ const oneTimeTiers = [
   }
   .dark .pricing-hero__badge { background: rgba(13,148,136,0.15); color: #5eead4; }
   .pricing-hero__title {
-    font-family: var(--font-display); font-size: clamp(1.75rem,5vw,2.5rem);
-    font-weight: 900; color: var(--text-primary); letter-spacing: -0.04em;
-    line-height: 1.05; margin: 0 0 0.75rem; text-wrap: balance;
+    font-family: var(--font-display); font-size: clamp(1.75rem,5vw,2.75rem);
+    font-weight: 900; letter-spacing: -0.04em; color: var(--text-primary);
+    margin: 0 0 0.625rem; text-wrap: balance; line-height: 1.05;
   }
   .pricing-hero__sub {
-    font-size: 0.9rem; color: var(--text-secondary); line-height: 1.65; margin: 0;
+    font-size: 0.9rem; color: var(--text-secondary); line-height: 1.65;
+    margin: 0 0 1.25rem; max-width: 40ch; margin-inline: auto;
   }
 
-  /* ── Planes mensuales ── */
-  .plans-grid {
-    display: grid; gap: 1rem;
-    grid-template-columns: 1fr;
+  /* Toggle */
+  .billing-toggle {
+    display: inline-flex; align-items: center;
+    background: var(--surface-elevated); border: 1px solid var(--border-light);
+    border-radius: var(--r-full); padding: 3px; gap: 2px;
   }
-  @media (min-width: 480px) { .plans-grid { grid-template-columns: repeat(2,1fr); } }
+  .billing-btn {
+    display: flex; align-items: center; gap: 0.375rem;
+    padding: 0.375rem 1rem; border-radius: var(--r-full);
+    font-size: 0.78rem; font-weight: 800; cursor: pointer;
+    border: none; background: none; color: var(--text-tertiary);
+    transition: all var(--t-fast) var(--ease);
+  }
+  .billing-btn--active { background: var(--surface-card); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+  .billing-save { padding: 0.1rem 0.4rem; background: #16a34a; color: white; border-radius: var(--r-full); font-size: 0.6rem; font-weight: 900; }
+
+  /* Plans */
+  .plans-grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+  @media (min-width: 500px) { .plans-grid { grid-template-columns: repeat(2,1fr); } }
 
   .plan-card {
-    position: relative; padding: 1.5rem;
-    background: var(--surface-card);
-    border: 1.5px solid var(--border-light);
-    border-radius: var(--r-2xl);
-    box-shadow: var(--shadow-sm);
-    display: flex; flex-direction: column; gap: 1rem;
-    transition: box-shadow var(--t-base) var(--ease), transform var(--t-base) var(--ease);
+    position: relative; display: flex; flex-direction: column; gap: 1rem;
+    padding: 1.5rem; background: var(--surface-card);
+    border: 1.5px solid var(--border-light); border-radius: var(--r-2xl);
+    transition: all var(--t-base) var(--ease);
   }
-  .plan-card:hover { box-shadow: var(--shadow-xl); transform: translateY(-2px); }
+  .plan-card:hover { box-shadow: var(--shadow-xl); transform: translateY(-3px); }
   .plan-card--featured {
     border-color: var(--color-primary);
-    background: linear-gradient(160deg, var(--teal-xlight) 0%, var(--surface-card) 40%);
+    background: linear-gradient(160deg,var(--teal-xlight) 0%,var(--surface-card) 45%);
     box-shadow: var(--shadow-teal);
   }
-  .dark .plan-card--featured { background: linear-gradient(160deg, rgba(13,148,136,0.08) 0%, var(--surface-card) 40%); }
+  .dark .plan-card--featured { background: linear-gradient(160deg,rgba(13,148,136,0.09) 0%,var(--surface-card) 45%); }
 
-  .plan-card__recommended {
+  .plan-card__badge {
     position: absolute; top: -1px; right: 1.25rem;
-    display: flex; align-items: center; gap: 0.3rem;
     padding: 0.25rem 0.75rem;
     background: var(--gradient-primary); color: white;
     border-radius: 0 0 var(--r-md) var(--r-md);
-    font-size: 0.65rem; font-weight: 900;
-    text-transform: uppercase; letter-spacing: 0.08em;
+    font-size: 0.62rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
     box-shadow: 0 4px 12px rgba(13,148,136,0.3);
   }
 
-  .plan-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+  .plan-card__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
   .plan-card__name { font-family: var(--font-display); font-size: 1rem; font-weight: 900; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
-  .plan-card__price-wrap { text-align: right; flex-shrink: 0; }
-  .plan-card__price { font-family: var(--font-display); font-size: 1.75rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.04em; line-height: 1; }
+  .plan-card__pricing { text-align: right; }
+  .plan-card__price { font-family: var(--font-display); font-size: 2rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.04em; line-height: 1; display: block; transition: all var(--t-base) var(--ease); }
+  .plan-card__period-wrap { display: flex; align-items: center; justify-content: flex-end; gap: 0.25rem; }
+  .plan-card__currency { font-size: 0.62rem; font-weight: 800; color: var(--text-tertiary); text-transform: uppercase; }
   .plan-card__period { font-size: 0.72rem; font-weight: 700; color: var(--text-tertiary); }
 
   .plan-card__features { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
-  .plan-feature { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; line-height: 1.4; }
-  .plan-feature__icon { color: var(--jungle); flex-shrink: 0; margin-top: 0.1rem; }
+  .plan-card__features li { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; }
+  .plan-card__features svg { flex-shrink: 0; margin-top: 1px; color: var(--color-primary); }
+  .plan-feature--highlight { font-weight: 800 !important; color: var(--text-primary) !important; }
+  .plan-card__cta { justify-content: center; gap: 0.375rem; }
 
-  .plan-card__cta { width: 100%; justify-content: center; }
+  /* Divider */
+  .section-divider { display: flex; align-items: center; gap: 1rem; }
+  .section-divider::before, .section-divider::after { content: ""; flex: 1; height: 1px; background: var(--border-light); }
+  .section-divider span { font-size: 0.72rem; font-weight: 700; color: var(--text-tertiary); white-space: nowrap; }
 
-  /* ── Donaciones únicas ── */
-  .tiers-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.75rem; }
+  /* One-time */
+  .onetime-grid { display: grid; gap: 0.75rem; grid-template-columns: 1fr; }
+  @media (min-width: 420px) { .onetime-grid { grid-template-columns: repeat(2,1fr); } }
 
-  .tier-card {
-    display: flex; flex-direction: column; gap: 0.75rem;
-    padding: 1.125rem 1rem;
-    background: var(--surface-card); border: 1.5px solid var(--border-light);
-    border-radius: var(--r-xl); text-decoration: none; color: inherit;
+  .onetime-card {
+    display: flex; flex-direction: column; gap: 0.625rem;
+    padding: 1.125rem; background: var(--surface-card);
+    border: 1.5px solid var(--border-light); border-radius: var(--r-xl);
+    text-decoration: none; color: var(--text-primary);
     transition: all var(--t-base) var(--ease);
-    -webkit-tap-highlight-color: transparent;
   }
-  .tier-card:hover { border-color: var(--color-primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-  .tier-card:active { transform: scale(0.97); }
-  .tier-card__top { display: flex; flex-direction: column; gap: 0.25rem; }
-  .tier-card__name { font-family: var(--font-display); font-size: 0.9rem; font-weight: 900; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
-  .tier-card__price { font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; color: var(--color-primary); letter-spacing: -0.04em; }
-  .tier-card__period { font-size: 0.65rem; font-weight: 700; color: var(--text-tertiary); }
-  .tier-card__features { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
-  .tier-card__features li { display: flex; align-items: flex-start; gap: 0.35rem; font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; }
-  .tier-card__features li > svg { color: var(--jungle); flex-shrink: 0; margin-top: 0.15rem; }
-  .tier-card__action {
-    display: flex; align-items: center; gap: 0.25rem;
-    font-size: 0.75rem; font-weight: 800; color: var(--color-primary);
-    margin-top: auto;
+  .onetime-card:hover { border-color: var(--color-primary); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .onetime-card__emoji { font-size: 1.75rem; }
+  .onetime-card__info { display: flex; justify-content: space-between; align-items: baseline; }
+  .onetime-card__name { font-family: var(--font-display); font-size: 0.95rem; font-weight: 900; }
+  .onetime-card__price { font-family: var(--font-display); font-size: 1.125rem; font-weight: 900; color: var(--color-primary); }
+  .onetime-card__price em { font-style: normal; font-size: 0.68rem; font-weight: 700; color: var(--text-tertiary); }
+  .onetime-card__features { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+  .onetime-card__features li { font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; }
+  .onetime-card__cta { align-self: flex-start; }
+
+  /* Trust */
+  .trust-row { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+  .trust-badge {
+    display: flex; align-items: center; gap: 0.375rem;
+    padding: 0.3rem 0.75rem;
+    background: var(--surface-elevated); border: 1px solid var(--border-light);
+    border-radius: var(--r-full); font-size: 0.7rem; font-weight: 700; color: var(--text-secondary);
   }
 
-  /* ── Garantia ── */
-  .trust-bar {
-    display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center;
-    padding: 1.25rem; margin-top: 1.5rem;
-    background: var(--surface-bg);
-    border: 1px solid var(--border-light);
-    border-radius: var(--r-xl);
-    margin-bottom: 1rem;
+  /* FAQ */
+  .faq { display: flex; flex-direction: column; gap: 0; }
+  .faq__title {
+    font-family: var(--font-display); font-size: 1.125rem; font-weight: 900;
+    color: var(--text-primary); margin: 0 0 0.75rem; letter-spacing: -0.02em;
   }
-  .trust-item {
-    display: flex; align-items: center; gap: 0.4rem;
-    font-size: 0.75rem; font-weight: 700; color: var(--text-secondary);
+  .faq__item {
+    border-bottom: 1px solid var(--border-light);
+    padding: 0.875rem 0;
   }
+  .faq__item:last-child { border-bottom: none; }
+  .faq__question {
+    font-size: 0.875rem; font-weight: 700; color: var(--text-primary);
+    cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;
+    user-select: none;
+  }
+  .faq__question::after { content: "+"; font-size: 1.25rem; font-weight: 300; color: var(--text-tertiary); transition: transform var(--t-fast); }
+  details[open] .faq__question::after { content: "−"; }
+  .faq__answer { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.65; margin: 0.625rem 0 0; }
 </style>
+
+<script is:inline>
+// Billing toggle — monthly/annual
+document.querySelectorAll('.billing-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.billing-btn').forEach(b => {
+      b.classList.remove('billing-btn--active');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    this.classList.add('billing-btn--active');
+    this.setAttribute('aria-pressed', 'true');
+    const period = this.dataset.period;
+    document.querySelectorAll('.plan-card__price').forEach(el => {
+      const val = period === 'annual' ? el.dataset.annual : el.dataset.monthly;
+      if (val) el.textContent = val;
+    });
+    document.querySelectorAll('.plan-card__period').forEach(el => {
+      el.textContent = period === 'annual'
+        ? (document.documentElement.lang === 'en' ? '/yr' : '/año')
+        : (document.documentElement.lang === 'en' ? '/mo' : '/mes');
+    });
+  });
+});
+</script>
