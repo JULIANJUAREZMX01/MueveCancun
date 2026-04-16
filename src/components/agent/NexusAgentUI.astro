@@ -61,7 +61,7 @@ const t = getI18N(lang as any);
   </div>
 </div>
 
-<script>
+<script client:load>
   import { NexusAgent } from "../../lib/agent/NexusAgent";
 
   const agent = NexusAgent.getInstance();
