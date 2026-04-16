@@ -1,0 +1,509 @@
+/**
+ * Responsive Utilities - Mobile-First Design System
+ * Hace TODA la app responsive desde mobile hasta 4K
+ */
+
+/* ========== BREAKPOINTS ========== */
+:root {
+  --breakpoint-xs: 320px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  --breakpoint-4k: 2560px;
+}
+
+/* ========== SAFE AREA (Notch Support) ========== */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* ========== RESPONSIVE CONTAINERS ========== */
+.container-responsive {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    max-width: 640px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    max-width: 1024px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container-responsive {
+    max-width: 1536px;
+  }
+}
+
+/* ========== RESPONSIVE TEXT ========== */
+.text-responsive-xs {
+  font-size: clamp(0.75rem, 2vw, 0.875rem);
+}
+
+.text-responsive-sm {
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+}
+
+.text-responsive-base {
+  font-size: clamp(1rem, 3vw, 1.125rem);
+}
+
+.text-responsive-lg {
+  font-size: clamp(1.125rem, 3.5vw, 1.25rem);
+}
+
+.text-responsive-xl {
+  font-size: clamp(1.25rem, 4vw, 1.5rem);
+}
+
+.text-responsive-2xl {
+  font-size: clamp(1.5rem, 5vw, 2rem);
+}
+
+.text-responsive-3xl {
+  font-size: clamp(1.875rem, 6vw, 2.5rem);
+}
+
+.text-responsive-4xl {
+  font-size: clamp(2.25rem, 7vw, 3.5rem);
+}
+
+/* ========== RESPONSIVE SPACING ========== */
+.spacing-responsive-xs {
+  padding: clamp(0.25rem, 1vw, 0.5rem);
+}
+
+.spacing-responsive-sm {
+  padding: clamp(0.5rem, 2vw, 1rem);
+}
+
+.spacing-responsive-md {
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+.spacing-responsive-lg {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.spacing-responsive-xl {
+  padding: clamp(2rem, 5vw, 4rem);
+}
+
+/* ========== MOBILE-FIRST UTILITIES ========== */
+
+/* Hide on mobile, show on desktop */
+.hidden-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hidden-mobile {
+    display: block;
+  }
+}
+
+/* Show on mobile, hide on desktop */
+.visible-mobile {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .visible-mobile {
+    display: none;
+  }
+}
+
+/* Touch-friendly minimum sizes */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Responsive grid system */
+.grid-responsive {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .grid-responsive {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* ========== MAP RESPONSIVE ========== */
+.map-container-responsive {
+  width: 100%;
+  height: 60vh;
+  min-height: 300px;
+  max-height: 600px;
+}
+
+@media (min-width: 768px) {
+  .map-container-responsive {
+    height: 70vh;
+    max-height: 800px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .map-container-responsive {
+    height: 80vh;
+    max-height: 1000px;
+  }
+}
+
+/* ========== CALCULATOR RESPONSIVE ========== */
+.calculator-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .calculator-container {
+    max-width: 440px;
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .calculator-container {
+    max-width: 500px;
+    padding: 2rem;
+  }
+}
+
+/* ========== BUTTONS RESPONSIVE ========== */
+.btn-responsive {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  border-radius: 8px;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .btn-responsive {
+    padding: 0.875rem 2rem;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .btn-responsive {
+    padding: 1rem 2.5rem;
+    font-size: 1.125rem;
+    border-radius: 12px;
+  }
+}
+
+/* ========== CARDS RESPONSIVE ========== */
+.card-responsive {
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .card-responsive {
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-responsive {
+    padding: 2rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+  }
+}
+
+/* ========== INPUTS RESPONSIVE ========== */
+.input-responsive {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  min-height: 48px;
+}
+
+@media (min-width: 768px) {
+  .input-responsive {
+    padding: 0.875rem 1.25rem;
+    font-size: 1.0625rem;
+    border-radius: 10px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .input-responsive {
+    padding: 1rem 1.5rem;
+    font-size: 1.125rem;
+    border-radius: 12px;
+    min-height: 52px;
+  }
+}
+
+/* ========== NAVIGATION RESPONSIVE ========== */
+.nav-responsive {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  padding-bottom: var(--safe-bottom);
+  z-index: 100;
+}
+
+@media (min-width: 768px) {
+  .nav-responsive {
+    top: 0;
+    bottom: auto;
+    left: 0;
+    right: auto;
+    width: 80px;
+    height: 100vh;
+    padding-bottom: 0;
+    padding-left: var(--safe-left);
+  }
+}
+
+/* ========== HEADER RESPONSIVE ========== */
+.header-responsive {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  padding-top: var(--safe-top);
+  z-index: 90;
+}
+
+@media (min-width: 768px) {
+  .header-responsive {
+    height: 64px;
+    left: 80px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header-responsive {
+    height: 72px;
+  }
+}
+
+/* ========== CONTENT SPACING ========== */
+.content-spacing-mobile {
+  padding-top: calc(56px + var(--safe-top));
+  padding-bottom: calc(60px + var(--safe-bottom));
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .content-spacing-mobile {
+    padding-top: calc(64px + var(--safe-top));
+    padding-bottom: 2rem;
+    padding-left: calc(80px + 2rem);
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-spacing-mobile {
+    padding-top: calc(72px + var(--safe-top));
+    padding-left: calc(80px + 3rem);
+    padding-right: 3rem;
+  }
+}
+
+/* ========== ORIENTATION SUPPORT ========== */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* Compact mode for landscape mobile */
+  .map-container-responsive {
+    height: calc(100vh - 120px);
+  }
+
+  .calculator-container {
+    padding: 0.75rem;
+  }
+
+  .spacing-responsive-lg {
+    padding: clamp(0.75rem, 2vw, 1.5rem);
+  }
+}
+
+/* ========== HIGH DPI SCREENS ========== */
+@media (min-width: 2560px) {
+  .container-responsive {
+    max-width: 2000px;
+  }
+
+  .text-responsive-4xl {
+    font-size: 4rem;
+  }
+
+  .spacing-responsive-xl {
+    padding: 5rem;
+  }
+}
+
+/* ========== PRINT STYLES ========== */
+@media print {
+  .hidden-print {
+    display: none !important;
+  }
+
+  .map-container-responsive {
+    page-break-inside: avoid;
+  }
+}
+
+/* ========== TOUCH DEVICE OPTIMIZATIONS ========== */
+@media (hover: none) and (pointer: coarse) {
+  /* Increase touch targets on touch devices */
+  button,
+  a,
+  input,
+  select {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Remove hover effects on touch devices */
+  *:hover {
+    transition: none;
+  }
+}
+
+/* ========== ACCESSIBILITY ========== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    --border-width: 2px;
+  }
+
+  button,
+  input,
+  select {
+    border-width: var(--border-width);
+  }
+}
+
+/* ========== FOCUS VISIBLE (Keyboard Navigation) ========== */
+:focus-visible {
+  outline: 3px solid var(--color-primary, #0d9488);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ========== SCROLL SNAP (For Carousels) ========== */
+.scroll-snap-container {
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-snap-item {
+  scroll-snap-align: start;
+}
+
+/* ========== ASPECT RATIOS ========== */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+/* ========== CLAMP UTILITIES ========== */
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.min-h-screen {
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height */
+}
+
+/* ========== FLUID SIZING ========== */
+.fluid-text-xs { font-size: clamp(0.75rem, 1.5vw + 0.5rem, 0.875rem); }
+.fluid-text-sm { font-size: clamp(0.875rem, 1.5vw + 0.625rem, 1rem); }
+.fluid-text-base { font-size: clamp(1rem, 1.5vw + 0.75rem, 1.125rem); }
+.fluid-text-lg { font-size: clamp(1.125rem, 2vw + 0.75rem, 1.5rem); }
+.fluid-text-xl { font-size: clamp(1.25rem, 2.5vw + 0.75rem, 1.875rem); }
+.fluid-text-2xl { font-size: clamp(1.5rem, 3vw + 1rem, 2.5rem); }
+.fluid-text-3xl { font-size: clamp(1.875rem, 4vw + 1rem, 3.5rem); }
+
+.fluid-space-xs { padding: clamp(0.25rem, 1vw, 0.5rem); }
+.fluid-space-sm { padding: clamp(0.5rem, 2vw, 1rem); }
+.fluid-space-md { padding: clamp(1rem, 3vw, 2rem); }
+.fluid-space-lg { padding: clamp(1.5rem, 4vw, 3rem); }
+.fluid-space-xl { padding: clamp(2rem, 5vw, 4rem); }
