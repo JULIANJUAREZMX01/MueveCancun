@@ -26,12 +26,12 @@ export async function shareJourney(journey: any, toast: (msg: string, type: stri
     try {
       await navigator.share({ title: "MueveCancún", text, url: window.location.href });
       return;
-    } catch (_) {/* cancelado */}
+    } catch (e) { console.error(e);/* cancelado */}
   }
   try {
     await navigator.clipboard.writeText(text);
     toast("Ruta copiada al portapapeles 📋", "success");
-  } catch (_) {
+  } catch (e) { console.error(e);
     toast("No se pudo copiar la ruta", "error");
   }
 }
@@ -56,7 +56,7 @@ export async function contributeRoute(
           { timeout: 3000 }
         );
       });
-    } catch (_) {}
+    } catch (e) { console.error(e);}
 
     const res = await fetch("/api/route-share", {
       method: "POST",

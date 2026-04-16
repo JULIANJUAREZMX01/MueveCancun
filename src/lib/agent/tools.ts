@@ -1,8 +1,5 @@
 /**
  * Nexus Agentic Core - Tools Bridge
- *
- * Defines the tools available to the local SLM, mapping natural language
- * intent to high-performance WASM functions.
  */
 
 import type { ChatCompletionTool } from "@mlc-ai/web-llm";
@@ -16,14 +13,8 @@ export const NEXUS_TOOLS: ChatCompletionTool[] = [
       parameters: {
         type: "object",
         properties: {
-          origin: {
-            type: "string",
-            description: "Name of the starting stop or landmark (e.g., 'El Crucero')"
-          },
-          destination: {
-            type: "string",
-            description: "Name of the destination stop or landmark (e.g., 'Hospital General')"
-          }
+          origin: { type: "string" },
+          destination: { type: "string" }
         },
         required: ["origin", "destination"]
       }
@@ -42,20 +33,15 @@ export const NEXUS_TOOLS: ChatCompletionTool[] = [
   }
 ];
 
-/**
- * Executes a tool call using the local system state (WASM/IndexedDB).
- */
-export async function executeToolCall(name: string, args: any) {
+export async function executeToolCall(name: string, args: Record<string, unknown>): Promise<unknown> {
   console.log(`[NexusAgent] Executing tool: ${name}`, args);
 
   if (name === "calculate_route") {
-    // This will be called from the main thread where WASM is loaded
-    if ((window as any).WASM_READY) {
-       // Since find_route in Rust takes &str and returns JsValue (Journey[])
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, boolean>).WASM_READY) {
        const { WasmLoader } = await import('../../utils/WasmLoader');
        const wasm = await WasmLoader.getModule();
-       const result = wasm.find_route(args.origin, args.destination);
-       return typeof result === 'string' ? JSON.parse(result) : result;
+       const result = wasm.find_route(args.origin as string, args.destination as string);
+       return typeof result === 'string' ? (JSON.parse(result) as unknown) : result;
     }
     return { error: "WASM Engine not ready" };
   }

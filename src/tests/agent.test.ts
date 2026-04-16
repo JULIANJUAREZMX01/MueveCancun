@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { executeToolCall } from '../lib/agent/tools';
 
 describe('Nexus Agent Tools', () => {

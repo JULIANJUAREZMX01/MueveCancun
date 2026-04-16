@@ -14,7 +14,7 @@ export function loadLeaflet(): Promise<void> {
   if (typeof window === 'undefined') return Promise.resolve(); // Server-side
 
   // Check if Leaflet is already loaded globally
-  if ((window as any).L) {
+  if ((window as Record<string, unknown>).L) {
       return Promise.resolve();
   }
 
@@ -45,7 +45,7 @@ export function loadLeaflet(): Promise<void> {
 
     const jsPromise = new Promise<void>((jsResolve, jsReject) => {
       script.onload = () => {
-        if ((window as any).L) {
+        if ((window as Record<string, unknown>).L) {
           jsResolve();
         } else {
           jsReject(new Error('Leaflet script loaded but window.L is missing'));

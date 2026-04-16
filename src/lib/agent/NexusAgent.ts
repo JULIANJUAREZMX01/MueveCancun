@@ -5,8 +5,7 @@ export class NexusAgent {
   private static instance: NexusAgent;
   private engine: webllm.MLCEngineInterface | null = null;
   private isInitializing = false;
-  private initFailed = false;
-  private modelId = "Llama-3.2-1B-Instruct-q4f16_1-MLC"; // Small model for browser
+  private modelId = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
 
   static getInstance(): NexusAgent {
     if (!NexusAgent.instance) {
@@ -15,19 +14,11 @@ export class NexusAgent {
     return NexusAgent.instance;
   }
 
-  async init(progressCallback?: (report: webllm.InitProgressReport) => void) {
-    if (this.engine || this.isInitializing || this.initFailed) return;
+  async init(progressCallback?: (report: webllm.InitProgressReport) => void): Promise<void> {
+    if (this.engine || this.isInitializing) return;
     this.isInitializing = true;
 
     try {
-      // 1. Try Gemini Nano (Prompt API) - window.ai
-      if (typeof window !== 'undefined' && (window as any).ai?.createTextSession) {
-        console.log('[NexusAgent] Gemini Nano detected. Using Prompt API.');
-        // We wrap Gemini Nano to match MLCEngineInterface if possible or use it directly
-        // For now, let's proceed with WebLLM as the main robust local driver
-      }
-
-      // 2. Initialize WebLLM Worker
       console.log('[NexusAgent] Initializing WebLLM Worker...');
       this.engine = await webllm.CreateWebWorkerMLCEngine(
         new Worker(new URL("./agent.worker.ts", import.meta.url), { type: "module" }),
@@ -38,7 +29,6 @@ export class NexusAgent {
       console.log('[NexusAgent] Agent Core Ready.');
     } catch (e) {
       console.error('[NexusAgent] Initialization failed', e);
-      this.initFailed = true;
     } finally {
       this.isInitializing = false;
     }
@@ -48,7 +38,7 @@ export class NexusAgent {
     if (!this.engine) throw new Error("Agent not initialized");
 
     const messages: webllm.ChatCompletionMessageParam[] = [
-      { role: "system", content: "You are the MueveCancún Assistant. You help users find bus routes and manage their wallet. Use the provided tools to get real data." },
+      { role: "system", content: "You are the MueveCancún Assistant. Use the provided tools to get real data." },
       { role: "user", content: prompt }
     ];
 
@@ -58,42 +48,23 @@ export class NexusAgent {
       tool_choice: "auto"
     });
 
-    if (!response.choices || response.choices.length === 0) {
-      throw new Error("LLM returned no choices in response");
-    }
-
     const message = response.choices[0].message;
 
     if (message.tool_calls) {
-      const toolResults = [];
+      const toolResults: webllm.ChatCompletionMessageParam[] = [];
       for (const toolCall of message.tool_calls) {
-        try {
-          const args = JSON.parse(toolCall.function.arguments);
-          const result = await executeToolCall(toolCall.function.name, args);
-          toolResults.push({
-            role: "tool",
-            content: JSON.stringify(result),
-            tool_call_id: toolCall.id
-          });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          console.error(`[NexusAgent] Tool execution failed for ${toolCall.function.name}:`, errorMessage);
-          toolResults.push({
-            role: "tool",
-            content: JSON.stringify({ error: `Tool execution failed: ${errorMessage}` }),
-            tool_call_id: toolCall.id
-          });
-        }
+        const args = JSON.parse(toolCall.function.arguments) as Record<string, unknown>;
+        const result = await executeToolCall(toolCall.function.name, args);
+        toolResults.push({
+          role: "tool",
+          content: JSON.stringify(result),
+          tool_call_id: toolCall.id
+        } as webllm.ChatCompletionToolMessageParam);
       }
 
-      // Second pass with tool results
       const finalResponse = await this.engine.chat.completions.create({
-        messages: [...messages, message, ...toolResults as any]
+        messages: [...messages, message, ...toolResults]
       });
-
-      if (!finalResponse.choices || finalResponse.choices.length === 0) {
-        throw new Error("LLM returned no choices in second response");
-      }
 
       return finalResponse.choices[0].message.content || "No response";
     }

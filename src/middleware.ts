@@ -12,11 +12,11 @@ type Locale = typeof SUPPORTED_LOCALES[number];
  */
 const UNLOCALIZED_PATHS = ['home', 'rutas', 'mapa', 'wallet', 'community', 'tracking', 'contribuir', 'about', 'guess'];
 
-function getLocaleFromCookie(cookies: ReturnType<typeof import('astro').AstroCookies.prototype.get extends infer T ? any : any>): Locale {
+function getLocaleFromCookie(): Locale {
   return 'es';
 }
 
-export const onRequest = defineMiddleware(({ request: _request, redirect, cookies, url }, next) => {
+export const onRequest = defineMiddleware(({ redirect, cookies, url }, next) => {
   const path = url.pathname;
   const parts = path.split('/').filter(p => p);
 

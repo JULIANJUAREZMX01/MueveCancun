@@ -87,7 +87,7 @@ const t = getI18N(lang as any);
             progressContainer?.classList.remove('hidden');
             await agent.init((report) => {
                 if (progressBar) progressBar.style.width = `${report.progress * 100}%`;
-                if (progressText) progressText.textContent = report.text;
+                if (progressText) progressText.innerText = report.text;
                 if (report.progress === 1) {
                     setTimeout(() => progressContainer?.classList.add('hidden'), 1000);
                     status?.classList.replace('bg-slate-700', 'bg-green-500');
@@ -104,9 +104,7 @@ const t = getI18N(lang as any);
     div.className = isUser
         ? 'bg-slate-200 text-slate-900 p-3 rounded-2xl rounded-tr-none font-medium ml-auto max-w-[80%]'
         : 'bg-primary-50 text-primary-900 p-3 rounded-2xl rounded-tl-none font-medium border border-primary-100 mr-auto max-w-[80%]';
-    // Use textContent instead of innerText to ensure content is treated as plain text
-    // This prevents XSS attacks even if the response is modified to use innerHTML in the future
-    div.textContent = text;
+    div.innerText = text;
     messages?.appendChild(div);
     messages?.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
   };

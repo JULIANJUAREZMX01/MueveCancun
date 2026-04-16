@@ -20,7 +20,7 @@ test.describe('PWA Interactive Components', () => {
 
     // Wait for WASM ready flag
     await expect.poll(async () => {
-        return await page.evaluate(() => (window as any).WASM_READY === true);
+        return await page.evaluate(() => (window as Record<string, unknown>).WASM_READY === true);
     }, { timeout: 60000, message: 'WASM NOT READY' }).toBe(true);
 
     await page.fill('#origin-input', 'Villas Otoch Paraíso');
