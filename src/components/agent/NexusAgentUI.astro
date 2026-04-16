@@ -1,0 +1,138 @@
+---
+import { getI18N } from "../../utils/i18n";
+
+const { lang = "es" } = Astro.params;
+const t = getI18N(lang as any);
+---
+
+<div id="nexus-agent-container" class="fixed bottom-24 right-6 z-[9999]">
+  <!-- Floating Button -->
+  <button
+    id="agent-toggle"
+    class="w-14 h-14 bg-primary-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group overflow-hidden relative"
+    aria-label="Nexus Agent"
+  >
+     <div class="absolute inset-0 bg-gradient-to-tr from-primary-400 to-transparent opacity-0 group-hover:opacity-20 transition-opacity"></div>
+     <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+     </svg>
+  </button>
+
+  <!-- Chat Panel -->
+  <div
+    id="agent-panel"
+    class="absolute bottom-18 right-0 w-[350px] max-w-[calc(100vw-2rem)] bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col transition-all duration-300 translate-y-4 opacity-0 pointer-events-none"
+  >
+    <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
+        <div>
+            <h3 class="font-black text-xs uppercase tracking-widest">Nexus Agent</h3>
+            <p class="text-[10px] text-slate-400 font-bold uppercase">Soberanía Local v1.0</p>
+        </div>
+        <div id="agent-status" class="w-2 h-2 rounded-full bg-slate-700 animate-pulse"></div>
+    </div>
+
+    <div id="agent-messages" class="flex-1 p-4 overflow-y-auto min-h-[300px] max-h-[400px] bg-slate-50 space-y-3 text-sm">
+        <div class="bg-primary-50 text-primary-900 p-3 rounded-2xl rounded-tl-none font-medium border border-primary-100">
+            ¡Hola! Soy tu asistente inteligente local. Puedo ayudarte a buscar rutas o consultar tu saldo. ¿A dónde quieres ir?
+        </div>
+    </div>
+
+    <div id="agent-input-container" class="p-4 bg-white border-t border-slate-100 flex gap-2">
+        <input
+            type="text"
+            id="agent-input"
+            placeholder="Escribe aquí..."
+            class="flex-1 bg-slate-100 border-none rounded-xl px-4 py-2 text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none"
+        />
+        <button
+            id="agent-send"
+            class="w-10 h-10 bg-primary-600 text-white rounded-xl flex items-center justify-center hover:bg-primary-700 transition-colors"
+        >
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+    </div>
+
+    <div id="agent-progress" class="hidden px-4 pb-4 bg-white">
+        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div id="agent-progress-bar" class="bg-primary-500 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <p id="agent-progress-text" class="text-[9px] font-bold text-slate-400 uppercase mt-1">Cargando inteligencia local...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { NexusAgent } from "../../lib/agent/NexusAgent";
+
+  const agent = NexusAgent.getInstance();
+  const toggle = document.getElementById('agent-toggle');
+  const panel = document.getElementById('agent-panel');
+  const input = document.getElementById('agent-input') as HTMLInputElement;
+  const send = document.getElementById('agent-send');
+  const messages = document.getElementById('agent-messages');
+  const status = document.getElementById('agent-status');
+  const progressContainer = document.getElementById('agent-progress');
+  const progressBar = document.getElementById('agent-progress-bar');
+  const progressText = document.getElementById('agent-progress-text');
+
+  let isOpen = false;
+  let isInitialized = false;
+
+  toggle?.addEventListener('click', async () => {
+    isOpen = !isOpen;
+    if (isOpen) {
+        panel?.classList.remove('translate-y-4', 'opacity-0', 'pointer-events-none');
+        if (!isInitialized) {
+            isInitialized = true;
+            progressContainer?.classList.remove('hidden');
+            await agent.init((report) => {
+                if (progressBar) progressBar.style.width = `${report.progress * 100}%`;
+                if (progressText) progressText.innerText = report.text;
+                if (report.progress === 1) {
+                    setTimeout(() => progressContainer?.classList.add('hidden'), 1000);
+                    status?.classList.replace('bg-slate-700', 'bg-green-500');
+                }
+            });
+        }
+    } else {
+        panel?.classList.add('translate-y-4', 'opacity-0', 'pointer-events-none');
+    }
+  });
+
+  const appendMessage = (text: string, isUser = false) => {
+    const div = document.createElement('div');
+    div.className = isUser
+        ? 'bg-slate-200 text-slate-900 p-3 rounded-2xl rounded-tr-none font-medium ml-auto max-w-[80%]'
+        : 'bg-primary-50 text-primary-900 p-3 rounded-2xl rounded-tl-none font-medium border border-primary-100 mr-auto max-w-[80%]';
+    div.innerText = text;
+    messages?.appendChild(div);
+    messages?.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
+  };
+
+  const handleSend = async () => {
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    appendMessage(text, true);
+
+    try {
+        status?.classList.add('animate-spin');
+        const response = await agent.ask(text);
+        appendMessage(response);
+    } catch (e) {
+        appendMessage("Lo siento, hubo un error procesando tu solicitud local.");
+    } finally {
+        status?.classList.remove('animate-spin');
+    }
+  };
+
+  send?.addEventListener('click', handleSend);
+  input?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleSend();
+  });
+</script>
+
+<style>
+  .bottom-18 { bottom: 4.5rem; }
+</style>

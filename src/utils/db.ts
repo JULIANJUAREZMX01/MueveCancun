@@ -1,7 +1,7 @@
 import { openDB, type IDBPDatabase } from 'idb';
 
 const DB_NAME = 'cancunmueve-db';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 let _cryptoKey: CryptoKey | null = null;
 let _dbPromise: Promise<IDBPDatabase> | null = null;
@@ -87,6 +87,11 @@ export const initDB = async (): Promise<IDBPDatabase> => {
           }
           if (!db.objectStoreNames.contains('security-keys')) {
             db.createObjectStore('security-keys');
+          }
+        }
+        if (oldVersion < 5) {
+          if (!db.objectStoreNames.contains('agent-memory')) {
+            db.createObjectStore('agent-memory', { keyPath: 'id' });
           }
         }
       },
