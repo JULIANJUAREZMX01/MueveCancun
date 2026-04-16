@@ -58,6 +58,10 @@ export class NexusAgent {
       tool_choice: "auto"
     });
 
+    if (!response.choices || response.choices.length === 0) {
+      throw new Error("LLM returned no choices in response");
+    }
+
     const message = response.choices[0].message;
 
     if (message.tool_calls) {
@@ -86,6 +90,10 @@ export class NexusAgent {
       const finalResponse = await this.engine.chat.completions.create({
         messages: [...messages, message, ...toolResults as any]
       });
+
+      if (!finalResponse.choices || finalResponse.choices.length === 0) {
+        throw new Error("LLM returned no choices in second response");
+      }
 
       return finalResponse.choices[0].message.content || "No response";
     }
