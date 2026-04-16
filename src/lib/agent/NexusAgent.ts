@@ -5,6 +5,7 @@ export class NexusAgent {
   private static instance: NexusAgent;
   private engine: webllm.MLCEngineInterface | null = null;
   private isInitializing = false;
+  private initFailed = false;
   private modelId = "Llama-3.2-1B-Instruct-q4f16_1-MLC"; // Small model for browser
 
   static getInstance(): NexusAgent {
@@ -15,7 +16,7 @@ export class NexusAgent {
   }
 
   async init(progressCallback?: (report: webllm.InitProgressReport) => void) {
-    if (this.engine || this.isInitializing) return;
+    if (this.engine || this.isInitializing || this.initFailed) return;
     this.isInitializing = true;
 
     try {
@@ -37,6 +38,7 @@ export class NexusAgent {
       console.log('[NexusAgent] Agent Core Ready.');
     } catch (e) {
       console.error('[NexusAgent] Initialization failed', e);
+      this.initFailed = true;
     } finally {
       this.isInitializing = false;
     }
