@@ -63,7 +63,7 @@ try {
   console.error('❌ Failed to create Jules session:', err.message);
   process.exit(1);
 }
-- PWA offline-first para transporte público en Cancún.
+- PWA // offline-first para transporte público en Cancún.
 - Stack: Astro SSG + Rust/WASM + Leaflet + IndexedDB.
 - Motor de ruteo en \`rust-wasm/route-calculator/src/lib.rs\` (compilado a WASM).
 - Datos de rutas en \`public/data/master_routes.json\`.

@@ -35,9 +35,6 @@ const dispatchBalanceUpdate = () => {
   }
 };
 
-/**
- * Migrate balance from localStorage to IndexedDB.
- */
 export const migrateBalanceFromLocalStorage = async (db: IDBPDatabase): Promise<void> => {
   try {
       if (typeof window === 'undefined' || localStorage.getItem('balance_migration_done')) return;
@@ -97,7 +94,6 @@ export const initDB = async (): Promise<IDBPDatabase> => {
       },
     });
 
-    // Initialize balance if empty
     const balance = await db.get('wallet-status', 'current_balance');
     if (balance === undefined) {
       const defaultAmount = 180.00;
@@ -107,7 +103,6 @@ export const initDB = async (): Promise<IDBPDatabase> => {
       dispatchBalanceUpdate();
     }
 
-    // Trigger migration
     await migrateBalanceFromLocalStorage(db);
 
     return db;
@@ -132,7 +127,7 @@ export const getWalletBalance = async () => {
     const isValid = await verifySignature(balance.amount, balance.signature, key);
 
     if (!isValid) {
-      console.error('[SECURITY] Wallet balance signature verification failed. Possible tampering detected. Resetting to 0.00 MXN.');
+      console.error('[SECURITY] Wallet balance signature verification failed. Resetting to 0.00 MXN.');
       const resetAmount = 0.00;
       balance.amount = resetAmount;
       balance.signature = await generateSignature(resetAmount, key);
@@ -161,8 +156,6 @@ export const updateWalletBalance = async (amount: number) => {
     await setWalletBalance(balance.amount + amount);
   }
 };
-
-// --- Offline Reporting Support ---
 
 export interface PendingReport {
   id?: number;

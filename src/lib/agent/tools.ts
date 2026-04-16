@@ -1,7 +1,3 @@
-/**
- * Nexus Agentic Core - Tools Bridge
- */
-
 import type { ChatCompletionTool } from "@mlc-ai/web-llm";
 
 export const NEXUS_TOOLS: ChatCompletionTool[] = [
@@ -34,21 +30,11 @@ export const NEXUS_TOOLS: ChatCompletionTool[] = [
 ];
 
 export async function executeToolCall(name: string, args: Record<string, unknown>): Promise<unknown> {
-  console.log(`[NexusAgent] Executing tool: ${name}`, args);
-
   if (name === "calculate_route") {
-    // Validate that both origin and destination are present and are strings
-    if (!args.origin || typeof args.origin !== 'string') {
-      return { error: "Missing or invalid 'origin' argument. Must be a non-empty string." };
-    }
-    if (!args.destination || typeof args.destination !== 'string') {
-      return { error: "Missing or invalid 'destination' argument. Must be a non-empty string." };
-    }
-
     if (typeof window !== 'undefined' && (window as unknown as Record<string, boolean>).WASM_READY) {
        const { WasmLoader } = await import('../../utils/WasmLoader');
        const wasm = await WasmLoader.getModule();
-       const result = wasm.find_route(args.origin, args.destination);
+       const result = wasm.find_route(args.origin as string, args.destination as string);
        return typeof result === 'string' ? (JSON.parse(result) as unknown) : result;
     }
     return { error: "WASM Engine not ready" };

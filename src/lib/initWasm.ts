@@ -7,7 +7,6 @@ export async function initWasm(): Promise<boolean> {
 
   _initPromise = (async () => {
     try {
-      console.log('[initWasm] Engine initializing...');
       const wasmModule = (await WasmLoader.getModule()) as unknown as RouteCalculatorWasm;
 
       const response = await fetch('/data/master_routes.optimized.json');
@@ -20,9 +19,8 @@ export async function initWasm(): Promise<boolean> {
           (wasmModule as unknown as { load_catalog: (j: string) => void }).load_catalog(catalogJson);
       }
 
-      console.log('[initWasm] ✅ ENGINE READY');
       if (typeof window !== 'undefined') {
-          (window as unknown as Record<string, boolean>).WASM_READY = true;
+          (window as Record<string, unknown>).WASM_READY = true;
       }
       return true;
     } catch (error) {

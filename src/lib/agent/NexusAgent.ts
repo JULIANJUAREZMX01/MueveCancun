@@ -19,14 +19,11 @@ export class NexusAgent {
     this.isInitializing = true;
 
     try {
-      console.log('[NexusAgent] Initializing WebLLM Worker...');
       this.engine = await webllm.CreateWebWorkerMLCEngine(
         new Worker(new URL("./agent.worker.ts", import.meta.url), { type: "module" }),
         this.modelId,
         { initProgressCallback: progressCallback }
       );
-
-      console.log('[NexusAgent] Agent Core Ready.');
     } catch (e) {
       console.error('[NexusAgent] Initialization failed', e);
     } finally {
@@ -48,7 +45,9 @@ export class NexusAgent {
       tool_choice: "auto"
     });
 
-    const message = response.choices[0].message;
+    const choice = response.choices[0];
+    if (!choice || !choice.message) return "No response from AI.";
+    const message = choice.message;
 
     if (message.tool_calls) {
       const toolResults: webllm.ChatCompletionMessageParam[] = [];
@@ -66,9 +65,9 @@ export class NexusAgent {
         messages: [...messages, message, ...toolResults]
       });
 
-      return finalResponse.choices[0].message.content || "No response";
+      return finalResponse.choices[0]?.message?.content || "No response after tool execution.";
     }
 
-    return message.content || "No response";
+    return message.content || "No response from AI.";
   }
 }
