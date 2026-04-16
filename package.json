@@ -39,8 +39,7 @@
     "start": "node dist/server/entry.mjs",
     "build:ci": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build",
     "db:migrate": "node --experimental-strip-types scripts/db-migrate.ts",
-    "build:vercel": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build",
-    "deploy": "pnpm run pre-deploy && pnpm run build && git push"
+    "build:vercel": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.3",

@@ -306,7 +306,7 @@ export async function createRepolessSession({ task, runtime = 'node', env = {} }
     throw new Error(`Jules API error ${response.status}: ${errorBody}`);
   }
 
-  // return response.json();
+  return response.json();
 }
 
 /**

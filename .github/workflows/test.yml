@@ -1,18 +1,14 @@
 name: CI / Security & Quality
-
 on:
   push:
     branches: [main, "claude/**", "jules/**"]
   pull_request:
     branches: [main]
-
 permissions:
   contents: read
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   environment:
     name: Environment Setup
@@ -31,7 +27,6 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
       - run: pnpm install --frozen-lockfile
-
   lint:
     name: Lint & Prettier
     needs: environment
@@ -47,7 +42,6 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
-
   ts-unit:
     name: TS Unit Tests
     needs: environment
@@ -63,7 +57,6 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm test -- --reporter=verbose
-
   rust-unit:
     name: Rust WASM Logic
     runs-on: ubuntu-latest
@@ -79,7 +72,6 @@ jobs:
       - name: Run route-calculator tests
         working-directory: rust-wasm/route-calculator
         run: cargo test --lib -- --nocapture
-
   data-integrity:
     name: Data Validation
     needs: environment
@@ -95,10 +87,9 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: node --experimental-strip-types scripts/validate-routes.ts
-
   build-vercel:
     name: Production Build (Vercel)
-    needs: [ts-unit, rust-unit, data-integrity]
+    needs: [lint, ts-unit, rust-unit, data-integrity]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

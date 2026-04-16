@@ -10,7 +10,7 @@ const modules = ['route-calculator', 'spatial-index'];
 const isCI = process.env.GITHUB_ACTIONS === 'true' || process.env.VERCEL === '1' || process.env.RENDER === 'true';
 
 function hasPrebuilt() {
-  return modules.every(m => fs.existsSync(path.join(rootDir, 'public', 'wasm', m, m.replace('-', '_') + '_bg.wasm')));
+  return modules.every(m => fs.existsSync(path.join(rootDir, 'public', 'wasm', m, m.replace('-', '_') + '.wasm')));
 }
 
 if (isCI && hasPrebuilt()) {
