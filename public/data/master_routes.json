@@ -1,9 +1,9 @@
 {
   "metadata": {
     "last_updated": "2026-04-15T08:33:33.284Z",
-    "source": "merge-routes.ts (78 routes from 43 files)",
+    "source": "merge-routes.ts (78 routes from 41 files)",
     "version": "3.8.0",
-    "last_merged": "2026-04-03T14:13:00.283Z",
+    "last_merged": "2026-04-16T04:19:27.718Z",
     "colors_added": "2026-04-15T08:33:33.285Z"
   },
   "social_alerts": [
@@ -65,9 +65,7 @@
           "lng": -86.768,
           "orden": 6
         }
-      ],
-      "route_id": "R2",
-      "color_id": "R2"
+      ]
     },
     {
       "id": "CR_PTO_JUAREZ_001",
@@ -120,9 +118,7 @@
           "lng": -86.8028,
           "orden": 5
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "R1_ZONA_HOTELERA_001",
@@ -180,9 +176,7 @@
           "lng": -86.775,
           "orden": 6
         }
-      ],
-      "route_id": "R1",
-      "color_id": "R1"
+      ]
     },
     {
       "id": "VAN_PLAYA_EXPRESS_001",
@@ -246,9 +240,7 @@
           "lng": -87.0739,
           "orden": 7
         }
-      ],
-      "route_id": "PLAYA_EXPRESS",
-      "color_id": "PLAYA_EXPRESS"
+      ]
     },
     {
       "id": "R28_VILLAS_OTOCH_001",
@@ -286,9 +278,7 @@
           "lng": -86.8219,
           "orden": 4
         }
-      ],
-      "route_id": "R28",
-      "color_id": "R28"
+      ]
     },
     {
       "id": "R19_VILLAS_OTOCH_002",
@@ -321,9 +311,7 @@
           "lng": -86.8219,
           "orden": 3
         }
-      ],
-      "route_id": "R1",
-      "color_id": "R1"
+      ]
     },
     {
       "id": "ADO_AEROPUERTO_001",
@@ -361,9 +349,7 @@
           "lng": -86.8271,
           "orden": 4
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "R10",
@@ -443,9 +429,7 @@
           "orden": 8,
           "landmarks": "Universidad"
         }
-      ],
-      "route_id": "R10",
-      "color_id": "R10"
+      ]
     },
     {
       "id": "ruta_1753801260218",
@@ -5481,9 +5465,7 @@
           "lng": -86.7474,
           "orden": 7
         }
-      ],
-      "route_id": "R1",
-      "color_id": "R1"
+      ]
     },
     {
       "id": "R2",
@@ -5506,9 +5488,7 @@
           "lng": -86.8234,
           "orden": 3
         }
-      ],
-      "route_id": "R2",
-      "color_id": "R2"
+      ]
     },
     {
       "id": "R10_AEROPUERTO",
@@ -5629,9 +5609,7 @@
           "lng": -86.8219,
           "orden": 5
         }
-      ],
-      "route_id": "R6",
-      "color_id": "R6"
+      ]
     },
     {
       "id": "R29_OUTLET_001",
@@ -5923,9 +5901,7 @@
           "lng": -86.775,
           "orden": 6
         }
-      ],
-      "route_id": "R27",
-      "color_id": "R27"
+      ]
     },
     {
       "id": "R237_RANCHO_001",
@@ -6147,9 +6123,7 @@
           "lng": -86.8234,
           "orden": 4
         }
-      ],
-      "route_id": "R3",
-      "color_id": "R3"
+      ]
     },
     {
       "id": "R15_HOTELES_001",
@@ -6193,9 +6167,7 @@
           "lng": -86.768,
           "orden": 5
         }
-      ],
-      "route_id": "R1",
-      "color_id": "R1"
+      ]
     },
     {
       "id": "POLYLINE_1753801260218_0",
@@ -6311,9 +6283,7 @@
           "lng": -86.88640594482423,
           "orden": 18
         }
-      ],
-      "route_id": "R31",
-      "color_id": "R31"
+      ]
     },
     {
       "id": "POLYLINE_1753802299281_0",
@@ -6609,9 +6579,7 @@
           "lng": -86.82531595230104,
           "orden": 48
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "POLYLINE_1754576044305",
@@ -6961,9 +6929,7 @@
           "lng": -86.83308362960815,
           "orden": 57
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "POLYLINE_1756850089371",
@@ -7169,9 +7135,7 @@
           "lng": -86.82136774063112,
           "orden": 33
         }
-      ],
-      "route_id": "R29",
-      "color_id": "R29"
+      ]
     },
     {
       "id": "POLYLINE_1759506708808",
@@ -7593,9 +7557,7 @@
           "lng": -86.82430744171143,
           "orden": 69
         }
-      ],
-      "route_id": "R30",
-      "color_id": "R30"
+      ]
     },
     {
       "id": "POLYLINE_1761456676914",
@@ -7867,9 +7829,7 @@
           "lng": -86.82418942451478,
           "orden": 44
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "POLYLINE_1761458818964",
@@ -8207,9 +8167,7 @@
           "lng": -86.82424843311311,
           "orden": 55
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "POLYLINE_1758230498578",
@@ -8355,9 +8313,7 @@
           "lng": -86.82428598403932,
           "orden": 23
         }
-      ],
-      "route_id": "R19",
-      "color_id": "R19"
+      ]
     },
     {
       "id": "POLYLINE_1759866849505",
@@ -8707,9 +8663,7 @@
           "lng": -86.90762758255006,
           "orden": 57
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "POLYLINE_1759866137331",
@@ -9095,9 +9049,7 @@
           "lng": -86.82297706604004,
           "orden": 63
         }
-      ],
-      "route_id": "R18",
-      "color_id": "R18"
+      ]
     },
     {
       "id": "POLYLINE_1759952771720",
@@ -9399,9 +9351,7 @@
           "lng": -86.82417869567873,
           "orden": 49
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "POLYLINE_1760327653692",
@@ -9811,9 +9761,7 @@
           "lng": -86.82430207729341,
           "orden": 67
         }
-      ],
-      "route_id": "R28",
-      "color_id": "R28"
+      ]
     },
     {
       "id": "POLYLINE_1760328606309",
@@ -10247,9 +10195,7 @@
           "lng": -86.82411432266237,
           "orden": 71
         }
-      ],
-      "route_id": "R17",
-      "color_id": "R17"
+      ]
     },
     {
       "id": "POLYLINE_1760338237012",
@@ -10749,9 +10695,7 @@
           "lng": -86.82426989078523,
           "orden": 82
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "POLYLINE_1760340184559",
@@ -11227,9 +11171,7 @@
           "lng": -86.82584702968599,
           "orden": 78
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "POLYLINE_1760414609200",
@@ -11627,9 +11569,7 @@
           "lng": -86.82427525520326,
           "orden": 65
         }
-      ],
-      "route_id": "R13",
-      "color_id": "R13"
+      ]
     },
     {
       "id": "POLYLINE_1760462813165",
@@ -11847,9 +11787,7 @@
           "lng": -86.84973478317262,
           "orden": 35
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "POLYLINE_1760462813166",
@@ -12079,9 +12017,7 @@
           "lng": -86.84973478317262,
           "orden": 37
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "POLYLINE_1761273705821",
@@ -12479,9 +12415,7 @@
           "lng": -86.82299852371216,
           "orden": 65
         }
-      ],
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      ]
     },
     {
       "id": "POLYLINE_1464274794329",
@@ -13053,9 +12987,7 @@
           "lng": -86.78317844867708,
           "orden": 94
         }
-      ],
-      "route_id": "R2",
-      "color_id": "R2"
+      ]
     },
     {
       "id": "POLYLINE_1653475759991",
@@ -13657,9 +13589,7 @@
           "lng": -86.78317844867708,
           "orden": 99
         }
-      ],
-      "route_id": "R2",
-      "color_id": "R2"
+      ]
     },
     {
       "id": "POLYLINE_1760333218631",
@@ -14291,9 +14221,7 @@
           "lng": -86.78317844867708,
           "orden": 104
         }
-      ],
-      "route_id": "R2",
-      "color_id": "R2"
+      ]
     },
     {
       "id": "POLYLINE_1760989478537",
@@ -14553,9 +14481,7 @@
           "lng": -86.82430207729341,
           "orden": 42
         }
-      ],
-      "route_id": "R21",
-      "color_id": "R21"
+      ]
     },
     {
       "id": "POLYLINE_1761460735535",
@@ -14779,9 +14705,7 @@
           "lng": -86.82422161102296,
           "orden": 36
         }
-      ],
-      "route_id": "R5",
-      "color_id": "R5"
+      ]
     },
     {
       "id": "POLYLINE_1761276380950",
@@ -15365,9 +15289,7 @@
           "lng": -86.78317844867708,
           "orden": 96
         }
-      ],
-      "route_id": "R2",
-      "color_id": "R2"
+      ]
     },
     {
       "id": "POLYLINE_1761277331648",
@@ -15987,9 +15909,7 @@
           "lng": -86.78317844867708,
           "orden": 102
         }
-      ],
-      "route_id": "R2",
-      "color_id": "R2"
+      ]
     },
     {
       "id": "POLYLINE_1761277780965",
@@ -16477,9 +16397,7 @@
           "lng": -86.78317844867708,
           "orden": 80
         }
-      ],
-      "route_id": "R1",
-      "color_id": "R1"
+      ]
     }
   ],
   "airport_restrictions": {
