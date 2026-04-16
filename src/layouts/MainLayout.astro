@@ -13,6 +13,7 @@ import CrowdsourceTracker from '../components/CrowdsourceTracker.astro';
 import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import { ClientRouter } from 'astro:transitions';
+import NexusAgentUI from '../components/agent/NexusAgentUI.astro';
 
 interface Props {
   title?: string;
@@ -57,7 +58,7 @@ import '../styles/responsive.css';" />
 
     {!hideNav && <div class="u-mobile-only"><BottomNav /></div>}
 
-    <Toast /><PwaReload /><BrowserDetection /><DonateNudge /><ReportWidget />
+    <Toast /><PwaReload /><BrowserDetection /><DonateNudge /><ReportWidget /><NexusAgentUI />
 
     <style lang="scss">
       .l-body {
