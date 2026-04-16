@@ -50,9 +50,6 @@ export async function executeToolCall(name: string, args: any) {
 
   if (name === "calculate_route") {
     // This will be called from the main thread where WASM is loaded
-    // or we might need to proxy it to the main thread.
-    const { find_route } = await import('../initWasm');
-    // Assuming find_route is exposed or accessible via window
     if ((window as any).WASM_READY) {
        // Since find_route in Rust takes &str and returns JsValue (Journey[])
        const { WasmLoader } = await import('../../utils/WasmLoader');
