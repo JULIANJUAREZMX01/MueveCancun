@@ -7,6 +7,9 @@ import Toast from '../components/ui/Toast.astro';
 import PwaReload from '../components/ui/PwaReload.astro';
 import BrowserDetection from '../components/ui/BrowserDetection.astro';
 import DonateNudge from '../components/ui/DonateNudge.astro';
+import AppLoader from '../components/AppLoader.astro';
+import HealthWidget from '../components/HealthWidget.astro';
+import CrowdsourceTracker from '../components/CrowdsourceTracker.astro';
 import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import { ClientRouter } from 'astro:transitions';
@@ -25,7 +28,8 @@ const lang = getLangFromUrl(Astro.url);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>{title}</title>
-    <link rel="stylesheet" href="/src/styles/main.scss" />
+    <link rel="stylesheet" href="/src/styles/main.scss
+import '../styles/responsive.css';" />
     <ClientRouter />
     <script is:inline>
       const theme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
@@ -43,6 +47,7 @@ const lang = getLangFromUrl(Astro.url);
       </header>
     )}
 
+    <AppLoader />
     {!hideNav && <Sidebar />}
 
     <main class:list={["l-main", !hideNav && "l-main--with-nav"]}>

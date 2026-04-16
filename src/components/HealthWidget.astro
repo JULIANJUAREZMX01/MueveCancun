@@ -1,0 +1,391 @@
+---
+/**
+ * HealthWidget - Shows app health status (dev/debug mode)
+ * Only visible in dev mode or when ?debug=1 query param is present
+ */
+const isDev = import.meta.env.DEV;
+const showWidget = isDev || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debug'));
+---
+
+{showWidget && (
+  <div id="health-widget" class="health-widget collapsed">
+    <button id="health-toggle" class="health-toggle" aria-label="Toggle health widget">
+      <div class="health-indicator"></div>
+      <span class="health-text">Health</span>
+    </button>
+
+    <div class="health-panel">
+      <div class="health-header">
+        <h3>System Health</h3>
+        <div class="health-score">
+          <span id="health-score-value">--%</span>
+        </div>
+      </div>
+
+      <div class="health-checks" id="health-checks">
+        <div class="health-check-loading">Running checks...</div>
+      </div>
+
+      <div class="health-actions">
+        <button id="health-refresh" class="btn-health">
+          <span>↻</span> Refresh
+        </button>
+        <button id="health-reset" class="btn-health btn-danger">
+          <span>⟲</span> Reset App
+        </button>
+      </div>
+
+      <div class="health-footer">
+        <small>Last check: <span id="health-timestamp">Never</span></small>
+      </div>
+    </div>
+  </div>
+)}
+
+<script>
+  import { RuntimeIntegrity } from '../utils/RuntimeIntegrity';
+  import { AppInitializer } from '../utils/AppInitializer';
+
+  const widget = document.getElementById('health-widget');
+  const toggle = document.getElementById('health-toggle');
+  const indicator = document.querySelector('.health-indicator');
+  const checksContainer = document.getElementById('health-checks');
+  const scoreValue = document.getElementById('health-score-value');
+  const timestamp = document.getElementById('health-timestamp');
+
+  if (widget && toggle) {
+    // Toggle panel
+    toggle.addEventListener('click', () => {
+      widget.classList.toggle('collapsed');
+    });
+
+    // Refresh button
+    document.getElementById('health-refresh')?.addEventListener('click', async () => {
+      await updateHealth();
+    });
+
+    // Reset button
+    document.getElementById('health-reset')?.addEventListener('click', async () => {
+      if (confirm('This will reset the app state. Continue?')) {
+        // Clear all storage
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // Clear IndexedDB
+        if ('indexedDB' in window) {
+          const dbs = await window.indexedDB.databases();
+          dbs.forEach(db => {
+            if (db.name) window.indexedDB.deleteDatabase(db.name);
+          });
+        }
+
+        // Unregister service workers
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map(r => r.unregister()));
+        }
+
+        // Reload
+        window.location.reload();
+      }
+    });
+
+    // Update health display
+    async function updateHealth() {
+      const startTime = Date.now();
+      const results = await RuntimeIntegrity.runChecks();
+      const score = RuntimeIntegrity.getHealthScore();
+
+      // Update score
+      if (scoreValue) {
+        scoreValue.textContent = `${score}%`;
+        scoreValue.className = score >= 90 ? 'score-good' : score >= 70 ? 'score-warn' : 'score-bad';
+      }
+
+      // Update indicator
+      if (indicator) {
+        indicator.className = 'health-indicator ' +
+          (results.critical > 0 ? 'critical' : score >= 90 ? 'healthy' : score >= 70 ? 'warning' : 'error');
+      }
+
+      // Update checks list
+      if (checksContainer) {
+        const checkResults = RuntimeIntegrity.getResults();
+        checksContainer.innerHTML = '';
+
+        checkResults.forEach((passed, name) => {
+          const item = document.createElement('div');
+          item.className = `health-check-item ${passed ? 'passed' : 'failed'}`;
+          item.innerHTML = `
+            <span class="check-icon">${passed ? '✓' : '✗'}</span>
+            <span class="check-name">${name}</span>
+          `;
+          checksContainer.appendChild(item);
+        });
+      }
+
+      // Update timestamp
+      if (timestamp) {
+        const now = new Date();
+        timestamp.textContent = now.toLocaleTimeString();
+      }
+
+      console.log(`Health check completed in ${Date.now() - startTime}ms`);
+    }
+
+    // Initial update
+    setTimeout(updateHealth, 2000);
+
+    // Auto-refresh every minute
+    setInterval(updateHealth, 60000);
+
+    // Update on app init complete
+    AppInitializer.onStatusChange((status) => {
+      if (status.wasm && status.data && status.ui) {
+        setTimeout(updateHealth, 500);
+      }
+    });
+  }
+</script>
+
+<style>
+.health-widget {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.health-widget.collapsed .health-panel {
+  display: none;
+}
+
+.health-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.health-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.health-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #94a3b8;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.health-indicator.healthy {
+  background: #10b981;
+}
+
+.health-indicator.warning {
+  background: #f59e0b;
+}
+
+.health-indicator.error {
+  background: #ef4444;
+}
+
+.health-indicator.critical {
+  background: #dc2626;
+  animation: pulse-critical 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes pulse-critical {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.2); }
+}
+
+.health-panel {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 10px;
+  width: 320px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.health-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.health-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.health-score {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#health-score-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+#health-score-value.score-good {
+  color: #10b981;
+}
+
+#health-score-value.score-warn {
+  color: #f59e0b;
+}
+
+#health-score-value.score-bad {
+  color: #ef4444;
+}
+
+.health-checks {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.health-check-loading {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.health-check-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin-bottom: 0.25rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  transition: background 0.2s ease;
+}
+
+.health-check-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.health-check-item.passed .check-icon {
+  color: #10b981;
+}
+
+.health-check-item.failed .check-icon {
+  color: #ef4444;
+}
+
+.check-name {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.health-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.btn-health {
+  flex: 1;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.btn-health:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.health-footer {
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.625rem;
+}
+
+/* Scrollbar styling */
+.health-checks::-webkit-scrollbar {
+  width: 6px;
+}
+
+.health-checks::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.health-checks::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.health-checks::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .health-widget {
+    bottom: 80px;
+    right: 10px;
+  }
+
+  .health-panel {
+    width: calc(100vw - 40px);
+    max-width: 320px;
+  }
+}
+</style>

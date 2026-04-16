@@ -1,0 +1,541 @@
+/**
+ * 🎨 Patrones Visuales Caribeños - MueveCancún
+ * Decoraciones, backgrounds y elementos visuales tropicales
+ */
+
+/* === PATRONES DE FONDO === */
+
+/* Patrón de Olas */
+.pattern-waves {
+  background-image:
+    linear-gradient(135deg, rgba(0, 200, 255, 0.05) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(0, 200, 255, 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, rgba(0, 200, 255, 0.05) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(0, 200, 255, 0.05) 25%, transparent 25%);
+  background-position: 20px 0, 20px 0, 0 0, 0 0;
+  background-size: 40px 40px;
+  background-repeat: repeat;
+}
+
+/* Patrón de Puntos Tropicales */
+.pattern-dots {
+  background-image: radial-gradient(
+    circle,
+    rgba(0, 200, 255, 0.1) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+}
+
+/* Patrón de Líneas Diagonales */
+.pattern-stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(0, 200, 255, 0.03) 10px,
+    rgba(0, 200, 255, 0.03) 20px
+  );
+}
+
+/* Patrón Geométrico Mexicano */
+.pattern-mexican {
+  background-image:
+    linear-gradient(45deg, rgba(206, 17, 38, 0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(64, 145, 108, 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(206, 17, 38, 0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(64, 145, 108, 0.05) 75%);
+  background-size: 30px 30px;
+  background-position: 0 0, 0 15px, 15px -15px, -15px 0px;
+}
+
+/* Patrón de Cuadrícula */
+.pattern-grid {
+  background-image:
+    linear-gradient(rgba(0, 200, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 200, 255, 0.1) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* === FONDOS HERO === */
+
+/* Hero Caribbean */
+.hero-caribbean {
+  position: relative;
+  background: radial-gradient(
+    ellipse at top,
+    rgba(0, 200, 255, 0.2) 0%,
+    transparent 60%
+  ), var(--color-bg);
+  overflow: hidden;
+}
+
+.hero-caribbean::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 200, 255, 0.1) 0%,
+    transparent 70%
+  );
+  animation: wave-horizontal 15s ease-in-out infinite;
+}
+
+/* Hero Sunset (México) */
+.hero-sunset {
+  position: relative;
+  background: radial-gradient(
+    ellipse at top right,
+    rgba(206, 17, 38, 0.15) 0%,
+    rgba(255, 179, 0, 0.08) 40%,
+    transparent 70%
+  ), var(--color-bg);
+}
+
+/* Hero Tropical */
+.hero-tropical {
+  position: relative;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(0, 200, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255, 179, 0, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(206, 17, 38, 0.08) 0%, transparent 50%),
+    var(--color-bg);
+}
+
+/* === OVERLAYS DECORATIVOS === */
+
+/* Overlay de Onda Superior */
+.wave-overlay-top {
+  position: relative;
+  padding-top: 80px;
+}
+
+.wave-overlay-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: var(--gradient-caribbean);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 50%,
+    90% 60%,
+    80% 50%,
+    70% 60%,
+    60% 50%,
+    50% 60%,
+    40% 50%,
+    30% 60%,
+    20% 50%,
+    10% 60%,
+    0 50%
+  );
+  opacity: 0.3;
+}
+
+/* Overlay de Onda Inferior */
+.wave-overlay-bottom {
+  position: relative;
+  padding-bottom: 80px;
+}
+
+.wave-overlay-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: var(--gradient-caribbean);
+  clip-path: polygon(
+    0 50%,
+    10% 40%,
+    20% 50%,
+    30% 40%,
+    40% 50%,
+    50% 40%,
+    60% 50%,
+    70% 40%,
+    80% 50%,
+    90% 40%,
+    100% 50%,
+    100% 100%,
+    0 100%
+  );
+  opacity: 0.3;
+}
+
+/* === EFECTOS DE LUZ === */
+
+/* Glow Caribbean */
+.glow-caribbean {
+  position: relative;
+}
+
+.glow-caribbean::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 200, 255, 0.15) 0%,
+    transparent 70%
+  );
+  filter: blur(40px);
+  z-index: -1;
+  pointer-events: none;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+/* Glow Mexico */
+.glow-mexico {
+  position: relative;
+}
+
+.glow-mexico::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(
+    circle at center,
+    rgba(206, 17, 38, 0.15) 0%,
+    transparent 70%
+  );
+  filter: blur(40px);
+  z-index: -1;
+  pointer-events: none;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+/* === ELEMENTOS DECORATIVOS === */
+
+/* Círculo Decorativo */
+.deco-circle {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 200, 255, 0.2) 0%,
+    transparent 70%
+  );
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.deco-circle-mexico {
+  background: radial-gradient(
+    circle at center,
+    rgba(206, 17, 38, 0.2) 0%,
+    transparent 70%
+  );
+}
+
+.deco-circle-sun {
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 179, 0, 0.2) 0%,
+    transparent 70%
+  );
+}
+
+/* Líneas Decorativas */
+.deco-lines {
+  position: relative;
+}
+
+.deco-lines::before,
+.deco-lines::after {
+  content: '';
+  position: absolute;
+  width: 100px;
+  height: 2px;
+  background: var(--gradient-caribbean);
+}
+
+.deco-lines::before {
+  top: 0;
+  left: 0;
+}
+
+.deco-lines::after {
+  bottom: 0;
+  right: 0;
+}
+
+/* === BORDES DECORATIVOS === */
+
+/* Borde Gradiente Caribbean */
+.border-gradient-caribbean {
+  border: 2px solid transparent;
+  background-image:
+    linear-gradient(var(--color-surface), var(--color-surface)),
+    var(--gradient-caribbean);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* Borde Gradiente Mexico */
+.border-gradient-mexico {
+  border: 2px solid transparent;
+  background-image:
+    linear-gradient(var(--color-surface), var(--color-surface)),
+    linear-gradient(90deg, var(--mexico-red) 0%, var(--mexico-sunset) 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* Borde Animado */
+.border-animated {
+  position: relative;
+  border: 2px solid transparent;
+}
+
+.border-animated::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: var(--gradient-caribbean);
+  background-size: 200% 200%;
+  border-radius: inherit;
+  z-index: -1;
+  animation: gradientShift 3s ease infinite;
+}
+
+/* === EFECTOS DE TEXTO === */
+
+/* Título con Sombra Caribbean */
+.text-shadow-caribbean {
+  text-shadow:
+    0 0 20px rgba(0, 200, 255, 0.5),
+    0 0 40px rgba(0, 200, 255, 0.3),
+    0 0 60px rgba(0, 200, 255, 0.1);
+}
+
+/* Título con Sombra Mexico */
+.text-shadow-mexico {
+  text-shadow:
+    0 0 20px rgba(206, 17, 38, 0.5),
+    0 0 40px rgba(206, 17, 38, 0.3),
+    0 0 60px rgba(206, 17, 38, 0.1);
+}
+
+/* Texto Outline */
+.text-outline {
+  -webkit-text-stroke: 2px var(--caribbean-foam);
+  -webkit-text-fill-color: transparent;
+}
+
+/* Texto con Reflejo */
+.text-reflect {
+  position: relative;
+}
+
+.text-reflect::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  transform: scaleY(-1);
+  opacity: 0.2;
+  background: linear-gradient(
+    to bottom,
+    var(--color-text) 0%,
+    transparent 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* === ICONOS DECORATIVOS === */
+
+/* Icono con Pulso */
+.icon-pulse {
+  position: relative;
+  display: inline-block;
+}
+
+.icon-pulse::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid var(--caribbean-foam);
+  animation: ripple 2s ease-out infinite;
+}
+
+/* Icono con Glow */
+.icon-glow {
+  filter: drop-shadow(0 0 8px rgba(0, 200, 255, 0.6));
+}
+
+/* === SEPARADORES === */
+
+/* Separador con Icono */
+.separator-icon {
+  position: relative;
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-2xl) 0;
+  text-align: center;
+}
+
+.separator-icon::before {
+  content: '🚍';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-bg);
+  padding: 0 var(--space-md);
+  font-size: var(--text-2xl);
+}
+
+/* Separador Gradiente */
+.separator-gradient {
+  height: 3px;
+  background: var(--gradient-caribbean);
+  margin: var(--space-3xl) 0;
+  border-radius: var(--radius-full);
+  opacity: 0.5;
+}
+
+/* === SECCIONES === */
+
+/* Sección con Fondo Diagonal */
+.section-diagonal {
+  position: relative;
+  padding: var(--spacing-section);
+}
+
+.section-diagonal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    var(--color-surface) 0%,
+    rgba(0, 200, 255, 0.05) 100%
+  );
+  clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+  z-index: -1;
+}
+
+/* Sección Destacada */
+.section-featured {
+  position: relative;
+  background: linear-gradient(
+    145deg,
+    rgba(0, 200, 255, 0.05) 0%,
+    rgba(206, 17, 38, 0.03) 100%
+  );
+  border-left: 4px solid var(--caribbean-foam);
+  padding: var(--space-2xl);
+  border-radius: var(--radius-lg);
+}
+
+/* === UTILIDADES DE LAYOUT === */
+
+/* Container con Glow */
+.container-glow {
+  position: relative;
+  padding: var(--space-xl);
+}
+
+.container-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at top right,
+    rgba(0, 200, 255, 0.1) 0%,
+    transparent 60%
+  );
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Grid Tropical */
+.grid-tropical {
+  display: grid;
+  gap: var(--space-xl);
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+@media (min-width: 768px) {
+  .grid-tropical {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+}
+
+/* Flex Stack Caribbean */
+.stack-caribbean {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.stack-caribbean > * + * {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-lg);
+}
+
+/* === EFECTOS ESPECIALES === */
+
+/* Efecto de Vidrio Esmerilado */
+.frosted-glass {
+  background: rgba(13, 17, 23, 0.4);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Efecto Neumórfico */
+.neomorphic {
+  background: var(--color-surface);
+  box-shadow:
+    8px 8px 16px rgba(0, 0, 0, 0.3),
+    -8px -8px 16px rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-xl);
+}
+
+.neomorphic-inset {
+  box-shadow:
+    inset 8px 8px 16px rgba(0, 0, 0, 0.3),
+    inset -8px -8px 16px rgba(255, 255, 255, 0.03);
+}
+
+/* Efecto Holográfico */
+.holographic {
+  background: linear-gradient(
+    45deg,
+    rgba(0, 200, 255, 0.1),
+    rgba(206, 17, 38, 0.1),
+    rgba(255, 179, 0, 0.1),
+    rgba(64, 145, 108, 0.1)
+  );
+  background-size: 300% 300%;
+  animation: gradientWave 6s ease infinite;
+}

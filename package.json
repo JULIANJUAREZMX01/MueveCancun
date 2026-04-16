@@ -21,7 +21,11 @@
     "geocode-stops:run": "node --experimental-strip-types scripts/geocode-stops.ts",
     "generate-og": "node --experimental-strip-types scripts/generate_og_image.ts",
     "update-stats": "node --experimental-strip-types scripts/update-stats.ts",
-    "prepare-data": "node --experimental-strip-types scripts/merge-routes.ts && node --experimental-strip-types scripts/optimize-json.ts",
+    "diagnose": "node --experimental-strip-types scripts/diagnose-optimize.ts",
+    "pre-deploy": "node --experimental-strip-types scripts/pre-deploy.ts",
+    "process-crowdsource": "node --experimental-strip-types scripts/process-crowdsource.ts",
+    "add-route-colors": "node --experimental-strip-types scripts/add-route-colors.ts",
+    "prepare-data": "node --experimental-strip-types scripts/merge-routes.ts && node --experimental-strip-types scripts/optimize-json.ts && node --experimental-strip-types scripts/add-route-colors.ts",
     "dev": "pnpm run prepare-data && astro dev",
     "dev:network": "pnpm run prepare-data && astro dev --host",
     "build": "pnpm prepare-data && node scripts/build-wasm.mjs && tsc -p tsconfig.client.json && tsc -p tsconfig.sw.json && astro build",
@@ -39,7 +43,8 @@
     "start": "node dist/server/entry.mjs",
     "build:ci": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build",
     "db:migrate": "node --experimental-strip-types scripts/db-migrate.ts",
-    "build:vercel": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build"
+    "build:vercel": "pnpm run pre-deploy && pnpm prepare-data && node scripts/build-wasm.mjs && astro build",
+    "deploy": "pnpm run pre-deploy && pnpm run build && git push"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.3",
