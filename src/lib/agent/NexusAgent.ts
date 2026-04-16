@@ -63,12 +63,23 @@ export class NexusAgent {
     if (message.tool_calls) {
       const toolResults = [];
       for (const toolCall of message.tool_calls) {
-        const result = await executeToolCall(toolCall.function.name, JSON.parse(toolCall.function.arguments));
-        toolResults.push({
-          role: "tool",
-          content: JSON.stringify(result),
-          tool_call_id: toolCall.id
-        });
+        try {
+          const args = JSON.parse(toolCall.function.arguments);
+          const result = await executeToolCall(toolCall.function.name, args);
+          toolResults.push({
+            role: "tool",
+            content: JSON.stringify(result),
+            tool_call_id: toolCall.id
+          });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.error(`[NexusAgent] Tool execution failed for ${toolCall.function.name}:`, errorMessage);
+          toolResults.push({
+            role: "tool",
+            content: JSON.stringify({ error: `Tool execution failed: ${errorMessage}` }),
+            tool_call_id: toolCall.id
+          });
+        }
       }
 
       // Second pass with tool results
