@@ -15,19 +15,17 @@ jobs:
         run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
       - name: Create Neon Branch
         id: create_neon_branch
-        uses: neondatabase/create-branch-action@14c7760971036c84c172d169d5059296e855799e
+        uses: neondatabase/create-branch-action@34f619c41c6e67b4f2f13f1c6eae90827a5f2cf4
         with:
           project_id: mute-waterfall-29421911
           branch_name: preview/pr-${{ github.event.number }}-neon
           api_key: ${{ secrets.NEON_API_KEY }}
       - name: Setup Node 24
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: "24"
       - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda
-        with:
-          version: 9
+        uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Apply schema to ephemeral branch
@@ -67,7 +65,7 @@ jobs:
     if: github.event.action == 'closed'
     steps:
       - name: Delete Neon Branch
-        uses: neondatabase/delete-branch-action@5d027f6780c888d3e911c1d0637c768297b4b1a4
+        uses: neondatabase/delete-branch-action@cc0fe5eeb96c99cd4df545047d5dfdff84c5bddb
         with:
           project_id: mute-waterfall-29421911
           branch_name: preview/pr-${{ github.event.number }}-neon
