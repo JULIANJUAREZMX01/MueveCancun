@@ -185,7 +185,11 @@ export function drawRoute(
         }
 
         if (routeCoords.length > 0) {
-            const color = index === 0 ? '#F97316' : '#0EA5E9'; // Orange -> Blue for transfers
+            // Usar color de ruta del catálogo; fallback naranja/azul por posición
+            const legData = leg as Record<string, unknown>;
+            const color = (typeof legData['color'] === 'string' && legData['color'])
+              ? legData['color']
+              : (index === 0 ? '#F97316' : '#0EA5E9');
             const dashArray = index === 0 ? null : '10, 10';
 
             // Polyline

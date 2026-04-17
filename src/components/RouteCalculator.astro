@@ -51,7 +51,7 @@ const t = useTranslations(lang);
 
 <script>
   import { WasmLoader } from "../utils/WasmLoader";
-  import { initWasm } from "../lib/initWasm";
+  import { initWasm, enrichJourneyLegs } from "../lib/initWasm";
   import { escapeHtml, showToast } from "../utils/utils";
 
   // ── Lógica principal ──────────────────────────────────────────────────────
@@ -96,7 +96,8 @@ const t = useTranslations(lang);
               if (timeBadge) timeBadge.textContent = `${(endSearch - startSearch).toFixed(2)}ms`;
 
               if (results && results.length > 0) {
-                  results.forEach((r: any) => {
+                  results.forEach((rawR: any) => {
+                      const r = enrichJourneyLegs(rawR as any) as any;
                       const card = document.createElement('div');
                       card.className = 'bg-white p-5 rounded-3xl shadow-sm border border-slate-100 hover:border-primary-200 transition-all cursor-pointer group';
 
@@ -107,7 +108,9 @@ const t = useTranslations(lang);
                       const routeColor = leg.color || leg.route_color ||
                         (leg.transport_type === "Bus_HotelZone" ? "#F97316" : leg.transport_type === "ADO" ? "#FF6B6B" : "#0EA5E9");
 
+                      card.style.borderLeftWidth = "4px";
                       card.style.borderLeftColor = routeColor;
+                      card.style.borderLeftStyle = "solid";
                       card.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;gap:0.5rem">
                           <div>

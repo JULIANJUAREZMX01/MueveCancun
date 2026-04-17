@@ -16,6 +16,7 @@ interface UIRoute {
   name: string;
   price: number;
   transport_type: string;
+  color?: string;
   operator?: string;
   frequency?: string;
   duration?: string;
@@ -45,6 +46,7 @@ const transformRoute = (raw: any): UIRoute => {
     name: raw.nombre || raw.name || "Ruta",
     price,
     transport_type,
+    color: (raw.color as string | undefined) || undefined,
     operator: raw.operador || raw.operator,
     frequency: raw.frecuencia || raw.frequency,
     duration: raw.duracion || raw.duration,
@@ -142,6 +144,7 @@ const types = ["all", "bus", "combi", "van", "ado"];
           data-type={route.transport_type}
           data-origin={(route.origin_hub || "").toLowerCase()}
           data-dest={(route.dest_hub || "").toLowerCase()}
+          style={route.color ? `border-left-color: ${route.color}` : undefined}
         >
           <!-- Transport type icon -->
           <div class="route-card__type">
