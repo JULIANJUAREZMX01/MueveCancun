@@ -257,6 +257,17 @@
     mapEl.dataset.initialized = "true";
     initMap();
 
+    // Escuchar evento externo para centrar GPS (desde home.astro)
+    window.addEventListener("MAP_CENTER_GPS", (e: any) => {
+      if (!map) return;
+      const { lat, lng } = e.detail || {};
+      if (lat && lng) {
+        map.setView([lat, lng], 16, { animate: true });
+        const L = (window as any).L;
+        if (L) L.circleMarker([lat, lng], { radius: 10, color: "#22c55e", fillColor: "#22c55e", fillOpacity: 0.4, weight: 2 }).addTo(map).bindPopup("📍 Mi ubicación").openPopup();
+      }
+    });
+
     document.getElementById("gps-center-btn")?.addEventListener("click", () => {
       if (!navigator.geolocation) return;
       navigator.geolocation.getCurrentPosition(pos => {

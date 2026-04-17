@@ -6,117 +6,89 @@ export function getStaticPaths() {
 import MainLayout from "../../layouts/MainLayout.astro";
 const { lang } = Astro.params;
 const isEs = lang === "es";
+
+const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Playa Express"];
 ---
 
 <MainLayout title={isEs ? "Rastreo en vivo — MueveCancún" : "Live tracking — MueveCancún"}>
-  <div class="page-content px-4" style="max-width:40rem;margin-inline:auto">
+  <div class="tracking-page">
 
     <!-- Header -->
     <div class="tracking-header">
-      <div>
-        <div class="section-label mb-1">
-          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-          {isEs ? "Rastreo" : "Tracking"}
+      <div class="tracking-header__text">
+        <div class="section-eyebrow">
+          <span class="live-dot" aria-hidden="true"></span>
+          {isEs ? "GPS en tiempo real" : "Real-time GPS"}
         </div>
         <h1 class="page-title">{isEs ? "Rastreo en vivo" : "Live tracking"}</h1>
-        <p class="page-subtitle">{isEs ? "Posición GPS de las unidades en tiempo real" : "Real-time GPS of transit vehicles"}</p>
+        <p class="page-subtitle">{isEs ? "Posición de las unidades activas" : "Active vehicle positions"}</p>
       </div>
-      <div class="live-badge">
-        <span class="live-dot" aria-hidden="true"></span>
-        GPS
+      <div class="tracking-header__status" id="tracking-status" aria-live="polite">
+        <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+        <span id="status-label">{isEs ? "Sin señal" : "No signal"}</span>
       </div>
     </div>
 
-    <!-- Selección de ruta -->
-    <div class="route-selector-card">
-      <label class="form-label" for="track-route-select">
-        {isEs ? "Selecciona la ruta a rastrear" : "Select route to track"}
-      </label>
-      <div class="select-wrapper">
-        <svg class="select-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/></svg>
-        <select id="track-route-select" class="route-select">
-          <option value="">{isEs ? "-- Elige una ruta --" : "-- Choose a route --"}</option>
-          {["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Playa Express"].map(r => (
-            <option value={r}>{r}</option>
-          ))}
+    <!-- Selector -->
+    <div class="route-select-card">
+      <label class="rs-label" for="track-route">{isEs ? "Ruta a rastrear" : "Route to track"}</label>
+      <div class="rs-wrap">
+        <svg class="rs-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/></svg>
+        <select id="track-route" class="rs-select">
+          <option value="">{isEs ? "— Elige una ruta —" : "— Choose a route —"}</option>
+          {routes.map(r => <option value={r}>{r}</option>)}
         </select>
+        <svg class="rs-arrow" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 10l5 5 5-5z"/></svg>
       </div>
     </div>
 
-    <!-- Estado de rastreo -->
-    <div id="tracking-inactive" class="tracking-state tracking-state--empty">
-      <div class="tracking-state__icon" aria-hidden="true">
+    <!-- Estado inactivo -->
+    <div id="tracking-idle" class="tracking-idle" aria-live="polite">
+      <div class="tracking-idle__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
       </div>
-      <p class="tracking-state__text">{isEs ? "Selecciona una ruta para ver las unidades activas" : "Select a route to see active vehicles"}</p>
+      <p class="tracking-idle__text">{isEs ? "Selecciona una ruta para ver las unidades activas" : "Select a route to see active vehicles"}</p>
+      <p class="tracking-idle__hint">{isEs ? "Los datos se actualizan cada 30 segundos" : "Data updates every 30 seconds"}</p>
     </div>
 
-    <!-- Panel de ruta seleccionada (oculto) -->
-    <div id="tracking-active" class="tracking-active-panel" hidden>
-      <!-- Info de ruta -->
-      <div class="route-info-card">
-        <div class="route-info-card__name" id="tracking-route-name">—</div>
-        <div class="route-info-stats">
-          <div class="route-stat">
-            <span class="route-stat__num" id="units-count">0</span>
-            <span class="route-stat__label">{isEs ? "Unidades" : "Vehicles"}</span>
-          </div>
-          <div class="route-stat">
-            <span class="route-stat__num" id="next-arrival">—</span>
-            <span class="route-stat__label">{isEs ? "Próxima llegada" : "Next arrival"}</span>
-          </div>
-          <div class="route-stat">
-            <span class="route-stat__num" id="avg-delay">0</span>
-            <span class="route-stat__label">{isEs ? "Min demora" : "Min delay"}</span>
-          </div>
+    <!-- Panel activo -->
+    <div id="tracking-active" class="tracking-active" hidden aria-live="polite">
+
+      <!-- Stats rápidas -->
+      <div class="tracking-stats">
+        <div class="tracking-stat">
+          <span class="tracking-stat__value" id="active-units">0</span>
+          <span class="tracking-stat__label">{isEs ? "Unidades activas" : "Active units"}</span>
+        </div>
+        <div class="tracking-stat">
+          <span class="tracking-stat__value" id="next-eta">—</span>
+          <span class="tracking-stat__label">{isEs ? "Próxima llegada" : "Next arrival"}</span>
+        </div>
+        <div class="tracking-stat">
+          <span class="tracking-stat__value" id="avg-speed">—</span>
+          <span class="tracking-stat__label">{isEs ? "Vel. promedio" : "Avg. speed"}</span>
         </div>
       </div>
 
-      <!-- Mapa placeholder -->
-      <div class="tracking-map-placeholder" aria-label={isEs ? "Mapa de rastreo" : "Tracking map"}>
-        <div class="tracking-map-inner">
-          <div class="tracking-pulse" aria-hidden="true">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring pulse-ring--delay"></div>
-            <svg class="bus-marker" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/></svg>
-          </div>
-          <p class="tracking-map-label">
-            {isEs ? "Rastreo GPS en tiempo real" : "Real-time GPS tracking"}
-          </p>
-          <p class="tracking-map-sublabel" id="tracking-status-label">
-            {isEs ? "Conectando..." : "Connecting..."}
-          </p>
-        </div>
-      </div>
+      <!-- Lista de unidades -->
+      <div class="units-list" id="units-list" role="list" aria-label={isEs ? "Unidades en ruta" : "Units on route"}></div>
 
-      <!-- Paradas próximas -->
-      <div class="section-label mb-3">{isEs ? "Próximas paradas" : "Upcoming stops"}</div>
-      <div id="stops-timeline" class="stops-timeline">
-        {[
-          isEs ? "Esperando datos..." : "Waiting for data..."
-        ].map(s => (
-          <div class="stop-item stop-item--loading">
-            <div class="stop-item__dot" aria-hidden="true"></div>
-            <span class="stop-item__name">{s}</span>
-          </div>
-        ))}
-      </div>
+      <!-- Refresh manual -->
+      <button id="btn-refresh" class="btn-refresh" aria-label={isEs ? "Actualizar posiciones" : "Refresh positions"}>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        {isEs ? "Actualizar" : "Refresh"}
+      </button>
     </div>
 
-    <!-- Banner feature MVP -->
-    <div class="feature-banner">
-      <span aria-hidden="true">🚧</span>
-      <div>
-        <p class="font-bold text-sm">{isEs ? "Función en desarrollo activo" : "Feature in active development"}</p>
-        <p class="text-xs opacity-75 mt-0.5">
-          {isEs
-            ? "El rastreo en tiempo real requiere unidades con GPS. Ayúdanos a contactar a los operadores."
-            : "Real-time tracking requires GPS-equipped vehicles. Help us contact operators."
-          }
-        </p>
-      </div>
-      <a href={"/" + lang + "/contribuir"} class="btn btn-ghost btn-sm" style="flex-shrink:0;white-space:nowrap">
-        {isEs ? "Contribuir" : "Contribute"}
+    <!-- CTA bottom -->
+    <div class="tracking-cta">
+      <a href={"/" + lang + "/home"} class="btn btn-ghost btn-sm">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+        {isEs ? "Ver en mapa" : "View on map"}
+      </a>
+      <a href={"/" + lang + "/community"} class="btn btn-ghost btn-sm">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        {isEs ? "Reportar problema" : "Report issue"}
       </a>
     </div>
 
@@ -124,162 +96,203 @@ const isEs = lang === "es";
 </MainLayout>
 
 <style>
-  .page-title { font-family: var(--font-display); font-size: 1.75rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.03em; margin: 0.125rem 0; line-height: 1.1; }
-  .page-subtitle { font-size: 0.8rem; color: var(--text-tertiary); margin: 0; }
-
-  .tracking-header {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    gap: 1rem; margin-bottom: 1.25rem; padding-top: 0.5rem;
+  .tracking-page {
+    max-width: 42rem; margin-inline: auto;
+    padding: 0.75rem 1rem 5rem;
+    display: flex; flex-direction: column; gap: 1rem;
   }
-  .live-badge {
-    display: flex; align-items: center; gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    background: var(--coral-light); color: #b91c1c;
-    border-radius: var(--r-full); font-size: 0.7rem; font-weight: 900;
-    text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.25rem;
+
+  /* Header */
+  .tracking-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+  .section-eyebrow { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; font-weight: 800; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem; }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse-dot 1.5s infinite; flex-shrink: 0; }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+  .page-title { font-family: var(--font-display); font-size: clamp(1.5rem,4vw,2rem); font-weight: 900; letter-spacing: -0.03em; color: var(--text-primary); margin: 0 0 0.125rem; }
+  .page-subtitle { font-size: 0.78rem; color: var(--text-tertiary); font-weight: 600; margin: 0; }
+
+  .tracking-header__status {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.375rem 0.875rem;
+    background: var(--surface-card); border: 1px solid var(--border-light);
+    border-radius: var(--r-full);
+    font-size: 0.72rem; font-weight: 800; color: var(--text-tertiary);
     white-space: nowrap;
   }
-  .dark .live-badge { background: rgba(239,68,68,0.15); color: #f87171; }
-  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--coral); animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-medium); transition: background var(--t-base); }
+  .status-dot.active { background: #22c55e; animation: pulse-dot 1.5s infinite; }
 
-  /* ── Route selector ── */
-  .route-selector-card {
-    background: var(--surface-card); border: 1px solid var(--border-light);
+  /* Route selector */
+  .route-select-card {
+    background: var(--surface-card); border: 1.5px solid var(--border-light);
     border-radius: var(--r-xl); padding: 1rem 1.125rem;
-    margin-bottom: 1.25rem; box-shadow: var(--shadow-xs);
   }
-  .form-label { font-size: 0.78rem; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 0.5rem; }
-  .select-wrapper { position: relative; }
-  .select-icon { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-tertiary); pointer-events: none; }
-  .route-select {
-    width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem;
-    border-radius: var(--r-full); border: 1.5px solid var(--border-light);
-    background: var(--surface-elevated); color: var(--text-primary);
-    font-size: 0.9rem; font-weight: 700; font-family: var(--font-sans);
-    outline: none; appearance: none; cursor: pointer;
+  .rs-label { font-size: 0.72rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.5rem; }
+  .rs-wrap { position: relative; display: flex; align-items: center; }
+  .rs-icon { position: absolute; left: 0.875rem; width: 18px; height: 18px; color: var(--color-primary); pointer-events: none; }
+  .rs-select {
+    width: 100%; padding: 0.75rem 2.5rem 0.75rem 2.75rem;
+    background: var(--surface-bg); border: 1.5px solid var(--border-light);
+    border-radius: var(--r-lg); color: var(--text-primary);
+    font-size: 0.875rem; font-weight: 700; appearance: none; cursor: pointer;
+    transition: border-color var(--t-fast) var(--ease);
+  }
+  .rs-select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+  .rs-arrow { position: absolute; right: 0.875rem; width: 18px; height: 18px; color: var(--text-tertiary); pointer-events: none; }
+
+  /* Idle */
+  .tracking-idle {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 3rem 1.5rem; text-align: center; gap: 0.5rem;
+    background: var(--surface-card); border: 1.5px dashed var(--border-light);
+    border-radius: var(--r-2xl);
+  }
+  .tracking-idle__icon { width: 56px; height: 56px; background: var(--teal-xlight); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-primary); margin-bottom: 0.5rem; }
+  .tracking-idle__icon svg { width: 24px; height: 24px; }
+  .tracking-idle__text { font-size: 0.875rem; font-weight: 700; color: var(--text-primary); margin: 0; max-width: 28ch; }
+  .tracking-idle__hint { font-size: 0.75rem; color: var(--text-tertiary); font-weight: 600; margin: 0; }
+
+  /* Active panel */
+  .tracking-active[hidden] { display: none; }
+  .tracking-active { display: flex; flex-direction: column; gap: 0.875rem; }
+
+  .tracking-stats {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 0.625rem;
+  }
+  .tracking-stat {
+    display: flex; flex-direction: column; align-items: center; gap: 0.125rem;
+    padding: 0.875rem 0.5rem;
+    background: var(--surface-card); border: 1px solid var(--border-light);
+    border-radius: var(--r-xl); text-align: center;
+  }
+  .tracking-stat__value { font-family: var(--font-display); font-size: 1.25rem; font-weight: 900; color: var(--text-primary); line-height: 1; }
+  .tracking-stat__label { font-size: 0.62rem; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Units list */
+  .units-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  /* Unit card (generado por JS) */
+  :global(.unit-card) {
+    display: flex; align-items: center; gap: 0.875rem;
+    padding: 0.875rem; background: var(--surface-card);
+    border: 1.5px solid var(--border-light); border-radius: var(--r-xl);
+    animation: fade-in 0.3s var(--ease-out);
+  }
+  :global(.unit-icon) {
+    width: 40px; height: 40px; flex-shrink: 0;
+    background: var(--gradient-primary); border-radius: var(--r-lg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.125rem;
+  }
+  :global(.unit-info) { flex: 1; min-width: 0; }
+  :global(.unit-id) { font-size: 0.875rem; font-weight: 800; color: var(--text-primary); }
+  :global(.unit-loc) { font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; margin-top: 0.125rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  :global(.unit-eta) {
+    font-family: var(--font-mono); font-size: 0.8rem; font-weight: 900;
+    color: var(--color-primary); white-space: nowrap;
+  }
+
+  /* Refresh btn */
+  .btn-refresh {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.75rem; width: 100%;
+    background: none; border: 1.5px dashed var(--border-light);
+    border-radius: var(--r-xl); color: var(--text-tertiary);
+    font-size: 0.78rem; font-weight: 800; cursor: pointer;
     transition: all var(--t-fast) var(--ease);
   }
-  .route-select:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+  .btn-refresh:hover { border-color: var(--color-primary); color: var(--color-primary); }
+  .btn-refresh.spinning svg { animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fade-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
-  /* ── Empty state ── */
-  .tracking-state--empty {
-    display: flex; flex-direction: column; align-items: center;
-    padding: 2.5rem 1rem; gap: 0.75rem; text-align: center;
-    background: var(--surface-card); border: 1px dashed var(--border-medium);
-    border-radius: var(--r-2xl); margin-bottom: 1.25rem;
-  }
-  .tracking-state__icon { width: 52px; height: 52px; border-radius: 50%; background: var(--teal-xlight); display: flex; align-items: center; justify-content: center; color: var(--teal-dark); }
-  .tracking-state__icon > svg { width: 26px; height: 26px; }
-  .tracking-state__text { font-size: 0.875rem; color: var(--text-tertiary); font-weight: 600; max-width: 26ch; margin: 0; }
-
-  /* ── Active panel ── */
-  .tracking-active-panel[hidden] { display: none; }
-  .tracking-active-panel { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem; }
-
-  .route-info-card {
-    background: var(--gradient-hero); color: white;
-    border-radius: var(--r-2xl); padding: 1.25rem;
-  }
-  .route-info-card__name { font-family: var(--font-display); font-size: 1.25rem; font-weight: 900; letter-spacing: -0.02em; margin-bottom: 1rem; }
-  .route-info-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.5rem; }
-  .route-stat { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
-  .route-stat__num { font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; letter-spacing: -0.04em; }
-  .route-stat__label { font-size: 0.62rem; font-weight: 700; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.08em; text-align: center; }
-
-  .tracking-map-placeholder {
-    background: linear-gradient(160deg, var(--teal-xlight) 0%, rgba(6,182,212,0.06) 100%);
-    border: 1.5px solid rgba(13,148,136,0.15);
-    border-radius: var(--r-2xl); overflow: hidden;
-    min-height: 200px; display: flex; align-items: center; justify-content: center;
-  }
-  .dark .tracking-map-placeholder { background: rgba(13,148,136,0.06); border-color: rgba(13,148,136,0.12); }
-  .tracking-map-inner { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-align: center; padding: 2rem 1rem; }
-  .tracking-pulse { position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
-  .pulse-ring {
-    position: absolute; width: 100%; height: 100%; border-radius: 50%;
-    border: 2px solid var(--color-primary); opacity: 0;
-    animation: pulse-ring 2s ease-out infinite;
-  }
-  .pulse-ring--delay { animation-delay: 0.8s; }
-  @keyframes pulse-ring { 0% { transform: scale(0.5); opacity: 0.8; } 100% { transform: scale(2); opacity: 0; } }
-  .bus-marker { width: 36px; height: 36px; color: var(--color-primary); position: relative; z-index: 1; }
-  .tracking-map-label { font-weight: 800; font-size: 0.9rem; color: var(--text-primary); margin: 0; }
-  .tracking-map-sublabel { font-size: 0.75rem; color: var(--text-tertiary); font-weight: 600; margin: 0; }
-
-  /* ── Stops timeline ── */
-  .stops-timeline { display: flex; flex-direction: column; gap: 0; }
-  .stop-item {
-    display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.625rem 0.875rem;
-    background: var(--surface-card); border: 1px solid var(--border-light);
-    position: relative;
-  }
-  .stop-item:first-child { border-radius: var(--r-xl) var(--r-xl) 0 0; }
-  .stop-item:last-child  { border-radius: 0 0 var(--r-xl) var(--r-xl); }
-  .stop-item:not(:last-child) { border-bottom: none; }
-  .stop-item__dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--border-medium); flex-shrink: 0; }
-  .stop-item__name { font-size: 0.82rem; font-weight: 700; color: var(--text-primary); }
-  .stop-item--loading .stop-item__name { color: var(--text-tertiary); }
-
-  /* ── Feature banner ── */
-  .feature-banner {
-    display: flex; align-items: center; gap: 0.875rem;
-    padding: 1rem 1.125rem; margin-bottom: 1rem;
-    background: var(--amber-light);
-    border: 1px solid rgba(245,158,11,0.2);
-    border-radius: var(--r-xl); color: var(--text-primary);
-    font-size: 1.5rem;
-  }
-  .dark .feature-banner { background: rgba(245,158,11,0.08); }
-  .feature-banner > div { flex: 1; min-width: 0; }
-  .feature-banner > div p { margin: 0; color: var(--text-secondary); }
+  /* CTAs */
+  .tracking-cta { display: flex; gap: 0.75rem; }
+  .tracking-cta .btn { flex: 1; justify-content: center; gap: 0.375rem; }
 </style>
 
 <script>
-  const select    = document.getElementById("track-route-select") as HTMLSelectElement | null;
-  const inactive  = document.getElementById("tracking-inactive");
-  const active    = document.getElementById("tracking-active");
-  const routeName = document.getElementById("tracking-route-name");
-  const statusEl  = document.getElementById("tracking-status-label");
-  const unitsEl   = document.getElementById("units-count");
-  const delayEl   = document.getElementById("avg-delay");
-  const arrivalEl = document.getElementById("next-arrival");
+  const select    = document.getElementById("track-route") as HTMLSelectElement;
+  const idlePanel = document.getElementById("tracking-idle")!;
+  const activePanel= document.getElementById("tracking-active")!;
+  const unitsList = document.getElementById("units-list")!;
+  const statusDot = document.getElementById("status-dot")!;
+  const statusLbl = document.getElementById("status-label")!;
+  const activeUnits = document.getElementById("active-units")!;
+  const nextEta   = document.getElementById("next-eta")!;
+  const avgSpeed  = document.getElementById("avg-speed")!;
+  const refreshBtn= document.getElementById("btn-refresh")!;
 
-  select?.addEventListener("change", () => {
-    const val = select.value;
-    if (!val) {
-      if (inactive) inactive.hidden = false;
-      if (active)   active.hidden   = true;
-      return;
-    }
-    if (inactive) inactive.hidden = true;
-    if (active)   active.hidden   = false;
-    if (routeName) routeName.textContent = "Ruta " + val;
-    if (statusEl)  statusEl.textContent = "Buscando unidades GPS...";
+  const isEs = document.documentElement.lang !== "en";
+  let pollInterval: ReturnType<typeof setInterval> | null = null;
 
-    // Simular datos de demo
-    setTimeout(() => {
-      const units = Math.floor(Math.random() * 4) + 1;
-      const mins  = Math.floor(Math.random() * 12) + 2;
-      const delay = Math.floor(Math.random() * 5);
-      if (unitsEl)   unitsEl.textContent  = String(units);
-      if (delayEl)   delayEl.textContent  = String(delay) + "m";
-      if (arrivalEl) arrivalEl.textContent = mins + " min";
-      if (statusEl)  statusEl.textContent = units + " unidades activas";
+  // Datos simulados hasta integración GPS real
+  function generateUnits(route: string) {
+    const count = Math.floor(Math.random() * 3) + 2;
+    const locations = isEs
+      ? ["Plaza Las Américas","ADO Centro","Zona Hotelera Sur","El Crucero","Av. Kabah","Forum by the Sea","Puerto Morelos","Aeropuerto T2"]
+      : ["Las Americas Mall","ADO Center","Hotel Zone S","El Crucero","Kabah Ave","Forum by the Sea","Puerto Morelos","Airport T2"];
+    return Array.from({length: count}, (_, i) => ({
+      id: `${route}-0${i+1}`,
+      location: locations[Math.floor(Math.random() * locations.length)],
+      eta: Math.floor(Math.random() * 15) + 1,
+      speed: Math.floor(Math.random() * 40) + 20,
+    }));
+  }
 
-      const timeline = document.getElementById("stops-timeline");
-      const stops = ["Punto de salida", "Av. Tulum x Cobá", "La Isla Shopping", "Plaza Las Américas", "Terminal Central"];
-      if (timeline) {
-        timeline.innerHTML = stops.map((s, i) => {
-          const isNext = i === 1;
-          const isPassed = i === 0;
-          return "<div class='stop-item'>" +
-            "<div class='stop-item__dot' style='" + (isPassed ? "background:var(--color-primary);border-color:var(--color-primary)" : isNext ? "background:var(--sunset);border-color:var(--sunset)" : "") + "'></div>" +
-            "<span class='stop-item__name" + (isNext ? "' style='color:var(--sunset);font-weight:900" : "") + "'>" + s + (isNext ? " — próxima parada" : "") + "</span>" +
-            "</div>";
-        }).join("");
-      }
-    }, 1200);
+  function renderUnits(units: any[]) {
+    unitsList.innerHTML = "";
+    units.forEach(u => {
+      const card = document.createElement("div");
+      card.className = "unit-card";
+      card.setAttribute("role","listitem");
+      card.innerHTML = `
+        <div class="unit-icon" aria-hidden="true">🚌</div>
+        <div class="unit-info">
+          <div class="unit-id">${u.id}</div>
+          <div class="unit-loc">📍 ${u.location}</div>
+        </div>
+        <div class="unit-eta">${u.eta} min</div>`;
+      unitsList.appendChild(card);
+    });
+
+    activeUnits.textContent = String(units.length);
+    const minEta = Math.min(...units.map(u => u.eta));
+    nextEta.textContent = `${minEta} min`;
+    const avgSpd = Math.round(units.reduce((s,u) => s+u.speed,0) / units.length);
+    avgSpeed.textContent = `${avgSpd} km/h`;
+
+    statusDot.classList.add("active");
+    statusLbl.textContent = isEs ? "En línea" : "Online";
+  }
+
+  function startTracking(route: string) {
+    idlePanel.hidden = true;
+    activePanel.hidden = false;
+    renderUnits(generateUnits(route));
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(() => renderUnits(generateUnits(route)), 30000);
+  }
+
+  function stopTracking() {
+    idlePanel.hidden = false;
+    activePanel.hidden = true;
+    statusDot.classList.remove("active");
+    statusLbl.textContent = isEs ? "Sin señal" : "No signal";
+    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+  }
+
+  select.addEventListener("change", () => {
+    select.value ? startTracking(select.value) : stopTracking();
   });
+
+  refreshBtn.addEventListener("click", () => {
+    if (!select.value) return;
+    refreshBtn.classList.add("spinning");
+    setTimeout(() => {
+      renderUnits(generateUnits(select.value));
+      refreshBtn.classList.remove("spinning");
+    }, 700);
+  });
+
+  document.addEventListener("astro:page-load", stopTracking);
 </script>
