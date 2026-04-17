@@ -102,27 +102,7 @@ const lang = getLangFromUrl(Astro.url);
       }
       @media (min-width: 769px) { .c-header { left: var(--sidebar-w, 80px); } }
 
-        @media (min-width: 769px) {
-          left: var(--sidebar-w);
-        }
-
-        &__logo {
-          display: flex;
-          align-items: center; gap: 0.5rem; text-decoration: none;
-        }
-
-        &__actions {
-          display: flex; align-items: center; gap: 1rem;
-        }
-
-        &__balance {
-          font-size: 0.75rem; font-weight: 900; letter-spacing: 0.1em; font-family: var(--font-mono);
-        }
-
-        &__theme-btn {
-          padding: 0.5rem; background-color: var(--surface-elevated); border-radius: var(--r-sm); border: 1px solid var(--border-light); cursor: pointer; transition: all var(--t-fast) var(--ease);
-          &:hover { transform: scale(1.1); }
-      .c-header__logo {
+        .c-header__logo {
         display: flex; align-items: center; gap: 0.5rem;
         text-decoration: none; border-radius: var(--r-md);
         padding: 0.25rem;
