@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test('verify interactive map features', async ({ page }) => {
   await page.goto('http://localhost:4321/es/home');

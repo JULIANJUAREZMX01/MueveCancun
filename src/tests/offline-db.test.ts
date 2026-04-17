@@ -3,7 +3,7 @@ import { savePendingReport, getPendingReports, deletePendingReport, __resetDBPro
 
 // Mock the idb library
 vi.mock('idb', () => {
-  let stores: Record<string, any> = {
+  const stores: Record<string, any> = {
     'pending-reports': {},
     'wallet-status': { current_balance: { amount: 180.00, currency: 'MXN' } },
     'security-keys': {}

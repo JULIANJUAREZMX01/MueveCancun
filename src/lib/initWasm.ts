@@ -1,14 +1,13 @@
-import { WasmLoader } from '../utils/WasmLoader';
+import { WasmLoader, type RouteCalculatorWasm } from '../utils/WasmLoader';
 
 let _initPromise: Promise<boolean> | null = null;
 
-export async function initWasm() {
+export async function initWasm(): Promise<boolean> {
   if (_initPromise) return _initPromise;
 
   _initPromise = (async () => {
     try {
-      console.log('[initWasm] Engine initializing...');
-      const wasmModule = await WasmLoader.getModule();
+      const wasmModule = (await WasmLoader.getModule()) as unknown as RouteCalculatorWasm;
 
       const response = await fetch('/data/master_routes.optimized.json');
       if (!response.ok) throw new Error('Catalog missing');
@@ -16,12 +15,13 @@ export async function initWasm() {
 
       if (typeof wasmModule.load_catalog_core === 'function') {
           wasmModule.load_catalog_core(catalogJson);
-      } else if (typeof (wasmModule as any).load_catalog === 'function') {
-          (wasmModule as any).load_catalog(catalogJson);
+      } else if (typeof (wasmModule as unknown as Record<string, unknown>).load_catalog === 'function') {
+          (wasmModule as unknown as { load_catalog: (j: string) => void }).load_catalog(catalogJson);
       }
 
-      console.log('[initWasm] ✅ ENGINE READY');
-      (window as any).WASM_READY = true;
+      if (typeof window !== 'undefined') {
+          (window as Record<string, unknown>).WASM_READY = true;
+      }
       return true;
     } catch (error) {
       console.error('[initWasm] ❌ ERROR:', error);

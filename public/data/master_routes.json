@@ -1,5 +1,9 @@
 {
   "metadata": {
+    "last_updated": "2026-02-17T07:09:33.432854",
+    "source": "merge-routes.ts (78 routes from 43 files)",
+    "version": "3.2.0",
+    "last_merged": "2026-04-03T14:13:00.283Z"
     "last_updated": "2026-04-15T08:33:33.284Z",
     "source": "merge-routes.ts (78 routes from 41 files)",
     "version": "3.8.0",
@@ -17138,9 +17142,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R31",
-      "color_id": "R31"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1753802299281",
@@ -17264,9 +17266,7 @@
           "orden": 19
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1759506708808",
@@ -17444,9 +17444,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R30",
-      "color_id": "R30"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761456676914",
@@ -17624,9 +17622,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761458818964",
@@ -17772,9 +17768,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1754576044305",
@@ -17896,9 +17890,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1756850089371",
@@ -18020,9 +18012,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R29",
-      "color_id": "R29"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1759866849505",
@@ -18192,9 +18182,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1758230498578",
@@ -18292,9 +18280,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R19",
-      "color_id": "R19"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1759866137331",
@@ -18424,9 +18410,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R18",
-      "color_id": "R18"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760327653692",
@@ -18588,9 +18572,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R28",
-      "color_id": "R28"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1759952771720",
@@ -18736,9 +18718,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760338237012",
@@ -18924,9 +18904,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760340184559",
@@ -19096,9 +19074,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761273705821",
@@ -19252,9 +19228,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760328606309",
@@ -19432,9 +19406,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R17",
-      "color_id": "R17"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760414609200",
@@ -19596,9 +19568,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R13",
-      "color_id": "R13"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760462813166",
@@ -19720,9 +19690,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760462813165",
@@ -19844,9 +19812,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761460735535",
@@ -19944,9 +19910,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R5",
-      "color_id": "R5"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760989478537",
@@ -20068,9 +20032,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R21",
-      "color_id": "R21"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1464274794329",
@@ -20384,9 +20346,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R2",
-      "color_id": "R2"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1653475759991",
@@ -20708,9 +20668,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R2",
-      "color_id": "R2"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1760333218631",
@@ -21056,9 +21014,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R2",
-      "color_id": "R2"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761276380950",
@@ -21388,9 +21344,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R2",
-      "color_id": "R2"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761277331648",
@@ -21752,9 +21706,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R2",
-      "color_id": "R2"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "ruta_1761277780965",
@@ -22036,9 +21988,7 @@
           "landmarks": ""
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R1",
-      "color_id": "R1"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R1",
@@ -22167,9 +22117,7 @@
           "orden": 10
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R1",
-      "color_id": "R1"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R6_WALMART_001",
@@ -22268,9 +22216,7 @@
           "orden": 6
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R29",
-      "color_id": "R29"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R17_LAKIN_001",
@@ -22314,9 +22260,7 @@
           "orden": 5
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R1",
-      "color_id": "R1"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R21_AMERICAS_001",
@@ -22360,9 +22304,7 @@
           "orden": 5
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R21",
-      "color_id": "R21"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R44_CENTRO_001",
@@ -22412,9 +22354,7 @@
           "orden": 6
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R4",
-      "color_id": "R4"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R5_HEROES_001",
@@ -22458,9 +22398,7 @@
           "orden": 5
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R5",
-      "color_id": "R5"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R27_TIERRA_MAYA_001",
@@ -22556,9 +22494,7 @@
           "orden": 5
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R23",
-      "color_id": "R23"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R71_RESIDENCIAL_001",
@@ -22602,9 +22538,7 @@
           "orden": 5
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R7",
-      "color_id": "R7"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R31_UNIVERSIDAD_001",
@@ -22648,9 +22582,7 @@
           "orden": 5
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R3",
-      "color_id": "R3"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R30_REG103_001",
@@ -22694,9 +22626,7 @@
           "orden": 5
         }
       ],
-      "tipo_transporte": "Bus_Urbano",
-      "route_id": "R3",
-      "color_id": "R3"
+      "tipo_transporte": "Bus_Urbano"
     },
     {
       "id": "R33_REG102_001",

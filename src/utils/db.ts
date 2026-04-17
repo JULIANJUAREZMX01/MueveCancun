@@ -1,7 +1,7 @@
 import { openDB, type IDBPDatabase } from 'idb';
 
 const DB_NAME = 'cancunmueve-db';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 let _cryptoKey: CryptoKey | null = null;
 let _dbPromise: Promise<IDBPDatabase> | null = null;
@@ -35,22 +35,16 @@ const dispatchBalanceUpdate = () => {
   }
 };
 
-/**
- * Migrate balance from localStorage to IndexedDB.
- */
 export const migrateBalanceFromLocalStorage = async (db: IDBPDatabase): Promise<void> => {
   try {
       if (typeof window === 'undefined' || localStorage.getItem('balance_migration_done')) return;
-
       const legacyBalance = parseFloat(
           localStorage.getItem('muevecancun_balance') ?? localStorage.getItem('user_balance') ?? 'NaN'
       );
-
       if (isNaN(legacyBalance) || legacyBalance <= 0) {
           localStorage.setItem('balance_migration_done', 'true');
           return;
       }
-
       const key = await getCryptoKey(db);
       const signature = await generateSignature(legacyBalance, key);
       await db.put(
@@ -58,7 +52,6 @@ export const migrateBalanceFromLocalStorage = async (db: IDBPDatabase): Promise<
           { id: 'current_balance', amount: legacyBalance, currency: 'MXN', signature },
           'current_balance'
       );
-
       localStorage.setItem('balance_migration_done', 'true');
       localStorage.removeItem('muevecancun_balance');
       localStorage.removeItem('user_balance');
@@ -70,7 +63,6 @@ export const migrateBalanceFromLocalStorage = async (db: IDBPDatabase): Promise<
 
 export const initDB = async (): Promise<IDBPDatabase> => {
   if (_dbPromise) return _dbPromise;
-
   _dbPromise = (async () => {
     const db = await openDB(DB_NAME, DB_VERSION, {
       upgrade(db, oldVersion) {
@@ -89,10 +81,13 @@ export const initDB = async (): Promise<IDBPDatabase> => {
             db.createObjectStore('security-keys');
           }
         }
+        if (oldVersion < 5) {
+          if (!db.objectStoreNames.contains('agent-memory')) {
+            db.createObjectStore('agent-memory', { keyPath: 'id' });
+          }
+        }
       },
     });
-
-    // Initialize balance if empty
     const balance = await db.get('wallet-status', 'current_balance');
     if (balance === undefined) {
       const defaultAmount = 180.00;
@@ -101,13 +96,9 @@ export const initDB = async (): Promise<IDBPDatabase> => {
       await db.put('wallet-status', { id: 'current_balance', amount: defaultAmount, currency: 'MXN', signature }, 'current_balance');
       dispatchBalanceUpdate();
     }
-
-    // Trigger migration
     await migrateBalanceFromLocalStorage(db);
-
     return db;
   })();
-
   return _dbPromise;
 };
 
@@ -116,18 +107,14 @@ export const getWalletBalance = async () => {
   const balance = await db.get('wallet-status', 'current_balance');
   if (balance) {
     const key = await getCryptoKey(db);
-    
     if (!balance.signature) {
       balance.signature = await generateSignature(balance.amount, key);
       await db.put('wallet-status', balance, 'current_balance');
       dispatchBalanceUpdate();
       return balance;
     }
-
     const isValid = await verifySignature(balance.amount, balance.signature, key);
-
     if (!isValid) {
-      console.error('[SECURITY] Wallet balance signature verification failed. Possible tampering detected. Resetting to 0.00 MXN.');
       const resetAmount = 0.00;
       balance.amount = resetAmount;
       balance.signature = await generateSignature(resetAmount, key);
@@ -144,7 +131,6 @@ export const setWalletBalance = async (amount: number) => {
   const existing = await db.get('wallet-status', 'current_balance');
   const key = await getCryptoKey(db);
   const signature = await generateSignature(amount, key);
-
   const data = existing ? { ...existing, amount, signature } : { id: 'current_balance', amount, currency: 'MXN', signature };
   await db.put('wallet-status', data, 'current_balance');
   dispatchBalanceUpdate();
@@ -152,12 +138,8 @@ export const setWalletBalance = async (amount: number) => {
 
 export const updateWalletBalance = async (amount: number) => {
   const balance = await getWalletBalance();
-  if (balance) {
-    await setWalletBalance(balance.amount + amount);
-  }
+  if (balance) await setWalletBalance(balance.amount + amount);
 };
-
-// --- Offline Reporting Support ---
 
 export interface PendingReport {
   id?: number;
@@ -173,10 +155,7 @@ export interface PendingReport {
 
 export const savePendingReport = async (report: Omit<PendingReport, 'id' | 'timestamp'>) => {
   const db = await initDB();
-  await db.put('pending-reports', {
-    ...report,
-    timestamp: Date.now()
-  });
+  await db.put('pending-reports', { ...report, timestamp: Date.now() });
 };
 
 export const getPendingReports = async () => (await initDB()).getAll('pending-reports');

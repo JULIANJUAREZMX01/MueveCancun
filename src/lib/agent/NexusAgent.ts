@@ -1,3 +1,9 @@
+import * as webllm from "@mlc-ai/web-llm";
+import { NEXUS_TOOLS, executeToolCall } from "./tools";
+
+export class NexusAgent {
+  private static instance: NexusAgent;
+  private engine: webllm.MLCEngineInterface | null = null;
 import { NEXUS_TOOLS, executeToolCall } from "./tools";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -14,7 +20,7 @@ export class NexusAgent {
     return NexusAgent.instance;
   }
 
-  async init(progressCallback?: (report: { progress: number; text: string }) => void): Promise<void> {
+  async init(progressCallback?: (report: webllm.InitProgressReport) => void): Promise<void> {
     if (this.engine || this.isInitializing) return;
     this.isInitializing = true;
     try {
@@ -34,27 +40,28 @@ export class NexusAgent {
 
   async ask(prompt: string): Promise<string> {
     if (!this.engine) throw new Error("Agent not initialized");
-    const webllm = await import("@mlc-ai/web-llm");
-    const messages: unknown[] = [
-      { role: "system", content: "Eres el asistente de MueveCancún. Usa las herramientas disponibles para obtener datos reales de rutas y saldo." },
+    const messages: webllm.ChatCompletionMessageParam[] = [
+      { role: "system", content: "You are the MueveCancún Assistant. Use the provided tools to get real data." },
       { role: "user", content: prompt }
     ];
     const response = await this.engine.chat.completions.create({ messages, tools: NEXUS_TOOLS, tool_choice: "auto" });
     const choice = response.choices[0];
-    if (!choice || !choice.message) return "Sin respuesta del agente.";
+    if (!choice || !choice.message) return "No response from AI.";
     const message = choice.message;
     if (message.tool_calls) {
-      const toolResults: unknown[] = [];
+      const toolResults: webllm.ChatCompletionMessageParam[] = [];
       for (const toolCall of message.tool_calls) {
         const args = JSON.parse(toolCall.function.arguments) as Record<string, unknown>;
         const result = await executeToolCall(toolCall.function.name, args);
-        toolResults.push({ role: "tool", content: JSON.stringify(result), tool_call_id: toolCall.id });
+        toolResults.push({
+          role: "tool",
+          content: JSON.stringify(result),
+          tool_call_id: toolCall.id
+        } as webllm.ChatCompletionToolMessageParam);
       }
-      const finalResponse = await this.engine.chat.completions.create({
-        messages: [...messages, message, ...toolResults]
-      });
-      return finalResponse.choices[0]?.message?.content || "Sin respuesta tras ejecución de tool.";
+      const finalResponse = await this.engine.chat.completions.create({ messages: [...messages, message, ...toolResults] });
+      return finalResponse.choices[0]?.message?.content || "No response after tool execution.";
     }
-    return message.content || "Sin respuesta.";
+    return message.content || "No response from AI.";
   }
 }

@@ -10,6 +10,7 @@ import DonateNudge from '../components/ui/DonateNudge.astro';
 import AppLoader from '../components/AppLoader.astro';
 import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
+import NexusAgentUI from '../components/agent/NexusAgentUI.astro';
 import { ClientRouter } from 'astro:transitions';
 import NexusAgentUI from '../components/agent/NexusAgentUI.astro';
 
@@ -26,13 +27,13 @@ const lang = getLangFromUrl(Astro.url);
 <html lang={lang} class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <meta name="google-site-verification" content="97193634d314b29e" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#0d9488" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>{title}</title>
+    <link rel="stylesheet" href="/src/styles/main.scss" />
     <link rel="manifest" href="/manifest.json" />
     <ClientRouter />
     <script is:inline>
@@ -59,7 +60,6 @@ const lang = getLangFromUrl(Astro.url);
       </header>
     )}
 
-    <AppLoader />
     {!hideNav && <Sidebar />}
 
     <main class:list={["l-main", !hideNav && "l-main--with-nav"]} id="main-content">
@@ -68,6 +68,7 @@ const lang = getLangFromUrl(Astro.url);
 
     {!hideNav && <div class="u-mobile-only"><BottomNav /></div>}
 
+    <Toast /><PwaReload /><BrowserDetection /><DonateNudge /><ReportWidget /><NexusAgentUI />
     <Toast />
     <PwaReload />
     <BrowserDetection />
@@ -101,6 +102,26 @@ const lang = getLangFromUrl(Astro.url);
       }
       @media (min-width: 769px) { .c-header { left: var(--sidebar-w, 80px); } }
 
+        @media (min-width: 769px) {
+          left: var(--sidebar-w);
+        }
+
+        &__logo {
+          display: flex;
+          align-items: center; gap: 0.5rem; text-decoration: none;
+        }
+
+        &__actions {
+          display: flex; align-items: center; gap: 1rem;
+        }
+
+        &__balance {
+          font-size: 0.75rem; font-weight: 900; letter-spacing: 0.1em; font-family: var(--font-mono);
+        }
+
+        &__theme-btn {
+          padding: 0.5rem; background-color: var(--surface-elevated); border-radius: var(--r-sm); border: 1px solid var(--border-light); cursor: pointer; transition: all var(--t-fast) var(--ease);
+          &:hover { transform: scale(1.1); }
       .c-header__logo {
         display: flex; align-items: center; gap: 0.5rem;
         text-decoration: none; border-radius: var(--r-md);
@@ -157,6 +178,7 @@ const lang = getLangFromUrl(Astro.url);
       }
 
       .u-mobile-only {
+        @media (min-width: 769px) { display: none; }
         display: block;
       }
       @media (min-width: 769px) {
@@ -168,6 +190,14 @@ const lang = getLangFromUrl(Astro.url);
       import { enforceGuards } from "../utils/auth";
       import { getWalletBalance } from "../utils/db";
 
+      async function sync() {
+          try {
+            const b = await getWalletBalance();
+            if (b) {
+                const el = document.getElementById("header-balance");
+                if (el) el.textContent = `$${b.amount.toFixed(2)}`;
+            }
+          } catch (e) {}
       async function syncBalance() {
         try {
           const b = await getWalletBalance();

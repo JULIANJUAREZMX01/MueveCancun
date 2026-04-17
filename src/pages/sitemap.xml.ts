@@ -3,7 +3,7 @@ import { getAllRoutes } from '../utils/routes';
 
 export const prerender = true;
 
-const siteUrl = (import.meta.env.SITE ?? 'https://mueve-cancun.vercel.app').replace(/\/$/, '');
+const siteUrl = (import.meta.env.SITE ?? 'https://querutamellevacancun.onrender.com').replace(/\/$/, '');
 
 export const GET: APIRoute = async () => {
   const staticPages = [
