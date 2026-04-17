@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3.3.3-nexus';
+const CACHE_VERSION = 'v3.3.2-fix';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 // Critical assets for offline-first PWA
 const CRITICAL_ASSETS = [
@@ -9,21 +9,26 @@ const CRITICAL_ASSETS = [
     '/es/community',
     '/en/wallet',
     '/es/wallet',
+    '/en/mapa',
+    '/es/mapa',
     '/en/rutas',
     '/es/rutas',
     '/en/home',
     '/es/home',
-    '/en/offline',
-    '/es/offline',
+    '/home',
+    '/rutas',
+    '/mapa',
+    '/wallet',
+    '/community',
+    '/tracking',
+    '/contribuir',
     '/vendor/leaflet/leaflet.js',
     '/vendor/leaflet/leaflet.css',
     '/wasm/route-calculator/route_calculator.js',
     '/wasm/route-calculator/route_calculator_bg.wasm',
     '/wasm/spatial-index/spatial_index.js',
     '/wasm/spatial-index/spatial_index_bg.wasm',
-    '/data/master_routes.optimized.json',
-    '/data/paradas.json',
-    '/data/precios.json',
+    '/data/master_routes.json',
     '/coordinates.json',
     '/manifest.json',
     '/logo.png',
@@ -40,7 +45,8 @@ const CRITICAL_ASSETS = [
     '/icons/briefcase.svg',
     '/icons/plane.svg',
     '/icons/palm-tree.svg',
-    '/icons/loader.svg'
+    '/icons/loader.svg',
+    '/offline'
 ];
 const OSM_TILES_PATTERN = /^https:\/\/[a-c]\.tile\.openstreetmap\.org\/(1[1-8])\/.*\.png$/;
 const CARTO_TILES_PATTERN = /^https:\/\/[a-d]\.basemaps\.cartocdn\.com\/.*\.png$/;
@@ -52,6 +58,7 @@ self.addEventListener('install', (event) => {
     event.waitUntil(caches.open(CACHE_NAME)
         .then(cache => {
         console.log('[SW] Caching critical assets');
+        // Use individual puts to avoid one bad URL killing the whole install
         return Promise.allSettled(CRITICAL_ASSETS.map(url => cache.add(url).catch((e) => console.warn(`[SW] Failed to cache ${url}:`, e))));
     })
         .then(() => self.skipWaiting())
@@ -95,6 +102,7 @@ self.addEventListener('fetch', (event) => {
         return;
     }
     if (url.pathname.includes('/data/')) {
+        // Data files: Stale-While-Revalidate
         event.respondWith(staleWhileRevalidate(request));
     }
     else if (url.pathname.includes('/wasm/') ||
@@ -103,35 +111,40 @@ self.addEventListener('fetch', (event) => {
         url.pathname.endsWith('.wasm') ||
         url.pathname.endsWith('.js') ||
         url.pathname.endsWith('.css')) {
+        // Immutable assets: Cache-First
         event.respondWith(cacheFirst(request));
     }
     else if (OSM_TILES_PATTERN.test(request.url) || CARTO_TILES_PATTERN.test(request.url)) {
+        // Map tiles: Cache-First
         event.respondWith(cacheFirst(request));
     }
-    else if (url.pathname.startsWith('/ruta/') || url.pathname.endsWith('/rutas') || url.pathname.endsWith('/home')) {
+    else if (url.pathname.startsWith('/ruta/') || url.pathname === '/rutas' || url.pathname === '/mapa') {
         event.respondWith(cacheFirst(request));
     }
     else {
+        // HTML pages: Network-First
         event.respondWith(networkFirst(request));
     }
 });
 // --- Cache Strategies ---
 async function cacheFirst(request) {
-    const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(request);
-    if (cached)
-        return cached;
     try {
+        const cached = await caches.match(request);
+        if (cached)
+            return cached;
         const response = await fetch(request);
-        if (response && response.status === 200) {
+        if (response?.status === 200) {
+            const cache = await caches.open(CACHE_NAME);
             cache.put(request, response.clone());
         }
         return response;
     }
     catch {
+        const cached = await caches.match(request);
+        if (cached)
+            return cached;
         if (request.mode === 'navigate') {
-            const lang = request.url.includes('/en/') ? 'en' : 'es';
-            const offlinePage = await cache.match(`/${lang}/offline`);
+            const offlinePage = await (await caches.open(CACHE_NAME)).match('/offline');
             if (offlinePage)
                 return offlinePage;
         }
@@ -139,21 +152,20 @@ async function cacheFirst(request) {
     }
 }
 async function networkFirst(request) {
-    const cache = await caches.open(CACHE_NAME);
     try {
         const response = await fetch(request);
-        if (response && response.status === 200) {
+        if (response?.status === 200) {
+            const cache = await caches.open(CACHE_NAME);
             cache.put(request, response.clone());
         }
         return response;
     }
     catch {
-        const cached = await cache.match(request);
+        const cached = await caches.match(request);
         if (cached)
             return cached;
         if (request.mode === 'navigate') {
-            const lang = request.url.includes('/en/') ? 'en' : 'es';
-            const offlinePage = await cache.match(`/${lang}/offline`);
+            const offlinePage = await (await caches.open(CACHE_NAME)).match('/offline');
             if (offlinePage)
                 return offlinePage;
         }
@@ -161,25 +173,24 @@ async function networkFirst(request) {
     }
 }
 async function networkFirstWithCache(request) {
-    const cache = await caches.open(CACHE_NAME);
     try {
         const response = await fetch(request);
-        if (response && response.status === 200) {
+        if (response?.status === 200) {
+            const cache = await caches.open(CACHE_NAME);
             cache.put(request, response.clone());
         }
         return response;
     }
     catch {
-        const cached = await cache.match(request);
+        const cached = await caches.match(request);
         return cached ?? new Response('{}', { status: 503, headers: { 'Content-Type': 'application/json' } });
     }
 }
 async function staleWhileRevalidate(request) {
-    const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(request);
-    const fetchPromise = fetch(request).then(async (response) => {
-        if (response && response.status === 200) {
-            await cache.put(request, response.clone());
+    const cached = await caches.match(request);
+    const fetchPromise = fetch(request).then((response) => {
+        if (response?.status === 200) {
+            caches.open(CACHE_NAME).then(c => c.put(request, response.clone()));
         }
         return response;
     }).catch(() => cached ?? new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } }));
