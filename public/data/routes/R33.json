@@ -10,31 +10,9 @@
   "empresa": "Autocar",
   "last_updated": "2026-04-01T22:21:19Z",
   "paradas": [
-    {
-      "nombre": "Región 102",
-      "lat": 21.1619,
-      "lng": -86.8515,
-      "orden": 1
-    },
-    {
-      "nombre": "Av. Talleres",
-      "lat": 21.15,
-      "lng": -86.86,
-      "orden": 2
-    },
-    {
-      "nombre": "Av. Kabah",
-      "lat": 21.145,
-      "lng": -86.845,
-      "orden": 3
-    },
-    {
-      "nombre": "Plaza Las Américas",
-      "lat": 21.1472,
-      "lng": -86.8234,
-      "orden": 4
-    }
-  ],
-  "color": "#45B7D1",
-  "color_id": "R3"
+    {"nombre": "Región 102", "lat": 21.1619, "lng": -86.8515, "orden": 1},
+    {"nombre": "Av. Talleres", "lat": 21.15, "lng": -86.86, "orden": 2},
+    {"nombre": "Av. Kabah", "lat": 21.145, "lng": -86.845, "orden": 3},
+    {"nombre": "Plaza Las Américas", "lat": 21.1472, "lng": -86.8234, "orden": 4}
+  ]
 }

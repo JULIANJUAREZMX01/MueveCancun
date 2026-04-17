@@ -55,8 +55,6 @@ const t = useTranslations(lang);
   import { escapeHtml, showToast } from "../utils/utils";
 
   // ── Lógica principal ──────────────────────────────────────────────────────
-  const isEs = document.documentElement.lang !== "en";
-
   async function start() {
       const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
       const originInput = document.getElementById('origin-input') as HTMLInputElement;
@@ -103,39 +101,26 @@ const t = useTranslations(lang);
                       const leg = r.legs[0];
                       const isTransfer = r.type === "Transfer";
 
-                      // Color de la ruta para el borde
-                      const routeColor = leg.color || leg.route_color ||
-                        (leg.transport_type === "Bus_HotelZone" ? "#F97316" : leg.transport_type === "ADO" ? "#FF6B6B" : "#0EA5E9");
-
-                      card.style.borderLeftColor = routeColor;
                       card.innerHTML = `
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;gap:0.5rem">
-                          <div>
-                            <div style="display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:${routeColor};margin-bottom:3px">
-                              ${isTransfer ? "🔀 Trasbordo" : "🚌 Directo"}
-                              ${r.legs?.length > 1 ? `<span style="background:${routeColor}22;padding:1px 5px;border-radius:4px">${r.legs.length} tramos</span>` : ""}
-                            </div>
-                            <div style="font-size:0.875rem;font-weight:900;color:var(--text-primary);line-height:1.2">${escapeHtml(leg.route_name)}</div>
+                        <div class="flex justify-between items-start mb-3">
+                          <div class="flex flex-col">
+                            <span class="text-[10px] font-black text-primary-500 uppercase tracking-tighter mb-1">${isTransfer ? "🔀 Trasbordo" : "🚌 Directo"}</span>
+                            <h4 class="text-sm font-black text-slate-900 group-hover:text-primary-600 transition-colors">${escapeHtml(leg.route_name)}</h4>
                           </div>
-                          <div style="text-align:right;flex-shrink:0">
-                            <div style="font-size:1.25rem;font-weight:900;color:var(--text-primary);line-height:1">$${r.total_price}</div>
-                            <div style="font-size:9px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em">MXN</div>
+                          <div class="text-right">
+                             <p class="text-lg font-black text-slate-900">$${r.total_price}</p>
+                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">MXN</p>
                           </div>
                         </div>
-                        <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--text-secondary)">
-                          <span style="background:${routeColor}22;color:${routeColor};padding:2px 8px;border-radius:9999px;font-weight:800">${escapeHtml(leg.origin_stop)}</span>
-                          <svg style="width:12px;height:12px;flex-shrink:0;color:var(--text-tertiary)" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-                          <span style="background:#64748b22;padding:2px 8px;border-radius:9999px">${escapeHtml(leg.dest_stop)}</span>
-                        </div>
-                        <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:6px;gap:4px">
-                          <svg style="width:10px;height:10px;color:var(--text-tertiary)" viewBox="0 0 24 24" fill="currentColor"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
-                          <span style="font-size:10px;font-weight:700;color:var(--text-tertiary)">${isEs ? "Toca para ver en mapa" : "Tap to view on map"}</span>
+                        <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
+                           <span class="truncate">${escapeHtml(leg.origin_stop)}</span>
+                           <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+                           <span class="truncate">${escapeHtml(leg.dest_stop)}</span>
                         </div>
                       `;
 
                       card.addEventListener('click', () => {
                          window.dispatchEvent(new CustomEvent("SHOW_ROUTE_ON_MAP", { detail: { journey: r } }));
-                         window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED"));
                       });
 
                       resultsContainer.appendChild(card);

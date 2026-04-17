@@ -1,5 +1,11 @@
 ---
 export const prerender = true;
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getI18N } from "../../utils/i18n";
+import Card from "../../components/ui/Card.astro";
+import Button from "../../components/ui/Button.astro";
+import Icon from "../../components/ui/Icon.astro";
+
 export function getStaticPaths() {
   return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
 }
@@ -9,288 +15,316 @@ const isEs = lang === "es";
 
 const quickAmounts = [20, 50, 100, 200];
 const transactions = [
-  { icon:"🚌", label: isEs ? "Ruta R2 — Centro"          : "Route R2 — Centro",       amount:-13, date:"Hoy 08:32" },
-  { icon:"🚌", label: isEs ? "Ruta R1 — Zona Hotelera"    : "Route R1 — Hotel Zone",   amount:-18, date:"Hoy 07:15" },
-  { icon:"💳", label: isEs ? "Recarga manual"              : "Manual top-up",           amount:+100,date:"Ayer 20:00" },
-  { icon:"🚐", label: isEs ? "Combi — Plaza Las Américas" : "Combi — Las Americas",    amount:-9,  date:"Ayer 14:45"},
-  { icon:"🚌", label: isEs ? "Ruta R27 — Aeropuerto"      : "Route R27 — Airport",     amount:-20, date:"Lun 09:00" },
+  { icon:"🚌", label: isEs ? "Ruta R2 — Centro"       : "Route R2 — Centro",       amount:-13, date:"Hoy 08:32" },
+  { icon:"🚌", label: isEs ? "Ruta R1 — Zona Hotelera" : "Route R1 — Hotel Zone",   amount:-18, date:"Hoy 07:15" },
+  { icon:"💳", label: isEs ? "Recarga manual"           : "Manual top-up",           amount:+100,date:"Ayer 20:00" },
+  { icon:"🚐", label: isEs ? "Combi — Plaza Las Américas": "Combi — Plaza Las Americas",amount:-9,date:"Ayer 14:45"},
+  { icon:"🚌", label: isEs ? "Ruta R27 — Aeropuerto"   : "Route R27 — Airport",     amount:-20, date:"Lun 09:00" },
 ];
 ---
 
 <MainLayout title={isEs ? "Mi Tarjeta — MueveCancún" : "My Wallet — MueveCancún"}>
-  <div class="wallet-page">
+  <div class="page-content px-4" style="max-width:400px;margin-inline:auto">
 
-    <!-- Tarjeta de saldo -->
-    <div class="wallet-card" role="region" aria-label={isEs ? "Tarjeta de saldo" : "Balance card"}>
-      <div class="wallet-card__glow" aria-hidden="true"></div>
-      <div class="wallet-card__inner">
-        <div class="wallet-card__top">
-          <div class="wallet-card__chip" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="rgba(255,255,255,0.22)"/><rect x="4" y="11" width="24" height="10" rx="2" fill="rgba(255,255,255,0.28)"/><rect x="4" y="11" width="8" height="10" fill="rgba(255,255,255,0.12)"/><line x1="16" y1="11" x2="16" y2="21" stroke="rgba(255,255,255,0.18)" stroke-width="1"/></svg>
-          </div>
-          <span class="wallet-card__brand">MueveCancún</span>
+    <!-- Balance card (tipo tarjeta bancaria) -->
+    <div class="wallet-card">
+      <div class="wallet-card__bg" aria-hidden="true"></div>
+
+      <div class="wallet-card__header">
+        <div class="wallet-card__chip" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="6" fill="rgba(255,255,255,0.25)"/>
+            <rect x="4" y="11" width="24" height="10" rx="2" fill="rgba(255,255,255,0.3)"/>
+            <rect x="4" y="11" width="8" height="10" fill="rgba(255,255,255,0.15)"/>
+            <rect x="16" y="11" width="1" height="10" fill="rgba(255,255,255,0.2)"/>
+          </svg>
         </div>
-        <div class="wallet-card__balance">
-          <p class="wallet-card__balance-label">{isEs ? "Saldo disponible" : "Available balance"}</p>
-          <h2 class="wallet-card__amount" id="balance-amount">$0.00 <span class="wallet-card__currency">MXN</span></h2>
-        </div>
-        <div class="wallet-card__bottom">
-          <span class="wallet-card__type">{isEs ? "Tarjeta de Tránsito" : "Transit Card"}</span>
-          <div class="wallet-card__dots" aria-hidden="true">
-            <span></span><span></span><span></span><span class="wallet-card__dots-active"></span>
-          </div>
+        <div class="wallet-card__logo">MueveCancún</div>
+      </div>
+
+      <div class="wallet-card__balance">
+        <p class="wallet-card__label">{isEs ? "Saldo disponible" : "Available balance"}</p>
+        <h2 id="balance-amount" class="wallet-card__amount">$0.00</h2>
+      </div>
+
+      <div class="wallet-card__footer">
+        <span class="wallet-card__type">{isEs ? "Tarjeta de transporte" : "Transit card"}</span>
+        <div class="wallet-card__dots" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
         </div>
       </div>
     </div>
 
     <!-- Acciones rápidas -->
-    <div class="quick-actions" role="group" aria-label={isEs ? "Acciones rápidas" : "Quick actions"}>
-      {[
-        { id:"recharge", icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>`, label: isEs ? "Recargar" : "Top-up", accent: true },
-        { id:"transfer", icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>`, label: isEs ? "Enviar" : "Send", accent: false },
-        { id:"tracking", href:`/${lang}/tracking`, icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`, label: isEs ? "Rastrear" : "Track", accent: false },
-        { id:"guardian", href:`/${lang}/suscripcion`, icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>`, label: "Guardian", accent: false },
-      ].map(a => (
-        a.href
-          ? <a href={a.href} class={`qaction${a.accent ? " qaction--accent" : ""}`}>
-              <span class="qaction__icon" aria-hidden="true" set:html={a.icon} />
-              <span class="qaction__label">{a.label}</span>
-            </a>
-          : <button id={`btn-${a.id}`} class={`qaction${a.accent ? " qaction--accent" : ""}`}>
-              <span class="qaction__icon" aria-hidden="true" set:html={a.icon} />
-              <span class="qaction__label">{a.label}</span>
-            </button>
-      ))}
+    <div class="quick-actions">
+      <button id="btn-recharge" class="qaction qaction--primary">
+        <span class="qaction__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        </span>
+        <span class="qaction__label">{isEs ? "Recargar" : "Top-up"}</span>
+      </button>
+      <button id="btn-transfer" class="qaction">
+        <span class="qaction__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+        </span>
+        <span class="qaction__label">{isEs ? "Enviar" : "Send"}</span>
+      </button>
+      <a href={"/" + lang + "/tracking"} class="qaction">
+        <span class="qaction__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        </span>
+        <span class="qaction__label">{isEs ? "Rastrear" : "Track"}</span>
+      </a>
+      <a href={"/" + lang + "/suscripcion"} class="qaction">
+        <span class="qaction__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        </span>
+        <span class="qaction__label">{isEs ? "Guardian" : "Guardian"}</span>
+      </a>
     </div>
 
-    <!-- Panel de recarga -->
-    <div id="recharge-panel" class="recharge-panel" hidden aria-live="polite">
-      <h3 class="recharge-panel__title">{isEs ? "¿Cuánto recargas?" : "How much to add?"}</h3>
-      <div class="amounts-grid" role="group" aria-label={isEs ? "Montos rápidos" : "Quick amounts"}>
+    <!-- Panel de recarga (oculto por defecto) -->
+    <div id="recharge-panel" class="recharge-panel" hidden>
+      <div class="section-label mb-3">
+        {isEs ? "Monto de recarga" : "Top-up amount"}
+      </div>
+      <div class="amounts-grid">
         {quickAmounts.map(amt => (
-          <button class="amount-chip" data-amount={amt} aria-label={`$${amt} MXN`}>
+          <button
+            class="amount-chip"
+            data-amount={amt}
+            aria-label={"$" + amt + " MXN"}
+          >
             <span class="amount-chip__value">${amt}</span>
             {amt === 50 && <span class="amount-chip__badge">{isEs ? "Popular" : "Popular"}</span>}
           </button>
         ))}
       </div>
-      <div class="custom-amount">
-        <label class="custom-amount__label" for="custom-amount">{isEs ? "Otro monto" : "Custom amount"}</label>
-        <div class="custom-amount__wrap">
-          <span class="custom-amount__prefix" aria-hidden="true">$</span>
-          <input id="custom-amount" type="number" min="10" max="1000" placeholder="0.00" class="custom-amount__input" />
-          <span class="custom-amount__suffix" aria-hidden="true">MXN</span>
+      <div class="custom-amount-wrap">
+        <label class="custom-amount-label" for="custom-amount">
+          {isEs ? "Otro monto" : "Custom amount"}
+        </label>
+        <div class="custom-amount-input-wrap">
+          <span class="custom-amount-prefix">$</span>
+          <input
+            id="custom-amount"
+            type="number"
+            min="10"
+            max="1000"
+            placeholder="0.00"
+            class="custom-amount-input"
+          />
+          <span class="custom-amount-suffix">MXN</span>
         </div>
       </div>
-      <button id="btn-confirm-recharge" class="btn btn-primary" style="width:100%;justify-content:center;gap:0.5rem;margin-top:0.75rem">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-        {isEs ? "Continuar con Stripe" : "Continue with Stripe"}
+      <button id="btn-confirm-recharge" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;margin-top:1rem">
+        {isEs ? "Confirmar recarga" : "Confirm top-up"}
       </button>
     </div>
 
     <!-- Historial -->
-    <section class="history" aria-labelledby="history-title">
-      <h3 class="history__title" id="history-title">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
-        {isEs ? "Movimientos" : "Transactions"}
-      </h3>
-      <div class="tx-list" role="list">
+    <div class="history-section">
+      <div class="section-label mb-3">
+        {isEs ? "Movimientos recientes" : "Recent transactions"}
+      </div>
+      <div class="transactions-list">
         {transactions.map(tx => (
-          <div class="tx-row" role="listitem">
+          <div class="tx-row">
             <div class="tx-icon" aria-hidden="true">{tx.icon}</div>
             <div class="tx-info">
               <div class="tx-label">{tx.label}</div>
               <div class="tx-date">{tx.date}</div>
             </div>
-            <div class={`tx-amount ${tx.amount > 0 ? "tx-amount--pos" : "tx-amount--neg"}`}>
-              {tx.amount > 0 ? "+" : ""}{Math.abs(tx.amount).toFixed(2)}
+            <div class={"tx-amount " + (tx.amount > 0 ? "tx-amount--positive" : "tx-amount--negative")}>
+              {tx.amount > 0 ? "+" : ""}{tx.amount < 0 ? "-" : ""}${Math.abs(tx.amount).toFixed(2)}
             </div>
           </div>
         ))}
       </div>
-      <button class="history__load-more" id="btn-load-more">
-        {isEs ? "Ver más movimientos" : "Load more"} ↓
-      </button>
-    </section>
+    </div>
 
   </div>
 </MainLayout>
 
 <style>
-  .wallet-page {
-    max-width: 420px;
-    margin-inline: auto;
-    padding: 0.75rem 1rem 6rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  /* ── Tarjeta ── */
+  /* ── Tarjeta de saldo ── */
   .wallet-card {
     position: relative;
     border-radius: var(--r-2xl);
     overflow: hidden;
-    min-height: 196px;
-    background: linear-gradient(135deg, #0f766e 0%, #0e7490 60%, #1d4ed8 100%);
-    box-shadow: 0 16px 48px rgba(13,148,136,0.4), 0 4px 16px rgba(0,0,0,0.2);
+    padding: 1.5rem 1.5rem 1.25rem;
+    min-height: 200px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    background: var(--gradient-hero);
+    box-shadow: 0 12px 40px rgba(13,148,136,0.35), 0 4px 16px rgba(0,0,0,0.15);
+    margin-bottom: 1.25rem;
     color: white;
   }
-  .wallet-card__glow {
-    position: absolute; inset: 0; pointer-events: none;
-    background:
-      radial-gradient(circle at 85% 15%, rgba(6,182,212,0.35) 0%, transparent 55%),
-      radial-gradient(circle at 15% 85%, rgba(20,184,166,0.25) 0%, transparent 45%);
+  .wallet-card__bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(20,184,166,0.3) 0%, transparent 60%),
+                radial-gradient(circle at 20% 80%, rgba(6,182,212,0.2) 0%, transparent 50%);
+    pointer-events: none;
   }
-  .wallet-card__inner {
+  .wallet-card__header {
+    display: flex; align-items: center; justify-content: space-between;
     position: relative; z-index: 1;
-    padding: 1.375rem 1.5rem;
-    display: flex; flex-direction: column; justify-content: space-between;
-    height: 100%; gap: 1rem;
   }
-  .wallet-card__top { display: flex; align-items: center; justify-content: space-between; }
   .wallet-card__chip svg { width: 32px; height: 32px; }
-  .wallet-card__brand { font-family: var(--font-display); font-size: 0.78rem; font-weight: 800; opacity: 0.85; letter-spacing: 0.06em; }
-  .wallet-card__balance-label { font-size: 0.6rem; font-weight: 700; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.14em; margin: 0 0 0.2rem; }
-  .wallet-card__amount { font-family: var(--font-display); font-size: 2.5rem; font-weight: 900; letter-spacing: -0.04em; margin: 0; line-height: 1.1; }
-  .wallet-card__currency { font-size: 1rem; opacity: 0.6; font-weight: 700; }
-  .wallet-card__bottom { display: flex; align-items: center; justify-content: space-between; }
-  .wallet-card__type { font-size: 0.62rem; font-weight: 700; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.12em; }
-  .wallet-card__dots { display: flex; gap: 0.3rem; align-items: center; }
-  .wallet-card__dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); }
-  .wallet-card__dots-active { background: rgba(255,255,255,0.85) !important; width: 8px !important; height: 8px !important; }
+  .wallet-card__logo { font-family: var(--font-display); font-size: 0.8rem; font-weight: 800; opacity: 0.85; letter-spacing: 0.04em; }
+  .wallet-card__balance { position: relative; z-index: 1; }
+  .wallet-card__label { font-size: 0.65rem; font-weight: 700; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.15em; margin: 0 0 0.25rem; }
+  .wallet-card__amount { font-family: var(--font-display); font-size: 2.75rem; font-weight: 900; letter-spacing: -0.04em; margin: 0; line-height: 1; }
+  .wallet-card__footer {
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; z-index: 1;
+  }
+  .wallet-card__type { font-size: 0.65rem; font-weight: 700; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.1em; }
+  .wallet-card__dots { display: flex; gap: 0.3rem; }
+  .wallet-card__dots span { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.4); }
+  .wallet-card__dots span:last-child { background: rgba(255,255,255,0.8); }
 
-  /* ── Quick actions ── */
+  /* ── Acciones rápidas ── */
   .quick-actions {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem; margin-bottom: 1.25rem;
   }
   .qaction {
     display: flex; flex-direction: column; align-items: center; gap: 0.375rem;
-    padding: 0.875rem 0.25rem;
+    padding: 0.875rem 0.5rem;
     background: var(--surface-card);
     border: 1.5px solid var(--border-light);
     border-radius: var(--r-xl);
-    cursor: pointer; text-decoration: none; color: var(--text-secondary);
+    cursor: pointer; text-decoration: none; color: var(--text-primary);
     transition: all var(--t-base) var(--ease-back);
     -webkit-tap-highlight-color: transparent;
   }
-  .qaction:hover { border-color: var(--color-primary); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(13,148,136,0.15); }
+  .qaction:hover { border-color: var(--color-primary); transform: translateY(-2px); box-shadow: var(--shadow-md); }
   .qaction:active { transform: scale(0.94); }
-  .qaction--accent { background: var(--gradient-primary); border-color: transparent; color: white; box-shadow: 0 4px 16px rgba(13,148,136,0.3); }
-  .qaction--accent:hover { opacity: 0.92; box-shadow: 0 8px 24px rgba(13,148,136,0.4); }
-  .qaction__icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
-  .qaction__icon > svg { width: 22px; height: 22px; }
-  .qaction__label { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.02em; white-space: nowrap; }
+  .qaction--primary .qaction__icon { background: var(--gradient-primary); }
+  .qaction__icon {
+    width: 40px; height: 40px; border-radius: var(--r-lg);
+    background: var(--teal-xlight); color: var(--teal-dark);
+    display: flex; align-items: center; justify-content: center;
+    transition: all var(--t-base) var(--ease);
+  }
+  .qaction--primary .qaction__icon { color: white; }
+  .qaction:hover .qaction__icon { background: var(--gradient-primary); color: white; }
+  .qaction__icon > svg { width: 18px; height: 18px; }
+  .qaction__label { font-size: 0.65rem; font-weight: 800; color: var(--text-secondary); text-align: center; letter-spacing: 0.01em; }
 
-  /* ── Panel recarga ── */
+  /* ── Panel de recarga ── */
   .recharge-panel {
     background: var(--surface-card);
-    border: 1.5px solid var(--border-light);
+    border: 1px solid var(--border-light);
     border-radius: var(--r-2xl);
     padding: 1.25rem;
-    animation: fade-up 0.25s var(--ease-out) both;
+    margin-bottom: 1.25rem;
+    animation: fade-up 0.3s var(--ease-out) forwards;
   }
   .recharge-panel[hidden] { display: none; }
-  .recharge-panel__title { font-family: var(--font-display); font-size: 1rem; font-weight: 900; color: var(--text-primary); margin: 0 0 0.875rem; }
-  .amounts-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.5rem; margin-bottom: 0.875rem; }
+  .amounts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
   .amount-chip {
     position: relative;
-    display: flex; flex-direction: column; align-items: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 0.75rem 0.5rem;
-    background: var(--surface-bg); border: 1.5px solid var(--border-light);
-    border-radius: var(--r-lg); cursor: pointer;
-    transition: all var(--t-fast) var(--ease-back);
+    border-radius: var(--r-lg);
+    border: 1.5px solid var(--border-light);
+    background: var(--surface-elevated);
+    cursor: pointer;
+    transition: all var(--t-base) var(--ease-back);
+    -webkit-tap-highlight-color: transparent;
+    gap: 0.125rem;
   }
-  .amount-chip:hover, .amount-chip.selected { border-color: var(--color-primary); background: var(--teal-xlight); color: var(--teal-dark); }
-  .amount-chip__value { font-family: var(--font-display); font-size: 1rem; font-weight: 900; }
-  .amount-chip__badge { position: absolute; top: -7px; left: 50%; transform: translateX(-50%); font-size: 0.55rem; font-weight: 900; background: var(--gradient-primary); color: white; padding: 1px 6px; border-radius: var(--r-full); letter-spacing: 0.04em; white-space: nowrap; }
-  .custom-amount__label { font-size: 0.72rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.375rem; display: block; }
-  .custom-amount__wrap { position: relative; display: flex; align-items: center; }
-  .custom-amount__prefix, .custom-amount__suffix { position: absolute; font-size: 0.875rem; font-weight: 700; color: var(--text-tertiary); pointer-events: none; }
-  .custom-amount__prefix { left: 0.875rem; }
-  .custom-amount__suffix { right: 0.875rem; }
-  .custom-amount__input { width: 100%; padding: 0.75rem 2.5rem; border: 1.5px solid var(--border-light); border-radius: var(--r-lg); background: var(--surface-bg); color: var(--text-primary); font-size: 1rem; font-weight: 700; text-align: center; transition: border-color var(--t-fast) var(--ease); }
-  .custom-amount__input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+  .amount-chip:hover { border-color: var(--color-primary); transform: translateY(-1px); }
+  .amount-chip.selected { background: var(--teal-xlight); border-color: var(--color-primary); }
+  .amount-chip__value { font-weight: 800; font-size: 0.875rem; color: var(--text-primary); }
+  .amount-chip__badge {
+    font-size: 0.55rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--jungle); background: var(--jungle-light);
+    padding: 0.1rem 0.3rem; border-radius: var(--r-full);
+  }
+  .custom-amount-wrap { margin-bottom: 0.5rem; }
+  .custom-amount-label { font-size: 0.72rem; font-weight: 700; color: var(--text-tertiary); display: block; margin-bottom: 0.375rem; }
+  .custom-amount-input-wrap {
+    display: flex; align-items: center; gap: 0.5rem;
+    border: 1.5px solid var(--border-light); border-radius: var(--r-full);
+    padding: 0.625rem 1rem; background: var(--surface-elevated);
+    transition: border-color var(--t-fast) var(--ease);
+  }
+  .custom-amount-input-wrap:focus-within { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+  .custom-amount-prefix, .custom-amount-suffix { font-weight: 800; color: var(--text-tertiary); font-size: 0.9rem; }
+  .custom-amount-input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-size: 1rem; font-weight: 800; color: var(--text-primary); font-family: var(--font-display);
+    text-align: center;
+  }
 
   /* ── Historial ── */
-  .history { display: flex; flex-direction: column; gap: 0; }
-  .history__title {
-    display: flex; align-items: center; gap: 0.5rem;
-    font-size: 0.72rem; font-weight: 800; color: var(--text-tertiary);
-    text-transform: uppercase; letter-spacing: 0.1em;
-    margin: 0 0 0.75rem;
-  }
-  .tx-list { display: flex; flex-direction: column; gap: 0; }
+  .history-section { margin-bottom: 1rem; }
+  .transactions-list { display: flex; flex-direction: column; }
   .tx-row {
-    display: flex; align-items: center; gap: 0.875rem;
+    display: flex; align-items: center; gap: 0.75rem;
     padding: 0.875rem 0;
     border-bottom: 1px solid var(--border-light);
   }
   .tx-row:last-child { border-bottom: none; }
-  .tx-icon { font-size: 1.375rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--surface-elevated); border-radius: var(--r-lg); flex-shrink: 0; }
+  .tx-icon { font-size: 1.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--surface-bg); border-radius: var(--r-lg); flex-shrink: 0; }
   .tx-info { flex: 1; min-width: 0; }
-  .tx-label { font-size: 0.82rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tx-date { font-size: 0.7rem; color: var(--text-tertiary); font-weight: 600; margin-top: 0.125rem; }
-  .tx-amount { font-family: var(--font-mono); font-size: 0.875rem; font-weight: 900; flex-shrink: 0; }
-  .tx-amount--pos { color: #16a34a; }
-  .tx-amount--neg { color: var(--text-primary); }
-  .dark .tx-amount--pos { color: #4ade80; }
-
-  .history__load-more {
-    margin-top: 1rem; padding: 0.75rem;
-    background: none; border: 1.5px dashed var(--border-light);
-    border-radius: var(--r-xl); color: var(--text-tertiary);
-    font-size: 0.75rem; font-weight: 700; cursor: pointer;
-    transition: all var(--t-fast) var(--ease);
-  }
-  .history__load-more:hover { border-color: var(--color-primary); color: var(--color-primary); }
-
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  .tx-label { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tx-date { font-size: 0.7rem; color: var(--text-tertiary); font-weight: 600; margin-top: 0.15rem; }
+  .tx-amount { font-family: var(--font-display); font-size: 0.9rem; font-weight: 900; letter-spacing: -0.02em; flex-shrink: 0; }
+  .tx-amount--positive { color: var(--jungle); }
+  .tx-amount--negative { color: var(--text-primary); }
 </style>
 
 <script>
-  import { getWalletBalance } from "../../utils/db";
+  import { getWalletBalance, updateWalletBalance } from "../../utils/db";
 
-  async function init() {
-    // Saldo real
+  async function syncBalance() {
     try {
-      const b = await getWalletBalance();
+      const w = await getWalletBalance();
       const el = document.getElementById("balance-amount");
-      if (el) el.innerHTML = `$${b.amount.toFixed(2)} <span class="wallet-card__currency">MXN</span>`;
+      if (el) el.textContent = "$" + ((w?.amount ?? 0) as number).toFixed(2);
     } catch {}
-
-    // Toggle recarga
-    const rechargePanel = document.getElementById("recharge-panel");
-    document.getElementById("btn-recharge")?.addEventListener("click", () => {
-      const hidden = rechargePanel?.hidden;
-      rechargePanel!.hidden = !hidden;
-      if (!hidden) rechargePanel?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
-
-    // Selección de monto
-    document.querySelectorAll<HTMLButtonElement>(".amount-chip").forEach(chip => {
-      chip.addEventListener("click", () => {
-        document.querySelectorAll(".amount-chip").forEach(c => c.classList.remove("selected"));
-        chip.classList.add("selected");
-        const input = document.getElementById("custom-amount") as HTMLInputElement;
-        if (input) input.value = chip.dataset.amount || "";
-      });
-    });
-
-    // Confirm → Stripe placeholder
-    document.getElementById("btn-confirm-recharge")?.addEventListener("click", () => {
-      const amt = (document.getElementById("custom-amount") as HTMLInputElement)?.value;
-      if (!amt || Number(amt) < 10) {
-        (window as any).showToast?.("Monto mínimo: $10 MXN", "warning");
-        return;
-      }
-      window.open(`/${document.documentElement.lang}/suscripcion`, "_blank");
-    });
   }
+  syncBalance();
 
-  init();
-  document.addEventListener("astro:page-load", init);
+  // Recarga panel toggle
+  const rechargeBtn  = document.getElementById("btn-recharge");
+  const rechargePanel= document.getElementById("recharge-panel");
+  rechargeBtn?.addEventListener("click", () => {
+    if (rechargePanel) {
+      rechargePanel.hidden = !rechargePanel.hidden;
+      if (!rechargePanel.hidden) rechargePanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  });
+
+  // Amount chips
+  document.querySelectorAll<HTMLButtonElement>(".amount-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".amount-chip").forEach(c => c.classList.remove("selected"));
+      chip.classList.add("selected");
+      const input = document.getElementById("custom-amount") as HTMLInputElement;
+      if (input) input.value = chip.dataset.amount || "";
+    });
+  });
+
+  // Confirm recharge
+  document.getElementById("btn-confirm-recharge")?.addEventListener("click", async () => {
+    const input = document.getElementById("custom-amount") as HTMLInputElement;
+    const amount = parseFloat(input?.value || "0");
+    if (!amount || amount < 10) {
+      window.dispatchEvent(new CustomEvent("SHOW_TOAST", { detail: { message: "Monto minimo: $10", type: "error" } }));
+      return;
+    }
+    try {
+      await updateWalletBalance(amount);
+      await syncBalance();
+      if (rechargePanel) rechargePanel.hidden = true;
+      window.dispatchEvent(new CustomEvent("SHOW_TOAST", { detail: { message: "Recarga exitosa: $" + amount.toFixed(2), type: "success" } }));
+    } catch {
+      window.dispatchEvent(new CustomEvent("SHOW_TOAST", { detail: { message: "Error al recargar", type: "error" } }));
+    }
+  });
 </script>

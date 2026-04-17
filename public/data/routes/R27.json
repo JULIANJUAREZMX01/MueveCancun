@@ -10,43 +10,11 @@
   "empresa": "Turicun",
   "last_updated": "2026-04-01T22:21:19Z",
   "paradas": [
-    {
-      "nombre": "Tierra Maya",
-      "lat": 21.1619,
-      "lng": -86.8515,
-      "orden": 1
-    },
-    {
-      "nombre": "Av. Kabah",
-      "lat": 21.155,
-      "lng": -86.845,
-      "orden": 2
-    },
-    {
-      "nombre": "Plaza Las Américas",
-      "lat": 21.1472,
-      "lng": -86.8234,
-      "orden": 3
-    },
-    {
-      "nombre": "Entrada Zona Hotelera",
-      "lat": 21.153,
-      "lng": -86.815,
-      "orden": 4
-    },
-    {
-      "nombre": "Zona Hotelera",
-      "lat": 21.135,
-      "lng": -86.768,
-      "orden": 5
-    },
-    {
-      "nombre": "Playa Delfines",
-      "lat": 21.085,
-      "lng": -86.775,
-      "orden": 6
-    }
-  ],
-  "color": "#4ECDC4",
-  "color_id": "R2"
+    {"nombre": "Tierra Maya", "lat": 21.1619, "lng": -86.8515, "orden": 1},
+    {"nombre": "Av. Kabah", "lat": 21.155, "lng": -86.845, "orden": 2},
+    {"nombre": "Plaza Las Américas", "lat": 21.1472, "lng": -86.8234, "orden": 3},
+    {"nombre": "Entrada Zona Hotelera", "lat": 21.153, "lng": -86.815, "orden": 4},
+    {"nombre": "Zona Hotelera", "lat": 21.135, "lng": -86.768, "orden": 5},
+    {"nombre": "Playa Delfines", "lat": 21.085, "lng": -86.775, "orden": 6}
+  ]
 }

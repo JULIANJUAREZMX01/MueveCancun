@@ -78,15 +78,9 @@ const types = ["all", "bus", "combi", "van", "ado"];
         <h1 class="page-title">{isEs ? "Todas las rutas" : "All routes"}</h1>
         <p class="page-subtitle">{routes.length} {isEs ? "rutas activas en Cancún" : "active routes in Cancún"}</p>
       </div>
-      <div class="header-actions">
-        <div class="header-badge">
-          <span class="live-dot" aria-hidden="true"></span>
-          {isEs ? "En vivo" : "Live"}
-        </div>
-        <a href={"/" + lang + "/home"} class="btn btn-ghost btn-sm" title={isEs ? "Ver en mapa" : "View on map"} aria-label={isEs ? "Ver en mapa" : "View on map"}>
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
-          {isEs ? "Mapa" : "Map"}
-        </a>
+      <div class="header-badge">
+        <span class="live-dot" aria-hidden="true"></span>
+        {isEs ? "En vivo" : "Live"}
       </div>
     </div>
 
@@ -204,7 +198,6 @@ const types = ["all", "bus", "combi", "van", "ado"];
     margin-bottom: 1.25rem;
     padding-top: 0.5rem;
   }
-  .header-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
   .page-title {
     font-family: var(--font-display);
     font-size: 1.75rem;

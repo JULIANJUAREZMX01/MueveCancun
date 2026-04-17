@@ -6,304 +6,215 @@ export function getStaticPaths() {
 import MainLayout from "../../layouts/MainLayout.astro";
 import InteractiveMap from "../../components/InteractiveMap.astro";
 import RouteCalculator from "../../components/RouteCalculator.astro";
+import Icon from "../../components/ui/Icon.astro";
 const { lang } = Astro.params;
 const isEs = lang === "es";
 ---
 
-<MainLayout
-  title={isEs ? "MueveCancún — Tu GPS del Caribe" : "MueveCancún — Your Caribbean GPS"}
-  description={isEs ? "Encuentra tu ruta de transporte público en Cancún. Offline, rápido, ciudadano." : "Find your public transit route in Cancún. Offline, fast, citizen-powered."}
->
+<MainLayout title={isEs ? "Inicio — MueveCancún" : "Home — MueveCancún"}>
   <div class="l-home">
-
-    <!-- Mapa de fondo (full screen) -->
-    <div class="l-home__map" role="presentation" aria-hidden="true">
+    <div class="l-home__map" role="presentation">
       <InteractiveMap />
     </div>
 
-    <!-- Overlay con controles -->
     <div class="l-home__overlay">
-
-      <!-- Header flotante -->
-      <header class="home-topbar">
-        <div class="home-topbar__brand">
-          <span class="home-topbar__dot" aria-hidden="true"></span>
-          <span class="home-topbar__name">MueveCancún</span>
-          <span class="home-topbar__version">v2</span>
+      <header class="c-home-header">
+        <div class="c-home-header__brand">
+          <div class="c-home-header__status-dot"></div>
+          <span class="c-home-header__name">MueveCancún</span>
         </div>
-        <div class="home-topbar__actions">
-          <button id="btn-gps-home" class="home-pill" aria-label={isEs ? "Centrar en mi ubicación" : "Center on my location"} title={isEs ? "Mi ubicación" : "My location"}>
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06z"/></svg>
-            <span class="home-pill__gps-dot" id="gps-status-dot" aria-hidden="true"></span>
+        <div class="c-home-header__actions">
+          <button id="btn-gps-home" class="c-home-header__pill" aria-label="Mi ubicación">
+            <Icon name="gps" class="u-icon-sm" />
+            <span class="c-home-header__gps-indicator"></span>
           </button>
-          <a href={"/" + lang + "/rutas"} class="home-pill" aria-label={isEs ? "Ver todas las rutas" : "View all routes"} title={isEs ? "Todas las rutas" : "All routes"}>
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/></svg>
-          </a>
-          <a href={"/" + lang + "/community"} class="home-pill home-pill--notify" aria-label={isEs ? "Comunidad — reportes" : "Community — reports"} title={isEs ? "Reportes en vivo" : "Live reports"}>
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-            <span class="home-pill__badge" id="live-reports-badge" hidden aria-hidden="true"></span>
+          <a href={"/" + lang + "/guess"} class="c-home-header__pill c-home-header__pill--accent" aria-label="Jugar">
+            <Icon name="swap" class="u-icon-sm" />
           </a>
         </div>
       </header>
 
-      <!-- Bottom sheet con calculadora -->
-      <div class="c-sheet" id="calculator-sheet" role="region" aria-label={isEs ? "Calculadora de rutas" : "Route calculator"}>
-        <button class="c-sheet__handle" id="sheet-handle" aria-controls="sheet-content" aria-expanded="false" aria-label={isEs ? "Expandir calculadora" : "Expand calculator"}>
-          <div class="c-sheet__bar" aria-hidden="true"></div>
-          <span class="c-sheet__hint" id="sheet-hint">
-            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-            {isEs ? "¿A dónde vas?" : "Where to?"}
-          </span>
-        </button>
-        <div class="c-sheet__body" id="sheet-content">
+      <div class="c-bottom-sheet" id="calculator-sheet">
+        <div class="c-bottom-sheet__handle" id="sheet-handle">
+          <div class="c-bottom-sheet__bar"></div>
+        </div>
+        <div class="c-bottom-sheet__content">
           <RouteCalculator />
         </div>
       </div>
-
     </div>
   </div>
 </MainLayout>
 
-<style>
-  /* Layout fullscreen */
+<style lang="scss">
   .l-home {
     position: relative;
     width: 100%;
     height: 100dvh;
     overflow: hidden;
+
+    &__map {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    &__overlay {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      pointer-events: none;
+      > * { pointer-events: auto; }
+    }
   }
 
-  .l-home__map {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-  }
-
-  .l-home__overlay {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    pointer-events: none;
-    > * { pointer-events: auto; }
-  }
-
-  /* Topbar flotante */
-  .home-topbar {
+  .c-home-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
-    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    padding: 1rem;
+    padding-top: calc(1rem + env(safe-area-inset-top));
+
+    &__brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background-color: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-full);
+      padding: 0.5rem 1rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    &__status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      box-shadow: 0 0 10px var(--color-primary);
+      animation: pulse 2s infinite;
+    }
+
+    &__name {
+      font-family: var(--font-display);
+      font-size: var(--fs-sm);
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    &__actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    &__pill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--r-full);
+      background-color: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-md);
+      color: var(--text-secondary);
+      transition: all var(--t-base) var(--ease-back);
+      position: relative;
+
+      &:hover { transform: scale(1.1); color: var(--color-primary); }
+      &--accent { color: var(--color-accent); border-color: oklch(70% 0.2 45 / 0.3); }
+    }
+
+    &__gps-indicator {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-success);
+      border: 2px solid white;
+    }
   }
 
-  .home-topbar__brand {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px) saturate(1.8);
-    -webkit-backdrop-filter: blur(20px) saturate(1.8);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--r-full);
-    padding: 0.5rem 1rem;
-    box-shadow: var(--shadow-md);
-  }
-
-  .home-topbar__dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--gradient-primary);
-    box-shadow: 0 0 10px var(--color-primary);
-    animation: pulse-map 2s infinite;
-    flex-shrink: 0;
-  }
-  @keyframes pulse-map {
-    0%,100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.3); opacity: 0.7; }
-  }
-
-  .home-topbar__name {
-    font-family: var(--font-display);
-    font-size: 0.85rem; font-weight: 800;
-    color: var(--text-primary); letter-spacing: -0.01em;
-  }
-
-  .home-topbar__version {
-    font-size: 0.6rem; font-weight: 900;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    background: var(--teal-xlight); color: var(--teal-dark);
-    padding: 0.1rem 0.35rem; border-radius: var(--r-full);
-  }
-  .dark .home-topbar__version { background: rgba(13,148,136,0.2); color: #5eead4; }
-
-  .home-topbar__actions { display: flex; gap: 0.5rem; }
-
-  .home-pill {
-    position: relative;
-    display: flex; align-items: center; justify-content: center;
-    width: 44px; height: 44px;
-    border-radius: var(--r-full);
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--shadow-md);
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: all var(--t-base) var(--ease-back);
-    cursor: pointer;
-  }
-  .home-pill:hover { transform: scale(1.1); color: var(--color-primary); border-color: var(--color-primary); }
-  .home-pill:active { transform: scale(0.92); }
-  .home-pill--notify { color: var(--color-accent); }
-
-  .home-pill__gps-dot {
-    position: absolute; top: 9px; right: 9px;
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--border-medium);
-    border: 1.5px solid white;
-    transition: background var(--t-fast) var(--ease);
-  }
-  .home-pill__gps-dot.active { background: #22c55e; }
-
-  .home-pill__badge {
-    position: absolute; top: 7px; right: 7px;
-    min-width: 16px; height: 16px; border-radius: var(--r-full);
-    background: #ef4444; color: white;
-    font-size: 0.55rem; font-weight: 900;
-    display: flex; align-items: center; justify-content: center;
-    border: 1.5px solid white; padding: 0 3px;
-  }
-  .home-pill__badge[hidden] { display: none; }
-
-  /* Bottom sheet */
-  .c-sheet {
+  .c-bottom-sheet {
     position: fixed;
-    bottom: calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
-    left: 0; right: 0;
-    background: var(--glass-bg);
-    backdrop-filter: blur(32px) saturate(2);
-    -webkit-backdrop-filter: blur(32px) saturate(2);
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(32px) saturate(1.8);
     border-top: 1px solid var(--glass-border);
     border-radius: var(--r-2xl) var(--r-2xl) 0 0;
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
-    max-height: 88px;
-    transition: max-height 0.4s cubic-bezier(0.16,1,0.3,1);
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.1);
+    max-height: 80px;
+    transition: max-height 0.4s var(--ease);
     overflow: hidden;
     will-change: max-height;
-  }
-  .c-sheet.is-expanded {
-    max-height: 82dvh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
 
-  .c-sheet__handle {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 0.375rem;
-    width: 100%; padding: 0.875rem 1rem 0.5rem;
-    background: none; border: none; cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .c-sheet__bar {
-    width: 36px; height: 4px;
-    background: var(--border-medium);
-    border-radius: var(--r-full); opacity: 0.5;
-    transition: opacity var(--t-fast);
-  }
-  .c-sheet__handle:hover .c-sheet__bar,
-  .c-sheet.is-expanded .c-sheet__bar { opacity: 0.8; }
-
-  .c-sheet__hint {
-    display: flex; align-items: center; gap: 0.375rem;
-    font-size: 0.82rem; font-weight: 800;
-    color: var(--text-secondary); letter-spacing: -0.01em;
-    transition: opacity var(--t-fast) var(--ease);
-  }
-  .c-sheet.is-expanded .c-sheet__hint { opacity: 0; pointer-events: none; }
-
-  .c-sheet__body { padding-bottom: 2rem; }
-
-  /* Desktop: sheet siempre expandido */
-  @media (min-width: 769px) {
-    .c-sheet {
-      bottom: 0;
-      left: 0; width: 380px;
-      top: var(--header-h, 56px);
-      border-radius: 0;
-      border-top: none;
-      border-right: 1px solid var(--glass-border);
-      max-height: none !important;
+    &.is-expanded {
+      max-height: 80dvh;
       overflow-y: auto;
     }
-    .l-home__map { left: 380px; }
-    .home-topbar { left: 380px; position: fixed; top: var(--header-h,56px); right: 0; background: none; }
+
+    &__handle {
+      display: flex;
+      justify-content: center;
+      padding: 1rem 0;
+      cursor: grab;
+    }
+
+    &__bar {
+      width: 40px;
+      height: 5px;
+      background-color: var(--border-medium);
+      border-radius: var(--r-full);
+      opacity: 0.5;
+    }
+
+    &__content {
+      padding-bottom: 2rem;
+    }
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
   }
 </style>
 
 <script>
-  const sheet  = document.getElementById("calculator-sheet");
+  const sheet = document.getElementById("calculator-sheet");
   const handle = document.getElementById("sheet-handle");
-  const mapEl  = document.querySelector(".l-home__map");
-  const gpsDot = document.getElementById("gps-status-dot");
-  const reportsBadge = document.getElementById("live-reports-badge");
 
-  function openSheet()  { sheet?.classList.add("is-expanded");    handle?.setAttribute("aria-expanded","true"); }
-  function closeSheet() { sheet?.classList.remove("is-expanded"); handle?.setAttribute("aria-expanded","false"); }
-  function toggleSheet(){ sheet?.classList.contains("is-expanded") ? closeSheet() : openSheet(); }
+  function toggleSheet() {
+    sheet?.classList.toggle("is-expanded");
+  }
 
   handle?.addEventListener("click", toggleSheet);
+  sheet?.addEventListener("focusin", () => sheet.classList.add("is-expanded"));
 
-  // Cerrar al tocar el mapa
-  mapEl?.addEventListener("click", closeSheet);
-
-  // Abrir al hacer foco en inputs del calculator
-  sheet?.addEventListener("focusin", openSheet);
-
-  // Desktop: siempre expandido
-  if (window.innerWidth >= 769) openSheet();
-
-  // GPS
-  const gpsBtn = document.getElementById("btn-gps-home");
-  gpsBtn?.addEventListener("click", () => {
-    if (!navigator.geolocation) return;
-    gpsDot?.classList.remove("active");
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        gpsDot?.classList.add("active");
-        window.dispatchEvent(new CustomEvent("MAP_CENTER_GPS", {
-          detail: { lat: pos.coords.latitude, lng: pos.coords.longitude }
-        }));
-        window.dispatchEvent(new CustomEvent("MAP_SET_STOP", {
-          detail: { type: "origin", name: "Mi ubicación" }
-        }));
-        openSheet();
-      },
-      () => { gpsDot?.classList.remove("active"); }
-    );
+  document.querySelector(".l-home__map")?.addEventListener("click", () => {
+    sheet?.classList.remove("is-expanded");
   });
 
-  // Badge de reportes en vivo (fetch ligero)
-  async function loadReportsBadge() {
-    try {
-      const r = await fetch("/api/reports");
-      if (r.ok) {
-        const data = await r.json();
-        const count = Array.isArray(data) ? data.filter((rep: any) => {
-          const d = new Date(rep.created_at || rep.fecha || 0);
-          return (Date.now() - d.getTime()) < 3600000; // última hora
-        }).length : 0;
-        if (count > 0 && reportsBadge) {
-          reportsBadge.textContent = String(count > 9 ? "9+" : count);
-          reportsBadge.hidden = false;
-        }
-      }
-    } catch {}
+  if (window.innerWidth >= 769) {
+    sheet?.classList.add("is-expanded");
   }
-  loadReportsBadge();
 
-  // Escuchar cuando llega resultado de ruta → abrir sheet
-  window.addEventListener("ROUTE_CALCULATED", openSheet);
-  document.addEventListener("astro:page-load", () => {
-    if (window.innerWidth >= 769) openSheet();
+  const gpsBtn = document.getElementById("btn-gps-home");
+  gpsBtn?.addEventListener("click", () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        window.dispatchEvent(new CustomEvent("MAP_SET_STOP", {
+           detail: { type: 'origin', name: 'Mi ubicación actual' }
+        }));
+      });
+    }
   });
 </script>
