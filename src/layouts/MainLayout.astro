@@ -170,14 +170,6 @@ const lang = getLangFromUrl(Astro.url);
       import { enforceGuards } from "../utils/auth";
       import { getWalletBalance } from "../utils/db";
 
-      async function sync() {
-          try {
-            const b = await getWalletBalance();
-            if (b) {
-                const el = document.getElementById("header-balance");
-                if (el) el.textContent = `$${b.amount.toFixed(2)}`;
-            }
-          } catch (e) {}
       async function syncBalance() {
         try {
           const b = await getWalletBalance();
@@ -190,13 +182,11 @@ const lang = getLangFromUrl(Astro.url);
         syncBalance();
         enforceGuards();
 
-        // Theme toggle
         document.getElementById("theme-toggle")?.addEventListener("click", () => {
           const isDark = document.documentElement.classList.toggle("dark");
           localStorage.setItem("theme", isDark ? "dark" : "light");
         });
 
-        // Balance pill click → wallet
         document.getElementById("balance-pill")?.addEventListener("click", () => {
           const lang = document.documentElement.lang || "es";
           window.location.href = `/${lang}/wallet`;
