@@ -2,6 +2,18 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
+/**
+ * GET: Obtener lista de reportes recientes
+ * Actualmente devuelve un array vacío para evitar errores 404 en el cliente.
+ * TODO: Integrar con Supabase o GitHub para mostrar reportes reales.
+ */
+export const GET: APIRoute = async () => {
+  return new Response(JSON.stringify([]), {
+    status: 200,
+    headers: { "Content-Type": "application/json" }
+  });
+};
+
 export const POST: APIRoute = async ({ request }) => {
   const token = import.meta.env.GITHUB_ISSUES_TOKEN;
   const owner = import.meta.env.GITHUB_REPO_OWNER || "JULIANJUAREZMX01";
@@ -17,38 +29,34 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const body = await request.json();
-    const { issue_type, description, route_id, location, wasm_version = "v1.0.0-stable" } = body;
 
-    // Título estandarizado para facilitar el filtrado visual
-    const title = `[REPORTE] ${issue_type.toUpperCase()}${route_id ? ` — ${route_id}` : ""}`;
+    // Armonización de campos (soporta formato ReportWidget y Community)
+    const issue_type = body.issue_type || body.type || "error";
+    const description = body.description || body.message || "Sin descripción";
+    const route_id = body.route_id || body.route || "Global";
+    const location = body.location || "No proporcionada";
+    const wasm_version = body.wasm_version || "v1.0.0-stable";
 
-    /**
-     * ESTRATEGIA DE ETIQUETADO SEMÁNTICO
-     * Estas etiquetas permiten que el workflow de branching organice los directorios y ramas:
-     * - type: Define el prefijo de la rama (fix/, optimize/, feat/)
-     * - area: Define el directorio afectado para Jules
-     */
+    // Título estandarizado
+    const title = `[REPORTE] ${issue_type.toUpperCase()}${route_id !== 'Global' ? ` — ${route_id}` : ""}`;
+
     const labels = [
       "reporte",
-      `type:${issue_type === 'error' ? 'fix' : issue_type === 'mejora' ? 'optimize' : 'feat'}`,
-      `area:${route_id ? 'data' : 'ui'}`,
+      `type:${issue_type === 'error' || issue_type === 'Tráfico' ? 'fix' : issue_type === 'mejora' || issue_type === 'Demora' ? 'optimize' : 'feat'}`,
+      `area:${route_id !== 'Global' ? 'data' : 'ui'}`,
       "status:pending-analysis"
     ];
 
-    /**
-     * CONSTRUCCIÓN DEL CUERPO (PROMPT PARA JULES)
-     * Incluimos metadatos técnicos y el comentario de invocación forzada.
-     */
     const issueBody = `
-### 📝 Descripción del Usuario
+### 📝 Descripción
 ${description}
 
 ---
-### 🛠 Metadatos de Ingeniería (Nexus Engine)
-- **ID de Ruta:** \`${route_id || "Global"}\`
-- **Ubicación:** \`${location || "No proporcionada"}\`
+### 🛠 Metadatos Técnicos
+- **ID de Ruta:** \`${route_id}\`
+- **Ubicación:** \`${location}\`
 - **WASM Version:** \`${wasm_version}\`
-- **Reported via:** \`PWA-Client-Reports\`
+- **Reported via:** \`Nexus-Client\`
 - **Timestamp:** \`${new Date().toISOString()}\`
 
 ---
@@ -56,8 +64,8 @@ ${description}
 hey, engineer, please analize, verify, fix & optimize resolving this issue, comment & all about it, right now @jules
 `.trim();
 
-    // Creación del Issue
-    const res = await fetch(`https://github.com{owner}/${repo}/issues`, {
+    // Fix URL: api.github.com/repos/...
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -74,8 +82,8 @@ hey, engineer, please analize, verify, fix & optimize resolving this issue, comm
     });
 
     if (!res.ok) {
-      const errorData = await res.json();
-      console.error("[API/Reports] GitHub Error:", errorData);
+      const errorData = await res.json().catch(() => ({}));
+      console.error("[API/Reports] GitHub Error:", res.status, errorData);
       return new Response(JSON.stringify({ error: "Failed to create GitHub issue" }), {
         status: res.status,
         headers: { "Content-Type": "application/json" }
@@ -83,13 +91,7 @@ hey, engineer, please analize, verify, fix & optimize resolving this issue, comm
     }
 
     const issue = await res.json();
-
-    /**
-     * BENEFICIO DEL WORKFLOW:
-     * Al incluir "@jules" en el cuerpo inicial, el evento de creación del issue
-     * disparará automáticamente el handler sin necesidad de comentarios extras.
-     */
-    console.log(`[API/Reports] Issue #${issue.number} delegated to @jules via body-injection.`);
+    console.log(`[API/Reports] Issue #${issue.number} created and delegated to @jules.`);
 
     return new Response(JSON.stringify({ 
       success: true, 

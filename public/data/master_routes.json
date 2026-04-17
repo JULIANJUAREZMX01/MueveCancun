@@ -1,13 +1,9 @@
 {
   "metadata": {
-    "last_updated": "2026-02-17T07:09:33.432854",
-    "source": "merge-routes.ts (78 routes from 43 files)",
-    "version": "3.2.0",
-    "last_merged": "2026-04-03T14:13:00.283Z",
     "last_updated": "2026-04-15T08:33:33.284Z",
     "source": "merge-routes.ts (78 routes from 41 files)",
     "version": "3.8.0",
-    "last_merged": "2026-04-16T04:19:27.718Z",
+    "last_merged": "2026-04-17T01:19:00.977Z",
     "colors_added": "2026-04-16T19:12:00.000Z",
     "color_strategy": "color_id_map_v2 — 21 paleta caribeña"
   },
@@ -256,8 +252,8 @@
         }
       ],
       "route_id": "PLAYA_EXPRESS",
-      "color_id": "PLAYA_EXPRESS",
-      "color": "#FF8C42"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "R28_VILLAS_OTOCH_001",
@@ -297,8 +293,8 @@
         }
       ],
       "route_id": "R28",
-      "color_id": "R28",
-      "color": "#BB8FCE"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "R19_VILLAS_OTOCH_002",
@@ -457,8 +453,8 @@
         }
       ],
       "route_id": "R10",
-      "color_id": "R10",
-      "color": "#F7DC6F"
+      "color_id": "R1",
+      "color": "#FF6B6B"
     },
     {
       "id": "ruta_1753801260218",
@@ -5972,8 +5968,8 @@
         }
       ],
       "route_id": "R27",
-      "color_id": "R27",
-      "color": "#F0B27A"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "R237_RANCHO_001",
@@ -6367,8 +6363,8 @@
         }
       ],
       "route_id": "R31",
-      "color_id": "R31",
-      "color": "#A3E4D7"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1753802299281_0",
@@ -7228,8 +7224,8 @@
         }
       ],
       "route_id": "R29",
-      "color_id": "R29",
-      "color": "#73C6B6"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1759506708808",
@@ -7653,8 +7649,8 @@
         }
       ],
       "route_id": "R30",
-      "color_id": "R30",
-      "color": "#F9E79F"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1761456676914",
@@ -8418,8 +8414,8 @@
         }
       ],
       "route_id": "R19",
-      "color_id": "R19",
-      "color": "#85C1E9"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1759866849505",
@@ -9160,8 +9156,8 @@
         }
       ],
       "route_id": "R18",
-      "color_id": "R18",
-      "color": "#F1948A"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1759952771720",
@@ -9878,8 +9874,8 @@
         }
       ],
       "route_id": "R28",
-      "color_id": "R28",
-      "color": "#BB8FCE"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1760328606309",
@@ -10315,8 +10311,8 @@
         }
       ],
       "route_id": "R17",
-      "color_id": "R17",
-      "color": "#AED6F1"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1760338237012",
@@ -11698,8 +11694,8 @@
         }
       ],
       "route_id": "R13",
-      "color_id": "R13",
-      "color": "#82E0AA"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1760462813165",
@@ -13128,8 +13124,8 @@
         }
       ],
       "route_id": "R2",
-      "color_id": "R2",
-      "color": "#4ECDC4"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1653475759991",
@@ -13733,8 +13729,8 @@
         }
       ],
       "route_id": "R2",
-      "color_id": "R2",
-      "color": "#4ECDC4"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1760333218631",
@@ -14368,8 +14364,8 @@
         }
       ],
       "route_id": "R2",
-      "color_id": "R2",
-      "color": "#4ECDC4"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1760989478537",
@@ -14631,8 +14627,8 @@
         }
       ],
       "route_id": "R21",
-      "color_id": "R21",
-      "color": "#A9DFBF"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1761460735535",
@@ -14858,8 +14854,8 @@
         }
       ],
       "route_id": "R5",
-      "color_id": "R5",
-      "color": "#FFEAA7"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1761276380950",
@@ -15445,8 +15441,8 @@
         }
       ],
       "route_id": "R2",
-      "color_id": "R2",
-      "color": "#4ECDC4"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1761277331648",
@@ -16068,8 +16064,8 @@
         }
       ],
       "route_id": "R2",
-      "color_id": "R2",
-      "color": "#4ECDC4"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1761277780965",
@@ -16559,8 +16555,8 @@
         }
       ],
       "route_id": "R1",
-      "color_id": "R1",
-      "color": "#FF6B6B"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     }
   ],
   "airport_restrictions": {
