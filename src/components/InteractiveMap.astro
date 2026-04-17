@@ -80,7 +80,17 @@
     const allCoords: [number, number][] = [];
 
     journey.legs.forEach((leg: any) => {
-      const color = leg.transport_type === "Bus_HotelZone" ? "#F97316" : "#0EA5E9";
+      // Usar color de la ruta si viene del motor WASM, fallback por transport_type
+      const typeColorMap: Record<string,string> = {
+        "Bus_HotelZone":  "#F97316",
+        "Bus_Urbano_Isla":"#4ECDC4",
+        "Bus_Urban":      "#0EA5E9",
+        "Combi_Municipal":"#96CEB4",
+        "ADO":            "#FF6B6B",
+        "Van":            "#DDA0DD",
+        "DEFAULT":        "#64748B",
+      };
+      const color = leg.color || leg.route_color || typeColorMap[leg.transport_type] || "#0EA5E9";
       const stops = leg.paradas || leg.stops || [];
       const legCoords = stops
         .map((s: any) => {
@@ -145,6 +155,40 @@
     }).addTo(map);
 
     layerGroup = L.layerGroup().addTo(map);
+
+    // ── Cargar leyenda de rutas con colores ──────────────────────────────────
+    try {
+      const routesResp = await fetch("/api/master_routes.json");
+      if (routesResp.ok) {
+        const routesData = await routesResp.json();
+        const routesList = routesData.rutas || routesData.routes || [];
+        const legendContent = document.getElementById("legend-content");
+        if (legendContent && Array.isArray(routesList)) {
+          // Deduplicar por nombre visual (R1, R2, etc.)
+          const seen = new Set<string>();
+          legendContent.innerHTML = "";
+          routesList
+            .filter((r: any) => {
+              const key = r.id || r.nombre;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return r.color;
+            })
+            .slice(0, 40)
+            .forEach((r: any) => {
+              const item = document.createElement("div");
+              item.style.cssText = "display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:8px;cursor:pointer;transition:background 0.15s";
+              item.onmouseenter = () => item.style.background = "rgba(0,0,0,0.04)";
+              item.onmouseleave = () => item.style.background = "transparent";
+              item.innerHTML = `<span style="width:12px;height:12px;border-radius:3px;background:${r.color};flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.2)"></span><span style="font-size:11px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(r.nombre || r.name || r.id)}</span>`;
+              item.addEventListener("click", () => {
+                document.getElementById("route-legend")?.classList.add("hidden");
+              });
+              legendContent.appendChild(item);
+            });
+        }
+      }
+    } catch {}
 
     // ── Cargar paradas en el mapa ──────────────────────────────────────────
     const allStops = coordsDB instanceof Map

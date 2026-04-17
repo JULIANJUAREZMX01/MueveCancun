@@ -4,7 +4,8 @@
     "source": "merge-routes.ts (78 routes from 41 files)",
     "version": "3.8.0",
     "last_merged": "2026-04-16T04:19:27.718Z",
-    "colors_added": "2026-04-15T08:33:33.285Z"
+    "colors_added": "2026-04-16T19:12:00.000Z",
+    "color_strategy": "color_id_map_v2 — 21 paleta caribeña"
   },
   "social_alerts": [
     "Retraso en Zona Hotelera por obra pública"
@@ -67,7 +68,8 @@
         }
       ],
       "route_id": "R2",
-      "color_id": "R2"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "CR_PTO_JUAREZ_001",
@@ -122,7 +124,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "R1_ZONA_HOTELERA_001",
@@ -182,7 +185,8 @@
         }
       ],
       "route_id": "R1",
-      "color_id": "R1"
+      "color_id": "R1",
+      "color": "#FF6B6B"
     },
     {
       "id": "VAN_PLAYA_EXPRESS_001",
@@ -248,7 +252,8 @@
         }
       ],
       "route_id": "PLAYA_EXPRESS",
-      "color_id": "PLAYA_EXPRESS"
+      "color_id": "PLAYA_EXPRESS",
+      "color": "#FF8C42"
     },
     {
       "id": "R28_VILLAS_OTOCH_001",
@@ -288,7 +293,8 @@
         }
       ],
       "route_id": "R28",
-      "color_id": "R28"
+      "color_id": "R28",
+      "color": "#BB8FCE"
     },
     {
       "id": "R19_VILLAS_OTOCH_002",
@@ -323,7 +329,8 @@
         }
       ],
       "route_id": "R1",
-      "color_id": "R1"
+      "color_id": "R1",
+      "color": "#FF6B6B"
     },
     {
       "id": "ADO_AEROPUERTO_001",
@@ -363,7 +370,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "R10",
@@ -445,7 +453,8 @@
         }
       ],
       "route_id": "R10",
-      "color_id": "R10"
+      "color_id": "R10",
+      "color": "#F7DC6F"
     },
     {
       "id": "ruta_1753801260218",
@@ -553,7 +562,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R31",
-      "color_id": "R31"
+      "color_id": "R31",
+      "color": "#A3E4D7"
     },
     {
       "id": "ruta_1753802299281",
@@ -679,7 +689,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "ruta_1759506708808",
@@ -859,7 +870,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R30",
-      "color_id": "R30"
+      "color_id": "R30",
+      "color": "#F9E79F"
     },
     {
       "id": "ruta_1761456676914",
@@ -1039,7 +1051,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "ruta_1761458818964",
@@ -1187,7 +1200,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "ruta_1754576044305",
@@ -1311,7 +1325,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "ruta_1756850089371",
@@ -1435,7 +1450,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R29",
-      "color_id": "R29"
+      "color_id": "R29",
+      "color": "#73C6B6"
     },
     {
       "id": "ruta_1759866849505",
@@ -1607,7 +1623,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "ruta_1758230498578",
@@ -1707,7 +1724,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R19",
-      "color_id": "R19"
+      "color_id": "R19",
+      "color": "#85C1E9"
     },
     {
       "id": "ruta_1759866137331",
@@ -1839,7 +1857,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R18",
-      "color_id": "R18"
+      "color_id": "R18",
+      "color": "#F1948A"
     },
     {
       "id": "ruta_1760327653692",
@@ -2003,7 +2022,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R28",
-      "color_id": "R28"
+      "color_id": "R28",
+      "color": "#BB8FCE"
     },
     {
       "id": "ruta_1759952771720",
@@ -2151,7 +2171,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "ruta_1760338237012",
@@ -2339,7 +2360,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "ruta_1760340184559",
@@ -2511,7 +2533,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "ruta_1761273705821",
@@ -2667,7 +2690,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "ruta_1760328606309",
@@ -2847,7 +2871,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R17",
-      "color_id": "R17"
+      "color_id": "R17",
+      "color": "#AED6F1"
     },
     {
       "id": "ruta_1760414609200",
@@ -3011,7 +3036,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R13",
-      "color_id": "R13"
+      "color_id": "R13",
+      "color": "#82E0AA"
     },
     {
       "id": "ruta_1760462813166",
@@ -3135,7 +3161,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "ruta_1760462813165",
@@ -3259,7 +3286,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "ruta_1761460735535",
@@ -3359,7 +3387,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R5",
-      "color_id": "R5"
+      "color_id": "R5",
+      "color": "#FFEAA7"
     },
     {
       "id": "ruta_1760989478537",
@@ -3483,7 +3512,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R21",
-      "color_id": "R21"
+      "color_id": "R21",
+      "color": "#A9DFBF"
     },
     {
       "id": "ruta_1464274794329",
@@ -3799,7 +3829,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R2",
-      "color_id": "R2"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "ruta_1653475759991",
@@ -4123,7 +4154,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R2",
-      "color_id": "R2"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "ruta_1760333218631",
@@ -4471,7 +4503,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R2",
-      "color_id": "R2"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "ruta_1761276380950",
@@ -4803,7 +4836,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R2",
-      "color_id": "R2"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "ruta_1761277331648",
@@ -5167,7 +5201,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R2",
-      "color_id": "R2"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "ruta_1761277780965",
@@ -5451,7 +5486,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R1",
-      "color_id": "R1"
+      "color_id": "R1",
+      "color": "#FF6B6B"
     },
     {
       "id": "R1",
@@ -5582,7 +5618,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R1",
-      "color_id": "R1"
+      "color_id": "R1",
+      "color": "#FF6B6B"
     },
     {
       "id": "R6_WALMART_001",
@@ -5631,7 +5668,8 @@
         }
       ],
       "route_id": "R6",
-      "color_id": "R6"
+      "color_id": "R6",
+      "color": "#DDA0DD"
     },
     {
       "id": "R29_OUTLET_001",
@@ -5683,7 +5721,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R29",
-      "color_id": "R29"
+      "color_id": "R29",
+      "color": "#73C6B6"
     },
     {
       "id": "R17_LAKIN_001",
@@ -5729,7 +5768,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R1",
-      "color_id": "R1"
+      "color_id": "R1",
+      "color": "#FF6B6B"
     },
     {
       "id": "R21_AMERICAS_001",
@@ -5775,7 +5815,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R21",
-      "color_id": "R21"
+      "color_id": "R21",
+      "color": "#A9DFBF"
     },
     {
       "id": "R44_CENTRO_001",
@@ -5827,7 +5868,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R4",
-      "color_id": "R4"
+      "color_id": "R4",
+      "color": "#96CEB4"
     },
     {
       "id": "R5_HEROES_001",
@@ -5873,7 +5915,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R5",
-      "color_id": "R5"
+      "color_id": "R5",
+      "color": "#FFEAA7"
     },
     {
       "id": "R27_TIERRA_MAYA_001",
@@ -5925,7 +5968,8 @@
         }
       ],
       "route_id": "R27",
-      "color_id": "R27"
+      "color_id": "R27",
+      "color": "#F0B27A"
     },
     {
       "id": "R237_RANCHO_001",
@@ -5971,7 +6015,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R23",
-      "color_id": "R23"
+      "color_id": "R23",
+      "color": "#FAD7A0"
     },
     {
       "id": "R71_RESIDENCIAL_001",
@@ -6017,7 +6062,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R7",
-      "color_id": "R7"
+      "color_id": "R7",
+      "color": "#98D8C8"
     },
     {
       "id": "R31_UNIVERSIDAD_001",
@@ -6063,7 +6109,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R3",
-      "color_id": "R3"
+      "color_id": "R3",
+      "color": "#45B7D1"
     },
     {
       "id": "R30_REG103_001",
@@ -6109,7 +6156,8 @@
       ],
       "tipo_transporte": "Bus_Urbano",
       "route_id": "R3",
-      "color_id": "R3"
+      "color_id": "R3",
+      "color": "#45B7D1"
     },
     {
       "id": "R33_REG102_001",
@@ -6149,7 +6197,8 @@
         }
       ],
       "route_id": "R3",
-      "color_id": "R3"
+      "color_id": "R3",
+      "color": "#45B7D1"
     },
     {
       "id": "R15_HOTELES_001",
@@ -6195,7 +6244,8 @@
         }
       ],
       "route_id": "R1",
-      "color_id": "R1"
+      "color_id": "R1",
+      "color": "#FF6B6B"
     },
     {
       "id": "POLYLINE_1753801260218_0",
@@ -6313,7 +6363,8 @@
         }
       ],
       "route_id": "R31",
-      "color_id": "R31"
+      "color_id": "R31",
+      "color": "#A3E4D7"
     },
     {
       "id": "POLYLINE_1753802299281_0",
@@ -6611,7 +6662,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1754576044305",
@@ -6963,7 +7015,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1756850089371",
@@ -7171,7 +7224,8 @@
         }
       ],
       "route_id": "R29",
-      "color_id": "R29"
+      "color_id": "R29",
+      "color": "#73C6B6"
     },
     {
       "id": "POLYLINE_1759506708808",
@@ -7595,7 +7649,8 @@
         }
       ],
       "route_id": "R30",
-      "color_id": "R30"
+      "color_id": "R30",
+      "color": "#F9E79F"
     },
     {
       "id": "POLYLINE_1761456676914",
@@ -7869,7 +7924,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1761458818964",
@@ -8209,7 +8265,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1758230498578",
@@ -8357,7 +8414,8 @@
         }
       ],
       "route_id": "R19",
-      "color_id": "R19"
+      "color_id": "R19",
+      "color": "#85C1E9"
     },
     {
       "id": "POLYLINE_1759866849505",
@@ -8709,7 +8767,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1759866137331",
@@ -9097,7 +9156,8 @@
         }
       ],
       "route_id": "R18",
-      "color_id": "R18"
+      "color_id": "R18",
+      "color": "#F1948A"
     },
     {
       "id": "POLYLINE_1759952771720",
@@ -9401,7 +9461,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1760327653692",
@@ -9813,7 +9874,8 @@
         }
       ],
       "route_id": "R28",
-      "color_id": "R28"
+      "color_id": "R28",
+      "color": "#BB8FCE"
     },
     {
       "id": "POLYLINE_1760328606309",
@@ -10249,7 +10311,8 @@
         }
       ],
       "route_id": "R17",
-      "color_id": "R17"
+      "color_id": "R17",
+      "color": "#AED6F1"
     },
     {
       "id": "POLYLINE_1760338237012",
@@ -10751,7 +10814,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1760340184559",
@@ -11229,7 +11293,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1760414609200",
@@ -11629,7 +11694,8 @@
         }
       ],
       "route_id": "R13",
-      "color_id": "R13"
+      "color_id": "R13",
+      "color": "#82E0AA"
     },
     {
       "id": "POLYLINE_1760462813165",
@@ -11849,7 +11915,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1760462813166",
@@ -12081,7 +12148,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1761273705821",
@@ -12481,7 +12549,8 @@
         }
       ],
       "route_id": "DEFAULT",
-      "color_id": "DEFAULT"
+      "color_id": "DEFAULT",
+      "color": "#94A3B8"
     },
     {
       "id": "POLYLINE_1464274794329",
@@ -13055,7 +13124,8 @@
         }
       ],
       "route_id": "R2",
-      "color_id": "R2"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "POLYLINE_1653475759991",
@@ -13659,7 +13729,8 @@
         }
       ],
       "route_id": "R2",
-      "color_id": "R2"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "POLYLINE_1760333218631",
@@ -14293,7 +14364,8 @@
         }
       ],
       "route_id": "R2",
-      "color_id": "R2"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "POLYLINE_1760989478537",
@@ -14555,7 +14627,8 @@
         }
       ],
       "route_id": "R21",
-      "color_id": "R21"
+      "color_id": "R21",
+      "color": "#A9DFBF"
     },
     {
       "id": "POLYLINE_1761460735535",
@@ -14781,7 +14854,8 @@
         }
       ],
       "route_id": "R5",
-      "color_id": "R5"
+      "color_id": "R5",
+      "color": "#FFEAA7"
     },
     {
       "id": "POLYLINE_1761276380950",
@@ -15367,7 +15441,8 @@
         }
       ],
       "route_id": "R2",
-      "color_id": "R2"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "POLYLINE_1761277331648",
@@ -15989,7 +16064,8 @@
         }
       ],
       "route_id": "R2",
-      "color_id": "R2"
+      "color_id": "R2",
+      "color": "#4ECDC4"
     },
     {
       "id": "POLYLINE_1761277780965",
@@ -16479,7 +16555,8 @@
         }
       ],
       "route_id": "R1",
-      "color_id": "R1"
+      "color_id": "R1",
+      "color": "#FF6B6B"
     }
   ],
   "airport_restrictions": {
