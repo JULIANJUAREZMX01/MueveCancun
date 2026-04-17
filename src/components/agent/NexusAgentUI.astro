@@ -429,7 +429,7 @@
       addMsg(reply.choices[0].message.content || '...', false);
     } catch(err) {
       typing.remove();
-      addMsg('Lo siento, ocurrió un error. Intenta de nuevo.', false);
+      console.error('[Nexus Error]', err); addMsg('❌ Lo siento, ocurrió un error al procesar tu mensaje. Intenta de nuevo.', false);
     }
     setStatus('idle');
   }
@@ -457,7 +457,7 @@
       });
     } catch(err) {
       console.error('[Nexus]', err);
-      progressText.textContent = '❌ Error al cargar el modelo local.';
+      console.error('[Nexus Init Error]', err); progressText.textContent = '❌ Error al cargar el modelo local. Usando modo básico.';
       setStatus('error');
       isInit = false;
       // Fallback: respuestas regla-based
