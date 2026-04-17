@@ -7,90 +7,100 @@ import Toast from '../components/ui/Toast.astro';
 import PwaReload from '../components/ui/PwaReload.astro';
 import BrowserDetection from '../components/ui/BrowserDetection.astro';
 import DonateNudge from '../components/ui/DonateNudge.astro';
+import AppLoader from '../components/AppLoader.astro';
 import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import NexusAgentUI from '../components/agent/NexusAgentUI.astro';
 import { ClientRouter } from 'astro:transitions';
+import NexusAgentUI from '../components/agent/NexusAgentUI.astro';
 
 interface Props {
   title?: string;
+  description?: string;
   hideNav?: boolean;
 }
 
-const { title = "CancúnMueve", hideNav = false } = Astro.props;
+const { title = "MueveCancún", description = "Transporte público de Cancún — offline, rápido, ciudadano.", hideNav = false } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 ---
 <!DOCTYPE html>
-<html lang={lang}>
+<html lang={lang} class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0d9488" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>{title}</title>
     <link rel="stylesheet" href="/src/styles/main.scss" />
+    <link rel="manifest" href="/manifest.json" />
     <ClientRouter />
     <script is:inline>
-      const theme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-      document.documentElement.classList.toggle("dark", theme === "dark");
+      const t = localStorage.getItem("theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.classList.toggle("dark", t === "dark");
     </script>
   </head>
   <body class="l-body">
     {!hideNav && (
-      <header class="c-header">
-        <a href={getRelativeLocaleUrl(lang, "home")} class="c-header__logo"><BrandAnimation /></a>
+      <header class="c-header" role="banner">
+        <a href={getRelativeLocaleUrl(lang, "home")} class="c-header__logo" aria-label="MueveCancún — Inicio">
+          <BrandAnimation />
+        </a>
         <div class="c-header__actions">
-           <span id="header-balance" class="c-header__balance">...</span>
-           <button id="theme-toggle" class="c-header__theme-btn">🌓</button>
+          <div class="c-header__balance-pill" id="balance-pill" aria-label="Saldo disponible">
+            <svg class="w-3 h-3 opacity-60" viewBox="0 0 24 24" fill="currentColor"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+            <span id="header-balance">...</span>
+          </div>
+          <button id="theme-toggle" class="c-header__icon-btn" aria-label="Cambiar tema" title="Cambiar tema">
+            <span class="theme-icon-light">☀️</span>
+            <span class="theme-icon-dark">🌙</span>
+          </button>
         </div>
       </header>
     )}
 
     {!hideNav && <Sidebar />}
 
-    <main class:list={["l-main", !hideNav && "l-main--with-nav"]}>
+    <main class:list={["l-main", !hideNav && "l-main--with-nav"]} id="main-content">
       <slot />
     </main>
 
     {!hideNav && <div class="u-mobile-only"><BottomNav /></div>}
 
     <Toast /><PwaReload /><BrowserDetection /><DonateNudge /><ReportWidget /><NexusAgentUI />
+    <Toast />
+    <PwaReload />
+    <BrowserDetection />
+    <DonateNudge />
+    <ReportWidget />
+    <NexusAgentUI />
 
-    <style lang="scss">
+    <style>
       .l-body {
         margin: 0;
-        min-height: 100vh;
+        min-height: 100dvh;
         background-color: var(--surface-bg);
         color: var(--text-primary);
-        transition: background-color var(--t-base) var(--ease);
+        transition: background-color var(--t-base) var(--ease), color var(--t-base) var(--ease);
+        -webkit-font-smoothing: antialiased;
       }
 
-      .l-main {
-        width: 100%;
-        min-height: 100vh;
-
-        &--with-nav {
-          padding-top: var(--header-h);
-          @media (min-width: 769px) {
-            margin-left: var(--sidebar-w);
-            width: calc(100% - var(--sidebar-w));
-          }
-        }
-      }
-
+      /* ── Header ── */
       .c-header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: var(--header-h);
-        background-color: var(--glass-bg);
-        backdrop-filter: blur(20px);
-        border-bottom: 1px solid var(--border-light);
+        position: fixed; top: 0; left: 0; right: 0;
+        height: var(--header-h, 56px);
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px) saturate(1.8);
+        -webkit-backdrop-filter: blur(20px) saturate(1.8);
+        border-bottom: 1px solid var(--glass-border);
         z-index: 50;
-        padding: 0 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        padding: 0 1rem;
+        display: flex; align-items: center; justify-content: space-between;
         transition: all var(--t-base) var(--ease);
+        padding-top: env(safe-area-inset-top, 0);
+      }
+      @media (min-width: 769px) { .c-header { left: var(--sidebar-w, 80px); } }
 
         @media (min-width: 769px) {
           left: var(--sidebar-w);
@@ -112,11 +122,67 @@ const lang = getLangFromUrl(Astro.url);
         &__theme-btn {
           padding: 0.5rem; background-color: var(--surface-elevated); border-radius: var(--r-sm); border: 1px solid var(--border-light); cursor: pointer; transition: all var(--t-fast) var(--ease);
           &:hover { transform: scale(1.1); }
+      .c-header__logo {
+        display: flex; align-items: center; gap: 0.5rem;
+        text-decoration: none; border-radius: var(--r-md);
+        padding: 0.25rem;
+        transition: opacity var(--t-fast) var(--ease);
+      }
+      .c-header__logo:hover { opacity: 0.8; }
+
+      .c-header__actions { display: flex; align-items: center; gap: 0.5rem; }
+
+      .c-header__balance-pill {
+        display: flex; align-items: center; gap: 0.375rem;
+        padding: 0.3rem 0.75rem;
+        background: var(--surface-elevated);
+        border: 1px solid var(--border-light);
+        border-radius: var(--r-full);
+        font-size: 0.72rem; font-weight: 900;
+        font-family: var(--font-mono);
+        color: var(--text-secondary);
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        transition: all var(--t-fast) var(--ease);
+      }
+      .c-header__balance-pill:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+      .c-header__icon-btn {
+        width: 36px; height: 36px;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--surface-elevated);
+        border: 1px solid var(--border-light);
+        border-radius: var(--r-md);
+        cursor: pointer; font-size: 1rem;
+        transition: all var(--t-fast) var(--ease);
+        line-height: 1;
+      }
+      .c-header__icon-btn:hover { transform: scale(1.1); background: var(--surface-card); }
+
+      /* Theme icon visibility */
+      html:not(.dark) .theme-icon-dark { display: none; }
+      html.dark .theme-icon-light { display: none; }
+
+      /* ── Layout ── */
+      .l-main {
+        width: 100%; min-height: 100dvh;
+      }
+      .l-main--with-nav {
+        padding-top: var(--header-h, 56px);
+      }
+      @media (min-width: 769px) {
+        .l-main--with-nav {
+          margin-left: var(--sidebar-w, 80px);
+          width: calc(100% - var(--sidebar-w, 80px));
         }
       }
 
       .u-mobile-only {
         @media (min-width: 769px) { display: none; }
+        display: block;
+      }
+      @media (min-width: 769px) {
+        .u-mobile-only { display: none; }
       }
     </style>
 
@@ -132,20 +198,34 @@ const lang = getLangFromUrl(Astro.url);
                 if (el) el.textContent = `$${b.amount.toFixed(2)}`;
             }
           } catch (e) {}
+      async function syncBalance() {
+        try {
+          const b = await getWalletBalance();
+          const el = document.getElementById("header-balance");
+          if (el) el.textContent = `$${b.amount.toFixed(2)}`;
+        } catch {}
       }
 
-      function setup() {
-          sync();
-          enforceGuards();
-          document.getElementById("theme-toggle")?.addEventListener("click", () => {
-              const isDark = document.documentElement.classList.toggle("dark");
-              localStorage.setItem("theme", isDark ? "dark" : "light");
-          });
+      function setupHeader() {
+        syncBalance();
+        enforceGuards();
+
+        // Theme toggle
+        document.getElementById("theme-toggle")?.addEventListener("click", () => {
+          const isDark = document.documentElement.classList.toggle("dark");
+          localStorage.setItem("theme", isDark ? "dark" : "light");
+        });
+
+        // Balance pill click → wallet
+        document.getElementById("balance-pill")?.addEventListener("click", () => {
+          const lang = document.documentElement.lang || "es";
+          window.location.href = `/${lang}/wallet`;
+        });
       }
 
-      setup();
-      document.addEventListener("astro:page-load", setup);
-      window.addEventListener("BALANCE_UPDATED", sync);
+      setupHeader();
+      document.addEventListener("astro:page-load", setupHeader);
+      window.addEventListener("BALANCE_UPDATED", syncBalance);
     </script>
   </body>
 </html>

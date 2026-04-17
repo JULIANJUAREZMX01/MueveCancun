@@ -4,6 +4,14 @@ import { NEXUS_TOOLS, executeToolCall } from "./tools";
 export class NexusAgent {
   private static instance: NexusAgent;
   private engine: webllm.MLCEngineInterface | null = null;
+import { NEXUS_TOOLS, executeToolCall } from "./tools";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MLCEngine = any;
+
+export class NexusAgent {
+  private static instance: NexusAgent;
+  private engine: MLCEngine | null = null;
   private isInitializing = false;
   private modelId = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
 
@@ -16,6 +24,8 @@ export class NexusAgent {
     if (this.engine || this.isInitializing) return;
     this.isInitializing = true;
     try {
+      // Dynamic import — only runs in browser, never on server
+      const webllm = await import("@mlc-ai/web-llm");
       this.engine = await webllm.CreateWebWorkerMLCEngine(
         new Worker(new URL("./agent.worker.ts", import.meta.url), { type: "module" }),
         this.modelId,
