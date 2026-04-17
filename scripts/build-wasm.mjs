@@ -10,12 +10,25 @@ const modules = ['route-calculator', 'spatial-index'];
 const isCI = process.env.GITHUB_ACTIONS === 'true' || process.env.VERCEL === '1' || process.env.RENDER === 'true';
 
 function hasPrebuilt() {
-  return modules.every(m => fs.existsSync(path.join(rootDir, 'public', 'wasm', m, m.replace('-', '_') + '.wasm')));
+  // wasm-pack genera _bg.wasm (no .wasm sin sufijo)
+  return modules.every(m => {
+    const bgWasm = path.join(rootDir, 'public', 'wasm', m, m.replace(/-/g, '_') + '_bg.wasm');
+    const js     = path.join(rootDir, 'public', 'wasm', m, m.replace(/-/g, '_') + '.js');
+    const exists = fs.existsSync(bgWasm) && fs.existsSync(js);
+    if (!exists) console.log(`[NEXUS_LOG] Missing prebuilt: ${bgWasm} (exists=${fs.existsSync(bgWasm)})`);
+    return exists;
+  });
 }
 
 if (isCI && hasPrebuilt()) {
-  console.log('[NEXUS_LOG] CI Detected with artifacts. Skipping Rust compilation.');
+  console.log('[NEXUS_LOG] CI: prebuilt WASM artifacts found — skipping Rust compilation.');
   process.exit(0);
+}
+
+if (isCI) {
+  console.error('[FATAL] CI detected but prebuilt WASM artifacts not found. Cannot compile Rust in this environment.');
+  console.error('[FATAL] Commit the compiled wasm files (public/wasm/**) to the repository.');
+  process.exit(1);
 }
 
 try {
@@ -33,6 +46,6 @@ try {
   });
   console.log('[SUCCESS] WASM Engine Ready.');
 } catch (e) {
-  console.error('[FATAL] WASM Compilation Failed.');
+  console.error('[FATAL] WASM Compilation Failed.', e.message);
   process.exit(1);
 }
