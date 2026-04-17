@@ -1,4 +1,5 @@
-import type { ChatCompletionTool } from "@mlc-ai/web-llm";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ChatCompletionTool = any;
 
 export const NEXUS_TOOLS: ChatCompletionTool[] = [
   {

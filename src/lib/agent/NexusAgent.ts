@@ -1,9 +1,3 @@
-import * as webllm from "@mlc-ai/web-llm";
-import { NEXUS_TOOLS, executeToolCall } from "./tools";
-
-export class NexusAgent {
-  private static instance: NexusAgent;
-  private engine: webllm.MLCEngineInterface | null = null;
 import { NEXUS_TOOLS, executeToolCall } from "./tools";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,7 +14,7 @@ export class NexusAgent {
     return NexusAgent.instance;
   }
 
-  async init(progressCallback?: (report: webllm.InitProgressReport) => void): Promise<void> {
+  async init(progressCallback?: (report: { text: string; progress: number }) => void): Promise<void> {
     if (this.engine || this.isInitializing) return;
     this.isInitializing = true;
     try {
@@ -40,7 +34,7 @@ export class NexusAgent {
 
   async ask(prompt: string): Promise<string> {
     if (!this.engine) throw new Error("Agent not initialized");
-    const messages: webllm.ChatCompletionMessageParam[] = [
+    const messages = [
       { role: "system", content: "You are the MueveCancún Assistant. Use the provided tools to get real data." },
       { role: "user", content: prompt }
     ];
@@ -49,15 +43,11 @@ export class NexusAgent {
     if (!choice || !choice.message) return "No response from AI.";
     const message = choice.message;
     if (message.tool_calls) {
-      const toolResults: webllm.ChatCompletionMessageParam[] = [];
+      const toolResults = [];
       for (const toolCall of message.tool_calls) {
         const args = JSON.parse(toolCall.function.arguments) as Record<string, unknown>;
         const result = await executeToolCall(toolCall.function.name, args);
-        toolResults.push({
-          role: "tool",
-          content: JSON.stringify(result),
-          tool_call_id: toolCall.id
-        } as webllm.ChatCompletionToolMessageParam);
+        toolResults.push({ role: "tool", content: JSON.stringify(result), tool_call_id: toolCall.id });
       }
       const finalResponse = await this.engine.chat.completions.create({ messages: [...messages, message, ...toolResults] });
       return finalResponse.choices[0]?.message?.content || "No response after tool execution.";
