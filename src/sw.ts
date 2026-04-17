@@ -1,9 +1,9 @@
 /// <reference lib="WebWorker" />
-export type {}; // Makes this file a TS module so \`declare const self\` can shadow the global
+export type {}; // Makes this file a TS module so `declare const self` can shadow the global
 declare const self: ServiceWorkerGlobalScope;
 
 const CACHE_VERSION = 'v3.3.3-nexus';
-const CACHE_NAME = \`cancunmueve-\${CACHE_VERSION}\`;
+const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 
 // Critical assets for offline-first PWA
 const CRITICAL_ASSETS: string[] = [
@@ -56,13 +56,13 @@ const USER_ROUTE_PATTERN = /\/data\/routes\/ruta_\\d+\\.json$/;
 
 // --- Install ---
 self.addEventListener('install', (event: ExtendableEvent) => {
-  console.log(\`[SW] Installing \${CACHE_VERSION}\`);
+  console.log(`[SW] Installing ${CACHE_VERSION}`);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('[SW] Caching critical assets');
         return Promise.allSettled(
-          CRITICAL_ASSETS.map(url => cache.add(url).catch((e: unknown) => console.warn(\`[SW] Failed to cache \${url}:\`, e)))
+          CRITICAL_ASSETS.map(url => cache.add(url).catch((e: unknown) => console.warn(`[SW] Failed to cache ${url}:`, e)))
         );
       })
       .then(() => self.skipWaiting())
@@ -72,7 +72,7 @@ self.addEventListener('install', (event: ExtendableEvent) => {
 
 // --- Activate ---
 self.addEventListener('activate', (event: ExtendableEvent) => {
-  console.log(\`[SW] Activating \${CACHE_VERSION}\`);
+  console.log(`[SW] Activating ${CACHE_VERSION}`);
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
@@ -150,7 +150,7 @@ async function cacheFirst(request: Request): Promise<Response> {
   } catch {
     if (request.mode === 'navigate') {
       const lang = request.url.includes('/en/') ? 'en' : 'es';
-      const offlinePage = await cache.match(\`/\${lang}/offline\`);
+      const offlinePage = await cache.match(`/${lang}/offline`);
       if (offlinePage) return offlinePage;
     }
     return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
@@ -170,7 +170,7 @@ async function networkFirst(request: Request): Promise<Response> {
     if (cached) return cached;
     if (request.mode === 'navigate') {
       const lang = request.url.includes('/en/') ? 'en' : 'es';
-      const offlinePage = await cache.match(\`/\${lang}/offline\`);
+      const offlinePage = await cache.match(`/${lang}/offline`);
       if (offlinePage) return offlinePage;
     }
     return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });

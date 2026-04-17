@@ -125,7 +125,7 @@ for (const file of routeFiles) {
   }
 
   // Normalize: individual files can be a route object, array, or {rutas:[...]}
-  let routes: RouteRecord[] = [];
+  let routes: RouteRecord[];
   if (Array.isArray(parsed)) {
     routes = parsed as RouteRecord[];
   } else if (parsed && typeof parsed === 'object' && 'rutas' in parsed && Array.isArray((parsed as MasterCatalog).rutas)) {
