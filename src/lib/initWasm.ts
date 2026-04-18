@@ -33,6 +33,7 @@ export async function initWasm(): Promise<boolean> {
         (window as Record<string, unknown>).WASM_READY = true;
         (window as Record<string, unknown>).WASM_ROUTE_MAP = routeMap;
         (window as Record<string, unknown>).WASM_ROUTES = rutas;
+        window.dispatchEvent(new CustomEvent('WASM_ENGINE_READY', { detail: { routes: rutas } }));
       }
 
       console.log('[initWasm] ENGINE READY —', rutas.length, 'routes');

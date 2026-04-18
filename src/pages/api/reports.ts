@@ -36,36 +36,21 @@ export const POST: APIRoute = async ({ request }) => {
     const location = body.location || "No proporcionada";
     const wasm_version = body.wasm_version || "v1.0.0-stable";
 
-    const title = `[REPORTE] ${issue_type.toUpperCase()}${route_id !== 'Global' ? ` — ${route_id}` : ""}`;
+    const title = `[REPORTE] ${issue_type.toUpperCase()}${route_id !== 'Global' ? " — " + route_id : ""}`;
 
     const labels = [
       "reporte",
-      `type:${issue_type === 'error' || issue_type === 'Tráfico' ? 'fix' : issue_type === 'mejora' || issue_type === 'Demora' ? 'optimize' : 'feat'}`,
-      `area:${route_id !== 'Global' ? 'data' : 'ui'}`,
+      "type:" + (issue_type === 'error' || issue_type === 'Tráfico' ? 'fix' : issue_type === 'mejora' || issue_type === 'Demora' ? 'optimize' : 'feat'),
+      "area:" + (route_id !== 'Global' ? 'data' : 'ui'),
       "status:pending-analysis"
     ];
 
-    const issueBody = `
-### 📝 Descripción
-${description}
+    const issueBody = "### 📝 Descripción\n" + description + "\n\n---\n### 🛠 Metadatos Técnicos\n- **ID de Ruta:** " + route_id + "\n- **Ubicación:** " + location + "\n- **WASM Version:** " + wasm_version + "\n- **Reported via:** Nexus-Client\n- **Timestamp:** " + new Date().toISOString() + "\n\n---\n**Instrucción de Sistema:**\nhey, engineer, please analize, verify, fix & optimize resolving this issue, comment & all about it, right now @jules";
 
----
-### 🛠 Metadatos Técnicos
-- **ID de Ruta:** `${route_id}`
-- **Ubicación:** `${location}`
-- **WASM Version:** `${wasm_version}`
-- **Reported via:** `Nexus-Client`
-- **Timestamp:** `${new Date().toISOString()}`
-
----
-**Instrucción de Sistema:**
-hey, engineer, please analize, verify, fix & optimize resolving this issue, comment & all about it, right now @jules
-`.trim();
-
-    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues`, {
+    const res = await fetch("https://api.github.com/repos/" + owner + "/" + repo + "/issues", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        "Authorization": "Bearer " + token,
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
         "Content-Type": "application/json",
@@ -91,7 +76,7 @@ hey, engineer, please analize, verify, fix & optimize resolving this issue, comm
     return new Response(JSON.stringify({ 
       success: true, 
       report_id: issue.number,
-      target_branch: `fix/issue-${issue.number}`
+      target_branch: "fix/issue-" + issue.number
     }), {
       status: 201,
       headers: { "Content-Type": "application/json" }

@@ -23,6 +23,26 @@
   </button>
   <div class="graffiti-tooltip">GPS</div>
 
+  <!-- Route Legend FAB -->
+  <button
+    id="legend-toggle-btn"
+    class="absolute right-4 top-20 z-[40] w-12 h-12 bg-white rounded-2xl shadow-xl border border-slate-100 flex items-center justify-center text-slate-600 active:scale-95 transition-all group"
+    aria-label="Ver leyenda de rutas"
+  >
+    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" /></svg>
+  </button>
+
+  <!-- Route Legend Panel -->
+  <div id="route-legend" class="hidden absolute right-4 top-36 z-[40] w-64 max-h-[60vh] bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col animate-scale-in">
+    <div class="px-5 py-4 border-b border-slate-50 flex items-center justify-between">
+      <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Rutas Principales</span>
+      <button id="legend-close-btn" class="p-1 text-slate-300 hover:text-slate-600">✕</button>
+    </div>
+    <div id="legend-content" class="flex-1 overflow-y-auto p-2 grid grid-cols-1 gap-1">
+      <!-- Inyectado por JS -->
+    </div>
+  </div>
+
   <!-- Route Info Banner (Hidden by default) -->
   <div id="route-banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-[40] px-4 py-3 bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 flex items-center gap-3 min-w-[200px] animate-slide-down">
     <div class="flex-1 min-w-0">
@@ -41,6 +61,7 @@
   import { loadLeaflet } from "../utils/leafletLoader";
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { escapeHtml, safeUrl, showToast } from "../utils/utils";
+  import { enrichJourneyLegs } from "../lib/initWasm";
 
   let map: any = null;
   let layerGroup: any = null;
@@ -58,17 +79,7 @@
     const allCoords: [number, number][] = [];
 
     journey.legs.forEach((leg: any) => {
-      // Usar color de la ruta si viene del motor WASM, fallback por transport_type
-      const typeColorMap: Record<string,string> = {
-        "Bus_HotelZone":  "#F97316",
-        "Bus_Urbano_Isla":"#4ECDC4",
-        "Bus_Urban":      "#0EA5E9",
-        "Combi_Municipal":"#96CEB4",
-        "ADO":            "#FF6B6B",
-        "Van":            "#DDA0DD",
-        "DEFAULT":        "#64748B",
-      };
-      const color = leg.color || leg.route_color || typeColorMap[leg.transport_type] || "#0EA5E9";
+      const color = leg.color || "#0EA5E9";
       const stops = leg.paradas || leg.stops || [];
       const legCoords = stops
         .map((s: any) => {
@@ -99,8 +110,6 @@
       }
       return lg;
   }
-
-  // ── Inicialización del mapa ───────────────────────────────────────────────────
 
   async function initMap() {
     if (map) return;
@@ -134,39 +143,53 @@
 
     layerGroup = L.layerGroup().addTo(map);
 
+    // Legend control listeners
+    const legendPanel = document.getElementById('route-legend');
+    document.getElementById('legend-toggle-btn')?.addEventListener('click', () => {
+      legendPanel?.classList.toggle('hidden');
+    });
+    document.getElementById('legend-close-btn')?.addEventListener('click', () => {
+      legendPanel?.classList.add('hidden');
+    });
+
+    function updateLegend(routesList: any[]) {
+      const legendContent = document.getElementById("legend-content");
+      if (!legendContent || !Array.isArray(routesList)) return;
+
+      const seen = new Set<string>();
+      legendContent.innerHTML = "";
+      routesList
+        .filter((r: any) => {
+          const key = r.id || r.nombre;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .slice(0, 40)
+        .forEach((r: any) => {
+          const item = document.createElement("div");
+          item.style.cssText = "display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:8px;cursor:pointer;transition:background 0.15s";
+          item.onmouseenter = () => item.style.background = "rgba(0,0,0,0.04)";
+          item.onmouseleave = () => item.style.background = "transparent";
+
+          const rColor = r.color || "#94A3B8";
+          item.innerHTML = `<span style=\"width:12px;height:12px;border-radius:3px;background:${rColor};flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.2)\"></span><span style=\"font-size:11px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis\">${escapeHtml(r.nombre || r.name || r.id)}</span>`;
+
+          item.addEventListener("click", () => {
+            const legendPanel = document.getElementById('route-legend');
+            legendPanel?.classList.add('hidden');
+          });
+          legendContent.appendChild(item);
+        });
+    }
+
     // ── Cargar leyenda de rutas con colores ──────────────────────────────────
-    try {
-      const routesResp = await fetch("/data/master_routes.json");
-      if (routesResp.ok) {
-        const routesData = await routesResp.json();
-        const routesList = routesData.rutas || routesData.routes || [];
-        const legendContent = document.getElementById("legend-content");
-        if (legendContent && Array.isArray(routesList)) {
-          // Deduplicar por nombre visual (R1, R2, etc.)
-          const seen = new Set<string>();
-          legendContent.innerHTML = "";
-          routesList
-            .filter((r: any) => {
-              const key = r.id || r.nombre;
-              if (seen.has(key)) return false;
-              seen.add(key);
-              return r.color;
-            })
-            .slice(0, 40)
-            .forEach((r: any) => {
-              const item = document.createElement("div");
-              item.style.cssText = "display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:8px;cursor:pointer;transition:background 0.15s";
-              item.onmouseenter = () => item.style.background = "rgba(0,0,0,0.04)";
-              item.onmouseleave = () => item.style.background = "transparent";
-              item.innerHTML = `<span style="width:12px;height:12px;border-radius:3px;background:${r.color};flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.2)"></span><span style="font-size:11px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(r.nombre || r.name || r.id)}</span>`;
-              item.addEventListener("click", () => {
-                document.getElementById("route-legend")?.classList.add("hidden");
-              });
-              legendContent.appendChild(item);
-            });
-        }
-      }
-    } catch {}
+    if ((window as any).WASM_ROUTES) {
+      updateLegend((window as any).WASM_ROUTES);
+    }
+    window.addEventListener('WASM_ENGINE_READY', (e: any) => {
+      if (e.detail?.routes) updateLegend(e.detail.routes);
+    });
 
     // ── Cargar paradas en el mapa ──────────────────────────────────────────
     const allStops = coordsDB instanceof Map
@@ -188,13 +211,13 @@
           opacity: 1,
           fillOpacity: 0.9,
         }).bindPopup(`
-          <div style="min-width:160px;padding:4px">
-            <p style="font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px">${escapeHtml(displayName)}</p>
-            <p style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
-            <div style="display:flex;flex-direction:column;gap:4px">
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
+          <div style=\"min-width:160px;padding:4px\">
+            <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px\">${escapeHtml(displayName)}</p>
+            <p style=\"font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px\">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
+            <div style=\"display:flex;flex-direction:column;gap:4px\">
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
             </div>
           </div>
         `)
@@ -221,13 +244,13 @@
       L.popup()
         .setLatLng(c as any)
         .setContent(`
-          <div style="min-width:170px;padding:4px">
-            <p style="font-weight:900;color:#0f172a;font-size:13px;margin:0 0 2px">${escapeHtml(result.name)}</p>
-            <p style="font-size:10px;color:#94a3b8;margin:0 0 8px">${(result.distanceKm * 1000).toFixed(0)} m</p>
-            <div style="display:flex;flex-direction:column;gap:4px">
-              <button data-stop-name="${escapeHtml(result.name)}" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name="${escapeHtml(result.name)}" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
-              <button data-stop-name="${escapeHtml(result.name)}" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
+          <div style=\"min-width:170px;padding:4px\">
+            <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 2px\">${escapeHtml(result.name)}</p>
+            <p style=\"font-size:10px;color:#94a3b8;margin:0 0 8px\">${(result.distanceKm * 1000).toFixed(0)} m</p>
+            <div style=\"display:flex;flex-direction:column;gap:4px\">
+              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
             </div>
           </div>
         `)
@@ -238,30 +261,7 @@
       const rawJourney = e.detail?.journey;
       if (!rawJourney) return;
 
-      // Enriquecer legs con color y paradas del catálogo WASM en memoria
-      const routeMap = ((window as any).WASM_ROUTE_MAP ?? {}) as Record<string, any>;
-      const journey = { ...rawJourney };
-      if (Array.isArray(journey.legs)) {
-        journey.legs = journey.legs.map((leg: any) => {
-          if (leg.color && leg.paradas?.length) return leg;
-          const route = routeMap[leg.route_id ?? ""] ?? routeMap[(leg.route_name ?? "").toLowerCase().trim()];
-          if (!route) return leg;
-          const stops: any[] = route.paradas ?? [];
-          const origin = (leg.origin_stop ?? "").toLowerCase().split(" ")[0];
-          const dest   = (leg.dest_stop   ?? "").toLowerCase().split(" ")[0];
-          const oi = stops.findIndex((s: any) => (s.nombre ?? s.name ?? "").toLowerCase().includes(origin));
-          const di = stops.findIndex((s: any) => (s.nombre ?? s.name ?? "").toLowerCase().includes(dest));
-          const sliced = (oi !== -1 && di !== -1)
-            ? stops.slice(...(oi <= di ? [oi, di + 1] : [di, oi + 1]))
-            : stops;
-          return {
-            ...leg,
-            color:          leg.color          ?? route.color ?? "#0EA5E9",
-            transport_type: leg.transport_type ?? route.tipo  ?? "Bus_Urban",
-            paradas:        leg.paradas?.length ? leg.paradas : sliced,
-          };
-        });
-      }
+      const journey = enrichJourneyLegs(rawJourney);
 
       activeJourney = journey;
       const newLg = drawRoute(map, journey, layerGroup, coordsDB);
