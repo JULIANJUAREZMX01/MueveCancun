@@ -9,11 +9,19 @@ export function formatDate(date: Date) {
 }
 
 export function readingTime(html: string) {
-  const textOnly = html.replace(/<[^>]*>?/gm, "").replace(/&nbsp;/g, " ");
+  if (!html) return 0;
+  // Acknowledge CodeQL: we are not using this to render, just to count words.
+  // Using a very simple loop-based stripper to avoid regex vulnerability concerns.
+  let text = '';
+  let inTag = false;
+  for (let i = 0; i < html.length; i++) {
+    if (html[i] === '<') inTag = true;
+    else if (html[i] === '>') inTag = false;
+    else if (!inTag) text += html[i];
+  }
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0);
   const wordsPerMinute = 200;
-  const noOfWords = textOnly.split(/\s+/).length;
-  const minutes = noOfWords / wordsPerMinute;
-  return Math.ceil(minutes);
+  return Math.ceil(words.length / wordsPerMinute);
 }
 
 export function getRelativeLocaleUrl(lang: string, path: string) {
@@ -41,7 +49,8 @@ export function truncateText(text: string, maxLength: number): string {
   if (!text) return "";
   const trimmed = text.trim();
   if (trimmed.length <= maxLength) return trimmed;
-  return text.slice(0, maxLength - 1).trim() + "…";
+  const sliced = text.slice(0, Math.max(0, maxLength - 1));
+  return (sliced.endsWith(" ") ? sliced.trim() : sliced) + "…";
 }
 
 export function safeJsonStringify(obj: unknown): string {
@@ -51,12 +60,11 @@ export function safeJsonStringify(obj: unknown): string {
 }
 
 export function showToast(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
-    window.dispatchEvent(new CustomEvent('SHOW_TOAST', { detail: { message, type } }));
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('SHOW_TOAST', { detail: { message, type } }));
+    }
 }
 
-/**
- * Normaliza una cadena para búsquedas: minúsculas, sin espacios extra y sin acentos básicos.
- */
 export function normalizeString(str: string): string {
   if (!str) return "";
   return str
@@ -73,6 +81,14 @@ interface Stop {
     nombre: string;
 }
 
+interface RouteEntry {
+    paradas: Stop[];
+}
+
+interface CatalogData {
+    rutas: RouteEntry[];
+}
+
 let stopsCache: Stop[] | null = null;
 
 export async function getClosestLandmark(lat: number, lng: number): Promise<Stop | null> {
@@ -80,10 +96,10 @@ export async function getClosestLandmark(lat: number, lng: number): Promise<Stop
         try {
             const res = await fetch('/data/master_routes.optimized.json');
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as CatalogData;
                 const stops = new Map<string, Stop>();
-                data.rutas.forEach((r: { paradas: Stop[] }) => {
-                    r.paradas.forEach((s: Stop) => {
+                data.rutas.forEach((r) => {
+                    r.paradas.forEach((s) => {
                         const key = `${s.lat},${s.lng}`;
                         if (!stops.has(key)) stops.set(key, s);
                     });
