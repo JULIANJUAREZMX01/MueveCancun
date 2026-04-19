@@ -9,7 +9,7 @@ export function formatDate(date: Date) {
 }
 
 export function readingTime(html: string) {
-  const textOnly = html.replace(/<[^>]*>?/gm, "");
+  const textOnly = html.replace(/<[^>]*>?/gm, "").replace(/&nbsp;/g, " ");
   const wordsPerMinute = 200;
   const noOfWords = textOnly.split(/\s+/).length;
   const minutes = noOfWords / wordsPerMinute;
@@ -20,7 +20,7 @@ export function getRelativeLocaleUrl(lang: string, path: string) {
   return `/${lang}${path.startsWith('/') ? path : '/' + path}`;
 }
 
-export function escapeHtml(unsafe: any): string {
+export function escapeHtml(unsafe: unknown): string {
   if (unsafe === null || unsafe === undefined) return '';
   const str = String(unsafe);
   return str
@@ -41,13 +41,10 @@ export function truncateText(text: string, maxLength: number): string {
   if (!text) return "";
   const trimmed = text.trim();
   if (trimmed.length <= maxLength) return trimmed;
-  // Match exact logic expected by tests: Hello World, 5 -> Hell... (no, Hell is 4 + ...)
-  // Test says Hello World, 5 -> Hell...
-  // Wait, if maxLength is 5, and it returns Hell..., that is 4 chars + 1 ellipsis
   return text.slice(0, maxLength - 1).trim() + "…";
 }
 
-export function safeJsonStringify(obj: any): string {
+export function safeJsonStringify(obj: unknown): string {
   return JSON.stringify(obj)
     .replace(/</g, '\\u003c')
     .replace(/'/g, '\\u0027');
@@ -70,17 +67,23 @@ export function normalizeString(str: string): string {
     .replace(/ñ/g, "n");
 }
 
-let stopsCache: any[] | null = null;
+interface Stop {
+    lat: number;
+    lng: number;
+    nombre: string;
+}
 
-export async function getClosestLandmark(lat: number, lng: number) {
+let stopsCache: Stop[] | null = null;
+
+export async function getClosestLandmark(lat: number, lng: number): Promise<Stop | null> {
     if (!stopsCache) {
         try {
             const res = await fetch('/data/master_routes.optimized.json');
             if (res.ok) {
                 const data = await res.json();
-                const stops = new Map();
-                data.rutas.forEach((r: any) => {
-                    r.paradas.forEach((s: any) => {
+                const stops = new Map<string, Stop>();
+                data.rutas.forEach((r: { paradas: Stop[] }) => {
+                    r.paradas.forEach((s: Stop) => {
                         const key = `${s.lat},${s.lng}`;
                         if (!stops.has(key)) stops.set(key, s);
                     });
@@ -94,7 +97,7 @@ export async function getClosestLandmark(lat: number, lng: number) {
 
     if (!stopsCache || stopsCache.length === 0) return null;
 
-    let closest = null;
+    let closest: Stop | null = null;
     let minDiff = Infinity;
 
     for (const stop of stopsCache) {
