@@ -1,5 +1,7 @@
 name: Data Integrity Pipeline
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
   push:
     paths: ["public/data/**", "scripts/*.ts"]
@@ -9,14 +11,18 @@ on:
 jobs:
   validate:
     name: JSON Schema & Geodata Audit
-    runs-on: ubuntu-latest
+    runs-env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Node 22
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
-          node-version: 24
+          node-versienv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: 24
       - name: Run Script Audit
         run: |
           node --experimental-strip-types scripts/validate-routes.ts

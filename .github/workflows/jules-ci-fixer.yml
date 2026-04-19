@@ -1,14 +1,20 @@
 name: JULES - CI Stability Protocol
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
   workflow_run:
     workflows: ["CI / Security & Quality"]
     types: [completed]
-    conclusion: [failure]
+    conclusienv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: [failure]
 
 jobs:
   fix:
-    runs-on: ubuntu-latest
+    runs-env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'failure'
     steps:
       # Checkout the default branch only — trusted code.
@@ -18,5 +24,7 @@ jobs:
       - name: Setup Node 24
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
-          node-version: "24"
+          node-versienv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: "24"
       - run: echo "[NEXUS_LOG] Initiating autocurative triage for failed CI run ${{ github.event.workflow_run.id }}"

@@ -76,6 +76,7 @@ jobs:
 
       - name: Invoke Jules for Issue Resolution
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}

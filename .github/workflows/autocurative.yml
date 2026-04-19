@@ -1,9 +1,13 @@
 name: Auto-Curative (Self-Healing)
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
   schedule:
     # Run at 06:00 UTC every Monday
-    - cron: "0 6 * * 1"
+    - crenv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: "0 6 * * 1"
   # Also run whenever route data changes
   push:
     branches: [main]
@@ -11,19 +15,27 @@ on:
       - "public/data/**"
   workflow_dispatch:
     inputs:
-      reason:
-        description: "Reason for manual trigger"
+      reasenv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on:
+        descriptienv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: "Reason for manual trigger"
         required: false
         default: "Manual health check"
       run_geocode:
-        description: "Run geocoder for missing coordinates (true/false)"
+        descriptienv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: "Run geocoder for missing coordinates (true/false)"
         required: false
         default: "false"
 
 jobs:
   autocurative:
     name: Self-Healing Pipeline
-    runs-on: ubuntu-latest
+    runs-env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: ubuntu-latest
     permissions:
       contents: write
     steps:
@@ -34,7 +46,9 @@ jobs:
       - name: Setup Node 22
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
-          node-version: "24"
+          node-versienv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: "24"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
@@ -120,7 +134,9 @@ jobs:
             chore(autocurative): self-heal pipeline run [skip ci]
 
             - merge-routes: merged individual route files into master catalog
-            - optimize-json: regenerated optimized catalog
+            - optimize-jsenv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: regenerated optimized catalog
             - wasm: rebuilt WASM binary if stale
           file_pattern: |
             public/data/master_routes.json
@@ -173,7 +189,9 @@ jobs:
 
   report:
     name: Health Report
-    runs-on: ubuntu-latest
+    runs-env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: ubuntu-latest
     needs: autocurative
     if: always()
     permissions:
