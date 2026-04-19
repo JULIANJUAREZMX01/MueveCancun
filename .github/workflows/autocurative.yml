@@ -1,9 +1,13 @@
 name: Auto-Curative (Self-Healing)
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
   schedule:
     # Run at 06:00 UTC every Monday
-    - cron: "0 6 * * 1"
+    - crenv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: "0 6 * * 1"
   # Also run whenever route data changes
   push:
     branches: [main]
@@ -11,41 +15,50 @@ on:
       - "public/data/**"
   workflow_dispatch:
     inputs:
-      reason:
-        description: "Reason for manual trigger"
+      reasenv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on:
+        descriptienv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: "Reason for manual trigger"
         required: false
         default: "Manual health check"
       run_geocode:
-        description: "Run geocoder for missing coordinates (true/false)"
+        descriptienv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: "Run geocoder for missing coordinates (true/false)"
         required: false
         default: "false"
 
 jobs:
   autocurative:
     name: Self-Healing Pipeline
-    runs-on: ubuntu-latest
+    runs-env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
 
       - name: Setup Node 22
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
-          node-version: "22"
+          node-versienv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: "24"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
-
+        uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
       - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
         with:
           targets: wasm32-unknown-unknown
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@54e2af0a8339c0435fa1de94002eab349a2f15ef # v2.7.3
+        uses: Swatinem/rust-cache@5cb072d7354962be830356aa6b146f7612846014
         with:
           workspaces: rust-wasm
 
@@ -114,14 +127,16 @@ jobs:
 
       # --- Step 8: Auto-commit any changes ---
       - name: Commit auto-healed artifacts
-        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79
         id: auto_commit
         with:
           commit_message: |
             chore(autocurative): self-heal pipeline run [skip ci]
 
             - merge-routes: merged individual route files into master catalog
-            - optimize-json: regenerated optimized catalog
+            - optimize-jsenv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: regenerated optimized catalog
             - wasm: rebuilt WASM binary if stale
           file_pattern: |
             public/data/master_routes.json
@@ -135,7 +150,7 @@ jobs:
       # --- Step 9: Open an issue if critical checks failed ---
       - name: Create issue for failed checks
         if: steps.validate.outputs.ok == 'false' || steps.rust_tests.outputs.ok == 'false'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: |
             const title = '🔴 Auto-Curative: Health Check Failed';
@@ -174,7 +189,9 @@ jobs:
 
   report:
     name: Health Report
-    runs-on: ubuntu-latest
+    runs-env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: ubuntu-latest
     needs: autocurative
     if: always()
     permissions:

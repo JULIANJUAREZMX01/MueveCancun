@@ -1,10 +1,14 @@
 name: Delegate to Claude (unscoped tasks)
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
   workflow_dispatch:
     inputs:
       instructions:
-        description: "Context or tasks to delegate (leave blank to let Claude plan)."
+        descriptienv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: "Context or tasks to delegate (leave blank to let Claude plan)."
         required: false
         type: string
 
@@ -13,16 +17,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  claude-delegation:
+  claude-delegatienv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on:
     name: Send unplanned work to Claude
-    runs-on: ubuntu-latest
+    runs-env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: ubuntu-latest
     if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
     permissions:
       contents: write
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Prepare delegation instructions
         id: prepare
@@ -40,7 +48,7 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Claude Code Base Action (plan and apply)
-        uses: anthropics/claude-code-base-action@b61aa83c32e3fbf17e758fd510b9a8d9204e6e31 # HEAD
+        uses: anthropics/claude-code-base-action@7b66596019195a7c8a1f13f72a359fec001e7964
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           instructions: |

@@ -9,7 +9,7 @@ export const prerender = false;
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json() as {
-      journey?: any;
+      journey?: import("../../lib/initWasm").Journey;
       origin?: string;
       dest?: string;
       userNote?: string;
@@ -26,19 +26,20 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const token = process.env.GITHUB_ISSUES_TOKEN;
+    const token = import.meta.env.GITHUB_ISSUES_TOKEN;
     const owner = "JULIANJUAREZMX01";
     const repoName = "MueveCancun";
 
     // Serializar tramos
     let legsMarkdown = "_No disponible_";
     if (Array.isArray(journey?.legs) && journey.legs.length > 0) {
-      const parts: string[] = journey.legs.map((leg: any, i: number) => {
-        const stops: any[] = leg.paradas || leg.stops_info || leg.stops || [];
+      const parts: string[] = journey.legs.map((leg: import("../../lib/initWasm").JourneyLeg, i: number) => {
+        const stops: import("../../lib/initWasm").RouteEntry["paradas"] = leg.paradas || leg.stops_info || leg.stops || [];
         const stopsStr = stops.length > 0
-          ? stops.map((s: any) => String(s.nombre || s.name || s)).join(" > ")
+          ? stops.map((s: unknown) => String(s.nombre || s.name || s)).join(" > ")
           : String(leg.origin_hub || "?") + " > " + String(leg.dest_hub || "?");
         return "**Tramo " + (i + 1) + ":** " + String(leg.name || "Ruta") + " (" + String(leg.transport_type || "?") + ")" + "\n" + stopsStr;
+
       });
       legsMarkdown = parts.join("\n\n");
     }
@@ -107,7 +108,7 @@ export const POST: APIRoute = async ({ request }) => {
       JSON.stringify({ ok: true, message: "Aportacion registrada." }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[route-share]", err);
     return new Response(
       JSON.stringify({ error: "Error interno del servidor" }),

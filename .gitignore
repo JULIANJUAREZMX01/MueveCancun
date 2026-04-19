@@ -80,3 +80,4 @@ test_browser*.js
 *.astro.bak
 *.astro.new
 path/
+.vercel

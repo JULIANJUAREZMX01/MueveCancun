@@ -84,7 +84,7 @@ Estas tareas están identificadas pero aún no tienen sprint asignado. Se irán 
 
 | Prioridad | Tarea |
 |-----------|-------|
-| 🔴 | Limpiar artefactos de desarrollo de la raíz (`full_script.ts`, `patch*.diff`, `*.bak`, `*.new`) |
+| ✅ | Limpiar artefactos de desarrollo de la raíz (`full_script.ts`, `patch*.diff`, `*.bak`, `*.new`) |
 | 🔴 | Cachear artefactos `wasm-bindgen` / `binaryen` en CI para builds rápidos |
 | 🟡 | Política stale-while-revalidate en Service Worker para `/data/**` |
 | 🟡 | Carga progresiva del catálogo (chunks) en lugar de un JSON único |
@@ -99,6 +99,7 @@ Estas tareas están identificadas pero aún no tienen sprint asignado. Se irán 
 ---
 
 ## Historial de Versiones
+| v2.0.0 | 2026-04-10 | Nexus Prime v2.0; Optimized data integrity; Added map animations; Cleaned legacy artifacts |
 
 | Versión | Fecha | Cambios principales |
 |---------|-------|---------------------|

@@ -15,3 +15,12 @@ Include the following information in your report:
 - Proof of Concept (PoC) or screenshots if applicable.
 
 We will acknowledge receipt of your vulnerability report and strive to send you regular updates about our progress.
+
+## Offline-First Integrity (Nexus Protocol)
+
+To ensure the platform remains fully functional in offline environments, the use of external runtime dependencies (CDNs, third-party fonts, or map APIs) is strictly prohibited. All assets must be bundled locally.
+
+A static audit can be performed using:
+```bash
+pnpm audit:survival
+```

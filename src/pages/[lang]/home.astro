@@ -10,137 +10,137 @@ const { lang } = Astro.params;
 const isEs = lang === "es";
 ---
 
-<MainLayout title={isEs ? "Inicio — MueveCancún" : "Home — MueveCancún"}>
-  <!-- Mapa fondo full-screen -->
-  <div class="map-backdrop" role="presentation">
-    <InteractiveMap center={[21.1619, -86.8515]} zoom={13} />
-  </div>
+<MainLayout
+  title={isEs ? "MueveCancún — Tu GPS del Caribe" : "MueveCancún — Your Caribbean GPS"}
+  description={isEs ? "Encuentra tu ruta de transporte público en Cancún. Offline, rápido, ciudadano." : "Find your public transit route in Cancún. Offline, fast, citizen-powered."}
+>
+  <div class="l-home">
 
-  <!-- Capa de contenido flotante -->
-  <div class="home-content">
-
-    <!-- Header flotante -->
-    <header class="home-header">
-      <div class="home-header__brand">
-        <div class="brand-dot" aria-hidden="true"></div>
-        <span class="brand-name">MueveCancún</span>
-      </div>
-      <div class="home-header__actions">
-        <!-- Indicador GPS en vivo -->
-        <button
-          id="btn-gps-home"
-          class="action-pill action-pill--gps"
-          aria-label={isEs ? "Ir a mi ubicacion" : "Go to my location"}
-        >
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
-          </svg>
-          <span class="gps-dot" aria-hidden="true"></span>
-        </button>
-
-        <!-- Boton mini-juego -->
-        <a
-          href={"/" + lang + "/guess"}
-          class="action-pill action-pill--game"
-          aria-label={isEs ? "Jugar Adivina Donde Estoy" : "Play Guess Where I Am"}
-        >
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/>
-          </svg>
-        </a>
-      </div>
-    </header>
-
-    <!-- Calculadora de rutas (tarjeta flotante) -->
-    <div class="calculator-sheet" id="calculator-sheet">
-      <!-- Handle de arrastre -->
-      <div class="sheet-handle" id="sheet-handle" role="button" aria-label={isEs ? "Expandir busqueda" : "Expand search"} tabindex="0" aria-expanded="false">
-        <div class="sheet-handle__bar"></div>
-      </div>
-      <RouteCalculator />
+    <!-- Mapa de fondo (full screen) -->
+    <div class="l-home__map">
+      <InteractiveMap />
     </div>
 
-  </div>
+    <!-- Overlay con controles -->
+    <div class="l-home__overlay">
 
-  <!-- FAB de reporte gestionado por ReportWidget global -->
+      <!-- Header flotante -->
+      <header class="home-topbar">
+        <div class="home-topbar__brand">
+          <span class="home-topbar__dot" aria-hidden="true"></span>
+          <span class="home-topbar__name">MueveCancún</span>
+          <span class="home-topbar__version">v2</span>
+        </div>
+        <div class="home-topbar__actions">
+          <button id="btn-gps-home" class="home-pill" aria-label={isEs ? "Centrar en mi ubicación" : "Center on my location"} title={isEs ? "Mi ubicación" : "My location"}>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06z"/></svg>
+            <span class="home-pill__gps-dot" id="gps-status-dot" aria-hidden="true"></span>
+          </button>
+          <a href={"/" + lang + "/rutas"} class="home-pill" aria-label={isEs ? "Ver todas las rutas" : "View all routes"} title={isEs ? "Todas las rutas" : "All routes"}>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/></svg>
+          </a>
+          <a href={"/" + lang + "/community"} class="home-pill home-pill--notify" aria-label={isEs ? "Comunidad — reportes" : "Community — reports"} title={isEs ? "Reportes en vivo" : "Live reports"}>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            <span class="home-pill__badge" id="live-reports-badge" hidden aria-hidden="true"></span>
+          </a>
+        </div>
+      </header>
+
+      <!-- Bottom sheet con calculadora -->
+      <div class="c-sheet" id="calculator-sheet" role="region" aria-label={isEs ? "Calculadora de rutas" : "Route calculator"}>
+        <button class="c-sheet__handle" id="sheet-handle" aria-controls="sheet-content" aria-expanded="false" aria-label={isEs ? "Expandir calculadora" : "Expand calculator"}>
+          <div class="c-sheet__bar" aria-hidden="true"></div>
+          <span class="c-sheet__hint" id="sheet-hint">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            {isEs ? "¿A dónde vas?" : "Where to?"}
+          </span>
+        </button>
+        <div class="c-sheet__body" id="sheet-content">
+          <RouteCalculator />
+        </div>
+      </div>
+
+    </div>
+  </div>
 </MainLayout>
 
 <style>
-  /* ── Mapa fondo ── */
-  .map-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    /* height explícito para que InteractiveMap (absolute) tenga referencia */
+  /* Layout fullscreen */
+  .l-home {
+    position: relative;
     width: 100%;
     height: 100dvh;
     overflow: hidden;
   }
 
-  /* ── Capa de contenido ── */
-  .home-content {
+  .l-home__map {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .l-home__overlay {
     position: relative;
     z-index: 10;
     display: flex;
     flex-direction: column;
-    min-height: 100dvh;
-    pointer-events: none; /* El mapa sigue siendo interactivo por debajo */
+    height: 100%;
+    pointer-events: none;
+    > * { pointer-events: auto; }
   }
-  .home-content > * { pointer-events: auto; }
 
-  /* ── Header flotante ── */
-  .home-header {
+  /* Topbar flotante */
+  .home-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem 1rem;
-    padding-top: calc(0.75rem + env(safe-area-inset-top));
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
   }
 
-  .home-header__brand {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  .home-topbar__brand {
+    display: inline-flex; align-items: center; gap: 0.5rem;
     background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px) saturate(1.8);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8);
     border: 1px solid var(--glass-border);
     border-radius: var(--r-full);
-    padding: 0.375rem 0.875rem 0.375rem 0.625rem;
+    padding: 0.5rem 1rem;
     box-shadow: var(--shadow-md);
   }
 
-  .brand-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+  .home-topbar__dot {
+    width: 10px; height: 10px; border-radius: 50%;
     background: var(--gradient-primary);
-    box-shadow: 0 0 0 0 rgba(13,148,136,0.6);
-    animation: brand-pulse 2.5s infinite;
+    box-shadow: 0 0 10px var(--color-primary);
+    animation: pulse-map 2s infinite;
+    flex-shrink: 0;
   }
-  @keyframes brand-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(13,148,136,0.5); }
-    50%       { box-shadow: 0 0 0 6px rgba(13,148,136,0); }
+  @keyframes pulse-map {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
   }
 
-  .brand-name {
+  .home-topbar__name {
     font-family: var(--font-display);
-    font-size: 0.875rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
+    font-size: 0.85rem; font-weight: 800;
+    color: var(--text-primary); letter-spacing: -0.01em;
   }
 
-  .home-header__actions { display: flex; gap: 0.5rem; }
+  .home-topbar__version {
+    font-size: 0.6rem; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    background: var(--teal-xlight); color: var(--teal-dark);
+    padding: 0.1rem 0.35rem; border-radius: var(--r-full);
+  }
+  .dark .home-topbar__version { background: rgba(13,148,136,0.2); color: #5eead4; }
 
-  /* Action pills */
-  .action-pill {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.3rem;
-    width: 40px;
-    height: 40px;
+  .home-topbar__actions { display: flex; gap: 0.5rem; }
+
+  .home-pill {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px;
     border-radius: var(--r-full);
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
@@ -148,135 +148,162 @@ const isEs = lang === "es";
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-md);
     color: var(--text-secondary);
-    cursor: pointer;
-    transition: all var(--t-base) var(--ease-back);
     text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
+    transition: all var(--t-base) var(--ease-back);
+    cursor: pointer;
   }
-  .action-pill:hover { color: var(--color-primary); transform: scale(1.08); }
-  .action-pill:active { transform: scale(0.92); }
+  .home-pill:hover { transform: scale(1.1); color: var(--color-primary); border-color: var(--color-primary); }
+  .home-pill:active { transform: scale(0.92); }
+  .home-pill--notify { color: var(--color-accent); }
 
-  .action-pill--gps { position: relative; }
-  .gps-dot {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--jungle);
-    border: 1.5px solid var(--surface-card);
+  .home-pill__gps-dot {
+    position: absolute; top: 9px; right: 9px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--border-medium);
+    border: 1.5px solid white;
+    transition: background var(--t-fast) var(--ease);
   }
+  .home-pill__gps-dot.active { background: #22c55e; }
 
-  .action-pill--game {
-    background: linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(249,115,22,0.12) 100%);
-    color: var(--sunset);
-    border-color: rgba(249,115,22,0.2);
+  .home-pill__badge {
+    position: absolute; top: 7px; right: 7px;
+    min-width: 16px; height: 16px; border-radius: var(--r-full);
+    background: #ef4444; color: white;
+    font-size: 0.55rem; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid white; padding: 0 3px;
   }
+  .home-pill__badge[hidden] { display: none; }
 
-  /* ── Bottom Sheet (calculadora) ── */
-  .calculator-sheet {
+  /* Bottom sheet */
+  .c-sheet {
     position: fixed;
-    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
-    left: 0;
-    right: 0;
-    z-index: 20;
+    bottom: calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
+    left: 0; right: 0;
     background: var(--glass-bg);
-    backdrop-filter: blur(28px) saturate(1.9);
-    -webkit-backdrop-filter: blur(28px) saturate(1.9);
+    backdrop-filter: blur(32px) saturate(2);
+    -webkit-backdrop-filter: blur(32px) saturate(2);
     border-top: 1px solid var(--glass-border);
     border-radius: var(--r-2xl) var(--r-2xl) 0 0;
     box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
-    padding-bottom: env(safe-area-inset-bottom);
-    /* Colapsado por defecto — solo muestra el handle + primera línea */
-    max-height: 72px;
+    max-height: 88px;
+    transition: max-height 0.4s cubic-bezier(0.16,1,0.3,1);
     overflow: hidden;
-    overscroll-behavior: contain;
-    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
     will-change: max-height;
   }
-  .calculator-sheet.expanded {
-    max-height: 72dvh;
+  .c-sheet.is-expanded {
+    max-height: 82dvh;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
-  .sheet-handle {
-    display: flex;
-    justify-content: center;
-    padding: 0.5rem 0 0.25rem;
-    cursor: grab;
+  .c-sheet__handle {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0.375rem;
+    width: 100%; padding: 0.875rem 1rem 0.5rem;
+    background: none; border: none; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
-  .sheet-handle__bar {
-    width: 36px;
-    height: 4px;
-    border-radius: var(--r-full);
+  .c-sheet__bar {
+    width: 36px; height: 4px;
     background: var(--border-medium);
-    opacity: 0.6;
+    border-radius: var(--r-full); opacity: 0.5;
+    transition: opacity var(--t-fast);
   }
+  .c-sheet__handle:hover .c-sheet__bar,
+  .c-sheet.is-expanded .c-sheet__bar { opacity: 0.8; }
 
+  .c-sheet__hint {
+    display: flex; align-items: center; gap: 0.375rem;
+    font-size: 0.82rem; font-weight: 800;
+    color: var(--text-secondary); letter-spacing: -0.01em;
+    transition: opacity var(--t-fast) var(--ease);
+  }
+  .c-sheet.is-expanded .c-sheet__hint { opacity: 0; pointer-events: none; }
 
+  .c-sheet__body { padding-bottom: 2rem; }
 
-  /* ── Dark ── */
-  :global(.dark) .calculator-sheet {
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.45);
+  /* Desktop: sheet siempre expandido */
+  @media (min-width: 769px) {
+    .c-sheet {
+      bottom: 0;
+      left: 0; width: 380px;
+      top: var(--header-h, 56px);
+      border-radius: 0;
+      border-top: none;
+      border-right: 1px solid var(--glass-border);
+      max-height: none !important;
+      overflow-y: auto;
+    }
+    .l-home__map { left: 380px; }
+    .home-topbar { left: 380px; position: fixed; top: var(--header-h,56px); right: 0; background: none; }
   }
 </style>
 
 <script>
-  // ── Bottom Sheet — toggle expand/collapse ──
-  const sheet = document.getElementById("calculator-sheet");
-  const handle = sheet?.querySelector(".sheet-handle");
+  const sheet  = document.getElementById("calculator-sheet");
+  const handle = document.getElementById("sheet-handle");
+  const mapEl  = document.querySelector(".l-home__map");
+  const gpsDot = document.getElementById("gps-status-dot");
+  const reportsBadge = document.getElementById("live-reports-badge");
 
-  function expandSheet() {
-    sheet?.classList.add("expanded");
-  }
-  function collapseSheet() {
-    sheet?.classList.remove("expanded");
-  }
+  function openSheet()  { sheet?.classList.add("is-expanded");    handle?.setAttribute("aria-expanded","true"); }
+  function closeSheet() { sheet?.classList.remove("is-expanded"); handle?.setAttribute("aria-expanded","false"); }
+  function toggleSheet(){ sheet?.classList.contains("is-expanded") ? closeSheet() : openSheet(); }
 
-  // Tap en el handle o en el título expande
-  handle?.addEventListener("click", () => {
-    if (sheet?.classList.contains("expanded")) {
-      collapseSheet();
-    } else {
-      expandSheet();
-    }
-  });
+  handle?.addEventListener("click", toggleSheet);
 
-  // Al escribir en los inputs, expandir automáticamente
-  sheet?.addEventListener("focusin", () => expandSheet());
+  // Cerrar al tocar el mapa
+  mapEl?.addEventListener("click", closeSheet);
 
-  // Al tocar el mapa (fuera del sheet), colapsar
-  document.getElementById("calculator-sheet")?.addEventListener("click", (e) => {
-    // No colapsar si el click es dentro del sheet
-    e.stopPropagation();
-  });
-  document.querySelector(".map-backdrop")?.addEventListener("click", () => collapseSheet());
+  // Abrir al hacer foco en inputs del calculator
+  sheet?.addEventListener("focusin", openSheet);
 
-  // Expandir automáticamente en tablets/desktop (pantalla ancha)
-  if (window.innerWidth >= 640) {
-    expandSheet();
-  }
+  // Desktop: siempre expandido
+  if (window.innerWidth >= 769) openSheet();
 
-  // ── Boton GPS — centrar mapa en ubicacion del usuario
+  // GPS
   const gpsBtn = document.getElementById("btn-gps-home");
-  if (gpsBtn) {
-    gpsBtn.addEventListener("click", () => {
-      if (!navigator.geolocation) return;
-      gpsBtn.classList.add("loading");
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          gpsBtn.classList.remove("loading");
-          window.dispatchEvent(new CustomEvent("MAP_FLY_TO", {
-            detail: { lat: pos.coords.latitude, lng: pos.coords.longitude, zoom: 16 }
-          }));
-        },
-        () => gpsBtn.classList.remove("loading"),
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    });
-  }
+  gpsBtn?.addEventListener("click", () => {
+    if (!navigator.geolocation) return;
+    gpsDot?.classList.remove("active");
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        gpsDot?.classList.add("active");
+        window.dispatchEvent(new CustomEvent("MAP_CENTER_GPS", {
+          detail: { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        }));
+        window.dispatchEvent(new CustomEvent("MAP_SET_STOP", {
+          detail: { type: "origin", name: "Mi ubicación" }
+        }));
+        openSheet();
+      },
+      () => { gpsDot?.classList.remove("active"); }
+    );
+  });
 
-  // El mapa escucha MAP_FLY_TO desde InteractiveMap
-  // El FAB de reporte está en ReportWidget global
+  // Badge de reportes en vivo (fetch ligero)
+  async function loadReportsBadge() {
+    try {
+      const r = await fetch("/api/reports");
+      if (r.ok) {
+        const data = await r.json();
+        const count = Array.isArray(data) ? data.filter((rep: any) => {
+          const d = new Date(rep.created_at || rep.fecha || 0);
+          return (Date.now() - d.getTime()) < 3600000; // última hora
+        }).length : 0;
+        if (count > 0 && reportsBadge) {
+          reportsBadge.textContent = String(count > 9 ? "9+" : count);
+          reportsBadge.hidden = false;
+        }
+      }
+    } catch {}
+  }
+  loadReportsBadge();
+
+  // Escuchar cuando llega resultado de ruta → abrir sheet
+  window.addEventListener("ROUTE_CALCULATED", openSheet);
+  document.addEventListener("astro:page-load", () => {
+    if (window.innerWidth >= 769) openSheet();
+  });
 </script>

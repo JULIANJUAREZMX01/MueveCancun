@@ -305,7 +305,7 @@
   color: var(--color-primary);
   transform: translateY(-1px);
 }
-.chip.active, .chip[aria-selected="true"] {
+.chip.active, .chip--active, .chip[aria-selected="true"] {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: white;

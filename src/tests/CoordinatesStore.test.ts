@@ -1,3 +1,4 @@
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CoordinatesStore } from '../utils/CoordinatesStore';
 
@@ -12,9 +13,9 @@ describe('CoordinatesStore', () => {
         // Create a fresh instance for each test
         store = new CoordinatesStore();
         // Reset the static singleton for isolation
-        (CoordinatesStore as any).instance = store;
-        (store as any).loadingPromise = null;
-        (store as any).db = null;
+        (CoordinatesStore as unknown).instance = store;
+        (store as unknown).loadingPromise = null;
+        (store as unknown).db = null;
         mockFetch.mockReset();
     });
 
@@ -192,9 +193,9 @@ describe('CoordinatesStore.findNearest - spatial index fast path', () => {
 
     beforeEach(() => {
         store = new CoordinatesStore();
-        (CoordinatesStore as any).instance = store;
-        (store as any).loadingPromise = null;
-        (store as any).db = null;
+        (CoordinatesStore as unknown).instance = store;
+        (store as unknown).loadingPromise = null;
+        (store as unknown).db = null;
     });
 
     // All tests use coordinates near (10.0, 10.0).
@@ -238,7 +239,7 @@ describe('CoordinatesStore.findNearest - spatial index fast path', () => {
             { nombre: 'Stop Alpha', lat: 10.005, lng: 10.0 },
         ]));
 
-        const spatialIndex = (store as any).spatialIndex;
+        const spatialIndex = (store as unknown).spatialIndex;
         const querySpy = vi.spyOn(spatialIndex, 'query');
 
         const nearest = store.findNearest(10.0, 10.0);

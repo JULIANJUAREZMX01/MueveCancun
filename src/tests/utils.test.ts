@@ -164,11 +164,11 @@ describe('safeUrl Utility', () => {
   });
 
   it('should return empty string for non-string inputs', () => {
-    expect(safeUrl(null as any)).toBe('');
-    expect(safeUrl(undefined as any)).toBe('');
-    expect(safeUrl(123 as any)).toBe('');
-    expect(safeUrl({} as any)).toBe('');
-    expect(safeUrl(true as any)).toBe('');
+    expect(safeUrl(null as unknown)).toBe('');
+    expect(safeUrl(undefined as unknown)).toBe('');
+    expect(safeUrl(123 as unknown)).toBe('');
+    expect(safeUrl({} as unknown)).toBe('');
+    expect(safeUrl(true as unknown)).toBe('');
   });
 
   it('should handle empty strings', () => {

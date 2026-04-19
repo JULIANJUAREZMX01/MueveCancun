@@ -9,341 +9,398 @@ const isEs = lang === "es";
 ---
 
 <MainLayout title={isEs ? "Comunidad — MueveCancún" : "Community — MueveCancún"}>
-  <div class="page-content page-content-wide px-4">
+  <div class="community-page">
 
     <!-- Header -->
     <div class="comm-header">
-      <div>
-        <div class="section-label mb-1">
-          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-          {isEs ? "Comunidad" : "Community"}
+      <div class="comm-header__text">
+        <div class="section-eyebrow">
+          <span class="live-pulse" aria-hidden="true"></span>
+          {isEs ? "En tiempo real" : "Real-time"}
         </div>
         <h1 class="page-title">{isEs ? "Reportes en vivo" : "Live reports"}</h1>
-        <p class="page-subtitle">{isEs ? "Incidencias reportadas por usuarios" : "User-reported incidents"}</p>
+        <p class="page-subtitle" id="reports-status">{isEs ? "Cargando..." : "Loading..."}</p>
       </div>
-      <button
-        id="btn-new-report"
-        class="btn btn-primary btn-sm"
-        aria-label={isEs ? "Nuevo reporte" : "New report"}
-      >
+      <button id="btn-new-report" class="btn btn-primary btn-sm" aria-label={isEs ? "Nuevo reporte" : "New report"}>
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         {isEs ? "Reportar" : "Report"}
       </button>
     </div>
 
-    <!-- Live indicator + stats -->
-    <div class="live-bar">
-      <div class="live-indicator">
-        <span class="live-dot" aria-hidden="true"></span>
-        <span id="reports-status" class="live-label">{isEs ? "Cargando..." : "Loading..."}</span>
-      </div>
-      <div class="live-stats" id="live-stats" aria-live="polite"></div>
+    <!-- Stats bar -->
+    <div class="stats-bar" id="live-stats" aria-live="polite" aria-label={isEs ? "Estadísticas en vivo" : "Live stats"}>
+      <div class="stat-pill"><span class="stat-pill__icon" aria-hidden="true">📡</span><span id="stat-total">—</span> {isEs ? "reportes" : "reports"}</div>
+      <div class="stat-pill"><span class="stat-pill__icon" aria-hidden="true">🏆</span><span id="stat-top">—</span></div>
+      <div class="stat-pill stat-pill--live"><span class="live-dot" aria-hidden="true"></span>{isEs ? "En vivo" : "Live"}</div>
     </div>
 
     <!-- Filtros -->
-    <div class="filter-row" role="group" aria-label={isEs ? "Filtrar reportes" : "Filter reports"}>
+    <div class="filter-bar" role="group" aria-label={isEs ? "Filtrar por tipo" : "Filter by type"}>
       {[
-        { id: "all",     emoji: "📡", label: isEs ? "Todos"    : "All"     },
-        { id: "Tráfico", emoji: "🚗", label: isEs ? "Tráfico"  : "Traffic" },
-        { id: "Demora",  emoji: "⏱",  label: isEs ? "Demora"   : "Delay"   },
-        { id: "Precio",  emoji: "💰", label: isEs ? "Precio"   : "Price"   },
-        { id: "Ruta",    emoji: "🗺️", label: isEs ? "Ruta"     : "Route"   },
-        { id: "Noticia", emoji: "📢", label: isEs ? "Noticia"  : "News"    },
+        { id:"all",     emoji:"📡", label: isEs ? "Todos"   : "All"     },
+        { id:"Tráfico", emoji:"🚗", label: isEs ? "Tráfico" : "Traffic" },
+        { id:"Demora",  emoji:"⏱",  label: isEs ? "Demora"  : "Delay"   },
+        { id:"Precio",  emoji:"💰", label: isEs ? "Precio"  : "Price"   },
+        { id:"Ruta",    emoji:"🗺️", label: isEs ? "Ruta"    : "Route"   },
+        { id:"Noticia", emoji:"📢", label: isEs ? "Noticia" : "News"    },
       ].map(f => (
-        <button
-          data-filter={f.id}
-          class={"chip" + (f.id === "all" ? " active" : "")}
-          aria-selected={f.id === "all" ? "true" : "false"}
-        >
-          <span aria-hidden="true">{f.emoji}</span>
-          {f.label}
+        <button data-filter={f.id} class={`chip${f.id === "all" ? " chip--active" : ""}`} aria-pressed={f.id === "all" ? "true" : "false"}>
+          <span aria-hidden="true">{f.emoji}</span> {f.label}
         </button>
       ))}
     </div>
 
     <!-- Feed -->
-    <div id="reports-feed" class="reports-feed" aria-live="polite" aria-atomic="false">
-      <!-- Skeletons -->
+    <div id="reports-feed" class="reports-feed" aria-live="polite" aria-atomic="false" aria-label={isEs ? "Lista de reportes" : "Reports feed"}>
       {[0,1,2].map(() => (
         <div class="report-skeleton" aria-hidden="true">
-          <div class="skeleton" style="width:36px;height:36px;border-radius:50%;flex-shrink:0"></div>
-          <div style="flex:1;display:flex;flex-direction:column;gap:0.5rem">
-            <div class="skeleton" style="height:14px;width:60%;border-radius:4px"></div>
-            <div class="skeleton" style="height:12px;width:80%;border-radius:4px"></div>
+          <div class="skeleton skeleton--avatar"></div>
+          <div class="skeleton-body">
+            <div class="skeleton skeleton--line" style="width:55%"></div>
+            <div class="skeleton skeleton--line" style="width:80%"></div>
           </div>
         </div>
       ))}
     </div>
 
     <!-- Empty state -->
-    <div id="reports-empty" class="reports-empty" hidden>
-      <span aria-hidden="true">📭</span>
-      <p>{isEs ? "Sin reportes recientes" : "No recent reports"}</p>
-      <p class="empty-sub">{isEs ? "Sé el primero en reportar una incidencia." : "Be the first to report an incident."}</p>
+    <div id="reports-empty" class="reports-empty" hidden aria-live="polite">
+      <span aria-hidden="true" class="reports-empty__icon">📭</span>
+      <p class="reports-empty__title">{isEs ? "Sin reportes recientes" : "No recent reports"}</p>
+      <p class="reports-empty__sub">{isEs ? "Sé el primero en reportar una incidencia." : "Be the first to report an incident."}</p>
+      <button id="btn-first-report" class="btn btn-primary btn-sm" style="margin-top:0.75rem">
+        {isEs ? "Crear reporte" : "Create report"}
+      </button>
+    </div>
+
+    <!-- Form modal -->
+    <div id="report-modal" class="report-modal" hidden role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+      <div class="report-modal__backdrop" id="modal-backdrop"></div>
+      <div class="report-modal__panel">
+        <div class="report-modal__header">
+          <h2 class="report-modal__title" id="report-modal-title">
+            {isEs ? "Nuevo reporte" : "New report"}
+          </h2>
+          <button id="modal-close" class="report-modal__close" aria-label={isEs ? "Cerrar" : "Close"}>
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+        <form id="report-form" class="report-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="r-type">{isEs ? "¿Qué sucede?" : "What's happening?"}</label>
+            <select id="r-type" name="tipo" required class="form-select">
+              <option value="" disabled selected>{isEs ? "Selecciona tipo..." : "Select type..."}</option>
+              <option value="Tráfico">🚗 {isEs ? "Tráfico" : "Traffic"}</option>
+              <option value="Demora">⏱ {isEs ? "Demora" : "Delay"}</option>
+              <option value="Precio">💰 {isEs ? "Precio incorrecto" : "Wrong price"}</option>
+              <option value="Ruta">🗺️ {isEs ? "Ruta incorrecta" : "Wrong route"}</option>
+              <option value="Noticia">📢 {isEs ? "Noticia" : "News"}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="r-route">{isEs ? "Ruta afectada (opcional)" : "Affected route (optional)"}</label>
+            <input id="r-route" name="ruta" type="text" placeholder={isEs ? "Ej: R-1, R-27, Combi..." : "e.g. R-1, R-27, Combi..."} class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="r-desc">{isEs ? "Descripción" : "Description"} <span class="form-required">*</span></label>
+            <textarea id="r-desc" name="descripcion" rows="3" minlength="10" maxlength="500" required class="form-textarea" placeholder={isEs ? "Sé específico — ayuda a todos." : "Be specific — it helps everyone."}></textarea>
+            <div class="form-char"><span id="r-chars">0</span>/500</div>
+          </div>
+          <div id="form-feedback" class="form-feedback" hidden></div>
+          <div class="report-form__actions">
+            <button type="button" id="modal-cancel" class="btn btn-ghost btn-sm">{isEs ? "Cancelar" : "Cancel"}</button>
+            <button type="submit" id="r-submit" class="btn btn-primary btn-sm">
+              <span id="r-submit-text">{isEs ? "Enviar reporte" : "Send report"}</span>
+              <span id="r-spinner" class="spinner" hidden aria-hidden="true"></span>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
   </div>
 </MainLayout>
 
 <style>
+  .community-page {
+    max-width: 48rem; margin-inline: auto;
+    padding: 0.75rem 1rem 5rem;
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+
+  /* Header */
+  .comm-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+  .section-eyebrow {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.7rem; font-weight: 800; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+  }
+  .live-pulse {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: #22c55e; animation: pulse 1.5s infinite;
+  }
   .page-title {
-    font-family: var(--font-display);
-    font-size: 1.75rem;
-    font-weight: 900;
-    color: var(--text-primary);
-    letter-spacing: -0.03em;
-    margin: 0.125rem 0;
-    line-height: 1.1;
+    font-family: var(--font-display); font-size: clamp(1.5rem,4vw,2rem);
+    font-weight: 900; letter-spacing: -0.03em; color: var(--text-primary);
+    margin: 0 0 0.125rem; line-height: 1.1;
   }
-  .page-subtitle { font-size: 0.8rem; color: var(--text-tertiary); margin: 0; }
+  .page-subtitle { font-size: 0.78rem; color: var(--text-tertiary); font-weight: 600; margin: 0; }
 
-  .comm-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    padding-top: 0.5rem;
+  /* Stats bar */
+  .stats-bar {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+    padding: 0.625rem 0.875rem;
+    background: var(--surface-card); border: 1px solid var(--border-light);
+    border-radius: var(--r-xl);
   }
+  .stat-pill {
+    display: flex; align-items: center; gap: 0.375rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--text-secondary);
+  }
+  .stat-pill--live { margin-left: auto; color: #16a34a; font-weight: 800; }
+  .dark .stat-pill--live { color: #4ade80; }
+  .stat-pill__icon { font-size: 0.875rem; }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: pulse 1.5s infinite; }
 
-  /* ── Live bar ── */
-  .live-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.875rem;
-    padding: 0.5rem 0.875rem;
-    background: var(--jungle-light);
-    border-radius: var(--r-full);
+  /* Filtros */
+  .filter-bar {
+    display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 2px;
+    scrollbar-width: none;
   }
-  .dark .live-bar { background: rgba(34,197,94,0.10); }
+  .filter-bar::-webkit-scrollbar { display: none; }
 
-  .live-indicator { display: flex; align-items: center; gap: 0.5rem; }
-  .live-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--jungle);
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.5; transform: scale(0.85); }
-  }
-  .live-label { font-size: 0.72rem; font-weight: 700; color: #15803d; }
-  .dark .live-label { color: #4ade80; }
-  .live-stats { font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary); }
-
-  .filter-row {
-    display: flex; gap: 0.5rem;
-    overflow-x: auto; padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  .filter-row::-webkit-scrollbar { display: none; }
-
-  /* ── Feed de reportes ── */
+  /* Feed */
   .reports-feed { display: flex; flex-direction: column; gap: 0.75rem; }
 
   /* Skeleton */
-  .report-skeleton {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: var(--surface-card);
-    border: 1px solid var(--border-light);
-    border-radius: var(--r-xl);
+  .report-skeleton { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; background: var(--surface-card); border: 1px solid var(--border-light); border-radius: var(--r-xl); }
+  .skeleton-body { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+  .skeleton { background: var(--border-light); border-radius: 4px; animation: shimmer 1.5s ease-in-out infinite; }
+  .skeleton--avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
+  .skeleton--line { height: 12px; }
+  @keyframes shimmer { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* Empty */
+  .reports-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 3rem 1.5rem; text-align: center; gap: 0.375rem;
   }
-
-  function renderCard(report) {
-    const safeUser = escapeHtml(report.user);
-    const safeText = escapeHtml(report.text);
-    const safeRuta = report.ruta ? escapeHtml(report.ruta) : '';
-    const safeLoc  = report.location ? escapeHtml(report.location) : '';
-    const initial  = safeUser.charAt(0).toUpperCase();
-
-    return `
-      <div class="report-card glass-card p-4 animate-slide-up" data-tipo="${escapeHtml(report.tipo)}" data-label="${escapeHtml(report.typeLabel)}">
-        <div class="flex items-start justify-between gap-2">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-xs font-black text-primary-700 dark:text-primary-400 shrink-0">
-              ${initial}
-            </div>
-            <div class="min-w-0">
-              <h4 class="text-sm font-bold text-slate-900 dark:text-white leading-none truncate">${safeUser}</h4>
-              <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">
-                ${escapeHtml(report.time)}${safeLoc ? ` · ${safeLoc}` : ''}
-              </span>
-            </div>
-          </div>
-          <span class="shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${report.typeColor}">
-            ${report.typeEmoji} ${escapeHtml(report.typeLabel)}
-          </span>
-        </div>
-
-        ${safeRuta ? `<div class="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[10px] font-bold text-slate-600 dark:text-slate-400"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 11.16l-1.42 1.42a7.462 7.462 0 01-1.02-2.24l1.93-.48c.17.71.44 1.37.81 1.96l-.3-.66zm8.22.84c0 2.34-1.14 4.33-2.89 5.6L14 16.49c1.3-.95 2.15-2.49 2.15-4.24 0-2.87-2.34-5.2-5.22-5.2-.39 0-.77.05-1.14.13l1.5 1.5C11.44 8.52 11.59 8.5 11.73 8.5c2.05 0 3.72 1.67 3.72 3.73l.55-.23z"/></svg>${safeRuta}</div>` : ''}
-
-        <p class="mt-2.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${safeText}</p>
-
-        <div class="mt-3 flex items-center gap-3 border-t border-slate-100 dark:border-slate-800 pt-2.5">
-          <button
-            class="vote-btn flex items-center gap-1.5 text-slate-400 hover:text-primary-500 transition-colors text-xs font-bold"
-            data-id="${escapeHtml(report.id)}"
-            aria-label="${isEs ? 'Útil' : 'Helpful'}"
-          >
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
-            <span class="vote-count">${escapeHtml(report.votes)}</span>
-          </button>
-          <a
-            href="${escapeHtml(report.url)}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-[10px] text-slate-400 hover:text-primary-500 transition-colors font-bold ml-auto"
-            aria-label="${isEs ? 'Ver en GitHub' : 'View on GitHub'}"
-          >
-            ${isEs ? 'Ver detalle →' : 'View detail →'}
-          </a>
-        </div>
-      </div>
-    `;
-  }
-  .reports-empty:first-child { font-size: 2.5rem; }
-  .reports-empty > span { font-size: 2.5rem; }
-  .reports-empty > p { margin: 0; font-weight: 600; color: var(--text-primary); }
-  .reports-empty .empty-sub { font-weight: 400; color: var(--text-tertiary); font-size: 0.8rem; }
   .reports-empty[hidden] { display: none; }
+  .reports-empty__icon { font-size: 3rem; }
+  .reports-empty__title { font-weight: 700; color: var(--text-primary); margin: 0; font-size: 0.95rem; }
+  .reports-empty__sub { font-size: 0.82rem; color: var(--text-tertiary); margin: 0; }
+
+  /* Report card (inyectado via JS) */
+  :global(.report-card) {
+    display: flex; align-items: flex-start; gap: 0.875rem;
+    padding: 1rem; background: var(--surface-card);
+    border: 1px solid var(--border-light); border-radius: var(--r-xl);
+    animation: fade-up 0.3s var(--ease-out) both;
+    transition: box-shadow var(--t-fast) var(--ease);
+  }
+  :global(.report-card:hover) { box-shadow: var(--shadow-md); }
+  :global(.rc-avatar) {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    background: var(--gradient-primary); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.875rem; font-weight: 900;
+  }
+  :global(.rc-body) { flex: 1; min-width: 0; }
+  :global(.rc-message) { font-size: 0.875rem; font-weight: 700; color: var(--text-primary); line-height: 1.45; margin-bottom: 0.375rem; }
+  :global(.rc-meta) { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  :global(.rc-type) {
+    font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.06em; padding: 0.15rem 0.5rem;
+    background: var(--teal-xlight); color: var(--teal-dark);
+    border-radius: var(--r-full);
+  }
+  .dark :global(.rc-type) { background: rgba(13,148,136,0.15); color: #5eead4; }
+  :global(.rc-route), :global(.rc-ago) { font-size: 0.72rem; color: var(--text-tertiary); font-weight: 600; }
+  :global(.rc-votes) {
+    display: flex; align-items: center; gap: 0.25rem;
+    padding: 0.2rem 0.5rem; margin-left: auto;
+    background: var(--surface-bg); border: 1px solid var(--border-light);
+    border-radius: var(--r-full); font-size: 0.72rem; font-weight: 800;
+    color: var(--text-tertiary); cursor: pointer; transition: all var(--t-fast) var(--ease);
+  }
+  :global(.rc-votes:hover), :global(.rc-votes.voted) { color: var(--color-primary); border-color: var(--color-primary); background: var(--teal-xlight); }
+
+  /* Modal */
+  .report-modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+  .report-modal[hidden] { display: none; }
+  .report-modal__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+  .report-modal__panel {
+    position: relative; width: 100%; max-width: 480px;
+    background: var(--surface-card); border-radius: var(--r-2xl) var(--r-2xl) 0 0;
+    padding: 1.5rem; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom,0));
+    animation: slide-up 0.3s var(--ease-out);
+  }
+  @media (min-width: 520px) {
+    .report-modal { align-items: center; }
+    .report-modal__panel { border-radius: var(--r-2xl); max-height: 90vh; overflow-y: auto; }
+  }
+  @keyframes slide-up { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .report-modal__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+  .report-modal__title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 900; color: var(--text-primary); margin: 0; }
+  .report-modal__close { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--surface-elevated); border: none; border-radius: var(--r-md); cursor: pointer; color: var(--text-secondary); transition: all var(--t-fast) var(--ease); }
+  .report-modal__close:hover { background: var(--surface-bg); color: var(--text-primary); }
+
+  /* Form */
+  .report-form { display: flex; flex-direction: column; gap: 0.875rem; }
+  .form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+  .form-label { font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .form-required { color: var(--color-accent); }
+  .form-select, .form-input, .form-textarea {
+    width: 100%; padding: 0.75rem 0.875rem;
+    background: var(--surface-bg); border: 1.5px solid var(--border-light);
+    border-radius: var(--r-lg); color: var(--text-primary);
+    font-size: 0.875rem; font-family: inherit;
+    transition: border-color var(--t-fast) var(--ease);
+  }
+  .form-select:focus, .form-input:focus, .form-textarea:focus {
+    outline: none; border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
+  }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-char { font-size: 0.68rem; font-weight: 700; color: var(--text-tertiary); text-align: right; }
+  .form-feedback { padding: 0.75rem; border-radius: var(--r-lg); font-size: 0.82rem; font-weight: 700; }
+  .form-feedback[hidden] { display: none; }
+  .form-feedback.success { background: var(--jungle-light); color: #15803d; }
+  .form-feedback.error { background: var(--sunset-light); color: #c2410c; }
+  .report-form__actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.25rem; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .spinner[hidden] { display: none; }
+
+  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.85); } }
+  @keyframes fade-up { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 
 <script>
   const API = "/api/reports";
   const feed    = document.getElementById("reports-feed")!;
   const empty   = document.getElementById("reports-empty")!;
-  const statusEl= document.getElementById("reports-status")!;
-  const statsEl = document.getElementById("live-stats")!;
-  const filterBtns = document.querySelectorAll<HTMLButtonElement>(".filter-row .chip");
-  const newBtn  = document.getElementById("btn-new-report");
+  const statusEl = document.getElementById("reports-status")!;
+  const statTotal = document.getElementById("stat-total")!;
+  const statTop   = document.getElementById("stat-top")!;
+  const modal   = document.getElementById("report-modal")!;
+  const form    = document.getElementById("report-form") as HTMLFormElement;
+  const textarea = document.getElementById("r-desc") as HTMLTextAreaElement;
+  const charEl  = document.getElementById("r-chars")!;
+  const feedback = document.getElementById("form-feedback")!;
+  const spinner  = document.getElementById("r-spinner")!;
+  const submitBtn = document.getElementById("r-submit") as HTMLButtonElement;
+  const submitTxt = document.getElementById("r-submit-text")!;
 
   let allReports: any[] = [];
   let activeFilter = "all";
 
-  const typeColors: Record<string,string> = {
-    "Tráfico":"orange","Demora":"amber","Precio":"green","Ruta":"teal","Noticia":"blue"
-  };
-  const typeEmoji: Record<string,string> = {
-    "Tráfico":"🚗","Demora":"⏱","Precio":"💰","Ruta":"🗺️","Noticia":"📢"
-  };
+  const typeEmoji: Record<string,string> = { Tráfico:"🚗", Demora:"⏱", Precio:"💰", Ruta:"🗺️", Noticia:"📢" };
 
-  function timeSince(dateStr: string): string {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const m = Math.floor(diff / 60000);
-    if (m < 1)  return "Ahora";
-    if (m < 60) return m + "m";
-    const h = Math.floor(m / 60);
-    if (h < 24) return h + "h";
-    return Math.floor(h / 24) + "d";
+  function esc(s: string) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+  function ago(iso: string) {
+    const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+    if (m < 1) return "Ahora"; if (m < 60) return m + "m"; if (m < 1440) return Math.floor(m/60) + "h"; return Math.floor(m/1440) + "d";
   }
 
-  function renderReports(reports: any[]) {
-    // Remove skeletons
-    feed.querySelectorAll(".report-skeleton").forEach(el => el.remove());
-    feed.innerHTML = "";
-
-    const filtered = activeFilter === "all"
-      ? reports
-      : reports.filter(r => (r.type || r.tipo || "") === activeFilter);
+  function renderFeed() {
+    feed.querySelectorAll(".report-skeleton,.report-card").forEach(el => el.remove());
+    const filtered = activeFilter === "all" ? allReports : allReports.filter(r => (r.type||r.tipo) === activeFilter);
 
     empty.hidden = filtered.length > 0;
+    statusEl.textContent = `${filtered.length} reporte${filtered.length !== 1 ? "s" : ""}`;
+    statTotal.textContent = String(allReports.length);
+
+    // Top type
+    const counts: Record<string,number> = {};
+    allReports.forEach(r => { const t = r.type||r.tipo||"?"; counts[t] = (counts[t]||0)+1; });
+    const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+    statTop.textContent = top ? `${typeEmoji[top[0]]||"📢"} ${top[0]}` : "—";
 
     filtered.forEach((r, i) => {
       const card = document.createElement("article");
       card.className = "report-card";
-      card.style.animationDelay = (i * 60) + "ms";
-      card.style.opacity = "0";
-
-      const initials = (r.author || r.autor || "?")[0].toUpperCase();
-      const type     = r.type || r.tipo || "General";
-      const emoji    = typeEmoji[type] || "📢";
-      const ago      = timeSince(r.created_at || r.fecha || new Date().toISOString());
-      const votes    = r.votes || r.votos || 0;
-
-      card.innerHTML = [
-        "<div class='report-card__avatar'>" + initials + "</div>",
-        "<div class='report-card__body'>",
-          "<div class='report-card__title'>" + emoji + " " + (r.message || r.mensaje || r.title || "Sin descripcion") + "</div>",
-          "<div class='report-card__meta'>",
-            "<span class='report-card__type'>" + type + "</span>",
-            "<span>" + (r.route || r.ruta || "") + "</span>",
-            "<span>" + ago + "</span>",
-            "<button class='report-card__votes' data-id='" + (r.id || "") + "'>",
-              "<svg width='12' height='12' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z'/></svg>",
-              "<span>" + votes + "</span>",
-            "</button>",
-          "</div>",
-        "</div>",
-      ].join("");
-
-      // Vote button
-      card.querySelector(".report-card__votes")?.addEventListener("click", (e) => {
-        e.stopPropagation();
+      card.style.animationDelay = `${i*50}ms`;
+      const init = (r.author||r.autor||"?")[0].toUpperCase();
+      const type = r.type||r.tipo||"General";
+      const emoji = typeEmoji[type] || "📢";
+      const votes = r.votes||r.votos||0;
+      card.innerHTML = `
+        <div class="rc-avatar" aria-hidden="true">${esc(init)}</div>
+        <div class="rc-body">
+          <div class="rc-message">${emoji} ${esc(r.message||r.mensaje||r.title||"—")}</div>
+          <div class="rc-meta">
+            <span class="rc-type">${esc(type)}</span>
+            ${r.route||r.ruta ? `<span class="rc-route">🚌 ${esc(r.route||r.ruta)}</span>` : ""}
+            <span class="rc-ago">${ago(r.created_at||r.fecha||new Date().toISOString())}</span>
+            <button class="rc-votes" data-id="${esc(r.id||"")}" aria-label="Votar útil">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+              <span>${votes}</span>
+            </button>
+          </div>
+        </div>`;
+      card.querySelector(".rc-votes")?.addEventListener("click", e => {
         const btn = e.currentTarget as HTMLButtonElement;
+        if (btn.classList.contains("voted")) return;
+        btn.classList.add("voted");
         const span = btn.querySelector("span")!;
-        span.textContent = String(parseInt(span.textContent || "0") + 1);
-        btn.style.color = "var(--color-primary)";
-        btn.style.borderColor = "var(--color-primary)";
-        btn.style.background = "var(--teal-xlight)";
+        span.textContent = String(parseInt(span.textContent||"0")+1);
       });
-
       feed.appendChild(card);
     });
-
-    statusEl.textContent = filtered.length + " reporte" + (filtered.length !== 1 ? "s" : "");
-    if (statsEl) {
-      const types = new Set(reports.map(r => r.type || r.tipo)).size;
-      statsEl.textContent = types + " tipos";
-    }
   }
 
   async function loadReports() {
     try {
       const res = await fetch(API);
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
-      allReports = Array.isArray(data) ? data : (data.reports || data.data || []);
-      renderReports(allReports);
-    } catch {
-      statusEl.textContent = "Sin conexion — datos en cache";
-      // Datos de demo offline
-      allReports = [
-        { id:"1", type:"Tráfico",  message:"Congestion en Av. Tulum frente a La Isla", author:"Ana G.", route:"R2",   created_at: new Date(Date.now()-300000).toISOString(), votes: 12 },
-        { id:"2", type:"Demora",   message:"Ruta R1 con 20 min de retraso desde el aeropuerto", author:"Carlos M.", route:"R1", created_at: new Date(Date.now()-900000).toISOString(), votes: 8 },
-        { id:"3", type:"Precio",   message:"Subio la tarifa en combis del Centro a $9 pesos", author:"Sofia T.", route:"Combi", created_at: new Date(Date.now()-1800000).toISOString(), votes: 23 },
-        { id:"4", type:"Ruta",     message:"Nuevo ramal de la R27 pasa por Plaza Americas", author:"Diego R.", route:"R27", created_at: new Date(Date.now()-3600000).toISOString(), votes: 5 },
-        { id:"5", type:"Noticia",  message:"MueveCancun ahora disponible offline!", author:"Admin", route:"", created_at: new Date(Date.now()-7200000).toISOString(), votes: 34 },
-      ];
-      renderReports(allReports);
-    }
+      if (res.ok) { allReports = await res.json(); }
+    } catch { allReports = []; }
+    renderFeed();
   }
 
   // Filtros
-  filterBtns.forEach(btn => {
+  document.querySelectorAll<HTMLButtonElement>(".filter-bar .chip").forEach(btn => {
     btn.addEventListener("click", () => {
-      filterBtns.forEach(b => { b.classList.remove("active"); b.setAttribute("aria-selected","false"); });
-      btn.classList.add("active");
-      btn.setAttribute("aria-selected","true");
+      document.querySelectorAll(".filter-bar .chip").forEach(b => { b.classList.remove("chip--active"); b.setAttribute("aria-pressed","false"); });
+      btn.classList.add("chip--active"); btn.setAttribute("aria-pressed","true");
       activeFilter = btn.dataset.filter || "all";
-      renderReports(allReports);
+      renderFeed();
     });
   });
 
-  // Nuevo reporte
-  if (newBtn) {
-    newBtn.addEventListener("click", () => {
-      window.dispatchEvent(new CustomEvent("OPEN_REPORT_WIDGET"));
-    });
-  }
+  // Modal
+  function openModal() { modal.hidden = false; document.body.style.overflow = "hidden"; feedback.hidden = true; form.reset(); charEl.textContent = "0"; }
+  function closeModal() { modal.hidden = true; document.body.style.overflow = ""; }
+
+  document.getElementById("btn-new-report")?.addEventListener("click", openModal);
+  document.getElementById("btn-first-report")?.addEventListener("click", openModal);
+  document.getElementById("modal-close")?.addEventListener("click", closeModal);
+  document.getElementById("modal-cancel")?.addEventListener("click", closeModal);
+  document.getElementById("modal-backdrop")?.addEventListener("click", closeModal);
+  textarea?.addEventListener("input", () => { charEl.textContent = String(textarea.value.length); });
+
+  // Submit
+  form?.addEventListener("submit", async e => {
+    e.preventDefault();
+    submitBtn.disabled = true; spinner.hidden = false; submitTxt.textContent = "Enviando...";
+    feedback.hidden = true;
+    const data = { type: (form as any)["tipo"].value, route: (form as any)["ruta"].value, message: (form as any)["descripcion"].value, author: "Ciudadano" };
+    try {
+      const res = await fetch(API, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(data) });
+      if (res.ok) {
+        feedback.className = "form-feedback success"; feedback.textContent = "✅ Reporte enviado. ¡Gracias!"; feedback.hidden = false;
+        form.reset(); charEl.textContent = "0";
+        setTimeout(() => { closeModal(); loadReports(); }, 1500);
+      } else { throw new Error("Error"); }
+    } catch {
+      feedback.className = "form-feedback error"; feedback.textContent = "❌ Error al enviar. Intenta de nuevo."; feedback.hidden = false;
+    } finally {
+      submitBtn.disabled = false; spinner.hidden = true;
+      submitTxt.textContent = document.documentElement.lang === "en" ? "Send report" : "Enviar reporte";
+    }
+  });
 
   loadReports();
-  // Refrescar cada 60s si esta en linea
-  setInterval(() => { if (navigator.onLine) loadReports(); }, 60000);
-
-  document.addEventListener("astro:after-swap", loadReports);
+  setInterval(loadReports, 30000);
+  document.addEventListener("astro:page-load", loadReports);
 </script>

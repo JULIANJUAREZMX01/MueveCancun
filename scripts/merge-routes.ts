@@ -125,7 +125,7 @@ for (const file of routeFiles) {
   }
 
   // Normalize: individual files can be a route object, array, or {rutas:[...]}
-  let routes: RouteRecord[] = [];
+  let routes: RouteRecord[];
   if (Array.isArray(parsed)) {
     routes = parsed as RouteRecord[];
   } else if (parsed && typeof parsed === 'object' && 'rutas' in parsed && Array.isArray((parsed as MasterCatalog).rutas)) {
@@ -165,14 +165,23 @@ for (const file of routeFiles) {
     }
 
     if (masterMap.has(route.id)) {
-      info(`Updated: ${route.id} (from ${file.name})`);
+      // HARDENED: preserve visual identity fields from master — never overwrite with undefined
+      const existing = masterMap.get(route.id)!;
+      const PROTECTED_FIELDS = ['route_id', 'color_id', 'color', 'color_hex', 'display_color', 'line_color'];
+      const merged: RouteRecord = { ...existing, ...route };
+      for (const field of PROTECTED_FIELDS) {
+        if (existing[field] !== undefined && !route[field]) {
+          merged[field] = existing[field]; // restore if routes/ file stripped it
+        }
+      }
+      info(`Updated: ${route.id} (from ${file.name}) [identity fields preserved]`);
       updated++;
+      masterMap.set(route.id, merged);
     } else {
       info(`Added:   ${route.id} (from ${file.name})`);
       added++;
+      masterMap.set(route.id, route);
     }
-
-    masterMap.set(route.id, route);
   }
 
   // Register file in index

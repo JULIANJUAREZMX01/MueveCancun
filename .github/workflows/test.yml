@@ -1,123 +1,100 @@
-name: Tests
-
-permissions:
-  contents: read
-
+name: CI / Security & Quality
 on:
   push:
-    branches: [main, "claude/**"]
+    branches: [main, "claude/**", "jules/**"]
   pull_request:
     branches: [main]
-
+permissions:
+  contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
-  rust-tests:
-    name: Rust WASM Unit Tests
+  environment:
+    name: Environment Setup
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
+        with:
+          node-version: 24
+          cache: 'pnpm'
       - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
         with:
           targets: wasm32-unknown-unknown
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@54e2af0a8339c0435fa1de94002eab349a2f15ef # v2.7.3
+      - run: pnpm install --frozen-lockfile
+  lint:
+    name: Lint & Prettier
+    needs: environment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+  ts-unit:
+    name: TS Unit Tests
+    needs: environment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test -- --reporter=verbose
+  rust-unit:
+    name: Rust WASM Logic
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@5cb072d7354962be830356aa6b146f7612846014
         with:
           workspaces: rust-wasm
-
       - name: Run route-calculator tests
         working-directory: rust-wasm/route-calculator
-        run: cargo test --lib -- --nocapture --test-threads=1
-
-  ts-tests:
-    name: TypeScript Unit Tests (Vitest)
+        run: cargo test --lib -- --nocapture
+  data-integrity:
+    name: Data Validation
+    needs: environment
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Setup Node 22
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
-          node-version: "22"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Cache pnpm store
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: ${{ runner.os }}-pnpm-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run Vitest
-        run: pnpm test -- --reporter=verbose
-
-  validate-routes:
-    name: Validate Route Data
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: node --experimental-strip-types scripts/validate-routes.ts
+  build-vercel:
+    name: Production Build (Vercel)
+    needs: [lint, ts-unit, rust-unit, data-integrity]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Setup Node 22
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
-          node-version: "22"
-
-      - name: Validate master_routes.json
-        run: node --experimental-strip-types scripts/validate-routes.ts
-
-  build-check:
-    name: Build Check (Astro SSG)
-    runs-on: ubuntu-latest
-    needs: [ts-tests, validate-routes, rust-tests]
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Setup Node 22
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
-        with:
-          node-version: "22"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Restore WASM cache
-        id: cache-wasm
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-        with:
-          path: public/wasm/route-calculator
-          key: wasm-build-${{ github.sha }}
-
-      - name: Build WASM fallback (if cache miss)
-        if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: |
-          npm install -g wasm-pack
-          cd rust-wasm/route-calculator
-          wasm-pack build --target web --out-dir ../../public/wasm/route-calculator
-
-      - name: Check WASM binary exists
-        run: node scripts/check-wasm.cjs
-
-      - name: Optimize JSON
-        run: node --experimental-strip-types scripts/optimize-json.ts || true
-
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Build WASM
+        run: node scripts/build-wasm.mjs
       - name: Astro build
-        run: pnpm exec astro build
+        run: pnpm build:vercel
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           NODE_ENV: production

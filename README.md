@@ -13,7 +13,7 @@
 
 | Recurso | URL |
 | :--- | :--- |
-| 🚌 App en producción | [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com) |
+| 🚌 App en producción | [mueve-cancun.vercel.app](https://mueve-cancun.vercel.app/en/home)](https://mueve-cancun.vercel.app/en/home) |
 | 📦 Repositorio principal | [github.com/JULIANJUAREZMX01/MueveCancun](https://github.com/JULIANJUAREZMX01/MueveCancun) |
 | 🗺️ Roadmap | [ROADMAP.md](./ROADMAP.md) |
 | 📊 Estado del proyecto | [docs/PROJECT_STATUS.md](./docs/PROJECT_STATUS.md) |

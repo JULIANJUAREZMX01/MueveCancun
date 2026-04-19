@@ -55,12 +55,12 @@ describe('RouteDrawer', () => {
 
     it('should return undefined if L is not available', () => {
         vi.stubGlobal('window', {}); // No L
-        const result = drawRoute(mockMap as any, {}, null, {});
+        const result = drawRoute(mockMap as unknown, {}, null, {});
         expect(result).toBeUndefined();
     });
 
     it('should return undefined if map is not available', () => {
-        const result = drawRoute(null as any, {}, null, {});
+        const result = drawRoute(null as unknown, {}, null, {});
         expect(result).toBeUndefined();
     });
 
@@ -70,13 +70,13 @@ describe('RouteDrawer', () => {
             remove: vi.fn(),
             addTo: vi.fn()
         };
-        drawRoute(mockMap as any, { paradas: [{lat: 1, lng: 1}] }, existingLayerGroup as any, {});
+        drawRoute(mockMap as unknown, { paradas: [{lat: 1, lng: 1}] }, existingLayerGroup as unknown, {});
         expect(existingLayerGroup.clearLayers).toHaveBeenCalled();
         expect(existingLayerGroup.remove).toHaveBeenCalled();
     });
 
     it('should return undefined if data structure is invalid (missing legs, paradas, stops)', () => {
-        const result = drawRoute(mockMap as any, {}, null, {});
+        const result = drawRoute(mockMap as unknown, {}, null, {});
         expect(result).toBeUndefined();
     });
 
@@ -89,7 +89,7 @@ describe('RouteDrawer', () => {
             ]
         };
 
-        const result = drawRoute(mockMap as any, routeData, null, {});
+        const result = drawRoute(mockMap as unknown, routeData, null, {});
 
         expect(result).toBe(mockLayerGroupInstance);
         expect(mockL.layerGroup).toHaveBeenCalled();
@@ -138,7 +138,7 @@ describe('RouteDrawer', () => {
             ['Stop2', [21.1, -86.1]]
         ]);
 
-        drawRoute(mockMap as any, routeData, null, coordinatesDB);
+        drawRoute(mockMap as unknown, routeData, null, coordinatesDB);
 
         expect(mockL.polyline).toHaveBeenCalledWith(
             [[21.0, -86.0], [21.1, -86.1]],
@@ -165,7 +165,7 @@ describe('RouteDrawer', () => {
             ]
         };
 
-        drawRoute(mockMap as any, routeData, null, {});
+        drawRoute(mockMap as unknown, routeData, null, {});
 
         // 2 Polylines (one for each leg)
         expect(mockL.polyline).toHaveBeenCalledTimes(2);
@@ -197,7 +197,7 @@ describe('RouteDrawer', () => {
             ]
         };
 
-        drawRoute(mockMap as any, routeData, null, {});
+        drawRoute(mockMap as unknown, routeData, null, {});
 
         expect(consoleWarnSpy).toHaveBeenCalledWith("No coordinates found for steps in this leg.");
         expect(mockL.polyline).not.toHaveBeenCalled();

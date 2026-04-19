@@ -12,8 +12,18 @@ const t = useTranslations(lang);
 <div class="calculator-wrapper relative z-20 -mt-12 px-4">
   <Card className="p-6 shadow-2xl border-slate-100/50 backdrop-blur-xl bg-white/90">
     <div class="space-y-4">
-      <Input id="origin-input" type="text" placeholder={t('calc.placeholder.origin')} className="h-14 font-bold bg-slate-50 rounded-2xl" />
-      <Input id="dest-input" type="text" placeholder={t('calc.placeholder.dest')} className="h-14 font-bold bg-slate-50 rounded-2xl" />
+      <div class="relative">
+        <Input id="origin-input" type="text" placeholder={t('calc.placeholder.origin')} className="h-14 font-bold bg-slate-50 rounded-2xl pl-12" />
+        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500">
+           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        </div>
+      </div>
+      <div class="relative">
+        <Input id="dest-input" type="text" placeholder={t('calc.placeholder.dest')} className="h-14 font-bold bg-slate-50 rounded-2xl pl-12" />
+        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-sky-500">
+           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        </div>
+      </div>
       <Button id="search-route-btn" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest shadow-xl">
         <span id="btn-text" class="flex items-center justify-center gap-2">
           {t('calc.btn')} <Icon name="arrow-right" className="w-4 h-4" />
@@ -22,14 +32,12 @@ const t = useTranslations(lang);
     </div>
   </Card>
 
-  <!-- Único bloque de resultados — IDs únicos, deduplicado -->
   <div id="results-info" class="hidden mt-8 animate-fade-in">
-    <div class="flex items-center justify-between px-2 mb-4">
-      <span class="text-[10px] font-black uppercase tracking-widest text-slate-400" id="results-count-label"></span>
-      <span class="badge-success font-mono text-xs" id="results-time-badge"></span>
-    </div>
-    <div id="best-result-area" class="space-y-4"></div>
-    <div id="results-container" class="mt-4 grid grid-cols-1 gap-3 pb-10"></div>
+      <div class="flex items-center justify-between px-2 mb-4">
+          <span class="text-[10px] font-black uppercase tracking-widest text-slate-400" id="results-count-label">OPCIONES ENCONTRADAS</span>
+          <span class="px-2 py-1 bg-teal-50 text-teal-600 rounded-lg text-[10px] font-bold font-mono" id="results-time-badge"></span>
+      </div>
+      <div id="results-container" class="space-y-4 pb-20"></div>
   </div>
 
   <datalist id="locations">
@@ -43,67 +51,117 @@ const t = useTranslations(lang);
 
 <script>
   import { WasmLoader } from "../utils/WasmLoader";
-  import { initWasm } from "../lib/initWasm";
-  import { escapeHtml } from "../utils/utils";
+  import { initWasm, enrichJourneyLegs } from "../lib/initWasm";
+  import { escapeHtml, showToast } from "../utils/utils";
+
+  // ── Lógica principal ──────────────────────────────────────────────────────
+  const isEs = document.documentElement.lang !== "en";
 
   async function start() {
-    const btn              = document.getElementById('search-route-btn') as HTMLButtonElement;
-    const originInput      = document.getElementById('origin-input') as HTMLInputElement;
-    const destInput        = document.getElementById('dest-input') as HTMLInputElement;
-    const resultsInfo      = document.getElementById('results-info');
-    const resultsContainer = document.getElementById('results-container');
-    const countLabel       = document.getElementById('results-count-label');
-    const timeBadge        = document.getElementById('results-time-badge');
+      const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
+      const originInput = document.getElementById('origin-input') as HTMLInputElement;
+      const destInput = document.getElementById('dest-input') as HTMLInputElement;
+      const resultsInfo = document.getElementById('results-info');
+      const resultsContainer = document.getElementById('results-container');
+      const timeBadge = document.getElementById('results-time-badge');
 
-    if (!btn || !originInput || !destInput || !resultsInfo || !resultsContainer) return;
+      if (!btn || !originInput || !destInput || !resultsInfo || !resultsContainer) return;
 
-    btn.addEventListener('click', async () => {
-      const oVal = originInput.value.trim();
-      const dVal = destInput.value.trim();
-      if (!oVal || !dVal) return;
+      // Escuchar eventos desde el mapa
+      window.addEventListener("MAP_SET_STOP", (e: any) => {
+        const { type, name } = e.detail;
+        if (type === "origin") originInput.value = name;
+        else if (type === "dest") destInput.value = name;
+      });
 
-      btn.disabled = true;
-      const t0 = performance.now();
+      btn.addEventListener('click', async () => {
+          const oVal = originInput.value.trim();
+          const dVal = destInput.value.trim();
+          if (!oVal || !dVal) {
+            showToast("Ingresa origen y destino", "warning");
+            return;
+          }
 
-      try {
-        await initWasm();
-        const module  = await WasmLoader.getModule();
-        const raw     = module.find_route(oVal, dVal);
-        const results = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        const ms      = Math.round(performance.now() - t0);
+          btn.disabled = true;
+          const startSearch = performance.now();
 
-        resultsInfo.classList.remove('hidden');
-        resultsContainer.innerHTML = '';
-        if (countLabel) countLabel.textContent = `${Array.isArray(results) ? results.length : 0} rutas`;
-        if (timeBadge)  timeBadge.textContent  = `${ms}ms`;
+          try {
+              await initWasm();
+              const module = await WasmLoader.getModule();
+              const results = module.find_route(oVal, dVal);
+              const endSearch = performance.now();
 
-        if (Array.isArray(results) && results.length > 0) {
-          results.forEach((r: any) => {
-            const card = document.createElement('div');
-            card.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center';
-            card.innerHTML =
-              `<div>
-                <span class="text-xs font-bold text-slate-500 uppercase">${escapeHtml(String(r.type ?? r.transport_type ?? ''))}</span>
-                <p class="font-black text-slate-900 mt-0.5">${escapeHtml(String(r.name ?? r.nombre ?? 'Ruta'))}</p>
-              </div>
-              <span class="text-lg font-black text-teal-600">$${escapeHtml(String(r.total_price ?? r.tarifa ?? 0))} MXN</span>`;
-            resultsContainer.appendChild(card);
-          });
-        } else {
-          resultsContainer.innerHTML =
-            '<div class="p-8 text-center text-slate-400 font-bold">No se encontraron rutas</div>';
-        }
-      } catch (e) {
-        console.error('[RouteCalculator] SEARCH ERROR', e);
-        resultsInfo.classList.remove('hidden');
-        resultsContainer.innerHTML =
-          '<div class="p-4 text-red-500 text-center font-bold">Error al cargar el motor</div>';
-      } finally {
-        btn.disabled = false;
-      }
-    });
+              resultsInfo.classList.remove('hidden');
+              resultsContainer.innerHTML = '';
+              if (timeBadge) timeBadge.textContent = `${(endSearch - startSearch).toFixed(2)}ms`;
+
+              if (results && results.length > 0) {
+                  results.forEach((rawR: any) => {
+                      const r = enrichJourneyLegs(rawR as any) as any;
+                      const card = document.createElement('div');
+                      card.className = 'bg-white p-5 rounded-3xl shadow-sm border border-slate-100 hover:border-primary-200 transition-all cursor-pointer group';
+
+                      const leg = r.legs[0];
+                      const isTransfer = r.type === "Transfer";
+
+                      // Color de la ruta para el borde
+                      const routeColor = leg.color || leg.route_color ||
+                        (leg.transport_type === "Bus_HotelZone" ? "#F97316" : leg.transport_type === "ADO" ? "#FF6B6B" : "#0EA5E9");
+
+                      card.style.borderLeftWidth = "4px";
+                      card.style.borderLeftColor = routeColor;
+                      card.style.borderLeftStyle = "solid";
+                      card.innerHTML = `
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;gap:0.5rem">
+                          <div>
+                            <div style="display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:${routeColor};margin-bottom:3px">
+                              ${isTransfer ? "🔀 Trasbordo" : "🚌 Directo"}
+                              ${r.legs?.length > 1 ? `<span style="background:${routeColor}22;padding:1px 5px;border-radius:4px">${r.legs.length} tramos</span>` : ""}
+                            </div>
+                            <div style="font-size:0.875rem;font-weight:900;color:var(--text-primary);line-height:1.2">${escapeHtml(leg.route_name)}</div>
+                          </div>
+                          <div style="text-align:right;flex-shrink:0">
+                            <div style="font-size:1.25rem;font-weight:900;color:var(--text-primary);line-height:1">$${r.total_price}</div>
+                            <div style="font-size:9px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em">MXN</div>
+                          </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--text-secondary)">
+                          <span style="background:${routeColor}22;color:${routeColor};padding:2px 8px;border-radius:9999px;font-weight:800">${escapeHtml(leg.origin_stop)}</span>
+                          <svg style="width:12px;height:12px;flex-shrink:0;color:var(--text-tertiary)" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+                          <span style="background:#64748b22;padding:2px 8px;border-radius:9999px">${escapeHtml(leg.dest_stop)}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:6px;gap:4px">
+                          <svg style="width:10px;height:10px;color:var(--text-tertiary)" viewBox="0 0 24 24" fill="currentColor"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+                          <span style="font-size:10px;font-weight:700;color:var(--text-tertiary)">${isEs ? "Toca para ver en mapa" : "Tap to view on map"}</span>
+                        </div>
+                      `;
+
+                      card.addEventListener('click', () => {
+                         window.dispatchEvent(new CustomEvent("SHOW_ROUTE_ON_MAP", { detail: { journey: r } }));
+                         window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED"));
+                      });
+
+                      resultsContainer.appendChild(card);
+                  });
+              } else {
+                  resultsContainer.innerHTML = `
+                    <div class="p-10 text-center">
+                      <div class="text-4xl mb-4">🛸</div>
+                      <p class="font-black text-slate-900 uppercase tracking-widest text-xs">Sin rutas directas</p>
+                      <p class="text-slate-400 text-xs mt-2 font-bold">Prueba con paradas más conocidas como "Crucero" o "ADO"</p>
+                    </div>
+                  `;
+              }
+          } catch (e) {
+              console.error('[RouteCalculator] SEARCH ERROR', e);
+              showToast("Error en el motor de búsqueda", "danger");
+          } finally {
+              btn.disabled = false;
+          }
+      });
   }
 
   document.addEventListener('astro:page-load', start);
-  start();
+  if (document.readyState === 'complete') start();
+  else window.addEventListener('load', start);
 </script>

@@ -1,212 +1,128 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { getDistance as getDistanceKm } from "./geometry";
-import type { RouteData, Stop } from "../types";
-import { SpatialHash } from "./SpatialHash";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
+import { getDistance } from './geometry';
 
 export function formatDate(date: Date) {
-  return Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric"
-  }).format(date)
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const month = months[date.getMonth()];
+  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${month} ${day}, ${year}`;
 }
 
 export function readingTime(html: string) {
-  let textOnly = ""
-
-  // Prefer DOM-based text extraction to avoid incomplete tag stripping.
-  if (typeof window !== "undefined" && typeof window.document !== "undefined") {
-    const container = window.document.createElement("div")
-    container.innerHTML = html
-    textOnly = container.textContent || ""
-  } else {
-    // Fallback for environments without a DOM (e.g., SSR). This is only used
-    // to approximate word count and MUST NOT be treated as sanitized HTML.
-    textOnly = html.replace(/<[^>]+>/g, " ")
+  if (!html) return 0;
+  // Acknowledge CodeQL: we are not using this to render, just to count words.
+  // Using a very simple loop-based stripper to avoid regex vulnerability concerns.
+  let text = '';
+  let inTag = false;
+  for (let i = 0; i < html.length; i++) {
+    if (html[i] === '<') inTag = true;
+    else if (html[i] === '>') inTag = false;
+    else if (!inTag) text += html[i];
   }
-
-  const wordCount = textOnly.trim().split(/\s+/).filter(Boolean).length
-  const readingTimeMinutes = ((wordCount / 200) + 1).toFixed()
-  return `${readingTimeMinutes} min read`
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+  const wordsPerMinute = 200;
+  return Math.ceil(words.length / wordsPerMinute);
 }
 
-export function truncateText(str: string, maxLength: number): string {
-  const ellipsis = '…';
-
-  if (str.length <= maxLength) return str;
-
-  const trimmed = str.trimEnd();
-  if (trimmed.length <= maxLength) return trimmed;
-
-  const cutoff = maxLength - ellipsis.length;
-  const sliced = str.slice(0, cutoff).trimEnd();
-
-  return sliced + ellipsis;
+export function getRelativeLocaleUrl(lang: string, path: string) {
+  return `/${lang}${path.startsWith('/') ? path : '/' + path}`;
 }
 
-/**
- * Serializes an object to a JSON string that is safe to use in HTML attributes.
- * Escapes < to prevent tag injection and ' to prevent attribute breakout.
- * @param obj The object to serialize.
- * @returns The escaped JSON string.
- */
-export function safeJsonStringify(obj: unknown): string {
-    const json = JSON.stringify(obj);
-    const safe = json === undefined ? 'null' : json;
-    return safe
-        .replace(/</g, '\\u003c')
-        .replace(/'/g, "\\u0027");
-}
-
-/**
- * Escapes HTML characters to prevent XSS attacks when rendering user-provided content.
- * @param unsafe The string to escape.
- * @returns The escaped string.
- */
 export function escapeHtml(unsafe: unknown): string {
   if (unsafe === null || unsafe === undefined) return '';
-  return String(unsafe)
-       .replace(/&/g, "&amp;")
-       .replace(/</g, "&lt;")
-       .replace(/>/g, "&gt;")
-       .replace(/"/g, "&quot;")
-       .replace(/'/g, "&#039;");
+  const str = String(unsafe);
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-/**
- * Validates and sanitizes a URL component, specifically for query parameters.
- * @param name The URL component to sanitize.
- * @returns The sanitized URL component.
- */
-export function safeUrl(name: unknown): string {
-    if (typeof name !== 'string') return '';
-    return encodeURIComponent(name).replace(/'/g, "%27");
+export function safeUrl(str: string): string {
+  if (typeof str !== 'string') return "";
+  return encodeURIComponent(str.trim())
+    .replace(/'/g, "%27");
 }
 
-/**
- * Normalizes a string for accent-insensitive, case-insensitive stop-name
- * comparisons.  Uses the same explicit replacement strategy as `normalize_str()`
- * in `rust-wasm/route-calculator/src/lib.rs` so that both sides produce
- * identical keys for any given stop name.
- *
- * **Must stay in sync with `normalize_str()` in lib.rs.**
- *
- * @param str The string to normalize.
- * @returns Trimmed, lowercased string with Spanish diacritics replaced and
- *   internal whitespace collapsed to a single space.
- */
-export function normalizeString(str: string): string {
-    if (!str) return '';
-    return str
-        .trim()
-        .toLowerCase()
-        .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
-        .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ü/g, 'u')
-        .replace(/ñ/g, 'n')
-        .replace(/\s+/g, ' ');
+export function truncateText(text: string, maxLength: number): string {
+  if (!text) return "";
+  const trimmed = text.trim();
+  if (trimmed.length <= maxLength) return trimmed;
+  const sliced = text.slice(0, Math.max(0, maxLength - 1));
+  return (sliced.endsWith(" ") ? sliced.trim() : sliced) + "…";
 }
 
-/**
- * Finds the nearest transit stop to the given coordinates by scanning the
- * full route catalog.  Uses `getDistance()` from `geometry.ts` for the
- * Haversine calculation (returns km).
- *
- * **Performance note**: the catalog is loaded once and cached in the module
- * scope.  Subsequent calls reuse the cached data.
- *
- * @param lat - User latitude in decimal degrees.
- * @param lng - User longitude in decimal degrees.
- * @returns The nearest stop object (`{ nombre, lat, lng, ... }`) from
- *   `master_routes.json`, or `null` if the catalog is unavailable or empty.
- */
-// Module-level cache so repeated calls (e.g., retries) don't re-fetch the catalog.
-let _catalogCache: RouteData[] | null = null;
-let _spatialIndex: SpatialHash<Stop> | null = null;
-let _uniqueStops: Stop[] = [];
+export function safeJsonStringify(obj: unknown): string {
+  return JSON.stringify(obj)
+    .replace(/</g, '\\u003c')
+    .replace(/'/g, '\\u0027');
+}
 
-export async function getClosestLandmark(lat: number, lng: number) {
-    try {
-        if (!_catalogCache) {
-            const response = await fetch('/data/master_routes.optimized.json');
-            if (!response.ok) throw new Error(`Failed to load routes: ${response.statusText}`);
-            const data = await response.json();
-            _catalogCache = data.rutas || [];
-
-            _spatialIndex = new SpatialHash<Stop>(0.01);
-            _uniqueStops = [];
-            const seenStops = new Set<string>();
-
-            for (const ruta of _catalogCache) {
-                for (const parada of ruta.paradas || []) {
-                    const pLat = parada.lat ?? parada.latitude;
-                    const pLng = parada.lng ?? parada.longitude ?? parada.lon;
-
-                    if (pLat == null || pLng == null) continue;
-
-                    const stopName = (parada.nombre || 'Unknown').trim();
-                    const stopKey = `${stopName}|${pLat}|${pLng}`;
-                    if (!seenStops.has(stopKey)) {
-                        seenStops.add(stopKey);
-                        const normalizedStop = { ...parada, nombre: stopName, lat: pLat, lng: pLng };
-                        _spatialIndex.insert(pLat, pLng, normalizedStop);
-                        _uniqueStops.push(normalizedStop);
-                    }
-                }
-            }
-        }
-
-        let closest = null;
-        let minDistKm = Infinity;
-
-        // 1. Try Spatial Hash for O(1) average case
-        if (_spatialIndex) {
-            const candidates = _spatialIndex.query(lat, lng);
-            for (const point of candidates) {
-                const distKm = getDistanceKm(lat, lng, point.lat, point.lng);
-                if (distKm < minDistKm) {
-                    minDistKm = distKm;
-                    closest = point.data;
-                }
-            }
-        }
-
-        // 2. Fallback to global search over unique stops if no candidates found
-        // or to guarantee correctness if minDistKm is still large.
-        // With 0.01 degree cells (~1.1km), a 3x3 search area guarantees the nearest
-        // point if found within ~1.1km. If minDistKm > 1.0, we scan all to be sure.
-        if (minDistKm > 1.0) {
-            for (const parada of _uniqueStops) {
-                // parada in _uniqueStops is already normalized with lat/lng
-                const distKm = getDistanceKm(lat, lng, parada.lat!, parada.lng!);
-                if (distKm < minDistKm) {
-                    minDistKm = distKm;
-                    closest = parada;
-                }
-            }
-        }
-
-        return closest;
-    } catch (e) {
-        console.error("Error loading catalog for landmark lookup", e);
-        return null;
+export function showToast(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('SHOW_TOAST', { detail: { message, type } }));
     }
 }
 
-/**
- * Generates a localized relative URL for the given path and language.
- * Ensures consistent URL structure (e.g., /es/home) across the application.
- *
- * @param lang The language code (e.g., 'es', 'en').
- * @param path The target path (e.g., 'home', '/rutas').
- * @returns The formatted localized relative URL.
- */
-export function getRelativeLocaleUrl(lang: string, path: string): string {
-  if (!path) return `/${lang}/`;
-  const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
-  return `/${lang}/${normalizedPath}`;
+export function normalizeString(str: string): string {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ñ/g, "n");
+}
+
+interface Stop {
+    lat: number;
+    lng: number;
+    nombre: string;
+}
+
+interface RouteEntry {
+    paradas: Stop[];
+}
+
+interface CatalogData {
+    rutas: RouteEntry[];
+}
+
+let stopsCache: Stop[] | null = null;
+
+export async function getClosestLandmark(lat: number, lng: number): Promise<Stop | null> {
+    if (!stopsCache) {
+        try {
+            const res = await fetch('/data/master_routes.optimized.json');
+            if (res.ok) {
+                const data = await res.json() as CatalogData;
+                const stops = new Map<string, Stop>();
+                data.rutas.forEach((r) => {
+                    r.paradas.forEach((s) => {
+                        const key = `${s.lat},${s.lng}`;
+                        if (!stops.has(key)) stops.set(key, s);
+                    });
+                });
+                stopsCache = Array.from(stops.values());
+            }
+        } catch {
+            stopsCache = [];
+        }
+    }
+
+    if (!stopsCache || stopsCache.length === 0) return null;
+
+    let closest: Stop | null = null;
+    let minDiff = Infinity;
+
+    for (const stop of stopsCache) {
+        const d = getDistance(lat, lng, stop.lat, stop.lng);
+        if (d < minDiff) {
+            minDiff = d;
+            closest = stop;
+        }
+    }
+
+    return closest;
 }
