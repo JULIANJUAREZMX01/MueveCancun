@@ -95,7 +95,7 @@ describe('FavoritesStore', () => {
         const favorites = favoritesStore.getFavorites();
 
         expect(favorites).toEqual([]);
-        expect(logger.error).toHaveBeenCalledWith(expect.unknown(String), mockError);
+        expect(logger.error).toHaveBeenCalledWith(expect.any(String), mockError);
         expect(analytics.track).toHaveBeenCalledWith('error_storage', {
             action: 'read',
             error: mockError.message
@@ -112,7 +112,7 @@ describe('FavoritesStore', () => {
 
         favoritesStore.addFavorite('ruta-err', 'Ruta Error');
 
-        expect(logger.error).toHaveBeenCalledWith(expect.unknown(String), mockError);
+        expect(logger.error).toHaveBeenCalledWith(expect.any(String), mockError);
         expect(analytics.track).toHaveBeenCalledWith('error_storage', {
             action: 'write',
             error: mockError.message

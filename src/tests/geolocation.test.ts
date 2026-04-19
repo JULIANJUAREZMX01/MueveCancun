@@ -39,8 +39,8 @@ describe('getCurrentPosition', () => {
     const position = await getCurrentPosition();
     expect(position).toEqual(mockPosition);
     expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledWith(
-      expect.unknown(Function),
-      expect.unknown(Function),
+      expect.any(Function),
+      expect.any(Function),
       expect.objectContaining({
         enableHighAccuracy: true,
         timeout: 5000,
@@ -70,8 +70,8 @@ describe('getCurrentPosition', () => {
     await getCurrentPosition();
 
     expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledWith(
-      expect.unknown(Function),
-      expect.unknown(Function),
+      expect.any(Function),
+      expect.any(Function),
       {
         enableHighAccuracy: true,
         timeout: 5000,
