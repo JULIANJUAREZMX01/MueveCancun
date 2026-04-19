@@ -14,14 +14,14 @@ services:
         value: production
       - key: RENDER
         value: "true"
-      - key: SKIP_INSTALL_DEPS
-        value: "true"
+      - key: ENABLE_COREPACK
+        value: "1"
 
   - type: static_site
     name: MueveCancun-Static
     repo: https://github.com/JULIANJUAREZMX01/MueveCancun
     buildCommand: bash scripts/setup-render.sh
-    publishPath: dist
+    publishPath: dist/client
     envVars:
       - key: NODE_VERSION
         value: "24.0.0"

@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 const modules = ['route-calculator', 'spatial-index'];
 
-const isCI = process.env.GITHUB_ACTIONS === 'true' || process.env.VERCEL === '1' || process.env.RENDER === 'true' || process.env.RENDER_SERVICE_ID;
+const isCI = process.env.GITHUB_ACTIONS === 'true' || process.env.VERCEL === '1' || process.env.RENDER === 'true' || !!process.env.RENDER_SERVICE_ID;
 
 function hasPrebuilt() {
   // wasm-pack genera _bg.wasm (no .wasm sin sufijo)
@@ -15,7 +15,8 @@ function hasPrebuilt() {
     const bgWasm = path.join(rootDir, 'public', 'wasm', m, m.replace(/-/g, '_') + '_bg.wasm');
     const js     = path.join(rootDir, 'public', 'wasm', m, m.replace(/-/g, '_') + '.js');
     const exists = fs.existsSync(bgWasm) && fs.existsSync(js);
-    if (!exists) console.log(`[NEXUS_LOG] Missing prebuilt: ${bgWasm} (exists=${fs.existsSync(bgWasm)})`);
+    if (exists) console.log(`[NEXUS_LOG] Found prebuilt: ${m}`);
+    if (!exists) console.log(`[NEXUS_LOG] Missing prebuilt artifact for module ${m} at ${bgWasm} (exists=${fs.existsSync(bgWasm)})`);
     return exists;
   });
 }
