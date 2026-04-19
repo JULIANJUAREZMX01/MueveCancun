@@ -45,7 +45,7 @@ const CRITICAL_ASSETS = [
 const OSM_TILES_PATTERN = /^https:\/\/[a-c]\.tile\.openstreetmap\.org\/(1[1-8])\/.*\.png$/;
 const CARTO_TILES_PATTERN = /^https:\/\/[a-d]\.basemaps\.cartocdn\.com\/.*\.png$/;
 // User-created routes pattern (dynamic ruta_*.json files)
-const USER_ROUTE_PATTERN = /\/data\/routes\/ruta_\\d+\\.json$/;
+const USER_ROUTE_PATTERN = /\/data\/routes\/ruta_\d+\.json$/;
 // --- Install ---
 self.addEventListener('install', (event) => {
     console.log(`[SW] Installing ${CACHE_VERSION}`);
