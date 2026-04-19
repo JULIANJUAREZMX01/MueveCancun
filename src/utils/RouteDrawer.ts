@@ -1,14 +1,12 @@
 import { escapeHtml } from './utils';
+import { getRouteColor } from './routeColors';
 
 // --- Minimal Leaflet Types ---
-// Defined locally to avoid adding @types/leaflet dependency
-
 interface LatLngExpression extends Array<number> {
     0: number;
     1: number;
 }
 
-/** Minimal Leaflet layer with addTo and bindPopup support. */
 interface LeafletLayer {
     addTo(group: LeafletLayerGroup): LeafletLayer;
     bindPopup(content: string): LeafletLayer;
@@ -23,7 +21,6 @@ interface LeafletMap {
     fitBounds(bounds: LatLngExpression[], options?: object): void;
 }
 
-/** Minimal Leaflet library instance (window.L). */
 interface LeafletLib {
     polyline(coords: LatLngExpression[], options: PolylineOptions): LeafletLayer;
     marker(coords: LatLngExpression, options?: MarkerOptions): LeafletLayer;
@@ -51,7 +48,6 @@ interface RouteStop {
     lat?: number | string;
     lng?: number | string;
     lon?: number | string;
-    /** Legacy field names used by some upstream data sources. */
     latitude?: number | string;
     longitude?: number | string;
     nombre?: string;
@@ -59,11 +55,15 @@ interface RouteStop {
 }
 
 interface RouteLeg {
+    route_id?: string;
+    route_name?: string;
+    transport_type?: string;
     paradas?: RouteStop[];
     stops_info?: RouteStop[];
     stops?: string[];
     name?: string;
     nombre?: string;
+    color?: string;
 }
 
 export interface RouteData {
@@ -89,15 +89,6 @@ function createMarker(L: LeafletLib, coords: LatLngExpression, popupContent: str
 
 // --- Main Export ---
 
-/**
- * Draws a route on the map, handling multiple legs, transfers, and legacy data formats.
- *
- * @param map The Leaflet map instance.
- * @param data The route data to draw.
- * @param existingLayerGroup The existing layer group to clear (if unknown).
- * @param coordinatesDB The coordinates database for legacy routes (stop names -> coords).
- * @returns The new LayerGroup containing the drawn route.
- */
 export function drawRoute(
     map: LeafletMap,
     data: RouteData,
@@ -105,33 +96,26 @@ export function drawRoute(
     coordinatesDB: Map<string, [number, number]> | Record<string, [number, number]>
 ): LeafletLayerGroup | undefined {
 
-    // Access global L safely
     const L = (window as unknown as { L?: LeafletLib }).L;
     if (!L || !map) return undefined;
 
-    // Reset layers
     if (existingLayerGroup) {
         existingLayerGroup.clearLayers();
         existingLayerGroup.remove();
     }
     const layerGroup = L.layerGroup().addTo(map as unknown as LeafletLayerGroup);
 
-    // Normalize Data Structure
-    // 'data' could be a full Journey (with legs) or a single Route object
     let legs: RouteLeg[] = [];
     if (data.legs && Array.isArray(data.legs)) {
         legs = data.legs;
     } else if ((data.paradas && Array.isArray(data.paradas)) || (data.stops && Array.isArray(data.stops))) {
-        // Single-route object (direct WASM output or legacy format): wrap it as a
-        // one-element legs array.  Both `paradas` and `stops` are preserved so
-        // downstream coordinate-resolution code can find whichever field is present.
         legs = [{
             paradas: data.paradas,
             stops: data.stops,
             name: data.nombre || data.name
         }];
     } else {
-        return undefined; // Invalid data
+        return undefined;
     }
 
     const allBounds: LatLngExpression[] = [];
@@ -141,11 +125,9 @@ export function drawRoute(
         const routeCoords: LatLngExpression[] = [];
         const validStops: { name: string, latlng: LatLngExpression }[] = [];
 
-        // Try to get explicit coordinates from 'paradas' object array
         const stopsSource = leg.paradas ?? leg.stops_info ?? [];
 
         if (stopsSource.length > 0 && typeof stopsSource[0] === 'object') {
-            // New Format: [{ lat, lng, nombre }, ...]
             stopsSource.forEach((stop: RouteStop) => {
                 const latVal = stop.lat ?? stop.latitude;
                 const lngVal = stop.lng ?? stop.lon ?? stop.longitude;
@@ -164,9 +146,7 @@ export function drawRoute(
             });
         }
 
-        // Fallback or Addition: Use 'stops' array of names
         if (routeCoords.length === 0) {
-            // Legacy: Array of strings + coordinatesDB
             const stopNames: string[] = leg.stops ?? [];
             stopNames.forEach(name => {
                 let coords: [number, number] | undefined;
@@ -185,49 +165,37 @@ export function drawRoute(
         }
 
         if (routeCoords.length > 0) {
-            // Usar color de ruta del catálogo; fallback naranja/azul por posición
-            const legData = leg as Record<string, unknown>;
-            const color = (typeof legData['color'] === 'string' && legData['color'])
-              ? legData['color']
-              : (index === 0 ? '#F97316' : '#0EA5E9');
+            const color = leg.color || getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
             const dashArray = index === 0 ? null : '10, 10';
 
-            // Polyline
             createPolyline(L, routeCoords, {
                 color, weight: 4, opacity: 0.8, dashArray
             }).addTo(layerGroup);
 
-            // Start Marker (only for first leg)
             if (index === 0) {
                  const start = validStops[0];
                  if (start) newLayers.push(createMarker(L, start.latlng, `<b>Inicio:</b> ${escapeHtml(start.name)}`));
             }
 
-            // End Marker (only for last leg)
             if (index === legs.length - 1) {
                  const end = validStops[validStops.length - 1];
                  if (end) newLayers.push(createMarker(L, end.latlng, `<b>Fin:</b> ${escapeHtml(end.name)}`));
             }
 
-            // Transfer Marker (if not last leg)
             if (index < legs.length - 1) {
                 const end = validStops[validStops.length - 1];
                  if (end) newLayers.push(createMarker(L, end.latlng, `<b>Transbordo:</b> ${escapeHtml(end.name)}`));
             }
 
-            // Intermediate dots
             validStops.slice(1, -1).forEach(stop => {
                  newLayers.push(
                     createMarker(L, stop.latlng, escapeHtml(stop.name), { radius: 4, color: '#334155', fillOpacity: 1 })
                  );
             });
 
-        } else {
-            console.warn("No coordinates found for steps in this leg.");
         }
     });
 
-    // Add all markers to the layer group
     newLayers.forEach(layer => layer.addTo(layerGroup));
 
     if (allBounds.length > 0) {
