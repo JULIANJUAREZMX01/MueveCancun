@@ -1,29 +1,29 @@
 /**
- * MueveCancún — Centralized Route Color System
+ * MueveCancun - Centralized Route Color System
  * High-performance palette based on "Metro CDMX" logic.
  */
 
 export const TRANSPORT_TYPE_COLORS: Record<string, string> = {
-  "Bus_HotelZone":  "#F97316", # Orange
-  "Bus_Urbano_Isla":"#4ECDC4", # Teal
-  "Bus_Urban":      "#0EA5E9", # Blue
-  "Combi_Municipal":"#96CEB4", # Sage
-  "ADO":            "#FF6B6B", # Red
-  "Van":            "#DDA0DD", # Plum
-  "DEFAULT":        "#94A3B8", # Slate
+  "Bus_HotelZone":  "#F97316", // Orange
+  "Bus_Urbano_Isla":"#4ECDC4", // Teal
+  "Bus_Urban":      "#0EA5E9", // Blue
+  "Combi_Municipal":"#96CEB4", // Sage
+  "ADO":            "#FF6B6B", // Red
+  "Van":            "#DDA0DD", // Plum
+  "DEFAULT":        "#94A3B8", // Slate
 };
 
 export const ROUTE_COLORS: Record<string, string> = {
-  "R1":  "#F97316", # Hotel Zone (Orange)
-  "R2":  "#0EA5E9", # Main Urban (Blue)
-  "R6":  "#22C55E", # Green
-  "R10": "#EAB308", # Yellow
-  "R15": "#A855F7", # Purple
-  "R27": "#EC4899", # Pink
-  "R28": "#14B8A6", # Teal
-  "R30": "#F43F5E", # Rose
-  "R31": "#8B5CF6", # Violet
-  "ADO": "#FF6B6B", # Red
+  "R1":  "#F97316", // Hotel Zone (Orange)
+  "R2":  "#0EA5E9", // Main Urban (Blue)
+  "R6":  "#22C55E", // Green
+  "R10": "#EAB308", // Yellow
+  "R15": "#A855F7", // Purple
+  "R27": "#EC4899", // Pink
+  "R28": "#14B8A6", // Teal
+  "R30": "#F43F5E", // Rose
+  "R31": "#8B5CF6", // Violet
+  "ADO": "#FF6B6B", // Red
 };
 
 /**

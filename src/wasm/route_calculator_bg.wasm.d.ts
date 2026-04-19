@@ -1,9 +1,9 @@
 /* tslint:disable */
-/* eslint-disable */
+
 export const memory: WebAssembly.Memory;
-export const calculate_route: (a: number, b: number, c: number, d: number, e: any) => any;
-export const calculate_trip_cost: (a: number, b: number, c: number) => any;
-export const find_route: (a: number, b: number, c: number, d: number) => any;
+export const calculate_route: (a: number, b: number, c: number, d: number, e: unknown) => unknown;
+export const calculate_trip_cost: (a: number, b: number, c: number) => unknown;
+export const find_route: (a: number, b: number, c: number, d: number) => unknown;
 export const validate_operator_funds: (a: number) => number;
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

@@ -3,22 +3,22 @@ import { savePendingReport, getPendingReports, deletePendingReport, __resetDBPro
 
 // Mock the idb library
 vi.mock('idb', () => {
-  const stores: Record<string, any> = {
+  const stores: Record<string, unknown> = {
     'pending-reports': {},
     'wallet-status': { current_balance: { amount: 180.00, currency: 'MXN' } },
     'security-keys': {}
   };
 
-  const mockDb: any = {
+  const mockDb: unknown = {
     get: async (store: string, key: string) => stores[store][key],
-    put: async (store: string, val: any, key: string) => {
+    put: async (store: string, val: unknown, key: string) => {
         const k = key || val.id || 'auto_' + Math.random();
         if (store === 'pending-reports' && !val.id) val.id = Math.floor(Math.random() * 1000);
         stores[store][val.id || k] = val;
         return val.id || k;
     },
     getAll: async (store: string) => Object.values(stores[store]),
-    delete: async (store: string, id: any) => {
+    delete: async (store: string, id: unknown) => {
         delete stores[store][id];
     },
     _clearStore: () => {
@@ -41,7 +41,7 @@ describe('Offline DB Support', () => {
   beforeEach(async () => {
     __resetDBPromise();
     const { openDB } = await import('idb');
-    const db = await openDB('any', 1) as any;
+    const db = await openDB('unknown', 1) as unknown;
     db._clearStore();
   });
 

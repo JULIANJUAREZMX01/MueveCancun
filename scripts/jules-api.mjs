@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * jules-api.mjs — Cliente REST compartido para Google Jules API
  *

@@ -30,8 +30,8 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.text();
     event = stripe.webhooks.constructEvent(body, sig, secret);
-  } catch (err: any) {
-    console.error("[webhook] Firma invalida:", err.message);
+  } catch (err: unknown) {
+    console.error("[webhook] Firma invalida:", (err as Error).message);
     return new Response(JSON.stringify({ error: "Firma invalida" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
@@ -76,8 +76,8 @@ export const POST: APIRoute = async ({ request }) => {
       default:
         console.log("[webhook] Evento no manejado:", event.type);
     }
-  } catch (err: any) {
-    console.error("[webhook] Error procesando evento:", err.message);
+  } catch (err: unknown) {
+    console.error("[webhook] Error procesando evento:", (err as Error).message);
   }
 
   return new Response(JSON.stringify({ received: true }), {

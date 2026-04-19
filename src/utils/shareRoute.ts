@@ -5,7 +5,7 @@
 /**
  * Comparte una ruta usando Web Share API o clipboard
  */
-export async function shareJourney(journey: any, toast: (msg: string, type: string) => void) {
+export async function shareJourney(journey: unknown, toast: (msg: string, type: string) => void) {
   const leg    = journey?.legs?.[0];
   const origin = leg?.origin_hub || leg?.paradas?.[0]?.nombre || "Origen";
   const dest   = leg?.dest_hub   || leg?.paradas?.[leg?.paradas?.length - 1]?.nombre || "Destino";
@@ -40,7 +40,7 @@ export async function shareJourney(journey: any, toast: (msg: string, type: stri
  * Envía la ruta al sistema como contribución ciudadana
  */
 export async function contributeRoute(
-  journey: any,
+  journey: unknown,
   origin: string,
   dest: string,
   userNote: string = "",

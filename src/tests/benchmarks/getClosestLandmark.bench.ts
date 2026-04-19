@@ -1,6 +1,5 @@
 import { bench, describe } from 'vitest';
 import { getClosestLandmark } from '../../utils/utils';
-import { RouteData } from '../../types';
 import fs from 'fs';
 import path from 'path';
 

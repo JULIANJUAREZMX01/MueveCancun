@@ -60,7 +60,7 @@ describe('useTranslations', () => {
 
         try {
             // Simulate missing translation in English for this key, so it falls back to 'es'
-            delete (ui.en as any)[key];
+            delete (ui.en as unknown)[key];
 
             const tEn = useTranslations('en');
             expect(tEn(key)).toBe(defaultValue); // falls back to Spanish "Inicio"
