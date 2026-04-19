@@ -61,6 +61,7 @@
   import { loadLeaflet } from "../utils/leafletLoader";
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { escapeHtml, safeUrl, showToast } from "../utils/utils";
+  import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
   import { enrichJourneyLegs } from "../lib/initWasm";
 
   let map: any = null;
@@ -79,7 +80,8 @@
     const allCoords: [number, number][] = [];
 
     journey.legs.forEach((leg: any) => {
-      const color = leg.color || "#0EA5E9";
+      const routeColor = getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
+      const color = leg.color || routeColor;
       const stops = leg.paradas || leg.stops || [];
       const legCoords = stops
         .map((s: any) => {
@@ -205,7 +207,7 @@
       markerLayers.push(
         L.circleMarker(coords, {
           radius: isHub ? 9 : 5,
-          fillColor: isHub ? "#F97316" : "#0EA5E9",
+          fillColor: isHub ? TRANSPORT_TYPE_COLORS["Bus_HotelZone"] : TRANSPORT_TYPE_COLORS["Bus_Urban"],
           color: "#FFFFFF",
           weight: 2,
           opacity: 1,
