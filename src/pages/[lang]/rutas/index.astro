@@ -48,7 +48,7 @@ const transformRoute = (raw: any): UIRoute => {
     transport_type,
     color: (raw.color as string | undefined) || undefined,
     operator: raw.operador || raw.operator,
-    frequency: raw.frecuencia || raw.frequency,
+    frequency: raw.frecuencia_minutos ? `${raw.frecuencia_minutos} min` : (raw.frecuencia || raw.frequency),
     duration: raw.duracion || raw.duration,
     badges,
     stops,

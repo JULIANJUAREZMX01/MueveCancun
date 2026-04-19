@@ -1,3 +1,4 @@
+import { logger } from "../utils/logger";
 import { getPendingReports, deletePendingReport, type PendingReport } from '../utils/db';
 
 let processing = false;
@@ -45,7 +46,7 @@ export async function processPending(config: { owner: string, repo: string, toke
   // In some environments, navigator.onLine might not be updated yet when 'online' event fires.
   // We allow the check but add logging.
   if (!navigator.onLine) {
-    console.log('[Sync] navigator.onLine is false, skipping processing.');
+    logger.log('[Sync] navigator.onLine is false, skipping processing.');
     return;
   }
 
@@ -57,14 +58,14 @@ export async function processPending(config: { owner: string, repo: string, toke
         return;
     }
 
-    console.log(`[Sync] Processing ${pending.length} pending reports...`);
+    logger.log(`[Sync] Processing ${pending.length} pending reports...`);
 
     for (const report of pending) {
       if (report.id === undefined) continue;
       try {
         await sendToGitHub(report, config);
         await deletePendingReport(report.id);
-        console.log(`[Sync] Report ${report.id} synced and deleted.`);
+        logger.log(`[Sync] Report ${report.id} synced and deleted.`);
       } catch (err) {
         console.error(`[Sync] Failed to sync report ${report.id}:`, err);
       }
@@ -90,7 +91,7 @@ export function initSync(config: { owner: string, repo: string, token: string })
   };
 
   window.addEventListener('online', () => {
-    console.log('[Sync] Browser online event detected.');
+    logger.log('[Sync] Browser online event detected.');
     // Delay slightly to ensure navigator.onLine is updated
     setTimeout(triggerSync, 500);
   });

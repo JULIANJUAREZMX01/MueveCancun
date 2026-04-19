@@ -94,6 +94,45 @@ export interface Journey {
 // ── Enrichment helper ──────────────────────────────────────────────────────
 
 /**
+ * Resuelve un nombre de parada ingresado por el usuario al nombre exacto del catálogo.
+ * Primero intenta match exacto (normalizado), luego substring, luego token.
+ */
+export function resolveStopName(query: string): string {
+  const rutas: RouteEntry[] = typeof window !== 'undefined'
+    ? ((window as Record<string, unknown>).WASM_ROUTES as RouteEntry[] ?? [])
+    : [];
+  if (!rutas.length) return query;
+
+  const norm = (s: string) => s.trim().toLowerCase()
+    .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i')
+    .replace(/ó/g,'o').replace(/ú/g,'u').replace(/ü/g,'u').replace(/ñ/g,'n');
+
+  const q = norm(query);
+  let best: { name: string; score: number } | null = null;
+
+  for (const r of rutas) {
+    for (const p of (r as unknown as { paradas?: Array<{ nombre?: string; name?: string }> }).paradas ?? []) {
+      const raw = (p.nombre ?? p.name ?? '').trim();
+      if (!raw) continue;
+      const n = norm(raw);
+      let score = 0;
+      if (n === q)             score = 100;
+      else if (n.startsWith(q)) score = 80;
+      else if (n.includes(q))  score = 60;
+      else if (q.includes(n) && n.length > 4) score = 50;
+      else {
+        const tokens = q.split(/\s+/);
+        const matched = tokens.filter(t => t.length > 3 && n.includes(t)).length;
+        if (matched > 0) score = matched * 15;
+      }
+      if (score > (best?.score ?? 0)) best = { name: raw, score };
+    }
+  }
+
+  return best && best.score >= 50 ? best.name : query;
+}
+
+/**
  * Enriquece los legs de un Journey con color, paradas y tipo_transporte del catálogo.
  * Seguro de llamar antes de que WASM_ROUTE_MAP esté disponible (no-op en ese caso).
  */
