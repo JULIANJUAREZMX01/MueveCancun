@@ -327,7 +327,16 @@
     });
   }
 
-  document.addEventListener("astro:page-load", scheduleInit);
+  let __scheduleInit_listener: (() => void) | null = null;
+  function __register_scheduleInit() {
+    if (__scheduleInit_listener) document.removeEventListener('astro:page-load', __scheduleInit_listener);
+    __scheduleInit_listener = scheduleInit;
+    document.addEventListener('astro:page-load', __scheduleInit_listener);
+  }
+  document.addEventListener('astro:before-swap', () => {
+    if (__scheduleInit_listener) { document.removeEventListener('astro:page-load', __scheduleInit_listener); __scheduleInit_listener = null; }
+  }, { once: true });
+  __register_scheduleInit();
   document.addEventListener("click", handleMapAction);
   if (document.readyState === "complete") scheduleInit();
   else window.addEventListener("load", scheduleInit);

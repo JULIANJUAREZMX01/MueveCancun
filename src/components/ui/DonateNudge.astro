@@ -90,5 +90,14 @@ const donateUrl = getRelativeLocaleUrl(lang, 'donate');
     dismissBtn?.addEventListener('click', dismiss);
   }
 
-  document.addEventListener('astro:page-load', setupNudge);
+  let __setupNudge_listener: (() => void) | null = null;
+  function __register_setupNudge() {
+    if (__setupNudge_listener) document.removeEventListener('astro:page-load', __setupNudge_listener);
+    __setupNudge_listener = setupNudge;
+    document.addEventListener('astro:page-load', __setupNudge_listener);
+  }
+  document.addEventListener('astro:before-swap', () => {
+    if (__setupNudge_listener) { document.removeEventListener('astro:page-load', __setupNudge_listener); __setupNudge_listener = null; }
+  }, { once: true });
+  __register_setupNudge();
 </script>

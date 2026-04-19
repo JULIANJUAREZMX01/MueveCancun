@@ -171,7 +171,14 @@ const t = useTranslations(lang);
       });
   }
 
-  document.addEventListener('astro:page-load', start);
-  if (document.readyState === 'complete') start();
-  else window.addEventListener('load', start);
+  let __start_listener: (() => void) | null = null;
+  function __register_start() {
+    if (__start_listener) document.removeEventListener('astro:page-load', __start_listener);
+    __start_listener = start;
+    document.addEventListener('astro:page-load', __start_listener);
+  }
+  document.addEventListener('astro:before-swap', () => {
+    if (__start_listener) { document.removeEventListener('astro:page-load', __start_listener); __start_listener = null; }
+  }, { once: true });
+  __register_start();
 </script>

@@ -303,7 +303,12 @@ const isEs = lang === "es";
 
   // Escuchar cuando llega resultado de ruta → abrir sheet
   window.addEventListener("ROUTE_CALCULATED", openSheet);
-  document.addEventListener("astro:page-load", () => {
+  let __homePage_fn: (() => void) | null = null;
+  __homePage_fn = () => {
     if (window.innerWidth >= 769) openSheet();
-  });
+  };
+  document.addEventListener('astro:page-load', __homePage_fn);
+  document.addEventListener('astro:before-swap', () => {
+    if (__homePage_fn) { document.removeEventListener('astro:page-load', __homePage_fn!); __homePage_fn = null; }
+  }, { once: true });
 </script>

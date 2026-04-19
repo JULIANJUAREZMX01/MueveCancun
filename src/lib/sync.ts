@@ -96,8 +96,10 @@ export function initSync(config: { owner: string, repo: string, token: string })
     setTimeout(triggerSync, 500);
   });
 
-  // Frequent interval for PWA resilience
-  setInterval(triggerSync, 10000);
+  // Guarded interval — prevent multiple intervals if initSync called again
+  if (!(window as any).__syncIntervalId) {
+    (window as any).__syncIntervalId = setInterval(triggerSync, 10000);
+  }
 
   if (navigator.onLine) {
     triggerSync();
