@@ -88,7 +88,8 @@ const t = useTranslations(lang);
           try {
               await initWasm();
               const module = await WasmLoader.getModule();
-              const results = module.find_route(oVal, dVal);
+              const raw = module.find_route(oVal, dVal);
+              const results = typeof raw === 'string' ? JSON.parse(raw) : raw;
               const endSearch = performance.now();
 
               resultsInfo.classList.remove('hidden');
