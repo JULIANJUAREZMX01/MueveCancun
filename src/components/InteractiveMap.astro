@@ -63,6 +63,7 @@
   import { escapeHtml, safeUrl, showToast } from "../utils/utils";
   import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
   import { enrichJourneyLegs } from "../lib/initWasm";
+  import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
 
   let map: any = null;
   let layerGroup: any = null;
@@ -217,8 +218,8 @@
             <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px\">${escapeHtml(displayName)}</p>
             <p style=\"font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px\">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
             <div style=\"display:flex;flex-direction:column;gap:4px\">
-              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_HotelZone"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_Urban"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
               <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
             </div>
           </div>
@@ -250,8 +251,8 @@
             <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 2px\">${escapeHtml(result.name)}</p>
             <p style=\"font-size:10px;color:#94a3b8;margin:0 0 8px\">${(result.distanceKm * 1000).toFixed(0)} m</p>
             <div style=\"display:flex;flex-direction:column;gap:4px\">
-              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_HotelZone"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_Urban"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
               <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
             </div>
           </div>
