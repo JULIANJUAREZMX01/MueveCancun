@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ChatCompletionTool = any;
+type ChatCompletionTool = unknown;
 
 export const NEXUS_TOOLS: ChatCompletionTool[] = [
   {

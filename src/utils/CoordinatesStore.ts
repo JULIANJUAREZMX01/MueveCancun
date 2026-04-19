@@ -46,7 +46,7 @@ export class CoordinatesStore {
                     } catch (e) {
                         console.warn("[CoordinatesStore] Optimized catalog missing, falling back...", e);
                         const res = await fetch('/data/master_routes.json');
-                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`, { cause: e });
                         text = await res.text();
                     }
                     data = JSON.parse(text);

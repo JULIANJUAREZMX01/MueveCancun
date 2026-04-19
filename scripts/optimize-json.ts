@@ -71,7 +71,7 @@ try {
             }
 
             // --- STRICT DUPLICATE PREVENTION ---
-            const newRoute: any = { ...route };
+            const newRoute: Record<string, unknown> = { ...route };
 
             // Map tipo_transporte to tipo if tipo is missing
             if (newRoute.tipo_transporte && !newRoute.tipo) {

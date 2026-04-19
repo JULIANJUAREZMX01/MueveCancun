@@ -6,13 +6,13 @@ describe('SpatialHash', () => {
     const spatialHash = new SpatialHash();
     expect(spatialHash).toBeDefined();
     // Access private property for testing
-    expect((spatialHash as any).cellSize).toBe(0.01);
+    expect((spatialHash as unknown).cellSize).toBe(0.01);
   });
 
   it('should create an instance with custom cell size', () => {
     const spatialHash = new SpatialHash(0.05);
     expect(spatialHash).toBeDefined();
-    expect((spatialHash as any).cellSize).toBe(0.05);
+    expect((spatialHash as unknown).cellSize).toBe(0.05);
   });
 
   it('should insert and retrieve a point', () => {

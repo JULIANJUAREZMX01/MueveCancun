@@ -94,7 +94,7 @@ function createMarker(L: LeafletLib, coords: LatLngExpression, popupContent: str
  *
  * @param map The Leaflet map instance.
  * @param data The route data to draw.
- * @param existingLayerGroup The existing layer group to clear (if any).
+ * @param existingLayerGroup The existing layer group to clear (if unknown).
  * @param coordinatesDB The coordinates database for legacy routes (stop names -> coords).
  * @returns The new LayerGroup containing the drawn route.
  */

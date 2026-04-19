@@ -110,13 +110,13 @@ describe('CoordinateFinder', () => {
         it('should populate the cache on fuzzy match and return from cache on repeat call', () => {
             // 'Américas Plaza' is not an exact key, so it goes through fuzzy search
             const query = 'Américas Plaza';
-            expect((finder as any).cache.has(query)).toBe(false);
+            expect(((finder as unknown) as { cache: Map<string, unknown> }).cache.has(query)).toBe(false);
 
             const result1 = finder.find(query);
             expect(result1).toEqual([21.1619, -86.8249]);
 
             // Cache should now contain the result
-            expect((finder as any).cache.has(query)).toBe(true);
+            expect(((finder as unknown) as { cache: Map<string, unknown> }).cache.has(query)).toBe(true);
 
             // Second call should return the same result (served from cache)
             const result2 = finder.find(query);

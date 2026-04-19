@@ -355,6 +355,7 @@ a { color: inherit; }
 
     <script>
       import { enforceGuards } from "../utils/auth";
+      import { initWasm } from "../lib/initWasm";
       import { getWalletBalance } from "../utils/db";
 
       async function syncBalance() {
@@ -368,6 +369,7 @@ a { color: inherit; }
       function setupHeader() {
         syncBalance();
         enforceGuards();
+        initWasm().catch(console.error);
 
         document.getElementById("theme-toggle")?.addEventListener("click", () => {
           const isDark = document.documentElement.classList.toggle("dark");

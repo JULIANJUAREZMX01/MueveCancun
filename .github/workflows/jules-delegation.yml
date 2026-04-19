@@ -77,6 +77,7 @@ jobs:
 
       - name: Invoke Jules delegation script
         env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
           JULES_TASK: ${{ github.event.inputs.task }}
           TARGET_BRANCH: ${{ github.event.inputs.target_branch }}

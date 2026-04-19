@@ -1,7 +1,6 @@
 import { NEXUS_TOOLS, executeToolCall } from "./tools";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type MLCEngine = any;
+type MLCEngine = unknown;
 
 export class NexusAgent {
   private static instance: NexusAgent;

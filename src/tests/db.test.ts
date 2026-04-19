@@ -4,21 +4,21 @@ import { getWalletBalance, __resetDBPromise, setWalletBalance, initDB, updateWal
 
 // Mock the idb library
 vi.mock('idb', () => {
-  let store: any = {};
+  let store: unknown = {};
 
-  const mockDb: any = {
+  const mockDb: unknown = {
     get: async (storeName: string, key: string) => {
       if (!store[storeName]) store[storeName] = {};
       return store[storeName][key];
     },
-    put: async (storeName: string, val: any, key: string) => {
+    put: async (storeName: string, val: unknown, key: string) => {
       if (!store[storeName]) store[storeName] = {};
       if (key) store[storeName][key] = val;
       else {
           // Fallback for simple puts if needed
       }
     },
-    _tamperStore: (storeName: string, key: string, val: any) => {
+    _tamperStore: (storeName: string, key: string, val: unknown) => {
       if (!store[storeName]) store[storeName] = {};
       store[storeName][key] = val;
     },
@@ -31,9 +31,9 @@ vi.mock('idb', () => {
 });
 
 import { webcrypto } from 'crypto';
-const originalLocalStorage = (globalThis as any).localStorage;
+const originalLocalStorage = (globalThis as unknown).localStorage;
 if (!globalThis.crypto) {
-  // @ts-ignore
+  // @ts-expect-error: Mocking internal IDB behavior
   globalThis.crypto = webcrypto;
 }
 
@@ -43,17 +43,17 @@ const localStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-globalThis.localStorage = localStorageMock as any;
+globalThis.localStorage = localStorageMock as unknown;
 
 afterAll(() => {
-  (globalThis as any).localStorage = originalLocalStorage;
+  (globalThis as unknown).localStorage = originalLocalStorage;
 });
 
 describe('DB Security Checks', () => {
 
   beforeEach(async () => {
     __resetDBPromise();
-    const db = await openDB('cancunmueve-db', 4) as any;
+    const db = await openDB('cancunmueve-db', 4) as unknown;
     db._clearStore();
 
     localStorageMock.setItem.mockClear();
@@ -84,7 +84,7 @@ describe('DB Security Checks', () => {
 
     await setWalletBalance(50.00);
 
-    const db = await openDB('cancunmueve-db', 4) as any;
+    const db = await openDB('cancunmueve-db', 4) as unknown;
     const existing = await db.get('wallet-status', 'current_balance');
     existing.amount = 9999.00;
     db._tamperStore('wallet-status', 'current_balance', existing);
@@ -96,7 +96,7 @@ describe('DB Security Checks', () => {
 
   it('should treat a missing signature as a legacy record and backfill it', async () => {
     await setWalletBalance(75.00);
-    const db = await openDB('cancunmueve-db', 4) as any;
+    const db = await openDB('cancunmueve-db', 4) as unknown;
     const existing = await db.get('wallet-status', 'current_balance');
     delete existing.signature;
     db._tamperStore('wallet-status', 'current_balance', existing);

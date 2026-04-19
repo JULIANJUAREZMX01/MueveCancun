@@ -11,13 +11,17 @@
 #
 name: "CodeQL Advanced"
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '21 1 * * 4'
+    - crenv:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: '21 1 * * 4'
 
 jobs:
   analyze:
@@ -27,7 +31,9 @@ jobs:
     #   - https://gh.io/supported-runners-and-hardware-resources
     #   - https://gh.io/using-larger-runners (GitHub.com only)
     # Consider using larger runners or machines with greater resources for possible analysis time improvements.
-    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    runs-env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
     permissions:
       # required for all workflows
       security-events: write
@@ -62,8 +68,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-
-    # Add any setup steps before running the `github/codeql-action/init` action.
     # This includes steps like installing compilers or runtimes (`actions/setup-node`
     # or others). This is typically only required for manual builds.
     # - name: Setup runtime (example)

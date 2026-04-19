@@ -22,21 +22,21 @@ describe('Telemetry', () => {
 
     // Ensure we are in a "browser-like" environment for the test
     if (typeof globalThis.navigator === 'undefined') {
-      (globalThis as any).navigator = {};
+      (globalThis as unknown).navigator = {};
     }
 
-    (globalThis.navigator as any).geolocation = {
+    (globalThis.navigator as unknown).geolocation = {
       watchPosition: watchPositionMock,
       clearWatch: clearWatchMock,
     };
 
     if (typeof globalThis.window === 'undefined') {
-       (globalThis as any).window = {
+       (globalThis as unknown).window = {
          dispatchEvent: vi.fn(),
          CustomEvent: class CustomEvent {
            type: string;
-           detail: any;
-           constructor(type: string, options: any) {
+           detail: unknown;
+           constructor(type: string, options: unknown) {
              this.type = type;
              this.detail = options.detail;
            }
@@ -58,8 +58,8 @@ describe('Telemetry', () => {
   });
 
   it('should start tracking and handle success path', async () => {
-    let successCallback: any;
-    watchPositionMock.mockImplementation((success: any) => {
+    let successCallback: unknown;
+    watchPositionMock.mockImplementation((success: unknown) => {
       successCallback = success;
       return 123; // mock watchId
     });
@@ -101,8 +101,8 @@ describe('Telemetry', () => {
   });
 
   it('should log error when IDB put fails', async () => {
-    let successCallback: any;
-    watchPositionMock.mockImplementation((success: any) => {
+    let successCallback: unknown;
+    watchPositionMock.mockImplementation((success: unknown) => {
       successCallback = success;
       return 123;
     });
@@ -123,8 +123,8 @@ describe('Telemetry', () => {
   });
 
   it('should log warning when GPS error occurs', () => {
-    let errorCallback: any;
-    watchPositionMock.mockImplementation((_success: any, error: any) => {
+    let errorCallback: unknown;
+    watchPositionMock.mockImplementation((_success: unknown, error: unknown) => {
       errorCallback = error;
       return 123;
     });
