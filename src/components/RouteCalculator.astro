@@ -1,8 +1,9 @@
 ---
-import { getLangFromUrl, useTranslations, ui as uiTranslations } from '../utils/i18n';
-import { safeJsonStringify } from '../utils/utils';
+import { getLangFromUrl, useTranslations } from '../utils/i18n';
 import Input from './ui/Input.astro';
 import Icon from './ui/Icon.astro';
+import Card from './ui/Card.astro';
+import Button from './ui/Button.astro';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -21,18 +22,14 @@ const t = useTranslations(lang);
     </div>
   </Card>
 
-  <div id="results-info" class="hidden mt-6 space-y-4">
-    <h3 id="results-title" class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">{t('calc.options')}</h3>
-    <div id="results-container" class="grid grid-cols-1 gap-3 pb-10"></div>
-  </div>
-
-  <div id="results-info" class="mt-8 hidden animate-fade-in">
-      <div class="flex items-center justify-between px-2 mb-4">
-          <span class="text-xxs font-black uppercase tracking-widest text-slate-400" id="results-count-label"></span>
-          <span class="badge-success font-mono" id="results-time-badge"></span>
-      </div>
-      <div id="best-result-area" class="space-y-4"></div>
-      <div id="results-container" class="mt-4 space-y-4"></div>
+  <!-- Único bloque de resultados — IDs únicos, deduplicado -->
+  <div id="results-info" class="hidden mt-8 animate-fade-in">
+    <div class="flex items-center justify-between px-2 mb-4">
+      <span class="text-[10px] font-black uppercase tracking-widest text-slate-400" id="results-count-label"></span>
+      <span class="badge-success font-mono text-xs" id="results-time-badge"></span>
+    </div>
+    <div id="best-result-area" class="space-y-4"></div>
+    <div id="results-container" class="mt-4 grid grid-cols-1 gap-3 pb-10"></div>
   </div>
 
   <datalist id="locations">
@@ -50,50 +47,61 @@ const t = useTranslations(lang);
   import { escapeHtml } from "../utils/utils";
 
   async function start() {
-      const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
-      const originInput = document.getElementById('origin-input') as HTMLInputElement;
-      const destInput = document.getElementById('dest-input') as HTMLInputElement;
-      const resultsInfo = document.getElementById('results-info');
-      const resultsContainer = document.getElementById('results-container');
-      if (!btn || !originInput || !destInput || !resultsInfo || !resultsContainer) return;
+    const btn              = document.getElementById('search-route-btn') as HTMLButtonElement;
+    const originInput      = document.getElementById('origin-input') as HTMLInputElement;
+    const destInput        = document.getElementById('dest-input') as HTMLInputElement;
+    const resultsInfo      = document.getElementById('results-info');
+    const resultsContainer = document.getElementById('results-container');
+    const countLabel       = document.getElementById('results-count-label');
+    const timeBadge        = document.getElementById('results-time-badge');
 
-      console.log("[RouteCalculator] Component starting...");
+    if (!btn || !originInput || !destInput || !resultsInfo || !resultsContainer) return;
 
-      btn.addEventListener('click', async () => {
-          const oVal = originInput.value.trim();
-          const dVal = destInput.value.trim();
-          if (!oVal || !dVal) return;
+    btn.addEventListener('click', async () => {
+      const oVal = originInput.value.trim();
+      const dVal = destInput.value.trim();
+      if (!oVal || !dVal) return;
 
-          console.log(`[RouteCalculator] Search requested: "${oVal}" -> "${dVal}"`);
-          btn.disabled = true;
+      btn.disabled = true;
+      const t0 = performance.now();
 
-          try {
-              await initWasm();
-              const module = await WasmLoader.getModule();
-              const results = module.find_route(oVal, dVal);
-              console.log(`[RouteCalculator] Results found: ${results?.length}`);
+      try {
+        await initWasm();
+        const module  = await WasmLoader.getModule();
+        const raw     = module.find_route(oVal, dVal);
+        const results = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        const ms      = Math.round(performance.now() - t0);
 
-              resultsInfo.classList.remove('hidden');
-              resultsContainer.innerHTML = '';
+        resultsInfo.classList.remove('hidden');
+        resultsContainer.innerHTML = '';
+        if (countLabel) countLabel.textContent = `${Array.isArray(results) ? results.length : 0} rutas`;
+        if (timeBadge)  timeBadge.textContent  = `${ms}ms`;
 
-              if (results && results.length > 0) {
-                  results.forEach((r: any) => {
-                      const card = document.createElement('div');
-                      card.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100';
-                      card.innerHTML = `<div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">${r.type}</span><span class="text-lg font-black text-slate-900">$${r.total_price} MXN</span></div>`;
-                      resultsContainer.appendChild(card);
-                  });
-              } else {
-                  resultsContainer.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold">No se encontraron rutas</div>';
-              }
-          } catch (e) {
-              console.error('[RouteCalculator] SEARCH ERROR', e);
-              resultsInfo.classList.remove('hidden');
-              resultsContainer.innerHTML = '<div class="p-4 text-red-500 text-center font-bold">Error motor</div>';
-          } finally {
-              btn.disabled = false;
-          }
-      });
+        if (Array.isArray(results) && results.length > 0) {
+          results.forEach((r: any) => {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center';
+            card.innerHTML =
+              `<div>
+                <span class="text-xs font-bold text-slate-500 uppercase">${escapeHtml(String(r.type ?? r.transport_type ?? ''))}</span>
+                <p class="font-black text-slate-900 mt-0.5">${escapeHtml(String(r.name ?? r.nombre ?? 'Ruta'))}</p>
+              </div>
+              <span class="text-lg font-black text-teal-600">$${escapeHtml(String(r.total_price ?? r.tarifa ?? 0))} MXN</span>`;
+            resultsContainer.appendChild(card);
+          });
+        } else {
+          resultsContainer.innerHTML =
+            '<div class="p-8 text-center text-slate-400 font-bold">No se encontraron rutas</div>';
+        }
+      } catch (e) {
+        console.error('[RouteCalculator] SEARCH ERROR', e);
+        resultsInfo.classList.remove('hidden');
+        resultsContainer.innerHTML =
+          '<div class="p-4 text-red-500 text-center font-bold">Error al cargar el motor</div>';
+      } finally {
+        btn.disabled = false;
+      }
+    });
   }
 
   document.addEventListener('astro:page-load', start);

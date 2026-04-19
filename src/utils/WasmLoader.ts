@@ -41,6 +41,7 @@ export class WasmLoader {
     );
 
     try {
+        if (typeof window === 'undefined') throw new Error('WASM requires browser context');
         const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
 
         const loadPromise = (async () => {
