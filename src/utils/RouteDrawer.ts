@@ -164,8 +164,30 @@ export function drawRoute(
             });
         }
 
-        if (routeCoords.length > 0) {
-            const color = leg.color || getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
+        if (routeCoords.length === 0) {
+            console.warn("No coordinates found for steps in this leg.");
+        } else {
+            // Determine color with fallback logic:
+            // 1. Use explicit color if available
+            // 2. Use route metadata (route_id, route_name, transport_type) if available
+            // 3. Fall back to index-based colors (first leg = orange, other legs = blue)
+            let color: string;
+            if (leg.color) {
+                color = leg.color;
+            } else {
+                const routeColor = getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
+                // Check if we got a non-default color
+                if (routeColor !== '#94A3B8') {
+                    // We have route metadata and got a meaningful color
+                    color = routeColor;
+                } else if (leg.route_id || leg.route_name || leg.nombre || leg.name || leg.transport_type) {
+                    // We have some metadata but getRouteColor returned default
+                    color = routeColor;
+                } else {
+                    // No metadata available, use index-based fallback
+                    color = index === 0 ? '#F97316' : '#0EA5E9';
+                }
+            }
             const dashArray = index === 0 ? null : '10, 10';
 
             createPolyline(L, routeCoords, {
