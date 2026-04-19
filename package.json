@@ -64,8 +64,8 @@
     "stripe": "^22.0.1",
     "vite": "^8.0.8",
     "wasm-pack": "^0.14.0",
-    "sass": "^1.99.0",
-    "typescript": "^6.0.2"
+    "sass": "^1.83.0",
+    "typescript": "^5.7.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.60.1"

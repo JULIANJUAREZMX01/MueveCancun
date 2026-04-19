@@ -1,4 +1,4 @@
-# render.yaml — MueveCancún v3.8.0 (Infrastructure Recovery Mode)
+# render.yaml — MueveCancún v4.0.0 (Nexus Agentic Core)
 version: "1"
 services:
   - type: web
@@ -12,6 +12,10 @@ services:
         value: "24.0.0"
       - key: NODE_ENV
         value: production
+      - key: RENDER
+        value: "true"
+      - key: SKIP_INSTALL_DEPS
+        value: "true"
 
   - type: static_site
     name: MueveCancun-Static
@@ -21,3 +25,5 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "24.0.0"
+      - key: RENDER
+        value: "true"
