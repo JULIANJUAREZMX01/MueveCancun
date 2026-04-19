@@ -63,6 +63,9 @@ importers:
       postcss:
         specifier: ^8.5.9
         version: 8.5.10
+      sass:
+        specifier: ^1.99.0
+        version: 1.99.0
       serve:
         specifier: ^14.2.6
         version: 14.2.6
@@ -72,6 +75,9 @@ importers:
       stripe:
         specifier: ^22.0.1
         version: 22.0.2(@types/node@25.6.0)
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.3
       vite:
         specifier: ^8.0.8
         version: 8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(sass@1.99.0)(yaml@2.8.3)
@@ -110,12 +116,6 @@ importers:
       playwright:
         specifier: ^1.59.1
         version: 1.59.1
-      sass:
-        specifier: ^1.99.0
-        version: 1.99.0
-      typescript:
-        specifier: ^6.0.2
-        version: 6.0.3
       typescript-eslint:
         specifier: ^8.58.2
         version: 8.58.2(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)
