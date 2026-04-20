@@ -29,3 +29,5 @@ services:
         value: "24.0.0"
       - key: RENDER
         value: "true"
+      - key: ENABLE_COREPACK
+        value: "1"
