@@ -75,8 +75,8 @@ const t = useTranslations(lang);
       });
 
       btn.addEventListener('click', async () => {
-          const oVal = originInput.value.trim();
-          const dVal = destInput.value.trim();
+          const oVal = normalizeString(originInput.value);
+          const dVal = normalizeString(destInput.value);
           if (!oVal || !dVal) {
             showToast("Ingresa origen y destino", "warning");
             return;
