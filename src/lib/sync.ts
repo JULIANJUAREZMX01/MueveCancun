@@ -3,6 +3,10 @@ import { getPendingReports, deletePendingReport, type PendingReport } from '../u
 
 let processing = false;
 
+type SyncWindow = Window & {
+  __syncIntervalId?: ReturnType<typeof setInterval>;
+};
+
 const buildPayload = (data: PendingReport) => ({
   title: `[REPORTE] ${data.tipo} — ${data.ruta || 'Sin Ruta'}`,
   labels: ['reporte', 'estado:pendiente'],
@@ -97,8 +101,9 @@ export function initSync(config: { owner: string, repo: string, token: string })
   });
 
   // Guarded interval — prevent multiple intervals if initSync called again
-  if (!(window as any).__syncIntervalId) {
-    (window as any).__syncIntervalId = setInterval(triggerSync, 10000);
+  const syncWindow = window as SyncWindow;
+  if (!syncWindow.__syncIntervalId) {
+    syncWindow.__syncIntervalId = setInterval(triggerSync, 10000);
   }
 
   if (navigator.onLine) {

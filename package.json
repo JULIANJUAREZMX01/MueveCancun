@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "engines": {
-    "node": ">=22.22.1"
+    "node": ">=22.21.0"
   },
   "pnpm": {
     "overrides": {
@@ -32,6 +32,7 @@
     "lint": "eslint .",
     "preview": "astro preview",
     "test": "vitest",
+    "test:e2e:smoke": "node scripts/e2e-smoke.mjs",
     "check-wasm": "node scripts/check-wasm.cjs",
     "validate-catalog": "node --experimental-strip-types scripts/validate-catalog.ts",
     "bench": "vitest bench",
@@ -62,7 +63,7 @@
     "serve": "^14.2.6",
     "sharp": "^0.34.5",
     "stripe": "^22.0.1",
-    "vite": "^8.0.8",
+    "vite": "^7.1.11",
     "wasm-pack": "^0.14.0",
     "sass": "^1.83.0",
     "typescript": "^5.7.0"
