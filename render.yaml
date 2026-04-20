@@ -15,9 +15,9 @@ services:
       - key: RENDER
         value: "true"
       - key: ENABLE_COREPACK
+        value: "1"
       - key: HOST
         value: "0.0.0.0"
-        value: "1"
 
   - type: static_site
     name: MueveCancun-Static
