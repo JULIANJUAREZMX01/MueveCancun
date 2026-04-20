@@ -61,8 +61,8 @@
   import { loadLeaflet } from "../utils/leafletLoader";
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { escapeHtml, safeUrl, showToast, normalizeString } from "../utils/utils";
-  import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
   import { enrichJourneyLegs } from "../lib/initWasm";
+  import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
 
   let map: any = null;
   let layerGroup: any = null;
@@ -80,12 +80,10 @@
     const allCoords: [number, number][] = [];
 
     journey.legs.forEach((leg: any) => {
-      const routeColor = getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
-      const color = leg.color || routeColor;
+      const color = leg.color || getRouteColor(leg.route_id, leg.route_name, leg.transport_type);
       const stops = leg.paradas || leg.stops || [];
       const legCoords = stops
         .map((s: any) => {
-          // Use normalizeString (same as CoordinatesStore key) — NOT just .toLowerCase()
           const name = normalizeString(s.nombre || s.name || "");
           return coordsDB instanceof Map ? coordsDB.get(name) : coordsDB[name];
         })
@@ -228,16 +226,24 @@
       const routesBadge = isHub ? `<span style="background:#f97316;color:#fff;font-size:10px;font-weight:900;padding:2px 6px;border-radius:99px;margin-left:6px">${hubRouteCount} rutas</span>` : '';
       const landmarkLine = landmark ? `<p style="font-size:10px;color:#7c3aed;font-weight:700;margin:0 0 6px">📌 ${escapeHtml(landmark)}</p>` : '';
       markerLayers.push(
-        L.circleMarker(coords, { radius, fillColor: color, color: '#FFFFFF', weight: isHub ? 3 : 2, opacity: 1, fillOpacity: 0.92 })
-         .bindPopup(`<div style="min-width:175px;padding:4px">
-            <p style="font-weight:900;color:#0f172a;font-size:13px;margin:0 0 2px;display:flex;align-items:center">${escapeHtml(displayName)}${routesBadge}</p>
-            <p style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 6px">${isHub ? '🔀 Hub de conexión' : '📍 Parada'}</p>
-            ${landmarkLine}
-            <div style="display:flex;flex-direction:column;gap:4px">
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
-            </div></div>`)
+        L.circleMarker(coords, {
+          radius: isHub ? 9 : 5,
+          fillColor: isHub ? TRANSPORT_TYPE_COLORS["Bus_HotelZone"] : TRANSPORT_TYPE_COLORS["Bus_Urban"],
+          color: "#FFFFFF",
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.9,
+        }).bindPopup(`
+          <div style=\"min-width:160px;padding:4px\">
+            <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px\">${escapeHtml(displayName)}</p>
+            <p style=\"font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px\">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
+            <div style=\"display:flex;flex-direction:column;gap:4px\">
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_HotelZone"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_Urban"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
+            </div>
+          </div>
+        `)
       );
     });
 
@@ -256,8 +262,7 @@
       const result = coordinatesStore.findNearestWithDistance(lat, lng);
       if (!result || result.distanceKm > 0.8) return;
 
-      const normKey = normalizeString(result.name);
-      const c = (coordsDB instanceof Map ? coordsDB.get(normKey) : (coordsDB as any)[normKey]) || [lat, lng];
+      const c = (coordsDB instanceof Map ? coordsDB.get(normalizeString(result.name)) : (coordsDB as any)[normalizeString(result.name)]) || [lat, lng];
       L.popup()
         .setLatLng(c as any)
         .setContent(`
@@ -265,8 +270,8 @@
             <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 2px\">${escapeHtml(result.name)}</p>
             <p style=\"font-size:10px;color:#94a3b8;margin:0 0 8px\">${(result.distanceKm * 1000).toFixed(0)} m</p>
             <div style=\"display:flex;flex-direction:column;gap:4px\">
-              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_HotelZone"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_Urban"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
               <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
             </div>
           </div>
