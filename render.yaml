@@ -1,4 +1,4 @@
-# render.yaml — MueveCancún v3.8.0 (Infrastructure Recovery Mode)
+# render.yaml — MueveCancún v4.0.0 (Nexus Agentic Core)
 version: "1"
 services:
   - type: web
@@ -12,12 +12,18 @@ services:
         value: "24.0.0"
       - key: NODE_ENV
         value: production
+      - key: RENDER
+        value: "true"
+      - key: ENABLE_COREPACK
+        value: "1"
 
   - type: static_site
     name: MueveCancun-Static
     repo: https://github.com/JULIANJUAREZMX01/MueveCancun
     buildCommand: bash scripts/setup-render.sh
-    publishPath: dist
+    publishPath: dist/client
     envVars:
       - key: NODE_VERSION
         value: "24.0.0"
+      - key: RENDER
+        value: "true"

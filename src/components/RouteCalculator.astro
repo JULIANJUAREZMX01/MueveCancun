@@ -41,17 +41,24 @@ const t = useTranslations(lang);
   </div>
 
   <datalist id="locations">
-    <option value="El Crucero Hub"></option>
-    <option value="ADO Centro / Terminal"></option>
+    <option value="El Crucero"></option>
     <option value="Plaza Las Américas"></option>
-    <option value="Aeropuerto Terminal 2"></option>
-    <option value="Playa Delfines (El Mirador)"></option>
+    <option value="Terminal ADO Centro"></option>
+    <option value="Terminal 2 Aeropuerto"></option>
+    <option value="Terminal 3 Aeropuerto"></option>
+    <option value="Zona Hotelera"></option>
+    <option value="Playa Delfines"></option>
+    <option value="Mercado 28"></option>
+    <option value="Av. Tulum Norte"></option>
+    <option value="Av. Kabah"></option>
+    <option value="UT Cancún"></option>
+    <option value="Puerto Cancun"></option>
   </datalist>
 </div>
 
 <script>
   import { WasmLoader } from "../utils/WasmLoader";
-  import { initWasm, enrichJourneyLegs } from "../lib/initWasm";
+  import { initWasm, enrichJourneyLegs, resolveStopName } from "../lib/initWasm";
   import { escapeHtml, showToast } from "../utils/utils";
 
   // ── Lógica principal ──────────────────────────────────────────────────────
@@ -88,7 +95,10 @@ const t = useTranslations(lang);
           try {
               await initWasm();
               const module = await WasmLoader.getModule();
-              const results = module.find_route(oVal, dVal);
+              const resolvedO = resolveStopName(oVal);
+              const resolvedD = resolveStopName(dVal);
+              const raw = module.find_route(resolvedO, resolvedD);
+              const results = typeof raw === 'string' ? JSON.parse(raw) : raw;
               const endSearch = performance.now();
 
               resultsInfo.classList.remove('hidden');
@@ -161,7 +171,14 @@ const t = useTranslations(lang);
       });
   }
 
-  document.addEventListener('astro:page-load', start);
-  if (document.readyState === 'complete') start();
-  else window.addEventListener('load', start);
+  let __start_listener: (() => void) | null = null;
+  function __register_start() {
+    if (__start_listener) document.removeEventListener('astro:page-load', __start_listener);
+    __start_listener = start;
+    document.addEventListener('astro:page-load', __start_listener);
+  }
+  document.addEventListener('astro:before-swap', () => {
+    if (__start_listener) { document.removeEventListener('astro:page-load', __start_listener); __start_listener = null; }
+  }, { once: true });
+  __register_start();
 </script>

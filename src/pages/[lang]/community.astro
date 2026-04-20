@@ -401,6 +401,22 @@ const isEs = lang === "es";
   });
 
   loadReports();
-  setInterval(loadReports, 30000);
-  document.addEventListener("astro:page-load", loadReports);
+
+  // Guarded interval — cleared on navigation to prevent accumulation
+  let _communityInterval: ReturnType<typeof setInterval> | null = null;
+  function _startInterval() {
+    if (_communityInterval) clearInterval(_communityInterval);
+    _communityInterval = setInterval(loadReports, 30000);
+  }
+  _startInterval();
+  document.addEventListener('astro:before-swap', () => {
+    if (_communityInterval) { clearInterval(_communityInterval); _communityInterval = null; }
+  }, { once: true });
+
+  let __loadReports_listener: (() => void) | null = null;
+  __loadReports_listener = loadReports;
+  document.addEventListener('astro:page-load', __loadReports_listener);
+  document.addEventListener('astro:before-swap', () => {
+    if (__loadReports_listener) { document.removeEventListener('astro:page-load', __loadReports_listener!); __loadReports_listener = null; }
+  }, { once: true });
 </script>

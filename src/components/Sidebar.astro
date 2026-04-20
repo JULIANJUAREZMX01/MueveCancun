@@ -208,5 +208,14 @@ const isDonateActive = /^\/(es|en)\/donate/.test(pathname);
     });
   }
   setupTheme();
-  document.addEventListener('astro:page-load', setupTheme);
+  let __setupTheme_listener: (() => void) | null = null;
+  function __register_setupTheme() {
+    if (__setupTheme_listener) document.removeEventListener('astro:page-load', __setupTheme_listener);
+    __setupTheme_listener = setupTheme;
+    document.addEventListener('astro:page-load', __setupTheme_listener);
+  }
+  document.addEventListener('astro:before-swap', () => {
+    if (__setupTheme_listener) { document.removeEventListener('astro:page-load', __setupTheme_listener); __setupTheme_listener = null; }
+  }, { once: true });
+  __register_setupTheme();
 </script>

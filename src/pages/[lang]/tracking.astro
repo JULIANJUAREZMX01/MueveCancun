@@ -294,5 +294,11 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
     }, 700);
   });
 
-  document.addEventListener("astro:page-load", stopTracking);
+  let __stopTracking_listener: (() => void) | null = null;
+  __stopTracking_listener = stopTracking;
+  document.addEventListener('astro:page-load', __stopTracking_listener);
+  document.addEventListener('astro:before-swap', () => {
+    stopTracking();
+    if (__stopTracking_listener) { document.removeEventListener('astro:page-load', __stopTracking_listener!); __stopTracking_listener = null; }
+  }, { once: true });
 </script>
