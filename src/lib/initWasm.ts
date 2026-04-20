@@ -129,7 +129,7 @@ export function resolveStopName(query: string): string {
     }
   }
 
-  return best && best.score >= 50 ? best.name : query;
+  return best && best.score >= 25 ? best.name : query;
 }
 
 /**

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3.3.3-nexus';
+const CACHE_VERSION = 'v3.4.0-recovery';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 // Critical assets for offline-first PWA
 const CRITICAL_ASSETS = [
@@ -22,6 +22,7 @@ const CRITICAL_ASSETS = [
     '/wasm/spatial-index/spatial_index.js',
     '/wasm/spatial-index/spatial_index_bg.wasm',
     '/data/master_routes.optimized.json',
+    '/data/hubs.json',
     '/data/paradas.json',
     '/data/precios.json',
     '/coordinates.json',
