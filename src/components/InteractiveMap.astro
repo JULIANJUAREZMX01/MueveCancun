@@ -115,18 +115,18 @@
   }
 
   async function initMap() {
-    if (map) return;
+    if (map) return true;
 
     const container = document.getElementById("map");
-    if (!container) return;
+    if (!container) return false;
 
     try {
       await loadLeaflet();
     } catch (err) {
       console.error("[Map] No se pudo cargar Leaflet:", err);
-      return;
+      return false;
     }
-    if (!(window as any).L) return;
+    if (!(window as any).L) return false;
 
     const L = (window as any).L;
     await coordinatesStore.init();
@@ -292,6 +292,7 @@
     });
 
     setTimeout(() => map.invalidateSize(), 600);
+    return true;
   }
 
   function handleMapAction(e: any) {
@@ -313,14 +314,20 @@
     }
   }
 
-  function scheduleInit() {
+  async function scheduleInit() {
     const mapEl = document.getElementById("map-container");
-    if (!mapEl || mapEl.dataset.initialized) {
+    if (!mapEl) return;
+    if (mapEl.dataset.initialized) {
       if (map) map.invalidateSize();
       return;
     }
+
+    const initialized = await initMap();
+    if (!initialized) {
+      delete mapEl.dataset.initialized;
+      return;
+    }
     mapEl.dataset.initialized = "true";
-    initMap();
 
     // Escuchar evento externo para centrar GPS (desde home.astro)
     window.addEventListener("MAP_CENTER_GPS", (e: any) => {

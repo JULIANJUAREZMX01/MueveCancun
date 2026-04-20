@@ -165,7 +165,11 @@ export function drawRoute(
         }
 
         if (routeCoords.length > 0) {
-            const color = leg.color || getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
+            const fallbackColor = index === 0 ? '#F97316' : '#0EA5E9';
+            const resolvedColor = getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
+            const color = leg.color
+                || (resolvedColor === '#94A3B8' ? undefined : resolvedColor)
+                || fallbackColor;
             const dashArray = index === 0 ? null : '10, 10';
 
             createPolyline(L, routeCoords, {
@@ -193,6 +197,8 @@ export function drawRoute(
                  );
             });
 
+        } else {
+            console.warn("No coordinates found for steps in this leg.");
         }
     });
 
