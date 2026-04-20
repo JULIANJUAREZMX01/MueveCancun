@@ -194,43 +194,56 @@
       if (e.detail?.routes) updateLegend(e.detail.routes);
     });
 
-    // ── Cargar paradas en el mapa ──────────────────────────────────────────
+    // ── Cargar paradas con hubs reales + landmarks ───────────────────────
     const allStops = coordsDB instanceof Map
       ? Array.from(coordsDB.entries())
       : Object.entries(coordsDB || {});
 
+    let hubSet: Map<string, number> = new Map();
+    try {
+      const hubsResp = await fetch('/data/hubs.json');
+      if (hubsResp.ok) {
+        const hubsData: Array<{name: string; route_count: number}> = await hubsResp.json();
+        hubsData.forEach(h => hubSet.set(normalizeString(h.name), h.route_count));
+      }
+    } catch {}
+
+    const wasmRoutes: any[] = (window as any).WASM_ROUTES ?? [];
+    const landmarkMap: Map<string, string> = new Map();
+    wasmRoutes.forEach((r: any) => {
+      (r.paradas || []).forEach((p: any) => {
+        if (p.landmarks) landmarkMap.set(normalizeString(p.nombre), p.landmarks);
+      });
+    });
+
     const markerLayers: any[] = [];
-    const hubs = ["plaza las americas", "crucero", "downtown", "aeropuerto", "ado", "walmart"];
 
     allStops.forEach(([key, coords]: any) => {
       const displayName = coordinatesStore.getOriginalName(key) || key;
-      const isHub = hubs.some(h => String(key).toLowerCase().includes(h));
+      const hubRouteCount = hubSet.get(key) ?? 0;
+      const isHub = hubRouteCount >= 3;
+      const landmark = landmarkMap.get(key);
+      const color = isHub ? '#F97316' : landmark ? '#8B5CF6' : TRANSPORT_TYPE_COLORS["Bus_Urban"];
+      const radius = isHub ? 10 : landmark ? 7 : 5;
+      const routesBadge = isHub ? `<span style="background:#f97316;color:#fff;font-size:10px;font-weight:900;padding:2px 6px;border-radius:99px;margin-left:6px">${hubRouteCount} rutas</span>` : '';
+      const landmarkLine = landmark ? `<p style="font-size:10px;color:#7c3aed;font-weight:700;margin:0 0 6px">📌 ${escapeHtml(landmark)}</p>` : '';
       markerLayers.push(
-        L.circleMarker(coords, {
-          radius: isHub ? 9 : 5,
-          fillColor: isHub ? TRANSPORT_TYPE_COLORS["Bus_HotelZone"] : TRANSPORT_TYPE_COLORS["Bus_Urban"],
-          color: "#FFFFFF",
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.9,
-        }).bindPopup(`
-          <div style=\"min-width:160px;padding:4px\">
-            <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px\">${escapeHtml(displayName)}</p>
-            <p style=\"font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px\">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
-            <div style=\"display:flex;flex-direction:column;gap:4px\">
-              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
-              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
-            </div>
-          </div>
-        `)
+        L.circleMarker(coords, { radius, fillColor: color, color: '#FFFFFF', weight: isHub ? 3 : 2, opacity: 1, fillOpacity: 0.92 })
+         .bindPopup(`<div style="min-width:175px;padding:4px">
+            <p style="font-weight:900;color:#0f172a;font-size:13px;margin:0 0 2px;display:flex;align-items:center">${escapeHtml(displayName)}${routesBadge}</p>
+            <p style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 6px">${isHub ? '🔀 Hub de conexión' : '📍 Parada'}</p>
+            ${landmarkLine}
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
+            </div></div>`)
       );
     });
 
     if (markerLayers.length) {
       stopMarkersLayer = L.layerGroup(markerLayers).addTo(map);
-      const coords = allStops.map(([, c]: any) => c);
-      setTimeout(() => map.fitBounds(coords, { padding: [50, 50], maxZoom: 14 }), 200);
+      map.fitBounds([[21.03, -87.05], [21.35, -86.75]], { padding: [30, 30] });
     }
 
     const fallback = document.getElementById("map-fallback");

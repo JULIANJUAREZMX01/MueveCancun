@@ -1,0 +1,8 @@
+[
+  {"name":"El Crucero","lat":21.1714,"lng":-86.8219,"route_count":12,"routes":["CR_PTO_JUAREZ_001","R1_ZONA_HOTELERA_001","R28_VILLAS_OTOCH_001","R19_VILLAS_OTOCH_002","R6_WALMART_001","R17_LAKIN_001","R44_CENTRO_001","R5_HEROES_001","R237_RANCHO_001","R31_UNIVERSIDAD_001","R30_REG103_001","R15_HOTELES_001"]},
+  {"name":"Plaza Las Américas","lat":21.1472,"lng":-86.8234,"route_count":10,"routes":["R10","R1","R2","R10_AEROPUERTO","R21_AMERICAS_001","R44_CENTRO_001","R27_TIERRA_MAYA_001","R71_RESIDENCIAL_001","R33_REG102_001","R15_HOTELES_001"]},
+  {"name":"Av. Kabah","lat":21.1355,"lng":-86.8412,"route_count":7,"routes":["R10","R10_AEROPUERTO","R6_WALMART_001","R21_AMERICAS_001","R5_HEROES_001","R27_TIERRA_MAYA_001","R33_REG102_001"]},
+  {"name":"Av. Las Torres","lat":21.1155,"lng":-86.8555,"route_count":3,"routes":["R10","R10_AEROPUERTO","R71_RESIDENCIAL_001"]},
+  {"name":"Tierra Maya","lat":21.1619,"lng":-86.8515,"route_count":3,"routes":["R17_LAKIN_001","R5_HEROES_001","R27_TIERRA_MAYA_001"]},
+  {"name":"Av. Tulum Norte","lat":21.1619,"lng":-86.8515,"route_count":3,"routes":["R44_CENTRO_001","R237_RANCHO_001","R30_REG103_001"]}
+]
