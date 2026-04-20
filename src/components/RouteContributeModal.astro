@@ -131,19 +131,19 @@
     pendingDest    = dest;
 
     const leg   = journey?.legs?.[0];
-    const price = journey?.total_price ? \`$\${Number(journey.total_price).toFixed(2)}\` : '?';
-    const dur   = journey?.duration_minutes ? \`\${journey.duration_minutes} min\` : '';
+    const price = journey?.total_price ? `$${Number(journey.total_price).toFixed(2)}` : '?';
+    const dur   = journey?.duration_minutes ? `${journey.duration_minutes} min` : '';
 
     const info = document.getElementById('contribute-route-info');
     if (info) {
-      info.innerHTML = \`
-        <div style="font-weight:900;font-size:1rem;margin-bottom:0.25rem">🚌 \${leg?.name || 'Ruta'}</div>
-        <div style="color:var(--text-tertiary);font-size:0.75rem">\${origin} → \${dest}</div>
+      info.innerHTML = `
+        <div style="font-weight:900;font-size:1rem;margin-bottom:0.25rem">🚌 ${leg?.name || 'Ruta'}</div>
+        <div style="color:var(--text-tertiary);font-size:0.75rem">${origin} → ${dest}</div>
         <div style="display:flex;gap:0.75rem;margin-top:0.5rem;font-size:0.75rem">
-          <span style="font-weight:800;color:var(--color-primary)">\${price} MXN</span>
-          \${dur ? \`<span style="color:var(--text-tertiary)">⏱️ \${dur}</span>\` : ''}
+          <span style="font-weight:800;color:var(--color-primary)">${price} MXN</span>
+          ${dur ? `<span style="color:var(--text-tertiary)">⏱️ ${dur}</span>` : ''}
         </div>
-      \`;
+      `;
     }
 
     const note = document.getElementById('contribute-note') as HTMLTextAreaElement | null;

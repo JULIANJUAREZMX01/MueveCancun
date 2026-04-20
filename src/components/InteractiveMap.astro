@@ -43,9 +43,9 @@ const isEs = Astro.url.pathname.includes("/es/");
 
 <script>
   import { initWasm, enrichJourneyLegs, resolveStopName } from "../lib/initWasm";
-  import { coordinatesStore, normalizeString } from "../utils/CoordinatesStore";
+  import { coordinatesStore } from "../utils/CoordinatesStore";
   import { drawRoute } from "../utils/RouteDrawer";
-  import { escapeHtml, safeUrl } from "../utils/utils";
+  import { normalizeString, escapeHtml, safeUrl } from "../utils/utils";
 
   let map: any = null;
   let layerGroup: any = null;
@@ -91,8 +91,8 @@ const isEs = Astro.url.pathname.includes("/es/");
           const item = document.createElement('div');
           item.className = 'map-legend__item';
           const color = r.color || TRANSPORT_TYPE_COLORS["Bus_Urban"];
-          item.innerHTML = \`<div class="map-legend__dot" style="background:\${color}"></div>
-                            <span class="map-legend__item-name">\${escapeHtml(r.nombre || r.name || r.id)}</span>\`;
+          item.innerHTML = `<div class="map-legend__dot" style="background:${color}"></div>
+                            <span class="map-legend__item-name">${escapeHtml(r.nombre || r.name || r.id)}</span>`;
 
           item.addEventListener("click", () => {
             const legendPanel = document.getElementById('route-legend');
@@ -136,19 +136,19 @@ const isEs = Astro.url.pathname.includes("/es/");
       const landmark = landmarkMap.get(key);
       const color = isHub ? '#F97316' : landmark ? '#8B5CF6' : TRANSPORT_TYPE_COLORS["Bus_Urban"];
       const radius = isHub ? 10 : landmark ? 7 : 5;
-      const routesBadge = isHub ? \`<span class="map-stop-badge">\${hubRouteCount} rutas</span>\` : '';
-      const landmarkLine = landmark ? \`<p class="map-stop-landmark">📌 \${escapeHtml(landmark)}</p>\` : '';
+      const routesBadge = isHub ? `<span class="map-stop-badge">${hubRouteCount} rutas</span>` : '';
+      const landmarkLine = landmark ? `<p class="map-stop-landmark">📌 ${escapeHtml(landmark)}</p>` : '';
       markerLayers.push(
         L.circleMarker(coords, { radius, fillColor: color, color: '#FFFFFF', weight: isHub ? 3 : 2, opacity: 1, fillOpacity: 0.92 })
-         .bindPopup(\`<div class="map-popup">
-            <p class="map-popup__title">\${escapeHtml(displayName)}\${routesBadge}</p>
-            <p class="map-popup__subtitle">\${isHub ? '🔀 Hub de conexión' : '📍 Parada'}</p>
-            \${landmarkLine}
+         .bindPopup(`<div class="map-popup">
+            <p class="map-popup__title">${escapeHtml(displayName)}${routesBadge}</p>
+            <p class="map-popup__subtitle">${isHub ? '🔀 Hub de conexión' : '📍 Parada'}</p>
+            ${landmarkLine}
             <div class="map-popup__actions">
-              <button data-stop-name="\${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action map-popup__btn map-popup__btn--origin">🟠 Salgo de aquí</button>
-              <button data-stop-name="\${escapeHtml(displayName)}" data-action="dest"   class="js-map-stop-action map-popup__btn map-popup__btn--dest">🔵 Voy aquí</button>
-              <button data-stop-name="\${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action map-popup__btn map-popup__btn--list">📋 Ver rutas</button>
-            </div></div>\`)
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action map-popup__btn map-popup__btn--origin">🟠 Salgo de aquí</button>
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="dest"   class="js-map-stop-action map-popup__btn map-popup__btn--dest">🔵 Voy aquí</button>
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action map-popup__btn map-popup__btn--list">📋 Ver rutas</button>
+            </div></div>`)
       );
     });
 
@@ -172,16 +172,16 @@ const isEs = Astro.url.pathname.includes("/es/");
       const c = (coordsDB instanceof Map ? coordsDB.get(normKey) : (coordsDB as any)[normKey]) || [lat, lng];
       L.popup()
         .setLatLng(c as any)
-        .setContent(\`
+        .setContent(`
           <div class="map-popup">
-            <p class="map-popup__title">\${escapeHtml(result.name)}</p>
-            <p class="map-popup__distance">\${(result.distanceKm * 1000).toFixed(0)} m</p>
+            <p class="map-popup__title">${escapeHtml(result.name)}</p>
+            <p class="map-popup__distance">${(result.distanceKm * 1000).toFixed(0)} m</p>
             <div class="map-popup__actions">
-              <button data-stop-name="\${escapeHtml(result.name)}" data-action="origin" class="js-map-stop-action map-popup__btn map-popup__btn--origin">🟠 Salgo de aquí</button>
-              <button data-stop-name="\${escapeHtml(result.name)}" data-action="dest"   class="js-map-stop-action map-popup__btn map-popup__btn--dest">🔵 Voy aquí</button>
+              <button data-stop-name="${escapeHtml(result.name)}" data-action="origin" class="js-map-stop-action map-popup__btn map-popup__btn--origin">🟠 Salgo de aquí</button>
+              <button data-stop-name="${escapeHtml(result.name)}" data-action="dest"   class="js-map-stop-action map-popup__btn map-popup__btn--dest">🔵 Voy aquí</button>
             </div>
           </div>
-        \`)
+        `)
         .openOn(map);
     });
 
@@ -219,7 +219,7 @@ const isEs = Astro.url.pathname.includes("/es/");
       map?.closePopup();
     } else if (action === "routes") {
       const lang = document.documentElement.lang || "es";
-      window.location.href = \`/\${lang}/rutas?search=\${safeUrl(name)}\`;
+      window.location.href = `/${lang}/rutas?search=${safeUrl(name)}`;
     }
   }
 
