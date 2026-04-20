@@ -60,7 +60,7 @@
 <script>
   import { loadLeaflet } from "../utils/leafletLoader";
   import { coordinatesStore } from "../utils/CoordinatesStore";
-  import { escapeHtml, safeUrl, showToast } from "../utils/utils";
+  import { escapeHtml, safeUrl, showToast, normalizeString } from "../utils/utils";
   import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
   import { enrichJourneyLegs } from "../lib/initWasm";
 
@@ -85,7 +85,8 @@
       const stops = leg.paradas || leg.stops || [];
       const legCoords = stops
         .map((s: any) => {
-          const name = (s.nombre || s.name || "").toLowerCase().trim();
+          // Use normalizeString (same as CoordinatesStore key) — NOT just .toLowerCase()
+          const name = normalizeString(s.nombre || s.name || "");
           return coordsDB instanceof Map ? coordsDB.get(name) : coordsDB[name];
         })
         .filter(Boolean) as [number, number][];
@@ -242,7 +243,8 @@
       const result = coordinatesStore.findNearestWithDistance(lat, lng);
       if (!result || result.distanceKm > 0.8) return;
 
-      const c = (coordsDB instanceof Map ? coordsDB.get(result.name.toLowerCase().trim()) : (coordsDB as any)[result.name.toLowerCase().trim()]) || [lat, lng];
+      const normKey = normalizeString(result.name);
+      const c = (coordsDB instanceof Map ? coordsDB.get(normKey) : (coordsDB as any)[normKey]) || [lat, lng];
       L.popup()
         .setLatLng(c as any)
         .setContent(`
