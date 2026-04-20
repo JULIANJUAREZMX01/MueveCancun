@@ -8,4 +8,17 @@ interface Props {
 const { class: className, width = 'w-full', height = 'h-4' } = Astro.props;
 ---
 
-<div class={`animate-pulse bg-slate-200 rounded-lg ${width} ${height} ${className || ''}`} aria-hidden="true"></div>
+<div class={`graffiti-skeleton ${width} ${height} ${className || ''}`} aria-hidden="true"></div>
+
+<style>
+  .graffiti-skeleton {
+    background-color: var(--border-light);
+    border-radius: var(--r-sm);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+</style>

@@ -23,31 +23,131 @@ const t = translations[lang] || translations.es;
 const donateUrl = getRelativeLocaleUrl(lang, 'donate');
 ---
 
-<div id="donate-nudge" class="hidden fixed bottom-20 md:bottom-6 right-4 left-4 md:left-auto md:w-80 z-50 animate-in fade-in slide-in-from-bottom-8 duration-500">
-  <div class="bg-white dark:bg-slate-900 border-l-4 border-primary-500 rounded-2xl shadow-2xl p-6 relative overflow-hidden group">
-    <!-- Close Button -->
-    <button id="close-donate-nudge" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+<div id="donate-nudge" class="donate-nudge hidden">
+  <div class="donate-nudge__card">
+    <button id="close-donate-nudge" class="donate-nudge__close" aria-label="Cerrar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
       </svg>
     </button>
 
-    <!-- Content -->
-    <div class="space-y-4">
-      <h4 class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">{t.title}</h4>
-      <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" set:html={t.message}></p>
+    <div class="donate-nudge__content">
+      <h4 class="donate-nudge__title">{t.title}</h4>
+      <p class="donate-nudge__message" set:html={t.message}></p>
 
-      <div class="flex gap-2">
-        <a href={donateUrl} class="flex-1 bg-primary-500 text-white text-center py-2.5 rounded-xl text-xs font-black shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all hover:scale-[1.02] active:scale-95 no-underline">
+      <div class="donate-nudge__actions">
+        <a href={donateUrl} class="donate-nudge__btn donate-nudge__btn--primary">
           {t.primaryCta}
         </a>
-        <button id="dismiss-donate-nudge" class="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+        <button id="dismiss-donate-nudge" class="donate-nudge__btn donate-nudge__btn--secondary">
           {t.secondaryCta}
         </button>
       </div>
     </div>
   </div>
 </div>
+
+<style>
+  .donate-nudge {
+    position: fixed;
+    bottom: 5rem;
+    right: 1rem;
+    left: 1rem;
+    z-index: 1000;
+    animation: fade-up 0.5s var(--ease-out) both;
+  }
+
+  @media (min-width: 768px) {
+    .donate-nudge {
+      left: auto;
+      width: 20rem;
+      bottom: 1.5rem;
+    }
+  }
+
+  .donate-nudge.hidden { display: none; }
+
+  .donate-nudge__card {
+    background-color: var(--surface-card);
+    border-left: 4px solid var(--color-primary);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-xl);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .donate-nudge__close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    width: 1.25rem;
+    height: 1.25rem;
+    transition: color 0.2s;
+  }
+  .donate-nudge__close:hover { color: var(--text-primary); }
+
+  .donate-nudge__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .donate-nudge__title {
+    font-size: 0.875rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+  }
+
+  .donate-nudge__message {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .donate-nudge__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .donate-nudge__btn {
+    flex: 1;
+    padding: 0.625rem;
+    border-radius: var(--r-md);
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .donate-nudge__btn--primary {
+    background-color: var(--color-primary);
+    color: white;
+    box-shadow: var(--shadow-teal);
+  }
+  .donate-nudge__btn--primary:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-1px);
+  }
+
+  .donate-nudge__btn--secondary {
+    background-color: var(--surface-bg);
+    color: var(--text-secondary);
+    font-weight: 700;
+  }
+  .donate-nudge__btn--secondary:hover { background-color: var(--border-light); }
+</style>
 
 <script>
   function setupNudge() {
@@ -74,14 +174,12 @@ const donateUrl = getRelativeLocaleUrl(lang, 'donate');
       nudge?.classList.add('hidden');
       localStorage.setItem('donate_nudge_dismissed', 'true');
 
-      // Show again in 14 days
       setTimeout(() => {
         localStorage.removeItem('donate_nudge_dismissed');
         localStorage.setItem('donate_nudge_count', '0');
       }, 14 * 24 * 60 * 60 * 1000);
     }
 
-    // Listen for search event (this event must be dispatched from RouteCalculator)
     window.addEventListener('ROUTE_CALCULATED', () => {
       incrementCount();
     });
@@ -90,14 +188,5 @@ const donateUrl = getRelativeLocaleUrl(lang, 'donate');
     dismissBtn?.addEventListener('click', dismiss);
   }
 
-  let __setupNudge_listener: (() => void) | null = null;
-  function __register_setupNudge() {
-    if (__setupNudge_listener) document.removeEventListener('astro:page-load', __setupNudge_listener);
-    __setupNudge_listener = setupNudge;
-    document.addEventListener('astro:page-load', __setupNudge_listener);
-  }
-  document.addEventListener('astro:before-swap', () => {
-    if (__setupNudge_listener) { document.removeEventListener('astro:page-load', __setupNudge_listener); __setupNudge_listener = null; }
-  }, { once: true });
-  __register_setupNudge();
+  document.addEventListener('astro:page-load', setupNudge);
 </script>

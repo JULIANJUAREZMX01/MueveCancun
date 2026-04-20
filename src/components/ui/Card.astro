@@ -7,6 +7,17 @@ interface Props {
 const { class: className, id } = Astro.props;
 ---
 
-<div id={id} class={`bg-white rounded-2xl shadow-sm border border-slate-100 p-4 ${className || ''}`}>
+<div id={id} class={`graffiti-card ${className || ''}`}>
   <slot />
 </div>
+
+<style>
+  .graffiti-card {
+    background-color: var(--surface-card);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    padding: 1rem;
+    transition: all var(--t-base) var(--ease);
+  }
+</style>
