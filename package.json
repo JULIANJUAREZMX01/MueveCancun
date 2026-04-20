@@ -32,6 +32,7 @@
     "lint": "eslint .",
     "preview": "astro preview",
     "test": "vitest",
+    "test:e2e:smoke": "node scripts/e2e-smoke.mjs",
     "check-wasm": "node scripts/check-wasm.cjs",
     "validate-catalog": "node --experimental-strip-types scripts/validate-catalog.ts",
     "bench": "vitest bench",
