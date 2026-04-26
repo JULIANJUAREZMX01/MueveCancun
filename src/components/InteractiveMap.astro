@@ -200,6 +200,14 @@ const isEs = Astro.url.pathname.includes("/es/");
       document.getElementById("route-banner")?.classList.add("hidden");
     });
 
+    document.getElementById("gps-center-btn")?.addEventListener("click", () => {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude, longitude } = pos.coords;
+        if (map) map.setView([latitude, longitude], 16);
+      });
+    });
+
     setTimeout(() => map.invalidateSize(), 600);
     return true;
   }
