@@ -407,9 +407,11 @@
     if (!engine) {
       if (!isInit) initEngine();
       const typing = addTyping();
-      await new Promise(r => setTimeout(r, 1200));
+      await new Promise(r => setTimeout(r, 800));
       typing.remove();
-      addMsg('⏳ Aún cargando el modelo. Espera un momento e intenta de nuevo.', false);
+      addMsg(isInit
+        ? '⏳ Cargando modelo… espera un momento e intenta de nuevo.'
+        : '⚠️ El asistente local no está disponible. Usa el calculador de rutas de arriba.', false);
       return;
     }
 
@@ -463,11 +465,40 @@
       // Fallback: respuestas regla-based
       engine = { chat: { completions: { create: async ({messages}) => {
         const q = messages[messages.length-1]?.content?.toLowerCase() || '';
-        let reply = 'Puedo ayudarte con rutas de Cancún. ¿A dónde necesitas ir?';
-        if (q.includes('aeropuerto')) reply = '✈️ Para el aeropuerto toma la Ruta R27 desde el centro, o ADO desde la terminal. Costo: $20-80 MXN.';
-        else if (q.includes('zona hotelera') || q.includes('hotel')) reply = '🏨 La Ruta R1 conecta el centro con la Zona Hotelera. Sale cada 10-15 min. Costo: $18 MXN.';
-        else if (q.includes('centro')) reply = '🏙️ Para el Centro toma la Ruta R2 desde cualquier punto de la avenida principal. $13 MXN.';
-        else if (q.includes('precio') || q.includes('costo') || q.includes('cuánto')) reply = '💰 Combis: $13-15 MXN · Buses: $15-20 MXN · ADO: $30-80 MXN · Zona Hotelera: $18 MXN.';
+        let reply = '';
+        // Normalize: remove accents, lowercase
+        const norm = q.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+
+        if (norm.match(/aeropuerto|airport|vuelo|terminal.*2|terminal.*3/))
+          reply = '✈️ Al aeropuerto: ADO desde terminal centro ($80-150 MXN) o R-27 desde Av. Tulum ($20 MXN). Terminal 2 y 3 tienen parada.';
+        else if (norm.match(/zona hotelera|hotel zone|playa.*delfin|zona.*hot/))
+          reply = '🏨 Zona Hotelera: R-1 desde el centro. Sale cada 10-15 min. $12 MXN.';
+        else if (norm.match(/centro|downtown|mercado.*28|avenida tulum|av.*tulum/))
+          reply = '🏙️ Al Centro: R-2 o R-1 desde cualquier parada en Av. Kabah o Tulum. $10-12 MXN.';
+        else if (norm.match(/americas|las americas|plaza.*americas|americas.*plaza/))
+          reply = '🛍️ Plaza Las Américas: R-10 desde el centro, R-33 desde Región 102. Baja en Av. Kabah. $10 MXN.';
+        else if (norm.match(/playa.*carmen|playa del carmen|playa carmen/))
+          reply = '🌊 Playa del Carmen: Playa Express desde Terminal ADO. ~$100 MXN. Sale cada hora.';
+        else if (norm.match(/precio|costo|cuanto|tarifa|cuánto|cobran/))
+          reply = '💰 Tarifas 2025: Combis $10 · Buses urbanos $10-12 · Zona Hotelera $12 · ADO $80-150 MXN.';
+        else if (norm.match(/horario|hora.*paso|pasa.*a|que hora|frecuencia/))
+          reply = '🕐 La mayoría de rutas operan 5am-11pm. La R-6 solo hasta 10pm. Zonas hoteleras tienen servicio nocturno.';
+        else if (norm.match(/ruta.*\d|r-?\d|numero.*ruta|ruta.*numero/)) {
+          const numMatch = norm.match(/\d+/);
+          if (numMatch) reply = `🚌 Para detalles de Ruta ${numMatch[0]}, búscala en el directorio de rutas o usa el calculador de trayecto.`;
+          else reply = '🚌 ¿Cuál ruta necesitas? Puedo darte info sobre R-1, R-2, R-6, R-10, R-27, ADO y más.';
+        } else if (norm.match(/crucero|el crucero|zicalo|zocalo/))
+          reply = '📍 El Crucero (Av. Tulum con Cobá): punto de transferencia clave. Ahí convergen R-1, R-2, R-19 y más.';
+        else if (norm.match(/combi|colectivo/))
+          reply = '🚐 Las combis cuestan $10 MXN y cubren rutas urbanas rápidas. La Combi Roja Puerto Juárez va a Ultramar.';
+        else if (norm.match(/gracias|thanks|ok|okay|listo|entend/))
+          reply = '✅ ¡Con gusto! Si necesitas otra ruta, aquí estoy.';
+        else if (norm.match(/hola|buenas|hey|hi\b|bueno.*dias|buen.*dia/))
+          reply = '👋 ¡Hola! Dime ¿a dónde necesitas llegar?';
+        else {
+          // Try to detect a destination name in the query
+          reply = `🗺️ Busco ruta hacia "${q.trim()}". Usa el calculador de arriba: escribe tu origen y destino para la ruta exacta con paradas.`;
+        }
         return { choices:[{ message:{ content: reply }}]};
       }}}};
       setStatus('idle');

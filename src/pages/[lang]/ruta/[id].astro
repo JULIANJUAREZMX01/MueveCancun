@@ -81,7 +81,7 @@ const schemaData = {
            <div class="space-y-1">
                 <div class="flex items-center gap-2 mb-2">
                    <span class="px-2 py-0.5 rounded bg-primary-100 text-primary-700 text-[10px] font-bold border border-primary-200 uppercase tracking-tighter" style={`view-transition-name: route-badge-${safeId}`}>
-                      {route.id}
+                      {route.nombre?.split(' ').slice(0, 2).join(' ') || route.tipo || 'Ruta'}
                    </span>
                    <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-bold border border-orange-200 uppercase tracking-tighter">
                       {(route.tipo || 'Ruta').replace('_', ' ')}
