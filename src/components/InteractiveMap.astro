@@ -60,9 +60,9 @@
 <script>
   import { loadLeaflet } from "../utils/leafletLoader";
   import { coordinatesStore } from "../utils/CoordinatesStore";
-  import { escapeHtml, safeUrl, showToast } from "../utils/utils";
-  import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
+  import { escapeHtml, safeUrl, showToast, normalizeString } from "../utils/utils";
   import { enrichJourneyLegs } from "../lib/initWasm";
+  import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
 
   let map: any = null;
   let layerGroup: any = null;
@@ -80,12 +80,11 @@
     const allCoords: [number, number][] = [];
 
     journey.legs.forEach((leg: any) => {
-      const routeColor = getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
-      const color = leg.color || routeColor;
+      const color = leg.color || getRouteColor(leg.route_id, leg.route_name, leg.transport_type);
       const stops = leg.paradas || leg.stops || [];
       const legCoords = stops
         .map((s: any) => {
-          const name = (s.nombre || s.name || "").toLowerCase().trim();
+          const name = normalizeString(s.nombre || s.name || "");
           return coordsDB instanceof Map ? coordsDB.get(name) : coordsDB[name];
         })
         .filter(Boolean) as [number, number][];
@@ -114,18 +113,18 @@
   }
 
   async function initMap() {
-    if (map) return;
+    if (map) return true;
 
     const container = document.getElementById("map");
-    if (!container) return;
+    if (!container) return false;
 
     try {
       await loadLeaflet();
     } catch (err) {
       console.error("[Map] No se pudo cargar Leaflet:", err);
-      return;
+      return false;
     }
-    if (!(window as any).L) return;
+    if (!(window as any).L) return false;
 
     const L = (window as any).L;
     await coordinatesStore.init();
@@ -175,7 +174,7 @@
           item.onmouseleave = () => item.style.background = "transparent";
 
           const rColor = r.color || "#94A3B8";
-          item.innerHTML = `<span style=\"width:12px;height:12px;border-radius:3px;background:${rColor};flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.2)\"></span><span style=\"font-size:11px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis\">${escapeHtml(r.nombre || r.name || r.id)}</span>`;
+          item.innerHTML = `<span style=\"width:12px;height:12px;border-radius:3px;background:${escapeHtml(rColor)};flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.2)\"></span><span style=\"font-size:11px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis\">${escapeHtml(r.nombre || r.name || r.id)}</span>`;
 
           item.addEventListener("click", () => {
             const legendPanel = document.getElementById('route-legend');
@@ -193,17 +192,39 @@
       if (e.detail?.routes) updateLegend(e.detail.routes);
     });
 
-    // ── Cargar paradas en el mapa ──────────────────────────────────────────
+    // ── Cargar paradas con hubs reales + landmarks ───────────────────────
     const allStops = coordsDB instanceof Map
       ? Array.from(coordsDB.entries())
       : Object.entries(coordsDB || {});
 
+    let hubSet: Map<string, number> = new Map();
+    try {
+      const hubsResp = await fetch('/data/hubs.json');
+      if (hubsResp.ok) {
+        const hubsData: Array<{name: string; route_count: number}> = await hubsResp.json();
+        hubsData.forEach(h => hubSet.set(normalizeString(h.name), h.route_count));
+      }
+    } catch {}
+
+    const wasmRoutes: any[] = (window as any).WASM_ROUTES ?? [];
+    const landmarkMap: Map<string, string> = new Map();
+    wasmRoutes.forEach((r: any) => {
+      (r.paradas || []).forEach((p: any) => {
+        if (p.landmarks) landmarkMap.set(normalizeString(p.nombre), p.landmarks);
+      });
+    });
+
     const markerLayers: any[] = [];
-    const hubs = ["plaza las americas", "crucero", "downtown", "aeropuerto", "ado", "walmart"];
 
     allStops.forEach(([key, coords]: any) => {
       const displayName = coordinatesStore.getOriginalName(key) || key;
-      const isHub = hubs.some(h => String(key).toLowerCase().includes(h));
+      const hubRouteCount = hubSet.get(key) ?? 0;
+      const isHub = hubRouteCount >= 3;
+      const landmark = landmarkMap.get(key);
+      const color = isHub ? '#F97316' : landmark ? '#8B5CF6' : TRANSPORT_TYPE_COLORS["Bus_Urban"];
+      const radius = isHub ? 10 : landmark ? 7 : 5;
+      const routesBadge = isHub ? `<span style="background:#f97316;color:#fff;font-size:10px;font-weight:900;padding:2px 6px;border-radius:99px;margin-left:6px">${hubRouteCount} rutas</span>` : '';
+      const landmarkLine = landmark ? `<p style="font-size:10px;color:#7c3aed;font-weight:700;margin:0 0 6px">📌 ${escapeHtml(landmark)}</p>` : '';
       markerLayers.push(
         L.circleMarker(coords, {
           radius: isHub ? 9 : 5,
@@ -217,8 +238,8 @@
             <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px\">${escapeHtml(displayName)}</p>
             <p style=\"font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px\">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
             <div style=\"display:flex;flex-direction:column;gap:4px\">
-              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_HotelZone"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_Urban"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
               <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
             </div>
           </div>
@@ -228,8 +249,7 @@
 
     if (markerLayers.length) {
       stopMarkersLayer = L.layerGroup(markerLayers).addTo(map);
-      const coords = allStops.map(([, c]: any) => c);
-      setTimeout(() => map.fitBounds(coords, { padding: [50, 50], maxZoom: 14 }), 200);
+      map.fitBounds([[21.03, -87.05], [21.35, -86.75]], { padding: [30, 30] });
     }
 
     const fallback = document.getElementById("map-fallback");
@@ -242,7 +262,7 @@
       const result = coordinatesStore.findNearestWithDistance(lat, lng);
       if (!result || result.distanceKm > 0.8) return;
 
-      const c = (coordsDB instanceof Map ? coordsDB.get(result.name.toLowerCase().trim()) : (coordsDB as any)[result.name.toLowerCase().trim()]) || [lat, lng];
+      const c = (coordsDB instanceof Map ? coordsDB.get(normalizeString(result.name)) : (coordsDB as any)[normalizeString(result.name)]) || [lat, lng];
       L.popup()
         .setLatLng(c as any)
         .setContent(`
@@ -250,8 +270,8 @@
             <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 2px\">${escapeHtml(result.name)}</p>
             <p style=\"font-size:10px;color:#94a3b8;margin:0 0 8px\">${(result.distanceKm * 1000).toFixed(0)} m</p>
             <div style=\"display:flex;flex-direction:column;gap:4px\">
-              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_HotelZone"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_Urban"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
               <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
             </div>
           </div>
@@ -277,6 +297,7 @@
     });
 
     setTimeout(() => map.invalidateSize(), 600);
+    return true;
   }
 
   function handleMapAction(e: any) {
@@ -298,14 +319,20 @@
     }
   }
 
-  function scheduleInit() {
+  async function scheduleInit() {
     const mapEl = document.getElementById("map-container");
-    if (!mapEl || mapEl.dataset.initialized) {
+    if (!mapEl) return;
+    if (mapEl.dataset.initialized) {
       if (map) map.invalidateSize();
       return;
     }
+
+    const initialized = await initMap();
+    if (!initialized) {
+      delete mapEl.dataset.initialized;
+      return;
+    }
     mapEl.dataset.initialized = "true";
-    initMap();
 
     // Escuchar evento externo para centrar GPS (desde home.astro)
     window.addEventListener("MAP_CENTER_GPS", (e: any) => {
@@ -327,7 +354,16 @@
     });
   }
 
-  document.addEventListener("astro:page-load", scheduleInit);
+  let __scheduleInit_listener: (() => void) | null = null;
+  function __register_scheduleInit() {
+    if (__scheduleInit_listener) document.removeEventListener('astro:page-load', __scheduleInit_listener);
+    __scheduleInit_listener = scheduleInit;
+    document.addEventListener('astro:page-load', __scheduleInit_listener);
+  }
+  document.addEventListener('astro:before-swap', () => {
+    if (__scheduleInit_listener) { document.removeEventListener('astro:page-load', __scheduleInit_listener); __scheduleInit_listener = null; }
+  }, { once: true });
+  __register_scheduleInit();
   document.addEventListener("click", handleMapAction);
   if (document.readyState === "complete") scheduleInit();
   else window.addEventListener("load", scheduleInit);

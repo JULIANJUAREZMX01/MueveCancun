@@ -41,21 +41,36 @@ const t = useTranslations(lang);
   </div>
 
   <datalist id="locations">
-    <option value="El Crucero Hub"></option>
-    <option value="ADO Centro / Terminal"></option>
+    <option value="El Crucero"></option>
     <option value="Plaza Las Américas"></option>
-    <option value="Aeropuerto Terminal 2"></option>
-    <option value="Playa Delfines (El Mirador)"></option>
+    <option value="Terminal ADO Centro"></option>
+    <option value="Terminal 2 Aeropuerto"></option>
+    <option value="Terminal 3 Aeropuerto"></option>
+    <option value="Zona Hotelera"></option>
+    <option value="Playa Delfines"></option>
+    <option value="Mercado 28"></option>
+    <option value="Av. Tulum Norte"></option>
+    <option value="Av. Kabah"></option>
+    <option value="UT Cancún"></option>
+    <option value="Puerto Cancun"></option>
   </datalist>
 </div>
 
 <script>
   import { WasmLoader } from "../utils/WasmLoader";
-  import { initWasm, enrichJourneyLegs } from "../lib/initWasm";
+  import { initWasm, enrichJourneyLegs, resolveStopName } from "../lib/initWasm";
   import { escapeHtml, showToast } from "../utils/utils";
 
   // ── Lógica principal ──────────────────────────────────────────────────────
   const isEs = document.documentElement.lang !== "en";
+
+      /** Translate "Stop N - RUTA X" → "Parada N" for Spanish UI */
+      function localizeStop(raw: string): string {
+        if (!raw) return raw;
+        const m = raw.match(/^Stop (\d+)/i);
+        if (m) return isEs ? `Parada ${m[1]}` : `Stop ${m[1]}`;
+        return raw;
+      }
 
   async function start() {
       const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
@@ -75,8 +90,8 @@ const t = useTranslations(lang);
       });
 
       btn.addEventListener('click', async () => {
-          const oVal = originInput.value.trim();
-          const dVal = destInput.value.trim();
+          const oVal = normalizeString(originInput.value);
+          const dVal = normalizeString(destInput.value);
           if (!oVal || !dVal) {
             showToast("Ingresa origen y destino", "warning");
             return;
@@ -88,7 +103,10 @@ const t = useTranslations(lang);
           try {
               await initWasm();
               const module = await WasmLoader.getModule();
-              const results = module.find_route(oVal, dVal);
+              const resolvedO = resolveStopName(oVal);
+              const resolvedD = resolveStopName(dVal);
+              const raw = module.find_route(resolvedO, resolvedD);
+              const results = typeof raw === 'string' ? JSON.parse(raw) : raw;
               const endSearch = performance.now();
 
               resultsInfo.classList.remove('hidden');
@@ -111,24 +129,25 @@ const t = useTranslations(lang);
                       card.style.borderLeftWidth = "4px";
                       card.style.borderLeftColor = routeColor;
                       card.style.borderLeftStyle = "solid";
+                      const safeColor = escapeHtml(routeColor);
                       card.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;gap:0.5rem">
                           <div>
-                            <div style="display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:${routeColor};margin-bottom:3px">
+                            <div style="display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:${safeColor};margin-bottom:3px">
                               ${isTransfer ? "🔀 Trasbordo" : "🚌 Directo"}
-                              ${r.legs?.length > 1 ? `<span style="background:${routeColor}22;padding:1px 5px;border-radius:4px">${r.legs.length} tramos</span>` : ""}
+                              ${r.legs?.length > 1 ? `<span style="background:${safeColor}22;padding:1px 5px;border-radius:4px">${r.legs.length} tramos</span>` : ""}
                             </div>
                             <div style="font-size:0.875rem;font-weight:900;color:var(--text-primary);line-height:1.2">${escapeHtml(leg.route_name)}</div>
                           </div>
                           <div style="text-align:right;flex-shrink:0">
-                            <div style="font-size:1.25rem;font-weight:900;color:var(--text-primary);line-height:1">$${r.total_price}</div>
+                            <div style="font-size:1.25rem;font-weight:900;color:var(--text-primary);line-height:1">$${escapeHtml(r.total_price)}</div>
                             <div style="font-size:9px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em">MXN</div>
                           </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--text-secondary)">
-                          <span style="background:${routeColor}22;color:${routeColor};padding:2px 8px;border-radius:9999px;font-weight:800">${escapeHtml(leg.origin_stop)}</span>
+                          <span style="background:${safeColor}22;color:${safeColor};padding:2px 8px;border-radius:9999px;font-weight:800">${escapeHtml(leg.origin_stop)}</span>
                           <svg style="width:12px;height:12px;flex-shrink:0;color:var(--text-tertiary)" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-                          <span style="background:#64748b22;padding:2px 8px;border-radius:9999px">${escapeHtml(leg.dest_stop)}</span>
+                          <span style="background:#64748b22;padding:2px 8px;border-radius:9999px">${escapeHtml(localizeStop(leg.dest_stop ?? ""))}</span>
                         </div>
                         <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:6px;gap:4px">
                           <svg style="width:10px;height:10px;color:var(--text-tertiary)" viewBox="0 0 24 24" fill="currentColor"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
@@ -138,7 +157,7 @@ const t = useTranslations(lang);
 
                       card.addEventListener('click', () => {
                          window.dispatchEvent(new CustomEvent("SHOW_ROUTE_ON_MAP", { detail: { journey: r } }));
-                         window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED"));
+                         window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED", { detail: { count: results.length, origin: resolvedO, dest: resolvedD } }));
                       });
 
                       resultsContainer.appendChild(card);
@@ -161,7 +180,14 @@ const t = useTranslations(lang);
       });
   }
 
-  document.addEventListener('astro:page-load', start);
-  if (document.readyState === 'complete') start();
-  else window.addEventListener('load', start);
+  let __start_listener: (() => void) | null = null;
+  function __register_start() {
+    if (__start_listener) document.removeEventListener('astro:page-load', __start_listener);
+    __start_listener = start;
+    document.addEventListener('astro:page-load', __start_listener);
+  }
+  document.addEventListener('astro:before-swap', () => {
+    if (__start_listener) { document.removeEventListener('astro:page-load', __start_listener); __start_listener = null; }
+  }, { once: true });
+  __register_start();
 </script>

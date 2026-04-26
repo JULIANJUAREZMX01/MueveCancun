@@ -82,6 +82,12 @@ const { id = 'toast-notification' } = Astro.props;
 
 <script define:vars={{ id }}>
   // GraffitiWarrior: Native Popover Controller
+  // Wire SHOW_TOAST custom event → window.showToast
+  window.addEventListener('SHOW_TOAST', (e) => {
+    const { message, type } = (e as CustomEvent).detail ?? {};
+    if (message) window.showToast(message, type ?? 'info');
+  });
+
   window.showToast = (message, type = 'info', duration = 3000) => {
     const toast = document.getElementById(id);
     const msgEl = document.getElementById(`${id}-message`);

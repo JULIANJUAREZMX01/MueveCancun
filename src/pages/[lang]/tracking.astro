@@ -211,6 +211,8 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
 </style>
 
 <script>
+  import { escapeHtml } from "../../utils/utils";
+
   const select    = document.getElementById("track-route") as HTMLSelectElement;
   const idlePanel = document.getElementById("tracking-idle")!;
   const activePanel= document.getElementById("tracking-active")!;
@@ -248,10 +250,10 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
       card.innerHTML = `
         <div class="unit-icon" aria-hidden="true">🚌</div>
         <div class="unit-info">
-          <div class="unit-id">${u.id}</div>
-          <div class="unit-loc">📍 ${u.location}</div>
+          <div class="unit-id">${escapeHtml(u.id)}</div>
+          <div class="unit-loc">📍 ${escapeHtml(u.location)}</div>
         </div>
-        <div class="unit-eta">${u.eta} min</div>`;
+        <div class="unit-eta">${escapeHtml(String(u.eta))} min</div>`;
       unitsList.appendChild(card);
     });
 
@@ -294,5 +296,11 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
     }, 700);
   });
 
-  document.addEventListener("astro:page-load", stopTracking);
+  let __stopTracking_listener: (() => void) | null = null;
+  __stopTracking_listener = stopTracking;
+  document.addEventListener('astro:page-load', __stopTracking_listener);
+  document.addEventListener('astro:before-swap', () => {
+    stopTracking();
+    if (__stopTracking_listener) { document.removeEventListener('astro:page-load', __stopTracking_listener!); __stopTracking_listener = null; }
+  }, { once: true });
 </script>
