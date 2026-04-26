@@ -20,6 +20,8 @@ export class CoordinatesStore {
     private spatialIndex: SpatialHash<string> | null = null;
     private loadingPromise: Promise<{ text: string, data: RoutesCatalog | Partial<RoutesCatalog> }> | null = null;
     private allPoints: Coordinate[] = [];
+    private nearestCache: Map<string, { name: string; distanceKm: number }> = new Map();
+    private readonly MAX_CACHE_SIZE = 100;
 
     static instance = new CoordinatesStore();
 
@@ -57,6 +59,7 @@ export class CoordinatesStore {
                 this.originalNames = new Map<string, string>();
                 this.spatialIndex = new SpatialHash<string>(); // Initialize SpatialHash
                 this.allPoints = []; // Clear on re-init to prevent duplicates
+                this.nearestCache.clear();
                 
                 if (data.rutas) {
                     data.rutas.forEach((route: RouteData) => {
@@ -126,10 +129,20 @@ export class CoordinatesStore {
     findNearestWithDistance(lat: number, lng: number): { name: string; distanceKm: number } | null {
         if (!this.db) return null;
 
+        // 1. Check Cache (LRU-ish)
+        const cacheKey = `${lat.toFixed(5)},${lng.toFixed(5)}`;
+        const cached = this.nearestCache.get(cacheKey);
+        if (cached) {
+            // Move to end to maintain LRU
+            this.nearestCache.delete(cacheKey);
+            this.nearestCache.set(cacheKey, cached);
+            return cached;
+        }
+
         let minDist = Infinity;
         let nearestKey: string | null = null;
 
-        // O(1) Spatial Hash first
+        // 2. O(1) Spatial Hash first
         if (this.spatialIndex) {
             const candidates = this.spatialIndex.query(lat, lng);
             for (const point of candidates) {
@@ -141,13 +154,48 @@ export class CoordinatesStore {
             }
         }
 
-        // O(N) global search only when spatial hash returned no candidates
-        if (minDist === Infinity) {
+        // 3. O(N) global search only when spatial hash returned no candidates
+        if (minDist === Infinity && this.allPoints.length > 0) {
+            // Pre-calculate degrees to km conversion roughly (constant)
+            // 1 degree lat ≈ 111km. 1 degree lng ≈ 111km * cos(lat)
+            const latRad = lat * Math.PI / 180;
+            const kLat = 111;
+            const kLng = 111 * Math.cos(latRad);
+
+            // Find an initial candidate using fast equirectangular approximation
+            // to provide a better bound for pruning.
+            let initialCandidate: Coordinate | null = null;
+            let bestApproxDistSq = Infinity;
             for (const point of this.allPoints) {
-                const d = getDistance(lat, lng, point.lat, point.lng);
-                if (d < minDist) {
-                    minDist = d;
-                    nearestKey = point.name;
+                const dLat = (point.lat - lat) * kLat;
+                const dLng = (point.lng - lng) * kLng;
+                const dSq = dLat * dLat + dLng * dLng;
+                if (dSq < bestApproxDistSq) {
+                    bestApproxDistSq = dSq;
+                    initialCandidate = point;
+                }
+            }
+
+            // Now we have a good candidate, get its real distance
+            if (initialCandidate) {
+                nearestKey = initialCandidate.name;
+                minDist = getDistance(lat, lng, initialCandidate.lat, initialCandidate.lng);
+
+                // Final pass with pruning
+                const thresholdLat = minDist / kLat;
+                const thresholdLng = minDist / Math.abs(kLng);
+
+                for (const point of this.allPoints) {
+                    // Bounding box pruning
+                    if (Math.abs(point.lat - lat) > thresholdLat || Math.abs(point.lng - lng) > thresholdLng) {
+                        continue;
+                    }
+
+                    const d = getDistance(lat, lng, point.lat, point.lng);
+                    if (d < minDist) {
+                        minDist = d;
+                        nearestKey = point.name;
+                    }
                 }
             }
         }
@@ -155,7 +203,16 @@ export class CoordinatesStore {
         if (!nearestKey) return null;
 
         const name = this.originalNames.get(nearestKey) || nearestKey;
-        return { name, distanceKm: minDist };
+        const result = { name, distanceKm: minDist };
+
+        // Save to cache
+        this.nearestCache.set(cacheKey, result);
+        if (this.nearestCache.size > this.MAX_CACHE_SIZE) {
+            const firstKey = this.nearestCache.keys().next().value;
+            if (firstKey !== undefined) this.nearestCache.delete(firstKey);
+        }
+
+        return result;
     }
 }
 
