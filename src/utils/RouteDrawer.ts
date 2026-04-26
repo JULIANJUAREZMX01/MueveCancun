@@ -164,6 +164,10 @@ export function drawRoute(
             });
         }
 
+        if (routeCoords.length === 0) {
+            console.warn("No coordinates found for steps in this leg.");
+        }
+
         if (routeCoords.length > 0) {
             const fallbackColor = index === 0 ? '#F97316' : '#0EA5E9';
             const resolvedColor = getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
