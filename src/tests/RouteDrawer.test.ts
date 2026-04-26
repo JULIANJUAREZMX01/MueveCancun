@@ -102,7 +102,7 @@ describe('RouteDrawer', () => {
                 [21.162, -86.852],
                 [21.1621, -86.8525]
             ],
-            { color: '#94A3B8', weight: 4, opacity: 0.8, dashArray: null }
+            { color: '#F97316', weight: 4, opacity: 0.8, dashArray: null }
         );
 
         // Map bounds should be fitted
@@ -173,13 +173,13 @@ describe('RouteDrawer', () => {
         // Leg 1 polyline
         expect(mockL.polyline).toHaveBeenNthCalledWith(1,
             [[1, 1], [2, 2]],
-            expect.objectContaining({ color: '#94A3B8', dashArray: null })
+            expect.objectContaining({ color: '#F97316', dashArray: null })
         );
 
         // Leg 2 polyline
         expect(mockL.polyline).toHaveBeenNthCalledWith(2,
             [[2, 2], [3, 3]],
-            expect.objectContaining({ color: '#94A3B8', dashArray: '10, 10' })
+            expect.objectContaining({ color: '#0EA5E9', dashArray: '10, 10' })
         );
 
         // Markers: Start(A), Transfer(B), End(C)

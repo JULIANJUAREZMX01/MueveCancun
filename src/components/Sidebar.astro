@@ -41,6 +41,9 @@ const isDonateActive = /^\/(es|en)\/donate/.test(pathname);
     <a href={donateHref} class:list={["donate-link", { active: isDonateActive }]} aria-label="Donar">
       <Icon name="palm-tree" class="w-6 h-6" />
     </a>
+    <button id="lang-toggle-sidebar" class="theme-toggle" aria-label="Cambiar idioma / Switch language" title={lang === 'es' ? 'Switch to English' : 'Cambiar a Español'}>
+      <span style="font-size:12px;font-weight:900;letter-spacing:0.05em">{lang === 'es' ? 'EN' : 'ES'}</span>
+    </button>
     <button id="theme-toggle-sidebar" class="theme-toggle" aria-label="Cambiar tema">
        <div class="dark-icon"><Icon name="swap" class="w-6 h-6" /></div>
        <div class="light-icon"><Icon name="swap" class="w-6 h-6" /></div>
@@ -205,6 +208,12 @@ const isDonateActive = /^\/(es|en)\/donate/.test(pathname);
     btn?.addEventListener('click', () => {
       const isDark = document.documentElement.classList.toggle('dark');
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+    const langBtn = document.getElementById('lang-toggle-sidebar');
+    langBtn?.addEventListener('click', () => {
+      const cur = document.documentElement.lang || 'es';
+      const next = cur === 'es' ? 'en' : 'es';
+      window.dispatchEvent(new CustomEvent('LANGUAGE_CHANGE', { detail: { lang: next } }));
     });
   }
   setupTheme();

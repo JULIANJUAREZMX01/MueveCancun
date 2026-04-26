@@ -240,6 +240,38 @@ const isEs = Astro.url.pathname.includes("/es/");
       if (newLg) layerGroup = newLg;
     });
 
+    // ── GPS dot from telemetry (mc:position) ─────────────────────────────
+    let gpsDot: any = null;
+    let gpsAccCircle: any = null;
+    window.addEventListener('mc:position', (e: any) => {
+      const { lat, lng, accuracy } = e.detail ?? {};
+      if (!lat || !lng || !map) return;
+      const pos: [number, number] = [lat, lng];
+      if (!gpsDot) {
+        gpsDot = L.circleMarker(pos, {
+          radius: 10, fillColor: '#3B82F6', color: '#FFFFFF',
+          weight: 3, opacity: 1, fillOpacity: 0.95,
+          className: 'gps-dot'
+        }).bindPopup('<b>📍 Tu ubicación</b>').addTo(map);
+        gpsAccCircle = L.circle(pos, {
+          radius: accuracy ?? 40, color: '#3B82F6',
+          fillColor: '#3B82F6', fillOpacity: 0.12, weight: 1
+        }).addTo(map);
+      } else {
+        gpsDot.setLatLng(pos);
+        gpsAccCircle.setLatLng(pos);
+        if (accuracy) gpsAccCircle.setRadius(accuracy);
+      }
+    });
+
+    // ── LANGUAGE_CHANGE relay ─────────────────────────────────────────────
+    window.addEventListener('LANGUAGE_CHANGE', (e: any) => {
+      const lang = e.detail?.lang;
+      if (!lang) return;
+      const url = window.location.pathname.replace(/^\/(es|en)/, '/' + lang);
+      window.location.href = url;
+    });
+
     document.getElementById("route-clear-btn")?.addEventListener("click", () => {
       if (layerGroup) { map.removeLayer(layerGroup); layerGroup = L.layerGroup().addTo(map); }
       activeJourney = null;
@@ -266,6 +298,9 @@ const isEs = Astro.url.pathname.includes("/es/");
     } else if (action === "routes") {
       const lang = document.documentElement.lang || "es";
       window.location.href = `/${lang}/rutas?search=${safeUrl(name)}`;
+    } else if (action === "contribute") {
+      window.dispatchEvent(new CustomEvent("CONTRIBUTE_ROUTE", { detail: { stopName: name } }));
+      map?.closePopup();
     }
   }
 
