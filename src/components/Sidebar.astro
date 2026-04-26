@@ -6,11 +6,11 @@ const pathname = Astro.url.pathname;
 const lang = getLangFromUrl(Astro.url);
 
 const navItems = [
-  { href: getRelativeLocaleUrl(lang, 'home'), icon: 'home', label: 'Inicio', activePattern: /^\/(es|en)\/home/ },
-  { href: getRelativeLocaleUrl(lang, 'rutas'), icon: 'bus', label: 'Rutas', activePattern: /^\/(es|en)\/rutas/ },
-  { href: getRelativeLocaleUrl(lang, 'community'), icon: 'users', label: 'Comunidad', activePattern: /^\/(es|en)\/community/ },
-  { href: getRelativeLocaleUrl(lang, 'wallet'), icon: 'credit-card', label: 'Billetera', activePattern: /^\/(es|en)\/wallet/ },
-  { href: getRelativeLocaleUrl(lang, 'about'), icon: 'alert', label: 'Nosotros', activePattern: /^\/(es|en)\/about/ },
+  { href: getRelativeLocaleUrl(lang, 'home'), icon: 'home', label: lang === 'es' ? 'Inicio' : 'Home', activePattern: /^\/(es|en)\/home/ },
+  { href: getRelativeLocaleUrl(lang, 'rutas'), icon: 'bus', label: lang === 'es' ? 'Rutas' : 'Routes', activePattern: /^\/(es|en)\/rutas/ },
+  { href: getRelativeLocaleUrl(lang, 'community'), icon: 'users', label: lang === 'es' ? 'Foro' : 'Forum', activePattern: /^\/(es|en)\/community/ },
+  { href: getRelativeLocaleUrl(lang, 'wallet'), icon: 'credit-card', label: lang === 'es' ? 'Tarjeta' : 'Wallet', activePattern: /^\/(es|en)\/wallet/ },
+  { href: getRelativeLocaleUrl(lang, 'about'), icon: 'alert', label: lang === 'es' ? 'Acerca' : 'About', activePattern: /^\/(es|en)\/about/ },
 ];
 
 const donateHref = getRelativeLocaleUrl(lang, 'donate');

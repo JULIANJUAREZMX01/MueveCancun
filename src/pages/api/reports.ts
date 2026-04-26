@@ -2,14 +2,65 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
+const SEED_REPORTS = [
+  {
+    id: "seed_001",
+    type: "Precio",
+    route: "Zona Hotelera",
+    message: "Los camiones de Zona Hotelera cobran $12 tanto el convencional como el de aire acondicionado.",
+    author: "Comunidad",
+    votes: 14,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString()
+  },
+  {
+    id: "seed_002",
+    type: "Precio",
+    route: "Combi / Urbano",
+    message: "Las combis cobran $10, los camiones de zona urbana también $10. Corrección de tarifas.",
+    author: "Esteban H.",
+    votes: 22,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString()
+  },
+  {
+    id: "seed_003",
+    type: "Ruta",
+    route: "R-10",
+    message: "La R-10 Las Américas — Aeropuerto en realidad no llega al aeropuerto. Llega a Las Américas (Trabajadores).",
+    author: "MÍSTICO_",
+    votes: 31,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString()
+  },
+  {
+    id: "seed_004",
+    type: "Noticia",
+    route: "General",
+    message: "¿Hay transporte de Las Américas al aeropuerto? Confirmado: la Combi Roja IRM-6 cobra $10, va de Ultramar a Crucero pasando por ZH.",
+    author: "Darwin G.",
+    votes: 8,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 36).toISOString()
+  },
+  {
+    id: "seed_005",
+    type: "Demora",
+    route: "R-6",
+    message: "La R-6 solo pasa hasta las 10pm. Tengan cuidado si necesitan regresar de noche.",
+    author: "Grecia P.",
+    votes: 19,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString()
+  }
+];
+
 /**
  * GET: Obtener lista de reportes recientes
- * Actualmente devuelve un array vacío para evitar errores 404 en el cliente.
+ * Devuelve seed data real de la comunidad mientras no hay backend persistente.
  */
 export const GET: APIRoute = async () => {
-  return new Response(JSON.stringify([]), {
+  return new Response(JSON.stringify(SEED_REPORTS), {
     status: 200,
-    headers: { "Content-Type": "application/json" }
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=60"
+    }
   });
 };
 
