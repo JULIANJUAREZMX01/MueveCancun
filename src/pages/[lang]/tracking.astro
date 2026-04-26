@@ -227,18 +227,29 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
   const isEs = document.documentElement.lang !== "en";
   let pollInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Datos simulados hasta integración GPS real
-  function generateUnits(route: string) {
-    const count = Math.floor(Math.random() * 3) + 2;
-    const locations = isEs
-      ? ["Plaza Las Américas","ADO Centro","Zona Hotelera Sur","El Crucero","Av. Kabah","Forum by the Sea","Puerto Morelos","Aeropuerto T2"]
-      : ["Las Americas Mall","ADO Center","Hotel Zone S","El Crucero","Kabah Ave","Forum by the Sea","Puerto Morelos","Airport T2"];
-    return Array.from({length: count}, (_, i) => ({
-      id: `${route}-0${i+1}`,
-      location: locations[Math.floor(Math.random() * locations.length)],
-      eta: Math.floor(Math.random() * 15) + 1,
-      speed: Math.floor(Math.random() * 40) + 20,
-    }));
+  // ── Live GPS via /api/tracking (real DB + stub fallback) ──────────────
+  async function fetchUnits(route: string): Promise<any[]> {
+    try {
+      const res = await fetch(`/api/tracking?route_id=${encodeURIComponent(route)}`);
+      if (!res.ok) throw new Error(res.statusText);
+      const data = await res.json();
+      // Emit mc:position for each unit so map shows GPS dots
+      data.forEach((u: any) => {
+        window.dispatchEvent(new CustomEvent('mc:position', {
+          detail: { lat: u.lat, lng: u.lng, accuracy: 40, unit_id: u.id }
+        }));
+      });
+      return data.map((u: any) => ({
+        id: u.id,
+        location: u.stop_name || (isEs ? 'En ruta' : 'On route'),
+        eta: Math.max(1, Math.round((Date.now() - new Date(u.updated_at).getTime()) / 60000) + 2),
+        speed: u.speed_kmh || 30,
+        is_stub: u.is_stub || false,
+      }));
+    } catch (err) {
+      console.warn('[Tracking] API unavailable, using stub');
+      return [];
+    }
   }
 
   function renderUnits(units: any[]) {
@@ -267,12 +278,13 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
     statusLbl.textContent = isEs ? "En línea" : "Online";
   }
 
-  function startTracking(route: string) {
+  async function startTracking(route: string) {
     idlePanel.hidden = true;
     activePanel.hidden = false;
-    renderUnits(generateUnits(route));
+    const units = await fetchUnits(route);
+    renderUnits(units.length ? units : [{ id: `${route}-01`, location: isEs ? 'Cargando...' : 'Loading...', eta: 5, speed: 0 }]);
     if (pollInterval) clearInterval(pollInterval);
-    pollInterval = setInterval(() => renderUnits(generateUnits(route)), 30000);
+    pollInterval = setInterval(async () => renderUnits(await fetchUnits(route)), 30000);
   }
 
   function stopTracking() {
