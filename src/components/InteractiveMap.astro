@@ -131,7 +131,8 @@ const isEs = Astro.url.pathname.includes("/es/");
 
     layerGroup = L.layerGroup().addTo(map);
 
-    const coordsDB = await coordinatesStore.getCoordinates();
+    await coordinatesStore.init();
+    const coordsDB = coordinatesStore.getAll();
 
     function updateLegend(routes: any[]) {
         const legendContent = document.getElementById('legend-content');
