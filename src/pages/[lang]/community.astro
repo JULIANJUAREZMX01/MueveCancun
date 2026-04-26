@@ -402,6 +402,9 @@ const isEs = lang === "es";
 
   loadReports();
 
+  // Refresh on sync complete (offline reports uploaded)
+  window.addEventListener('SYNC_COMPLETE', () => { setTimeout(loadReports, 500); });
+
   // Guarded interval — cleared on navigation to prevent accumulation
   let _communityInterval: ReturnType<typeof setInterval> | null = null;
   function _startInterval() {

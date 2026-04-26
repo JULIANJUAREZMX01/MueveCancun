@@ -148,7 +148,7 @@ const t = useTranslations(lang);
 
                       card.addEventListener('click', () => {
                          window.dispatchEvent(new CustomEvent("SHOW_ROUTE_ON_MAP", { detail: { journey: r } }));
-                         window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED"));
+                         window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED", { detail: { count: results.length, origin: resolvedO, dest: resolvedD } }));
                       });
 
                       resultsContainer.appendChild(card);
