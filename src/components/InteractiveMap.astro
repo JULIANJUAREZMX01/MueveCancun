@@ -44,19 +44,58 @@ const isEs = Astro.url.pathname.includes("/es/");
 <script>
   import { initWasm, enrichJourneyLegs, resolveStopName } from "../lib/initWasm";
   import { coordinatesStore } from "../utils/CoordinatesStore";
-  import { drawRoute } from "../utils/RouteDrawer";
-  import { normalizeString, escapeHtml, safeUrl } from "../utils/utils";
+  import { escapeHtml, safeUrl, showToast } from "../utils/utils";
+  import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
+  import { enrichJourneyLegs } from "../lib/initWasm";
 
   let map: any = null;
   let layerGroup: any = null;
   let stopMarkersLayer: any = null;
   let activeJourney: any = null;
 
-  const TRANSPORT_TYPE_COLORS: Record<string, string> = {
-    "Bus_Urban": "#0D9488",
-    "Bus_HotelZone": "#F97316",
-    "ADO": "#FF6B6B"
-  };
+  // ── Helpers ─────────────────────────────────────────────────────────────
+
+  function drawRoute(mapInstance: any, journey: any, currentLayerGroup: any, coordsDB: any) {
+    if (!mapInstance || !journey) return null;
+    if (currentLayerGroup) mapInstance.removeLayer(currentLayerGroup);
+
+    const L = (window as any).L;
+    const layers: any[] = [];
+    const allCoords: [number, number][] = [];
+
+    journey.legs.forEach((leg: any) => {
+      const routeColor = getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
+      const color = leg.color || routeColor;
+      const stops = leg.paradas || leg.stops || [];
+      const legCoords = stops
+        .map((s: any) => {
+          const name = (s.nombre || s.name || "").toLowerCase().trim();
+          return coordsDB instanceof Map ? coordsDB.get(name) : coordsDB[name];
+        })
+        .filter(Boolean) as [number, number][];
+
+      if (legCoords.length >= 2) {
+        const poly = L.polyline(legCoords, { color, weight: 6, opacity: 0.85, lineJoin: "round" });
+        layers.push(poly);
+        allCoords.push(...legCoords);
+
+        // Markers de inicio/fin del tramo
+        layers.push(L.circleMarker(legCoords[0], { radius: 7, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2 })
+          .bindPopup(`<b>${escapeHtml(leg.origin_stop || "Inicio")}</b>`));
+
+        layers.push(L.circleMarker(legCoords[legCoords.length - 1], { radius: 7, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2 })
+          .bindPopup(`<b>${escapeHtml(leg.dest_stop || "Fin")}</b>`));
+      }
+    });
+
+      if (!layers.length) return null;
+
+      const lg = L.layerGroup(layers).addTo(mapInstance);
+      if (allCoords.length > 0) {
+        mapInstance.fitBounds(allCoords, { padding: [48, 48], maxZoom: 16 });
+      }
+      return lg;
+  }
 
   async function initMap() {
     if (typeof window === "undefined") return false;
@@ -139,16 +178,24 @@ const isEs = Astro.url.pathname.includes("/es/");
       const routesBadge = isHub ? `<span class="map-stop-badge">${hubRouteCount} rutas</span>` : '';
       const landmarkLine = landmark ? `<p class="map-stop-landmark">📌 ${escapeHtml(landmark)}</p>` : '';
       markerLayers.push(
-        L.circleMarker(coords, { radius, fillColor: color, color: '#FFFFFF', weight: isHub ? 3 : 2, opacity: 1, fillOpacity: 0.92 })
-         .bindPopup(`<div class="map-popup">
-            <p class="map-popup__title">${escapeHtml(displayName)}${routesBadge}</p>
-            <p class="map-popup__subtitle">${isHub ? '🔀 Hub de conexión' : '📍 Parada'}</p>
-            ${landmarkLine}
-            <div class="map-popup__actions">
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action map-popup__btn map-popup__btn--origin">🟠 Salgo de aquí</button>
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="dest"   class="js-map-stop-action map-popup__btn map-popup__btn--dest">🔵 Voy aquí</button>
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action map-popup__btn map-popup__btn--list">📋 Ver rutas</button>
-            </div></div>`)
+        L.circleMarker(coords, {
+          radius: isHub ? 9 : 5,
+          fillColor: isHub ? TRANSPORT_TYPE_COLORS["Bus_HotelZone"] : TRANSPORT_TYPE_COLORS["Bus_Urban"],
+          color: "#FFFFFF",
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.9,
+        }).bindPopup(`
+          <div style=\"min-width:160px;padding:4px\">
+            <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px\">${escapeHtml(displayName)}</p>
+            <p style=\"font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px\">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
+            <div style=\"display:flex;flex-direction:column;gap:4px\">
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
+            </div>
+          </div>
+        `)
       );
     });
 
