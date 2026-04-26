@@ -40,7 +40,7 @@ try {
     fs.mkdirSync(outDir, { recursive: true });
 
     console.log(`[NEXUS_LOG] Compiling ${mod}...`);
-    execFileSync('wasm-pack', ['build', path.join(rootDir, 'rust-wasm', mod), '--target', 'web', '--out-dir', outDir], { stdio: 'inherit' });
+    execFileSync('npx', ['wasm-pack', 'build', path.join(rootDir, 'rust-wasm', mod), '--target', 'web', '--out-dir', outDir], { stdio: 'inherit' });
 
     const gi = path.join(outDir, '.gitignore');
     if (fs.existsSync(gi)) fs.unlinkSync(gi);
