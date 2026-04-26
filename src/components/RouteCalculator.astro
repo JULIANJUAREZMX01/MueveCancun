@@ -145,7 +145,7 @@ const t = useTranslations(lang);
                           </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--text-secondary)">
-                          <span style="background:${safeColor}22;color:${safeColor};padding:2px 8px;border-radius:9999px;font-weight:800">${escapeHtml(localizeStop(leg.origin_stop ?? ""))}</span>
+                          <span style="background:${safeColor}22;color:${safeColor};padding:2px 8px;border-radius:9999px;font-weight:800">${escapeHtml(leg.origin_stop)}</span>
                           <svg style="width:12px;height:12px;flex-shrink:0;color:var(--text-tertiary)" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
                           <span style="background:#64748b22;padding:2px 8px;border-radius:9999px">${escapeHtml(localizeStop(leg.dest_stop ?? ""))}</span>
                         </div>
