@@ -63,11 +63,10 @@ const isEs = lang === "es";
       ))}
     </div>
 
-    <!-- Empty state -->
     <div id="reports-empty" class="reports-empty" hidden aria-live="polite">
-      <span aria-hidden="true" class="reports-empty__icon">📭</span>
-      <p class="reports-empty__title">{isEs ? "Sin reportes recientes" : "No recent reports"}</p>
-      <p class="reports-empty__sub">{isEs ? "Sé el primero en reportar una incidencia." : "Be the first to report an incident."}</p>
+      <span aria-hidden="true" class="reports-empty__icon">🚌</span>
+      <p class="reports-empty__title">{isEs ? "Sin reportes en este filtro" : "No reports for this filter"}</p>
+      <p class="reports-empty__sub">{isEs ? "Tus reportes ayudan a miles de usuarios. Sé el primero en informar." : "Your reports help thousands of users. Be the first to inform."}</p>
       <button id="btn-first-report" class="btn btn-primary btn-sm" style="margin-top:0.75rem">
         {isEs ? "Crear reporte" : "Create report"}
       </button>
