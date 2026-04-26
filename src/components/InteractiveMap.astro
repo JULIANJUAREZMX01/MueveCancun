@@ -168,8 +168,7 @@ const isEs = Astro.url.pathname.includes("/es/");
       const result = coordinatesStore.findNearestWithDistance(lat, lng);
       if (!result || result.distanceKm > 0.8) return;
 
-      const normKey = normalizeString(result.name);
-      const c = (coordsDB instanceof Map ? coordsDB.get(normKey) : (coordsDB as any)[normKey]) || [lat, lng];
+      const c = (coordsDB instanceof Map ? coordsDB.get(normalizeString(result.name)) : (coordsDB as any)[normalizeString(result.name)]) || [lat, lng];
       L.popup()
         .setLatLng(c as any)
         .setContent(`

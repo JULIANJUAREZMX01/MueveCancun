@@ -230,6 +230,14 @@ const t = useTranslations(lang);
   // ── Lógica principal ──────────────────────────────────────────────────────
   const isEs = document.documentElement.lang !== "en";
 
+      /** Translate "Stop N - RUTA X" → "Parada N" for Spanish UI */
+      function localizeStop(raw: string): string {
+        if (!raw) return raw;
+        const m = raw.match(/^Stop (\d+)/i);
+        if (m) return isEs ? `Parada ${m[1]}` : `Stop ${m[1]}`;
+        return raw;
+      }
+
   async function start() {
       const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
       const originInput = document.getElementById('origin-input') as HTMLInputElement;
@@ -247,8 +255,8 @@ const t = useTranslations(lang);
       });
 
       btn.addEventListener('click', async () => {
-          const oVal = originInput.value.trim();
-          const dVal = destInput.value.trim();
+          const oVal = normalizeString(originInput.value);
+          const dVal = normalizeString(destInput.value);
           if (!oVal || !dVal) {
             showToast(isEs ? "Ingresa origen y destino" : "Enter origin and destination", "warning");
             return;
@@ -310,7 +318,7 @@ const t = useTranslations(lang);
 
                       card.addEventListener('click', () => {
                          window.dispatchEvent(new CustomEvent("SHOW_ROUTE_ON_MAP", { detail: { journey: r } }));
-                         window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED"));
+                         window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED", { detail: { count: results.length, origin: resolvedO, dest: resolvedD } }));
                       });
 
                       resultsContainer.appendChild(card);

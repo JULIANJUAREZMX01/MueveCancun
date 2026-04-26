@@ -6,21 +6,21 @@ const lang = getLangFromUrl(Astro.url);
 
 const translations = {
   es: {
-    title: '💡 Tip: Apoya MueveCancún',
-    message: 'Este proyecto vive de ti. Por <strong>$3/mes</strong> obtienes notificaciones de rutas alteradas y acceso a datos históricos.',
-    primaryCta: 'Apoyar',
+    title: '💡 MueveCancún es gratuito para todos',
+    message: 'Este proyecto funciona gracias a la comunidad. <strong>Apoya desde $3</strong> y ayuda a mantenerlo vivo sin publicidad.',
+    primaryCta: 'Ver opciones',
     secondaryCta: 'Más tarde'
   },
   en: {
-    title: '💡 Tip: Support MueveCancún',
-    message: 'This project lives off you. For <strong>$3/mo</strong> you get altered route notifications and historical data access.',
-    primaryCta: 'Support',
+    title: '💡 MueveCancún is free for everyone',
+    message: 'This project runs thanks to the community. <strong>Support from $3</strong> and help keep it alive, ad-free.',
+    primaryCta: 'See options',
     secondaryCta: 'Later'
   }
 };
 
 const t = translations[lang] || translations.es;
-const donateUrl = getRelativeLocaleUrl(lang, 'donate');
+const donateUrl = getRelativeLocaleUrl(lang, 'suscripcion');
 ---
 
 <div id="donate-nudge" class="donate-nudge hidden">

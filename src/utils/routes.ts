@@ -30,12 +30,20 @@ export interface Route {
   empresa?: string;
 }
 
+/**
+ * Extracts the canonical numeric timestamp from any route ID format.
+ * Handles: POLYLINE_1753801260218_0, ruta_1753801260218, R2_94_001, etc.
+ */
+function extractTimestamp(id: string): string | null {
+  const match = id.match(/(\d{10,})/);
+  return match ? match[1] : null;
+}
+
 export async function getAllRoutes(): Promise<Route[]> {
   const routesDir = path.resolve('./public/data/routes');
   const allRoutes: Route[] = [];
 
   try {
-    // Try reading individual files first
     const files = await fs.readdir(routesDir);
     const jsonFiles = files.filter(file => file.endsWith('.json'));
 
@@ -60,20 +68,26 @@ export async function getAllRoutes(): Promise<Route[]> {
     console.warn("Routes directory not accessible or empty, falling back to master_routes.json");
   }
 
-  // Also try master_routes.json and merge unique IDs
+  // Merge master_routes.json — skip any route whose timestamp already appears
+  // in individual files (POLYLINE_TIMESTAMP_N and ruta_TIMESTAMP are the same route)
   try {
       const masterPath = path.resolve('./public/data/master_routes.json');
       const masterContent = await fs.readFile(masterPath, 'utf-8');
       const masterData = JSON.parse(masterContent);
       if (masterData.rutas && Array.isArray(masterData.rutas)) {
+          // Build a set of both exact IDs and extracted timestamps already loaded
           const existingIds = new Set(allRoutes.map(r => r.id));
+          const existingTimestamps = new Set(
+            allRoutes.map(r => extractTimestamp(r.id)).filter(Boolean)
+          );
+
           masterData.rutas.forEach((r: Route) => {
-              // Only add if ID doesn't exist already (prefer individual files as they might be newer/more granular)
-              // OR if individual files were empty.
-              if (!existingIds.has(r.id)) {
-                  existingIds.add(r.id);
-                  allRoutes.push(r);
-              }
+              if (existingIds.has(r.id)) return; // exact duplicate
+              const ts = extractTimestamp(r.id);
+              if (ts && existingTimestamps.has(ts)) return; // same route, different prefix
+              existingIds.add(r.id);
+              if (ts) existingTimestamps.add(ts);
+              allRoutes.push(r);
           });
       }
   } catch {

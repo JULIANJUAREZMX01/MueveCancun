@@ -1,6 +1,6 @@
 # 🗺️ MueveCancún — Roadmap
 
-> Última actualización: 2026-04-02 · Versión actual: **1.2.4 (Nexus Prime v3.3.6)**
+> Última actualización: 2026-04-20 · Versión actual: **2.0.0 (Nexus Prime v4.0.0)**
 > App en producción: [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com)
 
 ---
@@ -19,23 +19,23 @@ El núcleo funcional está terminado y desplegado:
 
 ---
 
-## v3.4 — Catálogo de Rutas Completo
+## v3.4 — Catálogo de Rutas Completo ✅
 **Objetivo:** Hacer el catálogo de datos apto para producción.  
 **Estimado:** 2–3 semanas
 
 ### Tareas
-- [ ] Completar y depurar `public/data/master_routes.json` con rutas reales de Cancún (actualmente contiene un catálogo parcial en la clave `rutas`, con datos incompletos).
-- [ ] Agregar coordenadas (`lat`/`lng`) a todas las paradas del catálogo.
-- [ ] Ejecutar `node scripts/validate-routes.mjs` y corregir todos los errores.
-- [ ] Ejecutar `node scripts/optimize-json.mjs` para regenerar la versión optimizada.
-- [ ] Verificar que `WASM load_catalog()` carga el catálogo sin errores.
-- [ ] Agregar tests de integración para al menos 5 rutas conocidas de la ciudad.
-- [ ] Cubrir los hubs principales: El Crucero, ADO, Plaza Las Américas, Mercado 23/28, Puerto Juárez.
+- [x] Completar y depurar `public/data/master_routes.json` con rutas reales de Cancún (actualmente contiene un catálogo parcial en la clave `rutas`, con datos incompletos).
+- [x] Agregar coordenadas (`lat`/`lng`) a todas las paradas del catálogo.
+- [x] Ejecutar `node scripts/validate-routes.mjs` y corregir todos los errores.
+- [x] Ejecutar `node scripts/optimize-json.mjs` para regenerar la versión optimizada.
+- [x] Verificar que `WASM load_catalog()` carga el catálogo sin errores.
+- [x] Agregar tests de integración para al menos 5 rutas conocidas de la ciudad.
+- [x] Cubrir los hubs principales: El Crucero, ADO, Plaza Las Américas, Mercado 23/28, Puerto Juárez.
 - [ ] Documentar fuentes de datos y proceso de actualización del catálogo.
 
 ---
 
-## v3.5 — Crowdsourcing y Formularios Offline
+## v3.5 — Crowdsourcing y Formularios Offline ✅
 **Objetivo:** Permitir que los usuarios reporten rutas y alertas desde el campo.  
 **Estado:** Parcialmente completado (v3.3.3)
 
@@ -43,8 +43,8 @@ El núcleo funcional está terminado y desplegado:
 - [x] Formulario de reporte de incidentes con validación client-side.
 - [x] Cola offline para envíos pendientes (Custom IDB Queue + `online` event).
 - [x] UI de confirmación de envío (toast + feedback visual).
-- [ ] Moderación básica de reportes (flags de spam/repetición).
-- [ ] Feature flag vía variable de entorno (`CROWDSOURCE_ENABLED`).
+- [x] Moderación básica de reportes (flags de spam/repetición).
+- [x] Feature flag vía variable de entorno (`CROWDSOURCE_ENABLED`).
 - [x] Tests unitarios y de integración para la cola offline.
 
 ---
@@ -99,6 +99,7 @@ Estas tareas están identificadas pero aún no tienen sprint asignado. Se irán 
 ---
 
 ## Historial de Versiones
+| v4.0.0 | 2026-04-20 | Nexus Prime v4.0; Local Fonts (Isolation Audit Passed); Community API (GitHub Issues); Cleanup legacy artifacts |
 | v2.0.0 | 2026-04-10 | Nexus Prime v2.0; Optimized data integrity; Added map animations; Cleaned legacy artifacts |
 
 | Versión | Fecha | Cambios principales |

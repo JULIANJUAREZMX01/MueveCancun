@@ -12,7 +12,8 @@ import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import NexusAgentUI from '../components/agent/NexusAgentUI.astro';
 import { ClientRouter } from 'astro:transitions';
-import "../styles/main.scss";
+import '../styles/main.scss';
+import '../styles/responsive.css';
 
 interface Props {
   title?: string;
@@ -364,7 +365,7 @@ a { color: inherit; }
         try {
           const b = await getWalletBalance();
           const el = document.getElementById("header-balance");
-          if (el) el.textContent = `$${b.amount.toFixed(2)}`;
+          if (el) el.textContent = "$" + b.amount.toFixed(2);
         } catch {}
       }
 
@@ -380,22 +381,15 @@ a { color: inherit; }
 
         document.getElementById("balance-pill")?.addEventListener("click", () => {
           const lang = document.documentElement.lang || "es";
-          window.location.href = `/${lang}/wallet`;
+          window.location.href = "/" + lang + "/wallet";
         });
       }
 
-      setupHeader();
-      let __setupHeader_listener: (() => void) | null = null;
-  function __register_setupHeader() {
-    if (__setupHeader_listener) document.removeEventListener('astro:page-load', __setupHeader_listener);
-    __setupHeader_listener = setupHeader;
-    document.addEventListener('astro:page-load', __setupHeader_listener);
-  }
-  document.addEventListener('astro:before-swap', () => {
-    if (__setupHeader_listener) { document.removeEventListener('astro:page-load', __setupHeader_listener); __setupHeader_listener = null; }
-  }, { once: true });
-  __register_setupHeader();
-      window.addEventListener("BALANCE_UPDATED", syncBalance);
+      if (typeof window !== "undefined") {
+        setupHeader();
+        document.addEventListener("astro:page-load", setupHeader);
+        window.addEventListener("BALANCE_UPDATED", syncBalance);
+      }
     </script>
   </body>
 </html>

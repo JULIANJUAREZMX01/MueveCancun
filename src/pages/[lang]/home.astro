@@ -43,6 +43,9 @@ const isEs = lang === "es";
             <svg class="icon-size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
             <span class="home-pill__badge" id="live-reports-badge" hidden aria-hidden="true"></span>
           </a>
+          <button id="open-report-fab" class="home-pill" aria-label={isEs ? "Reportar incidencia" : "Report issue"} title={isEs ? "Reportar" : "Report"}>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          </button>
         </div>
       </header>
 
@@ -263,6 +266,10 @@ const isEs = lang === "es";
   if (window.innerWidth >= 769) openSheet();
 
   // GPS
+  document.getElementById('open-report-fab')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('OPEN_REPORT_WIDGET'));
+  });
+
   const gpsBtn = document.getElementById("btn-gps-home");
   gpsBtn?.addEventListener("click", () => {
     if (!navigator.geolocation) return;

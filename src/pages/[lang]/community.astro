@@ -63,11 +63,10 @@ const isEs = lang === "es";
       ))}
     </div>
 
-    <!-- Empty state -->
     <div id="reports-empty" class="reports-empty" hidden aria-live="polite">
-      <span aria-hidden="true" class="reports-empty__icon">📭</span>
-      <p class="reports-empty__title">{isEs ? "Sin reportes recientes" : "No recent reports"}</p>
-      <p class="reports-empty__sub">{isEs ? "Sé el primero en reportar una incidencia." : "Be the first to report an incident."}</p>
+      <span aria-hidden="true" class="reports-empty__icon">🚌</span>
+      <p class="reports-empty__title">{isEs ? "Sin reportes en este filtro" : "No reports for this filter"}</p>
+      <p class="reports-empty__sub">{isEs ? "Tus reportes ayudan a miles de usuarios. Sé el primero en informar." : "Your reports help thousands of users. Be the first to inform."}</p>
       <button id="btn-first-report" class="btn btn-primary btn-sm" style="margin-top:0.75rem">
         {isEs ? "Crear reporte" : "Create report"}
       </button>
@@ -335,7 +334,7 @@ const isEs = lang === "es";
             <span class="rc-ago">${ago(r.created_at||r.fecha||new Date().toISOString())}</span>
             <button class="rc-votes" data-id="${esc(r.id||"")}" aria-label="Votar útil">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
-              <span>${votes}</span>
+              <span>${esc(String(votes))}</span>
             </button>
           </div>
         </div>`;
@@ -401,6 +400,9 @@ const isEs = lang === "es";
   });
 
   loadReports();
+
+  // Refresh on sync complete (offline reports uploaded)
+  window.addEventListener('SYNC_COMPLETE', () => { setTimeout(loadReports, 500); });
 
   // Guarded interval — cleared on navigation to prevent accumulation
   let _communityInterval: ReturnType<typeof setInterval> | null = null;
