@@ -1,14 +1,10 @@
 name: Delegate to Claude (unscoped tasks)
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
   workflow_dispatch:
     inputs:
       instructions:
-        descriptienv:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-on: "Context or tasks to delegate (leave blank to let Claude plan)."
+        description: "Context or tasks to delegate (leave blank to let Claude plan)."
         required: false
         type: string
 
@@ -18,12 +14,9 @@ concurrency:
 
 jobs:
   claude-delegatienv:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
     name: Send unplanned work to Claude
-    runs-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-on: ubuntu-latest
+    runs-on: ubuntu-latest
     if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
     permissions:
       contents: write

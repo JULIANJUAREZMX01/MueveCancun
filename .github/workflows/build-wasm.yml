@@ -1,7 +1,6 @@
 name: Build WASM Pipeline
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
   push:
     branches: [main, develop]
@@ -13,9 +12,7 @@ on:
 jobs:
   test-and-build:
     name: Rust Unit → WASM Pack → Deploy
-    runs-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-on: ubuntu-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:

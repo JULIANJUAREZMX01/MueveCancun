@@ -12,7 +12,6 @@
 name: "CodeQL Advanced"
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
   push:
     branches: [ "main" ]
@@ -20,7 +19,6 @@ on:
     branches: [ "main" ]
   schedule:
     - crenv:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on: '21 1 * * 4'
 
 jobs:
@@ -31,9 +29,7 @@ jobs:
     #   - https://gh.io/supported-runners-and-hardware-resources
     #   - https://gh.io/using-larger-runners (GitHub.com only)
     # Consider using larger runners or machines with greater resources for possible analysis time improvements.
-    runs-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
     permissions:
       # required for all workflows
       security-events: write

@@ -1,12 +1,9 @@
-// import es from '../i18n/es.json';
-// import en from '../i18n/en.json';
+import es from '../i18n/es.json';
+import en from '../i18n/en.json';
 
 export const languages = {
     en: 'English',
-    es: 'Español',
-    fr: 'Français',
-    pt: 'Português',
-    my: 'Maya'
+    es: 'Español'
 };
 
 export const defaultLang = 'es';
