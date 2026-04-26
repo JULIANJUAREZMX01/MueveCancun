@@ -6,12 +6,11 @@ success() { echo -e "\033[1;32m[SUCCESS]\033[0m $1"; }
 
 log "INICIANDO SECUENCIA MAESTRA (Render Platform)..."
 
-# Memory optimization for Astro v6
+# Optimization and Network configuration
 export NODE_OPTIONS="--max-old-space-size=4096"
 export HOST=0.0.0.0
 export RENDER=true
 
-# Ensure we use the lockfile strictly
 log "Instalando dependencias..."
 pnpm install --frozen-lockfile
 
