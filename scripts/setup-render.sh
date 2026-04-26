@@ -7,14 +7,15 @@ success() { echo -e "\033[1;32m[SUCCESS]\033[0m $1"; }
 log "INICIANDO SECUENCIA MAESTRA (Render Platform)..."
 
 # Memory optimization for Astro v6
-export NODE_OPTIONS="--max-old-space-size=3072"
+export NODE_OPTIONS="--max-old-space-size=4096"
 export HOST=0.0.0.0
 export RENDER=true
 
-log "Instalando dependencias (pnpm)..."
+# Ensure we use the lockfile strictly
+log "Instalando dependencias..."
 pnpm install --frozen-lockfile
 
-log "Ejecutando build:ci..."
+log "Ejecutando pipeline de construcción..."
 pnpm run build:ci
 
-success "BUILD COMPLETADO - LISTO PARA DESPLIEGUE"
+success "CONSTRUCCIÓN COMPLETADA"

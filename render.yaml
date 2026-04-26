@@ -9,7 +9,7 @@ services:
     startCommand: pnpm start
     envVars:
       - key: NODE_VERSION
-        value: "24.0.0"
+        value: "22"
       - key: NODE_ENV
         value: production
       - key: RENDER
@@ -26,7 +26,7 @@ services:
     publishPath: dist/client
     envVars:
       - key: NODE_VERSION
-        value: "24.0.0"
+        value: "22"
       - key: RENDER
         value: "true"
       - key: ENABLE_COREPACK
