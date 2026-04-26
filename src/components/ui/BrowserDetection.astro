@@ -19,22 +19,83 @@ const translations = {
 const t = translations[lang] || translations.es;
 ---
 
-<div id="fb-browser-warning" class="hidden fixed bottom-4 left-4 right-4 z-[9999] bg-yellow-50 border-2 border-yellow-400 p-4 rounded-xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-  <div class="flex items-start gap-3">
-    <div class="flex-shrink-0 text-2xl">⚠️</div>
-    <div class="flex-1">
-      <h4 class="text-sm font-bold text-yellow-900 mb-1">{t.title}</h4>
-      <p class="text-xs text-yellow-800 leading-relaxed">
-        {t.message}
-      </p>
+<div id="fb-browser-warning" class="fb-warning hidden">
+  <div class="fb-warning__card">
+    <div class="fb-warning__icon" aria-hidden="true">⚠️</div>
+    <div class="fb-warning__content">
+      <h4 class="fb-warning__title">{t.title}</h4>
+      <p class="fb-warning__message">{t.message}</p>
     </div>
-    <button id="close-fb-warning" class="text-yellow-600 hover:text-yellow-800 transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+    <button id="close-fb-warning" class="fb-warning__close" aria-label={t.action}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
       </svg>
     </button>
   </div>
 </div>
+
+<style>
+  .fb-warning {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    z-index: 10000;
+    animation: fade-up 0.5s var(--ease-out) both;
+  }
+
+  .fb-warning.hidden { display: none; }
+
+  .fb-warning__card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: #fffbeb; /* yellow-50 */
+    border: 2px solid #fbbf24; /* yellow-400 */
+    border-radius: var(--r-xl);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .fb-warning__icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .fb-warning__content { flex: 1; }
+
+  .fb-warning__title {
+    font-size: 0.825rem;
+    font-weight: 900;
+    color: #78350f; /* yellow-900 */
+    margin: 0 0 0.25rem;
+  }
+
+  .fb-warning__message {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #92400e; /* yellow-800 */
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .fb-warning__close {
+    background: none;
+    border: none;
+    color: #d97706; /* yellow-600 */
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+  }
+  .fb-warning__close:hover { color: #92400e; }
+
+  :global(.dark) .fb-warning__card {
+    background-color: #1c1917;
+    border-color: #d97706;
+  }
+  :global(.dark) .fb-warning__title { color: #fef3c7; }
+  :global(.dark) .fb-warning__message { color: #fbbf24; }
+</style>
 
 <script>
   function isFacebookApp() {

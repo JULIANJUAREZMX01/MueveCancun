@@ -1,6 +1,11 @@
+import { logger } from "../utils/logger";
 import { getPendingReports, deletePendingReport, type PendingReport } from '../utils/db';
 
 let processing = false;
+
+type SyncWindow = Window & {
+  __syncIntervalId?: ReturnType<typeof setInterval>;
+};
 
 const buildPayload = (data: PendingReport) => ({
   title: `[REPORTE] ${data.tipo} — ${data.ruta || 'Sin Ruta'}`,
@@ -45,7 +50,7 @@ export async function processPending(config: { owner: string, repo: string, toke
   // In some environments, navigator.onLine might not be updated yet when 'online' event fires.
   // We allow the check but add logging.
   if (!navigator.onLine) {
-    console.log('[Sync] navigator.onLine is false, skipping processing.');
+    logger.log('[Sync] navigator.onLine is false, skipping processing.');
     return;
   }
 
@@ -57,14 +62,14 @@ export async function processPending(config: { owner: string, repo: string, toke
         return;
     }
 
-    console.log(`[Sync] Processing ${pending.length} pending reports...`);
+    logger.log(`[Sync] Processing ${pending.length} pending reports...`);
 
     for (const report of pending) {
       if (report.id === undefined) continue;
       try {
         await sendToGitHub(report, config);
         await deletePendingReport(report.id);
-        console.log(`[Sync] Report ${report.id} synced and deleted.`);
+        logger.log(`[Sync] Report ${report.id} synced and deleted.`);
       } catch (err) {
         console.error(`[Sync] Failed to sync report ${report.id}:`, err);
       }
@@ -90,13 +95,16 @@ export function initSync(config: { owner: string, repo: string, token: string })
   };
 
   window.addEventListener('online', () => {
-    console.log('[Sync] Browser online event detected.');
+    logger.log('[Sync] Browser online event detected.');
     // Delay slightly to ensure navigator.onLine is updated
     setTimeout(triggerSync, 500);
   });
 
-  // Frequent interval for PWA resilience
-  setInterval(triggerSync, 10000);
+  // Guarded interval — prevent multiple intervals if initSync called again
+  const syncWindow = window as SyncWindow;
+  if (!syncWindow.__syncIntervalId) {
+    syncWindow.__syncIntervalId = setInterval(triggerSync, 10000);
+  }
 
   if (navigator.onLine) {
     triggerSync();

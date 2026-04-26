@@ -9,7 +9,7 @@ services:
     startCommand: pnpm start
     envVars:
       - key: NODE_VERSION
-        value: "24.0.0"
+        value: "22.21.0"
       - key: NODE_ENV
         value: production
       - key: RENDER

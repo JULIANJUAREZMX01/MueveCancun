@@ -33,7 +33,6 @@ const lang = getLangFromUrl(Astro.url);
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>{title}</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" />
     <link rel="manifest" href="/manifest.json" />
 
     <ClientRouter />
@@ -236,6 +235,8 @@ a { color: inherit; }
 }
 .fade-up { animation: fade-up 0.4s var(--ease-out) both; }
 .scale-in { animation: scale-in 0.3s var(--ease-back) both; }
+.icon-size-4 { width: 1rem; height: 1rem; flex-shrink: 0; }
+.icon-size-3 { width: 0.75rem; height: 0.75rem; flex-shrink: 0; }
 
 /* ── Leaflet reset (evitar SVG gigante) ── */
 .leaflet-container { background: #e8f4f0; }
@@ -363,7 +364,7 @@ a { color: inherit; }
         try {
           const b = await getWalletBalance();
           const el = document.getElementById("header-balance");
-          if (el) el.textContent = `$${b.amount.toFixed(2)}`;
+          if (el) el.textContent = "$" + b.amount.toFixed(2);
         } catch {}
       }
 
@@ -379,13 +380,15 @@ a { color: inherit; }
 
         document.getElementById("balance-pill")?.addEventListener("click", () => {
           const lang = document.documentElement.lang || "es";
-          window.location.href = `/${lang}/wallet`;
+          window.location.href = "/" + lang + "/wallet";
         });
       }
 
-      setupHeader();
-      document.addEventListener("astro:page-load", setupHeader);
-      window.addEventListener("BALANCE_UPDATED", syncBalance);
+      if (typeof window !== "undefined") {
+        setupHeader();
+        document.addEventListener("astro:page-load", setupHeader);
+        window.addEventListener("BALANCE_UPDATED", syncBalance);
+      }
     </script>
   </body>
 </html>

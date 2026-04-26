@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "engines": {
-    "node": ">=22.22.1"
+    "node": ">=22.21.0"
   },
   "pnpm": {
     "overrides": {
@@ -32,12 +32,13 @@
     "lint": "eslint .",
     "preview": "astro preview",
     "test": "vitest",
+    "test:e2e:smoke": "node scripts/e2e-smoke.mjs",
     "check-wasm": "node scripts/check-wasm.cjs",
     "validate-catalog": "node --experimental-strip-types scripts/validate-catalog.ts",
     "bench": "vitest bench",
     "generate-roadmap": "node --experimental-strip-types scripts/generate-roadmap-doc.ts",
     "start": "node dist/server/entry.mjs",
-    "build:ci": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build",
+    "build:ci": "pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec tsc -p tsconfig.client.json && pnpm exec tsc -p tsconfig.sw.json && pnpm exec astro build",
     "db:migrate": "node --experimental-strip-types scripts/db-migrate.ts",
     "build:vercel": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build"
   },
@@ -57,8 +58,8 @@
     "docx": "^9.6.1",
     "fuse.js": "^7.3.0",
     "idb": "^8.0.3",
-    "jiti": "^2.6.1",
     "postcss": "^8.5.9",
+    "sass": "^1.83.0",
     "serve": "^14.2.6",
     "sharp": "^0.34.5",
     "stripe": "^22.0.1",
@@ -75,12 +76,13 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.59.1",
     "cheerio": "^1.2.0",
-    "eslint": "^10.2.0",
+    "eslint": "^10.2.1",
     "globals": "^17.5.0",
     "http-server": "^14.1.1",
+    "jiti": "^2.6.1",
     "jsdom": "^29.0.2",
     "playwright": "^1.59.1",
     "typescript-eslint": "^8.58.2",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.5"
   }
 }

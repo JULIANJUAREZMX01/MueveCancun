@@ -6,61 +6,120 @@
  */
 ---
 
-<!-- Modal oculto por defecto -->
-<div id="contribute-modal" class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4" role="dialog" aria-modal="true">
-  <!-- Backdrop -->
-  <div id="contribute-backdrop" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+<div id="contribute-modal" class="modal-root hidden" role="dialog" aria-modal="true">
+  <div id="contribute-backdrop" class="modal-backdrop"></div>
 
-  <!-- Panel -->
-  <div class="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-6 animate-slide-up">
-    <!-- Icono -->
-    <div class="flex items-center gap-3 mb-5">
-      <div class="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-2xl">🙌</div>
-      <div>
-        <h2 class="font-black text-lg text-slate-900 dark:text-white">Contribuir esta ruta</h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Ayuda a mejorar MueveCancún</p>
+  <div class="modal-panel">
+    <div class="modal-header">
+      <div class="modal-header__icon">🙌</div>
+      <div class="modal-header__content">
+        <h2 class="modal-header__title">Contribuir esta ruta</h2>
+        <p class="modal-header__subtitle">Ayuda a mejorar MueveCancún</p>
       </div>
     </div>
 
-    <!-- Info de la ruta -->
-    <div id="contribute-route-info" class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 mb-4 text-sm text-slate-700 dark:text-slate-300 font-medium">
-    </div>
+    <div id="contribute-route-info" class="modal-info-box"></div>
 
-    <!-- Nota del usuario -->
-    <div class="mb-4">
-      <label class="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2" for="contribute-note">
+    <div class="modal-body">
+      <label class="modal-label" for="contribute-note">
         Tu nota (opcional)
       </label>
       <textarea
         id="contribute-note"
         rows="3"
         maxlength="300"
-        placeholder="¿Algo que quieras agregar? Ej: 'Esta ruta no pasa los domingos', 'La tarifa cambió'..."
-        class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm p-3 text-slate-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+        placeholder="¿Algo que quieras agregar? Ej: 'Esta ruta no pasa los domingos'..."
+        class="modal-textarea"
       ></textarea>
     </div>
 
-    <!-- Aviso privacidad -->
-    <p class="text-[10px] text-slate-400 mb-5 leading-relaxed">
-      Al contribuir, acepta que los datos de la ruta (sin información personal) se usen para mejorar el sistema. No se guarda tu identidad.
+    <p class="modal-privacy">
+      Al contribuir, acepta que los datos de la ruta se usen para mejorar el sistema.
     </p>
 
-    <!-- Botones -->
-    <div class="flex gap-3">
-      <button id="contribute-cancel" class="flex-1 btn-secondary py-3 rounded-2xl font-black">
+    <div class="modal-footer">
+      <button id="contribute-cancel" class="modal-btn modal-btn--secondary">
         Cancelar
       </button>
-      <button id="contribute-send" class="flex-2 btn-primary py-3 px-6 rounded-2xl font-black flex items-center justify-center gap-2">
-        <span class="material-symbols-rounded" style="font-size:18px">upload</span>
+      <button id="contribute-send" class="modal-btn modal-btn--primary">
+        <span class="modal-btn__icon">upload</span>
         Enviar
       </button>
     </div>
   </div>
 </div>
 
+<style>
+  .modal-root {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: flex-end; justify-content: center;
+    padding: 1rem;
+  }
+  @media (min-width: 640px) { .modal-root { align-items: center; } }
+  .modal-root.hidden { display: none; }
+
+  .modal-backdrop {
+    position: absolute; inset: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-panel {
+    position: relative; width: 100%; max-width: 28rem;
+    background-color: var(--surface-card);
+    border-radius: var(--r-2xl);
+    box-shadow: var(--shadow-xl);
+    padding: 1.5rem;
+    animation: scale-in 0.3s var(--ease-back);
+  }
+
+  .modal-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
+  .modal-header__icon {
+    width: 3rem; height: 3rem; border-radius: var(--r-md);
+    background-color: var(--teal-xlight);
+    display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+  }
+  .modal-header__title { font-weight: 900; font-size: 1.125rem; color: var(--text-primary); margin: 0; }
+  .modal-header__subtitle { font-size: 0.75rem; color: var(--text-tertiary); margin: 0; }
+
+  .modal-info-box {
+    background-color: var(--surface-bg); border-radius: var(--r-md);
+    padding: 1rem; margin-bottom: 1rem; font-size: 0.875rem;
+    color: var(--text-secondary); font-weight: 500;
+  }
+
+  .modal-body { margin-bottom: 1rem; }
+  .modal-label {
+    display: block; font-size: 0.625rem; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-tertiary);
+    margin-bottom: 0.5rem;
+  }
+  .modal-textarea {
+    width: 100%; border-radius: var(--r-md); border: 1px solid var(--border-light);
+    background-color: var(--surface-card); font-size: 0.875rem; padding: 0.75rem;
+    color: var(--text-primary); resize: none; outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal-textarea:focus { border-color: var(--color-primary); }
+
+  .modal-privacy { font-size: 0.625rem; color: var(--text-tertiary); margin-bottom: 1.25rem; line-height: 1.5; }
+
+  .modal-footer { display: flex; gap: 0.75rem; }
+  .modal-btn {
+    flex: 1; padding: 0.75rem; border-radius: var(--r-md);
+    font-weight: 900; border: none; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  }
+  .modal-btn--primary { background-color: var(--color-primary); color: white; box-shadow: var(--shadow-teal); }
+  .modal-btn--primary:hover { background-color: var(--color-primary-hover); }
+  .modal-btn--secondary { background-color: var(--surface-bg); color: var(--text-secondary); }
+
+  .modal-btn__icon { font-family: 'Material Symbols Rounded'; font-size: 1.125rem; }
+</style>
+
 <script>
   import { contributeRoute } from '../utils/shareRoute';
-  import { showToast } from '../utils/toast';
+  import { showToast } from '../utils/utils';
 
   let pendingJourney: any = null;
   let pendingOrigin  = '';
@@ -78,11 +137,11 @@
     const info = document.getElementById('contribute-route-info');
     if (info) {
       info.innerHTML = `
-        <div class="font-black text-base mb-1">🚌 ${leg?.name || 'Ruta'}</div>
-        <div class="text-slate-500 text-xs">${origin} → ${dest}</div>
-        <div class="flex gap-3 mt-2 text-xs">
-          <span class="font-bold text-primary-500">${price} MXN</span>
-          ${dur ? `<span class="text-slate-400">⏱️ ${dur}</span>` : ''}
+        <div style="font-weight:900;font-size:1rem;margin-bottom:0.25rem">🚌 ${leg?.name || 'Ruta'}</div>
+        <div style="color:var(--text-tertiary);font-size:0.75rem">${origin} → ${dest}</div>
+        <div style="display:flex;gap:0.75rem;margin-top:0.5rem;font-size:0.75rem">
+          <span style="font-weight:800;color:var(--color-primary)">${price} MXN</span>
+          ${dur ? `<span style="color:var(--text-tertiary)">⏱️ ${dur}</span>` : ''}
         </div>
       `;
     }
@@ -107,11 +166,10 @@
     const btn  = document.getElementById('contribute-send');
     if (btn) { btn.setAttribute('disabled',''); btn.textContent = 'Enviando…'; }
     await contributeRoute(pendingJourney, pendingOrigin, pendingDest, note, showToast);
-    if (btn) { btn.removeAttribute('disabled'); btn.innerHTML = '<span class="material-symbols-rounded" style="font-size:18px">upload</span> Enviar'; }
+    if (btn) { btn.removeAttribute('disabled'); btn.innerHTML = '<span class="modal-btn__icon">upload</span> Enviar'; }
     closeModal();
   });
 
-  // Escuchar evento para abrir el modal
   window.addEventListener('CONTRIBUTE_ROUTE', (e: any) => {
     const { journey, origin, dest } = e.detail || {};
     if (journey) openModal(journey, origin, dest);

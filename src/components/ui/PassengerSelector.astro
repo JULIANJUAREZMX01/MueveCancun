@@ -36,28 +36,27 @@ const { id = 'passenger-selector', initialCount = 1 } = Astro.props;
         display: contents;
     }
 
-    /* Reuse existing styles for the trigger */
     .passengers-selector {
         flex: 1;
-        background-color: #f1f5f9;
+        background-color: var(--surface-bg);
         border: 2px solid transparent;
-        border-radius: var(--radius-full);
+        border-radius: var(--r-full);
         padding: 0.5rem 0.75rem;
         cursor: pointer;
         text-align: left;
         width: 100%;
-        transition: all 0.2s;
+        transition: all var(--t-base) var(--ease);
     }
 
     .passengers-selector:hover {
-        background-color: #e2e8f0;
+        background-color: var(--border-light);
     }
 
     .passengers-selector label {
         font-size: 10px;
-        color: var(--text-secondary);
+        color: var(--text-tertiary);
         text-transform: uppercase;
-        font-weight: 700;
+        font-weight: 800;
         letter-spacing: 0.05em;
         display: block;
         pointer-events: none;
@@ -68,12 +67,12 @@ const { id = 'passenger-selector', initialCount = 1 } = Astro.props;
         align-items: center;
         justify-content: space-between;
         pointer-events: none;
-        gap: 0.5rem; /* Add gap to prevent overlap */
+        gap: 0.5rem;
     }
 
     .selector-value span {
         font-size: 0.875rem;
-        font-weight: 600;
+        font-weight: 900;
         color: var(--text-primary);
         white-space: nowrap;
         overflow: hidden;
@@ -85,23 +84,18 @@ const { id = 'passenger-selector', initialCount = 1 } = Astro.props;
         flex-shrink: 0;
     }
 
-    /* Popover Styles */
     .passenger-popover {
         border: none;
         background: transparent;
         padding: 0;
-        margin: 0; /* Reset default popover margin */
-        inset: auto; /* Reset default popover inset */
+        margin: 0;
+        inset: auto;
         overflow: visible;
-
-        /* Anchor Positioning */
-        position: absolute; /* Ensure it can be positioned */
-        position-area: bottom span-right; /* New standard */
-        inset-area: bottom span-right; /* Fallback/Old standard */
+        position: absolute;
+        position-area: bottom span-right;
+        inset-area: bottom span-right;
         position-try-options: flip-block;
         margin-top: 0.5rem;
-
-        /* Animation Base */
         opacity: 0;
         transform: translateY(-10px);
         transition: opacity 0.2s, transform 0.2s, display 0.2s allow-discrete;
@@ -119,17 +113,12 @@ const { id = 'passenger-selector', initialCount = 1 } = Astro.props;
         }
     }
 
-    .passenger-popover::backdrop {
-        background-color: transparent;
-    }
-
-    /* Content Styling */
     .counter-control {
         background: var(--surface-card);
         border: 1px solid var(--border-light);
-        border-radius: 1rem;
+        border-radius: var(--r-lg);
         padding: 1rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--shadow-lg);
         display: flex;
         align-items: center;
         gap: 1rem;
@@ -138,8 +127,8 @@ const { id = 'passenger-selector', initialCount = 1 } = Astro.props;
     }
 
     .circle-btn {
-        width: 2rem;
-        height: 2rem;
+        width: 2.25rem;
+        height: 2.25rem;
         border-radius: 50%;
         border: 1px solid var(--border-light);
         background: var(--surface-bg);
@@ -148,45 +137,46 @@ const { id = 'passenger-selector', initialCount = 1 } = Astro.props;
         justify-content: center;
         cursor: pointer;
         color: var(--text-secondary);
-        transition: all 0.1s;
+        transition: all var(--t-fast) var(--ease);
     }
 
     .circle-btn:hover {
-        background: var(--border-subtle);
-        border-color: var(--border-light);
+        background: var(--border-light);
         color: var(--text-primary);
+        transform: scale(1.1);
     }
 
     .circle-btn:active {
         transform: scale(0.95);
-        background: var(--border-light);
     }
 
     .count-display {
         font-size: 1.25rem;
-        font-weight: 700;
+        font-weight: 900;
         color: var(--text-primary);
         width: 1.5rem;
         text-align: center;
+        font-family: var(--font-mono);
     }
 
     .help-text {
-        font-size: 0.75rem;
-        color: var(--text-secondary);
+        font-size: 0.625rem;
+        color: var(--text-tertiary);
         text-align: center;
         margin-top: 0.5rem;
-        background: var(--surface-elevated);
+        background: var(--surface-bg);
         padding: 0.25rem 0.5rem;
-        border-radius: 0.5rem;
+        border-radius: var(--r-sm);
         border: 1px solid var(--border-light);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 </style>
 
 <script define:vars={{ id }}>
     {
         const popover = document.getElementById(`${id}-popover`);
-
-        // Safety check in case component is not rendered (though it should be)
         if (popover) {
             const displayEl = document.getElementById(`${id}-display`);
             const countEl = popover.querySelector('.count-display');
@@ -198,16 +188,12 @@ const { id = 'passenger-selector', initialCount = 1 } = Astro.props;
             const updateDisplay = () => {
                 countEl.textContent = count;
                 countEl.dataset.value = count;
-                const lang = window.currentLang || 'en';
+                const lang = document.documentElement.lang || 'es';
                 const noun = lang === 'en'
                     ? (count === 1 ? 'Passenger' : 'Passengers')
                     : (count === 1 ? 'Pasajero' : 'Pasajeros');
                 displayEl.textContent = `${count} ${noun}`;
             };
-
-            window.addEventListener('LANGUAGE_CHANGE', (e) => {
-                 updateDisplay();
-            });
 
             incBtn.addEventListener('click', () => {
                 if (count < 10) {

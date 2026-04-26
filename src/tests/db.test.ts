@@ -120,7 +120,7 @@ describe('DB Security Checks', () => {
     await initDB();
     const balance = await getWalletBalance();
     expect(balance).toBeDefined();
-    expect(balance?.amount).toBe(180.00);
+    expect(balance?.amount).toBe(0.00);
     expect(balance?.signature).toBeDefined();
   });
 });

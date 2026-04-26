@@ -59,9 +59,9 @@ const emoji = transportEmoji[transportType] || "🚌";
   <!-- Badges + Actions -->
   <div class="rrc__footer">
     <div class="rrc__badges">
-      {isSafe && <span class="badge badge-green">Verificada</span>}
-      {isCashOnly && <span class="badge badge-amber">Solo efectivo</span>}
-      {transportType === "ado" && <span class="badge badge-blue">ADO</span>}
+      {isSafe && <span class="graffiti-badge" data-variant="success">Verificada</span>}
+      {isCashOnly && <span class="graffiti-badge" data-variant="warning">Solo efectivo</span>}
+      {transportType === "ado" && <span class="graffiti-badge" data-variant="info">ADO</span>}
     </div>
     <div class="rrc__actions">
       <button
