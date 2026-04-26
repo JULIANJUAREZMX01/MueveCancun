@@ -3,7 +3,7 @@
     "last_updated": "2026-04-15T08:33:33.284Z",
     "source": "merge-routes.ts (78 routes from 41 files)",
     "version": "3.8.0",
-    "last_merged": "2026-04-26T05:37:02.775Z",
+    "last_merged": "2026-04-17T01:33:58.113Z",
     "colors_added": "2026-04-16T19:12:00.000Z",
     "color_strategy": "color_id_map_v2 — 21 paleta caribeña"
   },
@@ -124,7 +124,7 @@
         }
       ],
       "route_id": "R8",
-      "color_id": "DEFAULT",
+      "color_id": "R8",
       "color": "#94A3B8"
     },
     {
@@ -370,7 +370,7 @@
         }
       ],
       "route_id": "EXPRESO",
-      "color_id": "DEFAULT",
+      "color_id": "EXPRESO",
       "color": "#94A3B8"
     },
     {
@@ -6662,7 +6662,7 @@
         }
       ],
       "route_id": "R11",
-      "color_id": "DEFAULT",
+      "color_id": "R11",
       "color": "#94A3B8"
     },
     {
@@ -7015,7 +7015,7 @@
         }
       ],
       "route_id": "R14",
-      "color_id": "DEFAULT",
+      "color_id": "R14",
       "color": "#94A3B8"
     },
     {
@@ -7924,7 +7924,7 @@
         }
       ],
       "route_id": "R12",
-      "color_id": "DEFAULT",
+      "color_id": "R12",
       "color": "#94A3B8"
     },
     {
@@ -8265,7 +8265,7 @@
         }
       ],
       "route_id": "R13",
-      "color_id": "DEFAULT",
+      "color_id": "R13",
       "color": "#94A3B8"
     },
     {
@@ -8767,7 +8767,7 @@
         }
       ],
       "route_id": "R15",
-      "color_id": "DEFAULT",
+      "color_id": "R15",
       "color": "#94A3B8"
     },
     {
@@ -9461,7 +9461,7 @@
         }
       ],
       "route_id": "R16",
-      "color_id": "DEFAULT",
+      "color_id": "R16",
       "color": "#94A3B8"
     },
     {
@@ -10814,7 +10814,7 @@
         }
       ],
       "route_id": "R17",
-      "color_id": "DEFAULT",
+      "color_id": "R17",
       "color": "#94A3B8"
     },
     {
@@ -11293,7 +11293,7 @@
         }
       ],
       "route_id": "R18",
-      "color_id": "DEFAULT",
+      "color_id": "R18",
       "color": "#94A3B8"
     },
     {
@@ -11915,7 +11915,7 @@
         }
       ],
       "route_id": "R22",
-      "color_id": "DEFAULT",
+      "color_id": "R22",
       "color": "#94A3B8"
     },
     {
@@ -12148,7 +12148,7 @@
         }
       ],
       "route_id": "R20",
-      "color_id": "DEFAULT",
+      "color_id": "R20",
       "color": "#94A3B8"
     },
     {
@@ -12549,7 +12549,7 @@
         }
       ],
       "route_id": "R19",
-      "color_id": "DEFAULT",
+      "color_id": "R19",
       "color": "#94A3B8"
     },
     {
