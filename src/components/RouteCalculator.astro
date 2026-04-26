@@ -121,22 +121,23 @@ const t = useTranslations(lang);
                       card.style.borderLeftWidth = "4px";
                       card.style.borderLeftColor = routeColor;
                       card.style.borderLeftStyle = "solid";
+                      const safeColor = escapeHtml(routeColor);
                       card.innerHTML = `
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;gap:0.5rem">
                           <div>
-                            <div style="display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:${routeColor};margin-bottom:3px">
+                            <div style="display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:${safeColor};margin-bottom:3px">
                               ${isTransfer ? "🔀 Trasbordo" : "🚌 Directo"}
-                              ${r.legs?.length > 1 ? `<span style="background:${routeColor}22;padding:1px 5px;border-radius:4px">${r.legs.length} tramos</span>` : ""}
+                              ${r.legs?.length > 1 ? `<span style="background:${safeColor}22;padding:1px 5px;border-radius:4px">${r.legs.length} tramos</span>` : ""}
                             </div>
                             <div style="font-size:0.875rem;font-weight:900;color:var(--text-primary);line-height:1.2">${escapeHtml(leg.route_name)}</div>
                           </div>
                           <div style="text-align:right;flex-shrink:0">
-                            <div style="font-size:1.25rem;font-weight:900;color:var(--text-primary);line-height:1">$${r.total_price}</div>
+                            <div style="font-size:1.25rem;font-weight:900;color:var(--text-primary);line-height:1">$${escapeHtml(r.total_price)}</div>
                             <div style="font-size:9px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em">MXN</div>
                           </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--text-secondary)">
-                          <span style="background:${routeColor}22;color:${routeColor};padding:2px 8px;border-radius:9999px;font-weight:800">${escapeHtml(leg.origin_stop)}</span>
+                          <span style="background:${safeColor}22;color:${safeColor};padding:2px 8px;border-radius:9999px;font-weight:800">${escapeHtml(leg.origin_stop)}</span>
                           <svg style="width:12px;height:12px;flex-shrink:0;color:var(--text-tertiary)" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
                           <span style="background:#64748b22;padding:2px 8px;border-radius:9999px">${escapeHtml(leg.dest_stop)}</span>
                         </div>

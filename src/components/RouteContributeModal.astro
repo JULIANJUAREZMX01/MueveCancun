@@ -61,6 +61,7 @@
 <script>
   import { contributeRoute } from '../utils/shareRoute';
   import { showToast } from '../utils/toast';
+  import { escapeHtml } from '../utils/utils';
 
   let pendingJourney: any = null;
   let pendingOrigin  = '';
@@ -78,11 +79,11 @@
     const info = document.getElementById('contribute-route-info');
     if (info) {
       info.innerHTML = `
-        <div class="font-black text-base mb-1">🚌 ${leg?.name || 'Ruta'}</div>
-        <div class="text-slate-500 text-xs">${origin} → ${dest}</div>
+        <div class="font-black text-base mb-1">🚌 ${escapeHtml(leg?.name || 'Ruta')}</div>
+        <div class="text-slate-500 text-xs">${escapeHtml(origin)} → ${escapeHtml(dest)}</div>
         <div class="flex gap-3 mt-2 text-xs">
-          <span class="font-bold text-primary-500">${price} MXN</span>
-          ${dur ? `<span class="text-slate-400">⏱️ ${dur}</span>` : ''}
+          <span class="font-bold text-primary-500">${escapeHtml(price)} MXN</span>
+          ${dur ? `<span class="text-slate-400">⏱️ ${escapeHtml(dur)}</span>` : ''}
         </div>
       `;
     }
