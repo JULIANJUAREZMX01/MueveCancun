@@ -57,9 +57,6 @@ importers:
       idb:
         specifier: ^8.0.3
         version: 8.0.3
-      jiti:
-        specifier: ^2.6.1
-        version: 2.6.1
       postcss:
         specifier: ^8.5.9
         version: 8.5.10
@@ -75,9 +72,6 @@ importers:
       stripe:
         specifier: ^22.0.1
         version: 22.1.0(@types/node@25.6.0)
-      typescript:
-        specifier: ^5.7.0
-        version: 5.9.3
       vite:
         specifier: ^7.1.11
         version: 7.3.2(@types/node@25.6.0)(jiti@2.6.1)(sass@1.99.0)(yaml@2.8.3)
@@ -102,7 +96,7 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       eslint:
-        specifier: ^10.2.0
+        specifier: ^10.2.1
         version: 10.2.1(jiti@2.6.1)
       globals:
         specifier: ^17.5.0
@@ -110,17 +104,26 @@ importers:
       http-server:
         specifier: ^14.1.1
         version: 14.1.1
+      jiti:
+        specifier: ^2.6.1
+        version: 2.6.1
       jsdom:
         specifier: ^29.0.2
         version: 29.0.2
       playwright:
         specifier: ^1.59.1
         version: 1.59.1
+      prettier:
+        specifier: ^3.8.3
+        version: 3.8.3
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
       typescript-eslint:
         specifier: ^8.58.2
         version: 8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@5.9.3)
       vitest:
-        specifier: ^4.1.4
+        specifier: ^4.1.5
         version: 4.1.5(@types/node@25.6.0)(jsdom@29.0.2)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(sass@1.99.0)(yaml@2.8.3))
 
 packages:

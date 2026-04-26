@@ -3,18 +3,27 @@ interface Props {
   class?: string;
   width?: string;
   height?: string;
+  circle?: boolean;
 }
 
-const { class: className, width = 'w-full', height = 'h-4' } = Astro.props;
+const { class: className, width = '100%', height = '1rem', circle = false } = Astro.props;
 ---
 
-<div class={`graffiti-skeleton ${width} ${height} ${className || ''}`} aria-hidden="true"></div>
+<div
+  class={`graffiti-skeleton ${className || ''}`}
+  style={{
+    width: width,
+    height: height,
+    borderRadius: circle ? '50%' : 'var(--r-sm)'
+  }}
+  aria-hidden="true"
+></div>
 
 <style>
   .graffiti-skeleton {
     background-color: var(--border-light);
-    border-radius: var(--r-sm);
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    display: block;
   }
 
   @keyframes pulse {

@@ -90,7 +90,7 @@ export const initDB = async (): Promise<IDBPDatabase> => {
     });
     const balance = await db.get('wallet-status', 'current_balance');
     if (balance === undefined) {
-      const defaultAmount = 180.00;
+      const defaultAmount = 0.00;
       const key = await getCryptoKey(db);
       const signature = await generateSignature(defaultAmount, key);
       await db.put('wallet-status', { id: 'current_balance', amount: defaultAmount, currency: 'MXN', signature }, 'current_balance');

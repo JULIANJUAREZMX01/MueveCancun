@@ -58,15 +58,13 @@
     "docx": "^9.6.1",
     "fuse.js": "^7.3.0",
     "idb": "^8.0.3",
-    "jiti": "^2.6.1",
     "postcss": "^8.5.9",
+    "sass": "^1.83.0",
     "serve": "^14.2.6",
     "sharp": "^0.34.5",
     "stripe": "^22.0.1",
     "vite": "^7.1.11",
-    "wasm-pack": "^0.14.0",
-    "sass": "^1.83.0",
-    "typescript": "^5.7.0"
+    "wasm-pack": "^0.14.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.60.1"
@@ -76,12 +74,15 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.59.1",
     "cheerio": "^1.2.0",
-    "eslint": "^10.2.0",
+    "eslint": "^10.2.1",
     "globals": "^17.5.0",
     "http-server": "^14.1.1",
+    "jiti": "^2.6.1",
     "jsdom": "^29.0.2",
     "playwright": "^1.59.1",
+    "prettier": "^3.8.3",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.2",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.5"
   }
 }
