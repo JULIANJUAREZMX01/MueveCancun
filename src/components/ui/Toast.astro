@@ -11,83 +11,75 @@ const { id = 'toast-notification' } = Astro.props;
   popover="manual"
   class="toast-popover"
 >
-  <div class="toast-content">
-    <span id={`${id}-icon`} class="text-xl">ℹ️</span>
-    <p id={`${id}-message`} class="text-sm font-bold tracking-tight">Notification</p>
+  <div class="toast-popover__card">
+    <span id={`${id}-icon`} class="toast-popover__icon">ℹ️</span>
+    <p id={`${id}-message`} class="toast-popover__message">Notification</p>
   </div>
 </div>
 
 <style>
-  /*
-   * GRAFFITI WARRIOR: CSS5 Popover API
-   * Native browser power. No z-index hacks. No manual display toggling.
-   */
   .toast-popover {
-    /* Position at the bottom, centered (Mobile Friendly - Above Nav) */
     position: fixed;
-    bottom: 5.5rem; /* h-16 (4rem) + 1.5rem gap */
+    bottom: 5.5rem;
     top: auto;
     left: 50%;
     transform: translateX(-50%);
     width: fit-content;
     max-width: 90vw;
-    z-index: 2147483647; /* Ensure visibility if fallback is used */
-
+    z-index: 10000;
     border: none;
     padding: 0;
     background: transparent;
     overflow: visible;
-
-    /* Animation State: Open (Final) */
     opacity: 1;
-    /* We include translateX(-50%) to maintain centering during transform transition */
     transform: translateX(-50%) translateY(0);
     transition:
-      opacity 0.3s ease-out,
-      transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+      opacity 0.3s var(--ease-out),
+      transform 0.4s var(--ease-back),
       display 0.4s allow-discrete,
       overlay 0.4s allow-discrete;
-
-    /* Animation State: Closed (Starting Style for Entry) */
-    @starting-style {
-      opacity: 0;
-      transform: translateX(-50%) translateY(2rem);
-    }
-
-    /* Animation State: Closed (Exit) */
-    &:not(:popover-open) {
-      opacity: 0;
-      transform: translateX(-50%) translateY(2rem);
-      display: none;
-    }
   }
 
-  .toast-content {
-    background-color: rgba(15, 23, 42, 0.95); /* slate-900/95 */
+  .toast-popover__card {
+    background-color: var(--text-primary);
     backdrop-filter: blur(8px);
-    color: white;
+    color: var(--text-inverse);
     padding: 0.75rem 1.5rem;
-    border-radius: 9999px;
-    box-shadow:
-      0 10px 15px -3px rgba(0, 0, 0, 0.1),
-      0 4px 6px -2px rgba(0, 0, 0, 0.05),
-      0 0 0 1px rgba(255, 255, 255, 0.1);
+    border-radius: var(--r-full);
+    box-shadow: var(--shadow-lg);
     display: flex;
     align-items: center;
     gap: 0.75rem;
     min-height: 44px;
-    font-family: system-ui, -apple-system, sans-serif;
+    border: 1px solid var(--glass-border);
+  }
+
+  .toast-popover__icon {
+    font-size: 1.25rem;
+  }
+
+  .toast-popover__message {
+    font-size: 0.875rem;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  @starting-style {
+    .toast-popover:popover-open {
+      opacity: 0;
+      transform: translateX(-50%) translateY(2rem);
+    }
+  }
+
+  .toast-popover:not(:popover-open) {
+    opacity: 0;
+    transform: translateX(-50%) translateY(2rem);
+    display: none;
   }
 </style>
 
 <script define:vars={{ id }}>
-  // GraffitiWarrior: Native Popover Controller
-  // Wire SHOW_TOAST custom event → window.showToast
-  window.addEventListener('SHOW_TOAST', (e) => {
-    const { message, type } = (e as CustomEvent).detail ?? {};
-    if (message) window.showToast(message, type ?? 'info');
-  });
-
   window.showToast = (message, type = 'info', duration = 3000) => {
     const toast = document.getElementById(id);
     const msgEl = document.getElementById(`${id}-message`);
@@ -95,7 +87,6 @@ const { id = 'toast-notification' } = Astro.props;
 
     if (!toast || !msgEl || !iconEl) return;
 
-    // Reset content
     msgEl.textContent = message;
 
     const icons = {
@@ -106,23 +97,18 @@ const { id = 'toast-notification' } = Astro.props;
     };
     iconEl.textContent = icons[type] || icons.info;
 
-    // Hide if already open to restart animation (creates a "pop" effect)
     if (toast.matches(':popover-open')) {
       toast.hidePopover();
-      // Force reflow to ensure animation restarts
       void toast.offsetWidth;
     }
 
-    // Show native popover
     try {
       toast.showPopover();
     } catch (e) {
-      // Fallback for ancient browsers (should not happen in 2026 context)
       console.warn("Popover API not supported", e);
       toast.style.display = 'block';
     }
 
-    // Auto-hide logic
     if (window.toastTimeout) clearTimeout(window.toastTimeout);
 
     window.toastTimeout = setTimeout(() => {

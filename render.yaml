@@ -9,13 +9,15 @@ services:
     startCommand: pnpm start
     envVars:
       - key: NODE_VERSION
-        value: "24.0.0"
+        value: "22.21.0"
       - key: NODE_ENV
         value: production
       - key: RENDER
         value: "true"
       - key: ENABLE_COREPACK
         value: "1"
+      - key: HOST
+        value: "0.0.0.0"
 
   - type: static_site
     name: MueveCancun-Static
@@ -24,6 +26,8 @@ services:
     publishPath: dist/client
     envVars:
       - key: NODE_VERSION
-        value: "24.0.0"
+        value: "22.21.0"
       - key: RENDER
         value: "true"
+      - key: ENABLE_COREPACK
+        value: "1"

@@ -1,11 +1,10 @@
 /// <reference lib="WebWorker" />
-export type {}; // Makes this file a TS module so `declare const self` can shadow the global
+export type {};
 declare const self: ServiceWorkerGlobalScope;
 
-const CACHE_VERSION = 'v3.3.3-nexus';
+const CACHE_VERSION = 'v4.0.0-nexus';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 
-// Critical assets for offline-first PWA
 const CRITICAL_ASSETS: string[] = [
   '/',
   '/en/about',
@@ -51,90 +50,52 @@ const CRITICAL_ASSETS: string[] = [
 const OSM_TILES_PATTERN = /^https:\/\/[a-c]\.tile\.openstreetmap\.org\/(1[1-8])\/.*\.png$/;
 const CARTO_TILES_PATTERN = /^https:\/\/[a-d]\.basemaps\.cartocdn\.com\/.*\.png$/;
 
-// User-created routes pattern (dynamic ruta_*.json files)
-const USER_ROUTE_PATTERN = /\/data\/routes\/ruta_\\d+\\.json$/;
-
-// --- Install ---
 self.addEventListener('install', (event: ExtendableEvent) => {
-  console.log(`[SW] Installing ${CACHE_VERSION}`);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('[SW] Caching critical assets');
         return Promise.allSettled(
-          CRITICAL_ASSETS.map(url => cache.add(url).catch((e: unknown) => console.warn(`[SW] Failed to cache ${url}:`, e)))
+          CRITICAL_ASSETS.map(url => cache.add(url).catch(e => console.warn(`[SW] Failed: ${url}`, e)))
         );
       })
       .then(() => self.skipWaiting())
-      .catch((err: unknown) => console.error('[SW] Install failed:', err))
   );
 });
 
-// --- Activate ---
 self.addEventListener('activate', (event: ExtendableEvent) => {
-  console.log(`[SW] Activating ${CACHE_VERSION}`);
   event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(key => key !== CACHE_NAME)
-            .map(key => {
-              console.log('[SW] Deleting old cache:', key);
-              return caches.delete(key);
-            })
-      ))
-      .then(() => self.clients.claim())
+    caches.keys().then(keys => Promise.all(
+      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+    )).then(() => self.clients.claim())
   );
 });
 
-// --- Message ---
 self.addEventListener('message', (event: ExtendableMessageEvent) => {
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-  // On-demand: cache a user-created route file
-  if (event.data?.type === 'CACHE_USER_ROUTE' && event.data.url) {
-    const url = event.data.url as string;
-    if (USER_ROUTE_PATTERN.test(url)) {
-      caches.open(CACHE_NAME).then(cache => cache.add(url)).catch(() => {});
-    }
-  }
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
-// --- Fetch ---
 self.addEventListener('fetch', (event: FetchEvent) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  if (request.method !== 'GET') return;
-  if (!url.protocol.startsWith('http')) return;
+  if (request.method !== 'GET' || !url.protocol.startsWith('http')) return;
 
-  // User-created routes: Network-First (they may be updated), then cache
-  if (USER_ROUTE_PATTERN.test(url.pathname)) {
-    event.respondWith(networkFirstWithCache(request));
-    return;
-  }
-
-  if (url.pathname.includes('/data/')) {
+  if (url.pathname.includes('/data/') || url.pathname.includes('/api/')) {
     event.respondWith(staleWhileRevalidate(request));
   } else if (
     url.pathname.includes('/wasm/') ||
     url.pathname.includes('/icons/') ||
-    url.pathname.endsWith('coordinates.json') ||
     url.pathname.endsWith('.wasm') ||
     url.pathname.endsWith('.js') ||
-    url.pathname.endsWith('.css')
+    url.pathname.endsWith('.css') ||
+    OSM_TILES_PATTERN.test(request.url) ||
+    CARTO_TILES_PATTERN.test(request.url)
   ) {
-    event.respondWith(cacheFirst(request));
-  } else if (OSM_TILES_PATTERN.test(request.url) || CARTO_TILES_PATTERN.test(request.url)) {
-    event.respondWith(cacheFirst(request));
-  } else if (url.pathname.startsWith('/ruta/') || url.pathname.endsWith('/rutas') || url.pathname.endsWith('/home')) {
     event.respondWith(cacheFirst(request));
   } else {
     event.respondWith(networkFirst(request));
   }
 });
-
-// --- Cache Strategies ---
 
 async function cacheFirst(request: Request): Promise<Response> {
   const cache = await caches.open(CACHE_NAME);
@@ -143,17 +104,10 @@ async function cacheFirst(request: Request): Promise<Response> {
 
   try {
     const response = await fetch(request);
-    if (response && response.status === 200) {
-      cache.put(request, response.clone());
-    }
+    if (response.ok) cache.put(request, response.clone());
     return response;
   } catch {
-    if (request.mode === 'navigate') {
-      const lang = request.url.includes('/en/') ? 'en' : 'es';
-      const offlinePage = await cache.match(`/${lang}/offline`);
-      if (offlinePage) return offlinePage;
-    }
-    return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+    return serveOffline(request);
   }
 }
 
@@ -161,33 +115,11 @@ async function networkFirst(request: Request): Promise<Response> {
   const cache = await caches.open(CACHE_NAME);
   try {
     const response = await fetch(request);
-    if (response && response.status === 200) {
-      cache.put(request, response.clone());
-    }
+    if (response.ok) cache.put(request, response.clone());
     return response;
   } catch {
     const cached = await cache.match(request);
-    if (cached) return cached;
-    if (request.mode === 'navigate') {
-      const lang = request.url.includes('/en/') ? 'en' : 'es';
-      const offlinePage = await cache.match(`/${lang}/offline`);
-      if (offlinePage) return offlinePage;
-    }
-    return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
-  }
-}
-
-async function networkFirstWithCache(request: Request): Promise<Response> {
-  const cache = await caches.open(CACHE_NAME);
-  try {
-    const response = await fetch(request);
-    if (response && response.status === 200) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    const cached = await cache.match(request);
-    return cached ?? new Response('{}', { status: 503, headers: { 'Content-Type': 'application/json' } });
+    return cached || serveOffline(request);
   }
 }
 
@@ -195,12 +127,20 @@ async function staleWhileRevalidate(request: Request): Promise<Response> {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
 
-  const fetchPromise = fetch(request).then(async (response) => {
-    if (response && response.status === 200) {
-      await cache.put(request, response.clone());
-    }
+  const fetchPromise = fetch(request).then(response => {
+    if (response.ok) cache.put(request, response.clone());
     return response;
-  }).catch(() => cached ?? new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } }));
+  }).catch(() => cached || serveOffline(request));
 
-  return cached ?? fetchPromise;
+  return cached || fetchPromise;
+}
+
+async function serveOffline(request: Request): Promise<Response> {
+  if (request.mode === 'navigate') {
+    const cache = await caches.open(CACHE_NAME);
+    const lang = request.url.includes('/en/') ? 'en' : 'es';
+    const offlinePage = await cache.match(`/${lang}/offline`);
+    if (offlinePage) return offlinePage;
+  }
+  return new Response('Offline', { status: 503 });
 }

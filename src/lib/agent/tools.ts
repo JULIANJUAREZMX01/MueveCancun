@@ -32,7 +32,7 @@ export const NEXUS_TOOLS: ChatCompletionTool[] = [
 /** Garantiza que el motor WASM esté listo, inicializándolo lazy si es necesario */
 async function ensureWasm(): Promise<boolean> {
   if (typeof window === 'undefined') return false;
-  if ((window as { WASM_READY?: boolean }).WASM_READY === true) return true;
+  if ((window as Window & { WASM_READY?: boolean }).WASM_READY === true) return true;
   try {
     const { initWasm } = await import('../initWasm');
     const ok = await initWasm();

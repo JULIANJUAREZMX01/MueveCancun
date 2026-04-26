@@ -1,180 +1,98 @@
 ---
+import Icon from "./ui/Icon.astro";
+const isEs = Astro.url.pathname.includes("/es/");
 ---
 
-<div id="map-container" class="map-container-fill relative bg-slate-100">
-  <div id="map" class="absolute inset-0 z-0"></div>
-
-  <!-- Fallback/Loading -->
-  <div id="map-fallback" class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-10 transition-opacity duration-500">
-    <div class="relative w-16 h-16">
-      <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
-      <div class="absolute inset-0 border-4 border-primary-500 rounded-full border-t-transparent animate-spin"></div>
-    </div>
-    <p class="mt-4 text-xs font-black uppercase tracking-widest text-slate-400">Cargando Mapa...</p>
-  </div>
-
-  <!-- GPS FAB -->
-  <button
-    id="gps-center-btn"
-    class="absolute right-4 top-4 z-[40] w-12 h-12 bg-white rounded-2xl shadow-xl border border-slate-100 flex items-center justify-center text-slate-600 active:scale-95 transition-all group"
-    aria-label="Centrar en mi ubicación"
-  >
-    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-  </button>
-  <div class="graffiti-tooltip">GPS</div>
-
-  <!-- Route Legend FAB -->
-  <button
-    id="legend-toggle-btn"
-    class="absolute right-4 top-20 z-[40] w-12 h-12 bg-white rounded-2xl shadow-xl border border-slate-100 flex items-center justify-center text-slate-600 active:scale-95 transition-all group"
-    aria-label="Ver leyenda de rutas"
-  >
-    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" /></svg>
-  </button>
-
-  <!-- Route Legend Panel -->
-  <div id="route-legend" class="hidden absolute right-4 top-36 z-[40] w-64 max-h-[60vh] bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col animate-scale-in">
-    <div class="px-5 py-4 border-b border-slate-50 flex items-center justify-between">
-      <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Rutas Principales</span>
-      <button id="legend-close-btn" class="p-1 text-slate-300 hover:text-slate-600">✕</button>
-    </div>
-    <div id="legend-content" class="flex-1 overflow-y-auto p-2 grid grid-cols-1 gap-1">
-      <!-- Inyectado por JS -->
+<div class="map-wrapper">
+  <div id="map-container" class="map-container">
+    <div id="map-fallback" class="map-fallback">
+       <div class="map-fallback__spinner"></div>
+       <p class="map-fallback__text">{isEs ? "Cargando Mapa..." : "Loading Map..."}</p>
     </div>
   </div>
 
-  <!-- Route Info Banner (Hidden by default) -->
-  <div id="route-banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-[40] px-4 py-3 bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 flex items-center gap-3 min-w-[200px] animate-slide-down">
-    <div class="flex-1 min-w-0">
-      <p id="route-banner-text" class="text-xs font-black text-white uppercase tracking-wider truncate">Ruta trazada</p>
+  <!-- GPS Control -->
+  <div class="map-controls">
+    <button id="gps-center-btn" class="map-control-btn" aria-label={isEs ? "Centrar GPS" : "Center GPS"}>
+       <Icon name="target" class="w-5 h-5" />
+    </button>
+    <div class="map-tooltip">{isEs ? "Mi ubicación" : "My location"}</div>
+
+    <button id="route-clear-btn" class="map-control-btn map-control-btn--danger" aria-label={isEs ? "Limpiar ruta" : "Clear route"}>
+       <Icon name="x" class="w-5 h-5" />
+    </button>
+  </div>
+
+  <!-- Legend -->
+  <div id="route-legend" class="map-legend hidden">
+    <div class="map-legend__header">
+      <span class="map-legend__title">Rutas Principales</span>
+      <button class="map-legend__close" onclick="document.getElementById('route-legend').classList.add('hidden')">
+        <Icon name="x" class="w-4 h-4" />
+      </button>
     </div>
-    <button id="share-route-btn" class="hidden p-2 text-white/60 hover:text-white transition-colors" aria-label="Compartir ruta">
-      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
-    </button>
-    <button id="route-clear-btn" class="p-2 text-white/40 hover:text-white transition-colors" aria-label="Limpiar ruta">
-      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-    </button>
+    <div id="legend-content" class="map-legend__content"></div>
+  </div>
+
+  <!-- Banner -->
+  <div id="route-banner" class="map-banner hidden">
+      <div class="map-banner__indicator"></div>
+      <p id="route-banner-text" class="map-banner__text">Ruta trazada</p>
   </div>
 </div>
 
 <script>
-  import { loadLeaflet } from "../utils/leafletLoader";
+  import { initWasm, enrichJourneyLegs, resolveStopName } from "../lib/initWasm";
   import { coordinatesStore } from "../utils/CoordinatesStore";
-  import { escapeHtml, safeUrl, showToast, normalizeString } from "../utils/utils";
-  import { enrichJourneyLegs } from "../lib/initWasm";
-  import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
+  import { drawRoute } from "../utils/RouteDrawer";
+  import { normalizeString, escapeHtml, safeUrl } from "../utils/utils";
 
   let map: any = null;
   let layerGroup: any = null;
   let stopMarkersLayer: any = null;
   let activeJourney: any = null;
 
-  // ── Helpers ─────────────────────────────────────────────────────────────
-
-  function drawRoute(mapInstance: any, journey: any, currentLayerGroup: any, coordsDB: any) {
-    if (!mapInstance || !journey) return null;
-    if (currentLayerGroup) mapInstance.removeLayer(currentLayerGroup);
-
-    const L = (window as any).L;
-    const layers: any[] = [];
-    const allCoords: [number, number][] = [];
-
-    journey.legs.forEach((leg: any) => {
-      const color = leg.color || getRouteColor(leg.route_id, leg.route_name, leg.transport_type);
-      const stops = leg.paradas || leg.stops || [];
-      const legCoords = stops
-        .map((s: any) => {
-          const name = normalizeString(s.nombre || s.name || "");
-          return coordsDB instanceof Map ? coordsDB.get(name) : coordsDB[name];
-        })
-        .filter(Boolean) as [number, number][];
-
-      if (legCoords.length >= 2) {
-        const poly = L.polyline(legCoords, { color, weight: 6, opacity: 0.85, lineJoin: "round" });
-        layers.push(poly);
-        allCoords.push(...legCoords);
-
-        // Markers de inicio/fin del tramo
-        layers.push(L.circleMarker(legCoords[0], { radius: 7, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2 })
-          .bindPopup(`<b>${escapeHtml(leg.origin_stop || "Inicio")}</b>`));
-
-        layers.push(L.circleMarker(legCoords[legCoords.length - 1], { radius: 7, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2 })
-          .bindPopup(`<b>${escapeHtml(leg.dest_stop || "Fin")}</b>`));
-      }
-    });
-
-      if (!layers.length) return null;
-
-      const lg = L.layerGroup(layers).addTo(mapInstance);
-      if (allCoords.length > 0) {
-        mapInstance.fitBounds(allCoords, { padding: [48, 48], maxZoom: 16 });
-      }
-      return lg;
-  }
+  const TRANSPORT_TYPE_COLORS: Record<string, string> = {
+    "Bus_Urban": "#0D9488",
+    "Bus_HotelZone": "#F97316",
+    "ADO": "#FF6B6B"
+  };
 
   async function initMap() {
-    if (map) return true;
-
-    const container = document.getElementById("map");
-    if (!container) return false;
-
-    try {
-      await loadLeaflet();
-    } catch (err) {
-      console.error("[Map] No se pudo cargar Leaflet:", err);
-      return false;
-    }
-    if (!(window as any).L) return false;
-
+    if (typeof window === "undefined") return false;
     const L = (window as any).L;
-    await coordinatesStore.init();
-    const coordsDB = coordinatesStore.getDB();
+    if (!L) return false;
 
-    map = L.map("map", {
+    const mapContainer = document.getElementById("map-container");
+    if (!mapContainer) return false;
+
+    map = L.map("map-container", {
       center: [21.1619, -86.8515],
       zoom: 13,
       zoomControl: false,
-      attributionControl: false,
+      attributionControl: false
     });
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-      maxZoom: 19,
-      attribution: "© CartoDB",
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19
     }).addTo(map);
 
     layerGroup = L.layerGroup().addTo(map);
 
-    // Legend control listeners
-    const legendPanel = document.getElementById('route-legend');
-    document.getElementById('legend-toggle-btn')?.addEventListener('click', () => {
-      legendPanel?.classList.toggle('hidden');
-    });
-    document.getElementById('legend-close-btn')?.addEventListener('click', () => {
-      legendPanel?.classList.add('hidden');
-    });
+    const coordsDB = await coordinatesStore.getCoordinates();
 
-    function updateLegend(routesList: any[]) {
-      const legendContent = document.getElementById("legend-content");
-      if (!legendContent || !Array.isArray(routesList)) return;
-
-      const seen = new Set<string>();
-      legendContent.innerHTML = "";
-      routesList
-        .filter((r: any) => {
-          const key = r.id || r.nombre;
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        })
-        .slice(0, 40)
-        .forEach((r: any) => {
-          const item = document.createElement("div");
-          item.style.cssText = "display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:8px;cursor:pointer;transition:background 0.15s";
-          item.onmouseenter = () => item.style.background = "rgba(0,0,0,0.04)";
-          item.onmouseleave = () => item.style.background = "transparent";
-
-          const rColor = r.color || "#94A3B8";
-          item.innerHTML = `<span style=\"width:12px;height:12px;border-radius:3px;background:${escapeHtml(rColor)};flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.2)\"></span><span style=\"font-size:11px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis\">${escapeHtml(r.nombre || r.name || r.id)}</span>`;
+    function updateLegend(routes: any[]) {
+        const legendContent = document.getElementById('legend-content');
+        if (!legendContent) return;
+        legendContent.innerHTML = '';
+        routes.sort((a,b) => (a.nombre || '').localeCompare(b.nombre || '')).forEach(r => {
+          const item = document.createElement('div');
+          item.className = 'map-legend__item';
+          const color = r.color || TRANSPORT_TYPE_COLORS["Bus_Urban"];
+          item.innerHTML = `<div class="map-legend__dot" style="background:${color}"></div>
+                            <span class="map-legend__item-name">${escapeHtml(r.nombre || r.name || r.id)}</span>`;
 
           item.addEventListener("click", () => {
             const legendPanel = document.getElementById('route-legend');
@@ -184,15 +102,11 @@
         });
     }
 
-    // ── Cargar leyenda de rutas con colores ──────────────────────────────────
-    if ((window as any).WASM_ROUTES) {
-      updateLegend((window as any).WASM_ROUTES);
-    }
+    if ((window as any).WASM_ROUTES) updateLegend((window as any).WASM_ROUTES);
     window.addEventListener('WASM_ENGINE_READY', (e: any) => {
       if (e.detail?.routes) updateLegend(e.detail.routes);
     });
 
-    // ── Cargar paradas con hubs reales + landmarks ───────────────────────
     const allStops = coordsDB instanceof Map
       ? Array.from(coordsDB.entries())
       : Object.entries(coordsDB || {});
@@ -215,7 +129,6 @@
     });
 
     const markerLayers: any[] = [];
-
     allStops.forEach(([key, coords]: any) => {
       const displayName = coordinatesStore.getOriginalName(key) || key;
       const hubRouteCount = hubSet.get(key) ?? 0;
@@ -223,27 +136,19 @@
       const landmark = landmarkMap.get(key);
       const color = isHub ? '#F97316' : landmark ? '#8B5CF6' : TRANSPORT_TYPE_COLORS["Bus_Urban"];
       const radius = isHub ? 10 : landmark ? 7 : 5;
-      const routesBadge = isHub ? `<span style="background:#f97316;color:#fff;font-size:10px;font-weight:900;padding:2px 6px;border-radius:99px;margin-left:6px">${hubRouteCount} rutas</span>` : '';
-      const landmarkLine = landmark ? `<p style="font-size:10px;color:#7c3aed;font-weight:700;margin:0 0 6px">📌 ${escapeHtml(landmark)}</p>` : '';
+      const routesBadge = isHub ? `<span class="map-stop-badge">${hubRouteCount} rutas</span>` : '';
+      const landmarkLine = landmark ? `<p class="map-stop-landmark">📌 ${escapeHtml(landmark)}</p>` : '';
       markerLayers.push(
-        L.circleMarker(coords, {
-          radius: isHub ? 9 : 5,
-          fillColor: isHub ? TRANSPORT_TYPE_COLORS["Bus_HotelZone"] : TRANSPORT_TYPE_COLORS["Bus_Urban"],
-          color: "#FFFFFF",
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.9,
-        }).bindPopup(`
-          <div style=\"min-width:160px;padding:4px\">
-            <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px\">${escapeHtml(displayName)}</p>
-            <p style=\"font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px\">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
-            <div style=\"display:flex;flex-direction:column;gap:4px\">
-              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_HotelZone"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_Urban"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
-              <button data-stop-name=\"${escapeHtml(displayName)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
-            </div>
-          </div>
-        `)
+        L.circleMarker(coords, { radius, fillColor: color, color: '#FFFFFF', weight: isHub ? 3 : 2, opacity: 1, fillOpacity: 0.92 })
+         .bindPopup(`<div class="map-popup">
+            <p class="map-popup__title">${escapeHtml(displayName)}${routesBadge}</p>
+            <p class="map-popup__subtitle">${isHub ? '🔀 Hub de conexión' : '📍 Parada'}</p>
+            ${landmarkLine}
+            <div class="map-popup__actions">
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action map-popup__btn map-popup__btn--origin">🟠 Salgo de aquí</button>
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="dest"   class="js-map-stop-action map-popup__btn map-popup__btn--dest">🔵 Voy aquí</button>
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action map-popup__btn map-popup__btn--list">📋 Ver rutas</button>
+            </div></div>`)
       );
     });
 
@@ -253,10 +158,11 @@
     }
 
     const fallback = document.getElementById("map-fallback");
-    if (fallback) fallback.style.opacity = "0";
-    setTimeout(() => { if (fallback) fallback.style.display = "none"; }, 500);
+    if (fallback) {
+      fallback.style.opacity = "0";
+      setTimeout(() => { fallback.style.display = "none"; }, 500);
+    }
 
-    // ── Tap en mapa → parada más cercana ──────────────────────────────────
     map.on("click", (e: any) => {
       const { lat, lng } = e.latlng;
       const result = coordinatesStore.findNearestWithDistance(lat, lng);
@@ -266,13 +172,12 @@
       L.popup()
         .setLatLng(c as any)
         .setContent(`
-          <div style=\"min-width:170px;padding:4px\">
-            <p style=\"font-weight:900;color:#0f172a;font-size:13px;margin:0 0 2px\">${escapeHtml(result.name)}</p>
-            <p style=\"font-size:10px;color:#94a3b8;margin:0 0 8px\">${(result.distanceKm * 1000).toFixed(0)} m</p>
-            <div style=\"display:flex;flex-direction:column;gap:4px\">
-              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_HotelZone"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:${TRANSPORT_TYPE_COLORS["Bus_Urban"]};color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
-              <button data-stop-name=\"${escapeHtml(result.name)}\" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
+          <div class="map-popup">
+            <p class="map-popup__title">${escapeHtml(result.name)}</p>
+            <p class="map-popup__distance">${(result.distanceKm * 1000).toFixed(0)} m</p>
+            <div class="map-popup__actions">
+              <button data-stop-name="${escapeHtml(result.name)}" data-action="origin" class="js-map-stop-action map-popup__btn map-popup__btn--origin">🟠 Salgo de aquí</button>
+              <button data-stop-name="${escapeHtml(result.name)}" data-action="dest"   class="js-map-stop-action map-popup__btn map-popup__btn--dest">🔵 Voy aquí</button>
             </div>
           </div>
         `)
@@ -282,9 +187,7 @@
     window.addEventListener("SHOW_ROUTE_ON_MAP", (e: any) => {
       const rawJourney = e.detail?.journey;
       if (!rawJourney) return;
-
       const journey = enrichJourneyLegs(rawJourney);
-
       activeJourney = journey;
       const newLg = drawRoute(map, journey, layerGroup, coordsDB);
       if (newLg) layerGroup = newLg;
@@ -321,67 +224,112 @@
 
   async function scheduleInit() {
     const mapEl = document.getElementById("map-container");
-    if (!mapEl) return;
-    if (mapEl.dataset.initialized) {
-      if (map) map.invalidateSize();
-      return;
-    }
-
+    if (!mapEl || mapEl.dataset.initialized === "true") return;
     const initialized = await initMap();
-    if (!initialized) {
-      delete mapEl.dataset.initialized;
-      return;
-    }
-    mapEl.dataset.initialized = "true";
-
-    // Escuchar evento externo para centrar GPS (desde home.astro)
-    window.addEventListener("MAP_CENTER_GPS", (e: any) => {
-      if (!map) return;
-      const { lat, lng } = e.detail || {};
-      if (lat && lng) {
-        map.setView([lat, lng], 16, { animate: true });
-        const L = (window as any).L;
-        if (L) L.circleMarker([lat, lng], { radius: 10, color: "#22c55e", fillColor: "#22c55e", fillOpacity: 0.4, weight: 2 }).addTo(map).bindPopup("📍 Mi ubicación").openPopup();
-      }
-    });
-
-    document.getElementById("gps-center-btn")?.addEventListener("click", () => {
-      if (!navigator.geolocation) return;
-      navigator.geolocation.getCurrentPosition(pos => {
-        const { latitude, longitude } = pos.coords;
-        if (map) map.setView([latitude, longitude], 16);
-      });
-    });
+    if (initialized) mapEl.dataset.initialized = "true";
   }
 
-  let __scheduleInit_listener: (() => void) | null = null;
-  function __register_scheduleInit() {
-    if (__scheduleInit_listener) document.removeEventListener('astro:page-load', __scheduleInit_listener);
-    __scheduleInit_listener = scheduleInit;
-    document.addEventListener('astro:page-load', __scheduleInit_listener);
-  }
-  document.addEventListener('astro:before-swap', () => {
-    if (__scheduleInit_listener) { document.removeEventListener('astro:page-load', __scheduleInit_listener); __scheduleInit_listener = null; }
-  }, { once: true });
-  __register_scheduleInit();
+  document.addEventListener('astro:page-load', scheduleInit);
   document.addEventListener("click", handleMapAction);
   if (document.readyState === "complete") scheduleInit();
   else window.addEventListener("load", scheduleInit);
 </script>
 
 <style>
-  .graffiti-tooltip {
-    position: absolute; margin: 0; padding: 6px 12px;
-    background: #1e293b; color: white; border-radius: 8px;
-    font-size: 11px; font-weight: 700; white-space: nowrap;
-    pointer-events: none; opacity: 0; transition: opacity 0.2s;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    z-index: 50; right: 60px; top: 12px;
-  }
-  #gps-center-btn:hover + .graffiti-tooltip { opacity: 1; }
-</style>
+  .map-wrapper { position: relative; width: 100%; height: 100%; }
+  .map-container { position: absolute; inset: 0; background-color: var(--surface-bg); }
 
-<style is:global>
-  .map-container-fill { position: absolute; inset: 0; overflow: hidden; }
-  .leaflet-container { background: #e8f4f8 !important; }
+  .map-fallback {
+    position: absolute; inset: 0; z-index: 1000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background-color: var(--surface-bg); transition: opacity 0.5s var(--ease);
+  }
+  .map-fallback__spinner {
+    width: 2.5rem; height: 2.5rem; border: 3px solid var(--border-light);
+    border-top-color: var(--color-primary); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin-bottom: 1rem;
+  }
+  .map-fallback__text {
+    font-size: 0.75rem; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--text-tertiary);
+  }
+
+  .map-controls {
+    position: absolute; right: 1rem; top: 1rem; z-index: 500;
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .map-control-btn {
+    width: 2.75rem; height: 2.75rem; border-radius: var(--r-md);
+    background-color: var(--glass-bg); backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border); box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-primary); cursor: pointer; transition: all var(--t-fast);
+  }
+  .map-control-btn:hover { transform: scale(1.05); color: var(--color-primary); }
+  .map-control-btn--danger { color: var(--color-danger); }
+  .map-control-btn--danger:hover { color: var(--color-danger); border-color: var(--color-danger); }
+
+  .map-tooltip {
+    position: absolute; right: 3.5rem; top: 0.625rem;
+    padding: 0.5rem 0.75rem; background-color: var(--text-primary);
+    color: white; border-radius: var(--r-sm); font-size: 0.7rem;
+    font-weight: 700; white-space: nowrap; pointer-events: none;
+    opacity: 0; transition: opacity 0.2s; box-shadow: var(--shadow-md);
+  }
+  .map-control-btn:hover + .map-tooltip { opacity: 1; }
+
+  .map-legend {
+    position: absolute; right: 1rem; top: 8rem; z-index: 500;
+    width: 16rem; max-height: 60vh; background-color: var(--glass-bg);
+    backdrop-filter: blur(12px); border-radius: var(--r-lg);
+    box-shadow: var(--shadow-xl); border: 1px solid var(--glass-border);
+    display: flex; flex-direction: column; overflow: hidden;
+    animation: scale-in 0.3s var(--ease-back);
+  }
+  .map-legend.hidden { display: none; }
+
+  .map-legend__header {
+    padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .map-legend__title {
+    font-size: 0.625rem; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--text-tertiary);
+  }
+  .map-legend__close { background: none; border: none; color: var(--text-tertiary); cursor: pointer; }
+
+  .map-legend__content { overflow-y: auto; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .map-legend__item {
+    display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem;
+    border-radius: var(--r-sm); cursor: pointer; transition: background 0.2s;
+  }
+  .map-legend__item:hover { background-color: var(--surface-bg); }
+  .map-legend__dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; flex-shrink: 0; }
+  .map-legend__item-name {
+    font-size: 0.7rem; font-weight: 700; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .map-banner {
+    position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
+    z-index: 500; padding: 0.75rem 1rem; background-color: rgba(15,23,42,0.9);
+    backdrop-filter: blur(12px); border-radius: var(--r-md);
+    box-shadow: var(--shadow-xl); border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; gap: 0.75rem; min-width: 12.5rem;
+    animation: fade-up 0.4s var(--ease-out);
+  }
+  .map-banner.hidden { display: none; }
+  .map-banner__indicator { width: 0.5rem; height: 0.5rem; border-radius: 50%; background-color: var(--color-primary); }
+  .map-banner__text { font-size: 0.7rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  :global(.map-popup) { min-width: 11rem; padding: 0.25rem; }
+  :global(.map-popup__title) { font-weight: 900; color: var(--text-primary); font-size: 0.825rem; margin: 0 0 2px; }
+  :global(.map-popup__subtitle) { font-size: 0.625rem; color: var(--text-tertiary); font-weight: 700; text-transform: uppercase; margin: 0 0 6px; }
+  :global(.map-stop-badge) { background: var(--color-accent); color: white; font-size: 0.6rem; font-weight: 900; padding: 2px 6px; border-radius: 99px; margin-left: 6px; }
+  :global(.map-stop-landmark) { font-size: 0.625rem; color: var(--color-info); font-weight: 700; margin: 0 0 6px; }
+  :global(.map-popup__actions) { display: flex; flex-direction: column; gap: 0.25rem; }
+  :global(.map-popup__btn) { width: 100%; font-size: 0.7rem; color: white; border: none; border-radius: 8px; padding: 6px; font-weight: 700; cursor: pointer; }
+  :global(.map-popup__btn--origin) { background-color: var(--color-accent); }
+  :global(.map-popup__btn--dest) { background-color: var(--color-info); }
+  :global(.map-popup__btn--list) { background-color: var(--text-primary); }
 </style>
