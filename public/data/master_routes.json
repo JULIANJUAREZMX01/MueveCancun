@@ -191,7 +191,7 @@
     {
       "id": "VAN_PLAYA_EXPRESS_001",
       "nombre": "Playa Express Cancún → Playa del Carmen",
-      "tarifa": 55,
+      "tarifa": 20,
       "tipo": "Van_Foranea",
       "frecuencia_minutos": 30,
       "horario": {
@@ -5822,7 +5822,7 @@
       "id": "R44_CENTRO_001",
       "nombre": "R-44 Centro - Plaza Las Américas",
       "tipo": "Bus_Urbano",
-      "tarifa": 13,
+      "tarifa": 10,
       "horario": {
         "inicio": "05:45 - 23:00"
       },
@@ -6022,7 +6022,7 @@
       "id": "R71_RESIDENCIAL_001",
       "nombre": "R-71 Polígono Sur - Centro",
       "tipo": "Bus_Urbano",
-      "tarifa": 13,
+      "tarifa": 10,
       "horario": {
         "inicio": "06:00 - 22:00"
       },
