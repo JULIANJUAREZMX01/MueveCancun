@@ -96,7 +96,7 @@ export const GET: APIRoute = async ({ url }) => {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
     });
-  } catch (_err) {
+  } catch {
     logger.warn('[API/Tracking] DB unavailable, returning stubs');
     const units = route_id ? stubUnits(route_id) : Object.keys(STUB_POSITIONS).flatMap(stubUnits);
     return new Response(JSON.stringify(units), {
