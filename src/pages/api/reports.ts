@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SqlRow = Record<string, any>;
+
 import type { APIRoute } from 'astro';
 import { neon } from '@neondatabase/serverless';
 import { logger } from '../../utils/logger';
@@ -29,7 +32,7 @@ async function ensureSchema() {
     )
   `;
   // Seed if empty
-  const [{ count }] = await sql`SELECT COUNT(*) AS count FROM community_reports` as any[];
+  const [{ count }] = await sql`SELECT COUNT(*) AS count FROM community_reports` as SqlRow[];
   if (Number(count) === 0) {
     await sql`
       INSERT INTO community_reports (type, route, message, author, votes, created_at) VALUES
@@ -45,7 +48,7 @@ async function ensureSchema() {
 
 // ── SEED fallback (when no DATABASE_URL in CI/dev) ───────────────────────────
 
-const SEED: any[] = [
+const SEED: SqlRow[] = [
   { id: 1, type: 'Precio',  route: 'Zona Hotelera', message: 'Los camiones de ZH cobran $12 fijos.', author: 'Comunidad', votes: 14, created_at: new Date(Date.now() - 7200000).toISOString() },
   { id: 2, type: 'Ruta',    route: 'R-10', message: 'R-10 no llega al aeropuerto — termina en Américas.', author: 'MÍSTICO_', votes: 31, created_at: new Date(Date.now() - 64800000).toISOString() },
   { id: 3, type: 'Demora',  route: 'R-6',  message: 'R-6 solo pasa hasta las 10pm.', author: 'Grecia P.', votes: 19, created_at: new Date(Date.now() - 172800000).toISOString() },
@@ -101,7 +104,7 @@ export const POST: APIRoute = async ({ request }) => {
         INSERT INTO community_reports (type, route, message, author)
         VALUES (${type}, ${route}, ${message}, ${author})
         RETURNING id, created_at::text AS created_at
-      ` as any[];
+      ` as SqlRow[];
 
       return new Response(JSON.stringify({ success: true, report_id: row.id }), {
         status: 201, headers: { 'Content-Type': 'application/json' }

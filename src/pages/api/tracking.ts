@@ -38,6 +38,9 @@ async function ensureSchema() {
 }
 
 // Realistic stub positions keyed by route_id
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SqlRow = Record<string, any>;
+
 const STUB_POSITIONS: Record<string, Array<{lat:number;lng:number;stop:string}>> = {
   'R1':  [{lat:21.1714,lng:-86.8219,stop:'El Crucero'},{lat:21.1588,lng:-86.8455,stop:'Av. Kabah'},{lat:21.1430,lng:-86.8460,stop:'Zona Hotelera'}],
   'R2':  [{lat:21.1619,lng:-86.8515,stop:'Av. Tulum Norte'},{lat:21.1714,lng:-86.8219,stop:'El Crucero'},{lat:21.1355,lng:-86.8412,stop:'Av. Kabah'}],
@@ -80,20 +83,20 @@ export const GET: APIRoute = async ({ url }) => {
       ? sql`SELECT *, updated_at::text AS updated_at FROM tracking_units WHERE route_id = ${route_id} AND updated_at > NOW() - INTERVAL '5 minutes' ORDER BY updated_at DESC`
       : sql`SELECT *, updated_at::text AS updated_at FROM tracking_units WHERE updated_at > NOW() - INTERVAL '5 minutes' ORDER BY route_id, updated_at DESC`;
 
-    const rows = await query as any[];
+    const rows = await query as SqlRow[];
 
     // Supplement with stubs for any route that has no live data
-    const liveRouteIds = new Set(rows.map((r: any) => r.route_id));
+    const liveRouteIds = new Set(rows.map((r: SqlRow) => r.route_id));
     const targetRoutes = route_id ? [route_id] : Object.keys(STUB_POSITIONS);
     const stubRows = targetRoutes
       .filter(rid => !liveRouteIds.has(rid))
-      .flatMap(rid => stubUnits(rid));
+      .flatMap((rid: string) => stubUnits(rid));
 
     return new Response(JSON.stringify([...rows, ...stubRows]), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
     });
-  } catch (err) {
+  } catch (_err) {
     logger.warn('[API/Tracking] DB unavailable, returning stubs');
     const units = route_id ? stubUnits(route_id) : Object.keys(STUB_POSITIONS).flatMap(stubUnits);
     return new Response(JSON.stringify(units), {

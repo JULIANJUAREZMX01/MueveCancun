@@ -1,4 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import es from '../i18n/es.json';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import en from '../i18n/en.json';
 
 export const languages = {
