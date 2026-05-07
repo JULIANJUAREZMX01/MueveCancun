@@ -3,6 +3,8 @@ members = [
     "route-calculator",
     "shared-types",
     "spatial-index",
+    "eta-engine",
+    "carbon-calculator",
 ]
 resolver = "2"
 
@@ -11,3 +13,6 @@ opt-level = "z"
 lto = true
 codegen-units = 1
 panic = "abort"
+
+[profile.dev]
+opt-level = 1  # Faster dev builds

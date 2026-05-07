@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
-const modules = ['route-calculator', 'spatial-index'];
+const modules = ['route-calculator', 'spatial-index', 'eta-engine', 'carbon-calculator'];
 
 const isCI = process.env.GITHUB_ACTIONS === 'true' || process.env.VERCEL === '1' || process.env.RENDER === 'true' || !!process.env.RENDER_SERVICE_ID;
 

@@ -1,0 +1,421 @@
+---
+/**
+ * JourneyPlanner — Super App Multimodal Planner
+ * 
+ * UI para planificar viajes con:
+ * - Selector de modo (Bus, Combi, ADO, MotorTaxi, Bici, Caminata)
+ * - Slider de presupuesto
+ * - Toggle de prioridad (tiempo / costo / eco)
+ * - Resultados con ETA, costo y CO2
+ */
+---
+
+<div id="journey-planner" class="jp-container" role="main" aria-label="Planificador de Viaje">
+  
+  <!-- Header -->
+  <div class="jp-header">
+    <span class="jp-logo">🗺️</span>
+    <h2 class="jp-title">Planificar Viaje</h2>
+    <span class="jp-badge">Super App</span>
+  </div>
+
+  <!-- Priority Tabs -->
+  <div class="jp-priority" role="tablist" aria-label="Prioridad del viaje">
+    <button class="jp-priority__tab jp-priority__tab--active" data-priority="time" role="tab" aria-selected="true">
+      ⚡ Más rápido
+    </button>
+    <button class="jp-priority__tab" data-priority="cost" role="tab" aria-selected="false">
+      💰 Más barato
+    </button>
+    <button class="jp-priority__tab" data-priority="eco" role="tab" aria-selected="false">
+      🌿 Más verde
+    </button>
+  </div>
+
+  <!-- Transport Mode Selector -->
+  <div class="jp-modes" role="group" aria-label="Modos de transporte">
+    <span class="jp-modes__label">Incluir:</span>
+    <div class="jp-modes__grid">
+      {[
+        { id: 'Bus', icon: '🚌', label: 'Bus' },
+        { id: 'Combi', icon: '🚐', label: 'Combi' },
+        { id: 'ADO', icon: '🚌', label: 'ADO' },
+        { id: 'MotorTaxi', icon: '🏍️', label: 'Moto' },
+        { id: 'Bicicleta', icon: '🚲', label: 'Bici' },
+        { id: 'Caminata', icon: '🚶', label: 'Pie' },
+      ].map(mode => (
+        <label class="jp-mode-chip" title={mode.label}>
+          <input type="checkbox" name="mode" value={mode.id} checked={['Bus','Combi'].includes(mode.id)} />
+          <span class="jp-mode-chip__content">
+            <span class="jp-mode-chip__icon">{mode.icon}</span>
+            <span class="jp-mode-chip__text">{mode.label}</span>
+          </span>
+        </label>
+      ))}
+    </div>
+  </div>
+
+  <!-- Budget Slider -->
+  <div class="jp-budget">
+    <label class="jp-budget__label">
+      <span>Presupuesto máximo:</span>
+      <strong id="budget-value">$50 MXN</strong>
+    </label>
+    <input type="range" id="budget-slider" min="0" max="200" value="50" step="5"
+           class="jp-budget__slider" aria-valuenow="50" aria-valuemin="0" aria-valuemax="200" />
+    <div class="jp-budget__marks">
+      <span>$0</span><span>$100</span><span>$200+</span>
+    </div>
+  </div>
+
+  <!-- Results Container -->
+  <div id="journey-results" class="jp-results" aria-live="polite" aria-label="Opciones de ruta">
+    <p class="jp-results__empty">Selecciona origen y destino en el mapa para ver opciones.</p>
+  </div>
+
+  <!-- Carbon Badge -->
+  <div id="carbon-summary" class="jp-carbon" hidden>
+    <div class="jp-carbon__bar">
+      <div class="jp-carbon__fill" style="width: 0%" id="eco-bar"></div>
+    </div>
+    <span id="eco-label" class="jp-carbon__label">🌿 Eco Score: --</span>
+  </div>
+
+</div>
+
+<style>
+.jp-container {
+  background: var(--color-surface, #1a1a2e);
+  border-radius: 16px;
+  padding: 1rem;
+  color: var(--color-text, #e8e8f0);
+  font-family: inherit;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.jp-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.jp-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+}
+
+.jp-badge {
+  font-size: 0.65rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* Priority tabs */
+.jp-priority {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 0.25rem;
+}
+
+.jp-priority__tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.jp-priority__tab--active {
+  background: rgba(255,255,255,0.12);
+  color: white;
+  font-weight: 600;
+}
+
+/* Transport mode chips */
+.jp-modes__label {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.jp-modes__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.jp-mode-chip input { display: none; }
+.jp-mode-chip__content {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.15);
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.15s;
+  user-select: none;
+}
+.jp-mode-chip input:checked + .jp-mode-chip__content {
+  background: rgba(102, 126, 234, 0.3);
+  border-color: #667eea;
+  color: white;
+}
+
+/* Budget slider */
+.jp-budget {
+  margin-bottom: 1rem;
+}
+.jp-budget__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  margin-bottom: 0.4rem;
+  color: rgba(255,255,255,0.7);
+}
+.jp-budget__label strong { color: #667eea; }
+.jp-budget__slider {
+  width: 100%;
+  accent-color: #667eea;
+}
+.jp-budget__marks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.3);
+  margin-top: 0.2rem;
+}
+
+/* Results */
+.jp-results {
+  min-height: 60px;
+}
+.jp-results__empty {
+  text-align: center;
+  color: rgba(255,255,255,0.3);
+  font-size: 0.8rem;
+  padding: 1rem 0;
+}
+.jp-result-card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.jp-result-card:hover { border-color: rgba(102,126,234,0.5); }
+.jp-result-card--best { border-color: rgba(102,126,234,0.7); }
+
+.jp-result-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+.jp-result-card__mode { font-weight: 600; font-size: 0.9rem; }
+.jp-result-card__time { font-size: 1rem; font-weight: 700; color: #667eea; }
+.jp-result-card__meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+}
+.jp-result-card__eco { color: #4ade80; }
+.jp-result-card__best-badge {
+  font-size: 0.6rem;
+  background: #667eea;
+  color: white;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+}
+
+/* Carbon bar */
+.jp-carbon {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.jp-carbon__bar {
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.4rem;
+}
+.jp-carbon__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #22d3ee);
+  transition: width 0.5s ease;
+  border-radius: 2px;
+}
+.jp-carbon__label {
+  font-size: 0.75rem;
+  color: #4ade80;
+}
+</style>
+
+<script>
+  // Journey Planner — client-side interactivity
+  
+  const planner = document.getElementById('journey-planner');
+  if (!planner) throw new Error('JourneyPlanner: container not found');
+
+  const budgetSlider = document.getElementById('budget-slider') as HTMLInputElement;
+  const budgetValue = document.getElementById('budget-value')!;
+  const resultsEl = document.getElementById('journey-results')!;
+  const carbonEl = document.getElementById('carbon-summary')!;
+  const ecoBar = document.getElementById('eco-bar') as HTMLElement;
+  const ecoLabel = document.getElementById('eco-label')!;
+
+  let currentPriority = 'time';
+  let currentBudget = 50;
+
+  // Budget slider
+  budgetSlider?.addEventListener('input', () => {
+    currentBudget = Number(budgetSlider.value);
+    budgetValue.textContent = currentBudget === 200 ? '$200+ MXN' : `$${currentBudget} MXN`;
+    triggerPlanIfReady();
+  });
+
+  // Priority tabs
+  document.querySelectorAll('.jp-priority__tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.jp-priority__tab').forEach(t => {
+        t.classList.remove('jp-priority__tab--active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('jp-priority__tab--active');
+      tab.setAttribute('aria-selected', 'true');
+      currentPriority = (tab as HTMLElement).dataset.priority ?? 'time';
+      triggerPlanIfReady();
+    });
+  });
+
+  // Mode checkboxes
+  document.querySelectorAll('.jp-mode-chip input').forEach(cb => {
+    cb.addEventListener('change', triggerPlanIfReady);
+  });
+
+  // Listen for map selection events (dispatched by InteractiveMap)
+  window.addEventListener('journey-request', ((e: CustomEvent) => {
+    const { origin, destination } = e.detail;
+    planJourney(origin, destination);
+  }) as EventListener);
+
+  function getSelectedModes(): string[] {
+    return Array.from(document.querySelectorAll<HTMLInputElement>('.jp-mode-chip input:checked'))
+      .map(cb => cb.value);
+  }
+
+  function triggerPlanIfReady() {
+    // Check if we have origin/destination stored
+    const origin = (window as Window & { _jpOrigin?: {lat: number; lng: number} })._jpOrigin;
+    const dest = (window as Window & { _jpDest?: {lat: number; lng: number} })._jpDest;
+    if (origin && dest) planJourney(origin, dest);
+  }
+
+  async function planJourney(origin: {lat: number; lng: number}, destination: {lat: number; lng: number}) {
+    // Store for re-triggers
+    (window as Window & { _jpOrigin?: typeof origin })._jpOrigin = origin;
+    (window as Window & { _jpDest?: typeof destination })._jpDest = destination;
+
+    resultsEl.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.4);font-size:0.8rem;padding:1rem">⏳ Calculando opciones...</p>';
+
+    try {
+      const res = await fetch('/api/v1/journey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          origin,
+          destination,
+          preferences: {
+            priority: currentPriority,
+            max_fare_mxn: currentBudget === 200 ? 9999 : currentBudget,
+            transport_modes: getSelectedModes(),
+          },
+          hour: new Date().getHours(),
+        }),
+      });
+
+      const data = await res.json();
+      renderResults(data.plans ?? []);
+    } catch {
+      resultsEl.innerHTML = '<p style="color:rgba(255,100,100,0.7);font-size:0.8rem;text-align:center;padding:1rem">❌ Error al calcular rutas</p>';
+    }
+  }
+
+  function renderResults(plans: JourneyPlan[]) {
+    if (!plans.length) {
+      resultsEl.innerHTML = '<p class="jp-results__empty">No hay opciones con los filtros seleccionados.</p>';
+      return;
+    }
+
+    const modeIcons: Record<string, string> = {
+      Bus: '🚌', Combi: '🚐', Van: '🚐', ADO: '🚌',
+      MotorTaxi: '🏍️', Bicicleta: '🚲', Caminata: '🚶',
+      Indriver: '🚗', Uber: '🚗',
+    };
+
+    resultsEl.innerHTML = plans.map((plan, i) => {
+      const mainMode = plan.legs[0]?.mode ?? 'Bus';
+      const icon = modeIcons[mainMode] ?? '🚌';
+      const isBest = i === 0;
+      const eco = plan.eco_score;
+      const ecoColor = eco > 70 ? '#4ade80' : eco > 40 ? '#fbbf24' : '#f87171';
+
+      return `
+        <div class="jp-result-card ${isBest ? 'jp-result-card--best' : ''}" data-plan-id="${plan.id}">
+          <div class="jp-result-card__header">
+            <span class="jp-result-card__mode">${icon} ${plan.legs.map(l => l.mode).join(' + ')}</span>
+            <span class="jp-result-card__time">${Math.round(plan.total_minutes)} min</span>
+            ${isBest ? `<span class="jp-result-card__best-badge">MEJOR ${currentPriority === 'time' ? '⚡' : currentPriority === 'cost' ? '💰' : '🌿'}</span>` : ''}
+          </div>
+          <div class="jp-result-card__meta">
+            <span>💵 $${plan.total_fare_mxn} MXN</span>
+            <span style="color:${ecoColor}">🌿 ${eco}pts eco</span>
+            <span>📏 ${plan.legs[0]?.distance_km?.toFixed(1) ?? '?'} km</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Update carbon bar with best plan
+    const best = plans[0];
+    if (best) {
+      const ecoScore = best.eco_score;
+      ecoBar.style.width = `${ecoScore}%`;
+      ecoLabel.textContent = `🌿 Eco Score: ${ecoScore}/100 · ${Math.round(best.total_co2_grams)}g CO₂`;
+      carbonEl.removeAttribute('hidden');
+    }
+  }
+
+  interface JourneyPlan {
+    id: string;
+    legs: Array<{mode: string; distance_km: number}>;
+    total_minutes: number;
+    total_fare_mxn: number;
+    total_co2_grams: number;
+    eco_score: number;
+    budget_score: number;
+    summary: string;
+  }
+</script>
