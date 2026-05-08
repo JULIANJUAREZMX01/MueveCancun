@@ -46,7 +46,6 @@ const isEs = Astro.url.pathname.includes("/es/");
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { escapeHtml, safeUrl, showToast } from "../utils/utils";
   import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
-  import { enrichJourneyLegs } from "../lib/initWasm";
 
   let map: any = null;
   let layerGroup: any = null;
