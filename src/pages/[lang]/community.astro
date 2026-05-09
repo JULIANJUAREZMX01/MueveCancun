@@ -1,118 +1,81 @@
 ---
-export const prerender = true;
-export function getStaticPaths() {
-  return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
-}
-import MainLayout from "../../layouts/MainLayout.astro";
-const { lang } = Astro.params;
-const isEs = lang === "es";
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getLangFromUrl } from '../../utils/i18n';
+const lang = getLangFromUrl(Astro.url);
+const isEs = lang === 'es';
 ---
-
-<MainLayout title={isEs ? "Comunidad — MueveCancún" : "Community — MueveCancún"}>
-  <div class="community-page">
+<MainLayout title={isEs ? "Foro Ciudadano" : "Community Forum"}>
+  <div class="community-root">
 
     <!-- Header -->
-    <div class="comm-header">
-      <div class="comm-header__text">
-        <div class="section-eyebrow">
-          <span class="live-pulse" aria-hidden="true"></span>
-          {isEs ? "En tiempo real" : "Real-time"}
+    <div class="community-header">
+      <div class="community-header__inner">
+        <h1 class="community-title">
+          {isEs ? '💬 Foro Ciudadano' : '💬 Community Forum'}
+        </h1>
+        <p class="community-desc">
+          {isEs ? 'Reportes, alertas y noticias del transporte en Cancún en tiempo real' : 'Real-time reports, alerts and transport news from Cancún'}
+        </p>
+        <div class="community-stats" id="community-stats">
+          <span class="stat-chip" id="stat-total">📊 Cargando...</span>
+          <span class="live-chip">
+            <span class="live-dot"></span>
+            {isEs ? 'En vivo' : 'Live'}
+          </span>
         </div>
-        <h1 class="page-title">{isEs ? "Reportes en vivo" : "Live reports"}</h1>
-        <p class="page-subtitle" id="reports-status">{isEs ? "Cargando..." : "Loading..."}</p>
       </div>
-      <button id="btn-new-report" class="btn btn-primary btn-sm" aria-label={isEs ? "Nuevo reporte" : "New report"}>
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        {isEs ? "Reportar" : "Report"}
-      </button>
-    </div>
-
-    <!-- Stats bar -->
-    <div class="stats-bar" id="live-stats" aria-live="polite" aria-label={isEs ? "Estadísticas en vivo" : "Live stats"}>
-      <div class="stat-pill"><span class="stat-pill__icon" aria-hidden="true">📡</span><span id="stat-total">—</span> {isEs ? "reportes" : "reports"}</div>
-      <div class="stat-pill"><span class="stat-pill__icon" aria-hidden="true">🏆</span><span id="stat-top">—</span></div>
-      <div class="stat-pill stat-pill--live"><span class="live-dot" aria-hidden="true"></span>{isEs ? "En vivo" : "Live"}</div>
     </div>
 
     <!-- Filtros -->
-    <div class="filter-bar" role="group" aria-label={isEs ? "Filtrar por tipo" : "Filter by type"}>
-      {[
-        { id:"all",     emoji:"📡", label: isEs ? "Todos"   : "All"     },
-        { id:"Tráfico", emoji:"🚗", label: isEs ? "Tráfico" : "Traffic" },
-        { id:"Demora",  emoji:"⏱",  label: isEs ? "Demora"  : "Delay"   },
-        { id:"Precio",  emoji:"💰", label: isEs ? "Precio"  : "Price"   },
-        { id:"Ruta",    emoji:"🗺️", label: isEs ? "Ruta"    : "Route"   },
-        { id:"Noticia", emoji:"📢", label: isEs ? "Noticia" : "News"    },
-      ].map(f => (
-        <button data-filter={f.id} class={`chip${f.id === "all" ? " chip--active" : ""}`} aria-pressed={f.id === "all" ? "true" : "false"}>
-          <span aria-hidden="true">{f.emoji}</span> {f.label}
-        </button>
-      ))}
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">{isEs ? 'Todo' : 'All'}</button>
+      <button class="filter-btn" data-filter="incident">⚠️ {isEs ? 'Incidentes' : 'Incidents'}</button>
+      <button class="filter-btn" data-filter="delay">⏰ {isEs ? 'Demoras' : 'Delays'}</button>
+      <button class="filter-btn" data-filter="tip">💡 {isEs ? 'Tips' : 'Tips'}</button>
     </div>
 
-    <!-- Feed -->
-    <div id="reports-feed" class="reports-feed" aria-live="polite" aria-atomic="false" aria-label={isEs ? "Lista de reportes" : "Reports feed"}>
-      {[0,1,2].map(() => (
-        <div class="report-skeleton" aria-hidden="true">
-          <div class="skeleton skeleton--avatar"></div>
-          <div class="skeleton-body">
-            <div class="skeleton skeleton--line" style="width:55%"></div>
-            <div class="skeleton skeleton--line" style="width:80%"></div>
-          </div>
-        </div>
-      ))}
-    </div>
-
-    <div id="reports-empty" class="reports-empty" hidden aria-live="polite">
-      <span aria-hidden="true" class="reports-empty__icon">🚌</span>
-      <p class="reports-empty__title">{isEs ? "Sin reportes en este filtro" : "No reports for this filter"}</p>
-      <p class="reports-empty__sub">{isEs ? "Tus reportes ayudan a miles de usuarios. Sé el primero en informar." : "Your reports help thousands of users. Be the first to inform."}</p>
-      <button id="btn-first-report" class="btn btn-primary btn-sm" style="margin-top:0.75rem">
-        {isEs ? "Crear reporte" : "Create report"}
+    <!-- New report button -->
+    <div class="report-fab-container">
+      <button id="open-report" class="report-fab">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        {isEs ? 'Nuevo reporte' : 'New report'}
       </button>
     </div>
 
-    <!-- Form modal -->
-    <div id="report-modal" class="report-modal" hidden role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
-      <div class="report-modal__backdrop" id="modal-backdrop"></div>
-      <div class="report-modal__panel">
-        <div class="report-modal__header">
-          <h2 class="report-modal__title" id="report-modal-title">
-            {isEs ? "Nuevo reporte" : "New report"}
-          </h2>
-          <button id="modal-close" class="report-modal__close" aria-label={isEs ? "Cerrar" : "Close"}>
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-          </button>
+    <!-- Posts feed -->
+    <div id="posts-feed" class="posts-feed">
+      {Array.from({length: 3}).map(() => (
+        <div class="post-skeleton">
+          <div class="sk-avatar"></div>
+          <div class="sk-lines">
+            <div class="sk-line sk-line--wide"></div>
+            <div class="sk-line sk-line--narrow"></div>
+          </div>
         </div>
-        <form id="report-form" class="report-form" novalidate>
-          <div class="form-group">
-            <label class="form-label" for="r-type">{isEs ? "¿Qué sucede?" : "What's happening?"}</label>
-            <select id="r-type" name="tipo" required class="form-select">
-              <option value="" disabled selected>{isEs ? "Selecciona tipo..." : "Select type..."}</option>
-              <option value="Tráfico">🚗 {isEs ? "Tráfico" : "Traffic"}</option>
-              <option value="Demora">⏱ {isEs ? "Demora" : "Delay"}</option>
-              <option value="Precio">💰 {isEs ? "Precio incorrecto" : "Wrong price"}</option>
-              <option value="Ruta">🗺️ {isEs ? "Ruta incorrecta" : "Wrong route"}</option>
-              <option value="Noticia">📢 {isEs ? "Noticia" : "News"}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="r-route">{isEs ? "Ruta afectada (opcional)" : "Affected route (optional)"}</label>
-            <input id="r-route" name="ruta" type="text" placeholder={isEs ? "Ej: R-1, R-27, Combi..." : "e.g. R-1, R-27, Combi..."} class="form-input" />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="r-desc">{isEs ? "Descripción" : "Description"} <span class="form-required">*</span></label>
-            <textarea id="r-desc" name="descripcion" rows="3" minlength="10" maxlength="500" required class="form-textarea" placeholder={isEs ? "Sé específico — ayuda a todos." : "Be specific — it helps everyone."}></textarea>
-            <div class="form-char"><span id="r-chars">0</span>/500</div>
-          </div>
-          <div id="form-feedback" class="form-feedback" hidden></div>
-          <div class="report-form__actions">
-            <button type="button" id="modal-cancel" class="btn btn-ghost btn-sm">{isEs ? "Cancelar" : "Cancel"}</button>
-            <button type="submit" id="r-submit" class="btn btn-primary btn-sm">
-              <span id="r-submit-text">{isEs ? "Enviar reporte" : "Send report"}</span>
-              <span id="r-spinner" class="spinner" hidden aria-hidden="true"></span>
-            </button>
-          </div>
+      ))}
+    </div>
+
+    <!-- New report modal -->
+    <div id="report-modal" class="modal-overlay" hidden>
+      <div class="modal-card">
+        <button id="close-report-modal" class="modal-close">✕</button>
+        <h2 class="modal-title">{isEs ? 'Nuevo reporte' : 'New report'}</h2>
+        <form id="report-form">
+          <select name="tipo" class="form-select" required>
+            <option value="">{isEs ? 'Tipo de reporte...' : 'Report type...'}</option>
+            <option value="incident">{isEs ? '⚠️ Incidente' : '⚠️ Incident'}</option>
+            <option value="delay">{isEs ? '⏰ Demora' : '⏰ Delay'}</option>
+            <option value="tip">{isEs ? '💡 Tip útil' : '💡 Useful tip'}</option>
+            <option value="overcrowded">{isEs ? '🔴 Bus lleno' : '🔴 Overcrowded'}</option>
+            <option value="positive">{isEs ? '✅ Reporte positivo' : '✅ Positive report'}</option>
+          </select>
+          <input type="text" name="ruta" class="form-input" placeholder={isEs ? 'Ruta afectada (ej: R-1)' : 'Affected route (e.g. R-1)'}/>
+          <textarea name="body" class="form-textarea" minlength="10" maxlength="280" required
+            placeholder={isEs ? 'Describe lo que está pasando...' : 'Describe what is happening...'}></textarea>
+          <div id="report-feedback" class="form-feedback" hidden></div>
+          <button type="submit" class="form-submit">{isEs ? 'Publicar' : 'Post'}</button>
         </form>
       </div>
     </div>
@@ -121,308 +84,195 @@ const isEs = lang === "es";
 </MainLayout>
 
 <style>
-  /* ═══ COMMUNITY PAGE ═══ */
-  .community-page {
-    max-width: 48rem; margin-inline: auto;
-    padding: 0.75rem 1rem 6rem;
-    display: flex; flex-direction: column; gap: 1.25rem;
-  }
+.community-root { min-height: calc(100dvh - 64px); background: var(--surface-bg); }
 
-  /* Header */
-  .comm-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
-  .section-eyebrow {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    font-family: var(--font-display); font-size: 0.68rem; font-weight: 800;
-    color: var(--jungle); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
-  }
-  .live-pulse {
-    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-    background: var(--jungle); animation: pulse-soft 2s ease-in-out infinite;
-  }
-  .page-title { font-family: var(--font-display); font-size: clamp(1.6rem,5vw,2.4rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; color: var(--text-primary); margin: 0.2rem 0 0; }
-  .page-subtitle { font-size: 0.8rem; color: var(--text-tertiary); margin: 0.2rem 0 0; }
+.community-header {
+  background: var(--gradient-deep); padding: 1.25rem 1rem 1rem; position: relative; overflow: hidden;
+}
+.community-header::before {
+  content: ''; position: absolute; right: -30px; bottom: -30px;
+  width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,0.04);
+}
+.community-header__inner { position: relative; z-index: 1; }
+.community-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: white; margin-bottom: 0.35rem; }
+.community-desc { font-size: 0.78rem; color: rgba(255,255,255,0.7); margin-bottom: 0.75rem; line-height: 1.5; }
+.community-stats { display: flex; align-items: center; gap: 0.5rem; }
+.stat-chip { background: rgba(255,255,255,0.12); color: white; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 99px; font-weight: 600; }
+.live-chip { display: flex; align-items: center; gap: 0.3rem; background: var(--danger); color: white; font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.05em; }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: white; animation: pulse-w 1.2s infinite; }
+@keyframes pulse-w { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(1.4); } }
 
-  /* Botones */
-  .btn { display: inline-flex; align-items: center; gap: 0.4rem; border-radius: var(--r-lg); font-family: var(--font-display); font-weight: 700; cursor: pointer; text-decoration: none; transition: all var(--t-fast) var(--ease-back); border: 1.5px solid transparent; -webkit-tap-highlight-color: transparent; }
-  .btn-primary { background: var(--gradient-primary); color: white; border-color: transparent; padding: 0.55rem 1rem; font-size: 0.82rem; box-shadow: var(--shadow-teal); }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-teal-lg); }
-  .btn-primary:active { transform: scale(0.96); }
-  .btn-ghost { background: var(--surface-card); border-color: var(--border-light); color: var(--text-secondary); padding: 0.45rem 0.875rem; font-size: 0.82rem; }
-  .btn-ghost:hover { background: var(--sea-xpale); border-color: var(--sea-bright); color: var(--sea-teal); transform: scale(1.04); }
-  .btn-sm { min-height: 36px; }
-  .w-4 { width: 1rem; height: 1rem; }
+/* Filtros */
+.filter-bar { display: flex; gap: 0.4rem; padding: 0.75rem 1rem; overflow-x: auto; scrollbar-width: none; background: var(--surface-bg); border-bottom: 1px solid var(--border-light); }
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-btn { flex-shrink: 0; padding: 0.35rem 0.75rem; border-radius: 99px; border: 1.5px solid var(--border-medium); background: var(--surface-card); color: var(--text-secondary); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.filter-btn.active { background: var(--sea-teal); color: white; border-color: var(--sea-teal); }
 
-  /* Stats bar */
-  .stats-bar {
-    display: flex; align-items: center; gap: 0.625rem;
-    overflow-x: auto; scrollbar-width: none; padding-bottom: 0.125rem;
-  }
-  .stats-bar::-webkit-scrollbar { display: none; }
-  .stat-pill {
-    display: inline-flex; align-items: center; gap: 0.375rem;
-    padding: 0.4rem 0.875rem; border-radius: var(--r-full);
-    background: var(--surface-card); border: 1px solid var(--border-light);
-    font-family: var(--font-display); font-size: 0.78rem; font-weight: 700;
-    color: var(--text-secondary); white-space: nowrap; flex-shrink: 0;
-  }
-  .stat-pill__icon { font-size: 0.9rem; }
-  .stat-pill--live { color: var(--jungle); background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.2); }
-  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--jungle); animation: pulse-soft 2s infinite; }
+/* Report FAB */
+.report-fab-container { padding: 0.75rem 1rem 0.25rem; }
+.report-fab { display: flex; align-items: center; gap: 0.5rem; width: 100%; padding: 0.65rem 1rem; background: var(--gradient-primary); color: white; border: none; border-radius: 14px; font-weight: 700; font-size: 0.88rem; cursor: pointer; justify-content: center; box-shadow: 0 4px 16px rgba(13,148,136,0.3); transition: all 0.2s; }
+.report-fab:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,148,136,0.4); }
+.report-fab:active { transform: translateY(0); }
 
-  /* Filter bar */
-  .filter-bar {
-    display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 0.125rem;
-  }
-  .filter-bar::-webkit-scrollbar { display: none; }
-  .chip, .filter-chip {
-    display: inline-flex; align-items: center; gap: 0.3rem;
-    padding: 0.4rem 0.875rem; border-radius: var(--r-full);
-    background: var(--surface-card); border: 1.5px solid var(--border-light);
-    font-family: var(--font-display); font-size: 0.78rem; font-weight: 700;
-    color: var(--text-secondary); white-space: nowrap; cursor: pointer;
-    transition: all var(--t-fast) var(--ease-back); flex-shrink: 0;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .chip:hover, .filter-chip:hover { background: var(--sea-xpale); border-color: var(--sea-bright); color: var(--sea-teal); transform: scale(1.05); }
-  .chip.chip--active, .filter-chip.active { background: var(--gradient-primary); border-color: transparent; color: white; box-shadow: var(--shadow-teal); }
+/* Feed */
+.posts-feed { padding: 0.75rem 1rem 5rem; display: flex; flex-direction: column; gap: 0.75rem; }
 
-  /* Report cards */
-  .reports-list { display: flex; flex-direction: column; gap: 0.875rem; }
+/* Skeleton */
+.post-skeleton { display: flex; gap: 0.75rem; background: var(--surface-card); border-radius: 16px; padding: 0.9rem; border: 1px solid var(--border-light); }
+.sk-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--border-light); flex-shrink: 0; animation: shimmer 1.5s infinite; }
+.sk-lines { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; padding-top: 0.25rem; }
+.sk-line { height: 10px; border-radius: 99px; background: var(--border-light); animation: shimmer 1.5s infinite; }
+.sk-line--wide { width: 80%; }
+.sk-line--narrow { width: 50%; }
+@keyframes shimmer { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
 
-  .report-card {
-    background: var(--surface-card); border: 1.5px solid var(--border-light);
-    border-radius: var(--r-xl); padding: 1.1rem 1.25rem;
-    transition: all var(--t-base) var(--ease-spring);
-    animation: fade-up 0.4s var(--ease-spring) both;
-    position: relative; overflow: hidden;
-  }
-  .report-card:hover { border-color: var(--border-medium); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+/* Post card */
+.post-card { background: var(--surface-card); border-radius: 16px; padding: 0.9rem; border: 1px solid var(--border-light); transition: box-shadow 0.2s; }
+.post-card:hover { box-shadow: 0 4px 16px rgba(0,78,95,0.08); }
+.post-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+.post-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.post-meta { flex: 1; }
+.post-author { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); }
+.post-time { font-size: 0.65rem; color: var(--text-muted); }
+.post-type-badge { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 99px; font-weight: 700; }
+.type-incident { background: var(--danger-light); color: var(--danger); }
+.type-delay { background: var(--sand); color: var(--sand-dark); }
+.type-tip { background: var(--jungle-light); color: var(--jungle); }
+.type-overcrowded { background: var(--danger-light); color: var(--danger); }
+.type-positive { background: var(--jungle-light); color: var(--jungle); }
+.post-route { display: inline-block; background: var(--sea-pale); color: var(--sea-teal); font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 99px; margin-bottom: 0.4rem; }
+.post-body { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
 
-  .report-card__header { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; }
-  .report-card__emoji {
-    width: 44px; height: 44px; border-radius: var(--r-md); flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
-    background: var(--sea-xpale);
-  }
-  .report-card__meta { flex: 1; min-width: 0; }
-  .report-card__type { font-family: var(--font-display); font-size: 0.68rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sea-teal); margin-bottom: 0.2rem; }
-  .report-card__title { font-family: var(--font-display); font-size: 0.95rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; line-height: 1.2; }
-  .report-card__time { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
-
-  .report-card__body { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem; }
-
-  .report-card__footer { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-  .report-tag {
-    display: inline-flex; align-items: center; gap: 0.25rem;
-    padding: 0.2rem 0.55rem; border-radius: var(--r-full);
-    font-family: var(--font-display); font-size: 0.62rem; font-weight: 800;
-    background: var(--sea-xpale); color: var(--sea-teal); border: 1px solid var(--border-light);
-  }
-  .report-votes { margin-left: auto; display: flex; align-items: center; gap: 0.375rem; }
-  .vote-btn {
-    display: flex; align-items: center; gap: 0.25rem;
-    padding: 0.3rem 0.625rem; border-radius: var(--r-full);
-    border: 1px solid var(--border-light); background: var(--surface-card);
-    font-family: var(--font-display); font-size: 0.72rem; font-weight: 800; cursor: pointer;
-    color: var(--text-tertiary); transition: all var(--t-fast) var(--ease-back);
-    -webkit-tap-highlight-color: transparent;
-  }
-  .vote-btn:hover { border-color: var(--sea-bright); color: var(--sea-teal); background: var(--sea-xpale); transform: scale(1.08); }
-  .vote-btn.voted { background: var(--sea-xpale); color: var(--sea-teal); border-color: var(--sea-bright); }
-
-  /* Empty */
-  .empty-state { text-align: center; padding: 4rem 1.5rem; }
-  .empty-state__emoji { font-size: 3.5rem; display: block; margin-bottom: 1rem; animation: float 3s ease-in-out infinite; }
-  .empty-state__title { font-family: var(--font-display); font-size: 1rem; font-weight: 900; color: var(--text-primary); margin-bottom: 0.5rem; }
-  .empty-state__text { font-size: 0.82rem; color: var(--text-tertiary); }
-
-  /* New report modal */
-  .new-report-modal {
-    position: fixed; inset: 0; z-index: 200;
-    display: flex; align-items: flex-end;
-    background: var(--surface-overlay);
-    backdrop-filter: blur(4px);
-    animation: fade-in 0.2s var(--ease-out) both;
-  }
-  .new-report-modal.hidden { display: none; }
-  .new-report-modal__card {
-    width: 100%; background: var(--surface-card);
-    border-radius: var(--r-2xl) var(--r-2xl) 0 0;
-    padding: 1.5rem 1.25rem 2rem;
-    animation: slide-up 0.35s var(--ease-spring) both;
-    max-height: 90dvh; overflow-y: auto;
-  }
-  .modal-handle { width: 40px; height: 4px; background: var(--border-medium); border-radius: var(--r-full); margin: 0 auto 1.25rem; opacity: 0.6; }
-  .modal-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; margin-bottom: 1.25rem; letter-spacing: -0.02em; }
-  .report-types-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.625rem; margin-bottom: 1.25rem; }
-  .report-type-btn {
-    display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
-    padding: 0.875rem 0.5rem; border-radius: var(--r-xl);
-    border: 1.5px solid var(--border-light); background: var(--surface-card);
-    font-family: var(--font-display); font-size: 0.68rem; font-weight: 800;
-    cursor: pointer; color: var(--text-secondary); transition: all var(--t-fast) var(--ease-back);
-    text-transform: uppercase; letter-spacing: 0.06em;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .report-type-btn:hover { background: var(--sea-xpale); border-color: var(--sea-bright); color: var(--sea-teal); transform: scale(1.05); }
-  .report-type-btn.selected { background: var(--gradient-primary); border-color: transparent; color: white; box-shadow: var(--shadow-teal); }
-  .report-type-btn .emoji { font-size: 1.5rem; }
-  .form-textarea {
-    width: 100%; height: 100px; resize: none; padding: 0.875rem 1rem;
-    background: var(--surface-card); border: 1.5px solid var(--border-light);
-    border-radius: var(--r-lg); font-family: var(--font-sans); font-size: 0.9rem;
-    color: var(--text-primary); outline: none;
-    transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
-  }
-  .form-textarea:focus { border-color: var(--sea-bright); box-shadow: 0 0 0 4px rgba(20,184,166,0.15); }
-  .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
-  .btn-block { flex: 1; justify-content: center; }
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: var(--surface-overlay); z-index: 1000; display: flex; align-items: flex-end; padding-bottom: env(safe-area-inset-bottom,0); }
+.modal-card { width: 100%; max-height: 85vh; overflow-y: auto; background: var(--surface-card); border-radius: 24px 24px 0 0; padding: 1.25rem 1rem 2rem; position: relative; }
+.modal-close { position: absolute; top: 0.75rem; right: 0.75rem; background: var(--surface-inset); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; }
+.modal-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1rem; }
+.form-select, .form-input, .form-textarea { width: 100%; padding: 0.65rem 0.75rem; border: 1.5px solid var(--border-medium); border-radius: 12px; background: var(--surface-bg); color: var(--text-primary); font-size: 0.85rem; margin-bottom: 0.6rem; }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-select:focus, .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--sea-teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+.form-submit { width: 100%; padding: 0.75rem; background: var(--gradient-primary); color: white; border: none; border-radius: 14px; font-weight: 700; font-size: 0.9rem; cursor: pointer; margin-top: 0.25rem; }
+.form-feedback { padding: 0.5rem 0.75rem; border-radius: 10px; font-size: 0.8rem; margin-bottom: 0.5rem; }
+.form-feedback.success { background: var(--jungle-light); color: var(--jungle); }
+.form-feedback.error { background: var(--danger-light); color: var(--danger); }
 </style>
 
 <script>
-  const API = "/api/reports";
-  const feed    = document.getElementById("reports-feed")!;
-  const empty   = document.getElementById("reports-empty")!;
-  const statusEl = document.getElementById("reports-status")!;
-  const statTotal = document.getElementById("stat-total")!;
-  const statTop   = document.getElementById("stat-top")!;
-  const modal   = document.getElementById("report-modal")!;
-  const form    = document.getElementById("report-form") as HTMLFormElement;
-  const textarea = document.getElementById("r-desc") as HTMLTextAreaElement;
-  const charEl  = document.getElementById("r-chars")!;
-  const feedback = document.getElementById("form-feedback")!;
-  const spinner  = document.getElementById("r-spinner")!;
-  const submitBtn = document.getElementById("r-submit") as HTMLButtonElement;
-  const submitTxt = document.getElementById("r-submit-text")!;
+const TYPE_ICONS: Record<string,string> = {
+  incident:'⚠️', delay:'⏰', tip:'💡', overcrowded:'🔴', positive:'✅', default:'📢'
+};
+const AVATARS = ['🚌','🌴','🏖️','🦜','🌊','🏝️','🐠','🦋','🌺','🎯'];
 
-  let allReports: any[] = [];
-  let activeFilter = "all";
+let currentFilter = 'all';
+let allPosts: any[] = [];
 
-  const typeEmoji: Record<string,string> = { Tráfico:"🚗", Demora:"⏱", Precio:"💰", Ruta:"🗺️", Noticia:"📢" };
+async function loadPosts() {
+  try {
+    const res = await fetch('/api/reports?limit=30');
+    if (!res.ok) throw new Error('fetch failed');
+    allPosts = await res.json();
+    renderPosts();
+    
+    const total = Array.isArray(allPosts) ? allPosts.length : 0;
+    const statEl = document.getElementById('stat-total');
+    if (statEl) statEl.textContent = `📊 ${total} reportes`;
+  } catch (e) {
+    document.getElementById('posts-feed')!.innerHTML =
+      `<div style="text-align:center;padding:2rem;color:var(--text-muted)">Sin reportes aún. ¡Sé el primero!</div>`;
+  }
+}
 
-  function esc(s: string) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
-  function ago(iso: string) {
-    const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-    if (m < 1) return "Ahora"; if (m < 60) return m + "m"; if (m < 1440) return Math.floor(m/60) + "h"; return Math.floor(m/1440) + "d";
+function renderPosts() {
+  const feed = document.getElementById('posts-feed')!;
+  let posts = Array.isArray(allPosts) ? allPosts : [];
+  if (currentFilter !== 'all') posts = posts.filter(p => p.tipo === currentFilter || p.type === currentFilter);
+  
+  if (!posts.length) {
+    feed.innerHTML = `<div style="text-align:center;padding:3rem 1rem;color:var(--text-muted)">
+      <div style="font-size:2rem;margin-bottom:0.5rem">🔍</div>
+      <div>Sin reportes en esta categoría</div>
+    </div>`;
+    return;
   }
 
-  function renderFeed() {
-    feed.querySelectorAll(".report-skeleton,.report-card").forEach(el => el.remove());
-    const filtered = activeFilter === "all" ? allReports : allReports.filter(r => (r.type||r.tipo) === activeFilter);
+  feed.innerHTML = posts.map((p: any, i: number) => {
+    const tipo = p.tipo || p.type || 'default';
+    const avatar = AVATARS[i % AVATARS.length];
+    const icon = TYPE_ICONS[tipo] || '📢';
+    const typeClass = `type-${tipo}`;
+    const route = p.ruta || p.route || p.labels?.join(', ') || '';
+    const body = p.body || p.descripcion || p.description || p.title || '';
+    const created = p.created_at || p.createdAt;
+    const timeAgo = created ? relTime(new Date(created)) : '';
+    
+    return `<div class="post-card">
+      <div class="post-header">
+        <div class="post-avatar" style="background:var(--sea-xpale)">${avatar}</div>
+        <div class="post-meta">
+          <div class="post-author">${p.user?.login || p.author || 'Ciudadano'}</div>
+          <div class="post-time">${timeAgo}</div>
+        </div>
+        <span class="post-type-badge ${typeClass}">${icon} ${tipo}</span>
+      </div>
+      ${route ? `<div class="post-route">Ruta ${route}</div>` : ''}
+      <div class="post-body">${body.slice(0, 200)}${body.length > 200 ? '...' : ''}</div>
+    </div>`;
+  }).join('');
+}
 
-    empty.hidden = filtered.length > 0;
-    statusEl.textContent = `${filtered.length} reporte${filtered.length !== 1 ? "s" : ""}`;
-    statTotal.textContent = String(allReports.length);
+function relTime(d: Date): string {
+  const s = Math.round((Date.now() - d.getTime()) / 1000);
+  if (s < 60) return `${s}s`;
+  if (s < 3600) return `${Math.floor(s/60)}min`;
+  if (s < 86400) return `${Math.floor(s/3600)}h`;
+  return `${Math.floor(s/86400)}d`;
+}
 
-    // Top type
-    const counts: Record<string,number> = {};
-    allReports.forEach(r => { const t = r.type||r.tipo||"?"; counts[t] = (counts[t]||0)+1; });
-    const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
-    statTop.textContent = top ? `${typeEmoji[top[0]]||"📢"} ${top[0]}` : "—";
-
-    filtered.forEach((r, i) => {
-      const card = document.createElement("article");
-      card.className = "report-card";
-      card.style.animationDelay = `${i*50}ms`;
-      const init = (r.author||r.autor||"?")[0].toUpperCase();
-      const type = r.type||r.tipo||"General";
-      const emoji = typeEmoji[type] || "📢";
-      const votes = r.votes||r.votos||0;
-      card.innerHTML = `
-        <div class="rc-avatar" aria-hidden="true">${esc(init)}</div>
-        <div class="rc-body">
-          <div class="rc-message">${emoji} ${esc(r.message||r.mensaje||r.title||"—")}</div>
-          <div class="rc-meta">
-            <span class="rc-type">${esc(type)}</span>
-            ${r.route||r.ruta ? `<span class="rc-route">🚌 ${esc(r.route||r.ruta)}</span>` : ""}
-            <span class="rc-ago">${ago(r.created_at||r.fecha||new Date().toISOString())}</span>
-            <button class="rc-votes" data-id="${esc(r.id||"")}" aria-label="Votar útil">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
-              <span>${esc(String(votes))}</span>
-            </button>
-          </div>
-        </div>`;
-      card.querySelector(".rc-votes")?.addEventListener("click", e => {
-        const btn = e.currentTarget as HTMLButtonElement;
-        if (btn.classList.contains("voted")) return;
-        btn.classList.add("voted");
-        const span = btn.querySelector("span")!;
-        span.textContent = String(parseInt(span.textContent||"0")+1);
-      });
-      feed.appendChild(card);
-    });
-  }
-
-  async function loadReports() {
-    try {
-      const res = await fetch(API);
-      if (res.ok) { allReports = await res.json(); }
-    } catch { allReports = []; }
-    renderFeed();
-  }
+document.addEventListener('astro:page-load', () => {
+  loadPosts();
+  setInterval(loadPosts, 30000);
 
   // Filtros
-  document.querySelectorAll<HTMLButtonElement>(".filter-bar .chip").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".filter-bar .chip").forEach(b => { b.classList.remove("chip--active"); b.setAttribute("aria-pressed","false"); });
-      btn.classList.add("chip--active"); btn.setAttribute("aria-pressed","true");
-      activeFilter = btn.dataset.filter || "all";
-      renderFeed();
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = (btn as HTMLElement).dataset.filter || 'all';
+      renderPosts();
     });
   });
 
   // Modal
-  function openModal() { modal.hidden = false; document.body.style.overflow = "hidden"; feedback.hidden = true; form.reset(); charEl.textContent = "0"; }
-  function closeModal() { modal.hidden = true; document.body.style.overflow = ""; }
-
-  document.getElementById("btn-new-report")?.addEventListener("click", openModal);
-  document.getElementById("btn-first-report")?.addEventListener("click", openModal);
-  document.getElementById("modal-close")?.addEventListener("click", closeModal);
-  document.getElementById("modal-cancel")?.addEventListener("click", closeModal);
-  document.getElementById("modal-backdrop")?.addEventListener("click", closeModal);
-  textarea?.addEventListener("input", () => { charEl.textContent = String(textarea.value.length); });
+  const modal = document.getElementById('report-modal')!;
+  document.getElementById('open-report')?.addEventListener('click', () => { modal.hidden = false; });
+  document.getElementById('close-report-modal')?.addEventListener('click', () => { modal.hidden = true; });
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
 
   // Submit
-  form?.addEventListener("submit", async e => {
+  document.getElementById('report-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    submitBtn.disabled = true; spinner.hidden = false; submitTxt.textContent = "Enviando...";
-    feedback.hidden = true;
-    const data = { type: (form as any)["tipo"].value, route: (form as any)["ruta"].value, message: (form as any)["descripcion"].value, author: "Ciudadano" };
+    const form = e.target as HTMLFormElement;
+    const fd = new FormData(form);
+    const fb = document.getElementById('report-feedback')!;
+
     try {
-      const res = await fetch(API, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(data) });
+      const res = await fetch('/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo: fd.get('tipo'), ruta: fd.get('ruta'), body: fd.get('body')
+        })
+      });
       if (res.ok) {
-        feedback.className = "form-feedback success"; feedback.textContent = "✅ Reporte enviado. ¡Gracias!"; feedback.hidden = false;
-        form.reset(); charEl.textContent = "0";
-        setTimeout(() => { closeModal(); loadReports(); }, 1500);
-      } else { throw new Error("Error"); }
+        fb.hidden = false; fb.className = 'form-feedback success';
+        fb.textContent = '✅ ¡Reporte publicado! Gracias por contribuir';
+        form.reset();
+        setTimeout(() => { modal.hidden = true; fb.hidden = true; loadPosts(); }, 2000);
+      } else throw new Error('Failed');
     } catch {
-      feedback.className = "form-feedback error"; feedback.textContent = "❌ Error al enviar. Intenta de nuevo."; feedback.hidden = false;
-    } finally {
-      submitBtn.disabled = false; spinner.hidden = true;
-      submitTxt.textContent = document.documentElement.lang === "en" ? "Send report" : "Enviar reporte";
+      fb.hidden = false; fb.className = 'form-feedback error';
+      fb.textContent = '❌ Error al publicar. Intenta de nuevo.';
     }
   });
-
-  loadReports();
-
-  // Refresh on sync complete (offline reports uploaded)
-  window.addEventListener('SYNC_COMPLETE', () => { setTimeout(loadReports, 500); });
-
-  // Guarded interval — cleared on navigation to prevent accumulation
-  let _communityInterval: ReturnType<typeof setInterval> | null = null;
-  function _startInterval() {
-    if (_communityInterval) clearInterval(_communityInterval);
-    _communityInterval = setInterval(loadReports, 30000);
-  }
-  _startInterval();
-  document.addEventListener('astro:before-swap', () => {
-    if (_communityInterval) { clearInterval(_communityInterval); _communityInterval = null; }
-  }, { once: true });
-
-  let __loadReports_listener: (() => void) | null = null;
-  __loadReports_listener = loadReports;
-  document.addEventListener('astro:page-load', __loadReports_listener);
-  document.addEventListener('astro:before-swap', () => {
-    if (__loadReports_listener) { document.removeEventListener('astro:page-load', __loadReports_listener!); __loadReports_listener = null; }
-  }, { once: true });
+});
 </script>
