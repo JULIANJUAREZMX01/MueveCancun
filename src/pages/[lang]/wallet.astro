@@ -205,11 +205,11 @@ const quickAmounts = [20, 50, 100, 200];
 </style>
 
 <script>
-import { getBalance, addBalance, deductBalance, getTransactions } from '../../utils/db';
+import { getWalletBalance, updateWalletBalance } from '../../utils/db';
 
 async function render() {
   try {
-    const balance = await getBalance();
+    const balance = await getWalletBalance();
     const balEl = document.getElementById('card-balance-display');
     if (balEl) balEl.textContent = `$${balance.toFixed(2)}`;
     const last4 = document.getElementById('card-last4');
@@ -285,7 +285,10 @@ document.addEventListener('astro:page-load', async () => {
     const amt = parseFloat(input.value) || 0;
     if (amt < 5) { showToast('❌ Mínimo $5.00'); return; }
     try {
-      await addBalance(amt, 'Recarga manual');
+      await updateWalletBalance(amt);
+      const txs = JSON.parse(localStorage.getItem('mc_transactions') || '[]');
+      txs.unshift({ amount: amt, description: 'Recarga manual', date: new Date().toISOString() });
+      localStorage.setItem('mc_transactions', JSON.stringify(txs.slice(0, 50)));
       await render();
       showToast(`✅ +$${amt.toFixed(2)} agregados`);
       (document.getElementById('recharge-panel') as HTMLElement).hidden = true;
@@ -295,9 +298,9 @@ document.addEventListener('astro:page-load', async () => {
   // Confirm pay
   document.getElementById('confirm-pay')?.addEventListener('click', async () => {
     try {
-      const bal = await getBalance();
+      const bal = await getWalletBalance();
       if (bal < 12) { showToast('❌ Saldo insuficiente'); return; }
-      await deductBalance(12, 'Viaje en bus');
+      await updateWalletBalance(-12);
       localStorage.setItem('mc_total_trips', String(parseInt(localStorage.getItem('mc_total_trips') || '0') + 1));
       await render();
       showToast('✅ Pago de $12.00 confirmado 🚌');
@@ -308,7 +311,7 @@ document.addEventListener('astro:page-load', async () => {
 
 async function loadHistory() {
   try {
-    const txs = await getTransactions();
+    const txs: any[] = JSON.parse(localStorage.getItem('mc_transactions') || '[]');
     const list = document.getElementById('tx-list')!;
     if (!txs?.length) {
       list.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--text-muted)">Sin transacciones aún</div>`;
