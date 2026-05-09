@@ -11,6 +11,8 @@ import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import NexusAgentUI from '../components/agent/NexusAgentUI.astro';
 import { ClientRouter } from 'astro:transitions';
+import { Analytics } from '@vercel/analytics/astro';
+import { SpeedInsights } from '@vercel/speed-insights/astro';
 import "../styles/global.css";
 
 interface Props {
@@ -49,6 +51,9 @@ const lang = getLangFromUrl(Astro.url);
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content="https://mueve-cancun.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:url" content="https://mueve-cancun.vercel.app" />
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -144,6 +149,8 @@ const lang = getLangFromUrl(Astro.url);
     <DonateNudge />
     <ReportWidget />
     <NexusAgentUI />
+    <Analytics />
+    <SpeedInsights />
 
   </body>
 </html>
