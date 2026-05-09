@@ -1,0 +1,46 @@
+---
+---
+<div id="pwa-install-banner" class="pwa-install-prompt" hidden>
+  <div class="pwa-install-icon">🚌</div>
+  <div class="pwa-install-text">
+    <strong>Instala MueveCancún</strong>
+    Funciona sin internet · Notificaciones de rutas
+  </div>
+  <button id="pwa-install-btn" class="pwa-install-btn">Instalar</button>
+  <button id="pwa-install-dismiss" class="pwa-install-btn" style="background:transparent;border:none;font-size:1rem;padding:0.4rem">✕</button>
+</div>
+
+<script is:inline>
+let deferredPrompt = null;
+const banner = document.getElementById('pwa-install-banner');
+const installBtn = document.getElementById('pwa-install-btn');
+const dismissBtn = document.getElementById('pwa-install-dismiss');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!localStorage.getItem('pwa_install_dismissed')) {
+    setTimeout(() => { if (banner) banner.hidden = false; }, 3000);
+  }
+});
+
+installBtn?.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') localStorage.setItem('pwa_installed', '1');
+  deferredPrompt = null;
+  if (banner) banner.hidden = true;
+});
+
+dismissBtn?.addEventListener('click', () => {
+  if (banner) banner.hidden = true;
+  localStorage.setItem('pwa_install_dismissed', '1');
+});
+
+window.addEventListener('appinstalled', () => {
+  if (banner) banner.hidden = true;
+  localStorage.setItem('pwa_installed', '1');
+  console.log('[PWA] App instalada!');
+});
+</script>
