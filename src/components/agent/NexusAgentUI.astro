@@ -1,5 +1,5 @@
 ---
-// NexusAgentUI — WebLLM cargado desde CDN en runtime
+// NexusAgentUI — Agente de rutas con /api/v1/nexus (Groq + rule-based fallback)
 ---
 
 <div id="nexus-agent-container" class="nexus-container" aria-label="Nexus Agent">
@@ -288,16 +288,12 @@
   const fabStatus = document.getElementById('fab-status');
   const nexusSub  = document.getElementById('nexus-sub');
   const progressC  = document.getElementById('nexus-progress');
-  const progressFill = document.getElementById('nexus-progress-fill');
-  const progressText = document.getElementById('nexus-progress-text');
   const closeBtn = document.getElementById('agent-close');
   const clearBtn = document.getElementById('agent-clear');
   const quickEl  = document.getElementById('nexus-quick');
 
-  const MODEL_ID = 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
-  let engine = null;
-  let isInit = false;
   let isOpen = false;
+  const history = [];
 
   // ── Helpers ──
   function addMsg(text, isUser) {
@@ -322,18 +318,17 @@
   }
 
   function setStatus(state) {
-    fabStatus.className = 'nexus-fab__status ' + state;
+    if (fabStatus) fabStatus.className = 'nexus-fab__status ' + state;
     const labels = { idle:'Listo', loading:'Cargando...', busy:'Pensando...', error:'Error' };
-    nexusSub.textContent = labels[state] || 'Asistente de rutas';
+    if (nexusSub) nexusSub.textContent = labels[state] || 'Asistente de rutas';
   }
 
-  // ── Abrir/cerrar ──
+  // ── Open/close ──
   function openPanel() {
     isOpen = true;
     panel.hidden = false;
     fab.setAttribute('aria-expanded','true');
-    input.focus();
-    if (!isInit) initEngine();
+    setTimeout(() => input.focus(), 50);
   }
 
   function closePanel() {
@@ -347,6 +342,7 @@
 
   clearBtn.addEventListener('click', () => {
     msgs.innerHTML = '';
+    history.length = 0;
     addMsg('¿En qué puedo ayudarte? 🚌', false);
   });
 
@@ -358,12 +354,10 @@
     });
   });
 
-  // ── Input enable ──
   input.addEventListener('input', () => {
     sendBtn.disabled = !input.value.trim();
   });
 
-  // ── Submit ──
   form.addEventListener('submit', e => {
     e.preventDefault();
     const text = input.value.trim();
@@ -373,109 +367,44 @@
     sendMessage(text);
   });
 
+  // ── Send → /api/v1/nexus ──
   async function sendMessage(text) {
     addMsg(text, true);
     quickEl.style.display = 'none';
-
-    if (!engine) {
-      if (!isInit) initEngine();
-      const typing = addTyping();
-      await new Promise(r => setTimeout(r, 800));
-      typing.remove();
-      addMsg(isInit
-        ? '⏳ Cargando modelo… espera un momento e intenta de nuevo.'
-        : '⚠️ El asistente local no está disponible. Usa el calculador de rutas de arriba.', false);
-      return;
-    }
+    history.push({ role: 'user', content: text });
 
     const typing = addTyping();
     setStatus('busy');
 
     try {
-      const reply = await engine.chat.completions.create({
-        messages: [
-          { role:'system', content:'Eres Nexus, asistente de transporte público de Cancún. Responde de forma corta y útil (máx 80 palabras). Hablas español. Tienes conocimiento sobre rutas (R1,R2,R6,R10,R15,R27,R28,ADO,combis), tarifas ($13-20 MXN combis/buses, $30-80 ADO) y zonas de Cancún.' },
-          { role:'user', content: text },
-        ],
-        max_tokens: 120,
-        temperature: 0.7,
+      const res = await fetch('/api/v1/nexus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: history.slice(-6) }),
       });
+
       typing.remove();
-      addMsg(reply.choices[0].message.content || '...', false);
-    } catch(err) {
+
+      if (res.ok) {
+        const data = await res.json();
+        const reply = data.reply || '...';
+        addMsg(reply, false);
+        history.push({ role: 'assistant', content: reply });
+      } else {
+        addMsg('❌ Error al conectar. Verifica tu conexión.', false);
+      }
+    } catch (err) {
       typing.remove();
-      console.error('[Nexus Error]', err); addMsg('❌ Lo siento, ocurrió un error al procesar tu mensaje. Intenta de nuevo.', false);
+      console.error('[Nexus]', err);
+      addMsg('❌ Sin conexión al asistente. Usa el calculador de rutas de arriba.', false);
     }
+
     setStatus('idle');
   }
 
-  // ── Inicializar WebLLM ──
-  async function initEngine() {
-    if (isInit) return;
-    isInit = true;
-    progressC.hidden = false;
-    setStatus('loading');
-
-    try {
-      const webllm = await import('https://esm.sh/@mlc-ai/web-llm@0.2.82');
-      engine = await webllm.CreateMLCEngine(MODEL_ID, {
-        initProgressCallback: (report) => {
-          const pct = Math.round((report.progress || 0) * 100);
-          progressFill.style.width = pct + '%';
-          progressText.textContent = report.text || 'Cargando...';
-          if (report.progress >= 1) {
-            setTimeout(() => { progressC.hidden = true; }, 1000);
-            setStatus('idle');
-            addMsg('✅ Modelo cargado. ¡Estoy listo para ayudarte!', false);
-          }
-        }
-      });
-    } catch(err) {
-      console.error('[Nexus]', err);
-      console.error('[Nexus Init Error]', err); progressText.textContent = '❌ Error al cargar el modelo local. Usando modo básico.';
-      setStatus('error');
-      isInit = false;
-      // Fallback: respuestas regla-based
-      engine = { chat: { completions: { create: async ({messages}) => {
-        const q = messages[messages.length-1]?.content?.toLowerCase() || '';
-        let reply = '';
-        // Normalize: remove accents, lowercase
-        const norm = q.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-
-        if (norm.match(/aeropuerto|airport|vuelo|terminal.*2|terminal.*3/))
-          reply = '✈️ Al aeropuerto: ADO desde terminal centro ($80-150 MXN) o R-27 desde Av. Tulum ($20 MXN). Terminal 2 y 3 tienen parada.';
-        else if (norm.match(/zona hotelera|hotel zone|playa.*delfin|zona.*hot/))
-          reply = '🏨 Zona Hotelera: R-1 desde el centro. Sale cada 10-15 min. $12 MXN.';
-        else if (norm.match(/centro|downtown|mercado.*28|avenida tulum|av.*tulum/))
-          reply = '🏙️ Al Centro: R-2 o R-1 desde cualquier parada en Av. Kabah o Tulum. $10-12 MXN.';
-        else if (norm.match(/americas|las americas|plaza.*americas|americas.*plaza/))
-          reply = '🛍️ Plaza Las Américas: R-10 desde el centro, R-33 desde Región 102. Baja en Av. Kabah. $10 MXN.';
-        else if (norm.match(/playa.*carmen|playa del carmen|playa carmen/))
-          reply = '🌊 Playa del Carmen: Playa Express desde Terminal ADO. ~$100 MXN. Sale cada hora.';
-        else if (norm.match(/precio|costo|cuanto|tarifa|cuánto|cobran/))
-          reply = '💰 Tarifas 2025: Combis $10 · Buses urbanos $10-12 · Zona Hotelera $12 · ADO $80-150 MXN.';
-        else if (norm.match(/horario|hora.*paso|pasa.*a|que hora|frecuencia/))
-          reply = '🕐 La mayoría de rutas operan 5am-11pm. La R-6 solo hasta 10pm. Zonas hoteleras tienen servicio nocturno.';
-        else if (norm.match(/ruta.*\d|r-?\d|numero.*ruta|ruta.*numero/)) {
-          const numMatch = norm.match(/\d+/);
-          if (numMatch) reply = `🚌 Para detalles de Ruta ${numMatch[0]}, búscala en el directorio de rutas o usa el calculador de trayecto.`;
-          else reply = '🚌 ¿Cuál ruta necesitas? Puedo darte info sobre R-1, R-2, R-6, R-10, R-27, ADO y más.';
-        } else if (norm.match(/crucero|el crucero|zicalo|zocalo/))
-          reply = '📍 El Crucero (Av. Tulum con Cobá): punto de transferencia clave. Ahí convergen R-1, R-2, R-19 y más.';
-        else if (norm.match(/combi|colectivo/))
-          reply = '🚐 Las combis cuestan $10 MXN y cubren rutas urbanas rápidas. La Combi Roja Puerto Juárez va a Ultramar.';
-        else if (norm.match(/gracias|thanks|ok|okay|listo|entend/))
-          reply = '✅ ¡Con gusto! Si necesitas otra ruta, aquí estoy.';
-        else if (norm.match(/hola|buenas|hey|hi\b|bueno.*dias|buen.*dia/))
-          reply = '👋 ¡Hola! Dime ¿a dónde necesitas llegar?';
-        else {
-          // Try to detect a destination name in the query
-          reply = `🗺️ Busco ruta hacia "${q.trim()}". Usa el calculador de arriba: escribe tu origen y destino para la ruta exacta con paradas.`;
-        }
-        return { choices:[{ message:{ content: reply }}]};
-      }}}};
-      setStatus('idle');
-    }
-  }
+  // Ocultar barra de progreso — ya no se usa WebLLM
+  if (progressC) progressC.hidden = true;
+  setStatus('idle');
 })();
 </script>
+

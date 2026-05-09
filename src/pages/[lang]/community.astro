@@ -174,7 +174,7 @@ const isEs = lang === "es";
     display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 0.125rem;
   }
   .filter-bar::-webkit-scrollbar { display: none; }
-  .filter-chip {
+  .chip, .filter-chip {
     display: inline-flex; align-items: center; gap: 0.3rem;
     padding: 0.4rem 0.875rem; border-radius: var(--r-full);
     background: var(--surface-card); border: 1.5px solid var(--border-light);
@@ -183,8 +183,8 @@ const isEs = lang === "es";
     transition: all var(--t-fast) var(--ease-back); flex-shrink: 0;
     -webkit-tap-highlight-color: transparent;
   }
-  .filter-chip:hover { background: var(--sea-xpale); border-color: var(--sea-bright); color: var(--sea-teal); transform: scale(1.05); }
-  .filter-chip.active { background: var(--gradient-primary); border-color: transparent; color: white; box-shadow: var(--shadow-teal); }
+  .chip:hover, .filter-chip:hover { background: var(--sea-xpale); border-color: var(--sea-bright); color: var(--sea-teal); transform: scale(1.05); }
+  .chip.chip--active, .filter-chip.active { background: var(--gradient-primary); border-color: transparent; color: white; box-shadow: var(--shadow-teal); }
 
   /* Report cards */
   .reports-list { display: flex; flex-direction: column; gap: 0.875rem; }

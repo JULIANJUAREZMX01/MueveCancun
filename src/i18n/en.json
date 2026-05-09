@@ -60,5 +60,18 @@
   "welcome.btn.next": "Next",
   "welcome.btn.start": "Comenzar en Español",
   "welcome.btn.start_en": "Start in English",
-  "welcome.skip": "Skip tutorial"
+  "welcome.skip": "Skip tutorial",
+  "game.title": "Guess Where I Am",
+  "game.instructions": "Take a photo of your surroundings and I'll guess exactly where you are in Cancún.",
+  "game.start": "Start Game!",
+  "game.capture": "Capture Photo",
+  "game.question1": "Are there palm trees or tropical vegetation nearby?",
+  "game.question2": "Can you see tall buildings or the hotel zone?",
+  "game.question3": "Are you near a main avenue?",
+  "game.thinking": "Analyzing your surroundings...",
+  "game.guess": "GOT IT! YOU'RE AT:",
+  "game.yes": "YES",
+  "game.no": "NO",
+  "game.retry": "Try again",
+  "game.share": "Share Achievement"
 }

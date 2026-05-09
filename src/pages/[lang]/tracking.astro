@@ -299,13 +299,17 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
     select.value ? startTracking(select.value) : stopTracking();
   });
 
-  refreshBtn.addEventListener("click", () => {
+  refreshBtn.addEventListener("click", async () => {
     if (!select.value) return;
     refreshBtn.classList.add("spinning");
-    setTimeout(() => {
-      renderUnits(generateUnits(select.value));
+    try {
+      const units = await fetchUnits(select.value);
+      renderUnits(units.length
+        ? units
+        : [{ id: select.value + '-01', location: isEs ? 'Cargando...' : 'Loading...', eta: 5, speed: 0 }]);
+    } finally {
       refreshBtn.classList.remove("spinning");
-    }, 700);
+    }
   });
 
   let __stopTracking_listener: (() => void) | null = null;

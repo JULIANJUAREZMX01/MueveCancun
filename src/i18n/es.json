@@ -60,5 +60,18 @@
   "welcome.btn.next": "Siguiente",
   "welcome.btn.start": "Comenzar en Español",
   "welcome.btn.start_en": "Start in English",
-  "welcome.skip": "Omitir tutorial"
+  "welcome.skip": "Omitir tutorial",
+  "game.title": "Adivina Dónde Estoy",
+  "game.instructions": "Toma una foto de tu entorno y adivinaré exactamente dónde estás en Cancún.",
+  "game.start": "¡Empezar Juego!",
+  "game.capture": "Capturar Foto",
+  "game.question1": "¿Hay palmeras o vegetación tropical cerca?",
+  "game.question2": "¿Ves edificios altos o zona hotelera?",
+  "game.question3": "¿Estás cerca de una avenida principal?",
+  "game.thinking": "Analizando tu entorno...",
+  "game.guess": "¡LO TENGO! ESTÁS EN:",
+  "game.yes": "SÍ",
+  "game.no": "NO",
+  "game.retry": "Intentar de nuevo",
+  "game.share": "Compartir Logro"
 }

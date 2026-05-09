@@ -1,124 +1,73 @@
 # 🗺️ MueveCancún — Roadmap
 
-> Última actualización: 2026-04-20 · Versión actual: **2.0.0 (Nexus Prime v4.0.0)**
-> App en producción: [querutamellevacancun.onrender.com](https://querutamellevacancun.onrender.com)
+> Última actualización: 2026-05-09 · Versión actual: **v3.7.0**
+> App en producción: [mueve-cancun.vercel.app](https://mueve-cancun.vercel.app)
 
 ---
 
-## Estado Actual — v3.7 ✅
+## Estado Actual — v3.7 ✅ LIVE
 
-El núcleo funcional está terminado y desplegado:
+El núcleo funcional está terminado y desplegado en Vercel:
 
-- **Motor WASM (Rust)** — Búsqueda de rutas con detección de transbordos exactos y por proximidad geográfica (≤ 350 m).
-- **PWA offline-first** — Service Worker activo; la app funciona sin conexión a internet.
-- **GPS → parada** — `CoordinatesStore` resuelve coordenadas a la parada más cercana (radio 1 km).
-- **Mapa interactivo** — Leaflet con popups "Salgo de aquí / Voy aquí".
-- **Wallet IndexedDB** — Balance unificado con firma HMAC, sin backend.
-- **i18n Español / Inglés** — Middleware Astro.
-- **CI/CD completo** — 6 workflows (tests, build-wasm, validación de datos, CodeQL, autocurative).
-
----
-
-## v3.4 — Catálogo de Rutas Completo ✅
-**Objetivo:** Hacer el catálogo de datos apto para producción.  
-**Estimado:** 2–3 semanas
-
-### Tareas
-- [x] Completar y depurar `public/data/master_routes.json` con rutas reales de Cancún (actualmente contiene un catálogo parcial en la clave `rutas`, con datos incompletos).
-- [x] Agregar coordenadas (`lat`/`lng`) a todas las paradas del catálogo.
-- [x] Ejecutar `node scripts/validate-routes.mjs` y corregir todos los errores.
-- [x] Ejecutar `node scripts/optimize-json.mjs` para regenerar la versión optimizada.
-- [x] Verificar que `WASM load_catalog()` carga el catálogo sin errores.
-- [x] Agregar tests de integración para al menos 5 rutas conocidas de la ciudad.
-- [x] Cubrir los hubs principales: El Crucero, ADO, Plaza Las Américas, Mercado 23/28, Puerto Juárez.
-- [ ] Documentar fuentes de datos y proceso de actualización del catálogo.
+- **Motor WASM (Rust)** — Búsqueda de rutas con transbordos exactos y geográficos (≤350m).
+- **PWA offline-first** — Service Worker v4; funciona sin internet.
+- **GPS auto-follow** — Long-press ≥600ms → watchPosition continuo, pan cancela.
+- **Mapa interactivo Leaflet** — Popups "Salgo de aquí / Voy aquí", 0 `any`.
+- **Wallet IndexedDB** — Balance HMAC-firmado, migración de localStorage.
+- **Virtual List** — DOM recycling (~200 cards → 8-12 en DOM).
+- **Nexus Agent** — Chat serverless `/api/v1/nexus` (Groq LLM + rule-based fallback).
+- **Foro en tiempo real** — `/api/reports` conectado a Neon Postgres, polling 30s.
+- **Juego "Adivina Dónde Estoy"** — Cámara + GPS + heurística de zonas.
+- **Stripe Guardians** — Payment Links live para Shield ($3) y Architect ($10).
+- **i18n ES/EN** — 75 keys incluyendo `game.*` y `welcome.*`.
+- **CI/CD** — 6 GitHub Actions workflows; Lighthouse PWA ≥90, A11y ≥90.
+- **Tests** — 156/156 vitest ✅ · tsc --noEmit exit 0 ✅
 
 ---
 
-## v3.5 — Crowdsourcing y Formularios Offline ✅
-**Objetivo:** Permitir que los usuarios reporten rutas y alertas desde el campo.  
-**Estado:** Parcialmente completado (v3.3.3)
+## v3.6 — Experiencia de Usuario y Accesibilidad ✅
 
-### Tareas
-- [x] Formulario de reporte de incidentes con validación client-side.
-- [x] Cola offline para envíos pendientes (Custom IDB Queue + `online` event).
-- [x] UI de confirmación de envío (toast + feedback visual).
-- [x] Moderación básica de reportes (flags de spam/repetición).
-- [x] Feature flag vía variable de entorno (`CROWDSOURCE_ENABLED`).
-- [x] Tests unitarios y de integración para la cola offline.
+- [x] GPS long-press auto-follow con follow-pulse CSS y aria-pressed.
+- [x] Virtual scroll en lista de rutas (~200→8-12 nodos DOM).
+- [x] Navegación por teclado completa en RouteCalculator.
+- [x] TTI <3s: manualChunks + dns-prefetch + modulepreload WASM.
+- [x] Lighthouse CI en GitHub Actions (PWA ≥90, A11y ≥90).
+- [x] ARIA live regions y roles completos en mapa y calculador.
 
----
+## v3.7 — Correcciones y Agente Real ✅ (2026-05-09)
 
-## v3.6 — Experiencia de Usuario y Accesibilidad
-**Objetivo:** Pulir la UX para usuarios en dispositivos de gama media/baja.  
-**Estimado:** 2 semanas
-
-### Tareas
-- [x] Navegación por teclado completa en `RouteCalculator.astro`.
-- [x] Etiquetas ARIA en todos los controles del mapa.
-- [x] UX de permisos de geolocalización (prompt suave + reintento).
-- [ ] Botón de recentrar mapa con pulsación larga para auto-seguir. ← pendiente
-- [ ] Scroll virtualizado en lista de rutas con muchos resultados. ← pendiente
-- [x] Auditoria Lighthouse PWA en CI (mínimo 90/100 en cada categoría).
-- [ ] Presupuesto de performance: TTI < 3 s en dispositivo de gama media. ← pendiente
+- [x] `guess.astro` — eliminado doble `export const prerender`, strings hardcoded al frontmatter.
+- [x] `ruta/index.astro` — eliminado segundo `export const prerender` fuera del frontmatter.
+- [x] `community.astro` — reconciliado CSS `.chip` vs `.filter-chip`.
+- [x] `tracking.astro` — `refreshBtn` usa `fetchUnits()` real (eliminado `generateUnits` indefinido).
+- [x] `NexusAgentUI.astro` — WebLLM de CDN reemplazado por `/api/v1/nexus` serverless.
+- [x] `/api/v1/nexus` — nuevo endpoint: Groq llama-3.1-8b-instant + rule-based fallback.
+- [x] i18n — agregadas 13 keys `game.*` que faltaban en `es.json` y `en.json`.
 
 ---
 
 ## v4.0 — Multi-ciudad y Analytics Real
-**Objetivo:** Expandir a Playa del Carmen y Tulum; integrar métricas reales.  
+**Objetivo:** Expandir a Playa del Carmen y Tulum; métricas reales.
 **Estimado:** 6–8 semanas
 
 ### Tareas
-- [ ] Selector de ciudad en la UI (Cancún / Playa del Carmen / Tulum).
+- [ ] Selector de ciudad en UI (Cancún / Playa del Carmen / Tulum).
 - [ ] Catálogos independientes por ciudad (`master_routes_playa.json`, etc.).
-- [x] Integrar analytics real (Plausible o GA4) en reemplazo del stub actual.
 - [ ] Dashboard de métricas: rutas más buscadas, hubs más usados.
 - [ ] Política de privacidad bilingüe actualizada.
-- [ ] Despliegue blue-green en Render para releases sin downtime.
+- [ ] Despliegue blue-green en Vercel para releases sin downtime.
+- [ ] Driver app para alimentar `/api/tracking` con GPS real.
 
 ---
 
-## Backlog Técnico (sin sprint asignado)
-
-Estas tareas están identificadas pero aún no tienen sprint asignado. Se irán priorizando según el impacto:
+## Backlog Técnico
 
 | Prioridad | Tarea |
 |-----------|-------|
-| ✅ | Limpiar artefactos de desarrollo de la raíz (`full_script.ts`, `patch*.diff`, `*.bak`, `*.new`) |
-| 🔴 | Cachear artefactos `wasm-bindgen` / `binaryen` en CI para builds rápidos |
-| 🟡 | Política stale-while-revalidate en Service Worker para `/data/**` |
-| 🟡 | Carga progresiva del catálogo (chunks) en lugar de un JSON único |
-| ✅ | Deduplicar paradas duplicadas en `CoordinatesStore` |
-| ✅ | Reemplazar `any` en `Analytics.ts` con interfaz tipada |
-| ✅ | Índice espacial con tamaño de celda configurable (`SpatialHash`) |
+| 🔴 | Cachear artefactos wasm-bindgen / binaryen en CI para builds rápidos |
+| 🟡 | stale-while-revalidate en SW para `/data/**` |
+| 🟡 | Carga progresiva del catálogo en chunks |
+| 🟡 | `GROQ_API_KEY` env var en Vercel para activar LLM en Nexus |
 | 🟢 | Generador de datasets sintéticos para pruebas de carga |
-| ✅ | Página de healthcheck con info de build (`/healthz`) |
-| 🟢 | Plantilla de post-mortem para incidentes |
-| ✅ | Documentar contrato de datos WASM en `docs/BRIDGE_WASM.md` |
-
----
-
-## Historial de Versiones
-| v4.0.0 | 2026-04-20 | Nexus Prime v4.0; Local Fonts (Isolation Audit Passed); Community API (GitHub Issues); Cleanup legacy artifacts |
-| v2.0.0 | 2026-04-10 | Nexus Prime v2.0; Optimized data integrity; Added map animations; Cleaned legacy artifacts |
-
-| Versión | Fecha | Cambios principales |
-|---------|-------|---------------------|
-| v3.3.3 | 2026-04-02 | Tier 1 Reporting: Migrated to client-side GitHub API; Added offline queuing with IndexedDB v4; Resolved Render deploy failure |
-| v3.3.2 | 2026-04-02 | Fix infinite redirect loop in static build; remove build-time middleware redirects; client-side tutorial enforcement |
-| v3.3.1 | 2026-03-29 | Strictly Static Stabilization; Client-side redirects for CDN compatibility; Localization utility implementation |
-| v3.3 | 2026-03-10 | Nexus Transfer Engine; GPS → parada; mapa interactivo con popups; balance IndexedDB unificado; 11 test files; 6 workflows CI/CD |
-| v3.2 | 2026-02-19 | WasmLoader singleton; SpatialHash; CoordinateFinder 2.1× más rápido; type-safety mejorada |
-| v3.1 | 2026-02-18 | Triple balance system; IndexedDB DataError resuelto; `src/lib/` → `src/utils/` |
-| v3.0 | 2026-02-17 | Consolidación de 12 PRs; arquitectura Nexus establecida |
-
----
-
-## Guía de Contribución
-
-1. Crear rama: `claude/descripcion-XXXXX` (nunca push directo a `main`).
-2. Para cambios al motor: `cargo test --lib` → `node scripts/build-wasm.mjs` → `pnpm test`.
-3. Para cambios al catálogo: `node scripts/validate-routes.mjs` → `node scripts/optimize-json.mjs`.
-4. Todo PR debe incluir: descripción del problema, solución implementada y tests que la validan.
-
-Ver `CLAUDE.md` para instrucciones detalladas por tipo de tarea.
+| 🟢 | Driver app móvil (React Native o PWA) para tracking GPS real |
+| 🟢 | Notificaciones push para alertas de ruta favorita |

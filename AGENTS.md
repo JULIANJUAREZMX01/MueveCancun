@@ -1,6 +1,6 @@
 
 
-**Misión**: PWA offline-first de transporte público en Cancún. Motor de ruteo en WebAssembly (Rust), sin backend.
+**Misión**: PWA offline-first de transporte público en Cancún. Motor de ruteo en WebAssembly (Rust). Nexus Agent serverless (`/api/v1/nexus`) con Groq LLM + fallback rule-based.
 
 ---
 
