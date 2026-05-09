@@ -69,7 +69,7 @@ export function renderTransferCardHtml(journey: Journey, isBest: boolean = false
 
         <div class="o-stack" style="gap: 0.5rem;">
             <div class="o-flex u-align-center">
-                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-success);"></div>
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--jungle);"></div>
                 <div class="u-fs-xs u-fw-black">${escapeHtml(leg1.name)}</div>
             </div>
 
@@ -78,7 +78,7 @@ export function renderTransferCardHtml(journey: Journey, isBest: boolean = false
             </div>
 
             <div class="o-flex u-align-center">
-                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-danger);"></div>
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--danger);"></div>
                 <div class="u-fs-xs u-fw-black">${escapeHtml(leg2.name)}</div>
             </div>
         </div>
