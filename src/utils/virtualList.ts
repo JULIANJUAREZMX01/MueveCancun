@@ -16,7 +16,7 @@
  *   - itemHeight: estimated row height in px (affects spacer; can be dynamic).
  */
 
-export interface VirtualListOptions<T> {
+export interface VirtualListOptions {
   /** Estimated height of each item in px (default: 88). */
   itemHeight?: number;
   /** Extra rows to render above/below viewport (default: 3). */
@@ -29,7 +29,7 @@ export class VirtualList<T> {
   private items: T[] = [];
   private readonly renderItem: (item: T, index: number) => HTMLElement;
   private readonly container: HTMLElement;
-  private readonly opts: Required<VirtualListOptions<T>>;
+  private readonly opts: Required<VirtualListOptions>;
 
   private spacerTop!: HTMLDivElement;
   private spacerBottom!: HTMLDivElement;
@@ -43,7 +43,7 @@ export class VirtualList<T> {
     container: HTMLElement,
     items: T[],
     renderItem: (item: T, index: number) => HTMLElement,
-    options: VirtualListOptions<T> = {},
+    options: VirtualListOptions = {},
   ) {
     this.container  = container;
     this.items      = items;
