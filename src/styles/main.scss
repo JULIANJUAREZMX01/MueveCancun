@@ -1,6 +1,6 @@
-/* MueveCancún — Entry SCSS: re-exports global.css */
-/* El sistema de diseño v4 "Mar Turquesa" vive en global.css */
-/* Este archivo se mantiene por compatibilidad con imports legacy */
+/* MueveCancún — Entry SCSS
+   El sistema de diseño v4 "Mar Turquesa" vive en global.css
+   Este archivo importa compatibilidad legacy */
 
-/* Legacy tokens de ITCSS (solo settings, sin main-legacy para evitar duplicados) */
 @import "./itcss/settings";
+@import "./itcss/main-legacy";

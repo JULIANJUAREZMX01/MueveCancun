@@ -1,46 +1,14 @@
 /*
- * MueveCancún — main.css
- * Estilos globales de app: view transitions, scrollbars, PWA polish.
+ * MueveCancún — Legacy bridge CSS
+ * Estilos de compatibilidad y focus ring accesible
+ * Los tokens viven en global.css v4 "Mar Turquesa"
  */
 
-/* ── View transitions suaves ── */
-::view-transition-old(root), ::view-transition-new(root) {
-  animation-duration: 280ms;
-  animation-timing-function: cubic-bezier(0,0,0.2,1);
-}
-
-/* ── Scrollbar sutil ── */
-::-webkit-scrollbar        { width: 4px; height: 4px; }
-::-webkit-scrollbar-track  { background: transparent; }
-::-webkit-scrollbar-thumb  { background: var(--border-medium); border-radius: 99px; }
-
-/* ── Animaciones globales ── */
-@keyframes float {
-  0%, 100% { transform: translateY(0);  }
-  50%       { transform: translateY(-8px); }
-}
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes scale-in {
-  from { opacity: 0; transform: scale(0.9); }
-  to   { opacity: 1; transform: scale(1);   }
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.animate-float    { animation: float    3s ease-in-out infinite; }
-.animate-fade-up  { animation: fade-up  0.5s cubic-bezier(0,0,0.2,1) forwards; }
-.animate-scale-in { animation: scale-in 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-.animate-spin     { animation: spin     0.8s linear infinite; }
-
-/* ── Keyboard focus ring accesible ── */
+/* ── Keyboard focus ring accesible (WCAG 2.1 AA) ── */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-  border-radius: var(--r-sm);
+  outline: 2.5px solid var(--sea-bright, #14b8a6);
+  outline-offset: 3px;
+  border-radius: var(--r-sm, 8px);
 }
 
 /* ── iOS momentum scroll ── */
@@ -49,45 +17,37 @@
 /* ── Prevenir FOUC en transiciones ── */
 [data-loading] { opacity: 0; pointer-events: none; }
 
-/* ── PWA: ocultar barra de status en standalone ── */
-@media (display-mode: standalone) {
-  :root { --header-extra-pad: env(safe-area-inset-top); }
-  body  { padding-top: var(--header-extra-pad, 0); }
-}
+/* ── Compat classes para código legacy ── */
+.animate-float    { animation: float    4s ease-in-out infinite; }
+.animate-fade-up  { animation: fade-up  0.5s var(--ease-spring, cubic-bezier(0.16,1,0.3,1)) both; }
+.animate-scale-in { animation: scale-in 0.35s var(--ease-back, cubic-bezier(0.34,1.56,0.64,1)) both; }
+.animate-spin     { animation: spin     0.8s linear infinite; }
+.animate-shimmer  { animation: shimmer  1.6s infinite; }
 
-/* ── Placeholder de imagen ── */
-.img-placeholder {
-  background: var(--border-light);
-  border-radius: var(--r-md);
-  animation: skeleton-shimmer 1.5s infinite;
-}
-@keyframes skeleton-shimmer {
-  0%   { background-position: 200% center; }
-  100% { background-position: -200% center; }
-}
+/* Aliases para clases en código existente */
+.fade-up   { animation: fade-up  0.4s var(--ease-out) both; }
+.scale-in  { animation: scale-in 0.3s var(--ease-back) both; }
 
-/* ── Botones con icono solamente ── */
-.icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--r-full);
-  background: var(--surface-elevated);
-  border: 1.5px solid var(--border-light);
-  cursor: pointer;
-  transition: all var(--t-fast) var(--ease);
-  -webkit-tap-highlight-color: transparent;
-  color: var(--text-secondary);
-  min-width: 44px; min-height: 44px;
+/* Botones con clase graffiti-btn (compat) */
+.graffiti-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 44px; padding: 0.75rem 1.5rem;
+  border-radius: var(--r-lg); border: 1.5px solid transparent;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.95rem;
+  cursor: pointer; user-select: none;
+  background: var(--gradient-primary); color: white;
+  box-shadow: var(--shadow-teal);
+  transition: transform var(--t-fast) var(--ease-back), box-shadow var(--t-base) var(--ease);
 }
+.graffiti-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-teal-lg); }
+.graffiti-btn:active:not(:disabled) { transform: scale(0.97); }
+.graffiti-btn:disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.5); }
 
-/* Animated Route Line */
-.animated-route-line {
-  stroke-dasharray: 20, 10;
-  animation: line-flow 30s linear infinite;
-}
-
-@keyframes line-flow {
-  from { stroke-dashoffset: 1000; }
-  to { stroke-dashoffset: 0; }
+/* ── Prefers reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

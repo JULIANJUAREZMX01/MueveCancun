@@ -39,6 +39,23 @@ const lang = getLangFromUrl(Astro.url);
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>{title}</title>
     <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/pwa-192x192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/icons/pwa-192x192.png" />
+    <!-- PWA iOS -->
+    <meta name="apple-mobile-web-app-title" content="MueveCancún" />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="https://mueve-cancun.vercel.app/og-image.png" />
+    <meta property="og:url" content="https://mueve-cancun.vercel.app" />
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:image" content="https://mueve-cancun.vercel.app/og-image.png" />
+    <!-- Color scheme -->
+    <meta name="color-scheme" content="light dark" />
     <!-- Preconnect fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -169,6 +186,11 @@ const lang = getLangFromUrl(Astro.url);
     .c-header {
       left: var(--sidebar-w, 76px);
     }
+  }
+
+  .c-header--scrolled {
+    box-shadow: 0 4px 32px rgba(0, 78, 95, 0.12), 0 1px 0 var(--border-light);
+    background: var(--glass-bg);
   }
 
   /* Brand */

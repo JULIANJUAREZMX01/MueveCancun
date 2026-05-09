@@ -95,52 +95,144 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
 </div>
 
 <style>
-  /* Variables de diseño */
-  :root {
-    --rw-primary: #0d9488;
-    --rw-bg: #ffffff;
-    --rw-text: #0f172a;
+  /* ═══ REPORT WIDGET — Mar Turquesa v4 ═══ */
+
+  /* FAB flotante */
+  .rw-fab {
+    position: fixed; bottom: calc(var(--bottom-nav-h, 72px) + 1rem + env(safe-area-inset-bottom,0px));
+    right: 1rem; z-index: 90;
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.75rem 1.1rem 0.75rem 1rem;
+    background: var(--gradient-deep); color: white;
+    border: 1px solid rgba(45,212,191,0.3); border-radius: var(--r-full);
+    box-shadow: 0 4px 24px rgba(0,78,95,0.3), var(--shadow-glow);
+    cursor: pointer; font-family: var(--font-display);
+    font-size: 0.78rem; font-weight: 800;
+    transition: all var(--t-fast) var(--ease-back);
+    -webkit-tap-highlight-color: transparent;
+    animation: breathe 4s ease-in-out infinite;
   }
-  :global(.dark) :root {
-    --rw-bg: #1e293b;
-    --rw-text: #f8fafc;
+  .rw-fab:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 32px rgba(0,78,95,0.4), var(--shadow-glow);
+    animation-play-state: paused;
+  }
+  .rw-fab:active { transform: scale(0.93); animation-play-state: paused; }
+
+  @media (min-width: 769px) {
+    .rw-fab { bottom: 1.5rem; right: 1.5rem; }
   }
 
-  .rw-fab { position: fixed; bottom: calc(var(--bottom-nav-h, 68px) + 0.875rem + env(safe-area-inset-bottom, 0px)); right: 1rem; z-index: 55; display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; background: var(--rw-primary); color: white; border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.4); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid rgba(255, 255, 255, 0.1); }
-  .rw-fab:hover { transform: scale(1.05) translateY(-2px); box-shadow: 0 15px 30px -5px rgba(13, 148, 136, 0.5); }
-  .rw-fab-label { font-size: 0.875rem; font-weight: 800; letter-spacing: 0.025em; }
+  .rw-fab-label { font-size: 0.78rem; white-space: nowrap; }
 
-  /* Corregido: Display none tiene precedencia absoluta cuando está hidden */
+  .rw-queue-badge {
+    position: absolute; top: -4px; right: -4px;
+    min-width: 18px; height: 18px; border-radius: var(--r-full);
+    background: var(--danger); color: white; border: 2px solid white;
+    font-family: var(--font-display); font-size: 0.58rem; font-weight: 900;
+    display: flex; align-items: center; justify-content: center; padding: 0 3px;
+  }
+  .rw-queue-badge[hidden] { display: none; }
+
+  /* Overlay */
+  .rw-overlay {
+    position: fixed; inset: 0; z-index: 150;
+    background: var(--surface-overlay);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: flex-end; justify-content: center;
+    animation: fade-in 0.2s var(--ease-out) both;
+  }
   .rw-overlay[hidden] { display: none !important; }
-  .rw-overlay:not([hidden]) { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
 
-  .rw-modal { background: var(--rw-bg); width: 100%; max-width: 400px; border-radius: 24px; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
-  .rw-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
-  .rw-modal-title-group { display: flex; align-items: center; gap: 0.75rem; }
+  /* Modal */
+  .rw-modal {
+    width: 100%; max-width: 480px;
+    background: var(--surface-card);
+    border-radius: var(--r-2xl) var(--r-2xl) 0 0;
+    padding: 1.5rem 1.25rem calc(2rem + env(safe-area-inset-bottom,0px));
+    max-height: 92dvh; overflow-y: auto;
+    box-shadow: 0 -8px 48px rgba(0,78,95,0.15);
+    animation: slide-up 0.35s var(--ease-spring) both;
+  }
+
+  .rw-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.375rem;
+  }
+  .rw-modal-title-group { display: flex; align-items: center; gap: 0.625rem; }
   .rw-modal-icon { font-size: 1.5rem; }
-  #rw-modal-title { margin: 0; font-size: 1.25rem; font-weight: 900; color: var(--rw-text); }
-  .rw-close { background: transparent; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
-  .rw-modal-subtitle { font-size: 0.875rem; color: #64748b; margin-bottom: 1.5rem; }
-  .rw-field { margin-bottom: 1.25rem; }
-  .rw-field label { display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
-  .rw-field select, .rw-field input, .rw-field textarea { width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.875rem; font-weight: 600; color: var(--rw-text); transition: all 0.2s; }
-  .rw-field select:focus, .rw-field input:focus, .rw-field textarea:focus { outline: none; border-color: var(--rw-primary); box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1); }
-  .rw-char-count { text-align: right; font-size: 10px; color: #94a3b8; margin-top: 0.25rem; font-weight: bold; }
-  .rw-geo-section { margin-bottom: 1.5rem; }
-  .rw-geo-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-radius: 12px; border: 2px dashed #e2e8f0; background: transparent; font-size: 0.875rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s; }
-  .rw-geo-active { border-color: #10b981; color: #059669; background: #f0fdf4; }
-  .rw-geo-error { border-color: #f43f5e; color: #e11d48; }
-  .rw-feedback { padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.8125rem; font-weight: 700; margin-bottom: 1.25rem; }
-  .rw-feedback.success { background: #f0fdf4; color: #166534; }
-  .rw-feedback.error { background: #fef2f2; color: #991b1b; }
-  .rw-feedback.info { background: #eff6ff; color: #1e40af; }
-  .rw-modal-footer { display: flex; gap: 0.75rem; margin-top: 2rem; }
-  .rw-btn-primary, .rw-btn-secondary { flex: 1; padding: 0.875rem; border-radius: 12px; font-size: 0.875rem; font-weight: 800; cursor: pointer; transition: all 0.2s; }
-  .rw-btn-primary { background: var(--rw-primary); color: white; border: none; box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3); }
-  .rw-btn-secondary { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
-  .rw-spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .rw-queue-badge { position: absolute; top: -5px; right: -5px; background: #f43f5e; color: white; font-size: 10px; font-weight: 900; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .rw-modal-title-group h2 {
+    font-family: var(--font-display); font-size: 1.15rem; font-weight: 900;
+    color: var(--text-primary); letter-spacing: -0.02em; margin: 0;
+  }
+  .rw-close {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface-inset); border: none;
+    color: var(--text-tertiary); font-size: 1.25rem; line-height: 1;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: all var(--t-fast) var(--ease-back);
+  }
+  .rw-close:hover { background: var(--danger-light); color: var(--danger); transform: scale(1.1); }
+
+  .rw-modal-subtitle { font-size: 0.82rem; color: var(--text-tertiary); margin: 0 0 1.25rem; }
+
+  /* Form fields */
+  .rw-field { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 0.875rem; }
+  .rw-field label {
+    font-family: var(--font-display); font-size: 0.78rem; font-weight: 800;
+    color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .rw-field select,
+  .rw-field input,
+  .rw-field textarea {
+    padding: 0.8rem 1rem;
+    background: var(--surface-card); border: 1.5px solid var(--border-light);
+    border-radius: var(--r-lg); font-family: var(--font-sans); font-size: 0.9rem;
+    color: var(--text-primary); outline: none; width: 100%;
+    transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  }
+  .rw-field select:focus,
+  .rw-field input:focus,
+  .rw-field textarea:focus {
+    border-color: var(--sea-bright);
+    box-shadow: 0 0 0 4px rgba(20,184,166,0.15);
+  }
+  .rw-field textarea { resize: none; min-height: 90px; }
+  .rw-field select { -webkit-appearance: none; appearance: none; cursor: pointer; }
+
+  /* Actions */
+  .rw-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
+  .rw-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    padding: 0.875rem 1rem; border-radius: var(--r-lg);
+    font-family: var(--font-display); font-weight: 800; font-size: 0.9rem;
+    cursor: pointer; transition: all var(--t-fast) var(--ease-back); border: 1.5px solid transparent;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .rw-btn--primary {
+    background: var(--gradient-primary); color: white;
+    box-shadow: var(--shadow-teal);
+  }
+  .rw-btn--primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-teal-lg); }
+  .rw-btn--primary:active { transform: scale(0.97); }
+  .rw-btn--primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .rw-btn--cancel {
+    background: var(--surface-card); color: var(--text-secondary);
+    border-color: var(--border-light);
+  }
+  .rw-btn--cancel:hover { background: var(--sea-xpale); border-color: var(--sea-bright); color: var(--sea-teal); }
+
+  /* Status messages */
+  .rw-status {
+    padding: 0.75rem 1rem; border-radius: var(--r-lg); margin-top: 0.875rem;
+    font-family: var(--font-display); font-size: 0.82rem; font-weight: 700;
+    display: flex; align-items: center; gap: 0.5rem;
+    animation: scale-in 0.3s var(--ease-back) both;
+  }
+  .rw-status.hidden { display: none; }
+  .rw-status--success { background: var(--jungle-light); color: var(--jungle); border: 1px solid rgba(34,197,94,0.2); }
+  .rw-status--error   { background: var(--danger-light);  color: var(--danger);  border: 1px solid rgba(239,68,68,0.2); }
+  .rw-status--info    { background: var(--sea-xpale);     color: var(--sea-teal); border: 1px solid var(--border-light); }
 </style>
 
 <script>
