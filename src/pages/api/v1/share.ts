@@ -30,7 +30,7 @@ export const POST: APIRoute = async ({ request }) => {
               ${route_id || null}, ${trip_id || null}, ${phase}, ${expires_at})
     `;
 
-    const shareUrl = \`https://mueve-cancun.vercel.app/share/\${share_id}\`;
+    const shareUrl = `https://mueve-cancun.vercel.app/share/\${share_id}`;
     return new Response(JSON.stringify({ share_id, share_url: shareUrl, expires_at }), {
       status: 201,
       headers: { 'Content-Type': 'application/json' }
