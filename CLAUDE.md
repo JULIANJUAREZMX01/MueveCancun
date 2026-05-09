@@ -44,7 +44,7 @@
 ## Proyecto
 
 **MueveCancun** es una PWA offline-first para transporte público en Cancún y la Riviera Maya.
-Stack: **Astro SSG + Rust/WASM + Leaflet + IndexedDB**
+Stack: **Astro SSR + Rust/WASM + Leaflet + IndexedDB**
 Repositorio: `JULIANJUAREZMX01/MueveCancun`
 Branch de desarrollo: siempre `claude/fix-*` o similar; **nunca pushear directo a `main`** sin PR de revisión.
 
@@ -55,7 +55,7 @@ Branch de desarrollo: siempre `claude/fix-*` o similar; **nunca pushear directo 
 ```
 Capa 1: Datos        → public/data/master_routes.json + public/data/routes/*.json
 Capa 2: Procesamiento → rust-wasm/route-calculator/src/lib.rs (compilado a WASM)
-Capa 3: Presentación  → src/components/, src/pages/ (Astro SSG)
+Capa 3: Presentación  → src/components/, src/pages/ (Astro SSR)
 Capa 4: Persistencia  → src/utils/db.ts (IndexedDB + HMAC wallet)
 Capa 5: Lib (nueva)  → src/lib/ (idb.ts, sync.ts, telemetry.ts, transport.ts)
 ```
@@ -77,7 +77,7 @@ cd rust-wasm/route-calculator && cargo test --lib  # Tests Rust (15 tests)
 node --experimental-strip-types scripts/build-wasm.ts    # Compilar Rust → WASM
 node --experimental-strip-types scripts/validate-routes.ts  # Validar datos de rutas
 node --experimental-strip-types scripts/optimize-json.ts   # Pre-optimizar JSON para WASM
-pnpm build                      # Build Astro SSG completo
+pnpm build                      # Build Astro SSR completo (output:server)
 
 # Validación rápida
 node scripts/check-wasm.cjs    # Verificar binario WASM existe

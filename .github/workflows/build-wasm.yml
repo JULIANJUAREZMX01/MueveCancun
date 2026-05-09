@@ -1,6 +1,5 @@
 name: Build WASM Pipeline
 
-env:
 on:
   push:
     branches: [main, develop]

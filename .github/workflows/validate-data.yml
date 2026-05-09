@@ -1,6 +1,5 @@
 name: Data Integrity Pipeline
 
-env:
 on:
   push:
     paths: ["public/data/**", "scripts/*.ts"]

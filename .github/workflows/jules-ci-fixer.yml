@@ -1,12 +1,10 @@
 name: JULES - CI Stability Protocol
 
-env:
 on:
   workflow_run:
     workflows: ["CI / Security & Quality"]
     types: [completed]
-    conclusienv:
-on: [failure]
+    conclusion: [failure]
 
 jobs:
   fix:

@@ -178,7 +178,7 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 2. Ejecutar `pnpm run prepare-data` (merge + optimize).
 
 ### Deployment:
-El sistema está configurado para Vercel (SSG). El middleware maneja redirecciones de idioma y completitud de tutorial.
+El sistema está configurado para Vercel (SSR — output:server). El middleware maneja redirecciones de idioma y completitud de tutorial.
 ```
 rama claude/* → tests pasan → PR a main → CI verde → merge
 rama jules/*  → PR abierto por Jules → revisión → merge

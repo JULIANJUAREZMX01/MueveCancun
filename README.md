@@ -96,9 +96,9 @@ Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales 
 - **SpatialHash**: Estructura de índice espacial para búsquedas O(1) de rutas cercanas.
 - **RouteCalculator**: Algoritmo que encuentra la mejor ruta considerando distancia, frecuencia y transbordos.
 - **Ruta Crítica**: El binario WASM se sirve desde `/wasm/route-calculator/route_calculator.js`.
-- **Seguridad**: Hardening contra DoS con Circuit Breaker de 2M ops máximo por request.
+- **Seguridad**: Hardening contra DoS con Circuit Breaker de 10M ops máximo por request.
 
-### 3. Capa de Presentación: Astro SSG
+### 3. Capa de Presentación: Astro SSR (output: server)
 - **UI**: Componentes `.astro` sin framework JS pesado (Vanilla JS para interactividad).
 - **Estilos**: `src/styles/global.css` y `src/index.css` con CSS Variables + Grid + Flexbox.
 - **Diseño Responsive**: Optimizado para Dark/Light mode y navegación inferior fija (mobile-first).
@@ -209,7 +209,7 @@ node scripts/optimize-json.mjs     # Pre-optimizar catálogo para WASM
 pnpm test                          # Tests Vitest (TypeScript)
 
 # Build completo
-pnpm build                         # Build Astro SSG (incluye optimize-json)
+pnpm build                         # Build Astro SSR (output:server, incluye optimize-json)
 ```
 
 ---
@@ -251,7 +251,7 @@ We prioritize CSS5 features over JavaScript for interactive states:
 - `public/data/`: Master route catalog and optimized JSON artifacts.
 
 ### 📜 Performance Mandates
-1. **SSG over SSR**: All pages are pre-rendered at build time.
+1. **SSR on Vercel**: Pages rendered server-side via @astrojs/vercel adapter (output: server).
 2. **Zero JS by Default**: Components must function without hydration unless strictly necessary (Astro Islands).
 3. **Rust/WASM Core**: Heavy algorithmic work (Dijkstra, Spatial Search) is delegated to the Rust engine.
 

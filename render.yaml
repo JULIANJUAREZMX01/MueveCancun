@@ -1,4 +1,7 @@
 # render.yaml — MueveCancún v4.0.0 (Nexus Agentic Core)
+# output: 'server' (SSR) — se despliega como web service Node.js
+# El sitio estático fue eliminado: output:server genera dist/server + dist/client
+# y el web service sirve ambos correctamente.
 version: "1"
 services:
   - type: web
@@ -18,14 +21,3 @@ services:
         value: "0.0.0.0"
       - key: ENABLE_COREPACK
         value: "1"
-
-  - type: static_site
-    name: MueveCancun-Static
-    repo: https://github.com/JULIANJUAREZMX01/MueveCancun
-    buildCommand: bash scripts/setup-render.sh
-    publishPath: dist/client
-    envVars:
-      - key: NODE_VERSION
-        value: "24.0.0"
-      - key: RENDER
-        value: "true"
