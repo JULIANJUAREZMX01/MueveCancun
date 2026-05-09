@@ -6,8 +6,8 @@ export interface Route {
   id: string;
   nombre: string;
   tarifa: number;
-  tipo?: string; // e.g. "Bus_Urbano_Isla"
-  tipo_transporte?: string; // e.g. "Bus_HotelZone"
+  tipo?: string;
+  tipo_transporte?: string;
   frecuencia_minutos?: number | string;
   horario?: string | {
     inicio?: string;
@@ -28,6 +28,7 @@ export interface Route {
   tags?: string[];
   operador?: string;
   empresa?: string;
+  color?: string;
 }
 
 /**
@@ -40,10 +41,39 @@ function extractTimestamp(id: string): string | null {
 }
 
 export async function getAllRoutes(): Promise<Route[]> {
-  const routesDir = path.resolve('./public/data/routes');
-  const allRoutes: Route[] = [];
+  // Strategy: master_routes.json is the source of truth (has colors + full data).
+  // Individual route files only supplement with routes NOT in master.
+
+  let masterRoutes: Route[] = [];
 
   try {
+    const masterPath = path.resolve('./public/data/master_routes.json');
+    const masterContent = await fs.readFile(masterPath, 'utf-8');
+    const masterData = JSON.parse(masterContent);
+
+    if (Array.isArray(masterData)) {
+      masterRoutes = masterData;
+    } else if (masterData.rutas && Array.isArray(masterData.rutas)) {
+      masterRoutes = masterData.rutas;
+    } else if (masterData.routes && Array.isArray(masterData.routes)) {
+      masterRoutes = masterData.routes;
+    }
+  } catch {
+    console.warn('[getAllRoutes] master_routes.json not accessible');
+  }
+
+  // Build lookup by ID and timestamp for fast dedup
+  const masterById = new Map(masterRoutes.map(r => [r.id, r]));
+  const masterByTs = new Map(
+    masterRoutes
+      .map(r => [extractTimestamp(r.id), r] as [string | null, Route])
+      .filter((entry): entry is [string, Route] => entry[0] !== null)
+  );
+
+  // Load individual route files — only pick up routes NOT already in master
+  const extraRoutes: Route[] = [];
+  try {
+    const routesDir = path.resolve('./public/data/routes');
     const files = await fs.readdir(routesDir);
     const jsonFiles = files.filter(file => file.endsWith('.json'));
 
@@ -53,46 +83,25 @@ export async function getAllRoutes(): Promise<Route[]> {
         const content = await fs.readFile(filePath, 'utf-8');
         const routeData = JSON.parse(content);
 
-        if (routeData.rutas && Array.isArray(routeData.rutas)) {
-            allRoutes.push(...routeData.rutas);
-        } else if (Array.isArray(routeData)) {
-            allRoutes.push(...routeData);
-        } else {
-            allRoutes.push(routeData);
+        const list: Route[] = Array.isArray(routeData)
+          ? routeData
+          : routeData.rutas && Array.isArray(routeData.rutas)
+            ? routeData.rutas
+            : [routeData];
+
+        for (const r of list) {
+          if (masterById.has(r.id)) continue;
+          const ts = extractTimestamp(r.id);
+          if (ts && masterByTs.has(ts)) continue;
+          extraRoutes.push(r);
         }
       } catch (e) {
-        console.error(`Error parsing route file ${file}:`, e);
+        console.error(`[getAllRoutes] Error parsing ${file}:`, e);
       }
     }
   } catch {
-    console.warn("Routes directory not accessible or empty, falling back to master_routes.json");
+    // No individual routes dir — fine
   }
 
-  // Merge master_routes.json — skip any route whose timestamp already appears
-  // in individual files (POLYLINE_TIMESTAMP_N and ruta_TIMESTAMP are the same route)
-  try {
-      const masterPath = path.resolve('./public/data/master_routes.json');
-      const masterContent = await fs.readFile(masterPath, 'utf-8');
-      const masterData = JSON.parse(masterContent);
-      if (masterData.rutas && Array.isArray(masterData.rutas)) {
-          // Build a set of both exact IDs and extracted timestamps already loaded
-          const existingIds = new Set(allRoutes.map(r => r.id));
-          const existingTimestamps = new Set(
-            allRoutes.map(r => extractTimestamp(r.id)).filter(Boolean)
-          );
-
-          masterData.rutas.forEach((r: Route) => {
-              if (existingIds.has(r.id)) return; // exact duplicate
-              const ts = extractTimestamp(r.id);
-              if (ts && existingTimestamps.has(ts)) return; // same route, different prefix
-              existingIds.add(r.id);
-              if (ts) existingTimestamps.add(ts);
-              allRoutes.push(r);
-          });
-      }
-  } catch {
-      // master_routes might not exist
-  }
-
-  return allRoutes;
+  return [...masterRoutes, ...extraRoutes];
 }
