@@ -2,5 +2,6 @@
    El sistema de diseño v4 "Mar Turquesa" vive en global.css
    Este archivo importa compatibilidad legacy */
 
-@import "./itcss/settings";
-@import "./itcss/main-legacy";
+/* Migrado de @import a @use para Dart Sass 3.0 compatibility */
+@use "./itcss/settings";
+@use "./itcss/main-legacy";

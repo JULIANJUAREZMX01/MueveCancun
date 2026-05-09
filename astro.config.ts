@@ -40,14 +40,19 @@ export default defineConfig({
         output: {
           // ── Manual chunk splitting for better long-term caching ──────
           manualChunks(id: string) {
-            // Leaflet and map utilities → separate chunk (heavy, rarely changes)
+            // Leaflet → separate chunk (heavy, rarely changes)
             if (id.includes('leaflet')) return 'vendor-leaflet';
-            // Spatial + geometry math → separate chunk
-            if (id.includes('SpatialHash') || id.includes('geometry') || id.includes('CoordinateFinder')) return 'geo-math';
+            // Geo-math utilities (use actual file names)
+            if (
+              id.includes('/utils/SpatialHash') ||
+              id.includes('/utils/coordinateFinder') ||
+              id.includes('/utils/CoordinateFinder') ||
+              id.includes('/utils/CoordinatesStore')
+            ) return 'geo-math';
             // Virtual list utility
-            if (id.includes('virtualList')) return 'virtual-list';
-            // i18n → separate chunk (loaded per-language)
-            if (id.includes('/i18n/')) return 'i18n';
+            if (id.includes('/utils/virtualList')) return 'virtual-list';
+            // i18n → separate chunk
+            if (id.includes('/i18n/') || id.includes('/utils/i18n')) return 'i18n';
           },
         },
       },
