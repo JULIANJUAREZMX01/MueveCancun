@@ -135,6 +135,33 @@
   --color-sunset:    var(--coral-reef);
   --color-coral:     var(--danger);
   --color-jungle:    var(--jungle);
+  /* ── Tokens de compatibilidad ampliados ── */
+  --amber:                  #f59e0b;
+  --amber-light:            #fef3c7;
+  --badge-bg:               var(--sea-xpale);
+  --badge-text:             var(--sea-teal);
+  --color-bg:               var(--surface-bg);
+  --color-surface:          var(--surface-card);
+  --color-text:             var(--text-primary);
+  --color-muted:            var(--text-muted);
+  --color-green:            var(--jungle);
+  --color-primary-alpha-10: rgba(13,148,136,0.10);
+  --color-sunset-alpha-10:  rgba(249,115,22,0.10);
+  --coral:                  var(--coral-reef);
+  --coral-light:            rgba(249,115,22,0.10);
+  --ease-smooth:            cubic-bezier(0.4,0,0.2,1);
+  --sea-light:              #ccfbf1;
+  --space-2xl:              3rem;
+  --sunset-light:           rgba(249,115,22,0.10);
+  --turquoise-light:        #ccfbf1;
+  --text-3xl:               1.875rem;
+  /* Switch component */
+  --switch-width:           44px;
+  --switch-height:          24px;
+  --switch-thumb-size:      18px;
+  --switch-bg-off:          var(--border-medium);
+  --switch-bg-on:           var(--sea-teal);
+
 }
 
 /* ══════════════════════════════════════
