@@ -48,27 +48,28 @@ const isEs = Astro.url.pathname.includes("/es/");
   import { escapeHtml, safeUrl, normalizeString } from "../utils/utils";
   import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
 
-  let map: any = null;
-  let layerGroup: any = null;
-  let stopMarkersLayer: any = null;
-  let activeJourney: any = null;
+  import type { Map, LayerGroup, CircleMarker, Circle, Polyline } from 'leaflet';
+  let map: Map | null = null;
+  let layerGroup: LayerGroup | null = null;
+  let stopMarkersLayer: LayerGroup | null = null;
+  let activeJourney: import('../lib/initWasm').Journey | null = null;
 
   // ── Route drawing ────────────────────────────────────────────────────────
 
-  function drawRoute(mapInstance: any, journey: any, currentLayerGroup: any, coordsDB: any) {
+  function drawRoute(mapInstance: Map, journey: import('../lib/initWasm').Journey, currentLayerGroup: LayerGroup | null, coordsDB: globalThis.Map<string,[number,number]> | Record<string,[number,number]>) {
     if (!mapInstance || !journey) return null;
     if (currentLayerGroup) mapInstance.removeLayer(currentLayerGroup);
 
     const L = window.L;
-    const layers: any[] = [];
+    const layers: Polyline[] = [];
     const allCoords: [number, number][] = [];
 
-    journey.legs.forEach((leg: any) => {
+    journey.legs.forEach((leg) => {
       const routeColor = getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
       const color = leg.color || routeColor;
       const stops = leg.paradas || leg.stops || [];
       const legCoords = stops
-        .map((s: any) => {
+        .map((s) => {
           const name = normalizeString(s.nombre || s.name || "");
           return coordsDB instanceof Map ? coordsDB.get(name) : coordsDB[name];
         })
@@ -121,7 +122,7 @@ const isEs = Astro.url.pathname.includes("/es/");
     if (!L) return false;
 
     // ── 2. Fix de iconos Leaflet con bundlers (SVG gigante en mobile) ───
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    delete (L.Icon.Default.prototype as Record<string,unknown>)._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
       iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -171,7 +172,7 @@ const isEs = Astro.url.pathname.includes("/es/");
     }
 
     if (window.WASM_ROUTES) updateLegend(window.WASM_ROUTES);
-    window.addEventListener('WASM_ENGINE_READY', (e: any) => {
+    window.addEventListener('WASM_ENGINE_READY', (e: Event) => { const ev = e as CustomEvent<{ routes: import('../lib/initWasm').RouteEntry[] }>;
       if (e.detail?.routes) updateLegend(e.detail.routes);
     });
 
@@ -192,13 +193,13 @@ const isEs = Astro.url.pathname.includes("/es/");
     const wasmRoutes: RouteEntry[] = window.WASM_ROUTES ?? [];
     const landmarkMap: Map<string, string> = new Map();
     wasmRoutes.forEach((r: RouteEntry) => {
-      (r.paradas || []).forEach((p: any) => {
-        if (p.landmarks) landmarkMap.set(normalizeString(p.nombre), p.landmarks);
+      (r.paradas || []).forEach((p) => {
+        if ((p as Record<string,unknown>).landmarks) landmarkMap.set(normalizeString(p.nombre ?? ''), (p as Record<string,unknown>).landmarks as string);
       });
     });
 
-    const markerLayers: any[] = [];
-    allStops.forEach(([key, coords]: any) => {
+    const markerLayers: CircleMarker[] = [];
+    allStops.forEach(([key, coords]: [string, [number, number]]) => {
       const displayName = coordinatesStore.getOriginalName(key) || key;
       const hubRouteCount = hubSet.get(key) ?? 0;
       const isHub = hubRouteCount >= 3;
@@ -242,17 +243,17 @@ const isEs = Astro.url.pathname.includes("/es/");
     }
 
     // ── 7. Eventos del mapa ─────────────────────────────────────────────
-    map.on("click", (e: any) => {
+    map.on("click", (e: import("leaflet").LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
       const result = coordinatesStore.findNearestWithDistance(lat, lng);
       if (!result || result.distanceKm > 0.8) return;
 
       const c = (coordsDB instanceof Map
         ? coordsDB.get(normalizeString(result.name))
-        : (coordsDB as any)[normalizeString(result.name)]) || [lat, lng];
+        : (coordsDB as Record<string,[number,number]>)[normalizeString(result.name)]) || [lat, lng];
 
       L.popup()
-        .setLatLng(c as any)
+        .setLatLng(c as [number,number])
         .setContent(`
           <div class="map-popup">
             <p class="map-popup__title">${escapeHtml(result.name)}</p>
@@ -266,7 +267,7 @@ const isEs = Astro.url.pathname.includes("/es/");
         .openOn(map);
     });
 
-    window.addEventListener("SHOW_ROUTE_ON_MAP", (e: any) => {
+    window.addEventListener("SHOW_ROUTE_ON_MAP", (e: Event) => { const se = e as CustomEvent<{ journey: import('../lib/initWasm').Journey }>;
       const rawJourney = e.detail?.journey;
       if (!rawJourney) return;
       const journey = enrichJourneyLegs(rawJourney);
@@ -283,10 +284,10 @@ const isEs = Astro.url.pathname.includes("/es/");
     });
 
     // GPS dot via telemetry
-    let gpsDot: any = null;
-    let gpsAccCircle: any = null;
-    window.addEventListener('mc:position', (e: any) => {
-      const { lat, lng, accuracy } = e.detail ?? {};
+    let gpsDot: CircleMarker | null = null;
+    let gpsAccCircle: Circle | null = null;
+    window.addEventListener('mc:position', (e: Event) => {
+      const { lat, lng, accuracy } = (e as CustomEvent<{ lat: number; lng: number; accuracy: number }>).detail ?? {};
       if (!lat || !lng || !map) return;
       const pos: [number, number] = [lat, lng];
       if (!gpsDot) {
@@ -306,13 +307,64 @@ const isEs = Astro.url.pathname.includes("/es/");
       }
     });
 
-    // GPS center button
-    document.getElementById("gps-center-btn")?.addEventListener("click", () => {
-      navigator.geolocation?.getCurrentPosition(({ coords }) => {
-        const pos: [number, number] = [coords.latitude, coords.longitude];
-        map?.setView(pos, 16);
-        window.dispatchEvent(new CustomEvent('mc:position', { detail: { lat: coords.latitude, lng: coords.longitude, accuracy: coords.accuracy } }));
+    // GPS center button — soft prompt + retry + ARIA states
+    const gpsBtn = document.getElementById("gps-center-btn") as HTMLButtonElement | null;
+    let gpsRequesting = false;
+
+    function setGpsBtnState(state: 'idle' | 'requesting' | 'denied' | 'timeout' | 'granted') {
+      if (!gpsBtn) return;
+      const labels: Record<string, string> = {
+        idle: isEs ? 'Mi ubicación' : 'My location',
+        requesting: isEs ? 'Buscando GPS…' : 'Finding GPS…',
+        denied: isEs ? 'Permiso denegado' : 'Permission denied',
+        timeout: isEs ? 'GPS tardó mucho' : 'GPS timed out',
+        granted: isEs ? 'Ubicación encontrada' : 'Location found',
+      };
+      gpsBtn.setAttribute('aria-label', labels[state] ?? labels['idle']);
+      gpsBtn.dataset.gpsState = state;
+      gpsBtn.disabled = state === 'requesting';
+      // Update tooltip text
+      const tooltip = gpsBtn.nextElementSibling as HTMLElement | null;
+      if (tooltip?.classList.contains('map-tooltip')) tooltip.textContent = labels[state] ?? labels['idle'];
+    }
+
+    gpsBtn?.addEventListener("click", async () => {
+      if (gpsRequesting) return;
+      gpsRequesting = true;
+      setGpsBtnState('requesting');
+
+      const { requestGeoLocation } = await import('../utils/geoUtils');
+      const result = await requestGeoLocation({
+        timeout: 10_000,
+        onState: (s) => {
+          if (s === 'requesting') setGpsBtnState('requesting');
+          else if (s === 'denied') {
+            setGpsBtnState('denied');
+            // Show retry toast after 2s
+            setTimeout(() => setGpsBtnState('idle'), 3000);
+            import('../utils/utils').then(({ showToast }) =>
+              showToast(isEs ? 'Permiso denegado — actívalo en ajustes del navegador' : 'Permission denied — enable in browser settings', 'warning')
+            );
+          } else if (s === 'timeout') {
+            setGpsBtnState('timeout');
+            setTimeout(() => setGpsBtnState('idle'), 3000);
+            import('../utils/utils').then(({ showToast }) =>
+              showToast(isEs ? 'GPS tardó demasiado. Inténtalo de nuevo.' : 'GPS timed out. Please try again.', 'warning')
+            );
+          } else if (s === 'unavailable') {
+            setGpsBtnState('denied');
+            setTimeout(() => setGpsBtnState('idle'), 3000);
+          }
+        },
       });
+
+      if (result) {
+        setGpsBtnState('granted');
+        map?.setView([result.lat, result.lng], 16);
+        window.dispatchEvent(new CustomEvent('mc:position', { detail: { lat: result.lat, lng: result.lng, accuracy: result.accuracy } }));
+        setTimeout(() => setGpsBtnState('idle'), 2000);
+      }
+      gpsRequesting = false;
     });
 
     // Clear route button
@@ -323,8 +375,8 @@ const isEs = Astro.url.pathname.includes("/es/");
     });
 
     // Language change
-    window.addEventListener('LANGUAGE_CHANGE', (e: any) => {
-      const lang = e.detail?.lang;
+    window.addEventListener('LANGUAGE_CHANGE', (e: Event) => {
+      const lang = (e as CustomEvent<{lang:string}>).detail?.lang;
       if (!lang) return;
       window.location.href = window.location.pathname.replace(/^\/(es|en)/, '/' + lang);
     });
@@ -339,7 +391,7 @@ const isEs = Astro.url.pathname.includes("/es/");
 
   // ── Popup action delegation ──────────────────────────────────────────────
 
-  function handleMapAction(e: any) {
+  function handleMapAction(e: Event) {
     const btn = (e.target as HTMLElement)?.closest(".js-map-stop-action") as HTMLElement | null;
     if (!btn) return;
     const name   = btn.dataset.stopName;
@@ -597,6 +649,25 @@ const isEs = Astro.url.pathname.includes("/es/");
 
   /* ── GPS dot pulse ── */
   :global(.gps-dot) { animation: gps-pulse 2s infinite; }
+  /* GPS button state styles */
+  .map-control-btn[data-gps-state="requesting"] {
+    animation: spin 1s linear infinite;
+    opacity: 0.7;
+  }
+  .map-control-btn[data-gps-state="denied"],
+  .map-control-btn[data-gps-state="unavailable"] {
+    color: var(--coral-reef, #F97316);
+    border-color: var(--coral-reef, #F97316);
+  }
+  .map-control-btn[data-gps-state="timeout"] {
+    color: #F59E0B;
+    border-color: #F59E0B;
+  }
+  .map-control-btn[data-gps-state="granted"] {
+    color: var(--sea-teal, #2DD4BF);
+    border-color: var(--sea-teal, #2DD4BF);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes gps-pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.6; }

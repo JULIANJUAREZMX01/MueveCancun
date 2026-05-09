@@ -62,21 +62,28 @@ export class CoordinatesStore {
                 this.nearestCache.clear();
                 
                 if (data.rutas) {
+                    // First pass: collect into Map (auto-deduplicates by normalized key)
+                    const rawMap = new Map<string, { nombre: string; lat: number; lng: number }>();
                     data.rutas.forEach((route: RouteData) => {
                         route.paradas.forEach(stop => {
-                            // Resolve lat/lng from whichever property is present, skipping stops with no coords
                             const lat = stop.lat ?? stop.latitude;
                             const lng = stop.lng ?? stop.longitude ?? stop.lon;
                             if (lat == null || lng == null || typeof lat !== 'number' || typeof lng !== 'number') return;
-                            // Normalize Key (accent-insensitive lookup)
                             const key = normalizeString(stop.nombre);
-                            if (this.db) this.db.set(key, [lat, lng]);
-                            // Preserve original casing for display
-                            this.originalNames.set(key, stop.nombre.trim());
+                            // Only keep first occurrence (prevents duplicate spatial inserts)
+                            if (!rawMap.has(key)) {
+                                rawMap.set(key, { nombre: stop.nombre.trim(), lat, lng });
+                            }
                         });
                     });
+
+                    // Second pass: populate db, originalNames (deduped)
+                    for (const [key, { nombre, lat, lng }] of rawMap.entries()) {
+                        if (this.db) this.db.set(key, [lat, lng]);
+                        this.originalNames.set(key, nombre);
+                    }
                 }
-                // Populate Spatial Index and List
+                // Populate Spatial Index and List (guaranteed no duplicates)
                 if (this.db) {
                     for (const [name, coords] of this.db.entries()) {
                          const lat = coords[0];

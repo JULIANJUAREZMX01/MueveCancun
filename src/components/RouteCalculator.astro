@@ -11,7 +11,7 @@ const t = useTranslations(lang);
 
 <div class="route-calculator">
   <Card className="route-calculator__card">
-    <div class="route-calculator__fields">
+    <div class="route-calculator__fields" role="search" aria-label={isEs ? "Buscador de rutas" : "Route finder"}>
       <div class="route-calculator__input-group">
         <Input
           id="origin-input"
@@ -19,10 +19,24 @@ const t = useTranslations(lang);
           placeholder={t('calc.placeholder.origin')}
           className="route-calculator__input"
           list="locations"
+          aria-label={isEs ? "Origen del viaje" : "Trip origin"}
+          autocomplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls="locations"
+          aria-expanded="false"
         />
         <div class="route-calculator__icon route-calculator__icon--origin">
            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
         </div>
+      </div>
+
+      <div class="route-calculator__swap-row" aria-hidden="true">
+        <button id="swap-btn" class="route-calculator__swap-btn" type="button"
+          aria-label={isEs ? "Intercambiar origen y destino" : "Swap origin and destination"}
+          title={isEs ? "Intercambiar" : "Swap"}>
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+        </button>
       </div>
 
       <div class="route-calculator__input-group">
@@ -32,6 +46,12 @@ const t = useTranslations(lang);
           placeholder={t('calc.placeholder.dest')}
           className="route-calculator__input"
           list="locations"
+          aria-label={isEs ? "Destino del viaje" : "Trip destination"}
+          autocomplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls="locations"
+          aria-expanded="false"
         />
         <div class="route-calculator__icon route-calculator__icon--dest">
            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
@@ -46,7 +66,7 @@ const t = useTranslations(lang);
     </div>
   </Card>
 
-  <div id="results-info" class="results-info hidden">
+  <div id="results-info" class="results-info hidden" aria-live="polite" aria-atomic="false" role="region" aria-label={isEs ? "Resultados de ruta" : "Route results"}>
       <div class="results-info__header">
           <span class="results-info__label" id="results-count-label">OPCIONES ENCONTRADAS</span>
           <span class="results-info__badge" id="results-time-badge"></span>
@@ -187,6 +207,10 @@ const t = useTranslations(lang);
     opacity: 0.5;
     cursor: not-allowed;
   }
+  .route-calculator__submit:focus-visible {
+    outline: 2px solid var(--sea-bright);
+    outline-offset: 2px;
+  }
 
   .route-calculator__submit-text {
     display: flex;
@@ -271,6 +295,11 @@ const t = useTranslations(lang);
   :global(.journey-card:active) {
     transform: scale(0.98);
   }
+  :global(.journey-card:focus-visible) {
+    outline: 2px solid var(--sea-bright);
+    outline-offset: 2px;
+    box-shadow: var(--shadow-md), 0 0 0 4px rgba(20,184,166,0.2);
+  }
 
   /* ── Estado vacío ── */
   :global(.journey-empty) {
@@ -322,6 +351,38 @@ const t = useTranslations(lang);
       const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
       const originInput = document.getElementById('origin-input') as HTMLInputElement;
       const destInput = document.getElementById('dest-input') as HTMLInputElement;
+
+      // ── Keyboard: Enter triggers search from either input ──────────────────
+      [originInput, destInput].forEach(input => {
+        input?.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            btn?.click();
+          }
+          if (e.key === 'Tab') {
+            input.setAttribute('aria-expanded', 'false');
+          }
+        });
+        input?.addEventListener('input', () => {
+          input.setAttribute('aria-expanded', input.value.length > 0 ? 'true' : 'false');
+        });
+      });
+
+      // ── Swap button ─────────────────────────────────────────────────────────
+      document.getElementById('swap-btn')?.addEventListener('click', () => {
+        if (!originInput || !destInput) return;
+        const tmp = originInput.value;
+        originInput.value = destInput.value;
+        destInput.value = tmp;
+        originInput.focus();
+        // Animate swap
+        originInput.classList.add('swap-flash');
+        destInput.classList.add('swap-flash');
+        setTimeout(() => {
+          originInput.classList.remove('swap-flash');
+          destInput.classList.remove('swap-flash');
+        }, 400);
+      });
       const resultsInfo = document.getElementById('results-info');
       const resultsContainer = document.getElementById('results-container');
       const timeBadge = document.getElementById('results-time-badge');
@@ -345,7 +406,7 @@ const t = useTranslations(lang);
       }
 
 
-      window.addEventListener("MAP_SET_STOP", (e: any) => {
+      window.addEventListener("MAP_SET_STOP", (e: Event) => { const me = e as CustomEvent<{ field: string; name: string }>;
         const { type, name } = e.detail;
         if (type === "origin") originInput.value = name;
         else if (type === "dest") destInput.value = name;
@@ -376,8 +437,8 @@ const t = useTranslations(lang);
               if (timeBadge) timeBadge.textContent = `${(endSearch - startSearch).toFixed(2)}ms`;
 
               if (results && results.length > 0) {
-                  results.forEach((rawR: any) => {
-                      const r = enrichJourneyLegs(rawR as any) as any;
+                  results.forEach((rawR: import('../lib/initWasm').Journey) => {
+                      const r = enrichJourneyLegs(rawR);
                       const card = document.createElement('div');
                       card.className = 'journey-card';
 
@@ -413,9 +474,16 @@ const t = useTranslations(lang);
                         </div>
                       `;
 
-                      card.addEventListener('click', () => {
+                      card.setAttribute('tabindex', '0');
+                      card.setAttribute('role', 'button');
+                      card.setAttribute('aria-label', `${leg.route_name} - $${r.total_price} MXN`);
+                      const activateCard = () => {
                          window.dispatchEvent(new CustomEvent("SHOW_ROUTE_ON_MAP", { detail: { journey: r } }));
                          window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED", { detail: { count: results.length, origin: resolvedO, dest: resolvedD } }));
+                      };
+                      card.addEventListener('click', activateCard);
+                      card.addEventListener('keydown', (ke: KeyboardEvent) => {
+                        if (ke.key === 'Enter' || ke.key === ' ') { ke.preventDefault(); activateCard(); }
                       });
 
                       resultsContainer.appendChild(card);
@@ -556,6 +624,56 @@ const t = useTranslations(lang);
 </style>
 
 <style>
+  
+  /* ── Swap row ── */
+  .route-calculator__swap-row {
+    display: flex;
+    justify-content: center;
+    margin: -0.15rem 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  .route-calculator__swap-btn {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--r-full);
+    background: var(--surface-card);
+    border: 1.5px solid var(--border-light);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+      transform   var(--t-fast) var(--ease-back),
+      background  var(--t-fast) var(--ease),
+      color       var(--t-fast) var(--ease);
+    box-shadow: var(--shadow-sm);
+  }
+  .route-calculator__swap-btn:hover {
+    background: var(--sea-xpale);
+    color: var(--sea-teal);
+    transform: rotate(180deg);
+  }
+  .route-calculator__swap-btn:active {
+    transform: rotate(180deg) scale(0.9);
+  }
+  .route-calculator__swap-btn:focus-visible {
+    outline: 2px solid var(--sea-bright);
+    outline-offset: 2px;
+  }
+
+  /* Swap flash animation on inputs */
+  :global(.swap-flash) {
+    animation: swap-pulse 0.4s var(--ease-spring);
+  }
+  @keyframes swap-pulse {
+    0% { background: var(--surface-card); }
+    40% { background: var(--sea-xpale); }
+    100% { background: var(--surface-card); }
+  }
+
   /* Hardening the layout against overlaps */
   .route-calculator {
     position: relative;
