@@ -1,18 +1,25 @@
 {
   "name": "MueveCancún — Tu GPS del Caribe",
   "short_name": "MueveCancún",
-  "description": "Encuentra tu ruta de transporte público en Cancún. Funciona sin internet. 78+ rutas, motor WASM, ciudadano.",
+  "description": "App de transporte público de Cancún. 78+ rutas, tiempo real, offline, gratis.",
   "start_url": "/es/home",
   "scope": "/",
   "id": "/es/home",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui", "browser"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#011820",
   "theme_color": "#0d9488",
   "orientation": "portrait-primary",
   "lang": "es",
   "dir": "ltr",
-  "categories": ["navigation", "travel", "utilities"],
+  "categories": [
+    "navigation",
+    "travel",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "/icons/pwa-192x192.png",
@@ -37,67 +44,62 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
     }
   ],
   "shortcuts": [
     {
-      "name": "Calcular Ruta",
+      "name": "Buses en vivo",
+      "short_name": "En vivo",
+      "description": "Ver buses en tiempo real",
+      "url": "/es/tracking",
+      "icons": [
+        {
+          "src": "/icons/pwa-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Calcular ruta",
       "short_name": "Rutas",
-      "description": "Calcula tu ruta de transporte en Cancún",
+      "description": "Planificar mi viaje",
       "url": "/es/home",
-      "icons": [{ "src": "/icons/bus.svg", "sizes": "96x96", "type": "image/svg+xml" }]
+      "icons": [
+        {
+          "src": "/icons/pwa-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
-      "name": "Ver Todas las Rutas",
-      "short_name": "Directorio",
-      "description": "Consulta el directorio completo de rutas",
-      "url": "/es/rutas",
-      "icons": [{ "src": "/icons/map-pin.svg", "sizes": "96x96", "type": "image/svg+xml" }]
-    },
-    {
-      "name": "Mi Tarjeta",
-      "short_name": "Tarjeta",
-      "description": "Saldo y recargas de tu billetera de tránsito",
-      "url": "/es/wallet",
-      "icons": [{ "src": "/icons/credit-card.svg", "sizes": "96x96", "type": "image/svg+xml" }]
-    },
-    {
-      "name": "Comunidad",
-      "short_name": "Reportes",
-      "description": "Reportes ciudadanos en tiempo real",
+      "name": "Foro ciudadano",
+      "short_name": "Foro",
+      "description": "Ver reportes de la comunidad",
       "url": "/es/community",
-      "icons": [{ "src": "/icons/flag.svg", "sizes": "96x96", "type": "image/svg+xml" }]
+      "icons": [
+        {
+          "src": "/icons/pwa-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
+  "share_target": {
+    "action": "/es/home",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
   "screenshots": [
     {
       "src": "/og-image.png",
       "sizes": "1200x630",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "MueveCancún — Calculadora de Rutas en Cancún"
-    },
-    {
-      "src": "/og-image.png",
-      "sizes": "1200x630",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "MueveCancún — Tu GPS del Caribe"
+      "label": "MueveCancún — Mapa de rutas"
     }
-  ],
-  "related_applications": [],
-  "prefer_related_applications": false,
-  "handle_links": "preferred",
-  "launch_handler": {
-    "client_mode": ["navigate-existing", "auto"]
-  },
-  "edge_side_panel": {
-    "preferred_width": 400
-  }
+  ]
 }
