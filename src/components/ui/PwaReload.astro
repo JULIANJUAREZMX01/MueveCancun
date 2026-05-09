@@ -13,99 +13,59 @@
 </div>
 
 <style>
-    .pwa-popover {
-        position: fixed;
-        bottom: 6rem;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 90%;
-        max-width: 28rem;
-        border: none;
-        background: transparent;
-        padding: 0;
-        margin: 0;
-        overflow: visible;
-        opacity: 1;
-        translate: 0 0;
-        transition:
-            opacity 0.4s var(--ease-out),
-            translate 0.4s var(--ease-back),
-            display 0.4s allow-discrete,
-            overlay 0.4s allow-discrete;
-        z-index: 1000;
-    }
+  /* ═══ PWA RELOAD TOAST — Mar Turquesa v4 ═══ */
+  .pwa-popover {
+    position: fixed;
+    bottom: calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom, 0px) + 1rem);
+    left: 50%; transform: translateX(-50%);
+    width: min(92vw, 400px); max-width: 400px;
+    border: none; background: transparent; padding: 0; margin: 0; overflow: visible;
+    z-index: 9998;
+    opacity: 1; translate: 0 0;
+    transition:
+      opacity   0.4s var(--ease-spring),
+      translate 0.4s var(--ease-spring),
+      display   0.4s allow-discrete,
+      overlay   0.4s allow-discrete;
+  }
+  @media (min-width: 769px) {
+    .pwa-popover { bottom: 2rem; left: calc(50% + var(--sidebar-w, 76px)/2); }
+  }
 
-    .pwa-popover__card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 1rem;
-        background-color: var(--glass-bg);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r-xl);
-        box-shadow: var(--shadow-xl);
-    }
+  .pwa-popover__card {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--r-full);
+    box-shadow: var(--shadow-xl), var(--shadow-teal);
+    animation: scale-in 0.35s var(--ease-spring) both;
+  }
 
-    .pwa-popover__content {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
+  .pwa-popover__content { display: flex; flex-direction: column; gap: 1px; }
+  .pwa-popover__title {
+    font-family: var(--font-display); font-size: 0.9rem; font-weight: 900;
+    color: var(--text-primary); margin: 0; letter-spacing: -0.01em;
+  }
+  .pwa-popover__subtitle { font-family: var(--font-sans); font-size: 0.72rem; color: var(--text-tertiary); margin: 0; font-weight: 500; }
 
-    .pwa-popover__title {
-        font-size: 0.875rem;
-        font-weight: 900;
-        color: var(--text-primary);
-        margin: 0;
-    }
+  .pwa-popover__btn {
+    background: var(--gradient-primary); color: white;
+    padding: 0.55rem 1.1rem; border-radius: var(--r-full);
+    font-family: var(--font-display); font-size: 0.72rem; font-weight: 900;
+    border: none; cursor: pointer; box-shadow: var(--shadow-teal);
+    text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;
+    transition: all var(--t-fast) var(--ease-back); flex-shrink: 0;
+  }
+  .pwa-popover__btn:hover { transform: scale(1.08); box-shadow: var(--shadow-teal-lg); }
+  .pwa-popover__btn:active { transform: scale(0.95); }
 
-    .pwa-popover__subtitle {
-        font-size: 0.75rem;
-        color: var(--text-tertiary);
-        margin: 0;
-        font-weight: 700;
-    }
-
-    .pwa-popover__btn {
-        background-color: var(--color-primary);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: var(--r-md);
-        font-size: 0.7rem;
-        font-weight: 900;
-        border: none;
-        cursor: pointer;
-        box-shadow: var(--shadow-teal);
-        transition: all 0.2s var(--ease);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .pwa-popover__btn:hover {
-        background-color: var(--color-primary-hover);
-        transform: translateY(-1px);
-    }
-
-    @starting-style {
-        .pwa-popover:popover-open {
-            opacity: 0;
-            translate: 0 2rem;
-        }
-    }
-
-    .pwa-popover:not(:popover-open) {
-        opacity: 0;
-        translate: 0 2rem;
-        display: none;
-    }
-
-    @media (min-width: 768px) {
-        .pwa-popover {
-            bottom: 2rem;
-        }
-    }
+  @starting-style {
+    .pwa-popover:popover-open { opacity: 0; translate: 0 2rem; }
+  }
+  .pwa-popover:not(:popover-open) { opacity: 0; translate: 0 2rem; display: none; }
 </style>
 
 <script>

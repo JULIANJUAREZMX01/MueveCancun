@@ -64,8 +64,14 @@ const lang = getLangFromUrl(Astro.url);
     <!-- Tema sin flash -->
     <script is:inline>
       (function(){
-        var t = localStorage.getItem("theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-        document.documentElement.classList.toggle("dark", t === "dark");
+        try {
+          var t = localStorage.getItem("theme");
+          if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          document.documentElement.classList.toggle("dark", t === "dark");
+          // Actualizar theme-color meta dinámicamente
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", t === "dark" ? "#011820" : "#0d9488");
+        } catch(e) {}
       })();
     </script>
   </head>
