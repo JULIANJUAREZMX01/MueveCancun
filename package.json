@@ -69,7 +69,7 @@
     "vite": "^8.0.8"
   },
   "optionalDependencies": {
-    "@mlc-ai/web-llm": "^0.2.82",
+    "@mlc-ai/web-llm": "^0.2.83",
     "@rollup/rollup-linux-x64-gnu": "^4.60.1"
   },
   "devDependencies": {
