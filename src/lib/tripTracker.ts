@@ -2,8 +2,7 @@
  * TripTracker — Motor de seguimiento en tiempo real
  * Guía al usuario desde el paradero hasta el destino
  */
-import { showLocalNotif, notifyTripEvent, getDeviceId } from './notifications';
-import type { Route } from '../utils/routes';
+import { notifyTripEvent, getDeviceId } from './notifications';
 
 export interface TripState {
   tripId: string | null;
@@ -14,23 +13,24 @@ export interface TripState {
   busUnitId: string | null;
   occupancyPct: number;
   startedAt: number | null;
+  boardedAt: number | null;
   watchId: number | null;
 }
 
 const state: TripState = {
   tripId: null, routeId: null, phase: 'idle',
   nearestStop: null, nextStop: null, busUnitId: null,
-  occupancyPct: 0, startedAt: null, watchId: null
+  occupancyPct: 0, startedAt: null, boardedAt: null, watchId: null
 };
 
-const TELEMETRY_INTERVAL = 15000; // cada 15s
+const TELEMETRY_INTERVAL = 15000;
 let telemetryTimer: ReturnType<typeof setInterval> | null = null;
 let lastLat = 0, lastLng = 0, lastHeading = 0;
 
 export function getState(): TripState { return { ...state }; }
 
 /** Iniciar seguimiento de un viaje */
-export async function startTrip(route: Route, originStop: string, destStop: string): Promise<string | null> {
+export async function startTrip(routeId: string, originStop: string, destStop: string): Promise<string | null> {
   if (state.phase !== 'idle') await stopTrip();
 
   const device_id = getDeviceId();
@@ -39,17 +39,18 @@ export async function startTrip(route: Route, originStop: string, destStop: stri
     const res = await fetch('/api/v1/trips', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'start', device_id, route_id: route.id, origin_stop: originStop, dest_stop: destStop })
+      body: JSON.stringify({ action: 'start', device_id, route_id: routeId, origin_stop: originStop, dest_stop: destStop })
     });
     const data = await res.json();
     state.tripId = data.trip_id;
-    state.routeId = route.id;
-    state.phase = 'waiting';
-    state.startedAt = Date.now();
-    state.nearestStop = originStop;
   } catch { state.tripId = 'local_' + Date.now(); }
 
-  await notifyTripEvent('trip_start', { route: route.id, stop: originStop });
+  state.routeId = routeId;
+  state.phase = 'waiting';
+  state.startedAt = Date.now();
+  state.nearestStop = originStop;
+
+  await notifyTripEvent('trip_start', { route: routeId, stop: originStop });
   startGpsWatch();
   dispatchStateChange();
   return state.tripId;
@@ -59,7 +60,7 @@ export async function startTrip(route: Route, originStop: string, destStop: stri
 export async function boardBus(busUnitId?: string): Promise<void> {
   state.phase = 'on_bus';
   state.busUnitId = busUnitId || null;
-  state.boarded_at = Date.now();
+  state.boardedAt = Date.now();
 
   const device_id = getDeviceId();
   await fetch('/api/v1/trips', {
@@ -72,7 +73,7 @@ export async function boardBus(busUnitId?: string): Promise<void> {
     })
   }).catch(() => {});
 
-  await notifyTripEvent('board_now', { route: state.routeId });
+  await notifyTripEvent('board_now', { route: state.routeId ?? '' });
   dispatchStateChange();
 }
 
@@ -101,7 +102,10 @@ export async function arriveAtDestination(): Promise<void> {
     body: JSON.stringify({ action: 'arrive', device_id, trip_id: state.tripId, route_id: state.routeId })
   }).catch(() => {});
 
-  await notifyTripEvent('arrived', { destination: '' });
+  const trips = parseInt(localStorage.getItem('mc_total_trips') || '0') + 1;
+  localStorage.setItem('mc_total_trips', String(trips));
+
+  await notifyTripEvent('arrived', { destination: state.nearestStop ?? '' });
   stopGpsWatch();
   dispatchStateChange();
 }
@@ -111,12 +115,13 @@ export async function stopTrip(): Promise<void> {
   stopGpsWatch();
   state.phase = 'idle'; state.tripId = null; state.routeId = null;
   state.nearestStop = null; state.nextStop = null; state.busUnitId = null;
+  state.boardedAt = null;
   dispatchStateChange();
 }
 
 function startGpsWatch(): void {
   if (state.watchId !== null) return;
-  if (!navigator.geolocation) return;
+  if (typeof navigator === 'undefined' || !navigator.geolocation) return;
 
   state.watchId = navigator.geolocation.watchPosition(
     (pos) => {
@@ -131,7 +136,6 @@ function startGpsWatch(): void {
     { enableHighAccuracy: true, maximumAge: 3000 }
   );
 
-  // Enviar telemetría al servidor periódicamente
   telemetryTimer = setInterval(async () => {
     if (!lastLat) return;
     const device_id = getDeviceId();
@@ -149,7 +153,7 @@ function startGpsWatch(): void {
 }
 
 function stopGpsWatch(): void {
-  if (state.watchId !== null) {
+  if (state.watchId !== null && typeof navigator !== 'undefined') {
     navigator.geolocation.clearWatch(state.watchId);
     state.watchId = null;
   }
@@ -157,7 +161,7 @@ function stopGpsWatch(): void {
 }
 
 function dispatchStateChange(): void {
-  window.dispatchEvent(new CustomEvent('mc:trip-state', { detail: getState() }));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('mc:trip-state', { detail: getState() }));
+  }
 }
-
-declare const state: TripState & { boarded_at?: number };
