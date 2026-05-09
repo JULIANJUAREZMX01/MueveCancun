@@ -64,7 +64,7 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: 'message required' }), { status: 400 });
     }
 
-    const groqKey = process.env.GROQ_API_KEY;
+    const groqKey = process.env['GROQ_API_KEY'] ?? (import.meta as any).env?.GROQ_API_KEY;
 
     // ── Path 1: Groq LLM ─────────────────────────────────────────────────────
     if (groqKey) {
