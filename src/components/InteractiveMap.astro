@@ -311,6 +311,59 @@ const isEs = Astro.url.pathname.includes("/es/");
     const gpsBtn = document.getElementById("gps-center-btn") as HTMLButtonElement | null;
     let gpsRequesting = false;
 
+    // ── Auto-follow (long-press activation) ──────────────────────────────
+    let autoFollow = false;
+    let followWatchId: number | null = null;
+    let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+    const LONG_PRESS_MS = 600;
+
+    function startAutoFollow(): void {
+      if (autoFollow) { stopAutoFollow(); return; } // toggle off
+      autoFollow = true;
+      if (gpsBtn) {
+        gpsBtn.classList.add('gps-follow-active');
+        gpsBtn.setAttribute('aria-label', isEs ? 'Seguimiento GPS activo' : 'GPS tracking active');
+        gpsBtn.setAttribute('aria-pressed', 'true');
+      }
+      // Show visual feedback toast
+      import('../utils/utils').then(({ showToast }) =>
+        showToast(isEs ? '📍 Seguimiento GPS activo' : '📍 GPS tracking active', 'info')
+      );
+      // Watch position
+      if ('geolocation' in navigator) {
+        followWatchId = navigator.geolocation.watchPosition(
+          (pos) => {
+            if (!autoFollow || !map) return;
+            const { latitude: lat, longitude: lng } = pos.coords;
+            map.setView([lat, lng], map.getZoom() < 15 ? 16 : map.getZoom(), { animate: true });
+            window.dispatchEvent(new CustomEvent('mc:position', {
+              detail: { lat, lng, accuracy: pos.coords.accuracy }
+            }));
+          },
+          () => stopAutoFollow(),
+          { enableHighAccuracy: true, maximumAge: 2000, timeout: 10_000 },
+        );
+      }
+    }
+
+    function stopAutoFollow(): void {
+      autoFollow = false;
+      if (followWatchId !== null) {
+        navigator.geolocation.clearWatch(followWatchId);
+        followWatchId = null;
+      }
+      if (gpsBtn) {
+        gpsBtn.classList.remove('gps-follow-active');
+        gpsBtn.setAttribute('aria-pressed', 'false');
+        setGpsBtnState('idle');
+      }
+    }
+
+    // Stop auto-follow when user manually pans the map
+    if (map) {
+      map.on('dragstart', () => { if (autoFollow) stopAutoFollow(); });
+    }
+
     function setGpsBtnState(state: 'idle' | 'requesting' | 'denied' | 'timeout' | 'granted') {
       if (!gpsBtn) return;
       const labels: Record<string, string> = {
@@ -328,7 +381,25 @@ const isEs = Astro.url.pathname.includes("/es/");
       if (tooltip?.classList.contains('map-tooltip')) tooltip.textContent = labels[state] ?? labels['idle'];
     }
 
+    // Long-press → start auto-follow
+    const cancelLongPress = (): void => {
+      if (longPressTimer !== null) { clearTimeout(longPressTimer); longPressTimer = null; }
+    };
+
+    gpsBtn?.addEventListener('pointerdown', () => {
+      longPressTimer = setTimeout(() => {
+        longPressTimer = null;
+        startAutoFollow();
+      }, LONG_PRESS_MS);
+    });
+    gpsBtn?.addEventListener('pointerup',     cancelLongPress);
+    gpsBtn?.addEventListener('pointerleave',  cancelLongPress);
+    gpsBtn?.addEventListener('pointercancel', cancelLongPress);
+    // Prevent context menu on long-press (mobile)
+    gpsBtn?.addEventListener('contextmenu', (e) => e.preventDefault());
+
     gpsBtn?.addEventListener("click", async () => {
+      if (longPressTimer === null && autoFollow) { stopAutoFollow(); return; } // already handled by longpress
       if (gpsRequesting) return;
       gpsRequesting = true;
       setGpsBtnState('requesting');
@@ -671,6 +742,26 @@ const isEs = Astro.url.pathname.includes("/es/");
   @keyframes gps-pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.6; }
+  }
+  /* Auto-follow active state */
+  .map-control-btn.gps-follow-active {
+    background: var(--sea-teal);
+    color: #fff;
+    border-color: var(--sea-teal);
+    box-shadow: 0 0 0 4px rgba(45,212,191,0.25), var(--shadow-teal);
+    animation: follow-pulse 2s ease-in-out infinite;
+  }
+  @keyframes follow-pulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(45,212,191,0.25), var(--shadow-teal); }
+    50%       { box-shadow: 0 0 0 8px rgba(45,212,191,0.10), var(--shadow-teal); }
+  }
+  /* Long-press hint ripple */
+  .map-control-btn:active:not([disabled]) {
+    animation: press-ripple 0.6s ease-out;
+  }
+  @keyframes press-ripple {
+    0%   { box-shadow: 0 0 0 0   rgba(45,212,191,0.5); }
+    100% { box-shadow: 0 0 0 14px rgba(45,212,191,0); }
   }
 
   /* ── Keyframes globales ── */

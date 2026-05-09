@@ -134,65 +134,43 @@ const types = ["all", "bus", "combi", "van", "ado"];
       {isEs ? " rutas" : " routes"}
     </div>
 
-    <!-- Grid de rutas -->
-    <div id="routes-grid" class="routes-grid">
-      {routes.map(route => (
-        <a
-          href={"/" + lang + "/ruta/" + encodeURIComponent(route.id)}
-          class="route-card"
-          data-name={route.name.toLowerCase()}
-          data-type={route.transport_type}
-          data-origin={(route.origin_hub || "").toLowerCase()}
-          data-dest={(route.dest_hub || "").toLowerCase()}
-          style={route.color ? `border-left-color: ${route.color}` : undefined}
-        >
-          <!-- Transport type icon -->
-          <div class="route-card__type">
-            <span class="transport-emoji" aria-hidden="true">
-              {transportEmoji[route.transport_type] || "🚌"}
-            </span>
-          </div>
+    <!-- Grid de rutas (virtualizado) -->
+    <!-- Los datos de rutas se serializan en JSON para el virtual-list client-side -->
+    <script id="routes-data" type="application/json" set:html={JSON.stringify(routes.map(r => ({
+      id: r.id, name: r.name, price: r.price, transport_type: r.transport_type,
+      color: r.color ?? null, origin_hub: r.origin_hub ?? '', dest_hub: r.dest_hub ?? '',
+      badges: r.badges,
+    })))} />
+    <script id="routes-meta" type="application/json" set:html={JSON.stringify({ lang, isEs })} />
 
-          <!-- Info principal -->
-          <div class="route-card__info">
-            <div class="route-card__name">{route.name}</div>
-            {route.origin_hub && route.dest_hub && (
-              <div class="route-card__route">
-                <span class="origin">{route.origin_hub}</span>
-                <svg class="arrow" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
-                </svg>
-                <span class="dest">{route.dest_hub}</span>
-              </div>
-            )}
-            {route.badges.length > 0 && (
-              <div class="route-card__badges">
-                {route.badges.slice(0, 3).map(badge => (
-                  <span class="badge badge-teal">{badge}</span>
-                ))}
-              </div>
-            )}
+    <div
+      id="routes-grid"
+      class="routes-grid-vl"
+      role="list"
+      aria-label={isEs ? "Lista de rutas" : "Route list"}
+      aria-live="polite"
+      aria-atomic="false"
+    >
+      <!-- Renderizado por VirtualList en client-side -->
+      <div id="routes-loading" class="routes-loading" aria-live="polite">
+        {[...Array(6)].map(() => (
+          <div class="route-skeleton-vl" aria-hidden="true">
+            <div class="skel skel-icon"></div>
+            <div class="skel-body">
+              <div class="skel skel-title"></div>
+              <div class="skel skel-sub"></div>
+            </div>
+            <div class="skel skel-price"></div>
           </div>
-
-          <!-- Precio -->
-          <div class="route-card__price">
-            {route.price > 0
-              ? <span class="price-tag">${route.price.toFixed(2)}</span>
-              : <span class="price-free">{isEs ? "Gratis" : "Free"}</span>
-            }
-            <svg class="chevron" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
-            </svg>
-          </div>
-        </a>
-      ))}
-
-      <!-- Estado vacío -->
-      <div id="routes-empty" class="routes-empty" hidden>
-        <span class="empty-emoji" aria-hidden="true">🔍</span>
-        <p class="empty-title">{isEs ? "Sin resultados" : "No results"}</p>
-        <p class="empty-sub">{isEs ? "Intenta con otro término" : "Try a different search term"}</p>
+        ))}
       </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div id="routes-empty" class="routes-empty" hidden>
+      <span class="empty-emoji" aria-hidden="true">🔍</span>
+      <p class="empty-title">{isEs ? "Sin resultados" : "No results"}</p>
+      <p class="empty-sub">{isEs ? "Intenta con otro término" : "Try a different search term"}</p>
     </div>
   </div>
 </MainLayout>
@@ -310,15 +288,36 @@ const types = ["all", "bus", "combi", "van", "ado"];
     transform: scale(1.05);
   }
 
-  /* ── Grid de rutas ── */
-  .routes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
+  /* ── Virtual List container ── */
+  .routes-grid-vl {
+    height: calc(100dvh - 260px);
+    min-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    /* Scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-medium) transparent;
+    /* For grid layout inside VirtualList — overridden per-item */
+    position: relative;
   }
-  @media (max-width: 640px) {
-    .routes-grid { grid-template-columns: 1fr; }
+  .routes-grid-vl::-webkit-scrollbar { width: 6px; }
+  .routes-grid-vl::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 3px; }
+  .routes-grid-vl::-webkit-scrollbar-track { background: transparent; }
+
+  /* Skeleton loaders */
+  .routes-loading { display: flex; flex-direction: column; gap: 0.875rem; }
+  .route-skeleton-vl {
+    display: flex; align-items: center; gap: 1rem;
+    background: var(--surface-card); border: 1.5px solid var(--border-light);
+    border-radius: var(--r-xl); padding: 1rem 1.25rem; height: 80px;
   }
+  .skel { background: linear-gradient(90deg, var(--border-light) 25%, var(--sea-xpale) 50%, var(--border-light) 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite; border-radius: var(--r-sm); }
+  .skel-icon { width: 40px; height: 40px; border-radius: var(--r-md); flex-shrink: 0; }
+  .skel-body { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+  .skel-title { height: 14px; width: 60%; }
+  .skel-sub   { height: 11px; width: 40%; }
+  .skel-price { width: 44px; height: 22px; border-radius: var(--r-full); flex-shrink: 0; }
 
   /* ── Route card ── */
   .route-card {
@@ -390,61 +389,179 @@ const types = ["all", "bus", "combi", "van", "ado"];
     animation: fade-up 0.3s var(--ease-out) both;
   }
   .skel { border-radius: var(--r-sm); background: linear-gradient(90deg, var(--border-light) 25%, var(--sea-xpale) 50%, var(--border-light) 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite; }
+
+  /* ── VirtualList card (client-side rendered) ── */
+  .route-card-vl {
+    display: flex; align-items: center; gap: 1rem;
+    background: var(--surface-card); border: 1.5px solid var(--border-light);
+    border-left-width: 4px; border-radius: var(--r-xl); padding: 1rem 1.25rem;
+    text-decoration: none; color: inherit; height: 80px; box-sizing: border-box;
+    transition: transform var(--t-base) var(--ease-spring), box-shadow var(--t-base) var(--ease), border-color var(--t-fast) var(--ease);
+    will-change: transform;
+  }
+  .route-card-vl:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-right-color: var(--border-medium); border-top-color: var(--border-medium); border-bottom-color: var(--border-medium); }
+  .route-card-vl:active { transform: scale(0.98); }
+
+  .rcv-type { width: 40px; height: 40px; border-radius: var(--r-md); background: var(--sea-xpale); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+  .rcv-info { flex: 1; min-width: 0; overflow: hidden; }
+  .rcv-name { font-family: var(--font-display); font-size: 0.92rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rcv-route { display: flex; align-items: center; gap: 0.375rem; font-size: 0.72rem; color: var(--text-tertiary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .rcv-route .origin, .rcv-route .dest { overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
+  .rcv-route .arrow { flex-shrink: 0; color: var(--text-muted); }
+  .rcv-badges { display: flex; gap: 0.25rem; margin-top: 3px; flex-wrap: nowrap; overflow: hidden; }
+  .rcv-price { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; flex-shrink: 0; }
+  .price-tag { font-family: var(--font-display); font-size: 1rem; font-weight: 900; color: var(--sea-teal); }
+  .price-free { font-family: var(--font-display); font-size: 0.75rem; font-weight: 800; color: var(--jungle); background: rgba(34,197,94,0.1); padding: 2px 8px; border-radius: var(--r-full); }
+  .chevron { color: var(--text-muted); }
+
+  /* ── Results info ── */
+  .results-info { font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 0.875rem; font-weight: 500; }
+
 </style>
 
 <script>
-  // ── Filtrado y busqueda interactiva ──
-  const searchEl    = document.getElementById("routes-search") as HTMLInputElement | null;
-  const clearBtn    = document.getElementById("search-clear") as HTMLButtonElement | null;
-  const filterBtns  = document.querySelectorAll<HTMLButtonElement>(".filter-row .chip");
-  const routeCards  = document.querySelectorAll<HTMLAnchorElement>(".route-card");
-  const emptyState  = document.getElementById("routes-empty");
-  const countEl     = document.getElementById("results-count");
+  import { VirtualList } from '../../../utils/virtualList';
+
+  // ── Tipos ──────────────────────────────────────────────────────────────
+  interface RouteItem {
+    id: string; name: string; price: number; transport_type: string;
+    color: string | null; origin_hub: string; dest_hub: string; badges: string[];
+  }
+
+  // ── Datos serializados en el HTML ──────────────────────────────────────
+  const routesData: RouteItem[] = JSON.parse(
+    (document.getElementById('routes-data') as HTMLScriptElement | null)?.textContent ?? '[]'
+  );
+  const { lang, isEs } = JSON.parse(
+    (document.getElementById('routes-meta') as HTMLScriptElement | null)?.textContent ?? '{}'
+  );
+
+  const TRANSPORT_EMOJI: Record<string, string> = {
+    bus: "🚌", combi: "🚐", van: "🚐", taxi: "🚕", ado: "🎒",
+  };
+
+  // ── DOM refs ──────────────────────────────────────────────────────────
+  const searchEl   = document.getElementById("routes-search") as HTMLInputElement | null;
+  const clearBtn   = document.getElementById("search-clear") as HTMLButtonElement | null;
+  const filterBtns = document.querySelectorAll<HTMLButtonElement>(".filter-row .chip");
+  const emptyState = document.getElementById("routes-empty");
+  const countEl    = document.getElementById("results-count");
+  const gridEl     = document.getElementById("routes-grid");
+  const loadingEl  = document.getElementById("routes-loading");
 
   let activeFilter = "all";
   let searchQuery  = "";
 
-  function applyFilters() {
-    let visible = 0;
-    routeCards.forEach(card => {
-      const name   = card.dataset.name || "";
-      const type   = card.dataset.type || "";
-      const origin = card.dataset.origin || "";
-      const dest   = card.dataset.dest  || "";
-      const q = searchQuery.toLowerCase();
-      const matchSearch = !q || name.includes(q) || origin.includes(q) || dest.includes(q);
-      const matchFilter = activeFilter === "all" || type === activeFilter;
-      const show = matchSearch && matchFilter;
-      card.hidden = !show;
-      if (show) visible++;
-    });
-    if (countEl) countEl.textContent = String(visible);
-    if (emptyState) emptyState.hidden = visible > 0;
+  // ── Render function para VirtualList ─────────────────────────────────
+  function renderRouteCard(route: RouteItem): HTMLElement {
+    const a = document.createElement('a');
+    a.href = `/${lang}/ruta/${encodeURIComponent(route.id)}`;
+    a.className = 'route-card-vl';
+    a.setAttribute('role', 'listitem');
+    if (route.color) a.style.borderLeftColor = route.color;
+
+    const emoji = TRANSPORT_EMOJI[route.transport_type] ?? '🚌';
+    const priceHtml = route.price > 0
+      ? `<span class="price-tag">$${route.price.toFixed(2)}</span>`
+      : `<span class="price-free">${isEs ? 'Gratis' : 'Free'}</span>`;
+
+    const routeHtml = route.origin_hub && route.dest_hub
+      ? `<div class="rcv-route">
+          <span class="origin">${escHtml(route.origin_hub)}</span>
+          <svg class="arrow" viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+          <span class="dest">${escHtml(route.dest_hub)}</span>
+        </div>`
+      : '';
+
+    const badgesHtml = route.badges.slice(0, 3).map(b =>
+      `<span class="badge badge-teal">${escHtml(b)}</span>`
+    ).join('');
+
+    a.innerHTML = `
+      <div class="rcv-type"><span aria-hidden="true">${emoji}</span></div>
+      <div class="rcv-info">
+        <div class="rcv-name">${escHtml(route.name)}</div>
+        ${routeHtml}
+        ${badgesHtml ? `<div class="rcv-badges">${badgesHtml}</div>` : ''}
+      </div>
+      <div class="rcv-price">
+        ${priceHtml}
+        <svg class="chevron" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </div>`;
+    return a;
   }
 
-  if (searchEl) {
-    searchEl.addEventListener("input", () => {
-      searchQuery = searchEl.value.trim();
-      if (clearBtn) clearBtn.hidden = !searchQuery;
-      applyFilters();
+  function escHtml(str: string): string {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Filtrado ──────────────────────────────────────────────────────────
+  function getFiltered(): RouteItem[] {
+    const q = searchQuery.toLowerCase();
+    return routesData.filter(r => {
+      const matchSearch = !q
+        || r.name.toLowerCase().includes(q)
+        || r.origin_hub.toLowerCase().includes(q)
+        || r.dest_hub.toLowerCase().includes(q);
+      const matchFilter = activeFilter === 'all' || r.transport_type === activeFilter;
+      return matchSearch && matchFilter;
     });
   }
-  if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
-      if (searchEl) { searchEl.value = ""; searchQuery = ""; }
-      clearBtn.hidden = true;
-      applyFilters();
-      searchEl?.focus();
+
+  // ── VirtualList setup ─────────────────────────────────────────────────
+  let vl: VirtualList<RouteItem> | null = null;
+
+  function mountVL(): void {
+    if (!gridEl) return;
+    loadingEl?.remove();
+    const filtered = getFiltered();
+    vl = new VirtualList<RouteItem>(gridEl, filtered, renderRouteCard, {
+      itemHeight: 88,
+      overscan: 4,
     });
+    vl.mount();
+    updateCount(filtered.length);
   }
+
+  function updateCount(n: number): void {
+    if (countEl) countEl.textContent = String(n);
+    if (emptyState) emptyState.hidden = n > 0;
+  }
+
+  function refilter(): void {
+    const filtered = getFiltered();
+    vl?.setItems(filtered);
+    updateCount(filtered.length);
+  }
+
+  // ── Event listeners ───────────────────────────────────────────────────
+  searchEl?.addEventListener("input", () => {
+    searchQuery = searchEl.value.trim();
+    if (clearBtn) clearBtn.hidden = !searchQuery;
+    refilter();
+  });
+
+  clearBtn?.addEventListener("click", () => {
+    if (searchEl) { searchEl.value = ""; searchQuery = ""; }
+    clearBtn.hidden = true;
+    refilter();
+    searchEl?.focus();
+  });
 
   filterBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       filterBtns.forEach(b => { b.classList.remove("active"); b.setAttribute("aria-selected","false"); });
       btn.classList.add("active");
       btn.setAttribute("aria-selected","true");
-      activeFilter = btn.dataset.filter || "all";
-      applyFilters();
+      activeFilter = btn.dataset.filter ?? "all";
+      refilter();
     });
   });
+
+  // ── Mount on DOMContentLoaded ─────────────────────────────────────────
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountVL, { once: true });
+  } else {
+    mountVL();
+  }
 </script>

@@ -18,17 +18,43 @@ export default defineConfig({
   output: 'server',
   adapter: getAdapter(),
   integrations: [mdx()],
+
+  // ── Prefetch strategy: hover/tap intent, not aggressive ─────────────
+  prefetch: {
+    prefetchAll: false,
+    defaultStrategy: 'hover',
+  },
+
   vite: {
     define: {
       "process.env.IS_DEV": JSON.stringify(isDev),
-      "__APP_VERSION__":    JSON.stringify("2.0.0-nexus-prime"),
+      "__APP_VERSION__":    JSON.stringify("3.6.0"),
       "__BUILD_DATE__":     JSON.stringify(new Date().toISOString()),
-      "__GIT_COMMIT__":     JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA?.slice(0,7) ?? "8c6c4d5"),
+      "__GIT_COMMIT__":     JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA?.slice(0,7) ?? "local"),
     },
     build: {
+      // Raise warning limit (WASM glue is large by design)
+      chunkSizeWarningLimit: 800,
       rollupOptions: {
         external: ["/wasm/route-calculator/route_calculator.js"],
+        output: {
+          // ── Manual chunk splitting for better long-term caching ──────
+          manualChunks(id: string) {
+            // Leaflet and map utilities → separate chunk (heavy, rarely changes)
+            if (id.includes('leaflet')) return 'vendor-leaflet';
+            // Spatial + geometry math → separate chunk
+            if (id.includes('SpatialHash') || id.includes('geometry') || id.includes('CoordinateFinder')) return 'geo-math';
+            // Virtual list utility
+            if (id.includes('virtualList')) return 'virtual-list';
+            // i18n → separate chunk (loaded per-language)
+            if (id.includes('/i18n/')) return 'i18n';
+          },
+        },
       },
+      // Enable CSS code splitting (already default, but explicit)
+      cssCodeSplit: true,
+      // Target modern browsers for smaller output
+      target: ['es2020', 'chrome87', 'firefox78', 'safari14'],
     },
     resolve: {
       alias: {
@@ -38,6 +64,10 @@ export default defineConfig({
         "@consts":     path.resolve(__dirname, "src/consts.ts"),
         "@types":      path.resolve(__dirname, "src/types.ts"),
       },
+    },
+    // Dev server optimizations
+    optimizeDeps: {
+      exclude: ['@astrojs/vercel'],
     },
   },
 })

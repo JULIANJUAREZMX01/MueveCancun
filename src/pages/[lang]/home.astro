@@ -483,4 +483,38 @@ const isEs = lang === "es";
     } catch {}
   }
   fetchLiveReports();
+
+  // ── Performance: mark TTI for analytics ───────────────────────────
+  if ('PerformanceObserver' in window) {
+    // Report LCP
+    try {
+      new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        const lcp = entries[entries.length - 1];
+        if (lcp) {
+          // Send to Vercel Speed Insights automatically via the imported component
+          // Also log for debugging
+          if (typeof __APP_VERSION__ !== 'undefined') {
+            console.debug(`[MueveCancún] LCP: ${lcp.startTime.toFixed(0)}ms`);
+          }
+        }
+      }).observe({ type: 'largest-contentful-paint', buffered: true });
+    } catch {}
+
+    // Lazy-load NexusAgent only when sheet is opened (saves ~40KB parse)
+    const sheetContent = document.getElementById('sheet-content');
+    let agentPreloaded = false;
+    const preloadAgent = () => {
+      if (agentPreloaded) return;
+      agentPreloaded = true;
+      import('/wasm/route-calculator/route_calculator.js').catch(() => {});
+    };
+    document.getElementById('sheet-handle')?.addEventListener('click', preloadAgent, { once: true });
+    // Also preload on page idle
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(preloadAgent, { timeout: 3000 });
+    } else {
+      setTimeout(preloadAgent, 2000);
+    }
+  }
 </script>
