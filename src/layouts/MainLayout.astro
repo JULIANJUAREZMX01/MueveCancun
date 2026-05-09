@@ -11,6 +11,8 @@ import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import NexusAgentUI from '../components/agent/NexusAgentUI.astro';
 import { ClientRouter } from 'astro:transitions';
+import Analytics from "@vercel/analytics/astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
 import "../styles/global.css";
 
 interface Props {
@@ -49,6 +51,9 @@ const lang = getLangFromUrl(Astro.url);
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content="https://mueve-cancun.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:url" content="https://mueve-cancun.vercel.app" />
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -56,9 +61,17 @@ const lang = getLangFromUrl(Astro.url);
     <meta name="twitter:image" content="https://mueve-cancun.vercel.app/og-image.png" />
     <!-- Color scheme -->
     <meta name="color-scheme" content="light dark" />
-    <!-- Preconnect fonts -->
+    <!-- ── Resource hints for TTI < 3s ────────────────────────────── -->
+    <!-- Preconnect to critical third-party origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Map tiles CDNs (Leaflet connects at map init) -->
+    <link rel="dns-prefetch" href="https://a.tile.openstreetmap.org" />
+    <link rel="dns-prefetch" href="https://a.basemaps.cartocdn.com" />
+    <!-- Critical data: prefetch main routes catalog -->
+    <link rel="prefetch" href="/data/master_routes.optimized.json" as="fetch" crossorigin />
+    <!-- WASM glue (loaded on home/map pages) -->
+    <link rel="modulepreload" href="/wasm/route-calculator/route_calculator.js" />
 
     <ClientRouter />
     <!-- Tema sin flash -->
@@ -144,6 +157,8 @@ const lang = getLangFromUrl(Astro.url);
     <DonateNudge />
     <ReportWidget />
     <NexusAgentUI />
+    <Analytics />
+    <SpeedInsights />
 
   </body>
 </html>

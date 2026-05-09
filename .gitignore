@@ -81,3 +81,7 @@ test_browser*.js
 *.astro.new
 path/
 .vercel
+
+# WASM stubs vacíos (generados en build)
+/public/wasm/carbon-calculator/
+/public/wasm/eta-engine/
