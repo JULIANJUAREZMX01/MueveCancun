@@ -246,7 +246,7 @@ const heroStats = [
 </style>
 
 <script>
-import L from 'leaflet';
+import { loadLeaflet } from '../../utils/leafletLoader';
 
 let map: L.Map | null = null;
 let busMarkers: Map<string, L.Marker> = new Map();
@@ -270,10 +270,9 @@ async function initMap() {
   const el = document.getElementById('home-map');
   if (!el || map) return;
 
-  await import('/vendor/leaflet/leaflet.js').catch(() => {});
-  const link = document.createElement('link');
-  link.rel = 'stylesheet'; link.href = '/vendor/leaflet/leaflet.css';
-  document.head.appendChild(link);
+  await loadLeaflet();
+  const L = window.L as typeof import('leaflet');
+  if (!L) return;
 
   map = L.map('home-map', {
     center: [21.1619, -86.8515], zoom: 13,
