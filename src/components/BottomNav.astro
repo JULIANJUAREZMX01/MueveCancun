@@ -9,67 +9,44 @@ const navItems = [
     href: getRelativeLocaleUrl(lang, "home"),
     label: lang === "es" ? "Inicio" : "Home",
     activePattern: /^\/(es|en)\/home/,
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M3 12L12 3l9 9"/>
-      <path d="M9 21V12h6v9"/>
-    </svg>`,
-    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2.1L1 12h3v9h6v-6h4v6h6v-9h3L12 2.1z"/>
-    </svg>`,
+    emoji: "🏠",
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 3l9 9"/><path d="M9 21V12h6v9"/></svg>`,
+    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.1L1 12h3v9h6v-6h4v6h6v-9h3L12 2.1z"/></svg>`,
   },
   {
     href: getRelativeLocaleUrl(lang, "rutas"),
     label: lang === "es" ? "Rutas" : "Routes",
     activePattern: /^\/(es|en)\/rutas/,
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <rect x="2" y="7" width="20" height="14" rx="2"/>
-      <path d="M16 3H8l-1 4h10l-1-4z"/>
-      <circle cx="7" cy="17" r="1.5"/>
-      <circle cx="17" cy="17" r="1.5"/>
-    </svg>`,
-    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/>
-    </svg>`,
+    emoji: "🗺️",
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8l-1 4h10l-1-4z"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg>`,
+    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/></svg>`,
+  },
+  {
+    href: getRelativeLocaleUrl(lang, "tracking"),
+    label: lang === "es" ? "En vivo" : "Live",
+    activePattern: /^\/(es|en)\/tracking/,
+    emoji: "📡",
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="8" width="22" height="12" rx="2"/><path d="M9 8V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v3"/><circle cx="7" cy="17" r="1" fill="currentColor"/><circle cx="17" cy="17" r="1" fill="currentColor"/></svg>`,
+    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 8H4c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2zm-9-6h2v3h-2V2zM7 8V5c0-.55.45-1 1-1h8c.55 0 1 .45 1 1v3H7z"/></svg>`,
+    badge: "live",
   },
   {
     href: getRelativeLocaleUrl(lang, "community"),
     label: lang === "es" ? "Foro" : "Forum",
     activePattern: /^\/(es|en)\/community/,
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-    </svg>`,
-    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-    </svg>`,
+    emoji: "💬",
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>`,
   },
   {
     href: getRelativeLocaleUrl(lang, "wallet"),
     label: lang === "es" ? "Tarjeta" : "Card",
     activePattern: /^\/(es|en)\/wallet/,
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <rect x="2" y="5" width="20" height="14" rx="2"/>
-      <path d="M2 10h20"/>
-    </svg>`,
-    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-    </svg>`,
-  },
-  {
-    href: getRelativeLocaleUrl(lang, "about"),
-    label: lang === "es" ? "Info" : "Info",
-    activePattern: /^\/(es|en)\/about/,
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="10"/>
-      <path d="M12 16v-4M12 8h.01"/>
-    </svg>`,
-    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-    </svg>`,
+    emoji: "💳",
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>`,
+    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>`,
   },
 ];
-
-const donateHref = getRelativeLocaleUrl(lang, "donate");
-const isDonateActive = /^\/(es|en)\/donate/.test(pathname);
 ---
 
 <nav transition:persist class="bottom-nav" aria-label="Navegación principal" role="navigation">
@@ -79,183 +56,69 @@ const isDonateActive = /^\/(es|en)\/donate/.test(pathname);
       return (
         <a
           href={item.href}
-          class:list={["nav-tab", isActive && "nav-tab--active"]}
-          aria-label={item.label}
+          class:list={["nav-item", { "nav-item--active": isActive }]}
           aria-current={isActive ? "page" : undefined}
+          aria-label={item.label}
         >
-          <span class="nav-tab__icon" set:html={isActive ? item.iconFill : item.icon} />
-          <span class="nav-tab__label">{item.label}</span>
-          {isActive && <span class="nav-tab__dot" aria-hidden="true" />}
+          <div class="nav-icon">
+            {item.badge === 'live' && (
+              <span class="nav-live-dot" aria-hidden="true"></span>
+            )}
+            <Fragment set:html={isActive ? item.iconFill : item.icon} />
+          </div>
+          <span class="nav-label">{item.label}</span>
         </a>
       );
     })}
-
-    <!-- FAB Donar -->
-    <a
-      href={donateHref}
-      class:list={["nav-fab", isDonateActive && "nav-fab--active"]}
-      aria-label={lang === "es" ? "Apoyar el proyecto" : "Support project"}
-    >
-      <span class="nav-fab__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-          <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/>
-        </svg>
-      </span>
-    </a>
   </div>
 </nav>
 
 <style>
-  /* ── Shell ── */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border-top: 1px solid var(--glass-border);
-    box-shadow: 0 -4px 32px rgba(0, 78, 95, 0.10), 0 -1px 0 var(--border-light);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
-    transition: background var(--t-base) var(--ease);
-  }
-
-  .bottom-nav__inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    height: var(--bottom-nav-h);
-    padding: 0 0.25rem;
-    position: relative;
-  }
-
-  /* ── Tab ── */
-  .nav-tab {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.2rem;
-    flex: 1;
-    height: 100%;
-    padding: 0.5rem 0.25rem 0.25rem;
-    text-decoration: none;
-    color: var(--text-tertiary);
-    border-radius: var(--r-md);
-    transition:
-      color     var(--t-fast) var(--ease),
-      transform var(--t-fast) var(--ease-back);
-    -webkit-tap-highlight-color: transparent;
-    outline: none;
-  }
-
-  .nav-tab:focus-visible {
-    outline: 2px solid var(--sea-bright);
-    outline-offset: 2px;
-  }
-
-  .nav-tab:active { transform: scale(0.88); }
-
-  /* Icono */
-  .nav-tab__icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    transition: transform var(--t-fast) var(--ease-back);
-  }
-  .nav-tab__icon svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  /* Label */
-  .nav-tab__label {
-    font-family: var(--font-display);
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    transition: color var(--t-fast) var(--ease);
-    white-space: nowrap;
-  }
-
-  /* Dot activo */
-  .nav-tab__dot {
-    position: absolute;
-    bottom: 6px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--sea-bright);
-  }
-
-  /* Estado activo */
-  .nav-tab--active {
-    color: var(--sea-teal);
-
-    .nav-tab__icon {
-      transform: translateY(-2px) scale(1.1);
-      filter: drop-shadow(0 2px 6px rgba(13,148,136,0.4));
-    }
-
-    .nav-tab__label { color: var(--sea-teal); }
-  }
-
-  /* ── FAB Donar — flotante ── */
-  .nav-fab {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--gradient-sunrise);
-    color: white;
-    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.45);
-    text-decoration: none;
-    flex-shrink: 0;
-    margin-bottom: 0.5rem;
-    align-self: center;
-    transition:
-      transform var(--t-fast) var(--ease-back),
-      box-shadow var(--t-base) var(--ease);
-    animation: breathe 3s ease-in-out infinite;
-  }
-
-  .nav-fab:hover {
-    transform: scale(1.12) translateY(-2px);
-    box-shadow: 0 8px 32px rgba(249, 115, 22, 0.55);
-    animation-play-state: paused;
-  }
-
-  .nav-fab:active {
-    transform: scale(0.93);
-    box-shadow: 0 2px 10px rgba(249, 115, 22, 0.3);
-    animation-play-state: paused;
-  }
-
-  .nav-fab--active {
-    background: var(--gradient-deep);
-    box-shadow: var(--shadow-teal-lg);
-    animation: breathe 2s ease-in-out infinite;
-  }
-
-  .nav-fab__icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* ── Responsive ── */
-  @media (min-width: 769px) {
-    .bottom-nav { display: none; }
-  }
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+  background: var(--glass-bg); backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -2px 20px rgba(0, 78, 95, 0.08);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.bottom-nav__inner {
+  display: flex; align-items: stretch;
+  max-width: 600px; margin: 0 auto;
+  height: 64px; padding: 0 0.25rem;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 0.18rem; text-decoration: none;
+  color: var(--text-muted); padding: 0.4rem 0.25rem;
+  border-radius: 14px; margin: 0.3rem 0.1rem;
+  transition: color 0.2s, background 0.2s;
+  position: relative; overflow: visible;
+}
+.nav-item:hover { color: var(--sea-teal); background: var(--sea-xpale); }
+.nav-item--active { color: var(--sea-teal); }
+.nav-item--active .nav-icon {
+  background: var(--sea-pale);
+  transform: translateY(-2px);
+}
+.nav-icon {
+  width: 36px; height: 28px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+.nav-icon svg { width: 20px; height: 20px; }
+.nav-label {
+  font-size: 0.6rem; font-weight: 600; letter-spacing: 0.01em;
+  transition: color 0.2s; white-space: nowrap;
+}
+.nav-live-dot {
+  position: absolute; top: 0; right: 0;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--danger); border: 1.5px solid var(--glass-bg);
+  animation: pulse-live 2s ease-in-out infinite;
+}
+@keyframes pulse-live {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.3); }
+}
 </style>
