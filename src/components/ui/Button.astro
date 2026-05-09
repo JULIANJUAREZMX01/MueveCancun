@@ -1,126 +1,187 @@
 ---
 interface Props {
-  variant?: 'primary' | 'ghost' | 'danger' | 'secondary';
+  variant?: 'primary' | 'ghost' | 'danger' | 'secondary' | 'ocean' | 'sunrise';
+  size?: 'sm' | 'md' | 'lg';
   type?: 'button' | 'submit' | 'reset';
   id?: string;
   class?: string;
   disabled?: boolean;
 }
 
-const { variant = 'primary', type = 'button', id, class: className, disabled = false } = Astro.props;
+const {
+  variant = 'primary',
+  size = 'md',
+  type = 'button',
+  id,
+  class: className,
+  disabled = false
+} = Astro.props;
 ---
 
 <button
   type={type}
   id={id}
-  class={`graffiti-btn ${className || ''}`}
+  class={`mc-btn mc-btn--${variant} mc-btn--${size} ${className || ''}`}
   disabled={disabled}
-  data-variant={variant}
 >
   <slot />
 </button>
 
 <style>
-  /*
-   * GRAFFITI WARRIOR: CSS5 LOGIC
-   * Pure CSS Variables & Nesting with Global Tropical Tokens
-   */
-  .graffiti-btn {
-    /* Layout & Box Model */
+  /* ── Base ── */
+  .mc-btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    min-height: 44px;
-    padding: 0.75rem 1.5rem; /* px-6 py-3 */
-    border-radius: var(--radius-lg); /* rounded-lg */
-    border: 1px solid transparent;
-
-    /* Typography */
+    border-radius: var(--r-lg);
+    border: 1.5px solid transparent;
+    font-family: var(--font-display);
     font-weight: 700;
-    font-family: inherit;
-    font-size: 1rem;
-    line-height: 1.5;
-
-    /* Interaction Defaults */
+    letter-spacing: -0.01em;
     cursor: pointer;
     user-select: none;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    white-space: nowrap;
+    transition:
+      transform     var(--t-fast) var(--ease-back),
+      box-shadow    var(--t-base) var(--ease),
+      background    var(--t-fast) var(--ease),
+      border-color  var(--t-fast) var(--ease),
+      opacity       var(--t-fast) var(--ease);
 
-    /* Default Variables (Primary) */
-    --btn-bg: var(--color-sunset);
-    --btn-text: white;
-    --btn-border: transparent;
-    --btn-hover-bg: #EA580C; /* Sunset Darker */
-    --btn-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.35);
-
-    background-color: var(--btn-bg);
-    color: var(--btn-text);
-    border-color: var(--btn-border);
-    box-shadow: var(--btn-shadow);
-
-    /* --- VARIANTS --- */
-
-    &[data-variant="primary"] {
-      --btn-bg: var(--color-sunset);
-      --btn-text: white;
-      --btn-hover-bg: #EA580C;
-      --btn-shadow: 0 4px 14px -2px rgba(249, 115, 22, 0.35);
+    /* Ripple base */
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+      opacity: 0;
+      border-radius: inherit;
+      transition: opacity var(--t-fast) var(--ease);
     }
+    &:active::after { opacity: 1; }
+  }
 
-    &[data-variant="secondary"] {
-      --btn-bg: var(--color-turquoise);
-      --btn-text: white;
-      --btn-hover-bg: #0284C7; /* Turquoise Darker */
-      --btn-shadow: 0 4px 14px -2px rgba(14, 165, 233, 0.35);
-    }
+  /* ── Sizes ── */
+  .mc-btn--sm {
+    min-height: 36px;
+    padding: 0.5rem 1rem;
+    font-size: 0.82rem;
+  }
+  .mc-btn--md {
+    min-height: 46px;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+  }
+  .mc-btn--lg {
+    min-height: 54px;
+    padding: 1rem 2rem;
+    font-size: 1.05rem;
+  }
 
-    &[data-variant="ghost"] {
-      --btn-bg: transparent;
-      --btn-text: var(--text-secondary); /* slate-500 */
-      --btn-hover-bg: var(--surface-elevated);
-      --btn-shadow: none;
-      --btn-border: transparent;
-
-      &:hover {
-        border-color: var(--border-light);
-      }
-    }
-
-    &[data-variant="danger"] {
-      --btn-bg: #FEF2F2; /* coral-50 equivalent */
-      --btn-text: var(--color-coral);
-      --btn-border: #FECACA; /* coral-200 equivalent */
-      --btn-hover-bg: #FEE2E2; /* coral-100 equivalent */
-      --btn-shadow: none;
-    }
-
-    /* --- STATES --- */
+  /* ── PRIMARY — turquesa del Caribe ── */
+  .mc-btn--primary {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: transparent;
+    box-shadow: var(--shadow-teal);
 
     &:hover:not(:disabled) {
-      background-color: var(--btn-hover-bg);
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: var(--shadow-teal-lg), 0 0 20px rgba(45,212,191,0.25);
+    }
+    &:active:not(:disabled) {
+      transform: translateY(0) scale(0.97);
+      box-shadow: var(--shadow-teal);
+    }
+  }
+
+  /* ── OCEAN — gradiente profundo ── */
+  .mc-btn--ocean {
+    background: var(--gradient-deep);
+    color: white;
+    border-color: rgba(45,212,191,0.3);
+    box-shadow: 0 4px 16px rgba(0,78,95,0.3);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,78,95,0.35), 0 0 20px rgba(45,212,191,0.15);
+    }
+    &:active:not(:disabled) { transform: scale(0.97); }
+  }
+
+  /* ── SUNRISE — coral-flamingo ── */
+  .mc-btn--sunrise {
+    background: var(--gradient-sunrise);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(249,115,22,0.35);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(249,115,22,0.45);
+    }
+    &:active:not(:disabled) { transform: scale(0.97); }
+  }
+
+  /* ── SECONDARY — glass turquesa ── */
+  .mc-btn--secondary {
+    background: var(--sea-xpale);
+    color: var(--sea-teal);
+    border-color: var(--border-medium);
+    box-shadow: var(--shadow-xs);
+
+    &:hover:not(:disabled) {
+      background: var(--sea-pale);
+      border-color: var(--sea-bright);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+    &:active:not(:disabled) { transform: scale(0.97); }
+  }
+
+  /* ── GHOST ── */
+  .mc-btn--ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border-color: var(--border-light);
+    box-shadow: none;
+
+    &:hover:not(:disabled) {
+      background: var(--sea-xpale);
+      color: var(--sea-teal);
+      border-color: var(--border-medium);
+    }
+    &:active:not(:disabled) { transform: scale(0.97); }
+  }
+
+  /* ── DANGER ── */
+  .mc-btn--danger {
+    background: var(--danger-light);
+    color: var(--danger);
+    border-color: rgba(239,68,68,0.3);
+    box-shadow: none;
+
+    &:hover:not(:disabled) {
+      background: #fee2e2;
       transform: translateY(-1px);
     }
+    &:active:not(:disabled) { transform: scale(0.97); }
+  }
 
-    &:active:not(:disabled) {
-      transform: scale(0.96);
-    }
+  /* ── Disabled ── */
+  .mc-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+    filter: grayscale(0.5);
+  }
 
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      box-shadow: none;
-      filter: grayscale(1);
-
-      &:active {
-        transform: none;
-      }
-    }
-
-    /* Focus Visible */
-    &:focus-visible {
-      outline: 2px solid var(--btn-bg);
-      outline-offset: 2px;
-    }
+  /* ── Focus ── */
+  .mc-btn:focus-visible {
+    outline: 2.5px solid var(--sea-bright);
+    outline-offset: 3px;
   }
 </style>

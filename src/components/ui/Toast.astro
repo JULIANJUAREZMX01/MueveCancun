@@ -2,121 +2,131 @@
 interface Props {
   id?: string;
 }
-
 const { id = 'toast-notification' } = Astro.props;
 ---
 
-<div
-  id={id}
-  popover="manual"
-  class="toast-popover"
->
-  <div class="toast-popover__card">
-    <span id={`${id}-icon`} class="toast-popover__icon">ℹ️</span>
-    <p id={`${id}-message`} class="toast-popover__message">Notification</p>
+<div id={id} popover="manual" class="mc-toast">
+  <div class="mc-toast__inner">
+    <span id={`${id}-icon`} class="mc-toast__icon" aria-hidden="true">🌊</span>
+    <p id={`${id}-message`} class="mc-toast__msg">Notificación</p>
   </div>
 </div>
 
 <style>
-  .toast-popover {
+  .mc-toast {
     position: fixed;
-    bottom: 5.5rem;
-    top: auto;
+    bottom: calc(var(--bottom-nav-h, 72px) + 1.25rem + env(safe-area-inset-bottom, 0px));
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(0);
     width: fit-content;
-    max-width: 90vw;
-    z-index: 10000;
+    max-width: min(92vw, 420px);
+    z-index: 9999;
     border: none;
     padding: 0;
     background: transparent;
     overflow: visible;
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
     transition:
-      opacity 0.3s var(--ease-out),
-      transform 0.4s var(--ease-back),
-      display 0.4s allow-discrete,
-      overlay 0.4s allow-discrete;
+      opacity   0.35s var(--ease-spring),
+      transform 0.45s var(--ease-spring),
+      display   0.4s allow-discrete,
+      overlay   0.4s allow-discrete;
   }
 
-  .toast-popover__card {
-    background-color: var(--text-primary);
-    backdrop-filter: blur(8px);
-    color: var(--text-inverse);
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--r-full);
-    box-shadow: var(--shadow-lg);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    min-height: 44px;
-    border: 1px solid var(--glass-border);
-  }
-
-  .toast-popover__icon {
-    font-size: 1.25rem;
-  }
-
-  .toast-popover__message {
-    font-size: 0.875rem;
-    font-weight: 900;
-    letter-spacing: -0.01em;
-    margin: 0;
-  }
-
-  @starting-style {
-    .toast-popover:popover-open {
-      opacity: 0;
-      transform: translateX(-50%) translateY(2rem);
+  @media (min-width: 769px) {
+    .mc-toast {
+      bottom: 2rem;
+      left: calc(50% + var(--sidebar-w, 76px) / 2);
     }
   }
 
-  .toast-popover:not(:popover-open) {
+  .mc-toast__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 1.4rem 0.75rem 1rem;
+    border-radius: var(--r-full);
+    /* Glassmorphism profundo */
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-xl), var(--shadow-teal);
+    min-height: 48px;
+    animation: scale-in 0.35s var(--ease-back) both;
+  }
+
+  /* Variantes por tipo */
+  .mc-toast[data-type="success"] .mc-toast__inner {
+    border-color: rgba(34,197,94,0.3);
+    box-shadow: var(--shadow-xl), 0 4px 20px rgba(34,197,94,0.25);
+  }
+  .mc-toast[data-type="error"] .mc-toast__inner {
+    border-color: rgba(239,68,68,0.3);
+    box-shadow: var(--shadow-xl), 0 4px 20px rgba(239,68,68,0.25);
+  }
+  .mc-toast[data-type="warning"] .mc-toast__inner {
+    border-color: rgba(245,158,11,0.3);
+    box-shadow: var(--shadow-xl), 0 4px 20px rgba(245,158,11,0.2);
+  }
+
+  .mc-toast__icon { font-size: 1.1rem; flex-shrink: 0; }
+
+  .mc-toast__msg {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  /* Entrada */
+  @starting-style {
+    .mc-toast:popover-open {
+      opacity: 0;
+      transform: translateX(-50%) translateY(1.5rem) scale(0.9);
+    }
+  }
+
+  /* Salida */
+  .mc-toast:not(:popover-open) {
     opacity: 0;
-    transform: translateX(-50%) translateY(2rem);
+    transform: translateX(-50%) translateY(1.5rem) scale(0.9);
     display: none;
   }
 </style>
 
 <script define:vars={{ id }}>
-  window.showToast = (message, type = 'info', duration = 3000) => {
+  window.showToast = (message, type = 'info', duration = 3200) => {
     const toast = document.getElementById(id);
     const msgEl = document.getElementById(`${id}-message`);
     const iconEl = document.getElementById(`${id}-icon`);
-
     if (!toast || !msgEl || !iconEl) return;
 
     msgEl.textContent = message;
+    toast.setAttribute('data-type', type);
 
     const icons = {
       success: '✅',
-      error: '❌',
+      error:   '🌊',
       warning: '⚠️',
-      info: 'ℹ️'
+      info:    '🐚'
     };
-    iconEl.textContent = icons[type] || icons.info;
+    iconEl.textContent = icons[type] ?? icons.info;
 
     if (toast.matches(':popover-open')) {
       toast.hidePopover();
-      void toast.offsetWidth;
+      void toast.offsetWidth; // force reflow
     }
 
-    try {
-      toast.showPopover();
-    } catch (e) {
-      console.warn("Popover API not supported", e);
-      toast.style.display = 'block';
-    }
+    try { toast.showPopover(); }
+    catch { toast.style.display = 'flex'; }
 
-    if (window.toastTimeout) clearTimeout(window.toastTimeout);
-
-    window.toastTimeout = setTimeout(() => {
-      try {
-        toast.hidePopover();
-      } catch (e) {
-         toast.style.display = 'none';
-      }
+    if (window._toastTimeout) clearTimeout(window._toastTimeout);
+    window._toastTimeout = setTimeout(() => {
+      try { toast.hidePopover(); }
+      catch { toast.style.display = 'none'; }
     }, duration);
   };
 </script>

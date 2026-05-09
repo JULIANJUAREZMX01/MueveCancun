@@ -7,16 +7,18 @@ interface Props {
   value?: string;
   required?: boolean;
   list?: string;
+  autocomplete?: string;
 }
 
 const {
   type = 'text',
   placeholder,
   id,
-  className: className,
+  className,
   value,
   required = false,
-  list
+  list,
+  autocomplete
 } = Astro.props;
 ---
 
@@ -27,28 +29,64 @@ const {
   value={value}
   required={required}
   list={list}
-  class={`graffiti-input ${className || ''}`}
+  autocomplete={autocomplete}
+  class={`mc-input ${className || ''}`}
 />
 
 <style>
-  .graffiti-input {
+  .mc-input {
     width: 100%;
     background: var(--surface-card);
-    border: 1px solid var(--border-light);
+    border: 1.5px solid var(--border-light);
     border-radius: var(--r-lg);
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
+    padding: 0.8rem 1.1rem;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 500;
     color: var(--text-primary);
-    transition: all 0.2s ease;
     outline: none;
+    transition:
+      border-color var(--t-fast) var(--ease),
+      box-shadow   var(--t-fast) var(--ease),
+      background   var(--t-fast) var(--ease);
+    -webkit-appearance: none;
+    appearance: none;
   }
 
-  .graffiti-input:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 4px var(--color-primary-alpha);
+  .mc-input:hover:not(:focus) {
+    border-color: var(--border-medium);
   }
 
-  .graffiti-input::placeholder {
-    color: var(--text-tertiary);
+  .mc-input:focus {
+    border-color: var(--sea-bright);
+    box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15);
+    background: var(--surface-elevated);
+  }
+
+  .mc-input::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .dark .mc-input {
+    background: var(--surface-inset);
+  }
+
+  /* Compat */
+  :global(.graffiti-input) {
+    width: 100%;
+    background: var(--surface-card);
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--r-lg);
+    padding: 0.8rem 1.1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  }
+  :global(.graffiti-input:focus) {
+    border-color: var(--sea-bright);
+    box-shadow: 0 0 0 4px rgba(20,184,166,0.15);
   }
 </style>

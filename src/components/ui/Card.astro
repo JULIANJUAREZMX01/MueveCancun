@@ -2,22 +2,105 @@
 interface Props {
   class?: string;
   id?: string;
+  variant?: 'default' | 'glass' | 'ocean' | 'elevated' | 'bordered';
+  hover?: boolean;
 }
 
-const { class: className, id } = Astro.props;
+const {
+  class: className,
+  id,
+  variant = 'default',
+  hover = false
+} = Astro.props;
 ---
 
-<div id={id} class={`graffiti-card ${className || ''}`}>
+<div
+  id={id}
+  class:list={[
+    'mc-card',
+    `mc-card--${variant}`,
+    hover && 'mc-card--hover',
+    className
+  ]}
+>
   <slot />
 </div>
 
 <style>
-  .graffiti-card {
-    background-color: var(--surface-card);
-    border-radius: var(--r-lg);
+  /* ── Base ── */
+  .mc-card {
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    transition:
+      transform  var(--t-base) var(--ease-spring),
+      box-shadow var(--t-base) var(--ease),
+      border-color var(--t-fast) var(--ease);
+  }
+
+  /* ── DEFAULT — card limpia ── */
+  .mc-card--default {
+    background: var(--surface-card);
     border: 1px solid var(--border-light);
     box-shadow: var(--shadow-sm);
-    padding: 1rem;
+    padding: 1.25rem;
+  }
+
+  /* ── GLASS — glassmorphism mar ── */
+  .mc-card--glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    padding: 1.25rem;
+  }
+
+  /* ── OCEAN — fondo profundo ── */
+  .mc-card--ocean {
+    background: var(--gradient-deep);
+    border: 1px solid rgba(45,212,191,0.25);
+    box-shadow: var(--shadow-lg);
+    color: white;
+    padding: 1.25rem;
+  }
+
+  /* ── ELEVATED ── */
+  .mc-card--elevated {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-lg);
+    padding: 1.25rem;
+  }
+
+  /* ── BORDERED — borde turquesa ── */
+  .mc-card--bordered {
+    background: var(--surface-card);
+    border: 1.5px solid var(--border-medium);
+    box-shadow: var(--shadow-xs);
+    padding: 1.25rem;
+  }
+
+  /* ── Hover lift ── */
+  .mc-card--hover {
+    cursor: pointer;
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border-strong);
+    }
+    &:active {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+  }
+
+  /* ── Backward compat ── */
+  :global(.graffiti-card) {
+    background: var(--surface-card);
+    border-radius: var(--r-xl);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem;
     transition: all var(--t-base) var(--ease);
   }
 </style>

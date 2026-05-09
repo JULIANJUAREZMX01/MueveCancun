@@ -12,66 +12,134 @@ const isEs = lang === "es";
 
 <MainLayout
   title={isEs ? "MueveCancún — Tu GPS del Caribe" : "MueveCancún — Your Caribbean GPS"}
-  description={isEs ? "Encuentra tu ruta de transporte público en Cancún. Offline, rápido, ciudadano." : "Find your public transit route in Cancún. Offline, fast, citizen-powered."}
+  description={isEs
+    ? "Encuentra tu ruta de transporte público en Cancún. Offline, rápido, ciudadano."
+    : "Find your public transit route in Cancún. Offline, fast, citizen-powered."}
 >
   <div class="l-home">
 
-    <!-- Mapa de fondo (full screen) -->
-    <div class="l-home__map">
+    <!-- ── Mapa full-screen ── -->
+    <div class="l-home__map" id="home-map-wrap">
       <InteractiveMap />
     </div>
 
-    <!-- Overlay con controles -->
+    <!-- ── Capa de controles sobre el mapa ── -->
     <div class="l-home__overlay">
 
-      <!-- Header flotante -->
-      <header class="home-topbar">
-        <div class="home-topbar__brand">
-          <span class="home-topbar__dot" aria-hidden="true"></span>
-          <span class="home-topbar__name">MueveCancún</span>
-          <span class="home-topbar__version">v2</span>
+      <!-- Topbar flotante -->
+      <header class="home-topbar" role="banner">
+        <!-- Brand pill -->
+        <div class="home-brand-pill">
+          <span class="home-brand-dot" aria-hidden="true"></span>
+          <span class="home-brand-name">MueveCancún</span>
+          <span class="home-brand-tag">BETA</span>
         </div>
-        <div class="home-topbar__actions">
-          <button id="btn-gps-home" class="home-pill" aria-label={isEs ? "Centrar en mi ubicación" : "Center on my location"} title={isEs ? "Mi ubicación" : "My location"}>
-            <svg class="icon-size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06z"/></svg>
-            <span class="home-pill__gps-dot" id="gps-status-dot" aria-hidden="true"></span>
+
+        <!-- Acciones rápidas -->
+        <div class="home-actions">
+          <!-- GPS -->
+          <button
+            id="btn-gps-home"
+            class="home-action-btn"
+            aria-label={isEs ? "Centrar en mi ubicación" : "Center on my location"}
+            title={isEs ? "Mi ubicación" : "My location"}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06z"/>
+            </svg>
+            <span class="home-action-btn__status" id="gps-status-dot" aria-hidden="true"></span>
           </button>
-          <a href={"/" + lang + "/rutas"} class="home-pill" aria-label={isEs ? "Ver todas las rutas" : "View all routes"} title={isEs ? "Todas las rutas" : "All routes"}>
-            <svg class="icon-size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/></svg>
+
+          <!-- Ver rutas -->
+          <a
+            href={"/" + lang + "/rutas"}
+            class="home-action-btn"
+            aria-label={isEs ? "Ver todas las rutas" : "View all routes"}
+            title={isEs ? "Todas las rutas" : "All routes"}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/>
+            </svg>
           </a>
-          <a href={"/" + lang + "/community"} class="home-pill home-pill--notify" aria-label={isEs ? "Comunidad — reportes" : "Community — reports"} title={isEs ? "Reportes en vivo" : "Live reports"}>
-            <svg class="icon-size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-            <span class="home-pill__badge" id="live-reports-badge" hidden aria-hidden="true"></span>
+
+          <!-- Comunidad -->
+          <a
+            href={"/" + lang + "/community"}
+            class="home-action-btn home-action-btn--alert"
+            aria-label={isEs ? "Comunidad y reportes" : "Community & reports"}
+            title={isEs ? "Reportes en vivo" : "Live reports"}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+            </svg>
+            <span class="home-action-btn__badge" id="live-reports-badge" hidden aria-hidden="true"></span>
           </a>
-          <button id="open-report-fab" class="home-pill" aria-label={isEs ? "Reportar incidencia" : "Report issue"} title={isEs ? "Reportar" : "Report"}>
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+
+          <!-- Reportar -->
+          <button
+            id="open-report-fab"
+            class="home-action-btn"
+            aria-label={isEs ? "Reportar incidencia" : "Report issue"}
+            title={isEs ? "Reportar" : "Report"}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
           </button>
         </div>
       </header>
 
-      <!-- Bottom sheet con calculadora -->
-      <div class="c-sheet" id="calculator-sheet" role="region" aria-label={isEs ? "Calculadora de rutas" : "Route calculator"}>
-        <button class="c-sheet__handle" id="sheet-handle" aria-controls="sheet-content" aria-expanded="false" aria-label={isEs ? "Expandir calculadora" : "Expand calculator"}>
+      <!-- ── Bottom Sheet (calculadora) ── -->
+      <div
+        class="c-sheet"
+        id="calculator-sheet"
+        role="region"
+        aria-label={isEs ? "Calculadora de rutas" : "Route calculator"}
+      >
+        <!-- Handle drag -->
+        <button
+          class="c-sheet__handle"
+          id="sheet-handle"
+          aria-controls="sheet-content"
+          aria-expanded="false"
+          aria-label={isEs ? "Expandir calculadora de rutas" : "Expand route calculator"}
+        >
           <div class="c-sheet__bar" aria-hidden="true"></div>
-          <span class="c-sheet__hint" id="sheet-hint">
-            <svg class="icon-size-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-            {isEs ? "¿A dónde vas?" : "Where to?"}
-          </span>
+          <div class="c-sheet__hint" id="sheet-hint">
+            <span class="c-sheet__hint-wave" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M3 12 Q6 8 9 12 Q12 16 15 12 Q18 8 21 12"/>
+              </svg>
+            </span>
+            <span class="c-sheet__hint-text">
+              {isEs ? "¿A dónde vas?" : "Where to?"}
+            </span>
+            <span class="c-sheet__hint-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M5 15l7-7 7 7"/>
+              </svg>
+            </span>
+          </div>
         </button>
+
+        <!-- Contenido -->
         <div class="c-sheet__body" id="sheet-content">
           <RouteCalculator />
         </div>
       </div>
 
-    </div>
-  </div>
+    </div><!-- /overlay -->
+  </div><!-- /l-home -->
 </MainLayout>
 
 <style>
-  /* Override sidebar-w para home — el RouteCalculator actúa como sidebar */
-  :global(.l-main) { --sidebar-w: 0px !important; }
+  /* ── Override: home es fullscreen, sin padding top del layout ── */
+  :global(#main-content.l-main--with-nav) {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
 
-  /* Layout fullscreen */
+  /* ═══ HOME WRAPPER ═══ */
   .l-home {
     position: relative;
     width: 100%;
@@ -79,12 +147,14 @@ const isEs = lang === "es";
     overflow: hidden;
   }
 
+  /* ── Mapa fondo ── */
   .l-home__map {
     position: fixed;
     inset: 0;
     z-index: 0;
   }
 
+  /* ── Overlay controles ── */
   .l-home__overlay {
     position: relative;
     z-index: 10;
@@ -92,233 +162,325 @@ const isEs = lang === "es";
     flex-direction: column;
     height: 100%;
     pointer-events: none;
-    > * { pointer-events: auto; }
   }
+  .l-home__overlay > * { pointer-events: auto; }
 
-  /* Topbar flotante */
+  /* ═══ TOPBAR FLOTANTE ═══ */
   .home-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
-    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    padding: calc(0.875rem + env(safe-area-inset-top, 0px)) 1rem 0.875rem;
+    pointer-events: auto;
+    animation: fade-up 0.5s var(--ease-spring) both;
   }
 
-  .home-topbar__brand {
-    display: inline-flex; align-items: center; gap: 0.5rem;
+  /* Brand pill */
+  .home-brand-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem 0.5rem 0.75rem;
     background: var(--glass-bg);
-    backdrop-filter: blur(20px) saturate(1.8);
-    -webkit-backdrop-filter: blur(20px) saturate(1.8);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
     border-radius: var(--r-full);
-    padding: 0.5rem 1rem;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-md), var(--shadow-glow);
   }
 
-  .home-topbar__dot {
-    width: 10px; height: 10px; border-radius: 50%;
+  .home-brand-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
     background: var(--gradient-primary);
-    box-shadow: 0 0 10px var(--color-primary);
-    animation: pulse-map 2s infinite;
+    box-shadow: 0 0 8px var(--sea-bright);
+    animation: pulse-soft 2.5s ease-in-out infinite;
     flex-shrink: 0;
   }
-  @keyframes pulse-map {
-    0%,100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.3); opacity: 0.7; }
-  }
 
-  .home-topbar__name {
+  .home-brand-name {
     font-family: var(--font-display);
-    font-size: 0.85rem; font-weight: 800;
-    color: var(--text-primary); letter-spacing: -0.01em;
+    font-size: 0.88rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
   }
 
-  .home-topbar__version {
-    font-size: 0.6rem; font-weight: 900;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    background: var(--teal-xlight); color: var(--teal-dark);
-    padding: 0.1rem 0.35rem; border-radius: var(--r-full);
-  }
-  .dark .home-topbar__version { background: rgba(13,148,136,0.2); color: #5eead4; }
-
-  .home-topbar__actions { display: flex; gap: 0.5rem; }
-
-  .home-pill {
-    position: relative;
-    display: flex; align-items: center; justify-content: center;
-    width: 44px; height: 44px;
+  .home-brand-tag {
+    font-family: var(--font-display);
+    font-size: 0.5rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sea-teal);
+    background: var(--sea-xpale);
+    border: 1px solid var(--border-light);
+    padding: 0.1rem 0.4rem;
     border-radius: var(--r-full);
+  }
+
+  /* Acciones */
+  .home-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  /* Botón acción circular */
+  .home-action-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px; height: 46px;
+    border-radius: 50%;
     background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-md);
     color: var(--text-secondary);
     text-decoration: none;
-    transition: all var(--t-base) var(--ease-back);
     cursor: pointer;
+    transition:
+      transform     var(--t-fast) var(--ease-back),
+      box-shadow    var(--t-base) var(--ease),
+      background    var(--t-fast) var(--ease),
+      border-color  var(--t-fast) var(--ease),
+      color         var(--t-fast) var(--ease);
+    -webkit-tap-highlight-color: transparent;
   }
-  .home-pill:hover { transform: scale(1.1); color: var(--color-primary); border-color: var(--color-primary); }
-  .home-pill:active { transform: scale(0.92); }
-  .home-pill--notify { color: var(--color-accent); }
+  .home-action-btn:hover {
+    transform: scale(1.12) translateY(-2px);
+    color: var(--sea-teal);
+    border-color: var(--sea-bright);
+    box-shadow: var(--shadow-lg), var(--shadow-teal);
+    background: rgba(240, 253, 250, 0.92);
+  }
+  .home-action-btn:active { transform: scale(0.90); box-shadow: var(--shadow-sm); }
 
-  .home-pill__gps-dot {
-    position: absolute; top: 9px; right: 9px;
-    width: 7px; height: 7px; border-radius: 50%;
+  .home-action-btn--alert { color: var(--coral-reef); }
+  .home-action-btn--alert:hover { color: var(--coral-reef); border-color: var(--coral-reef); }
+
+  /* GPS dot */
+  .home-action-btn__status {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
     background: var(--border-medium);
     border: 1.5px solid white;
     transition: background var(--t-fast) var(--ease);
   }
-  .home-pill__gps-dot.active { background: #22c55e; }
-
-  .home-pill__badge {
-    position: absolute; top: 7px; right: 7px;
-    min-width: 16px; height: 16px; border-radius: var(--r-full);
-    background: #ef4444; color: white;
-    font-size: 0.55rem; font-weight: 900;
-    display: flex; align-items: center; justify-content: center;
-    border: 1.5px solid white; padding: 0 3px;
+  .home-action-btn__status.active {
+    background: var(--jungle);
+    animation: pulse-soft 2s ease-in-out infinite;
   }
-  .home-pill__badge[hidden] { display: none; }
 
-  /* Bottom sheet */
+  /* Badge reportes */
+  .home-action-btn__badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    min-width: 17px; height: 17px;
+    border-radius: var(--r-full);
+    background: var(--danger);
+    color: white;
+    font-family: var(--font-display);
+    font-size: 0.52rem; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid white;
+    padding: 0 3px;
+  }
+  .home-action-btn__badge[hidden] { display: none; }
+
+  /* ═══ BOTTOM SHEET ═══ */
   .c-sheet {
     position: fixed;
-    bottom: calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
+    bottom: calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom, 0px));
     left: 0; right: 0;
+    z-index: 40;
+    /* Glassmorphism arena */
     background: var(--glass-bg);
-    backdrop-filter: blur(32px) saturate(2);
-    -webkit-backdrop-filter: blur(32px) saturate(2);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border-top: 1px solid var(--glass-border);
     border-radius: var(--r-2xl) var(--r-2xl) 0 0;
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
-    max-height: 88px;
-    transition: max-height 0.4s cubic-bezier(0.16,1,0.3,1);
+    box-shadow:
+      0 -8px 48px rgba(0, 78, 95, 0.12),
+      0 -1px 0 var(--border-light);
+    /* Colapado: solo el handle visible */
+    max-height: 96px;
     overflow: hidden;
     will-change: max-height;
+    transition: max-height 0.5s var(--ease-spring);
+    animation: slide-up 0.6s var(--ease-spring) 0.1s both;
   }
+
   .c-sheet.is-expanded {
-    max-height: 82dvh;
+    max-height: 85dvh;
     overflow-y: auto;
     overscroll-behavior: contain;
   }
 
+  /* Handle */
   .c-sheet__handle {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 0.375rem;
-    width: 100%; padding: 0.875rem 1rem 0.5rem;
-    background: none; border: none; cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.875rem 1.25rem 0.625rem;
+    background: none;
+    border: none;
+    cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    outline: none;
   }
-  .c-sheet__bar {
-    width: 36px; height: 4px;
-    background: var(--border-medium);
-    border-radius: var(--r-full); opacity: 0.5;
-    transition: opacity var(--t-fast);
-  }
-  .c-sheet__handle:hover .c-sheet__bar,
-  .c-sheet.is-expanded .c-sheet__bar { opacity: 0.8; }
+  .c-sheet__handle:focus-visible { outline: 2px solid var(--sea-bright); }
 
+  .c-sheet__bar {
+    width: 40px; height: 4px;
+    background: var(--border-medium);
+    border-radius: var(--r-full);
+    opacity: 0.6;
+    transition: opacity var(--t-fast) var(--ease), width var(--t-fast) var(--ease);
+  }
+  .c-sheet__handle:hover .c-sheet__bar { opacity: 0.9; width: 52px; }
+  .c-sheet.is-expanded .c-sheet__bar { opacity: 0.4; }
+
+  /* Hint */
   .c-sheet__hint {
-    display: flex; align-items: center; gap: 0.375rem;
-    font-size: 0.82rem; font-weight: 800;
-    color: var(--text-secondary); letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text-secondary);
+    letter-spacing: -0.01em;
     transition: opacity var(--t-fast) var(--ease);
   }
-  .c-sheet.is-expanded .c-sheet__hint { opacity: 0; pointer-events: none; }
+  .c-sheet.is-expanded .c-sheet__hint {
+    opacity: 0;
+    pointer-events: none;
+  }
 
-  .c-sheet__body { padding-bottom: 2rem; }
+  .c-sheet__hint-wave {
+    display: flex;
+    color: var(--sea-bright);
+    animation: wave 3s ease-in-out infinite;
+  }
+  .c-sheet__hint-text { color: var(--text-primary); }
+  .c-sheet__hint-arrow {
+    display: flex;
+    color: var(--sea-bright);
+    animation: float 2s ease-in-out infinite;
+  }
 
-  /* Desktop: sheet siempre expandido */
+  /* Body */
+  .c-sheet__body { padding-bottom: 2.5rem; }
+
+  /* ═══ DESKTOP ═══ */
   @media (min-width: 769px) {
+    /* Mapa ocupa el área derecha del sidebar */
+    .l-home__map {
+      left: var(--sidebar-w, 76px);
+    }
+
+    /* Sheet se convierte en panel lateral fijo */
     .c-sheet {
+      position: fixed;
+      left: var(--sidebar-w, 76px);
+      top: 0;
       bottom: 0;
-      left: 0; width: 380px;
-      top: var(--header-h, 56px);
+      right: auto;
+      width: 380px;
       border-radius: 0;
       border-top: none;
       border-right: 1px solid var(--glass-border);
+      box-shadow: 4px 0 40px rgba(0, 78, 95, 0.10);
       max-height: none !important;
       overflow-y: auto;
+      animation: none;
     }
-    .l-home__map { left: 380px; }
-    .home-topbar { left: 380px; position: fixed; top: var(--header-h,56px); right: 0; background: none; }
+
+    .c-sheet__handle { display: none; }
+    .c-sheet__body { padding-top: 1rem; }
+
+    /* Mapa ocupa el resto */
+    .l-home__map {
+      left: calc(var(--sidebar-w, 76px) + 380px);
+    }
+
+    /* Topbar flota sobre el mapa (área derecha) */
+    .home-topbar {
+      position: fixed;
+      top: 0;
+      left: calc(var(--sidebar-w, 76px) + 380px);
+      right: 0;
+      padding: calc(0.75rem + env(safe-area-inset-top,0px)) 1rem 0.75rem;
+      pointer-events: none;
+    }
+    .home-topbar > * { pointer-events: auto; }
   }
 </style>
 
 <script>
-  const sheet  = document.getElementById("calculator-sheet");
-  const handle = document.getElementById("sheet-handle");
-  const mapEl  = document.querySelector(".l-home__map");
+  // ── GPS status dot ──────────────────────────────────────────
   const gpsDot = document.getElementById("gps-status-dot");
-  const reportsBadge = document.getElementById("live-reports-badge");
 
-  function openSheet()  { sheet?.classList.add("is-expanded");    handle?.setAttribute("aria-expanded","true"); }
-  function closeSheet() { sheet?.classList.remove("is-expanded"); handle?.setAttribute("aria-expanded","false"); }
-  function toggleSheet(){ sheet?.classList.contains("is-expanded") ? closeSheet() : openSheet(); }
+  navigator.geolocation?.watchPosition(
+    () => { gpsDot?.classList.add("active"); },
+    () => { gpsDot?.classList.remove("active"); },
+    { enableHighAccuracy: true }
+  );
 
-  handle?.addEventListener("click", toggleSheet);
+  // ── Sheet expand/collapse ───────────────────────────────────
+  const sheet   = document.getElementById("calculator-sheet");
+  const handle  = document.getElementById("sheet-handle");
 
-  // Cerrar al tocar el mapa
-  mapEl?.addEventListener("click", closeSheet);
+  function toggleSheet(force?: boolean) {
+    const isExp = force !== undefined ? force : !sheet?.classList.contains("is-expanded");
+    sheet?.classList.toggle("is-expanded", isExp);
+    handle?.setAttribute("aria-expanded", String(isExp));
+  }
 
-  // Abrir al hacer foco en inputs del calculator
-  sheet?.addEventListener("focusin", openSheet);
+  handle?.addEventListener("click", () => toggleSheet());
 
-  // Desktop: siempre expandido
-  if (window.innerWidth >= 769) openSheet();
+  // Swipe up/down para el sheet
+  let startY = 0;
+  sheet?.addEventListener("touchstart", (e) => {
+    startY = e.touches[0].clientY;
+  }, { passive: true });
 
-  // GPS
-  document.getElementById('open-report-fab')?.addEventListener('click', () => {
-    window.dispatchEvent(new CustomEvent('OPEN_REPORT_WIDGET'));
+  sheet?.addEventListener("touchend", (e) => {
+    const delta = startY - e.changedTouches[0].clientY;
+    if (Math.abs(delta) < 30) return;
+    toggleSheet(delta > 0); // swipe up = expand, swipe down = collapse
+  }, { passive: true });
+
+  // ── GPS centrar ─────────────────────────────────────────────
+  document.getElementById("btn-gps-home")?.addEventListener("click", () => {
+    navigator.geolocation?.getCurrentPosition((pos) => {
+      window.dispatchEvent(new CustomEvent("MAP_CENTER_ON_USER", {
+        detail: { lat: pos.coords.latitude, lng: pos.coords.longitude }
+      }));
+    });
   });
 
-  const gpsBtn = document.getElementById("btn-gps-home");
-  gpsBtn?.addEventListener("click", () => {
-    if (!navigator.geolocation) return;
-    gpsDot?.classList.remove("active");
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        gpsDot?.classList.add("active");
-        window.dispatchEvent(new CustomEvent("MAP_CENTER_GPS", {
-          detail: { lat: pos.coords.latitude, lng: pos.coords.longitude }
-        }));
-        window.dispatchEvent(new CustomEvent("MAP_SET_STOP", {
-          detail: { type: "origin", name: "Mi ubicación" }
-        }));
-        openSheet();
-      },
-      () => { gpsDot?.classList.remove("active"); }
-    );
-  });
-
-  // Badge de reportes en vivo (fetch ligero)
-  async function loadReportsBadge() {
+  // ── Live reports badge ──────────────────────────────────────
+  async function fetchLiveReports() {
     try {
-      const r = await fetch("/api/reports");
-      if (r.ok) {
-        const data = await r.json();
-        const count = Array.isArray(data) ? data.filter((rep: any) => {
-          const d = new Date(rep.created_at || rep.fecha || 0);
-          return (Date.now() - d.getTime()) < 3600000; // última hora
-        }).length : 0;
-        if (count > 0 && reportsBadge) {
-          reportsBadge.textContent = String(count > 9 ? "9+" : count);
-          reportsBadge.hidden = false;
-        }
+      const res = await fetch("/api/reports?limit=5");
+      if (!res.ok) return;
+      const data = await res.json();
+      const count = data?.total ?? data?.length ?? 0;
+      const badge = document.getElementById("live-reports-badge");
+      if (badge) {
+        badge.hidden = count === 0;
+        badge.textContent = count > 9 ? "9+" : String(count);
       }
     } catch {}
   }
-  loadReportsBadge();
-
-  // Escuchar cuando llega resultado de ruta → abrir sheet
-  window.addEventListener("ROUTE_CALCULATED", openSheet);
-  let __homePage_fn: (() => void) | null = null;
-  __homePage_fn = () => {
-    if (window.innerWidth >= 769) openSheet();
-  };
-  document.addEventListener('astro:page-load', __homePage_fn);
-  document.addEventListener('astro:before-swap', () => {
-    if (__homePage_fn) { document.removeEventListener('astro:page-load', __homePage_fn!); __homePage_fn = null; }
-  }, { once: true });
+  fetchLiveReports();
 </script>

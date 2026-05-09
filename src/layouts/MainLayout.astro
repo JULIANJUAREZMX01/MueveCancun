@@ -3,17 +3,15 @@ import { getLangFromUrl } from '../utils/i18n';
 import { getRelativeLocaleUrl } from '../utils/utils';
 import BottomNav from '../components/BottomNav.astro';
 import DesktopNav from '../components/DesktopNav.astro';
-import Sidebar from '../components/Sidebar.astro';
 import Toast from '../components/ui/Toast.astro';
 import PwaReload from '../components/ui/PwaReload.astro';
 import BrowserDetection from '../components/ui/BrowserDetection.astro';
 import DonateNudge from '../components/ui/DonateNudge.astro';
-import AppLoader from '../components/AppLoader.astro';
 import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
 import NexusAgentUI from '../components/agent/NexusAgentUI.astro';
 import { ClientRouter } from 'astro:transitions';
-import "../styles/main.scss";
+import "../styles/global.css";
 
 interface Props {
   title?: string;
@@ -21,55 +19,102 @@ interface Props {
   hideNav?: boolean;
 }
 
-const { title = "MueveCancún", description = "Transporte público de Cancún — offline, rápido, ciudadano.", hideNav = false } = Astro.props;
+const {
+  title = "MueveCancún",
+  description = "Transporte público de Cancún — offline, rápido, ciudadano.",
+  hideNav = false
+} = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 ---
 <!DOCTYPE html>
-<html lang={lang} class="scroll-smooth">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#0d9488" />
+    <meta name="theme-color" content="#0d9488" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#011820" media="(prefers-color-scheme: dark)" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>{title}</title>
     <link rel="manifest" href="/manifest.json" />
+    <!-- Preconnect fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <ClientRouter />
+    <!-- Tema sin flash -->
     <script is:inline>
-      const t = localStorage.getItem("theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-      document.documentElement.classList.toggle("dark", t === "dark");
+      (function(){
+        var t = localStorage.getItem("theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.classList.toggle("dark", t === "dark");
+      })();
     </script>
   </head>
+
   <body class="l-body">
+
     {!hideNav && (
-      <header class="c-header" role="banner">
-        <a href={getRelativeLocaleUrl(lang, "home")} class="c-header__logo" aria-label="MueveCancún — Inicio">
+      <header class="c-header" role="banner" id="app-header">
+        <!-- Brand -->
+        <a href={getRelativeLocaleUrl(lang, "home")} class="c-header__brand" aria-label="MueveCancún — Inicio">
           <BrandAnimation />
         </a>
+
+        <!-- Acciones -->
         <div class="c-header__actions">
-          <div class="c-header__balance-pill" id="balance-pill" aria-label="Saldo disponible">
-            <svg class="w-3 h-3 opacity-60" viewBox="0 0 24 24" fill="currentColor"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
-            <span id="header-balance">...</span>
-          </div>
-          <button id="theme-toggle" class="c-header__icon-btn" aria-label="Cambiar tema" title="Cambiar tema">
-            <span class="theme-icon-light">☀️</span>
-            <span class="theme-icon-dark">🌙</span>
+          <!-- Balance wallet -->
+          <button
+            class="c-header__balance"
+            id="balance-pill"
+            aria-label="Saldo disponible — ir a Tarjeta"
+            title="Ver saldo"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+            </svg>
+            <span id="header-balance" class="c-header__balance-value">…</span>
+          </button>
+
+          <!-- Tema toggle -->
+          <button
+            id="theme-toggle"
+            class="c-header__pill-btn"
+            aria-label="Cambiar tema"
+            title="Cambiar tema"
+          >
+            <span class="theme-sun" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"/>
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+              </svg>
+            </span>
+            <span class="theme-moon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            </span>
           </button>
         </div>
       </header>
     )}
 
-    {!hideNav && <Sidebar />}
+    <!-- Desktop nav rail -->
+    {!hideNav && <DesktopNav />}
 
-    <main class:list={["l-main", !hideNav && "l-main--with-nav"]} id="main-content">
+    <!-- Contenido principal -->
+    <main
+      class:list={["l-main", !hideNav && "l-main--with-nav"]}
+      id="main-content"
+    >
       <slot />
     </main>
 
-    {!hideNav && <div class="u-mobile-only"><BottomNav /></div>}
-      {!hideNav && <DesktopNav />}
+    <!-- Mobile bottom nav -->
+    {!hideNav && <BottomNav />}
 
+    <!-- Widgets globales -->
     <Toast />
     <PwaReload />
     <BrowserDetection />
@@ -77,320 +122,208 @@ const lang = getLangFromUrl(Astro.url);
     <ReportWidget />
     <NexusAgentUI />
 
-    <style is:global>
-/* ═══════════════════════════════════════════
-   MueveCancún — Global Styles
-   Tokens CSS + resets + utilidades globales
-   ═══════════════════════════════════════════ */
-
-/* ── Design Tokens (fuente única de verdad) ── */
-:root {
-  --teal:          #0d9488;
-  --teal-bright:   #14b8a6;
-  --teal-dark:     #0f766e;
-  --teal-light:    #ccfbf1;
-  --teal-xlight:   #f0fdfa;
-
-  --sunset:        #f97316;
-  --sunset-light:  #ffedd5;
-  --coral:         #ef4444;
-  --coral-light:   #fee2e2;
-  --jungle:        #22c55e;
-  --jungle-light:  #dcfce7;
-  --turquoise:     #06b6d4;
-  --turquoise-light: #e0f2fe;
-  --amber:         #f59e0b;
-  --amber-light:   #fef3c7;
-
-  --color-primary:        var(--teal);
-  --color-primary-hover:  var(--teal-bright);
-  --color-primary-light:  var(--teal-light);
-  --color-accent:         var(--sunset);
-  --color-success:        var(--jungle);
-  --color-warning:        var(--amber);
-  --color-danger:         var(--coral);
-  --color-info:           var(--turquoise);
-
-  --surface-bg:        #f8fafc;
-  --surface-card:      #ffffff;
-  --surface-elevated:  #ffffff;
-  --surface-overlay:   rgba(0,0,0,0.45);
-
-  --text-primary:   #0f172a;
-  --text-secondary: #334155;
-  --text-tertiary:  #64748b;
-  --text-inverse:   #ffffff;
-
-  --border-light:  #e2e8f0;
-  --border-medium: #cbd5e1;
-
-  --gradient-primary: linear-gradient(135deg, var(--teal) 0%, var(--teal-bright) 100%);
-  --gradient-hero:    linear-gradient(160deg, #0f172a 0%, #0d3d38 50%, #0f766e 100%);
-  --gradient-card:    linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(13,148,136,0.06) 100%);
-
-  --glass-bg:     rgba(255,255,255,0.88);
-  --glass-border: rgba(255,255,255,0.5);
-  --glass-shadow: 0 8px 32px rgba(0,0,0,0.08);
-
-  --shadow-xs:  0 1px 2px rgba(0,0,0,0.04);
-  --shadow-sm:  0 2px 8px rgba(0,0,0,0.06);
-  --shadow-md:  0 4px 16px rgba(0,0,0,0.08);
-  --shadow-lg:  0 8px 32px rgba(0,0,0,0.10);
-  --shadow-xl:  0 16px 48px rgba(0,0,0,0.12);
-  --shadow-teal:    0 4px 14px -2px rgba(13,148,136,0.35);
-  --shadow-teal-lg: 0 8px 24px -4px rgba(13,148,136,0.45);
-
-  --r-xs:   6px;
-  --r-sm:   10px;
-  --r-md:   14px;
-  --r-lg:   20px;
-  --r-xl:   28px;
-  --r-2xl:  36px;
-  --r-full: 9999px;
-
-  --font-sans:    "Inter", system-ui, -apple-system, sans-serif;
-  --font-display: "Poppins", "Inter", sans-serif;
-  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
-
-  --header-h:      56px;
-  --bottom-nav-h:  68px;
-  --sidebar-w:     72px;
-
-  --ease:      cubic-bezier(0.4,0,0.2,1);
-  --ease-out:  cubic-bezier(0,0,0.2,1);
-  --ease-in:   cubic-bezier(0.4,0,1,1);
-  --ease-back: cubic-bezier(0.34,1.56,0.64,1);
-  --t-fast:    120ms;
-  --t-base:    220ms;
-  --t-slow:    380ms;
-}
-
-/* ── Dark Mode ── */
-.dark {
-  --surface-bg:       #030712;
-  --surface-card:     #0f172a;
-  --surface-elevated: #1e293b;
-  --text-primary:   #f1f5f9;
-  --text-secondary: #cbd5e1;
-  --text-tertiary:  #94a3b8;
-  --text-inverse:   #0f172a;
-  --border-light:  #1e293b;
-  --border-medium: #334155;
-  --glass-bg:     rgba(15,23,42,0.90);
-  --glass-border: rgba(255,255,255,0.08);
-  --glass-shadow: 0 8px 32px rgba(0,0,0,0.30);
-  --teal-light:  rgba(13,148,136,0.18);
-  --teal-xlight: rgba(13,148,136,0.08);
-  --sunset-light: rgba(249,115,22,0.15);
-  --jungle-light: rgba(34,197,94,0.15);
-}
-
-/* ── Reset base ── */
-*, *::before, *::after { box-sizing: border-box; }
-html { font-family: var(--font-sans); -webkit-text-size-adjust: 100%; }
-body { margin: 0; }
-img, svg { display: block; max-width: 100%; }
-button { cursor: pointer; font-family: inherit; }
-a { color: inherit; }
-
-/* ── View transitions ── */
-::view-transition-old(root), ::view-transition-new(root) {
-  animation-duration: 280ms;
-  animation-timing-function: cubic-bezier(0,0,0.2,1);
-}
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar        { width: 4px; height: 4px; }
-::-webkit-scrollbar-track  { background: transparent; }
-::-webkit-scrollbar-thumb  { background: var(--border-medium); border-radius: 99px; }
-
-/* ── Animaciones globales ── */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-8px); }
-}
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes scale-in {
-  from { opacity: 0; transform: scale(0.9); }
-  to   { opacity: 1; transform: scale(1); }
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.5; }
-}
-@keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position:  200% 0; }
-}
-
-/* ── Utilidades globales ── */
-.sr-only {
-  position: absolute; width: 1px; height: 1px;
-  padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
-}
-.fade-up { animation: fade-up 0.4s var(--ease-out) both; }
-.scale-in { animation: scale-in 0.3s var(--ease-back) both; }
-.icon-size-4 { width: 1rem; height: 1rem; flex-shrink: 0; }
-.icon-size-3 { width: 0.75rem; height: 0.75rem; flex-shrink: 0; }
-
-/* ── Leaflet reset (evitar SVG gigante) ── */
-.leaflet-container { background: #e8f4f0; }
-.leaflet-control-zoom a { color: var(--text-primary) !important; }
-
-/* ── Shared page patterns ── */
-.page-content {
-  padding: 1.5rem 1rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
-.page-content-wide { max-width: 1200px; }
-.page-header { margin-bottom: 1.5rem; }
-.page-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  font-weight: 900;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
-  margin: 0 0 0.25rem;
-}
-.section-label {
-  display: inline-flex; align-items: center; gap: 0.375rem;
-  font-size: 0.7rem; font-weight: 800;
-  text-transform: uppercase; letter-spacing: 0.12em;
-  color: var(--color-primary);
-  background: var(--teal-xlight);
-  padding: 0.25rem 0.6rem;
-  border-radius: var(--r-full);
-}
-
-    </style>
-
-    <style>
-      .l-body {
-        margin: 0;
-        min-height: 100dvh;
-        background-color: var(--surface-bg);
-        color: var(--text-primary);
-        font-family: var(--font-sans);
-        transition: background-color var(--t-base) var(--ease), color var(--t-base) var(--ease);
-        -webkit-font-smoothing: antialiased;
-      }
-
-      /* ── Header ── */
-      .c-header {
-        position: fixed; top: 0; left: 0; right: 0;
-        height: var(--header-h, 56px);
-        background: var(--glass-bg);
-        backdrop-filter: blur(20px) saturate(1.8);
-        -webkit-backdrop-filter: blur(20px) saturate(1.8);
-        border-bottom: 1px solid var(--glass-border);
-        z-index: 50;
-        padding: 0 1rem;
-        padding-top: env(safe-area-inset-top, 0);
-        display: flex; align-items: center; justify-content: space-between;
-        transition: all var(--t-base) var(--ease);
-      }
-      @media (min-width: 769px) { .c-header { left: var(--sidebar-w, 80px); } }
-
-      .c-header__logo {
-        display: flex; align-items: center; gap: 0.5rem;
-        text-decoration: none; border-radius: var(--r-md);
-        padding: 0.25rem;
-        transition: opacity var(--t-fast) var(--ease);
-      }
-      .c-header__logo:hover { opacity: 0.8; }
-
-      .c-header__actions { display: flex; align-items: center; gap: 0.5rem; }
-
-      .c-header__balance-pill {
-        display: flex; align-items: center; gap: 0.375rem;
-        padding: 0.3rem 0.75rem;
-        background: var(--surface-elevated);
-        border: 1px solid var(--border-light);
-        border-radius: var(--r-full);
-        font-size: 0.72rem; font-weight: 900;
-        font-family: var(--font-mono);
-        color: var(--text-secondary);
-        letter-spacing: 0.05em;
-        cursor: pointer;
-        transition: all var(--t-fast) var(--ease);
-      }
-      .c-header__balance-pill:hover { border-color: var(--color-primary); color: var(--color-primary); }
-
-      .c-header__icon-btn {
-        width: 36px; height: 36px;
-        display: flex; align-items: center; justify-content: center;
-        background: var(--surface-elevated);
-        border: 1px solid var(--border-light);
-        border-radius: var(--r-md);
-        cursor: pointer; font-size: 1rem;
-        transition: all var(--t-fast) var(--ease);
-        line-height: 1;
-      }
-      .c-header__icon-btn:hover { transform: scale(1.1); background: var(--surface-card); }
-
-      html:not(.dark) .theme-icon-dark { display: none; }
-      html.dark .theme-icon-light { display: none; }
-
-      /* ── Layout ── */
-      .l-main {
-        width: 100%; min-height: 100dvh;
-      }
-      .l-main--with-nav {
-        padding-top: var(--header-h, 56px);
-      }
-      @media (min-width: 769px) {
-        .l-main--with-nav {
-          margin-left: var(--sidebar-w, 80px);
-          width: calc(100% - var(--sidebar-w, 80px));
-        }
-      }
-
-      .u-mobile-only { display: block; }
-      @media (min-width: 769px) { .u-mobile-only { display: none; } }
-    </style>
-
-    <script>
-      import { enforceGuards } from "../utils/auth";
-      import { initWasm } from "../lib/initWasm";
-      import { getWalletBalance } from "../utils/db";
-
-      async function syncBalance() {
-        try {
-          const b = await getWalletBalance();
-          const el = document.getElementById("header-balance");
-          if (el) el.textContent = "$" + b.amount.toFixed(2);
-        } catch {}
-      }
-
-      function setupHeader() {
-        syncBalance();
-        enforceGuards();
-        initWasm().catch(console.error);
-
-        document.getElementById("theme-toggle")?.addEventListener("click", () => {
-          const isDark = document.documentElement.classList.toggle("dark");
-          localStorage.setItem("theme", isDark ? "dark" : "light");
-        });
-
-        document.getElementById("balance-pill")?.addEventListener("click", () => {
-          const lang = document.documentElement.lang || "es";
-          window.location.href = "/" + lang + "/wallet";
-        });
-      }
-
-      if (typeof window !== "undefined") {
-        setupHeader();
-        document.addEventListener("astro:page-load", setupHeader);
-        window.addEventListener("BALANCE_UPDATED", syncBalance);
-      }
-    </script>
   </body>
 </html>
+
+<style is:global>
+  /* ── Body ── */
+  .l-body {
+    margin: 0;
+    min-height: 100dvh;
+    background-color: var(--surface-bg);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition:
+      background-color var(--t-base) var(--ease),
+      color           var(--t-base) var(--ease);
+  }
+
+  /* ═══ HEADER ═══ */
+  .c-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-h, 60px);
+    padding: 0 1.25rem;
+    padding-top: env(safe-area-inset-top, 0px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    z-index: 60;
+    /* Glassmorphism caribe */
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 2px 24px rgba(0, 78, 95, 0.07);
+    transition:
+      background var(--t-base) var(--ease),
+      box-shadow var(--t-base) var(--ease);
+  }
+
+  @media (min-width: 769px) {
+    .c-header {
+      left: var(--sidebar-w, 76px);
+    }
+  }
+
+  /* Brand */
+  .c-header__brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    border-radius: var(--r-md);
+    padding: 0.25rem 0.375rem;
+    transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease-back);
+  }
+  .c-header__brand:hover { opacity: 0.85; transform: scale(1.02); }
+  .c-header__brand:active { transform: scale(0.97); }
+
+  /* Acciones */
+  .c-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Balance pill */
+  .c-header__balance {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    background: var(--sea-xpale);
+    border: 1px solid var(--border-light);
+    border-radius: var(--r-full);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--sea-teal);
+    cursor: pointer;
+    transition:
+      background   var(--t-fast) var(--ease),
+      border-color var(--t-fast) var(--ease),
+      transform    var(--t-fast) var(--ease-back),
+      box-shadow   var(--t-fast) var(--ease);
+  }
+  .c-header__balance:hover {
+    background: var(--sea-pale);
+    border-color: var(--sea-bright);
+    transform: scale(1.04);
+    box-shadow: var(--shadow-teal);
+  }
+  .c-header__balance:active { transform: scale(0.96); }
+
+  .c-header__balance-value {
+    font-family: var(--font-mono);
+    letter-spacing: 0.03em;
+  }
+
+  /* Pill button (tema) */
+  .c-header__pill-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--r-full);
+    background: var(--surface-card);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition:
+      background  var(--t-fast) var(--ease),
+      border-color var(--t-fast) var(--ease),
+      transform   var(--t-fast) var(--ease-back),
+      color       var(--t-fast) var(--ease);
+  }
+  .c-header__pill-btn:hover {
+    background: var(--sea-xpale);
+    border-color: var(--sea-bright);
+    color: var(--sea-teal);
+    transform: scale(1.08) rotate(12deg);
+  }
+  .c-header__pill-btn:active { transform: scale(0.92) rotate(0deg); }
+
+  /* Tema sun/moon */
+  html:not(.dark) .theme-moon { display: none; }
+  html.dark        .theme-sun  { display: none; }
+  .theme-sun, .theme-moon { display: flex; align-items: center; justify-content: center; }
+
+  /* ═══ LAYOUT PRINCIPAL ═══ */
+  .l-main {
+    width: 100%;
+    min-height: 100dvh;
+  }
+
+  .l-main--with-nav {
+    padding-top: var(--header-h, 60px);
+    padding-bottom: calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (min-width: 769px) {
+    .l-main--with-nav {
+      margin-left: var(--sidebar-w, 76px);
+      width: calc(100% - var(--sidebar-w, 76px));
+      padding-bottom: 0;
+    }
+  }
+
+  /* ── Backward compat ── */
+  .u-mobile-only { display: block; }
+  @media (min-width: 769px) { .u-mobile-only { display: none; } }
+</style>
+
+<script>
+  import { enforceGuards } from "../utils/auth";
+  import { initWasm } from "../lib/initWasm";
+  import { getWalletBalance } from "../utils/db";
+
+  async function syncBalance() {
+    try {
+      const b = await getWalletBalance();
+      const el = document.getElementById("header-balance");
+      if (el) el.textContent = "$" + b.amount.toFixed(2);
+    } catch {}
+  }
+
+  function setupHeader() {
+    syncBalance();
+    enforceGuards();
+    initWasm().catch(console.error);
+
+    const themeBtn = document.getElementById("theme-toggle");
+    if (themeBtn) {
+      themeBtn.addEventListener("click", () => {
+        const isDark = document.documentElement.classList.toggle("dark");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      });
+    }
+
+    const balancePill = document.getElementById("balance-pill");
+    if (balancePill) {
+      balancePill.addEventListener("click", () => {
+        const lang = document.documentElement.lang || "es";
+        window.location.href = "/" + lang + "/wallet";
+      });
+    }
+
+    // Scroll: header shadow on scroll
+    const header = document.getElementById("app-header");
+    if (header) {
+      window.addEventListener("scroll", () => {
+        header.classList.toggle("c-header--scrolled", window.scrollY > 8);
+      }, { passive: true });
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    setupHeader();
+    document.addEventListener("astro:page-load", setupHeader);
+    window.addEventListener("BALANCE_UPDATED", syncBalance);
+  }
+</script>
