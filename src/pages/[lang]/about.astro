@@ -1,285 +1,127 @@
 ---
-export const prerender = true;
-export function getStaticPaths() {
-  return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
-}
-import MainLayout from "../../layouts/MainLayout.astro";
-const { lang } = Astro.params;
-const isEs = lang === "es";
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getLangFromUrl } from '../../utils/i18n';
+const lang = getLangFromUrl(Astro.url);
+const isEs = lang === 'es';
 ---
-
-<MainLayout
-  title={isEs ? "Acerca — MueveCancún" : "About — MueveCancún"}
-  description={isEs ? "Conoce la historia detrás de MueveCancún — el GPS del Caribe." : "Learn the story behind MueveCancún — the Caribbean GPS."}
->
-  <div class="about-page">
+<MainLayout title={isEs ? "Acerca de MueveCancún" : "About MueveCancún"}>
+  <div class="about-root safe-bottom">
 
     <!-- Hero -->
-    <header class="about-hero">
-      <div class="about-hero__eyebrow">
-        <span aria-hidden="true">🌊</span>
-        {isEs ? "El proyecto" : "The project"}
+    <div class="about-hero">
+      <div class="about-hero__logo">
+        <svg width="56" height="56" viewBox="0 0 48 48" fill="none">
+          <rect width="48" height="48" rx="16" fill="url(#aGrad)"/>
+          <rect x="7" y="14" width="34" height="22" rx="5" fill="white" opacity="0.95"/>
+          <rect x="10" y="17" width="11" height="9" rx="2.5" fill="url(#aGrad)"/>
+          <rect x="27" y="17" width="11" height="9" rx="2.5" fill="url(#aGrad)"/>
+          <circle cx="13" cy="36" r="4.5" fill="white" opacity="0.95"/>
+          <circle cx="35" cy="36" r="4.5" fill="white" opacity="0.95"/>
+          <defs>
+            <linearGradient id="aGrad" x1="0" y1="0" x2="48" y2="48">
+              <stop stop-color="#0d9488"/><stop offset="1" stop-color="#0ea5e9"/>
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
-      <h1 class="about-hero__title">
-        {isEs ? "La verdad de la calle" : "The truth of the street"}
-      </h1>
-      <p class="about-hero__sub">
-        {isEs
-          ? "MueveCancún no nació en una oficina — nació en la parada del camión."
-          : "MueveCancún wasn't born in an office — it was born at the bus stop."
-        }
-      </p>
-    </header>
+      <h1 class="about-title">MueveCancún</h1>
+      <p class="about-version">v4.0 SuperApp · {new Date().getFullYear()}</p>
+      <p class="about-desc">{isEs ? 'La app de transporte público más completa de Cancún. Offline-first, ciudadana y gratuita.' : 'The most complete public transport app in Cancún. Offline-first, community-driven and free.'}</p>
+    </div>
 
-    <!-- Stats -->
-    <div class="stats-grid" aria-label={isEs ? "Estadísticas clave" : "Key stats"}>
+    <!-- Stats grid -->
+    <div class="stats-grid stagger-children">
       {[
-        { num:"78+",  label: isEs ? "Rutas activas"    : "Active routes",   color:"teal"   },
-        { num:"100%", label: isEs ? "Sin internet"     : "Offline-first",   color:"green"  },
-        { num:"0",    label: isEs ? "Publicidad"       : "Ads",             color:"orange" },
-        { num:"24/7", label: isEs ? "Disponible"       : "Available",       color:"blue"   },
+        { icon: '🚌', val: '78+', lbl: isEs ? 'Rutas' : 'Routes' },
+        { icon: '📍', val: '500+', lbl: isEs ? 'Paraderos' : 'Stops' },
+        { icon: '📶', val: '100%', lbl: 'Offline' },
+        { icon: '⚡', val: 'WASM', lbl: isEs ? 'Motor Rust' : 'Rust Engine' },
+        { icon: '🌐', val: 'ES/EN', lbl: isEs ? 'Idiomas' : 'Languages' },
+        { icon: '🎯', val: '0$', lbl: isEs ? 'Gratis' : 'Free' },
       ].map(s => (
-        <div class={`stat-card stat-card--${s.color}`}>
-          <span class="stat-num">{s.num}</span>
-          <span class="stat-label">{s.label}</span>
+        <div class="stat-card card-premium">
+          <div class="stat-card__icon">{s.icon}</div>
+          <div class="stat-card__val">{s.val}</div>
+          <div class="stat-card__lbl">{s.lbl}</div>
         </div>
       ))}
     </div>
 
-    <!-- El problema -->
+    <!-- Features -->
     <section class="about-section">
-      <div class="about-section__eyebrow"><span aria-hidden="true">🔍</span>{isEs ? "El problema" : "The problem"}</div>
-      <h2 class="about-section__title">
-        {isEs ? "Google Maps no entiende a Cancún" : "Google Maps doesn't get Cancún"}
-      </h2>
-      <div class="about-section__body">
-        <p>
-          {isEs
-            ? "El transporte público en Cancún es un organismo vivo: rutas que cambian, avisos en Facebook, bloqueos improvisados. Las grandes plataformas no pueden mantenerse al día — nosotros sí, porque somos de aquí."
-            : "Public transport in Cancún is a living organism: changing routes, Facebook notices, improvised blockages. Big platforms can't keep up — we can, because we're from here."
-          }
-        </p>
-        <p>
-          {isEs
-            ? "MueveCancún funciona sin internet, carga en menos de 1 segundo y está diseñada para que cualquier persona, bajo el sol del Caribe, sepa exactamente qué ruta la lleva a su destino."
-            : "MueveCancún works offline, loads in under 1 second, and is designed so anyone — under the Caribbean sun — knows exactly which route gets them there."
-          }
-        </p>
-      </div>
-    </section>
-
-    <!-- Tech -->
-    <section class="about-section">
-      <div class="about-section__eyebrow"><span aria-hidden="true">⚡</span>{isEs ? "La tecnología" : "The technology"}</div>
-      <h2 class="about-section__title">
-        {isEs ? "Motor WASM de alto rendimiento" : "High-performance WASM engine"}
-      </h2>
-      <div class="tech-stack" role="list">
+      <h2 class="section-title">{isEs ? '¿Qué incluye?' : 'What\'s included?'}</h2>
+      <div class="features-list stagger-children">
         {[
-          { icon:"🦀", name:"Rust + WASM",    desc: isEs ? "Motor de rutas compilado a WebAssembly — 4M eventos/segundo" : "Route engine compiled to WebAssembly — 4M events/second" },
-          { icon:"🚀", name:"Astro 5 SSR",    desc: isEs ? "Renderizado híbrido — carga en menos de 1s" : "Hybrid rendering — loads in under 1s" },
-          { icon:"🌍", name:"IndexedDB",      desc: isEs ? "78+ rutas almacenadas offline en tu dispositivo" : "78+ routes stored offline on your device" },
-          { icon:"🛡️", name:"Service Worker", desc: isEs ? "Cache inteligente — funciona sin conexión" : "Smart cache — works without connection" },
-        ].map(t => (
-          <div class="tech-item" role="listitem">
-            <span class="tech-item__icon" aria-hidden="true">{t.icon}</span>
+          { icon: '🗺️', title: isEs ? 'Mapa interactivo' : 'Interactive map', desc: isEs ? 'Leaflet con rutas coloreadas y paraderos' : 'Leaflet with colored routes and stops' },
+          { icon: '📡', title: isEs ? 'Buses en tiempo real' : 'Real-time buses', desc: isEs ? 'SVG animado 2D con posición en vivo' : 'Animated 2D SVG with live position' },
+          { icon: '🔥', title: isEs ? 'Mapa de calor' : 'Heat map', desc: isEs ? 'Densidad de usuarios en paraderos' : 'User density at stops' },
+          { icon: '🔔', title: isEs ? 'Notificaciones push' : 'Push notifications', desc: isEs ? 'Alertas de bus llegando, transbordo, llegada' : 'Alerts for arriving bus, transfer, arrival' },
+          { icon: '📲', title: isEs ? 'PWA instalable' : 'Installable PWA', desc: isEs ? 'Como app nativa, sin tienda' : 'Like a native app, no store needed' },
+          { icon: '💾', title: isEs ? 'Modo offline' : 'Offline mode', desc: isEs ? 'Funciona sin conexión a internet' : 'Works without internet connection' },
+          { icon: '📍', title: isEs ? 'Ubicación compartida' : 'Shared location', desc: isEs ? 'Comparte tu viaje en tiempo real' : 'Share your journey in real time' },
+          { icon: '🤖', title: 'Nexus Agent', desc: isEs ? 'IA para ayudarte con rutas (Groq)' : 'AI to help you with routes (Groq)' },
+        ].map(f => (
+          <div class="feature-item">
+            <div class="feature-icon">{f.icon}</div>
             <div>
-              <div class="tech-item__name">{t.name}</div>
-              <div class="tech-item__desc">{t.desc}</div>
+              <div class="feature-title">{f.title}</div>
+              <div class="feature-desc">{f.desc}</div>
             </div>
           </div>
         ))}
       </div>
     </section>
 
-    <!-- Team -->
+    <!-- Tech stack -->
     <section class="about-section">
-      <div class="about-section__eyebrow"><span aria-hidden="true">🌴</span>{isEs ? "El equipo" : "The team"}</div>
-      <h2 class="about-section__title">
-        {isEs ? "Hecho en Cancún, para Cancún" : "Made in Cancún, for Cancún"}
-      </h2>
-      <div class="about-section__body">
-        <p>
-          {isEs
-            ? "Somos ciudadanos que usamos el transporte público todos los días. Este proyecto es código abierto y comunidad primero. Creemos que el acceso a la información de transporte es un derecho, no un producto."
-            : "We're citizens who use public transport daily. This project is open-source and community-first. We believe transport information access is a right, not a product."
-          }
-        </p>
+      <h2 class="section-title">{isEs ? 'Stack técnico' : 'Tech stack'}</h2>
+      <div class="tech-grid">
+        {['Astro 5 SSR', 'Rust/WASM', 'Tailwind', 'Leaflet', 'Neon Postgres', 'Vercel', 'Groq LLM', 'TypeScript'].map(t => (
+          <span class="chip chip-teal">{t}</span>
+        ))}
       </div>
-      <a href="https://github.com/JULIANJUAREZMX01/MueveCancun" target="_blank" rel="noopener noreferrer" class="github-link">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
-        {isEs ? "Ver en GitHub" : "View on GitHub"}
-        <span aria-hidden="true">↗</span>
+    </section>
+
+    <!-- Links -->
+    <section class="about-section">
+      <a href={`/${lang}/suscripcion`} class="btn-primary" style="width:100%;margin-bottom:0.75rem">
+        ⭐ {isEs ? 'Apoyar el proyecto' : 'Support the project'}
+      </a>
+      <a href={`/${lang}/contribuir`} class="btn-ghost" style="width:100%;justify-content:center">
+        🗺️ {isEs ? 'Contribuir rutas' : 'Contribute routes'}
       </a>
     </section>
 
-    <!-- Roadmap visual -->
-    <section class="about-section">
-      <div class="about-section__eyebrow"><span aria-hidden="true">🗺️</span>Roadmap</div>
-      <h2 class="about-section__title">{isEs ? "Lo que viene" : "What's next"}</h2>
-      <div class="roadmap">
-        {[
-          { phase:"Q2 2026", status:"active",  label: isEs ? "Motor WASM v2 — tiempo real"      : "WASM engine v2 — real-time" },
-          { phase:"Q3 2026", status:"planned", label: isEs ? "Mapa colaborativo de paradas"      : "Collaborative stop map" },
-          { phase:"Q3 2026", status:"planned", label: isEs ? "Notificaciones push de rutas"      : "Route push notifications" },
-          { phase:"Q4 2026", status:"planned", label: isEs ? "App nativa iOS/Android"            : "Native iOS/Android app" },
-        ].map(r => (
-          <div class={`roadmap-item roadmap-item--${r.status}`}>
-            <div class="roadmap-item__dot" aria-hidden="true"></div>
-            <div class="roadmap-item__content">
-              <span class="roadmap-item__phase">{r.phase}</span>
-              <span class="roadmap-item__label">{r.label}</span>
-            </div>
-            {r.status === "active" && <span class="roadmap-item__live">{isEs ? "En progreso" : "In progress"}</span>}
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <!-- CTA -->
-    <div class="about-cta">
-      <h2 class="about-cta__title">{isEs ? "Ayúdanos a crecer" : "Help us grow"}</h2>
-      <p class="about-cta__body">
-        {isEs
-          ? "Con tu apoyo podemos mantener los datos actualizados, sin publicidad, para toda la comunidad."
-          : "With your support we can keep the data updated, ad-free, for the whole community."
-        }
-      </p>
-      <div class="about-cta__actions">
-        <a href={`/${lang}/suscripcion`} class="btn btn-primary btn-lg">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
-          {isEs ? "Apoyar el proyecto" : "Support the project"}
-        </a>
-        <a href={`/${lang}/community`} class="btn btn-ghost btn-lg">
-          {isEs ? "Ver comunidad" : "See community"}
-        </a>
-      </div>
-    </div>
-
+    <p class="about-footer">
+      {isEs ? 'Hecho con ❤️ para Cancún · Código abierto · MIT License' : 'Made with ❤️ for Cancún · Open source · MIT License'}
+    </p>
   </div>
 </MainLayout>
 
 <style>
-  /* ═══ ABOUT PAGE ═══ */
-  .about-page {
-    max-width: 44rem; margin-inline: auto;
-    padding: 0.75rem 1rem 6rem;
-    display: flex; flex-direction: column; gap: 0;
-  }
+.about-root { padding: 0 1rem 2rem; max-width: 520px; margin: 0 auto; }
+.about-hero { text-align: center; padding: 2rem 0 1.5rem; }
+.about-hero__logo { display: flex; justify-content: center; margin-bottom: 0.75rem; filter: drop-shadow(0 4px 16px rgba(13,148,136,0.3)); }
+.about-title { font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.02em; }
+.about-version { font-size: 0.72rem; color: var(--text-muted); margin: 0.1rem 0 0.75rem; }
+.about-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; max-width: 340px; margin: 0 auto; }
 
-  /* Hero */
-  .about-hero { text-align: center; padding: 2rem 0 1.5rem; }
-  .about-hero__eyebrow {
-    display: inline-flex; align-items: center; gap: 0.375rem;
-    padding: 0.35rem 1rem; margin-bottom: 1rem;
-    background: var(--sea-xpale); color: var(--sea-teal);
-    border: 1px solid var(--border-light); border-radius: var(--r-full);
-    font-family: var(--font-display); font-size: 0.72rem; font-weight: 800;
-    text-transform: uppercase; letter-spacing: 0.1em;
-  }
-  .about-hero__title {
-    font-family: var(--font-display); font-size: clamp(1.8rem, 6vw, 3rem);
-    font-weight: 900; letter-spacing: -0.03em; line-height: 1.1;
-    color: var(--text-primary); margin-bottom: 0.75rem;
-  }
-  .about-hero__sub { font-size: 1rem; color: var(--text-secondary); line-height: 1.6; max-width: 36rem; margin: 0 auto; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin: 1.25rem 0; }
+.stat-card { text-align: center; padding: 0.75rem 0.5rem !important; }
+.stat-card__icon { font-size: 1.2rem; margin-bottom: 0.2rem; }
+.stat-card__val { font-family: var(--font-display); font-size: 1rem; font-weight: 800; color: var(--sea-teal); }
+.stat-card__lbl { font-size: 0.62rem; color: var(--text-muted); margin-top: 0.1rem; }
 
-  /* Stats grid */
-  .stats-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.625rem;
-    padding: 1.5rem 0;
-  }
-  @media (max-width: 480px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+.about-section { margin-bottom: 1.5rem; }
+.section-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; }
 
-  .stat-card {
-    padding: 1.25rem 0.875rem; border-radius: var(--r-xl);
-    text-align: center; border: 1.5px solid var(--border-light);
-    background: var(--surface-card); transition: transform var(--t-fast) var(--ease-back);
-    animation: scale-in 0.4s var(--ease-spring) both;
-  }
-  .stat-card:hover { transform: translateY(-3px); }
-  .stat-card--teal   { background: var(--sea-xpale); border-color: var(--border-medium); }
-  .stat-card--green  { background: var(--jungle-light); border-color: rgba(34,197,94,0.2); }
-  .stat-card--orange { background: rgba(249,115,22,0.08); border-color: rgba(249,115,22,0.2); }
-  .stat-card--blue   { background: var(--sky-light); border-color: rgba(14,165,233,0.2); }
+.features-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.feature-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.7rem; background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-light); }
+.feature-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem; }
+.feature-title { font-weight: 700; font-size: 0.82rem; color: var(--text-primary); }
+.feature-desc { font-size: 0.72rem; color: var(--text-tertiary); margin-top: 0.1rem; }
 
-  .stat-num {
-    display: block; font-family: var(--font-display); font-size: 1.8rem; font-weight: 900;
-    letter-spacing: -0.03em; color: var(--text-primary); line-height: 1;
-  }
-  .stat-card--teal   .stat-num { color: var(--sea-teal); }
-  .stat-card--green  .stat-num { color: var(--jungle); }
-  .stat-card--orange .stat-num { color: var(--coral-reef); }
-  .stat-card--blue   .stat-num { color: var(--sky-blue); }
+.tech-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
-  .stat-label { display: block; font-family: var(--font-display); font-size: 0.65rem; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.375rem; }
-
-  /* Sections */
-  .about-section { padding: 1.5rem 0; border-top: 1px solid var(--border-light); }
-  .about-section__eyebrow {
-    display: inline-flex; align-items: center; gap: 0.375rem;
-    font-family: var(--font-display); font-size: 0.68rem; font-weight: 900;
-    text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);
-    margin-bottom: 0.5rem;
-  }
-  .about-section__title { font-family: var(--font-display); font-size: 1.4rem; font-weight: 900; letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 1rem; line-height: 1.2; }
-  .about-section__body { display: flex; flex-direction: column; gap: 0.875rem; }
-  .about-section__body p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.65; }
-
-  /* Tech stack */
-  .tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.625rem; margin-top: 1rem; }
-  .tech-item {
-    display: flex; align-items: center; gap: 0.625rem;
-    padding: 0.75rem 1rem; border-radius: var(--r-lg);
-    background: var(--surface-card); border: 1px solid var(--border-light);
-    font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; color: var(--text-primary);
-    transition: all var(--t-fast) var(--ease-back);
-  }
-  .tech-item:hover { border-color: var(--sea-bright); background: var(--sea-xpale); color: var(--sea-teal); transform: scale(1.03); }
-  .tech-icon { font-size: 1.25rem; flex-shrink: 0; }
-
-  /* Timeline */
-  .timeline { display: flex; flex-direction: column; gap: 0; padding-top: 1rem; }
-  .timeline-item { display: flex; gap: 1rem; padding-bottom: 1.5rem; position: relative; }
-  .timeline-item:last-child { padding-bottom: 0; }
-  .timeline-dot-wrap { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 16px; }
-  .timeline-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--gradient-primary); box-shadow: 0 0 8px rgba(13,148,136,0.4); flex-shrink: 0; margin-top: 4px; }
-  .timeline-line { flex: 1; width: 2px; background: var(--border-light); margin-top: 4px; }
-  .timeline-item:last-child .timeline-line { display: none; }
-  .timeline-content { flex: 1; }
-  .timeline-date { font-family: var(--font-display); font-size: 0.68rem; font-weight: 800; color: var(--sea-teal); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.2rem; }
-  .timeline-title { font-family: var(--font-display); font-size: 0.92rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem; }
-  .timeline-text { font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.5; }
-
-  /* CTA */
-  .about-cta {
-    background: var(--gradient-ocean); border-radius: var(--r-2xl);
-    padding: 2rem 1.5rem; text-align: center; color: white; margin-top: 1.5rem;
-    border: 1px solid rgba(45,212,191,0.2);
-    box-shadow: 0 8px 40px rgba(0,78,95,0.25);
-  }
-  .about-cta__title { font-family: var(--font-display); font-size: 1.4rem; font-weight: 900; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
-  .about-cta__sub { font-size: 0.88rem; opacity: 0.8; margin-bottom: 1.5rem; line-height: 1.5; }
-  .about-cta__actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
-  .btn-white {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.75rem 1.5rem; border-radius: var(--r-lg);
-    background: white; color: var(--sea-deep); border: none;
-    font-family: var(--font-display); font-size: 0.9rem; font-weight: 800;
-    cursor: pointer; text-decoration: none;
-    transition: all var(--t-fast) var(--ease-back);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  }
-  .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
-  .btn-white:active { transform: scale(0.96); }
-  .btn-outline-white {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.75rem 1.5rem; border-radius: var(--r-lg);
-    background: transparent; color: white;
-    border: 1.5px solid rgba(255,255,255,0.4);
-    font-family: var(--font-display); font-size: 0.9rem; font-weight: 700;
-    cursor: pointer; text-decoration: none;
-    transition: all var(--t-fast) var(--ease-back);
-  }
-  .btn-outline-white:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.7); transform: translateY(-2px); }
+.about-footer { text-align: center; font-size: 0.7rem; color: var(--text-muted); padding: 0.5rem 0 1rem; }
 </style>
