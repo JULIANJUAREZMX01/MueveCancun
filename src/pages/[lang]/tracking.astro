@@ -143,12 +143,12 @@ const t = {
 // ═══════════════════════════════════════════════════
 // TRACKING PAGE — Buses en tiempo real + Heatmap
 // ═══════════════════════════════════════════════════
-import L from 'leaflet';
+import { loadLeaflet } from '../../utils/leafletLoader';
 
-let map: L.Map | null = null;
-let busMarkers: Map<string, L.Marker> = new Map();
-let stopMarkers: Map<string, L.CircleMarker> = new Map();
-let heatLayer: L.Layer | null = null;
+let map: import('leaflet').Map | null = null;
+let busMarkers: Map<string, import('leaflet').Marker> = new Map();
+let stopMarkers: Map<string, import('leaflet').CircleMarker> = new Map();
+let heatLayer: import('leaflet').Layer | null = null;
 let currentView = 'buses';
 let currentRoute = '';
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
@@ -190,7 +190,8 @@ function createBusSvg(color: string, heading: number, occupancy: number): string
 </svg>`;
 }
 
-function createBusIcon(color: string, heading: number, occupancy: number): L.DivIcon {
+function createBusIcon(color: string, heading: number, occupancy: number): import('leaflet').DivIcon {
+  const L = (window as any).L;
   return L.divIcon({
     html: createBusSvg(color, heading, occupancy),
     iconSize: [48, 48], iconAnchor: [24, 34],
@@ -199,7 +200,7 @@ function createBusIcon(color: string, heading: number, occupancy: number): L.Div
   });
 }
 
-function createStopIcon(demand: string): L.DivIcon {
+function createStopIcon(demand: string): import('leaflet').DivIcon {
   const colors: Record<string, string> = {
     low: '#22c55e', medium: '#f59e0b', high: '#f97316', critical: '#ef4444'
   };
@@ -214,6 +215,7 @@ function createStopIcon(demand: string): L.DivIcon {
     <circle cx="12" cy="12" r="8" fill="${color}" stroke="white" stroke-width="2"/>
     <text x="12" y="16" text-anchor="middle" fill="white" font-size="9" font-weight="bold" font-family="system-ui">P</text>
   </svg>`;
+  const L = (window as any).L;
   return L.divIcon({ html, iconSize: [24, 24], iconAnchor: [12, 12], className: '' });
 }
 
@@ -221,10 +223,9 @@ async function initMap() {
   const el = document.getElementById('tracking-map');
   if (!el || map) return;
 
-  await import('/vendor/leaflet/leaflet.js').catch(() => {});
-  const link = document.createElement('link');
-  link.rel = 'stylesheet'; link.href = '/vendor/leaflet/leaflet.css';
-  document.head.appendChild(link);
+  await loadLeaflet();
+  const L = window.L as typeof import('leaflet');
+  if (!L) return;
 
   map = L.map('tracking-map', {
     center: [21.1619, -86.8515], zoom: 13,
