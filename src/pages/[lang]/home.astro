@@ -68,6 +68,9 @@ const isEs = lang === "es";
 </MainLayout>
 
 <style>
+  /* Override sidebar-w para home — el RouteCalculator actúa como sidebar */
+  :global(.l-main) { --sidebar-w: 0px !important; }
+
   /* Layout fullscreen */
   .l-home {
     position: relative;

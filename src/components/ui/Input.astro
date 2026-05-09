@@ -6,6 +6,7 @@ interface Props {
   className?: string;
   value?: string;
   required?: boolean;
+  list?: string;
 }
 
 const {
@@ -14,7 +15,8 @@ const {
   id,
   className: className,
   value,
-  required = false
+  required = false,
+  list
 } = Astro.props;
 ---
 
@@ -24,6 +26,7 @@ const {
   placeholder={placeholder}
   value={value}
   required={required}
+  list={list}
   class={`graffiti-input ${className || ''}`}
 />
 

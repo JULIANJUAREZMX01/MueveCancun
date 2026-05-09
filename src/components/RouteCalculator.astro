@@ -18,6 +18,7 @@ const t = useTranslations(lang);
           type="text"
           placeholder={t('calc.placeholder.origin')}
           className="route-calculator__input"
+          list="locations"
         />
         <div class="route-calculator__icon route-calculator__icon--origin">
            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
@@ -30,6 +31,7 @@ const t = useTranslations(lang);
           type="text"
           placeholder={t('calc.placeholder.dest')}
           className="route-calculator__input"
+          list="locations"
         />
         <div class="route-calculator__icon route-calculator__icon--dest">
            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
@@ -225,7 +227,8 @@ const t = useTranslations(lang);
 <script>
   import { WasmLoader } from "../utils/WasmLoader";
   import { initWasm, enrichJourneyLegs, resolveStopName } from "../lib/initWasm";
-  import { escapeHtml, showToast } from "../utils/utils";
+  import { escapeHtml, showToast, normalizeString } from "../utils/utils";
+  import { coordinatesStore } from "../utils/CoordinatesStore";
 
   // ── Lógica principal ──────────────────────────────────────────────────────
   const isEs = document.documentElement.lang !== "en";
@@ -247,6 +250,23 @@ const t = useTranslations(lang);
       const timeBadge = document.getElementById('results-time-badge');
 
       if (!btn || !originInput || !destInput || !resultsInfo || !resultsContainer) return;
+
+      // ── Cargar paradas reales en el datalist ───────────────────────────────
+      const datalist = document.getElementById("locations");
+      if (datalist && datalist.children.length < 20) {
+        coordinatesStore.init().then(() => {
+          const names = coordinatesStore.getOriginalNames();
+          if (names.size > 0) {
+            datalist.innerHTML = "";
+            names.forEach((original) => {
+              const opt = document.createElement("option");
+              opt.value = original;
+              datalist.appendChild(opt);
+            });
+          }
+        }).catch(() => {/* use static fallback */});
+      }
+
 
       window.addEventListener("MAP_SET_STOP", (e: any) => {
         const { type, name } = e.detail;

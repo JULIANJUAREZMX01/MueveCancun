@@ -1,0 +1,134 @@
+---
+import { getLangFromUrl } from "../utils/i18n";
+import { getRelativeLocaleUrl } from "../utils/utils";
+
+const pathname = Astro.url.pathname;
+const lang = getLangFromUrl(Astro.url);
+
+const navItems = [
+  {
+    href: getRelativeLocaleUrl(lang, "home"),
+    label: lang === "es" ? "Inicio" : "Home",
+    activePattern: /^\/(es|en)\/home/,
+    icon: `<svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`,
+  },
+  {
+    href: getRelativeLocaleUrl(lang, "rutas"),
+    label: lang === "es" ? "Rutas" : "Routes",
+    activePattern: /^\/(es|en)\/rutas/,
+    icon: `<svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/></svg>`,
+  },
+  {
+    href: getRelativeLocaleUrl(lang, "community"),
+    label: lang === "es" ? "Foro" : "Forum",
+    activePattern: /^\/(es|en)\/community/,
+    icon: `<svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>`,
+  },
+  {
+    href: getRelativeLocaleUrl(lang, "wallet"),
+    label: lang === "es" ? "Tarjeta" : "Wallet",
+    activePattern: /^\/(es|en)\/wallet/,
+    icon: `<svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>`,
+  },
+  {
+    href: getRelativeLocaleUrl(lang, "about"),
+    label: lang === "es" ? "Info" : "About",
+    activePattern: /^\/(es|en)\/about/,
+    icon: `<svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`,
+  },
+];
+---
+
+<nav class="desktop-nav" aria-label="Navegación principal desktop" role="navigation">
+  <div class="desktop-nav__logo">
+    <a href={getRelativeLocaleUrl(lang, "home")} aria-label="MueveCancún">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M17 8C8 10 5.9 16.17 3.82 22.5l1.9.5C7.27 18.33 9.6 13.88 18 12z M15.48 2.28C13.49 3.6 12 6.3 12 9c0 4.42 3.58 8 8 8v-2c-3.31 0-6-2.69-6-6 0-1.93.94-3.7 2.48-4.72l-1-2z"/></svg>
+    </a>
+  </div>
+  {navItems.map((item) => {
+    const isActive = item.activePattern.test(pathname);
+    return (
+      <a
+        href={item.href}
+        class={`desktop-nav__item ${isActive ? "desktop-nav__item--active" : ""}`}
+        aria-label={item.label}
+        aria-current={isActive ? "page" : undefined}
+        title={item.label}
+      >
+        <span class="desktop-nav__icon" set:html={item.icon} />
+      </a>
+    );
+  })}
+</nav>
+
+<style>
+  .desktop-nav {
+    display: none;
+  }
+  @media (min-width: 769px) {
+    .desktop-nav {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-w, 72px);
+      z-index: 60;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px) saturate(1.8);
+      -webkit-backdrop-filter: blur(24px) saturate(1.8);
+      border-right: 1px solid var(--glass-border);
+      padding: 0.5rem 0;
+      gap: 0.25rem;
+    }
+  }
+
+  .desktop-nav__logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.75rem 0 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 0.5rem;
+    color: var(--color-primary);
+  }
+  .desktop-nav__logo a { 
+    color: inherit; 
+    line-height: 0; 
+    border-radius: var(--r-md); 
+    padding: 0.25rem;
+    transition: opacity var(--t-fast);
+  }
+  .desktop-nav__logo a:hover { opacity: 0.7; }
+
+  .desktop-nav__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--r-lg);
+    color: var(--text-tertiary);
+    text-decoration: none;
+    transition: all var(--t-fast) var(--ease);
+  }
+  .desktop-nav__item:hover {
+    background: var(--surface-elevated);
+    color: var(--color-primary);
+  }
+  .desktop-nav__item--active {
+    background: var(--teal-xlight);
+    color: var(--color-primary);
+  }
+  :global(.dark) .desktop-nav__item--active {
+    background: rgba(13,148,136,0.15);
+  }
+
+  .desktop-nav__icon {
+    line-height: 0;
+    display: flex;
+  }
+</style>
