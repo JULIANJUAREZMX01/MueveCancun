@@ -3,7 +3,7 @@
     "last_updated": "2026-04-15T08:33:33.284Z",
     "source": "merge-routes.ts (78 routes from 41 files)",
     "version": "3.8.0",
-    "last_merged": "2026-04-20T09:18:55.062Z",
+    "last_merged": "2026-05-09T04:56:15.668Z",
     "colors_added": "2026-04-16T19:12:00.000Z",
     "color_strategy": "color_id_map_v2 — 21 paleta caribeña"
   },
@@ -191,7 +191,7 @@
     {
       "id": "VAN_PLAYA_EXPRESS_001",
       "nombre": "Playa Express Cancún → Playa del Carmen",
-      "tarifa": 20,
+      "tarifa": 55,
       "tipo": "Van_Foranea",
       "frecuencia_minutos": 30,
       "horario": {

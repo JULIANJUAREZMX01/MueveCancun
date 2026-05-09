@@ -43,7 +43,7 @@ const isEs = Astro.url.pathname.includes("/es/");
 
 <script>
   import { loadLeaflet } from "../utils/leafletLoader";
-  import { initWasm, enrichJourneyLegs } from "../lib/initWasm";
+  import { initWasm, enrichJourneyLegs, type RouteEntry } from "../lib/initWasm";
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { escapeHtml, safeUrl, normalizeString } from "../utils/utils";
   import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
@@ -59,7 +59,7 @@ const isEs = Astro.url.pathname.includes("/es/");
     if (!mapInstance || !journey) return null;
     if (currentLayerGroup) mapInstance.removeLayer(currentLayerGroup);
 
-    const L = (window as any).L;
+    const L = window.L;
     const layers: any[] = [];
     const allCoords: [number, number][] = [];
 
@@ -117,7 +117,7 @@ const isEs = Astro.url.pathname.includes("/es/");
       return false;
     }
 
-    const L = (window as any).L;
+    const L = window.L;
     if (!L) return false;
 
     // ── 2. Fix de iconos Leaflet con bundlers (SVG gigante en mobile) ───
@@ -155,7 +155,7 @@ const isEs = Astro.url.pathname.includes("/es/");
     ]);
 
     // ── 5. Leyenda de rutas ─────────────────────────────────────────────
-    function updateLegend(routes: any[]) {
+    function updateLegend(routes: RouteEntry[]) {
       const legendContent = document.getElementById('legend-content');
       if (!legendContent) return;
       legendContent.innerHTML = '';
@@ -170,7 +170,7 @@ const isEs = Astro.url.pathname.includes("/es/");
       });
     }
 
-    if ((window as any).WASM_ROUTES) updateLegend((window as any).WASM_ROUTES);
+    if (window.WASM_ROUTES) updateLegend(window.WASM_ROUTES);
     window.addEventListener('WASM_ENGINE_READY', (e: any) => {
       if (e.detail?.routes) updateLegend(e.detail.routes);
     });
@@ -189,9 +189,9 @@ const isEs = Astro.url.pathname.includes("/es/");
       }
     } catch {}
 
-    const wasmRoutes: any[] = (window as any).WASM_ROUTES ?? [];
+    const wasmRoutes: RouteEntry[] = window.WASM_ROUTES ?? [];
     const landmarkMap: Map<string, string> = new Map();
-    wasmRoutes.forEach((r: any) => {
+    wasmRoutes.forEach((r: RouteEntry) => {
       (r.paradas || []).forEach((p: any) => {
         if (p.landmarks) landmarkMap.set(normalizeString(p.nombre), p.landmarks);
       });

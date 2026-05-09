@@ -30,9 +30,9 @@ export async function initWasm(): Promise<boolean> {
       }
 
       if (typeof window !== 'undefined') {
-        (window as unknown as { WASM_READY: boolean }).WASM_READY = true;
-        (window as Record<string, unknown>).WASM_ROUTE_MAP = routeMap;
-        (window as Record<string, unknown>).WASM_ROUTES = rutas;
+        window.WASM_READY = true;
+        window.WASM_ROUTE_MAP = routeMap;
+        window.WASM_ROUTES = rutas;
         window.dispatchEvent(new CustomEvent('WASM_ENGINE_READY', { detail: { routes: rutas } }));
       }
 
@@ -99,7 +99,7 @@ export interface Journey {
  */
 export function resolveStopName(query: string): string {
   const rutas: RouteEntry[] = typeof window !== 'undefined'
-    ? ((window as Record<string, unknown>).WASM_ROUTES as RouteEntry[] ?? [])
+    ? window.WASM_ROUTES ?? []
     : [];
   if (!rutas.length) return query;
 
@@ -137,7 +137,7 @@ export function resolveStopName(query: string): string {
  * Seguro de llamar antes de que WASM_ROUTE_MAP esté disponible (no-op en ese caso).
  */
 export function enrichJourneyLegs(journey: Journey): Journey {
-  const routeMap = (window as unknown as Record<string, Record<string, RouteEntry>>).WASM_ROUTE_MAP ?? {};
+  const routeMap = window.WASM_ROUTE_MAP ?? {};
   if (!journey?.legs?.length) return journey;
 
   const enriched: Journey = { ...journey };
