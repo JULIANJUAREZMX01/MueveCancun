@@ -54,13 +54,13 @@ El núcleo funcional está terminado y desplegado:
 **Estimado:** 2 semanas
 
 ### Tareas
-- [ ] Navegación por teclado completa en `RouteCalculator.astro`.
-- [ ] Etiquetas ARIA en todos los controles del mapa.
-- [ ] UX de permisos de geolocalización (prompt suave + reintento).
-- [ ] Botón de recentrar mapa con pulsación larga para auto-seguir.
-- [ ] Scroll virtualizado en lista de rutas con muchos resultados.
-- [ ] Auditoria Lighthouse PWA en CI (mínimo 90/100 en cada categoría).
-- [ ] Presupuesto de performance: TTI < 3 s en dispositivo de gama media.
+- [x] Navegación por teclado completa en `RouteCalculator.astro`.
+- [x] Etiquetas ARIA en todos los controles del mapa.
+- [x] UX de permisos de geolocalización (prompt suave + reintento).
+- [ ] Botón de recentrar mapa con pulsación larga para auto-seguir. ← pendiente
+- [ ] Scroll virtualizado en lista de rutas con muchos resultados. ← pendiente
+- [x] Auditoria Lighthouse PWA en CI (mínimo 90/100 en cada categoría).
+- [ ] Presupuesto de performance: TTI < 3 s en dispositivo de gama media. ← pendiente
 
 ---
 
@@ -88,13 +88,13 @@ Estas tareas están identificadas pero aún no tienen sprint asignado. Se irán 
 | 🔴 | Cachear artefactos `wasm-bindgen` / `binaryen` en CI para builds rápidos |
 | 🟡 | Política stale-while-revalidate en Service Worker para `/data/**` |
 | 🟡 | Carga progresiva del catálogo (chunks) en lugar de un JSON único |
-| 🟡 | Deduplicar paradas duplicadas en `CoordinatesStore` |
-| 🟡 | Reemplazar `any` en `Analytics.ts` con interfaz tipada |
-| 🟡 | Índice espacial con tamaño de celda configurable (`SpatialHash`) |
+| ✅ | Deduplicar paradas duplicadas en `CoordinatesStore` |
+| ✅ | Reemplazar `any` en `Analytics.ts` con interfaz tipada |
+| ✅ | Índice espacial con tamaño de celda configurable (`SpatialHash`) |
 | 🟢 | Generador de datasets sintéticos para pruebas de carga |
-| 🟢 | Página de healthcheck con info de build (`/healthz`) |
+| ✅ | Página de healthcheck con info de build (`/healthz`) |
 | 🟢 | Plantilla de post-mortem para incidentes |
-| 🟢 | Documentar contrato de datos WASM en `docs/BRIDGE_WASM.md` |
+| ✅ | Documentar contrato de datos WASM en `docs/BRIDGE_WASM.md` |
 
 ---
 
