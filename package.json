@@ -46,16 +46,16 @@
     "build:vercel": "pnpm prepare-data && node scripts/build-wasm.mjs && astro build"
   },
   "dependencies": {
-    "@astrojs/mdx": "^5.0.3",
-    "@astrojs/node": "^10.0.4",
+    "@astrojs/mdx": "^5.0.4",
+    "@astrojs/node": "^10.1.0",
     "@astrojs/rss": "^4.0.18",
-    "@astrojs/vercel": "^10.0.4",
+    "@astrojs/vercel": "^10.0.6",
     "@neondatabase/serverless": "^1.0.2",
     "@supabase/supabase-js": "^2.103.0",
     "@types/node": "^25.6.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "astro": "^6.1.6",
+    "astro": "^6.3.1",
     "clsx": "^2.1.1",
     "docx": "^9.6.1",
     "fuse.js": "^7.3.0",
@@ -73,7 +73,7 @@
     "@rollup/rollup-linux-x64-gnu": "^4.60.1"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.8",
+    "@astrojs/check": "^0.9.9",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.59.1",
     "@types/leaflet": "^1.9.21",
