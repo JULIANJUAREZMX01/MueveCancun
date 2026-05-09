@@ -128,7 +128,7 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
   }
   .rs-label { font-size: 0.72rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.5rem; }
   .rs-wrap { position: relative; display: flex; align-items: center; }
-  .rs-icon { position: absolute; left: 0.875rem; width: 18px; height: 18px; color: var(--color-primary); pointer-events: none; }
+  .rs-icon { position: absolute; left: 0.875rem; width: 18px; height: 18px; color: var(--sea-teal); pointer-events: none; }
   .rs-select {
     width: 100%; padding: 0.75rem 2.5rem 0.75rem 2.75rem;
     background: var(--surface-bg); border: 1.5px solid var(--border-light);
@@ -136,7 +136,7 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
     font-size: 0.875rem; font-weight: 700; appearance: none; cursor: pointer;
     transition: border-color var(--t-fast) var(--ease);
   }
-  .rs-select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+  .rs-select:focus { outline: none; border-color: var(--sea-teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
   .rs-arrow { position: absolute; right: 0.875rem; width: 18px; height: 18px; color: var(--text-tertiary); pointer-events: none; }
 
   /* Idle */
@@ -146,7 +146,7 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
     background: var(--surface-card); border: 1.5px dashed var(--border-light);
     border-radius: var(--r-2xl);
   }
-  .tracking-idle__icon { width: 56px; height: 56px; background: var(--teal-xlight); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-primary); margin-bottom: 0.5rem; }
+  .tracking-idle__icon { width: 56px; height: 56px; background: var(--sea-xpale); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--sea-teal); margin-bottom: 0.5rem; }
   .tracking-idle__icon svg { width: 24px; height: 24px; }
   .tracking-idle__text { font-size: 0.875rem; font-weight: 700; color: var(--text-primary); margin: 0; max-width: 28ch; }
   .tracking-idle__hint { font-size: 0.75rem; color: var(--text-tertiary); font-weight: 600; margin: 0; }
@@ -188,7 +188,7 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
   :global(.unit-loc) { font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; margin-top: 0.125rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   :global(.unit-eta) {
     font-family: var(--font-mono); font-size: 0.8rem; font-weight: 900;
-    color: var(--color-primary); white-space: nowrap;
+    color: var(--sea-teal); white-space: nowrap;
   }
 
   /* Refresh btn */
@@ -200,7 +200,7 @@ const routes = ["R1","R2","R6","R10","R15","R27","R28","ADO Aeropuerto","Van Pla
     font-size: 0.78rem; font-weight: 800; cursor: pointer;
     transition: all var(--t-fast) var(--ease);
   }
-  .btn-refresh:hover { border-color: var(--color-primary); color: var(--color-primary); }
+  .btn-refresh:hover { border-color: var(--sea-teal); color: var(--sea-teal); }
   .btn-refresh.spinning svg { animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes fade-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }

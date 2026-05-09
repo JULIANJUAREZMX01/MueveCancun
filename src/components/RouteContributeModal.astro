@@ -76,7 +76,7 @@
   .modal-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
   .modal-header__icon {
     width: 3rem; height: 3rem; border-radius: var(--r-md);
-    background-color: var(--teal-xlight);
+    background-color: var(--sea-xpale);
     display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
   }
   .modal-header__title { font-weight: 900; font-size: 1.125rem; color: var(--text-primary); margin: 0; }
@@ -100,7 +100,7 @@
     color: var(--text-primary); resize: none; outline: none;
     transition: border-color 0.2s;
   }
-  .modal-textarea:focus { border-color: var(--color-primary); }
+  .modal-textarea:focus { border-color: var(--sea-teal); }
 
   .modal-privacy { font-size: 0.625rem; color: var(--text-tertiary); margin-bottom: 1.25rem; line-height: 1.5; }
 
@@ -110,8 +110,8 @@
     font-weight: 900; border: none; cursor: pointer; transition: all 0.2s;
     display: flex; align-items: center; justify-content: center; gap: 0.5rem;
   }
-  .modal-btn--primary { background-color: var(--color-primary); color: white; box-shadow: var(--shadow-teal); }
-  .modal-btn--primary:hover { background-color: var(--color-primary-hover); }
+  .modal-btn--primary { background-color: var(--sea-teal); color: white; box-shadow: var(--shadow-teal); }
+  .modal-btn--primary:hover { background-color: var(--sea-bright); }
   .modal-btn--secondary { background-color: var(--surface-bg); color: var(--text-secondary); }
 
   .modal-btn__icon { font-family: 'Material Symbols Rounded'; font-size: 1.125rem; }
@@ -140,7 +140,7 @@
         <div style="font-weight:900;font-size:1rem;margin-bottom:0.25rem">🚌 ${leg?.name || 'Ruta'}</div>
         <div style="color:var(--text-tertiary);font-size:0.75rem">${origin} → ${dest}</div>
         <div style="display:flex;gap:0.75rem;margin-top:0.5rem;font-size:0.75rem">
-          <span style="font-weight:800;color:var(--color-primary)">${price} MXN</span>
+          <span style="font-weight:800;color:var(--sea-teal)">${price} MXN</span>
           ${dur ? `<span style="color:var(--text-tertiary)">⏱️ ${dur}</span>` : ''}
         </div>
       `;

@@ -157,7 +157,7 @@ const reportOptions = [
   }
   .contrib-header__icon {
     width: 52px; height: 52px; border-radius: var(--r-xl);
-    background: var(--teal-xlight); color: var(--teal-dark);
+    background: var(--sea-xpale); color: var(--sea-deep);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
@@ -195,14 +195,14 @@ const reportOptions = [
     -webkit-tap-highlight-color: transparent;
   }
   .report-type-option input:checked + .report-type-card {
-    background: var(--teal-xlight);
-    border-color: var(--color-primary);
+    background: var(--sea-xpale);
+    border-color: var(--sea-teal);
     box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
   }
   .dark .report-type-option input:checked + .report-type-card {
     background: rgba(13,148,136,0.12);
   }
-  .report-type-option:hover .report-type-card { border-color: var(--color-primary); transform: translateY(-1px); }
+  .report-type-option:hover .report-type-card { border-color: var(--sea-teal); transform: translateY(-1px); }
   .report-type-emoji { font-size: 1.375rem; line-height: 1; }
   .report-type-label { font-size: 0.65rem; font-weight: 800; color: var(--text-secondary); text-align: center; line-height: 1.2; }
 
@@ -220,12 +220,12 @@ const reportOptions = [
     transition: all var(--t-base) var(--ease);
     overflow: hidden;
   }
-  .photo-upload:hover { border-color: var(--color-primary); background: var(--teal-xlight); }
+  .photo-upload:hover { border-color: var(--sea-teal); background: var(--sea-xpale); }
   .photo-upload__inner {
     display: flex; align-items: center; justify-content: center; gap: 0.75rem;
     padding: 1.25rem; color: var(--text-tertiary);
   }
-  .photo-upload:hover .photo-upload__inner { color: var(--color-primary); }
+  .photo-upload:hover .photo-upload__inner { color: var(--sea-teal); }
   .photo-upload__text { font-size: 0.82rem; font-weight: 700; }
   .photo-preview { display: flex; gap: 0.5rem; flex-wrap: wrap; }
   .photo-preview[hidden] { display: none; }

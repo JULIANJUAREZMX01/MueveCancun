@@ -473,3 +473,19 @@ input, textarea { font-family: inherit; }
   font-size: 0.6rem !important;
   color: var(--text-tertiary) !important;
 }
+
+/* ── Badge sea (compat badge-teal) ── */
+.badge-sea {
+  background: var(--sea-xpale);
+  color: var(--sea-teal);
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-full);
+  padding: 0.2rem 0.55rem;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: inline-flex;
+  align-items: center;
+}
