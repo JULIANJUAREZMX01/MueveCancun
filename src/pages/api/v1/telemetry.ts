@@ -9,17 +9,55 @@ function getDb() {
   return neon(url);
 }
 
+
+async function ensureTables(sql: ReturnType<typeof neon>) {
+  try {
+    await sql.unsafe(`CREATE TABLE IF NOT EXISTS mc_telemetry (
+      id BIGSERIAL PRIMARY KEY,
+      device_id TEXT NOT NULL,
+      lat DOUBLE PRECISION NOT NULL,
+      lng DOUBLE PRECISION NOT NULL,
+      accuracy FLOAT,
+      route_id TEXT,
+      trip_id TEXT,
+      phase TEXT DEFAULT 'idle',
+      nearest_stop TEXT,
+      speed_kmh FLOAT DEFAULT 0,
+      heading INT DEFAULT 0,
+      ts TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await sql.unsafe(`CREATE TABLE IF NOT EXISTS mc_users (
+      id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+      device_id TEXT UNIQUE NOT NULL,
+      total_trips INT DEFAULT 0,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      last_seen TIMESTAMPTZ DEFAULT NOW()
+    )`);
+    await sql.unsafe(`CREATE TABLE IF NOT EXISTS mc_stop_demand (
+      stop_id TEXT PRIMARY KEY,
+      stop_name TEXT,
+      lat DOUBLE PRECISION,
+      lng DOUBLE PRECISION,
+      waiting_count INT DEFAULT 0,
+      boarding_count INT DEFAULT 0,
+      demand_level TEXT DEFAULT 'low',
+      last_activity TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+  } catch (_) { /* already exist */ }
+}
+
 // POST — el cliente envía su posición anónima
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const sql = getDb();
+    await ensureTables(sql);
     const body = await request.json();
     const { device_id, lat, lng, accuracy, route_id, trip_id, phase, nearest_stop, speed_kmh = 0, heading = 0 } = body;
 
     if (!device_id || lat == null || lng == null) {
       return new Response(JSON.stringify({ error: 'device_id, lat, lng required' }), { status: 400 });
     }
-
-    const sql = getDb();
 
     // Insertar telemetría (retener últimas 24h, purgar automáticamente)
     await sql`
