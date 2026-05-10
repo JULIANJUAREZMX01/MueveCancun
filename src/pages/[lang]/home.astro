@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import RouteCalculator from '../../components/RouteCalculator.astro';
+import LiveStatsBar from '../../components/LiveStatsBar.astro';
 import { getLangFromUrl } from '../../utils/i18n';
 const lang = getLangFromUrl(Astro.url);
 const isEs = lang === 'es';
@@ -61,6 +62,8 @@ const heroStats = [
       </div>
       <button id="trip-stop-btn" class="trip-stop-btn" title="{isEs ? 'Terminar viaje' : 'End trip'}">✕</button>
     </div>
+
+    <LiveStatsBar />
 
     <!-- Map container -->
     <div id="home-map" class="home-map"></div>
