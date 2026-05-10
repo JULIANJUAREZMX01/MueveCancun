@@ -9,46 +9,51 @@ function getDb() {
   return neon(url);
 }
 
+function getDbDirect() {
+  // Para DDL: usar connection sin pooler si está disponible
+  const url = process.env.DATABASE_URL_UNPOOLED
+    || process.env.POSTGRES_URL_NON_POOLING
+    || process.env.DATABASE_URL
+    || import.meta.env.DATABASE_URL;
+  if (!url) throw new Error('No DATABASE_URL');
+  return neon(url);
+}
+
 // POST — gestionar viajes
 export const POST: APIRoute = async ({ request }) => {
-  const sql = getDb();
-
-  // Auto-migrate — reportar error explícito si falla
-  let migrateErr: string | null = null;
-  try {
-    await sql.unsafe(`CREATE TABLE IF NOT EXISTS mc_trips (
-      trip_id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-      device_id TEXT NOT NULL,
-      route_id TEXT,
-      origin_stop TEXT,
-      dest_stop TEXT,
-      bus_unit_id TEXT,
-      occupancy INT DEFAULT 0,
-      status TEXT DEFAULT 'waiting',
-      started_at TIMESTAMPTZ DEFAULT NOW(),
-      ended_at TIMESTAMPTZ,
-      distance_km FLOAT DEFAULT 0
-    )`);
-    await sql.unsafe(`CREATE TABLE IF NOT EXISTS mc_users (
-      id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-      device_id TEXT UNIQUE NOT NULL,
-      total_trips INT DEFAULT 0,
-      total_km FLOAT DEFAULT 0,
-      co2_saved_g INT DEFAULT 0,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      last_seen TIMESTAMPTZ DEFAULT NOW()
-    )`);
-  } catch (e) {
-    migrateErr = e instanceof Error ? e.message : String(e);
-  }
-
   try {
     const body = await request.json();
     const { action, device_id, route_id, origin_stop, dest_stop, trip_id } = body;
 
     if (!device_id) {
-      return new Response(JSON.stringify({ error: 'device_id required', migrate_err: migrateErr }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'device_id required' }), { status: 400 });
     }
+
+    const sql = getDb();
+    const sqlDDL = getDbDirect();
+
+    // Auto-migrate usando conexión directa (sin pooler)
+    try {
+      await sqlDDL.unsafe(`CREATE TABLE IF NOT EXISTS mc_trips (
+        trip_id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+        device_id TEXT NOT NULL,
+        route_id TEXT,
+        origin_stop TEXT,
+        dest_stop TEXT,
+        status TEXT DEFAULT 'waiting',
+        started_at TIMESTAMPTZ DEFAULT NOW(),
+        ended_at TIMESTAMPTZ,
+        distance_km FLOAT DEFAULT 0
+      )`);
+      await sqlDDL.unsafe(`CREATE TABLE IF NOT EXISTS mc_users (
+        id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+        device_id TEXT UNIQUE NOT NULL,
+        total_trips INT DEFAULT 0,
+        co2_saved_g INT DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        last_seen TIMESTAMPTZ DEFAULT NOW()
+      )`);
+    } catch (_) { /* may already exist or pooler limitation */ }
 
     if (action === 'start') {
       const result = await sql`
@@ -59,10 +64,10 @@ export const POST: APIRoute = async ({ request }) => {
       try {
         await sql`
           INSERT INTO mc_users (device_id, last_seen) VALUES (${device_id}, NOW())
-          ON CONFLICT (device_id) DO UPDATE SET last_seen = NOW(), total_trips = mc_users.total_trips + 1
+          ON CONFLICT (device_id) DO UPDATE SET last_seen = NOW()
         `;
       } catch (_) { /* ignore */ }
-      return new Response(JSON.stringify({ trip_id: result[0]?.trip_id, migrate_err: migrateErr }), { status: 201 });
+      return new Response(JSON.stringify({ trip_id: result[0]?.trip_id }), { status: 201 });
     }
 
     if (action === 'end' && trip_id) {
@@ -70,14 +75,13 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ ok: true }), { status: 200 });
     }
 
-    return new Response(JSON.stringify({ error: 'action must be: start|end', migrate_err: migrateErr }), { status: 400 });
+    return new Response(JSON.stringify({ error: 'action must be: start|end' }), { status: 400 });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    return new Response(JSON.stringify({ error: msg, migrate_err: migrateErr }), { status: 500 });
+    return new Response(JSON.stringify({ error: msg }), { status: 500 });
   }
 };
 
-// GET — historial
 export const GET: APIRoute = async ({ url }) => {
   try {
     const sql = getDb();
