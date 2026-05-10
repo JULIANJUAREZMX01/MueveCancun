@@ -128,6 +128,29 @@ const types = ["all", "bus", "combi", "van", "ado"];
       ))}
     </div>
 
+
+    <!-- Sort + Price filter -->
+    <div class="sort-row">
+      <div class="sort-group">
+        <label class="sort-label" for="routes-sort">{isEs ? 'Ordenar:' : 'Sort:'}</label>
+        <select id="routes-sort" class="sort-select">
+          <option value="name">{isEs ? 'A → Z' : 'A → Z'}</option>
+          <option value="price-asc">{isEs ? 'Precio ↑' : 'Price ↑'}</option>
+          <option value="price-desc">{isEs ? 'Precio ↓' : 'Price ↓'}</option>
+        </select>
+      </div>
+      <div class="sort-group">
+        <label class="sort-label" for="routes-price">{isEs ? 'Precio máx:' : 'Max price:'}</label>
+        <select id="routes-price" class="sort-select">
+          <option value="all">{isEs ? 'Todos' : 'All'}</option>
+          <option value="free">{isEs ? 'Gratis' : 'Free'}</option>
+          <option value="15">≤ $15</option>
+          <option value="20">≤ $20</option>
+          <option value="30">≤ $30</option>
+        </select>
+      </div>
+    </div>
+
     <!-- Contador de resultados -->
     <div class="results-info" aria-live="polite" aria-atomic="true">
       <span id="results-count">{routes.length}</span>
@@ -414,6 +437,22 @@ const types = ["all", "bus", "combi", "van", "ado"];
   .price-free { font-family: var(--font-display); font-size: 0.75rem; font-weight: 800; color: var(--jungle); background: rgba(34,197,94,0.1); padding: 2px 8px; border-radius: var(--r-full); }
   .chevron { color: var(--text-muted); }
 
+
+  /* Sort row */
+  .sort-row {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 0.75rem; flex-wrap: wrap;
+  }
+  .sort-group { display: flex; align-items: center; gap: 0.35rem; }
+  .sort-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+  .sort-select {
+    border: 1.5px solid var(--border-light); border-radius: var(--r-full);
+    padding: 0.3rem 0.6rem; font-size: 0.75rem; font-weight: 600;
+    background: var(--surface-card); color: var(--text-secondary);
+    cursor: pointer; outline: none; transition: border-color 0.15s;
+  }
+  .sort-select:focus { border-color: var(--sea-bright); }
+
   /* ── Results info ── */
   .results-info { font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 0.875rem; font-weight: 500; }
 
@@ -495,10 +534,33 @@ const types = ["all", "bus", "combi", "van", "ado"];
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+
+  // ── Sort & Price filter ─────────────────────────────────────────────
+  const sortEl  = document.getElementById('routes-sort') as HTMLSelectElement | null;
+  const priceEl = document.getElementById('routes-price') as HTMLSelectElement | null;
+  let activeSort  = 'name';
+  let priceFilter = 'all';
+
+  function getSorted(items: RouteItem[]): RouteItem[] {
+    const copy = [...items];
+    if (activeSort === 'price-asc')  copy.sort((a,b) => a.price - b.price);
+    else if (activeSort === 'price-desc') copy.sort((a,b) => b.price - a.price);
+    else copy.sort((a,b) => a.name.localeCompare(b.name));
+    return copy;
+  }
+
+  function getPriceFiltered(items: RouteItem[]): RouteItem[] {
+    if (priceFilter === 'all') return items;
+    if (priceFilter === 'free') return items.filter(r => r.price === 0);
+    const max = Number(priceFilter);
+    return items.filter(r => r.price <= max);
+  }
+
+
   // ── Filtrado ──────────────────────────────────────────────────────────
   function getFiltered(): RouteItem[] {
     const q = searchQuery.toLowerCase();
-    return routesData.filter(r => {
+    const base = routesData.filter(r => {
       const matchSearch = !q
         || r.name.toLowerCase().includes(q)
         || r.origin_hub.toLowerCase().includes(q)
@@ -506,7 +568,9 @@ const types = ["all", "bus", "combi", "van", "ado"];
       const matchFilter = activeFilter === 'all' || r.transport_type === activeFilter;
       return matchSearch && matchFilter;
     });
+    return getSorted(getPriceFiltered(base));
   }
+
 
   // ── VirtualList setup ─────────────────────────────────────────────────
   let vl: VirtualList<RouteItem> | null = null;
