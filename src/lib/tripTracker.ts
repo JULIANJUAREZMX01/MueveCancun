@@ -25,7 +25,8 @@ const state: TripState = {
 
 const TELEMETRY_INTERVAL = 15000;
 let telemetryTimer: ReturnType<typeof setInterval> | null = null;
-let lastLat = 0, lastLng = 0, lastHeading = 0;
+let lastLat = 0, lastLng = 0;
+const lastHeading = 0;
 
 export function getState(): TripState { return { ...state }; }
 
