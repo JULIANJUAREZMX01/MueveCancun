@@ -6,10 +6,10 @@ export const prerender = false;
 export const GET: APIRoute = async () => {
   const url = process.env.DATABASE_URL || import.meta.env.DATABASE_URL;
   if (!url) return new Response(JSON.stringify({ error: 'No DATABASE_URL' }), { status: 500 });
-  
+
   const sql = neon(url);
   const results: string[] = [];
-  
+
   const ddl = [
     `CREATE TABLE IF NOT EXISTS mc_users (
       id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
@@ -42,7 +42,6 @@ export const GET: APIRoute = async () => {
     )`,
     `CREATE INDEX IF NOT EXISTS idx_telem_ts ON mc_telemetry(ts DESC)`,
     `CREATE INDEX IF NOT EXISTS idx_telem_device ON mc_telemetry(device_id)`,
-    `CREATE INDEX IF NOT EXISTS idx_telem_stop ON mc_telemetry(nearest_stop) WHERE nearest_stop IS NOT NULL`,
     `CREATE TABLE IF NOT EXISTS mc_trips (
       trip_id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
       device_id TEXT NOT NULL,
@@ -57,7 +56,6 @@ export const GET: APIRoute = async () => {
       distance_km FLOAT DEFAULT 0
     )`,
     `CREATE INDEX IF NOT EXISTS idx_trips_device ON mc_trips(device_id)`,
-    `CREATE INDEX IF NOT EXISTS idx_trips_status ON mc_trips(status)`,
     `CREATE TABLE IF NOT EXISTS mc_community_posts (
       id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
       device_id TEXT NOT NULL,
@@ -81,8 +79,19 @@ export const GET: APIRoute = async () => {
       auth TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
     )`,
+    `CREATE TABLE IF NOT EXISTS mc_stop_demand (
+      stop_id TEXT PRIMARY KEY,
+      stop_name TEXT,
+      lat DOUBLE PRECISION,
+      lng DOUBLE PRECISION,
+      waiting_count INT DEFAULT 0,
+      demand_level TEXT DEFAULT 'low',
+      last_activity TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_stop_demand_activity ON mc_stop_demand(last_activity DESC)`,
   ];
-  
+
   for (const q of ddl) {
     try {
       await sql.unsafe(q);
@@ -92,7 +101,7 @@ export const GET: APIRoute = async () => {
       results.push('ERR: ' + err.slice(0, 80));
     }
   }
-  
+
   return new Response(JSON.stringify({ done: true, results }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' }
