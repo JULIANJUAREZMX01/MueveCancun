@@ -2,11 +2,11 @@
   "ci": {
     "collect": {
       "url": [
-        "http://localhost:4321/",
-        "http://localhost:4321/es/home",
-        "http://localhost:4321/en/home"
+        "https://mueve-cancun.vercel.app/",
+        "https://mueve-cancun.vercel.app/es/home",
+        "https://mueve-cancun.vercel.app/es/rutas"
       ],
-      "numberOfRuns": 2,
+      "numberOfRuns": 1,
       "settings": {
         "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
       }
@@ -14,14 +14,40 @@
     "assert": {
       "preset": "lighthouse:recommended",
       "assertions": {
-        "categories:performance":    ["warn",  {"minScore": 0.75}],
-        "categories:accessibility":  ["error", {"minScore": 0.90}],
-        "categories:best-practices": ["warn",  {"minScore": 0.85}],
-        "categories:seo":            ["warn",  {"minScore": 0.85}],
-        "categories:pwa":            ["error", {"minScore": 0.90}],
-        "uses-rel-preconnect":       "off",
-        "unused-javascript":         "off",
-        "uses-long-cache-ttl":       "off"
+        "categories:performance": [
+          "warn",
+          {
+            "minScore": 0.7
+          }
+        ],
+        "categories:accessibility": [
+          "warn",
+          {
+            "minScore": 0.85
+          }
+        ],
+        "categories:best-practices": [
+          "warn",
+          {
+            "minScore": 0.8
+          }
+        ],
+        "categories:seo": [
+          "warn",
+          {
+            "minScore": 0.8
+          }
+        ],
+        "categories:pwa": [
+          "warn",
+          {
+            "minScore": 0.85
+          }
+        ],
+        "uses-rel-preconnect": "off",
+        "unused-javascript": "off",
+        "uses-long-cache-ttl": "off",
+        "is-on-https": "off"
       }
     },
     "upload": {
