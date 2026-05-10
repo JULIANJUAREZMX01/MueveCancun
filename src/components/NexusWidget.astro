@@ -1,0 +1,334 @@
+---
+// NexusWidget.astro — Mini chat flotante del Nexus Agent (IA Groq)
+// Se incluye en MainLayout, visible en todas las páginas
+---
+
+<div id="nexus-fab-container" class="nexus-fab-container">
+  <!-- FAB button -->
+  <button id="nexus-fab" class="nexus-fab" aria-label="Abrir Nexus Agent" title="Nexus Agent IA">
+    <div class="nexus-fab__icon" id="nexus-fab-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="currentColor" opacity="0.2"/>
+        <circle cx="12" cy="12" r="4" fill="currentColor"/>
+        <path d="M12 8v2M12 14v2M8 12h2M14 12h2" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="nexus-fab__pulse"></div>
+  </button>
+
+  <!-- Chat panel -->
+  <div id="nexus-panel" class="nexus-panel" hidden aria-modal="true" role="dialog" aria-label="Nexus Agent IA">
+    <div class="nexus-panel__header">
+      <div class="nexus-header__info">
+        <div class="nexus-header__avatar">🤖</div>
+        <div>
+          <div class="nexus-header__name">Nexus Agent</div>
+          <div class="nexus-header__status">
+            <span class="live-dot"></span>
+            <span id="nexus-status-txt">Groq · listo</span>
+          </div>
+        </div>
+      </div>
+      <button id="nexus-close" class="nexus-close" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+
+    <div id="nexus-messages" class="nexus-messages">
+      <div class="nexus-msg nexus-msg--agent">
+        <span class="nexus-msg__bubble">¡Hola! Soy Nexus 🤖 Pregúntame qué ruta tomar, dónde está un paradero, o qué bus va al centro.</span>
+      </div>
+    </div>
+
+    <div class="nexus-quick-replies" id="nexus-quick">
+      <button class="nexus-qr" data-msg="¿Qué ruta va al centro?">🏙️ Al centro</button>
+      <button class="nexus-qr" data-msg="¿Cuánto cuesta el pasaje?">💰 Precio</button>
+      <button class="nexus-qr" data-msg="¿Rutas nocturnas disponibles?">🌙 Nocturnas</button>
+    </div>
+
+    <form id="nexus-form" class="nexus-input-row" autocomplete="off">
+      <input id="nexus-input" type="text" class="nexus-input"
+             placeholder="Pregunta algo sobre rutas..." maxlength="200" />
+      <button type="submit" id="nexus-send" class="nexus-send" aria-label="Enviar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<style>
+/* Posicionamiento */
+.nexus-fab-container {
+  position: fixed;
+  bottom: calc(var(--nav-height, 72px) + 12px);
+  right: 1rem;
+  z-index: 800;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+.nexus-fab-container > * { pointer-events: auto; }
+
+/* FAB */
+.nexus-fab {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, #0d9488, #0ea5e9);
+  border: none; cursor: pointer; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(13,148,136,0.4), 0 2px 6px rgba(0,0,0,0.2);
+  transition: transform 0.2s var(--ease-back), box-shadow 0.2s;
+  color: white;
+}
+.nexus-fab:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(13,148,136,0.5); }
+.nexus-fab:active { transform: scale(0.95); }
+.nexus-fab__pulse {
+  position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid rgba(13,148,136,0.4);
+  animation: nexusPulse 2s ease-in-out infinite;
+}
+@keyframes nexusPulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 0; }
+}
+
+/* Panel */
+.nexus-panel {
+  position: fixed;
+  bottom: calc(var(--nav-height, 72px) + 72px);
+  right: 1rem;
+  width: min(360px, calc(100vw - 2rem));
+  max-height: 460px;
+  background: var(--surface-elevated, #fff);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+  border: 1px solid var(--border-light, rgba(0,0,0,0.08));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 799;
+  transform-origin: bottom right;
+  animation: nexusPanelIn 0.25s var(--ease-back) forwards;
+}
+@keyframes nexusPanelIn {
+  from { opacity: 0; transform: scale(0.85) translateY(12px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+/* Header */
+.nexus-panel__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-light, rgba(0,0,0,0.08));
+  background: linear-gradient(135deg, rgba(13,148,136,0.08), rgba(14,165,233,0.05));
+}
+.nexus-header__info { display: flex; align-items: center; gap: 0.6rem; }
+.nexus-header__avatar { font-size: 1.5rem; }
+.nexus-header__name { font-weight: 700; font-size: 0.85rem; color: var(--text-primary, #111); }
+.nexus-header__status { display: flex; align-items: center; gap: 0.3rem; font-size: 0.65rem; color: var(--text-muted, #888); margin-top: 0.1rem; }
+.nexus-close {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--surface-inset, #f4f4f4);
+  border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted, #888); transition: background 0.15s;
+}
+.nexus-close:hover { background: var(--danger-light, #fee2e2); color: var(--danger, #ef4444); }
+
+/* Messages */
+.nexus-messages {
+  flex: 1; overflow-y: auto; padding: 0.75rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  scroll-behavior: smooth;
+}
+.nexus-msg { display: flex; }
+.nexus-msg--agent { justify-content: flex-start; }
+.nexus-msg--user  { justify-content: flex-end; }
+.nexus-msg__bubble {
+  max-width: 85%; padding: 0.55rem 0.8rem;
+  border-radius: 14px; font-size: 0.82rem; line-height: 1.5;
+  color: var(--text-primary, #111);
+}
+.nexus-msg--agent .nexus-msg__bubble {
+  background: var(--surface-card, #f8f8f8);
+  border: 1px solid var(--border-light, rgba(0,0,0,0.08));
+  border-bottom-left-radius: 4px;
+}
+.nexus-msg--user .nexus-msg__bubble {
+  background: linear-gradient(135deg, #0d9488, #0ea5e9);
+  color: white; border-bottom-right-radius: 4px;
+}
+.nexus-msg__bubble.loading {
+  display: flex; gap: 0.3rem; align-items: center;
+  padding: 0.65rem 0.9rem;
+}
+.typing-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text-muted, #aaa);
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* Quick replies */
+.nexus-quick-replies {
+  display: flex; gap: 0.35rem; padding: 0.4rem 0.75rem;
+  overflow-x: auto; border-top: 1px solid var(--border-light, rgba(0,0,0,0.06));
+  scrollbar-width: none;
+}
+.nexus-qr {
+  flex-shrink: 0; padding: 0.3rem 0.65rem;
+  background: var(--surface-card, #f8f8f8);
+  border: 1px solid var(--border-medium, rgba(0,0,0,0.12));
+  border-radius: 99px; font-size: 0.7rem; font-weight: 600;
+  color: var(--text-secondary, #555); cursor: pointer;
+  white-space: nowrap; transition: all 0.15s;
+}
+.nexus-qr:hover { background: var(--sea-pale, #e0f2fe); color: var(--sea-teal, #0d9488); border-color: var(--sea-bright, #0d9488); }
+
+/* Input row */
+.nexus-input-row {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.55rem 0.75rem; border-top: 1px solid var(--border-light, rgba(0,0,0,0.08));
+  background: var(--surface-bg, #fff);
+}
+.nexus-input {
+  flex: 1; border: 1.5px solid var(--border-medium, rgba(0,0,0,0.12));
+  border-radius: 12px; padding: 0.45rem 0.75rem;
+  font-size: 0.82rem; background: var(--surface-card, #f8f8f8);
+  color: var(--text-primary, #111); outline: none;
+  transition: border-color 0.2s;
+}
+.nexus-input:focus { border-color: var(--sea-teal, #0d9488); background: var(--surface-bg, #fff); }
+.nexus-send {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #0d9488, #0ea5e9);
+  border: none; cursor: pointer; color: white;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
+}
+.nexus-send:hover { transform: scale(1.08); box-shadow: 0 2px 8px rgba(13,148,136,0.4); }
+.nexus-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+</style>
+
+<script>
+// Detectar idioma de la página
+const pageLang = document.documentElement.lang || 
+  window.location.pathname.split('/')[1] || 'es';
+
+const fab = document.getElementById('nexus-fab')!;
+const panel = document.getElementById('nexus-panel')!;
+const closeBtn = document.getElementById('nexus-close')!;
+const form = document.getElementById('nexus-form') as HTMLFormElement;
+const input = document.getElementById('nexus-input') as HTMLInputElement;
+const sendBtn = document.getElementById('nexus-send') as HTMLButtonElement;
+const messages = document.getElementById('nexus-messages')!;
+const statusTxt = document.getElementById('nexus-status-txt')!;
+
+let isOpen = false;
+let isLoading = false;
+
+// Toggle panel
+fab.addEventListener('click', () => {
+  isOpen = !isOpen;
+  panel.hidden = !isOpen;
+  if (isOpen) {
+    input.focus();
+    scrollMessages();
+  }
+});
+
+closeBtn.addEventListener('click', () => {
+  isOpen = false;
+  panel.hidden = true;
+});
+
+// Quick replies
+document.querySelectorAll<HTMLButtonElement>('.nexus-qr').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const msg = btn.dataset.msg || '';
+    if (msg && !isLoading) sendMessage(msg);
+  });
+});
+
+// Submit
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const msg = input.value.trim();
+  if (!msg || isLoading) return;
+  input.value = '';
+  sendMessage(msg);
+});
+
+async function sendMessage(text: string) {
+  isLoading = true;
+  sendBtn.disabled = true;
+  statusTxt.textContent = 'Pensando...';
+
+  // Add user message
+  appendMsg(text, 'user');
+
+  // Add loading bubble
+  const loadingEl = appendLoading();
+  scrollMessages();
+
+  try {
+    const res = await fetch('/api/v1/nexus', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, lang: pageLang }),
+    });
+
+    const data = await res.json();
+    loadingEl.remove();
+
+    const reply = data.reply || data.response || data.message || 
+      (pageLang === 'es' ? 'No pude obtener respuesta en este momento.' : 'Could not get a response right now.');
+
+    appendMsg(reply, 'agent');
+    statusTxt.textContent = `${data.source || 'groq'} · listo`;
+  } catch {
+    loadingEl.remove();
+    appendMsg(pageLang === 'es' ? '⚠️ Sin conexión al agente.' : '⚠️ Agent offline.', 'agent');
+    statusTxt.textContent = 'offline';
+  } finally {
+    isLoading = false;
+    sendBtn.disabled = false;
+    scrollMessages();
+  }
+}
+
+function appendMsg(text: string, role: 'agent' | 'user') {
+  const div = document.createElement('div');
+  div.className = `nexus-msg nexus-msg--${role}`;
+  const bubble = document.createElement('span');
+  bubble.className = 'nexus-msg__bubble';
+  bubble.textContent = text;
+  div.appendChild(bubble);
+  messages.appendChild(div);
+  
+  // Hide quick replies after first user message
+  if (role === 'user') {
+    const qr = document.getElementById('nexus-quick');
+    if (qr) qr.style.display = 'none';
+  }
+  return div;
+}
+
+function appendLoading() {
+  const div = document.createElement('div');
+  div.className = 'nexus-msg nexus-msg--agent';
+  div.innerHTML = '<span class="nexus-msg__bubble loading"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span>';
+  messages.appendChild(div);
+  return div;
+}
+
+function scrollMessages() {
+  requestAnimationFrame(() => {
+    messages.scrollTop = messages.scrollHeight;
+  });
+}
+</script>
