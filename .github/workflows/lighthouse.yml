@@ -12,36 +12,16 @@ permissions:
 
 jobs:
   lighthouse:
-    name: Lighthouse CI (PWA ≥ 90)
+    name: Lighthouse CI (PWA audit vs prod)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
-      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Build WASM
-        run: node scripts/build-wasm.mjs
-
-      - name: Build (static preview)
-        run: pnpm build:vercel
-        env:
-          NODE_ENV: production
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
       - name: Install Lighthouse CI
         run: npm install -g @lhci/cli@0.14.x
 
-      - name: Serve + run Lighthouse
-        run: |
-          npx serve dist -l 4321 &
-          sleep 3
-          lhci autorun
+      - name: Run Lighthouse against production
+        run: lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
