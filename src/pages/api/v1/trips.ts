@@ -3,6 +3,32 @@ import { neon } from '@neondatabase/serverless';
 
 export const prerender = false;
 
+async function ensureTables(sql: ReturnType<typeof neon>) {
+  try {
+    await sql.unsafe(`CREATE TABLE IF NOT EXISTS mc_trips (
+      trip_id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+      device_id TEXT NOT NULL,
+      route_id TEXT,
+      origin_stop TEXT,
+      dest_stop TEXT,
+      status TEXT DEFAULT 'active',
+      started_at TIMESTAMPTZ DEFAULT NOW(),
+      ended_at TIMESTAMPTZ,
+      distance_km FLOAT DEFAULT 0
+    )`);
+    await sql.unsafe(`CREATE TABLE IF NOT EXISTS mc_users (
+      id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+      device_id TEXT UNIQUE NOT NULL,
+      total_trips INT DEFAULT 0,
+      total_km FLOAT DEFAULT 0,
+      co2_saved_g INT DEFAULT 0,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      last_seen TIMESTAMPTZ DEFAULT NOW()
+    )`);
+  } catch (_) { /* already exists */ }
+}
+
+
 function getDb() {
   const url = process.env.DATABASE_URL || import.meta.env.DATABASE_URL;
   if (!url) throw new Error('No DATABASE_URL');
@@ -12,6 +38,8 @@ function getDb() {
 // POST — crear/actualizar viaje
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const sql = getDb();
+    await ensureTables(sql);
     const body = await request.json();
     const { action, device_id, route_id, origin_stop, dest_stop, trip_id, bus_unit_id, occupancy } = body;
 
@@ -87,6 +115,8 @@ export const POST: APIRoute = async ({ request }) => {
 // GET — viajes activos por ruta (para mostrar buses con ocupación en mapa)
 export const GET: APIRoute = async ({ url }) => {
   try {
+    const sql = getDb();
+    await ensureTables(sql);
     const sql = getDb();
     const route_id = url.searchParams.get('route_id');
 
