@@ -7,157 +7,163 @@ import MainLayout from "../../layouts/MainLayout.astro";
 const { lang } = Astro.params;
 const isEs = lang === "es";
 ---
+<MainLayout title={isEs ? "Sin conexión — MueveCancún" : "Offline — MueveCancún"}>
+  <div class="offline-root">
 
-<MainLayout title={isEs ? "Sin conexión — MueveCancún" : "Offline — MueveCancún"} hideNav={false}>
-  <div class="offline-page">
-    <!-- Ilustracion animada -->
-    <div class="offline-illustration" aria-hidden="true">
-      <div class="bus-circle">
-        <svg viewBox="0 0 24 24" fill="currentColor" class="bus-icon">
-          <path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/>
-        </svg>
-      </div>
-      <div class="wifi-slash" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M22.99 9C19.15 5.35 13.8 3.76 8.84 4.78L11 6.94c3.13-.55 6.43.28 8.85 2.29l3.14-3.23zM15 15.95L12 13l-3 3.01L12 19l3-3.05zM1.41 1.41L0 2.82l4.39 4.39C2.6 8.08 1.28 9.11.01 10.28l3.14 3.23C4.39 12.4 5.9 11.3 7.64 10.68L19.5 22.5l1.41-1.41L1.41 1.41zm9.7 7.68l3.47 3.47c-.34-.4-.7-.78-1.11-1.13-.67-.6-1.52-1.01-2.36-1.34z"/>
-        </svg>
-      </div>
-    </div>
-
-    <h1 class="offline-title">
-      {isEs ? "Sin conexión" : "You're offline"}
-    </h1>
-    <p class="offline-subtitle">
-      {isEs
-        ? "Pero no te preocupes — MueveCancún funciona completamente sin internet."
-        : "Don't worry — MueveCancún works completely offline."
-      }
-    </p>
-
-    <!-- Acciones offline disponibles -->
-    <div class="offline-actions-label">
-      {isEs ? "Disponible sin internet:" : "Available offline:"}
-    </div>
-    <div class="offline-features">
-      {[
-        { emoji:"🚌", label: isEs ? "78+ rutas guardadas"     : "78+ saved routes"    },
-        { emoji:"🗺️", label: isEs ? "Mapa sin conexión"       : "Offline map"         },
-        { emoji:"📍", label: isEs ? "Buscar paradas cercanas"  : "Find nearby stops"   },
-        { emoji:"⚡",  label: isEs ? "Motor WASM ultrarrápido" : "Ultra-fast WASM engine" },
-      ].map(f => (
-        <div class="offline-feature">
-          <span aria-hidden="true">{f.emoji}</span>
-          <span>{f.label}</span>
+    <!-- Animated graphic -->
+    <div class="offline-hero">
+      <div class="offline-icon-wrap">
+        <div class="offline-rings">
+          <div class="ring ring-1"></div>
+          <div class="ring ring-2"></div>
+          <div class="ring ring-3"></div>
         </div>
-      ))}
+        <div class="offline-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+            <path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <h1 class="offline-title">{isEs ? 'Sin conexión' : 'You\'re offline'}</h1>
+      <p class="offline-desc">
+        {isEs
+          ? 'No hay red disponible, pero MueveCancún funciona sin internet.'
+          : 'No network available, but MueveCancún works without internet.'
+        }
+      </p>
     </div>
 
-    <div class="offline-cta">
-      <a href={"/" + lang + "/ruta"} class="btn btn-primary btn-lg">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        {isEs ? "Buscar rutas offline" : "Search routes offline"}
-      </a>
-      <button id="retry-btn" class="btn btn-ghost btn-md" onclick="window.location.reload()">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-        {isEs ? "Reintentar conexión" : "Retry connection"}
-      </button>
+    <!-- What still works -->
+    <div class="offline-section">
+      <h2 class="offline-section-title">
+        {isEs ? '✅ Qué funciona sin internet' : '✅ What works offline'}
+      </h2>
+      <div class="offline-features">
+        {[
+          { icon: '🗺️', title: isEs ? 'Mapa cacheado' : 'Cached map', desc: isEs ? 'Las rutas descargadas siguen visibles' : 'Downloaded routes remain visible' },
+          { icon: '🚌', title: isEs ? '78 rutas' : '78 routes', desc: isEs ? 'Datos de rutas guardados localmente' : 'Route data stored locally' },
+          { icon: '💳', title: isEs ? 'Tu saldo' : 'Your balance', desc: isEs ? 'Wallet funciona sin conexión' : 'Wallet works without internet' },
+          { icon: '📍', title: isEs ? 'GPS' : 'GPS', desc: isEs ? 'Tu ubicación funciona siempre' : 'Your location always works' },
+        ].map(f => (
+          <div class="offline-feature">
+            <span class="offline-feature__icon">{f.icon}</span>
+            <div>
+              <div class="offline-feature__title">{f.title}</div>
+              <div class="offline-feature__desc">{f.desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
+
+    <!-- Retry -->
+    <div class="offline-actions">
+      <button id="offline-retry" class="btn-primary" style="width:100%">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right:0.4rem">
+          <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+        </svg>
+        {isEs ? 'Reintentar conexión' : 'Retry connection'}
+      </button>
+      <a href={`/${lang}/home`} class="btn-ghost" style="width:100%;justify-content:center;margin-top:0.5rem">
+        {isEs ? 'Ir al inicio (offline)' : 'Go home (offline)'}
+      </a>
+    </div>
+
+    <!-- Connection status -->
+    <div id="offline-status" class="offline-status">
+      <span id="offline-status-dot" class="offline-dot offline-dot--waiting"></span>
+      <span id="offline-status-txt">{isEs ? 'Esperando conexión...' : 'Waiting for connection...'}</span>
+    </div>
+
   </div>
 </MainLayout>
 
 <style>
-  /* ═══ OFFLINE PAGE ═══ */
-  .offline-page {
-    display: flex; flex-direction: column; align-items: center; text-align: center;
-    padding: 2rem 1.5rem;
-    min-height: calc(100dvh - var(--header-h, 60px) - var(--bottom-nav-h, 72px));
-    justify-content: center; gap: 0; max-width: 360px; margin: 0 auto;
-  }
+.offline-root { 
+  min-height: calc(100dvh - var(--nav-height, 72px));
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 1.5rem 1rem 3rem;
+  max-width: 400px; margin: 0 auto; text-align: center;
+}
 
-  /* Ilustración animada */
-  .offline-illustration {
-    position: relative; width: 110px; height: 110px; margin-bottom: 2rem;
-    animation: float 4s ease-in-out infinite;
-  }
-  .bus-circle {
-    width: 110px; height: 110px; border-radius: 50%;
-    background: var(--gradient-primary);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: var(--shadow-teal-lg), var(--shadow-glow);
-  }
-  .bus-icon { width: 54px; height: 54px; color: white; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
+/* Hero */
+.offline-hero { display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem; }
+.offline-icon-wrap { position: relative; width: 100px; height: 100px; margin-bottom: 1.5rem; }
+.offline-rings { position: absolute; inset: 0; }
+.ring { position: absolute; border-radius: 50%; border: 2px solid rgba(13,148,136,0.15); animation: ringPulse 2.5s ease-out infinite; }
+.ring-1 { inset: 15px; animation-delay: 0s; }
+.ring-2 { inset: 5px; animation-delay: 0.4s; }
+.ring-3 { inset: -5px; animation-delay: 0.8s; }
+@keyframes ringPulse {
+  0% { opacity: 0.6; transform: scale(0.9); }
+  100% { opacity: 0; transform: scale(1.2); }
+}
+.offline-icon {
+  position: absolute; inset: 20px; border-radius: 50%;
+  background: var(--surface-card); border: 2px solid var(--border-medium);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); animation: iconFloat 3s ease-in-out infinite;
+}
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
 
-  .wifi-slash {
-    position: absolute; bottom: -4px; right: -4px;
-    width: 36px; height: 36px; border-radius: 50%;
-    background: var(--danger); border: 3px solid var(--surface-bg);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 8px rgba(239,68,68,0.4);
-    animation: pulse-soft 2s ease-in-out infinite;
-  }
-  .wifi-slash svg { width: 18px; height: 18px; color: white; }
+.offline-title { font-family: var(--font-display, sans-serif); font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem; }
+.offline-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; max-width: 280px; }
 
-  /* Texto */
-  .offline-title {
-    font-family: var(--font-display); font-size: 1.8rem; font-weight: 900;
-    letter-spacing: -0.03em; color: var(--text-primary); line-height: 1.1; margin-bottom: 0.75rem;
-  }
-  .offline-subtitle {
-    font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.75rem;
-    max-width: 28rem;
-  }
+/* Features */
+.offline-section { width: 100%; margin-bottom: 1.5rem; }
+.offline-section-title { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; text-align: left; }
+.offline-features { display: flex; flex-direction: column; gap: 0.4rem; }
+.offline-feature { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-light); text-align: left; }
+.offline-feature__icon { font-size: 1.2rem; flex-shrink: 0; }
+.offline-feature__title { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
+.offline-feature__desc { font-size: 0.68rem; color: var(--text-muted); }
 
-  /* Label features */
-  .offline-actions-label {
-    font-family: var(--font-display); font-size: 0.7rem; font-weight: 900;
-    text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);
-    margin-bottom: 0.875rem;
-  }
+/* Actions */
+.offline-actions { width: 100%; margin-bottom: 1rem; }
 
-  /* Features disponibles offline */
-  .offline-features {
-    display: flex; flex-direction: column; gap: 0.5rem; width: 100%; margin-bottom: 2rem;
-  }
-  .offline-feature {
-    display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.75rem 1rem; border-radius: var(--r-lg);
-    background: var(--surface-card); border: 1.5px solid var(--border-light);
-    font-size: 0.88rem; font-weight: 600; color: var(--text-primary);
-    animation: fade-up 0.4s var(--ease-spring) both;
-    transition: all var(--t-fast) var(--ease-spring);
-  }
-  .offline-feature:hover { border-color: var(--sea-bright); background: var(--sea-xpale); transform: scale(1.02); }
-  .offline-feature span:first-child { font-size: 1.2rem; flex-shrink: 0; }
-
-  /* CTA */
-  .offline-cta {
-    display: flex; flex-direction: column; gap: 0.625rem; width: 100%;
-  }
-  .btn-primary {
-    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-    width: 100%; padding: 0.875rem 1.5rem; border-radius: var(--r-lg);
-    background: var(--gradient-primary); color: white; border: none;
-    font-family: var(--font-display); font-size: 0.95rem; font-weight: 800;
-    cursor: pointer; box-shadow: var(--shadow-teal); text-decoration: none;
-    transition: all var(--t-fast) var(--ease-back);
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-teal-lg); }
-  .btn-primary:active { transform: scale(0.97); }
-  .btn-ghost {
-    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-    width: 100%; padding: 0.75rem 1.5rem; border-radius: var(--r-lg);
-    background: var(--surface-card); color: var(--text-secondary);
-    border: 1.5px solid var(--border-light);
-    font-family: var(--font-display); font-size: 0.88rem; font-weight: 700;
-    cursor: pointer; text-decoration: none;
-    transition: all var(--t-fast) var(--ease-back);
-  }
-  .btn-ghost:hover { background: var(--sea-xpale); border-color: var(--sea-bright); color: var(--sea-teal); transform: scale(1.02); }
-  .btn-ghost:active { transform: scale(0.97); }
-
-  /* SW update badge */
-  .sw-version {
-    margin-top: 1.5rem; font-family: var(--font-mono); font-size: 0.65rem;
-    color: var(--text-muted); opacity: 0.6;
-  }
+/* Status */
+.offline-status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--text-muted); }
+.offline-dot { width: 7px; height: 7px; border-radius: 50%; }
+.offline-dot--waiting { background: #f59e0b; animation: blink 1.5s ease-in-out infinite; }
+.offline-dot--online  { background: #22c55e; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 </style>
+
+<script>
+const retryBtn = document.getElementById('offline-retry') as HTMLButtonElement;
+const statusDot = document.getElementById('offline-status-dot')!;
+const statusTxt = document.getElementById('offline-status-txt')!;
+const isEs = window.location.pathname.includes('/es/');
+
+// Auto-detect when connection is restored
+window.addEventListener('online', () => {
+  statusDot.className = 'offline-dot offline-dot--online';
+  statusTxt.textContent = isEs ? '¡Conexión restaurada! Redirigiendo...' : 'Connection restored! Redirecting...';
+  setTimeout(() => {
+    window.history.back();
+  }, 1500);
+});
+
+retryBtn.addEventListener('click', async () => {
+  retryBtn.disabled = true;
+  retryBtn.textContent = isEs ? 'Probando...' : 'Testing...';
+  try {
+    const res = await fetch('/manifest.webmanifest', { cache: 'no-cache' });
+    if (res.ok) {
+      statusDot.className = 'offline-dot offline-dot--online';
+      statusTxt.textContent = isEs ? '¡Online! Volviendo...' : 'Back online!';
+      setTimeout(() => window.history.back(), 800);
+    } else {
+      throw new Error('offline');
+    }
+  } catch {
+    retryBtn.disabled = false;
+    retryBtn.textContent = isEs ? 'Reintentar conexión' : 'Retry connection';
+    statusTxt.textContent = isEs ? 'Aún sin conexión...' : 'Still offline...';
+  }
+});
+</script>
