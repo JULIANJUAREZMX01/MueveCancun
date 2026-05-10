@@ -1,0 +1,113 @@
+---
+// LiveStatsBar.astro — Barra de estadísticas en vivo (usuarios, reportes, viajes)
+---
+<div id="live-stats-bar" class="live-stats-bar">
+  <div class="live-stats-inner">
+    <div class="live-stat" id="stat-users">
+      <span class="live-stat__val" id="stat-users-val">–</span>
+      <span class="live-stat__lbl">en vivo</span>
+    </div>
+    <div class="live-stat-sep"></div>
+    <div class="live-stat" id="stat-reports">
+      <span class="live-stat__val" id="stat-reports-val">–</span>
+      <span class="live-stat__lbl">reportes hoy</span>
+    </div>
+    <div class="live-stat-sep"></div>
+    <div class="live-stat" id="stat-trips">
+      <span class="live-stat__val" id="stat-trips-val">–</span>
+      <span class="live-stat__lbl">viajes hoy</span>
+    </div>
+    <div class="live-stat-sep live-stat-sep--right"></div>
+    <div class="live-indicator">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span class="live-indicator__txt">LIVE</span>
+    </div>
+  </div>
+</div>
+
+<style>
+.live-stats-bar {
+  flex-shrink: 0;
+  background: rgba(13,148,136,0.07);
+  border-bottom: 1px solid rgba(13,148,136,0.12);
+  overflow: hidden;
+  height: 32px;
+}
+.live-stats-inner {
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; padding: 0 1rem; gap: 0.5rem;
+}
+.live-stat { display: flex; align-items: baseline; gap: 0.25rem; }
+.live-stat__val {
+  font-family: var(--font-display, sans-serif);
+  font-size: 0.75rem; font-weight: 800;
+  color: var(--sea-teal, #0d9488);
+  min-width: 1.5ch; text-align: right;
+  transition: all 0.4s;
+}
+.live-stat__lbl { font-size: 0.6rem; color: var(--text-muted); white-space: nowrap; }
+.live-stat-sep {
+  width: 1px; height: 12px;
+  background: var(--border-medium, rgba(0,0,0,0.12));
+}
+.live-stat-sep--right { margin-left: auto; display: none; }
+.live-indicator {
+  display: flex; align-items: center; gap: 0.25rem;
+  padding-left: 0.25rem;
+}
+.live-indicator__txt {
+  font-size: 0.55rem; font-weight: 800; letter-spacing: 0.1em;
+  color: var(--sea-teal, #0d9488); opacity: 0.7;
+}
+</style>
+
+<script>
+const lang = document.documentElement.lang ||
+  window.location.pathname.split('/')[1] || 'es';
+const isEs = lang === 'es';
+
+const els = {
+  users:   document.getElementById('stat-users-val'),
+  reports: document.getElementById('stat-reports-val'),
+  trips:   document.getElementById('stat-trips-val'),
+};
+const lbls = {
+  users:   document.querySelector('#stat-users .live-stat__lbl'),
+  reports: document.querySelector('#stat-reports .live-stat__lbl'),
+  trips:   document.querySelector('#stat-trips .live-stat__lbl'),
+};
+
+if (lbls.users)   lbls.users.textContent   = isEs ? 'en vivo' : 'live now';
+if (lbls.reports) lbls.reports.textContent = isEs ? 'reportes hoy' : 'reports today';
+if (lbls.trips)   lbls.trips.textContent   = isEs ? 'viajes hoy' : 'trips today';
+
+function fmt(n: number): string {
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return String(n);
+}
+
+function animateVal(el: HTMLElement, val: number) {
+  el.style.transform = 'translateY(-4px)';
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.textContent = fmt(val);
+    el.style.transform = 'translateY(0)';
+    el.style.opacity = '1';
+  }, 150);
+}
+
+async function fetchStats() {
+  try {
+    const res = await fetch('/api/v1/stats', { cache: 'no-store' });
+    if (!res.ok) return;
+    const d = await res.json();
+    if (els.users)   animateVal(els.users,   d.users_now    ?? 0);
+    if (els.reports) animateVal(els.reports, d.reports_today ?? 0);
+    if (els.trips)   animateVal(els.trips,   d.trips_today   ?? 0);
+  } catch { /* silently fail */ }
+}
+
+// Fetch inmediato + cada 30s
+fetchStats();
+setInterval(fetchStats, 30_000);
+</script>
