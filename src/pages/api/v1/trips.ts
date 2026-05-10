@@ -13,7 +13,7 @@ function getDb() {
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
-    const { action, device_id, route_id, origin_stop, dest_stop, trip_id, status, bus_unit_id, occupancy } = body;
+    const { action, device_id, route_id, origin_stop, dest_stop, trip_id, bus_unit_id, occupancy } = body;
 
     if (!device_id) return new Response(JSON.stringify({ error: 'device_id required' }), { status: 400 });
 
@@ -124,7 +124,7 @@ export const GET: APIRoute = async ({ url }) => {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
     });
-  } catch (e) {
+  } catch {
     return new Response(JSON.stringify([]), { status: 200 });
   }
 };
