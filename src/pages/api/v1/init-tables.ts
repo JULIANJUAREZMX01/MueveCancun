@@ -7,6 +7,10 @@ export const GET: APIRoute = async () => {
   const url = process.env.DATABASE_URL || import.meta.env.DATABASE_URL;
   if (!url) return new Response(JSON.stringify({ error: 'No DATABASE_URL' }), { status: 500 });
 
+  // Debug: mostrar prefix de la URL (sin credenciales)
+  const urlObj = new URL(url);
+  const dbInfo = `${urlObj.protocol}//${urlObj.hostname}${urlObj.pathname}`;
+
   const sql = neon(url);
   const results: string[] = [];
 
@@ -17,9 +21,6 @@ export const GET: APIRoute = async () => {
       name TEXT,
       avatar_emoji TEXT DEFAULT '🚌',
       lang TEXT DEFAULT 'es',
-      notifications BOOLEAN DEFAULT true,
-      share_location BOOLEAN DEFAULT false,
-      preferred_routes TEXT[] DEFAULT '{}',
       total_trips INT DEFAULT 0,
       total_km FLOAT DEFAULT 0,
       co2_saved_g INT DEFAULT 0,
@@ -98,11 +99,11 @@ export const GET: APIRoute = async () => {
       results.push('OK: ' + q.slice(0, 60).replace(/\n/g, ' ').trim());
     } catch (e) {
       const err = e instanceof Error ? e.message : String(e);
-      results.push('ERR: ' + err.slice(0, 80));
+      results.push('ERR: ' + err.slice(0, 120));
     }
   }
 
-  return new Response(JSON.stringify({ done: true, results }), {
+  return new Response(JSON.stringify({ done: true, db: dbInfo, results }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' }
   });
