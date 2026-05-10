@@ -28,8 +28,16 @@ async function ensureSchema() {
       created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
     )
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS community_report_votes (
+      report_id   INT          NOT NULL,
+      voter_id    TEXT         NOT NULL,
+      created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (report_id, voter_id)
+    )
+  `;
   // Seed if empty
-  const [{ count }] = await sql`SELECT COUNT(*) AS count FROM community_reports` as any[];
+  const [{ count }] = await sql`SELECT COUNT(*) AS count FROM community_reports` as { count: string | number }[];
   if (Number(count) === 0) {
     await sql`
       INSERT INTO community_reports (type, route, message, author, votes, created_at) VALUES
@@ -45,7 +53,17 @@ async function ensureSchema() {
 
 // ── SEED fallback (when no DATABASE_URL in CI/dev) ───────────────────────────
 
-const SEED: any[] = [
+interface Report {
+  id: number;
+  type: string;
+  route: string;
+  message: string;
+  author: string;
+  votes: number;
+  created_at: string;
+}
+
+const SEED: Report[] = [
   { id: 1, type: 'Precio',  route: 'Zona Hotelera', message: 'Los camiones de ZH cobran $12 fijos.', author: 'Comunidad', votes: 14, created_at: new Date(Date.now() - 7200000).toISOString() },
   { id: 2, type: 'Ruta',    route: 'R-10', message: 'R-10 no llega al aeropuerto — termina en Américas.', author: 'MÍSTICO_', votes: 31, created_at: new Date(Date.now() - 64800000).toISOString() },
   { id: 3, type: 'Demora',  route: 'R-6',  message: 'R-6 solo pasa hasta las 10pm.', author: 'Grecia P.', votes: 19, created_at: new Date(Date.now() - 172800000).toISOString() },
@@ -101,7 +119,7 @@ export const POST: APIRoute = async ({ request }) => {
         INSERT INTO community_reports (type, route, message, author)
         VALUES (${type}, ${route}, ${message}, ${author})
         RETURNING id, created_at::text AS created_at
-      ` as any[];
+      ` as { id: number, created_at: string }[];
 
       return new Response(JSON.stringify({ success: true, report_id: row.id }), {
         status: 201, headers: { 'Content-Type': 'application/json' }
@@ -126,19 +144,52 @@ export const POST: APIRoute = async ({ request }) => {
 
 export const PATCH: APIRoute = async ({ request }) => {
   try {
-    const { id, direction } = await request.json();
+    const { id, direction, voter_id } = await request.json();
     if (!id) return new Response(JSON.stringify({ error: 'id required' }), { status: 400 });
+    if (!voter_id) return new Response(JSON.stringify({ error: 'voter_id required' }), { status: 401 });
 
     try {
       await ensureSchema();
       const sql = getDb();
       const delta = direction === 'down' ? -1 : 1;
-      await sql`UPDATE community_reports SET votes = votes + ${delta} WHERE id = ${id}`;
+
+      // Use a transaction to ensure atomicity
+      await sql.begin(async (tx) => {
+        // Check if already voted
+        const [existing] = await tx`
+          SELECT 1 FROM community_report_votes
+          WHERE report_id = ${id} AND voter_id = ${voter_id}
+        `;
+
+        if (existing) {
+          throw new Error('Already voted');
+        }
+
+        // Record the vote
+        await tx`
+          INSERT INTO community_report_votes (report_id, voter_id)
+          VALUES (${id}, ${voter_id})
+        `;
+
+        // Update the report vote count
+        await tx`
+          UPDATE community_reports
+          SET votes = votes + ${delta}
+          WHERE id = ${id}
+        `;
+      });
+
       return new Response(JSON.stringify({ success: true }), { status: 200 });
-    } catch {
+    } catch (err) {
+      if (err instanceof Error && err.message === 'Already voted') {
+        return new Response(JSON.stringify({ error: 'Already voted' }), { status: 403 });
+      }
+      logger.error('[API/Reports] PATCH failed:', err);
+      // Fallback for development/CI if DB fails
       return new Response(JSON.stringify({ success: true, fallback: true }), { status: 200 });
     }
-  } catch {
+  } catch (err) {
+    logger.error('[API/Reports] PATCH parse error:', err);
     return new Response(JSON.stringify({ error: 'Invalid request' }), { status: 400 });
   }
 };

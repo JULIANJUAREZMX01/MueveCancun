@@ -296,6 +296,15 @@ const isEs = lang === "es";
 
   const typeEmoji: Record<string,string> = { Tráfico:"🚗", Demora:"⏱", Precio:"💰", Ruta:"🗺️", Noticia:"📢" };
 
+  function getVoterId() {
+    let id = localStorage.getItem("voter_id");
+    if (!id) {
+      id = (crypto as any).randomUUID ? (crypto as any).randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      localStorage.setItem("voter_id", id);
+    }
+    return id;
+  }
+
   function esc(s: string) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
   function ago(iso: string) {
     const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
@@ -305,6 +314,7 @@ const isEs = lang === "es";
   function renderFeed() {
     feed.querySelectorAll(".report-skeleton,.report-card").forEach(el => el.remove());
     const filtered = activeFilter === "all" ? allReports : allReports.filter(r => (r.type||r.tipo) === activeFilter);
+    const votedReports = JSON.parse(localStorage.getItem("voted_reports") || "[]");
 
     empty.hidden = filtered.length > 0;
     statusEl.textContent = `${filtered.length} reporte${filtered.length !== 1 ? "s" : ""}`;
@@ -324,6 +334,8 @@ const isEs = lang === "es";
       const type = r.type||r.tipo||"General";
       const emoji = typeEmoji[type] || "📢";
       const votes = r.votes||r.votos||0;
+      const alreadyVoted = votedReports.includes(String(r.id));
+
       card.innerHTML = `
         <div class="rc-avatar" aria-hidden="true">${esc(init)}</div>
         <div class="rc-body">
@@ -332,18 +344,46 @@ const isEs = lang === "es";
             <span class="rc-type">${esc(type)}</span>
             ${r.route||r.ruta ? `<span class="rc-route">🚌 ${esc(r.route||r.ruta)}</span>` : ""}
             <span class="rc-ago">${ago(r.created_at||r.fecha||new Date().toISOString())}</span>
-            <button class="rc-votes" data-id="${esc(r.id||"")}" aria-label="Votar útil">
+            <button class="rc-votes ${alreadyVoted ? "voted" : ""}" data-id="${esc(String(r.id||""))}" aria-label="Votar útil">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
               <span>${esc(String(votes))}</span>
             </button>
           </div>
         </div>`;
-      card.querySelector(".rc-votes")?.addEventListener("click", e => {
+      card.querySelector(".rc-votes")?.addEventListener("click", async e => {
         const btn = e.currentTarget as HTMLButtonElement;
-        if (btn.classList.contains("voted")) return;
+        const reportId = btn.dataset.id;
+        if (btn.classList.contains("voted") || !reportId) return;
+
         btn.classList.add("voted");
         const span = btn.querySelector("span")!;
-        span.textContent = String(parseInt(span.textContent||"0")+1);
+        const currentVotes = parseInt(span.textContent||"0");
+        span.textContent = String(currentVotes + 1);
+
+        try {
+          const res = await fetch(API, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: reportId, voter_id: getVoterId() })
+          });
+
+          if (!res.ok) {
+            const errData = await res.json();
+            if (errData.error !== "Already voted") {
+              throw new Error(errData.error || "Failed to vote");
+            }
+          }
+          // Persist voted state locally
+          const updatedVoted = JSON.parse(localStorage.getItem("voted_reports") || "[]");
+          if (!updatedVoted.includes(reportId)) {
+            updatedVoted.push(reportId);
+            localStorage.setItem("voted_reports", JSON.stringify(updatedVoted));
+          }
+        } catch (err) {
+          console.error("[Community] Vote failed:", err);
+          btn.classList.remove("voted");
+          span.textContent = String(currentVotes);
+        }
       });
       feed.appendChild(card);
     });
