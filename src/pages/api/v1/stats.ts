@@ -37,7 +37,7 @@ export const GET: APIRoute = async () => {
       users_now: usersNow[0]?.count ?? 0,
       reports_today: reportsToday[0]?.count ?? 0,
       trips_today: tripsToday[0]?.count ?? 0,
-      top_routes: topRoutes.map((r: any) => ({ id: r.route_id, users: r.users })),
+      top_routes: topRoutes.map((r: Record<string, unknown>) => ({ id: r["route_id"], users: r["users"] })),
       ts: Date.now(),
     }), {
       status: 200,
