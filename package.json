@@ -70,7 +70,7 @@
   },
   "optionalDependencies": {
     "@mlc-ai/web-llm": "^0.2.83",
-    "@rollup/rollup-linux-x64-gnu": "^4.60.1"
+    "@rollup/rollup-linux-x64-gnu": "^4.60.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
