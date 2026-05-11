@@ -79,7 +79,7 @@
     "@types/leaflet": "^1.9.21",
     "cheerio": "^1.2.0",
     "eslint": "^10.3.0",
-    "globals": "^17.5.0",
+    "globals": "^17.6.0",
     "http-server": "^14.1.1",
     "jiti": "^2.6.1",
     "jsdom": "^29.1.1",
