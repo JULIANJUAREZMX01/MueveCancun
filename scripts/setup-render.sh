@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 log() { echo -e "\033[1;34m[NEXUS_LOG]\033[0m $1"; }
 success() { echo -e "\033[1;32m[SUCCESS]\033[0m $1"; }
@@ -19,14 +20,9 @@ log "Activando pnpm..."
 corepack enable
 corepack prepare pnpm@9.15.4 --activate
 
-# 4. Dependencies
-log "Instalando dependencias (frozen-lockfile)..."
-pnpm install --frozen-lockfile
-
-# 5. Build Sequence
+# 4. Dependencies & Build Sequence
+log "Instalando dependencias y ejecutando build..."
 export RENDER=true
-log "Ejecutando build de produccion (build:ci)..."
-# build:ci includes prepare-data (merge + optimize) and build-wasm.mjs
-pnpm run build:ci
+pnpm install --frozen-lockfile && pnpm run build:ci
 
 success "BUILD COMPLETADO - LISTO PARA DESPLIEGUE"
