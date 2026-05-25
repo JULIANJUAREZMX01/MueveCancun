@@ -6,11 +6,11 @@ export const prerender = false;
 export const POST: APIRoute = async ({ request }) => {
   // Solo accesible con token secreto
   const auth = request.headers.get('x-setup-key');
-  if (auth !== (process.env.GITHUB_ISSUES_TOKEN || import.meta.env.GITHUB_ISSUES_TOKEN)) {
+  if (auth !== process.env.GITHUB_ISSUES_TOKEN) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
-  const url = process.env.DATABASE_URL || import.meta.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL;
   if (!url) return new Response(JSON.stringify({ error: 'No DATABASE_URL' }), { status: 500 });
 
   const sql = neon(url);

@@ -10,7 +10,7 @@ export const prerender = false;
 // ── DB helpers ──────────────────────────────────────────────────────────────
 
 function getDb() {
-  const url = process.env.DATABASE_URL || import.meta.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL;
   if (!url) throw new Error('[Reports] DATABASE_URL not set');
   return neon(url);
 }

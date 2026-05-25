@@ -4,7 +4,7 @@ import { neon } from '@neondatabase/serverless';
 export const prerender = false;
 
 function getDb() {
-  const url = process.env.DATABASE_URL || import.meta.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL;
   if (!url) throw new Error('No DATABASE_URL');
   return neon(url);
 }
@@ -13,8 +13,7 @@ function getDbDirect() {
   // Para DDL: usar connection sin pooler si está disponible
   const url = process.env.DATABASE_URL_UNPOOLED
     || process.env.POSTGRES_URL_NON_POOLING
-    || process.env.DATABASE_URL
-    || import.meta.env.DATABASE_URL;
+    || process.env.DATABASE_URL;
   if (!url) throw new Error('No DATABASE_URL');
   return neon(url);
 }

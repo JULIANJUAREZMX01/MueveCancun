@@ -4,7 +4,7 @@ import { neon } from '@neondatabase/serverless';
 export const prerender = false;
 
 export const GET: APIRoute = async ({ url: reqUrl }) => {
-  const dbUrl = process.env.DATABASE_URL || import.meta.env.DATABASE_URL;
+  const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) return new Response(JSON.stringify({ error: 'No DATABASE_URL' }), { status: 500 });
 
   const urlObj = new URL(dbUrl);

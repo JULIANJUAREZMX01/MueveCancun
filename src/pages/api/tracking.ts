@@ -13,7 +13,7 @@ import { logger } from '../../utils/logger';
 export const prerender = false;
 
 function getDb() {
-  const url = process.env.DATABASE_URL || import.meta.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL;
   if (!url) throw new Error('[Tracking] DATABASE_URL not set');
   return neon(url);
 }
