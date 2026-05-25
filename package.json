@@ -57,7 +57,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "astro": "^6.3.5",
     "clsx": "^2.1.1",
-    "docx": "^9.6.1",
+    "docx": "^9.7.0",
     "fuse.js": "^7.3.0",
     "idb": "^8.0.3",
     "postcss": "^8.5.14",
