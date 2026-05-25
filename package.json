@@ -76,7 +76,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.60.0",
     "@types/leaflet": "^1.9.21",
     "cheerio": "^1.2.0",
     "eslint": "^10.4.0",
