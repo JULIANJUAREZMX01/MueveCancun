@@ -91,25 +91,34 @@ const navItems = [
   justify-content: center; gap: 0.18rem; text-decoration: none;
   color: var(--text-muted); padding: 0.4rem 0.25rem;
   border-radius: 14px; margin: 0.3rem 0.1rem;
-  transition: color 0.2s, background 0.2s;
+  transition: color 0.25s cubic-bezier(0.16,1,0.3,1),
+              background 0.25s cubic-bezier(0.16,1,0.3,1),
+              transform 0.15s cubic-bezier(0.16,1,0.3,1);
   position: relative; overflow: visible;
+  -webkit-tap-highlight-color: transparent;
 }
-.nav-item:hover { color: var(--sea-teal); background: var(--sea-xpale); }
+.nav-item:hover:not(.nav-item--active) { color: var(--sea-teal); background: var(--sea-xpale); }
+.nav-item:active { transform: scale(0.91); }
 .nav-item--active { color: var(--sea-teal); }
 .nav-item--active .nav-icon {
-  background: var(--sea-pale);
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, var(--sea-pale) 0%, rgba(94,234,212,0.22) 100%);
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 4px 12px rgba(13,148,136,0.22);
+}
+.nav-item--active .nav-label {
+  color: var(--sea-teal);
+  font-weight: 700;
 }
 .nav-icon {
   width: 36px; height: 28px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
 }
 .nav-icon svg { width: 20px; height: 20px; }
 .nav-label {
   font-size: 0.6rem; font-weight: 600; letter-spacing: 0.01em;
-  transition: color 0.2s; white-space: nowrap;
+  transition: color 0.25s, font-weight 0.1s; white-space: nowrap;
 }
 .nav-live-dot {
   position: absolute; top: 0; right: 0;

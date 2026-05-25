@@ -4,30 +4,49 @@ interface Props {
   width?: string;
   height?: string;
   circle?: boolean;
+  rows?: number;
+  gap?: string;
 }
 
-const { class: className, width = '100%', height = '1rem', circle = false } = Astro.props;
+const {
+  class: className,
+  width = '100%',
+  height = '1rem',
+  circle = false,
+  rows = 1,
+  gap = '0.5rem'
+} = Astro.props;
 ---
 
-<div
-  class={`graffiti-skeleton ${className || ''}`}
-  style={{
-    width: width,
-    height: height,
-    borderRadius: circle ? '50%' : 'var(--r-sm)'
-  }}
-  aria-hidden="true"
-></div>
+{rows > 1 ? (
+  <div class="skeleton-stack" style={`gap:${gap}`} aria-hidden="true">
+    {Array.from({ length: rows }).map((_, i) => (
+      <div
+        class={`skeleton ${className || ''}`}
+        style={{
+          width: i === rows - 1 && rows > 1 ? '70%' : width,
+          height,
+          borderRadius: circle ? '50%' : undefined
+        }}
+      />
+    ))}
+  </div>
+) : (
+  <div
+    class={`skeleton ${className || ''}`}
+    style={{
+      width,
+      height,
+      borderRadius: circle ? '50%' : undefined
+    }}
+    aria-hidden="true"
+  />
+)}
 
 <style>
-  .graffiti-skeleton {
-    background-color: var(--border-light);
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    display: block;
+  .skeleton-stack {
+    display: flex;
+    flex-direction: column;
   }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
+  /* .skeleton class is defined in global.css with shimmer animation */
 </style>

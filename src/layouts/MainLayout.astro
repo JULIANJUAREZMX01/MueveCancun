@@ -164,6 +164,35 @@ const lang = getLangFromUrl(Astro.url);
     <SpeedInsights />
 
     <NexusWidget />
+
+    <!-- Offline indicator -->
+    <div id="offline-banner" class="offline-banner" role="alert" aria-live="polite" aria-atomic="true">
+      📶 Sin conexión — usando datos guardados
+    </div>
+
+    <script>
+      // Offline / online detector
+      (function initOfflineDetector() {
+        const banner = document.getElementById('offline-banner');
+        if (!banner) return;
+        function update() {
+          const offline = !navigator.onLine;
+          banner!.classList.toggle('visible', offline);
+          document.body.classList.toggle('is-offline', offline);
+        }
+        window.addEventListener('online', update);
+        window.addEventListener('offline', update);
+        update();
+      })();
+
+      // Re-bind on Astro page transitions
+      document.addEventListener('astro:page-load', () => {
+        const banner = document.getElementById('offline-banner');
+        if (!banner) return;
+        banner.classList.toggle('visible', !navigator.onLine);
+        document.body.classList.toggle('is-offline', !navigator.onLine);
+      });
+    </script>
 </body>
 </html>
 

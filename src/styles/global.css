@@ -704,3 +704,135 @@ input, textarea { font-family: inherit; }
   font-size: 1.1rem !important;
 }
 .leaflet-control-zoom a:hover { background: var(--sea-pale) !important; }
+
+/* ══════════════════════════════════════
+   ANIMACIONES GLOBALES MEJORADAS
+   ══════════════════════════════════════ */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+@keyframes rippleAnim {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* Utility animation classes */
+.anim-fade-up {
+  opacity: 0;
+  animation: fadeSlideUp 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.anim-scale-in {
+  opacity: 0;
+  animation: scaleIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.10s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.20s; }
+.delay-5 { animation-delay: 0.25s; }
+.delay-6 { animation-delay: 0.30s; }
+
+/* ── Shimmer skeleton ── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-inset) 25%,
+    var(--sea-pale) 50%,
+    var(--surface-inset) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--r-md);
+  display: block;
+}
+
+/* ── Ripple ── */
+.ripple-container { position: relative; overflow: hidden; }
+.ripple-wave {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transform: scale(0);
+  animation: rippleAnim 0.55s linear;
+  pointer-events: none;
+}
+
+/* ── Glassmorphism mejorado ── */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--r-xl);
+}
+.glass-panel {
+  background: rgba(240, 253, 250, 0.75);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(94, 234, 212, 0.25);
+  box-shadow: 0 4px 24px rgba(0, 78, 95, 0.08);
+}
+
+/* ── Offline banner ── */
+.offline-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 9999;
+  background: var(--gradient-sunrise);
+  color: white;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transform: translateY(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 12px rgba(249,115,22,0.4);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.offline-banner.visible { transform: translateY(0); }
+
+/* ── Map control active state ── */
+.map-ctrl-btn--active {
+  background: var(--sea-pale) !important;
+  color: var(--sea-teal);
+  border-color: var(--sea-bright);
+  box-shadow: 0 0 0 3px rgba(13,148,136,0.18);
+}
+.map-ctrl-btn:active { transform: scale(0.90) !important; }
+
+/* ── dark mode glass ── */
+@media (prefers-color-scheme: dark) {
+  .glass-card {
+    background: rgba(1, 40, 51, 0.82);
+    border-color: rgba(45, 212, 191, 0.15);
+  }
+  .glass-panel {
+    background: rgba(1, 28, 38, 0.75);
+    border-color: rgba(45, 212, 191, 0.12);
+  }
+}
+
+/* ── Reduce motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .skeleton { animation: none; background: var(--surface-inset); }
+}

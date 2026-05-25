@@ -184,4 +184,45 @@ const {
     outline: 2.5px solid var(--sea-bright);
     outline-offset: 3px;
   }
+
+  /* ── Loading state ── */
+  .mc-btn[data-loading] {
+    opacity: 0.7;
+    cursor: wait;
+    pointer-events: none;
+  }
+  .mc-btn[data-loading]::before {
+    content: '';
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-right: 0.4rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
+
+<script>
+  // Ripple effect en todos los mc-btn
+  function initBtnRipple() {
+    document.querySelectorAll<HTMLButtonElement>('.mc-btn:not([data-ripple])').forEach(btn => {
+      btn.setAttribute('data-ripple', '1');
+      btn.addEventListener('pointerdown', function(e: PointerEvent) {
+        if (this.disabled) return;
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height) * 2;
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        const wave = document.createElement('span');
+        wave.className = 'ripple-wave';
+        wave.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px;position:absolute;border-radius:50%;background:rgba(255,255,255,0.28);transform:scale(0);animation:rippleAnim 0.55s linear;pointer-events:none;`;
+        this.appendChild(wave);
+        wave.addEventListener('animationend', () => wave.remove(), { once: true });
+      });
+    });
+  }
+  document.addEventListener('astro:page-load', initBtnRipple);
+  document.addEventListener('DOMContentLoaded', initBtnRipple);
+  initBtnRipple();
+</script>

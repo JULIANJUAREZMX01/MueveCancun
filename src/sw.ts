@@ -113,11 +113,15 @@ async function cacheFirst(request: Request): Promise<Response> {
 
 async function networkFirst(request: Request): Promise<Response> {
   const cache = await caches.open(CACHE_NAME);
+  const controller = new AbortController();
+  const tid = setTimeout(() => controller.abort(), 5000);
   try {
-    const response = await fetch(request);
+    const response = await fetch(request, { signal: controller.signal });
+    clearTimeout(tid);
     if (response.ok) cache.put(request, response.clone());
     return response;
   } catch {
+    clearTimeout(tid);
     const cached = await cache.match(request);
     return cached || serveOffline(request);
   }
@@ -127,12 +131,27 @@ async function staleWhileRevalidate(request: Request): Promise<Response> {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
 
-  const fetchPromise = fetch(request).then(response => {
-    if (response.ok) cache.put(request, response.clone());
-    return response;
-  }).catch(() => cached || serveOffline(request));
+  // Network fetch with 3s timeout
+  const controller = new AbortController();
+  const tid = setTimeout(() => controller.abort(), 3000);
 
-  return cached || fetchPromise;
+  const fetchPromise = fetch(request, { signal: controller.signal })
+    .then(response => {
+      clearTimeout(tid);
+      if (response.ok) cache.put(request, response.clone());
+      return response;
+    })
+    .catch(() => {
+      clearTimeout(tid);
+      return cached || serveOffline(request);
+    });
+
+  // Return cached immediately, revalidate in background
+  if (cached) {
+    fetchPromise.catch(() => {}); // background revalidation, swallow
+    return cached;
+  }
+  return fetchPromise;
 }
 
 async function serveOffline(request: Request): Promise<Response> {

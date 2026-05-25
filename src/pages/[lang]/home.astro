@@ -103,20 +103,20 @@ const heroStats = [
     </div>
 
     <!-- Quick actions floating row -->
-    <div class="quick-actions" id="quick-actions">
-      <a href={`/${lang}/tracking`} class="quick-btn quick-btn--primary">
+    <div class="quick-actions anim-fade-up" id="quick-actions">
+      <a href={`/${lang}/tracking`} class="quick-btn quick-btn--primary ripple-container">
         <span>🚌</span>
         <span>{isEs ? 'En vivo' : 'Live'}</span>
       </a>
-      <a href={`/${lang}/rutas`} class="quick-btn">
+      <a href={`/${lang}/rutas`} class="quick-btn ripple-container">
         <span>🗺️</span>
         <span>{isEs ? 'Rutas' : 'Routes'}</span>
       </a>
-      <a href={`/${lang}/community`} class="quick-btn">
+      <a href={`/${lang}/community`} class="quick-btn ripple-container">
         <span>💬</span>
         <span>{isEs ? 'Foro' : 'Forum'}</span>
       </a>
-      <a href={`/${lang}/guess`} class="quick-btn">
+      <a href={`/${lang}/guess`} class="quick-btn ripple-container">
         <span>🎯</span>
         <span>{isEs ? 'Juega' : 'Play'}</span>
       </a>
@@ -208,11 +208,16 @@ const heroStats = [
   display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
   padding: 0.3rem 0.6rem; border-radius: 99px; text-decoration: none;
   font-size: 0.6rem; font-weight: 600; color: var(--text-secondary);
-  transition: all 0.15s;
+  transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
+  -webkit-tap-highlight-color: transparent;
+  position: relative; overflow: hidden;
 }
-.quick-btn span:first-child { font-size: 1rem; }
-.quick-btn:hover, .quick-btn--primary { background: var(--sea-pale); color: var(--sea-teal); }
-.quick-btn--primary { color: var(--sea-teal); font-weight: 700; }
+.quick-btn span:first-child { font-size: 1rem; transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); }
+.quick-btn:hover { background: var(--sea-pale); color: var(--sea-teal); transform: translateY(-1px); }
+.quick-btn:hover span:first-child { transform: scale(1.15); }
+.quick-btn:active { transform: scale(0.93); }
+.quick-btn--primary { background: var(--sea-pale); color: var(--sea-teal); font-weight: 700; }
+.quick-btn--primary span:first-child { transform: scale(1.05); }
 
 /* ── Calculator sheet ── */
 .calc-sheet {
@@ -367,17 +372,39 @@ document.addEventListener('astro:page-load', async () => {
     if (Math.abs(delta) > 30) toggleSheet(delta > 0);
   }, { passive: true });
 
-  // GPS btn
-  document.getElementById('btn-gps-home')?.addEventListener('click', () => {
-    navigator.geolocation?.getCurrentPosition((pos) => {
-      map?.flyTo([pos.coords.latitude, pos.coords.longitude], 16, { duration: 1 });
-    });
+  // GPS btn — con feedback visual
+  const gpsBtn = document.getElementById('btn-gps-home');
+  gpsBtn?.addEventListener('click', () => {
+    if (!navigator.geolocation) return;
+    gpsBtn.classList.add('map-ctrl-btn--active');
+    gpsBtn.setAttribute('aria-label', 'Buscando GPS…');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        map?.flyTo([pos.coords.latitude, pos.coords.longitude], 16, { duration: 1.2 });
+        gpsBtn.classList.remove('map-ctrl-btn--active');
+        gpsBtn.setAttribute('aria-label', 'Centrar en mi ubicación');
+      },
+      () => {
+        gpsBtn.classList.remove('map-ctrl-btn--active');
+        gpsBtn.setAttribute('aria-label', 'GPS no disponible');
+      },
+      { timeout: 8000, maximumAge: 30000 }
+    );
+  });
+
+  // Trip stop btn
+  document.getElementById('trip-stop-btn')?.addEventListener('click', () => {
+    const bar = document.getElementById('trip-status-bar');
+    if (bar) { bar.hidden = true; }
+    window.dispatchEvent(new CustomEvent('TRIP_STOPPED'));
   });
 
   // Tracking btn
-  document.getElementById('btn-tracking')?.addEventListener('click', () => {
+  const trackBtn = document.getElementById('btn-tracking');
+  trackBtn?.addEventListener('click', () => {
     const lang = document.documentElement.lang || 'es';
-    window.location.href = `/${lang}/tracking`;
+    trackBtn.classList.add('map-ctrl-btn--active');
+    setTimeout(() => window.location.href = `/${lang}/tracking`, 120);
   });
 
   // Live reports
