@@ -122,13 +122,22 @@ export const POST: APIRoute = async ({ request }) => {
     )`
   ];
 
+  const combinedQuery = queries.join(';\n');
   const results: Array<{ ok: boolean; q: string; err?: string }> = [];
-  for (const q of queries) {
-    try {
-      await sql(q as TemplateStringsArray & string);
+
+  try {
+    // Execute all queries in a single round-trip using unsafe for raw string execution
+    await sql.unsafe(combinedQuery);
+    // If successful, mark all as ok
+    for (const q of queries) {
       results.push({ ok: true, q: q.slice(0, 60) });
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
+    }
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    // If the batch fails, we report the error for all.
+    // This changes behavior from sequential execution (where it would continue on error),
+    // but setup queries are typically dependent and batching is the requested optimization.
+    for (const q of queries) {
       results.push({ ok: false, q: q.slice(0, 60), err: msg });
     }
   }
