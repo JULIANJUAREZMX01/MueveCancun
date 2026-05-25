@@ -1,9 +1,10 @@
 {
   "ci": {
     "collect": {
+      "startServerCommand": "pnpm run preview",
       "url": [
-        "https://mueve-cancun.vercel.app/es/home",
-        "https://mueve-cancun.vercel.app/es/rutas"
+        "http://localhost:4321/es/home",
+        "http://localhost:4321/es/rutas"
       ],
       "numberOfRuns": 1,
       "settings": {
