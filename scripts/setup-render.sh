@@ -18,7 +18,7 @@ log "Memoria configurada (max-old-space-size=3072)"
 # 3. Setup PNPM via native activation
 log "Activando pnpm..."
 corepack enable
-corepack prepare pnpm@9.15.4 --activate
+corepack prepare pnpm@9.15.9 --activate
 
 # 4. Dependencies & Build Sequence
 log "Instalando dependencias y ejecutando build..."
