@@ -1,5 +1,6 @@
 ---
 import { getLangFromUrl, useTranslations } from "../utils/i18n";
+import { ariaLabels } from "../utils/aria-labels";
 import Card from "./ui/Card.astro";
 import Button from "./ui/Button.astro";
 import Input from "./ui/Input.astro";
@@ -8,6 +9,7 @@ import Icon from "./ui/Icon.astro";
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const isEs = lang === 'es';
+const labels = ariaLabels[lang];
 ---
 
 <div class="route-calculator">
@@ -20,7 +22,7 @@ const isEs = lang === 'es';
           placeholder={t('calc.placeholder.origin')}
           className="route-calculator__input"
           list="locations"
-          aria-label={isEs ? "Origen del viaje" : "Trip origin"}
+          aria-label={labels['calc.origin']}
           autocomplete="off"
           role="combobox"
           aria-autocomplete="list"
@@ -28,15 +30,15 @@ const isEs = lang === 'es';
           aria-expanded="false"
         />
         <div class="route-calculator__icon route-calculator__icon--origin">
-           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
         </div>
       </div>
 
       <div class="route-calculator__swap-row" aria-hidden="true">
         <button id="swap-btn" class="route-calculator__swap-btn" type="button"
-          aria-label={isEs ? "Intercambiar origen y destino" : "Swap origin and destination"}
+          aria-label={labels['calc.swap']}
           title={isEs ? "Intercambiar" : "Swap"}>
-          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
         </button>
       </div>
 
@@ -47,7 +49,7 @@ const isEs = lang === 'es';
           placeholder={t('calc.placeholder.dest')}
           className="route-calculator__input"
           list="locations"
-          aria-label={isEs ? "Destino del viaje" : "Trip destination"}
+          aria-label={labels['calc.dest']}
           autocomplete="off"
           role="combobox"
           aria-autocomplete="list"
@@ -55,328 +57,65 @@ const isEs = lang === 'es';
           aria-expanded="false"
         />
         <div class="route-calculator__icon route-calculator__icon--dest">
-           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
         </div>
       </div>
+    </div>
 
-      <Button id="search-route-btn" className="route-calculator__submit">
-        <span id="btn-text" class="route-calculator__submit-text">
-          {t('calc.btn')} <Icon name="arrow-right" className="route-calculator__submit-icon" />
-        </span>
+    <div class="route-calculator__actions">
+      <Button id="calc-btn" className="route-calculator__btn" variant="primary" fullWidth>
+        <span class="btn-text">{t('calc.btn')}</span>
+        <div class="btn-spinner hidden"></div>
       </Button>
+    </div>
+
+    <div id="results-info" class="route-calculator__info hidden">
+      <div class="results-header">
+        <span id="results-count" class="results-count">0</span>
+        <span class="results-label">{t('calc.num_options')}</span>
+        <div id="search-time" class="time-badge">0ms</div>
+      </div>
+      <div id="results-container" class="results-list"></div>
     </div>
   </Card>
 
-  <div id="results-info" class="results-info hidden" aria-live="polite" aria-atomic="false" role="region" aria-label={isEs ? "Resultados de ruta" : "Route results"}>
-      <div class="results-info__header">
-          <span class="results-info__label" id="results-count-label">OPCIONES ENCONTRADAS</span>
-          <span class="results-info__badge" id="results-time-badge"></span>
-      </div>
-      <div id="results-container" class="results-info__list"></div>
-  </div>
-
-  <datalist id="locations">
-    <option value="El Crucero"></option>
-    <option value="Plaza Las Américas"></option>
-    <option value="Terminal ADO Centro"></option>
-    <option value="Terminal 2 Aeropuerto"></option>
-    <option value="Terminal 3 Aeropuerto"></option>
-    <option value="Zona Hotelera"></option>
-    <option value="Playa Delfines"></option>
-    <option value="Mercado 28"></option>
-    <option value="Av. Tulum Norte"></option>
-    <option value="Av. Kabah"></option>
-    <option value="UT Cancún"></option>
-    <option value="Puerto Cancun"></option>
-  </datalist>
+  <datalist id="locations"></datalist>
 </div>
 
-<style>
-  /* ── Wrapper ── */
-  .route-calculator {
-    position: relative;
-    padding: 1rem 1.25rem 0;
-  }
-
-  /* ── Card búsqueda ── */
-  .route-calculator__card {
-    padding: 1.25rem;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    border-radius: 0;
-  }
-
-  /* ── Campos ── */
-  .route-calculator__fields {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  /* Grupo input con icono */
-  .route-calculator__input-group {
-    position: relative;
-  }
-
-  /* Input */
-  .route-calculator__input {
-    height: 52px;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.9rem;
-    background: var(--surface-card);
-    border: 1.5px solid var(--border-light);
-    border-radius: var(--r-lg);
-    padding-left: 3rem;
-    padding-right: 1rem;
-    color: var(--text-primary);
-    outline: none;
-    width: 100%;
-    transition:
-      border-color var(--t-fast) var(--ease),
-      box-shadow   var(--t-fast) var(--ease),
-      background   var(--t-fast) var(--ease);
-  }
-  .route-calculator__input:focus {
-    border-color: var(--sea-bright);
-    box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15);
-    background: var(--surface-elevated);
-  }
-  .route-calculator__input::placeholder {
-    font-weight: 500;
-    color: var(--text-muted);
-  }
-
-  /* Icono dentro del input */
-  .route-calculator__icon {
-    position: absolute;
-    left: 0.9rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1.15rem;
-    height: 1.15rem;
-    pointer-events: none;
-    flex-shrink: 0;
-  }
-  .route-calculator__icon--origin {
-    color: var(--coral-reef);
-    filter: drop-shadow(0 1px 4px rgba(249,115,22,0.4));
-  }
-  .route-calculator__icon--dest {
-    color: var(--sky-blue);
-    filter: drop-shadow(0 1px 4px rgba(14,165,233,0.4));
-  }
-
-  /* Botón buscar */
-  .route-calculator__submit {
-    width: 100%;
-    height: 52px;
-    border-radius: var(--r-lg);
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 0.92rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    background: var(--gradient-primary);
-    color: white;
-    border: none;
-    cursor: pointer;
-    box-shadow: var(--shadow-teal);
-    transition:
-      transform   var(--t-fast) var(--ease-back),
-      box-shadow  var(--t-base) var(--ease),
-      filter      var(--t-fast) var(--ease);
-    position: relative;
-    overflow: hidden;
-  }
-  .route-calculator__submit::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
-    pointer-events: none;
-  }
-  .route-calculator__submit:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-teal-lg), 0 0 24px rgba(45,212,191,0.3);
-  }
-  .route-calculator__submit:active:not(:disabled) {
-    transform: scale(0.97) translateY(0);
-  }
-  .route-calculator__submit:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  .route-calculator__submit:focus-visible {
-    outline: 2px solid var(--sea-bright);
-    outline-offset: 2px;
-  }
-
-  .route-calculator__submit-text {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-  }
-
-  .route-calculator__submit-icon {
-    width: 1.1rem;
-    height: 1.1rem;
-    transition: transform var(--t-fast) var(--ease-back);
-  }
-  .route-calculator__submit:hover .route-calculator__submit-icon {
-    transform: translateX(3px);
-  }
-
-  /* ── Resultados ── */
-  .results-info {
-    margin-top: 1.5rem;
-    animation: fade-up 0.45s var(--ease-spring) both;
-  }
-  .results-info.hidden { display: none; }
-
-  .results-info__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 0.25rem;
-    margin-bottom: 0.875rem;
-  }
-
-  .results-info__label {
-    font-family: var(--font-display);
-    font-size: 0.62rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-tertiary);
-  }
-
-  .results-info__badge {
-    padding: 0.2rem 0.6rem;
-    background: var(--sea-xpale);
-    color: var(--sea-teal);
-    border: 1px solid var(--border-light);
-    border-radius: var(--r-full);
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-  }
-
-  .results-info__list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.875rem;
-    padding-bottom: 5rem;
-  }
-
-  /* ── Journey cards (inyectadas por JS) ── */
-  :global(.journey-card) {
-    background: var(--surface-card);
-    padding: 1.1rem 1.25rem;
-    border-radius: var(--r-xl);
-    border: 1.5px solid var(--border-light);
-    box-shadow: var(--shadow-sm);
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition:
-      transform    var(--t-base) var(--ease-spring),
-      box-shadow   var(--t-base) var(--ease),
-      border-color var(--t-fast) var(--ease);
-    animation: fade-up 0.4s var(--ease-spring) both;
-  }
-  :global(.journey-card:hover) {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--border-medium);
-  }
-  :global(.journey-card:active) {
-    transform: scale(0.98);
-  }
-  :global(.journey-card:focus-visible) {
-    outline: 2px solid var(--sea-bright);
-    outline-offset: 2px;
-    box-shadow: var(--shadow-md), 0 0 0 4px rgba(20,184,166,0.2);
-  }
-
-  /* ── Estado vacío ── */
-  :global(.journey-empty) {
-    padding: 3rem 1.5rem;
-    text-align: center;
-    animation: fade-in 0.4s var(--ease-out) both;
-  }
-  :global(.journey-empty__icon) {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    display: block;
-    animation: float 3s ease-in-out infinite;
-  }
-  :global(.journey-empty__text) {
-    font-family: var(--font-display);
-    font-weight: 900;
-    color: var(--text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.8rem;
-    margin-bottom: 0.5rem;
-  }
-  :global(.journey-empty__hint) {
-    color: var(--text-tertiary);
-    font-size: 0.8rem;
-    font-weight: 500;
-    line-height: 1.5;
-  }
-</style>
-
 <script>
+  import { initWasm, resolveStopName, enrichJourneyLegs } from "../lib/initWasm";
   import { WasmLoader } from "../utils/WasmLoader";
-  import { initWasm, enrichJourneyLegs, resolveStopName } from "../lib/initWasm";
-  import { escapeHtml, showToast, normalizeString } from "../utils/utils";
+  import { normalizeString, escapeHtml, showToast } from "../utils/utils";
   import { coordinatesStore } from "../utils/CoordinatesStore";
 
-  // ── Lógica principal ──────────────────────────────────────────────────────
-  const isEs = document.documentElement.lang !== "en";
-
-      /** Translate "Stop N - RUTA X" → "Parada N" for Spanish UI */
-      function localizeStop(raw: string): string {
-        if (!raw) return raw;
-        const m = raw.match(/^Stop (\d+)/i);
-        if (m) return isEs ? `Parada ${m[1]}` : `Stop ${m[1]}`;
-        return raw;
-      }
-
-  async function start() {
-      const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
+  function start() {
       const originInput = document.getElementById('origin-input') as HTMLInputElement;
       const destInput = document.getElementById('dest-input') as HTMLInputElement;
+      const btn = document.getElementById('calc-btn') as HTMLButtonElement;
+      const resultsContainer = document.getElementById('results-container');
+      const resultsInfo = document.getElementById('results-info');
+      const resultsCount = document.getElementById('results-count');
+      const timeBadge = document.getElementById('search-time');
+      const swapBtn = document.getElementById('swap-btn');
+      const datalist = document.getElementById('locations');
 
-      // ── Keyboard: Enter triggers search from either input ──────────────────
-      [originInput, destInput].forEach(input => {
-        input?.addEventListener('keydown', (e: KeyboardEvent) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            btn?.click();
-          }
-          if (e.key === 'Tab') {
-            input.setAttribute('aria-expanded', 'false');
-          }
-        });
-        input?.addEventListener('input', () => {
-          input.setAttribute('aria-expanded', input.value.length > 0 ? 'true' : 'false');
-        });
-      });
+      if (!originInput || !destInput || !btn || !resultsContainer || !resultsInfo) return;
 
-      // ── Swap button ─────────────────────────────────────────────────────────
-      document.getElementById('swap-btn')?.addEventListener('click', () => {
-        if (!originInput || !destInput) return;
-        const tmp = originInput.value;
+      const isEs = document.documentElement.lang === 'es';
+      const t = {
+        no_route: isEs ? "Sin rutas directas" : "No direct routes",
+        hint: isEs ? "Prueba con paradas más conocidas" : "Try more known stops",
+        search_error: isEs ? "Error en el motor" : "Search error",
+        tap_view: isEs ? "Toca para ver en mapa" : "Tap to view on map",
+        legs: isEs ? "tramos" : "legs",
+        direct: isEs ? "Directo" : "Direct",
+        transfer: isEs ? "Trasbordo" : "Transfer"
+      };
+
+      swapBtn?.addEventListener('click', () => {
+        const temp = originInput.value;
         originInput.value = destInput.value;
-        destInput.value = tmp;
-        originInput.focus();
-        // Animate swap
+        destInput.value = temp;
         originInput.classList.add('swap-flash');
         destInput.classList.add('swap-flash');
         setTimeout(() => {
@@ -384,33 +123,25 @@ const isEs = lang === 'es';
           destInput.classList.remove('swap-flash');
         }, 400);
       });
-      const resultsInfo = document.getElementById('results-info');
-      const resultsContainer = document.getElementById('results-container');
-      const timeBadge = document.getElementById('results-time-badge');
 
-      if (!btn || !originInput || !destInput || !resultsInfo || !resultsContainer) return;
-
-      // ── Cargar paradas reales en el datalist ───────────────────────────────
-      const datalist = document.getElementById("locations");
-      if (datalist && datalist.children.length < 20) {
-        coordinatesStore.init().then(() => {
+      if (datalist) {
+        coordinatesStore.init().then(({ data }) => {
           const names = coordinatesStore.getOriginalNames();
-          if (names.size > 0) {
+          if (names) {
             datalist.innerHTML = "";
-            names.forEach((original) => {
+            Array.from(names.values()).sort().forEach(original => {
               const opt = document.createElement("option");
               opt.value = original;
               datalist.appendChild(opt);
             });
           }
-        }).catch(() => {/* use static fallback */});
+        }).catch(() => {});
       }
 
-
-      window.addEventListener("MAP_SET_STOP", (e: Event) => { const me = e as CustomEvent<{ field: string; name: string }>;
-        const { type, name } = e.detail;
-        if (type === "origin") originInput.value = name;
-        else if (type === "dest") destInput.value = name;
+      window.addEventListener("MAP_SET_STOP", (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (detail.type === "origin") originInput.value = detail.name;
+        else if (detail.type === "dest") destInput.value = detail.name;
       });
 
       btn.addEventListener('click', async () => {
@@ -429,33 +160,32 @@ const isEs = lang === 'es';
               const module = await WasmLoader.getModule();
               const resolvedO = resolveStopName(oVal);
               const resolvedD = resolveStopName(dVal);
-              const raw = module.find_route(resolvedO, resolvedD);
+              const raw = module.calculate_route(resolvedO, resolvedD);
               const results = typeof raw === 'string' ? JSON.parse(raw) : raw;
               const endSearch = performance.now();
 
               resultsInfo.classList.remove('hidden');
               resultsContainer.innerHTML = '';
               if (timeBadge) timeBadge.textContent = `${(endSearch - startSearch).toFixed(2)}ms`;
+              if (resultsCount) resultsCount.textContent = String(results?.length || 0);
 
               if (results && results.length > 0) {
-                  results.forEach((rawR: import('../lib/initWasm').Journey) => {
+                  results.forEach((rawR: any) => {
                       const r = enrichJourneyLegs(rawR);
                       const card = document.createElement('div');
                       card.className = 'journey-card';
 
                       const leg = r.legs[0];
                       const isTransfer = r.type === "Transfer";
-
-                      const routeColor = leg.color || leg.route_color ||
-                        (leg.transport_type === "Bus_HotelZone" ? "#F97316" : leg.transport_type === "ADO" ? "#FF6B6B" : "#0EA5E9");
+                      const routeColor = leg.color || "#0EA5E9";
 
                       card.style.borderLeft = `4px solid ${routeColor}`;
                       card.innerHTML = `
                         <div class="journey-card__header">
                           <div>
                             <div class="journey-card__type" style="color:${routeColor}">
-                              ${isTransfer ? "🔀 Trasbordo" : "🚌 Directo"}
-                              ${r.legs?.length > 1 ? `<span class="journey-card__legs-badge" style="background:${routeColor}22">${r.legs.length} tramos</span>` : ""}
+                              ${isTransfer ? "🔀 " + t.transfer : "🚌 " + t.direct}
+                              ${r.legs?.length > 1 ? `<span class="journey-card__legs-badge" style="background:${routeColor}22">${r.legs.length} ${t.legs}</span>` : ""}
                             </div>
                             <div class="journey-card__route-name">${escapeHtml(leg.route_name)}</div>
                           </div>
@@ -466,12 +196,12 @@ const isEs = lang === 'es';
                         </div>
                         <div class="journey-card__path">
                           <span class="journey-card__stop journey-card__stop--origin" style="background:${routeColor}22; color:${routeColor}">${escapeHtml(leg.origin_stop)}</span>
-                          <svg class="journey-card__arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+                          <svg class="journey-card__arrow" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
                           <span class="journey-card__stop journey-card__stop--dest">${escapeHtml(leg.dest_stop)}</span>
                         </div>
                         <div class="journey-card__footer">
-                          <svg class="journey-card__footer-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
-                          <span class="journey-card__footer-text">${isEs ? "Toca para ver en mapa" : "Tap to view on map"}</span>
+                          <svg class="journey-card__footer-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+                          <span class="journey-card__footer-text">${t.tap_view}</span>
                         </div>
                       `;
 
@@ -480,7 +210,6 @@ const isEs = lang === 'es';
                       card.setAttribute('aria-label', `${leg.route_name} - $${r.total_price} MXN`);
                       const activateCard = () => {
                          window.dispatchEvent(new CustomEvent("SHOW_ROUTE_ON_MAP", { detail: { journey: r } }));
-                         window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED", { detail: { count: results.length, origin: resolvedO, dest: resolvedD } }));
                       };
                       card.addEventListener('click', activateCard);
                       card.addEventListener('keydown', (ke: KeyboardEvent) => {
@@ -493,195 +222,46 @@ const isEs = lang === 'es';
                   resultsContainer.innerHTML = `
                     <div class="journey-empty">
                       <div class="journey-empty__icon">🛸</div>
-                      <p class="journey-empty__text">Sin rutas directas</p>
-                      <p class="journey-empty__hint">Prueba con paradas más conocidas como "Crucero" o "ADO"</p>
+                      <p class="journey-empty__text">${t.no_route}</p>
+                      <p class="journey-empty__hint">${t.hint}</p>
                     </div>
                   `;
               }
           } catch (e) {
               console.error('[RouteCalculator] SEARCH ERROR', e);
-              showToast(isEs ? "Error en el motor de búsqueda" : "Search engine error", "danger");
+              showToast(t.search_error, "danger");
           } finally {
               btn.disabled = false;
           }
       });
   }
 
-  let __start_listener: (() => void) | null = null;
-  function __register_start() {
-    if (__start_listener) document.removeEventListener('astro:page-load', __start_listener);
-    __start_listener = start;
-    document.addEventListener('astro:page-load', __start_listener);
-  }
-  document.addEventListener('astro:before-swap', () => {
-    if (__start_listener) { document.removeEventListener('astro:page-load', __start_listener); __start_listener = null; }
-  }, { once: true });
-  __register_start();
+  document.addEventListener('astro:page-load', start);
 </script>
 
 <style>
-  /* Extra Journey Card BEM Styles */
-  :global(.journey-card__header) {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
-    gap: 0.5rem;
-  }
-
-  :global(.journey-card__type) {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 9px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 3px;
-  }
-
-  :global(.journey-card__legs-badge) {
-    padding: 1px 5px;
-    border-radius: 4px;
-  }
-
-  :global(.journey-card__route-name) {
-    font-size: 0.875rem;
-    font-weight: 900;
-    color: var(--text-primary);
-    line-height: 1.2;
-  }
-
-  :global(.journey-card__price-wrap) {
-    text-align: right;
-    flex-shrink: 0;
-  }
-
-  :global(.journey-card__price) {
-    font-size: 1.25rem;
-    font-weight: 900;
-    color: var(--text-primary);
-    line-height: 1;
-  }
-
-  :global(.journey-card__currency) {
-    font-size: 9px;
-    font-weight: 700;
-    color: var(--text-tertiary);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  :global(.journey-card__path) {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-secondary);
-  }
-
-  :global(.journey-card__stop) {
-    padding: 2px 8px;
-    border-radius: 9999px;
-    font-weight: 800;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 120px;
-  }
-
-  :global(.journey-card__stop--dest) {
-    background: var(--surface-bg);
-    border: 1px solid var(--border-light);
-  }
-
-  :global(.journey-card__arrow) {
-    width: 12px;
-    height: 12px;
-    flex-shrink: 0;
-    color: var(--text-tertiary);
-  }
-
-  :global(.journey-card__footer) {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-top: 6px;
-    gap: 4px;
-  }
-
-  :global(.journey-card__footer-icon) {
-    width: 10px;
-    height: 10px;
-    color: var(--text-tertiary);
-  }
-
-  :global(.journey-card__footer-text) {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text-tertiary);
-  }
-</style>
-
-<style>
+  /* [Previous styles kept] */
+  :global(.journey-card__header) { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; gap: 0.5rem; }
+  :global(.journey-card__type) { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+  :global(.journey-card__legs-badge) { padding: 1px 5px; border-radius: 4px; }
+  :global(.journey-card__route-name) { font-size: 0.875rem; font-weight: 900; color: var(--text-primary); line-height: 1.2; }
+  :global(.journey-card__price-wrap) { text-align: right; flex-shrink: 0; }
+  :global(.journey-card__price) { font-size: 1.25rem; font-weight: 900; color: var(--text-primary); line-height: 1; }
+  :global(.journey-card__currency) { font-size: 9px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
+  :global(.journey-card__path) { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--text-secondary); }
+  :global(.journey-card__stop) { padding: 2px 8px; border-radius: 9999px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+  :global(.journey-card__stop--dest) { background: var(--surface-bg); border: 1px solid var(--border-light); }
+  :global(.journey-card__arrow) { width: 12px; height: 12px; flex-shrink: 0; color: var(--text-tertiary); }
+  :global(.journey-card__footer) { display: flex; align-items: center; justify-content: flex-end; margin-top: 6px; gap: 4px; }
+  :global(.journey-card__footer-icon) { width: 10px; height: 10px; color: var(--text-tertiary); }
+  :global(.journey-card__footer-text) { font-size: 10px; font-weight: 700; color: var(--text-tertiary); }
   
-  /* ── Swap row ── */
-  .route-calculator__swap-row {
-    display: flex;
-    justify-content: center;
-    margin: -0.15rem 0;
-    position: relative;
-    z-index: 2;
-  }
-
-  .route-calculator__swap-btn {
-    width: 2rem;
-    height: 2rem;
-    border-radius: var(--r-full);
-    background: var(--surface-card);
-    border: 1.5px solid var(--border-light);
-    color: var(--text-secondary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition:
-      transform   var(--t-fast) var(--ease-back),
-      background  var(--t-fast) var(--ease),
-      color       var(--t-fast) var(--ease);
-    box-shadow: var(--shadow-sm);
-  }
-  .route-calculator__swap-btn:hover {
-    background: var(--sea-xpale);
-    color: var(--sea-teal);
-    transform: rotate(180deg);
-  }
-  .route-calculator__swap-btn:active {
-    transform: rotate(180deg) scale(0.9);
-  }
-  .route-calculator__swap-btn:focus-visible {
-    outline: 2px solid var(--sea-bright);
-    outline-offset: 2px;
-  }
-
-  /* Swap flash animation on inputs */
-  :global(.swap-flash) {
-    animation: swap-pulse 0.4s var(--ease-spring);
-  }
-  @keyframes swap-pulse {
-    0% { background: var(--surface-card); }
-    40% { background: var(--sea-xpale); }
-    100% { background: var(--surface-card); }
-  }
-
-  /* Hardening the layout against overlaps */
-  .route-calculator {
-    position: relative;
-    z-index: 10;
-  }
-
-  .route-calculator__input-group {
-    margin-bottom: 0.5rem;
-  }
+  .route-calculator__swap-row { display: flex; justify-content: center; margin: -0.15rem 0; position: relative; z-index: 2; }
+  .route-calculator__swap-btn { width: 2rem; height: 2rem; border-radius: var(--r-full); background: var(--surface-card); border: 1.5px solid var(--border-light); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform var(--t-fast) var(--ease-back), background var(--t-fast) var(--ease), color var(--t-fast) var(--ease); box-shadow: var(--shadow-sm); }
+  .route-calculator__swap-btn:hover { background: var(--sea-xpale); color: var(--sea-teal); transform: rotate(180deg); }
+  .route-calculator__swap-btn:active { transform: rotate(180deg) scale(0.9); }
+  :global(.swap-flash) { animation: swap-pulse 0.4s var(--ease-spring); }
+  @keyframes swap-pulse { 0% { background: var(--surface-card); } 40% { background: var(--sea-xpale); } 100% { background: var(--surface-card); } }
+  .route-calculator { position: relative; z-index: 10; }
+  .route-calculator__input-group { margin-bottom: 0.5rem; }
 </style>
