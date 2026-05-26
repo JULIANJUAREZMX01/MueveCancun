@@ -1,18 +1,21 @@
-/** Minimal interface for the route-calculator WASM module exports. */
+/**
+ * Nexus Prime WASM Loader - Singleton Pattern
+ * Previene condiciones de carrera en la inicialización del motor de ruteo.
+ */
+
 export interface RouteCalculatorWasm {
-  default(): Promise<void>;
-  validate_operator_funds(balance: number): boolean;
-  load_catalog(json_payload: string): void;
-  load_catalog_core(json_payload: string): void;
-  get_route_by_id(id: string): string;
-  get_all_routes(): string;
-  find_route(origin: string, dest: string): string;
+  load_catalog_core(json: string): void;
+  load_catalog(json: string): void;
+  calculate_route(origin: string, dest: string): string;
+  match_stop(query: string): string;
 }
 
 export class WasmLoader {
   private static instance: WasmLoader;
   private wasmModule: RouteCalculatorWasm | null = null;
-  private loading: Promise<RouteCalculatorWasm> | null = null;
+  private loadingPromise: Promise<RouteCalculatorWasm> | null = null;
+
+  private constructor() {}
 
   static async getModule(): Promise<RouteCalculatorWasm> {
     if (!WasmLoader.instance) {
@@ -23,37 +26,27 @@ export class WasmLoader {
 
   private async ensureLoaded(): Promise<RouteCalculatorWasm> {
     if (this.wasmModule) return this.wasmModule;
-    if (this.loading) return this.loading;
+    if (this.loadingPromise) return this.loadingPromise;
 
-    this.loading = this.loadWasm();
+    this.loadingPromise = this.loadWasm();
     try {
-      const module = await this.loading;
-      this.wasmModule = module;
+      this.wasmModule = await this.loadingPromise;
       return this.wasmModule;
     } finally {
-      this.loading = null;
+      this.loadingPromise = null;
     }
   }
 
   private async loadWasm(): Promise<RouteCalculatorWasm> {
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("WASM load timeout (5s)")), 5000)
-    );
-
     try {
-        if (typeof window === 'undefined') throw new Error('WASM requires browser context');
-        const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
-
-        const loadPromise = (async () => {
-          const module = await import(/* @vite-ignore */ wasmPath) as RouteCalculatorWasm;
-          await module.default();
-          return module;
-        })();
-
-        return await Promise.race([loadPromise, timeoutPromise]);
-    } catch (e) {
-        console.error("Failed to load WASM module", e);
-        throw e;
+      // Importamos el pegamento JS generado por wasm-pack
+      const module = await import('/wasm/route-calculator/route_calculator.js');
+      // Inicializamos el módulo WASM
+      await module.default();
+      return module as unknown as RouteCalculatorWasm;
+    } catch (err) {
+      console.error('[WasmLoader] Failed to load WASM module:', err);
+      throw err;
     }
   }
 }

@@ -44,7 +44,7 @@ async function ensureTables(sql: ReturnType<typeof neon>) {
       last_activity TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )`);
-  } catch (_) { /* already exist */ }
+  } catch { /* already exist */ }
 }
 
 // POST — el cliente envía su posición anónima

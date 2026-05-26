@@ -1,24 +1,30 @@
 ---
 import Icon from "./ui/Icon.astro";
-const isEs = Astro.url.pathname.includes("/es/");
+import { getLangFromUrl, useTranslations } from "../utils/i18n";
+import { ariaLabels } from "../utils/aria-labels";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const isEs = lang === "es";
+const labels = ariaLabels[lang];
 ---
 
 <div class="map-wrapper">
   <div id="map-container" class="map-container">
     <div id="map-fallback" class="map-fallback">
        <div class="map-fallback__spinner"></div>
-       <p class="map-fallback__text">{isEs ? "Cargando Mapa..." : "Loading Map..."}</p>
+       <p class="map-fallback__text">{t('map.loading')}</p>
     </div>
   </div>
 
   <!-- GPS + Controls -->
   <div class="map-controls">
-    <button id="gps-center-btn" class="map-control-btn" aria-label={isEs ? "Centrar GPS" : "Center GPS"}>
+    <button id="gps-center-btn" class="map-control-btn" aria-label={labels['map.gps']}>
        <Icon name="target" class="w-5 h-5" />
     </button>
     <div class="map-tooltip">{isEs ? "Mi ubicación" : "My location"}</div>
 
-    <button id="route-clear-btn" class="map-control-btn map-control-btn--danger" aria-label={isEs ? "Limpiar ruta" : "Clear route"}>
+    <button id="route-clear-btn" class="map-control-btn map-control-btn--danger" aria-label={labels['map.clear']}>
        <Icon name="x" class="w-5 h-5" />
     </button>
   </div>
@@ -26,8 +32,8 @@ const isEs = Astro.url.pathname.includes("/es/");
   <!-- Legend -->
   <div id="route-legend" class="map-legend hidden">
     <div class="map-legend__header">
-      <span class="map-legend__title">Rutas Principales</span>
-      <button class="map-legend__close" onclick="document.getElementById('route-legend').classList.add('hidden')">
+      <span class="map-legend__title">{t('map.legend_title')}</span>
+      <button class="map-legend__close" aria-label={labels['map.legend_close']} onclick="document.getElementById('route-legend').classList.add('hidden')">
         <Icon name="x" class="w-4 h-4" />
       </button>
     </div>
@@ -37,7 +43,7 @@ const isEs = Astro.url.pathname.includes("/es/");
   <!-- Route Banner -->
   <div id="route-banner" class="map-banner hidden">
       <div class="map-banner__indicator"></div>
-      <p id="route-banner-text" class="map-banner__text">Ruta trazada</p>
+      <p id="route-banner-text" class="map-banner__text">{t('map.route_drawn')}</p>
   </div>
 </div>
 
@@ -54,8 +60,6 @@ const isEs = Astro.url.pathname.includes("/es/");
   let stopMarkersLayer: LayerGroup | null = null;
   let activeJourney: import('../lib/initWasm').Journey | null = null;
 
-  // ── Route drawing ────────────────────────────────────────────────────────
-
   function drawRoute(mapInstance: Map, journey: import('../lib/initWasm').Journey, currentLayerGroup: LayerGroup | null, coordsDB: globalThis.Map<string,[number,number]> | Record<string,[number,number]>) {
     if (!mapInstance || !journey) return null;
     if (currentLayerGroup) mapInstance.removeLayer(currentLayerGroup);
@@ -71,7 +75,7 @@ const isEs = Astro.url.pathname.includes("/es/");
       const legCoords = stops
         .map((s) => {
           const name = normalizeString(s.nombre || s.name || "");
-          return coordsDB instanceof Map ? coordsDB.get(name) : coordsDB[name];
+          return coordsDB instanceof Map ? coordsDB.get(name) : (coordsDB as Record<string,[number,number]>)[name];
         })
         .filter(Boolean) as [number, number][];
 
@@ -96,337 +100,68 @@ const isEs = Astro.url.pathname.includes("/es/");
     return lg;
   }
 
-  // ── Map init ─────────────────────────────────────────────────────────────
-
   async function initMap() {
-    if (typeof window === "undefined") return false;
-
     const mapContainer = document.getElementById("map-container");
-    if (!mapContainer) return false;
-    if (mapContainer.dataset.initialized === "true") return true;
+    if (!mapContainer || mapContainer.dataset.initialized === "true") return;
 
-    // ── 1. Cargar Leaflet (CSS + JS) ────────────────────────────────────
-    try {
-      await loadLeaflet();
-    } catch (err) {
-      console.error("[MapInit] Leaflet load failed:", err);
-      const fallback = document.getElementById("map-fallback");
-      if (fallback) {
-        (fallback.querySelector(".map-fallback__text") as HTMLElement).textContent = "Error cargando mapa";
-        fallback.style.opacity = "1";
-      }
-      return false;
-    }
-
+    await loadLeaflet();
     const L = window.L;
-    if (!L) return false;
 
-    // ── 2. Fix de iconos Leaflet con bundlers (SVG gigante en mobile) ───
-    delete (L.Icon.Default.prototype as Record<string,unknown>)._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-    });
-
-    // ── 3. Crear instancia del mapa ─────────────────────────────────────
-    map = L.map("map-container", {
+    map = L.map('map-container', {
       center: [21.1619, -86.8515],
       zoom: 13,
       zoomControl: false,
-      attributionControl: false,
+      attributionControl: false
     });
 
-    L.control.zoom({ position: 'topright' }).addTo(map);
-
-    // CartoDB Voyager — tiles limpios, sin bold names
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       subdomains: 'abcd',
+      maxZoom: 20
     }).addTo(map);
 
     layerGroup = L.layerGroup().addTo(map);
+    stopMarkersLayer = L.layerGroup().addTo(map);
 
-    // ── 4. Inicializar coords store + WASM en paralelo ─────────────────
-    const [coordsDB] = await Promise.all([
-      coordinatesStore.init().then(() => coordinatesStore.getAll()),
-      initWasm().catch(() => null),
-    ]);
+    await coordinatesStore.init();
+    const coordsDB = coordinatesStore.getAll();
 
-    // ── 5. Leyenda de rutas ─────────────────────────────────────────────
-    function updateLegend(routes: RouteEntry[]) {
-      const legendContent = document.getElementById('legend-content');
-      if (!legendContent) return;
-      legendContent.innerHTML = '';
-      routes.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '')).forEach(r => {
-        const item = document.createElement('div');
-        item.className = 'map-legend__item';
-        const color = r.color || TRANSPORT_TYPE_COLORS["Bus_Urban"];
-        item.innerHTML = `<div class="map-legend__dot" style="background:${color}"></div>
-                          <span class="map-legend__item-name">${escapeHtml(r.nombre || r.name || r.id)}</span>`;
-        item.addEventListener("click", () => document.getElementById('route-legend')?.classList.add('hidden'));
-        legendContent.appendChild(item);
-      });
-    }
-
-    if (window.WASM_ROUTES) updateLegend(window.WASM_ROUTES);
-    window.addEventListener('WASM_ENGINE_READY', (e: Event) => { const ev = e as CustomEvent<{ routes: import('../lib/initWasm').RouteEntry[] }>;
-      if (e.detail?.routes) updateLegend(e.detail.routes);
-    });
-
-    // ── 6. Paradas en el mapa ───────────────────────────────────────────
-    const allStops = coordsDB instanceof Map
-      ? Array.from(coordsDB.entries())
-      : Object.entries(coordsDB || {});
-
-    let hubSet: Map<string, number> = new Map();
-    try {
-      const hubsResp = await fetch('/data/hubs.json');
-      if (hubsResp.ok) {
-        const hubsData: Array<{name: string; route_count: number}> = await hubsResp.json();
-        hubsData.forEach(h => hubSet.set(normalizeString(h.name), h.route_count));
-      }
-    } catch {}
-
-    const wasmRoutes: RouteEntry[] = window.WASM_ROUTES ?? [];
-    const landmarkMap: Map<string, string> = new Map();
-    wasmRoutes.forEach((r: RouteEntry) => {
-      (r.paradas || []).forEach((p) => {
-        if ((p as Record<string,unknown>).landmarks) landmarkMap.set(normalizeString(p.nombre ?? ''), (p as Record<string,unknown>).landmarks as string);
-      });
-    });
-
-    const markerLayers: CircleMarker[] = [];
-    allStops.forEach(([key, coords]: [string, [number, number]]) => {
-      const displayName = coordinatesStore.getOriginalName(key) || key;
-      const hubRouteCount = hubSet.get(key) ?? 0;
-      const isHub = hubRouteCount >= 3;
-      const landmark = landmarkMap.get(key);
-      const color = isHub ? '#F97316' : landmark ? '#8B5CF6' : TRANSPORT_TYPE_COLORS["Bus_Urban"];
-
-      markerLayers.push(
-        L.circleMarker(coords, {
-          radius: isHub ? 9 : 5,
-          fillColor: color,
-          color: "#FFFFFF",
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.9,
-        }).bindPopup(`
-          <div style="min-width:160px;padding:4px">
-            <p style="font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px">${escapeHtml(displayName)}</p>
-            <p style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
-            <div style="display:flex;flex-direction:column;gap:4px">
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
-            </div>
-          </div>
-        `)
-      );
-    });
-
-    if (markerLayers.length) {
-      stopMarkersLayer = L.layerGroup(markerLayers).addTo(map);
-    }
-
-    // Fit a Cancún
-    map.fitBounds([[21.03, -87.05], [21.35, -86.75]], { padding: [30, 30] });
-
-    // Ocultar fallback
-    const fallback = document.getElementById("map-fallback");
-    if (fallback) {
-      fallback.style.opacity = "0";
-      setTimeout(() => { fallback.style.display = "none"; }, 500);
-    }
-
-    // ── 7. Eventos del mapa ─────────────────────────────────────────────
-    map.on("click", (e: import("leaflet").LeafletMouseEvent) => {
-      const { lat, lng } = e.latlng;
-      const result = coordinatesStore.findNearestWithDistance(lat, lng);
-      if (!result || result.distanceKm > 0.8) return;
-
-      const c = (coordsDB instanceof Map
-        ? coordsDB.get(normalizeString(result.name))
-        : (coordsDB as Record<string,[number,number]>)[normalizeString(result.name)]) || [lat, lng];
-
-      L.popup()
-        .setLatLng(c as [number,number])
-        .setContent(`
-          <div class="map-popup">
-            <p class="map-popup__title">${escapeHtml(result.name)}</p>
-            <p style="font-size:10px;color:#64748b;margin:0 0 6px">${(result.distanceKm * 1000).toFixed(0)} m</p>
-            <div class="map-popup__actions">
-              <button data-stop-name="${escapeHtml(result.name)}" data-action="origin" class="js-map-stop-action map-popup__btn map-popup__btn--origin">🟠 Salgo de aquí</button>
-              <button data-stop-name="${escapeHtml(result.name)}" data-action="dest"   class="js-map-stop-action map-popup__btn map-popup__btn--dest">🔵 Voy aquí</button>
-            </div>
-          </div>
-        `)
-        .openOn(map);
-    });
-
-    window.addEventListener("SHOW_ROUTE_ON_MAP", (e: Event) => { const se = e as CustomEvent<{ journey: import('../lib/initWasm').Journey }>;
-      const rawJourney = e.detail?.journey;
-      if (!rawJourney) return;
-      const journey = enrichJourneyLegs(rawJourney);
+    window.addEventListener("SHOW_ROUTE_ON_MAP", (e: Event) => {
+      const journey = (e as CustomEvent).detail.journey;
+      if (!map || !journey) return;
       activeJourney = journey;
-      const newLg = drawRoute(map, journey, layerGroup, coordsDB);
-      if (newLg) layerGroup = newLg;
+      layerGroup = drawRoute(map, journey, layerGroup, coordsDB);
 
-      const bannerText = document.getElementById("route-banner-text");
       const banner = document.getElementById("route-banner");
-      if (bannerText && banner) {
-        bannerText.textContent = journey.legs?.[0]?.route_name || "Ruta trazada";
+      const bannerText = document.getElementById("route-banner-text");
+      if (banner && bannerText) {
         banner.classList.remove("hidden");
+        const isEs = document.documentElement.lang === "es";
+        bannerText.textContent = journey.legs?.[0]?.route_name || (isEs ? "Ruta trazada" : "Route drawn");
       }
     });
 
-    // GPS dot via telemetry
-    let gpsDot: CircleMarker | null = null;
-    let gpsAccCircle: Circle | null = null;
-    window.addEventListener('mc:position', (e: Event) => {
-      const { lat, lng, accuracy } = (e as CustomEvent<{ lat: number; lng: number; accuracy: number }>).detail ?? {};
-      if (!lat || !lng || !map) return;
-      const pos: [number, number] = [lat, lng];
-      if (!gpsDot) {
-        gpsDot = L.circleMarker(pos, {
-          radius: 10, fillColor: '#3B82F6', color: '#FFFFFF',
-          weight: 3, opacity: 1, fillOpacity: 0.95,
-          className: 'gps-dot'
-        }).bindPopup('<b>📍 Tu ubicación</b>').addTo(map);
-        gpsAccCircle = L.circle(pos, {
-          radius: accuracy ?? 40, color: '#3B82F6',
-          fillColor: '#3B82F6', fillOpacity: 0.12, weight: 1
-        }).addTo(map);
-      } else {
-        gpsDot.setLatLng(pos);
-        gpsAccCircle.setLatLng(pos);
-        if (accuracy) gpsAccCircle.setRadius(accuracy);
-      }
-    });
-
-    // GPS center button — soft prompt + retry + ARIA states
-    const gpsBtn = document.getElementById("gps-center-btn") as HTMLButtonElement | null;
+    const gpsBtn = document.getElementById("gps-center-btn");
     let gpsRequesting = false;
 
-    // ── Auto-follow (long-press activation) ──────────────────────────────
-    let autoFollow = false;
-    let followWatchId: number | null = null;
-    let longPressTimer: ReturnType<typeof setTimeout> | null = null;
-    const LONG_PRESS_MS = 600;
-
-    function startAutoFollow(): void {
-      if (autoFollow) { stopAutoFollow(); return; } // toggle off
-      autoFollow = true;
-      if (gpsBtn) {
-        gpsBtn.classList.add('gps-follow-active');
-        gpsBtn.setAttribute('aria-label', isEs ? 'Seguimiento GPS activo' : 'GPS tracking active');
-        gpsBtn.setAttribute('aria-pressed', 'true');
-      }
-      // Show visual feedback toast
-      import('../utils/utils').then(({ showToast }) =>
-        showToast(isEs ? '📍 Seguimiento GPS activo' : '📍 GPS tracking active', 'info')
-      );
-      // Watch position
-      if ('geolocation' in navigator) {
-        followWatchId = navigator.geolocation.watchPosition(
-          (pos) => {
-            if (!autoFollow || !map) return;
-            const { latitude: lat, longitude: lng } = pos.coords;
-            map.setView([lat, lng], map.getZoom() < 15 ? 16 : map.getZoom(), { animate: true });
-            window.dispatchEvent(new CustomEvent('mc:position', {
-              detail: { lat, lng, accuracy: pos.coords.accuracy }
-            }));
-          },
-          () => stopAutoFollow(),
-          { enableHighAccuracy: true, maximumAge: 2000, timeout: 10_000 },
-        );
-      }
-    }
-
-    function stopAutoFollow(): void {
-      autoFollow = false;
-      if (followWatchId !== null) {
-        navigator.geolocation.clearWatch(followWatchId);
-        followWatchId = null;
-      }
-      if (gpsBtn) {
-        gpsBtn.classList.remove('gps-follow-active');
-        gpsBtn.setAttribute('aria-pressed', 'false');
-        setGpsBtnState('idle');
-      }
-    }
-
-    // Stop auto-follow when user manually pans the map
-    if (map) {
-      map.on('dragstart', () => { if (autoFollow) stopAutoFollow(); });
-    }
-
-    function setGpsBtnState(state: 'idle' | 'requesting' | 'denied' | 'timeout' | 'granted') {
-      if (!gpsBtn) return;
-      const labels: Record<string, string> = {
-        idle: isEs ? 'Mi ubicación' : 'My location',
-        requesting: isEs ? 'Buscando GPS…' : 'Finding GPS…',
-        denied: isEs ? 'Permiso denegado' : 'Permission denied',
-        timeout: isEs ? 'GPS tardó mucho' : 'GPS timed out',
-        granted: isEs ? 'Ubicación encontrada' : 'Location found',
-      };
-      gpsBtn.setAttribute('aria-label', labels[state] ?? labels['idle']);
-      gpsBtn.dataset.gpsState = state;
-      gpsBtn.disabled = state === 'requesting';
-      // Update tooltip text
-      const tooltip = gpsBtn.nextElementSibling as HTMLElement | null;
-      if (tooltip?.classList.contains('map-tooltip')) tooltip.textContent = labels[state] ?? labels['idle'];
-    }
-
-    // Long-press → start auto-follow
-    const cancelLongPress = (): void => {
-      if (longPressTimer !== null) { clearTimeout(longPressTimer); longPressTimer = null; }
+    const setGpsBtnState = (state: string) => {
+      if (gpsBtn) (gpsBtn as HTMLElement).dataset.gpsState = state;
     };
 
-    gpsBtn?.addEventListener('pointerdown', () => {
-      longPressTimer = setTimeout(() => {
-        longPressTimer = null;
-        startAutoFollow();
-      }, LONG_PRESS_MS);
-    });
-    gpsBtn?.addEventListener('pointerup',     cancelLongPress);
-    gpsBtn?.addEventListener('pointerleave',  cancelLongPress);
-    gpsBtn?.addEventListener('pointercancel', cancelLongPress);
-    // Prevent context menu on long-press (mobile)
-    gpsBtn?.addEventListener('contextmenu', (e) => e.preventDefault());
-
     gpsBtn?.addEventListener("click", async () => {
-      if (longPressTimer === null && autoFollow) { stopAutoFollow(); return; } // already handled by longpress
       if (gpsRequesting) return;
       gpsRequesting = true;
       setGpsBtnState('requesting');
 
-      const { requestGeoLocation } = await import('../utils/geoUtils');
-      const result = await requestGeoLocation({
-        timeout: 10_000,
-        onState: (s) => {
-          if (s === 'requesting') setGpsBtnState('requesting');
-          else if (s === 'denied') {
-            setGpsBtnState('denied');
-            // Show retry toast after 2s
-            setTimeout(() => setGpsBtnState('idle'), 3000);
-            import('../utils/utils').then(({ showToast }) =>
-              showToast(isEs ? 'Permiso denegado — actívalo en ajustes del navegador' : 'Permission denied — enable in browser settings', 'warning')
-            );
-          } else if (s === 'timeout') {
-            setGpsBtnState('timeout');
-            setTimeout(() => setGpsBtnState('idle'), 3000);
-            import('../utils/utils').then(({ showToast }) =>
-              showToast(isEs ? 'GPS tardó demasiado. Inténtalo de nuevo.' : 'GPS timed out. Please try again.', 'warning')
-            );
-          } else if (s === 'unavailable') {
-            setGpsBtnState('denied');
-            setTimeout(() => setGpsBtnState('idle'), 3000);
-          }
+      const { getCurrentPosition } = await import("../utils/geolocation");
+      const result = await getCurrentPosition({
+        onPermissionDenied: () => {
+          setGpsBtnState('denied');
+          setTimeout(() => setGpsBtnState('idle'), 3000);
         },
+        onError: () => {
+          setGpsBtnState('unavailable');
+          setTimeout(() => setGpsBtnState('idle'), 3000);
+        }
       });
 
       if (result) {
@@ -438,29 +173,24 @@ const isEs = Astro.url.pathname.includes("/es/");
       gpsRequesting = false;
     });
 
-    // Clear route button
     document.getElementById("route-clear-btn")?.addEventListener("click", () => {
-      if (layerGroup) { map.removeLayer(layerGroup); layerGroup = L.layerGroup().addTo(map); }
+      if (layerGroup) { map?.removeLayer(layerGroup); layerGroup = L.layerGroup().addTo(map!); }
       activeJourney = null;
       document.getElementById("route-banner")?.classList.add("hidden");
     });
 
-    // Language change
     window.addEventListener('LANGUAGE_CHANGE', (e: Event) => {
       const lang = (e as CustomEvent<{lang:string}>).detail?.lang;
       if (!lang) return;
       window.location.href = window.location.pathname.replace(/^\/(es|en)/, '/' + lang);
     });
 
-    // Force re-render after layout settles
-    setTimeout(() => map.invalidateSize(), 400);
-    setTimeout(() => map.invalidateSize(), 1200);
+    setTimeout(() => map?.invalidateSize(), 400);
+    setTimeout(() => map?.invalidateSize(), 1200);
 
     mapContainer.dataset.initialized = "true";
     return true;
   }
-
-  // ── Popup action delegation ──────────────────────────────────────────────
 
   function handleMapAction(e: Event) {
     const btn = (e.target as HTMLElement)?.closest(".js-map-stop-action") as HTMLElement | null;
@@ -481,10 +211,7 @@ const isEs = Astro.url.pathname.includes("/es/");
     }
   }
 
-  // ── Boot ─────────────────────────────────────────────────────────────────
-
   async function scheduleInit() {
-    // Solo inicializar en la página home que tiene el mapa
     const mapContainer = document.getElementById("map-container");
     if (!mapContainer) return;
     try {
@@ -497,7 +224,6 @@ const isEs = Astro.url.pathname.includes("/es/");
   document.addEventListener('astro:page-load', scheduleInit);
   document.addEventListener("click", handleMapAction);
 
-  // Primer load (sin astro:page-load porque el DOM ya existe)
   if (document.readyState === "complete") {
     scheduleInit();
   } else {
@@ -516,11 +242,9 @@ const isEs = Astro.url.pathname.includes("/es/");
     position: absolute;
     inset: 0;
     background-color: #e8f4f0;
-    /* Fondo caribe mientras carga */
     background-image: linear-gradient(135deg, #e0f2f7 0%, #e8f4f0 50%, #d4edda 100%);
   }
 
-  /* ── Fallback spinner ── */
   .map-fallback {
     position: absolute;
     inset: 0;
@@ -550,7 +274,6 @@ const isEs = Astro.url.pathname.includes("/es/");
     opacity: 0.7;
   }
 
-  /* ── Controls ── */
   .map-controls {
     position: absolute;
     right: 1rem;
@@ -602,7 +325,6 @@ const isEs = Astro.url.pathname.includes("/es/");
   }
   .map-control-btn:hover + .map-tooltip { opacity: 1; }
 
-  /* ── Legend ── */
   .map-legend {
     position: absolute;
     right: 1rem;
@@ -674,7 +396,6 @@ const isEs = Astro.url.pathname.includes("/es/");
     text-overflow: ellipsis;
   }
 
-  /* ── Route Banner ── */
   .map-banner {
     position: absolute;
     top: 1rem;
@@ -710,7 +431,6 @@ const isEs = Astro.url.pathname.includes("/es/");
     margin: 0;
   }
 
-  /* ── Popup global styles ── */
   :global(.map-popup) { min-width: 11rem; padding: 0.25rem; }
   :global(.map-popup__title) { font-weight: 900; color: #0f172a; font-size: 0.825rem; margin: 0 0 2px; }
   :global(.map-popup__actions) { display: flex; flex-direction: column; gap: 0.25rem; }
@@ -718,9 +438,7 @@ const isEs = Astro.url.pathname.includes("/es/");
   :global(.map-popup__btn--origin) { background: #f97316; }
   :global(.map-popup__btn--dest) { background: #0ea5e9; }
 
-  /* ── GPS dot pulse ── */
   :global(.gps-dot) { animation: gps-pulse 2s infinite; }
-  /* GPS button state styles */
   .map-control-btn[data-gps-state="requesting"] {
     animation: spin 1s linear infinite;
     opacity: 0.7;
@@ -743,7 +461,6 @@ const isEs = Astro.url.pathname.includes("/es/");
     0%, 100% { opacity: 1; }
     50% { opacity: 0.6; }
   }
-  /* Auto-follow active state */
   .map-control-btn.gps-follow-active {
     background: var(--sea-teal);
     color: #fff;
@@ -755,7 +472,6 @@ const isEs = Astro.url.pathname.includes("/es/");
     0%, 100% { box-shadow: 0 0 0 4px rgba(45,212,191,0.25), var(--shadow-teal); }
     50%       { box-shadow: 0 0 0 8px rgba(45,212,191,0.10), var(--shadow-teal); }
   }
-  /* Long-press hint ripple */
   .map-control-btn:active:not([disabled]) {
     animation: press-ripple 0.6s ease-out;
   }
@@ -764,7 +480,6 @@ const isEs = Astro.url.pathname.includes("/es/");
     100% { box-shadow: 0 0 0 14px rgba(45,212,191,0); }
   }
 
-  /* ── Keyframes globales ── */
   @keyframes spin {
     to { transform: rotate(360deg); }
   }

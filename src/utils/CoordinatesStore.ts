@@ -1,21 +1,13 @@
 import { logger } from "./logger";
 import { getDistance } from "./geometry";
-import type { RoutesCatalog, RouteData } from "../types";
+import type { RoutesCatalog, RouteData, Stop } from "../lib/types";
 import { SpatialHash } from "./SpatialHash";
 import { normalizeString } from "./utils";
 
-// Define Types
 type Coordinate = { name: string; lat: number; lng: number };
 
-
 export class CoordinatesStore {
-    // 🛡️ SECURITY FIX (Prototype Pollution Prevention)
-    // By using a Map instead of a plain Object (Record<string, ...>),
-    // we prevent attacks where malicious JSON payload keys like "__proto__"
-    // or "constructor" could overwrite JS prototype chain methods,
-    // potentially leading to DoS or bypassing logic checks.
     private db: Map<string, [number, number]> | null = null;
-    // Maps lowercase key → original-cased stop name for display
     private originalNames: Map<string, string> = new Map();
     private spatialIndex: SpatialHash<string> | null = null;
     private loadingPromise: Promise<{ text: string, data: RoutesCatalog | Partial<RoutesCatalog> }> | null = null;
@@ -30,10 +22,10 @@ export class CoordinatesStore {
 
         this.loadingPromise = (async () => {
             try {
-                let data = initialData;
+                let data = initialData as RoutesCatalog | Partial<RoutesCatalog>;
                 let text = "";
 
-                if (data) {
+                if (data && 'rutas' in data) {
                     logger.log("[CoordinatesStore] ⚡ Using injected data (Skipped Fetch)");
                     text = JSON.stringify(data);
                 } else {
@@ -52,38 +44,34 @@ export class CoordinatesStore {
                         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`, { cause: e });
                         text = await res.text();
                     }
-                    data = JSON.parse(text);
+                    data = JSON.parse(text) as RoutesCatalog;
                 }
 
                 this.db = new Map<string, [number, number]>();
                 this.originalNames = new Map<string, string>();
-                this.spatialIndex = new SpatialHash<string>(); // Initialize SpatialHash
-                this.allPoints = []; // Clear on re-init to prevent duplicates
+                this.spatialIndex = new SpatialHash<string>();
+                this.allPoints = [];
                 this.nearestCache.clear();
                 
                 if (data.rutas) {
-                    // First pass: collect into Map (auto-deduplicates by normalized key)
                     const rawMap = new Map<string, { nombre: string; lat: number; lng: number }>();
                     data.rutas.forEach((route: RouteData) => {
-                        route.paradas.forEach(stop => {
-                            const lat = stop.lat ?? stop.latitude;
-                            const lng = stop.lng ?? stop.longitude ?? stop.lon;
+                        route.paradas.forEach((stop: Stop) => {
+                            const lat = stop.lat;
+                            const lng = stop.lng;
                             if (lat == null || lng == null || typeof lat !== 'number' || typeof lng !== 'number') return;
                             const key = normalizeString(stop.nombre);
-                            // Only keep first occurrence (prevents duplicate spatial inserts)
                             if (!rawMap.has(key)) {
                                 rawMap.set(key, { nombre: stop.nombre.trim(), lat, lng });
                             }
                         });
                     });
 
-                    // Second pass: populate db, originalNames (deduped)
                     for (const [key, { nombre, lat, lng }] of rawMap.entries()) {
                         if (this.db) this.db.set(key, [lat, lng]);
                         this.originalNames.set(key, nombre);
                     }
                 }
-                // Populate Spatial Index and List (guaranteed no duplicates)
                 if (this.db) {
                     for (const [name, coords] of this.db.entries()) {
                          const lat = coords[0];
@@ -96,34 +84,31 @@ export class CoordinatesStore {
                 return { text, data };
             } catch (e) {
                 console.error("[CoordinatesStore] Failed to load data", e);
-                return { text: "{}", data: {} };
+                return { text: "{}", data: { rutas: [] } };
             }
         })();
 
         return this.loadingPromise;
     }
 
-    getCoordinates(stopName: string) {
+    getCoordinates(stopName: string): [number, number] | null {
         if (!this.db) return null;
         const key = normalizeString(stopName);
         return this.db.get(key) || null;
     }
 
-    getDB() {
+    getDB(): Map<string, [number, number]> | null {
         return this.db;
     }
 
-    /** Returns all coordinates as a Map (alias para compatibilidad con InteractiveMap). */
     getAll(): Map<string, [number, number]> {
         return this.db ?? new Map();
     }
 
-    /** Returns the original-cased stop name for a given key (lowercase lookup). */
     getOriginalName(key: string): string | undefined {
         return this.originalNames.get(normalizeString(key));
     }
 
-    /** Returns the full map of lowercase key → original-cased name. */
     getOriginalNames(): Map<string, string> {
         return this.originalNames;
     }
@@ -132,15 +117,12 @@ export class CoordinatesStore {
         return this.findNearestWithDistance(lat, lng)?.name ?? null;
     }
 
-    /** Returns the nearest stop with its distance in km.  Returns null if no stops are indexed. */
     findNearestWithDistance(lat: number, lng: number): { name: string; distanceKm: number } | null {
         if (!this.db) return null;
 
-        // 1. Check Cache (LRU-ish)
         const cacheKey = `${lat.toFixed(5)},${lng.toFixed(5)}`;
         const cached = this.nearestCache.get(cacheKey);
         if (cached) {
-            // Move to end to maintain LRU
             this.nearestCache.delete(cacheKey);
             this.nearestCache.set(cacheKey, cached);
             return cached;
@@ -149,7 +131,6 @@ export class CoordinatesStore {
         let minDist = Infinity;
         let nearestKey: string | null = null;
 
-        // 2. O(1) Spatial Hash first
         if (this.spatialIndex) {
             const candidates = this.spatialIndex.query(lat, lng);
             for (const point of candidates) {
@@ -161,16 +142,11 @@ export class CoordinatesStore {
             }
         }
 
-        // 3. O(N) global search only when spatial hash returned no candidates
         if (minDist === Infinity && this.allPoints.length > 0) {
-            // Pre-calculate degrees to km conversion roughly (constant)
-            // 1 degree lat ≈ 111km. 1 degree lng ≈ 111km * cos(lat)
             const latRad = lat * Math.PI / 180;
             const kLat = 111;
             const kLng = 111 * Math.cos(latRad);
 
-            // Find an initial candidate using fast equirectangular approximation
-            // to provide a better bound for pruning.
             let initialCandidate: Coordinate | null = null;
             let bestApproxDistSq = Infinity;
             for (const point of this.allPoints) {
@@ -183,17 +159,14 @@ export class CoordinatesStore {
                 }
             }
 
-            // Now we have a good candidate, get its real distance
             if (initialCandidate) {
                 nearestKey = initialCandidate.name;
                 minDist = getDistance(lat, lng, initialCandidate.lat, initialCandidate.lng);
 
-                // Final pass with pruning
                 const thresholdLat = minDist / kLat;
                 const thresholdLng = minDist / Math.abs(kLng);
 
                 for (const point of this.allPoints) {
-                    // Bounding box pruning
                     if (Math.abs(point.lat - lat) > thresholdLat || Math.abs(point.lng - lng) > thresholdLng) {
                         continue;
                     }
@@ -212,7 +185,6 @@ export class CoordinatesStore {
         const name = this.originalNames.get(nearestKey) || nearestKey;
         const result = { name, distanceKm: minDist };
 
-        // Save to cache
         this.nearestCache.set(cacheKey, result);
         if (this.nearestCache.size > this.MAX_CACHE_SIZE) {
             const firstKey = this.nearestCache.keys().next().value;
