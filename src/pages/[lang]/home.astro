@@ -2,6 +2,7 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import RouteCalculator from '../../components/RouteCalculator.astro';
 import LiveStatsBar from '../../components/LiveStatsBar.astro';
+import InteractiveMap from '../../components/InteractiveMap.astro';
 import { getLangFromUrl } from '../../utils/i18n';
 const lang = getLangFromUrl(Astro.url);
 const isEs = lang === 'es';
@@ -60,37 +61,20 @@ const heroStats = [
         <div class="trip-status__label" id="trip-status-label">{isEs ? 'Caminando al paradero' : 'Walking to stop'}</div>
         <div class="trip-status__detail" id="trip-status-detail"></div>
       </div>
-      <button id="trip-stop-btn" class="trip-stop-btn" title="{isEs ? 'Terminar viaje' : 'End trip'}">✕</button>
+      <button id="trip-stop-btn" class="trip-stop-btn" title={isEs ? 'Terminar viaje' : 'End trip'}>✕</button>
     </div>
 
     <LiveStatsBar />
 
-    <!-- Map container -->
-    <div id="home-map" class="home-map"></div>
-
-    <!-- Map controls overlay -->
-    <div class="map-controls">
-      <button id="btn-gps-home" class="map-ctrl-btn" title="{isEs ? 'Centrar en mi ubicación' : 'Center on my location'}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-          <circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
-          <circle cx="12" cy="12" r="7" stroke-dasharray="2 2"/>
-        </svg>
-      </button>
-      <button id="btn-tracking" class="map-ctrl-btn" title="{isEs ? 'Buses en tiempo real' : 'Live buses'}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-          <rect x="1" y="7" width="22" height="13" rx="3"/>
-          <path d="M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/>
-          <circle cx="7" cy="17" r="1.5" fill="currentColor"/>
-          <circle cx="17" cy="17" r="1.5" fill="currentColor"/>
-        </svg>
-      </button>
-      <div id="gps-status-dot" class="gps-dot" title="GPS"></div>
+    <!-- Unified Interactive Map -->
+    <div class="home-map">
+       <InteractiveMap />
     </div>
 
     <!-- Bottom sheet calculator -->
     <div id="calculator-sheet" class="calc-sheet">
       <div id="sheet-handle" class="sheet-handle" role="button" aria-expanded="false" tabindex="0"
-           aria-label="{isEs ? 'Abrir/cerrar calculador' : 'Toggle calculator'}">
+           aria-label={isEs ? 'Abrir/cerrar calculador' : 'Toggle calculator'}>
         <div class="handle-bar"></div>
         <span class="handle-label" id="handle-label">{isEs ? '¿A dónde vas?' : 'Where to?'}</span>
         <div class="handle-actions">
@@ -148,15 +132,16 @@ const heroStats = [
 .hero-logo { flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2)); }
 .hero-name { font-family: var(--font-display); font-size: 1rem; font-weight: 800; color: white; line-height: 1.2; }
 .hero-tagline { font-size: 0.65rem; color: rgba(255,255,255,0.7); font-weight: 400; }
-.hero-stats { display: flex; gap: 1rem; }
-.hero-stat { text-align: center; }
-.hero-stat__val { display: block; font-family: var(--font-display); font-size: 1rem; font-weight: 800; color: white; line-height: 1; }
-.hero-stat__lbl { display: block; font-size: 0.6rem; color: rgba(255,255,255,0.65); margin-top: 0.1rem; }
 
-/* ── Trip status bar ── */
+.hero-stats { display: flex; gap: 0.75rem; }
+.hero-stat { display: flex; flex-direction: column; align-items: flex-end; }
+.hero-stat__val { font-size: 0.9rem; font-weight: 900; color: white; line-height: 1; }
+.hero-stat__lbl { font-size: 0.6rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── Trip status ── */
 .trip-status-bar {
-  display: flex; align-items: center; gap: 0.75rem;
-  background: var(--sea-teal); color: white;
+  position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--jungle); color: white; display: flex; align-items: center; gap: 0.75rem;
   padding: 0.5rem 1rem; flex-shrink: 0;
   animation: slideDown 0.3s ease;
 }
@@ -168,35 +153,11 @@ const heroStats = [
 .trip-stop-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
 
 /* ── Map ── */
-.home-map { flex: 1; width: 100%; min-height: 0; z-index: 1; }
-
-/* ── Map controls ── */
-.map-controls {
-  position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
-  display: flex; flex-direction: column; gap: 0.4rem; z-index: 400;
-}
-.map-ctrl-btn {
-  width: 40px; height: 40px; border-radius: 12px; border: none;
-  background: var(--glass-bg); backdrop-filter: blur(12px);
-  box-shadow: 0 2px 8px rgba(0,78,95,0.15); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--sea-teal); transition: all 0.15s;
-}
-.map-ctrl-btn:hover { background: var(--sea-pale); transform: scale(1.05); }
-.gps-dot {
-  width: 10px; height: 10px; border-radius: 50%; background: var(--text-muted);
-  margin: 0.2rem auto; transition: background 0.3s;
-  box-shadow: 0 0 0 0 rgba(34,197,94,0.4);
-}
-.gps-dot.active {
-  background: var(--jungle); 
-  animation: gps-pulse 2s ease-in-out infinite;
-}
-@keyframes gps-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); } }
+.home-map { flex: 1; width: 100%; min-height: 0; z-index: 1; position: relative; }
 
 /* ── Quick Actions ── */
 .quick-actions {
-  position: absolute; top: calc(var(--hero-h, 68px) + 0.75rem); left: 50%;
+  position: absolute; top: 0.75rem; left: 50%;
   transform: translateX(-50%); z-index: 400;
   display: flex; gap: 0.5rem;
   background: var(--glass-bg); backdrop-filter: blur(16px);
@@ -254,109 +215,25 @@ const heroStats = [
 </style>
 
 <script>
-import { loadLeaflet } from '../../utils/leafletLoader';
-
-let map: L.Map | null = null;
-let busMarkers: Map<string, L.Marker> = new Map();
-let userMarker: L.CircleMarker | null = null;
-let refreshTimer: ReturnType<typeof setInterval> | null = null;
-
-function createBusIconSimple(color: string, heading: number): L.DivIcon {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
-    <g transform="rotate(${heading},18,18)">
-      <rect x="5" y="5" width="26" height="22" rx="5" fill="${color}"/>
-      <rect x="8" y="8" width="8" height="7" rx="2" fill="#e0f2fe" opacity="0.9"/>
-      <rect x="20" y="8" width="8" height="7" rx="2" fill="#e0f2fe" opacity="0.9"/>
-      <circle cx="10" cy="27" r="3.5" fill="#1e293b"/>
-      <circle cx="26" cy="27" r="3.5" fill="#1e293b"/>
-    </g>
-  </svg>`;
-  return L.divIcon({ html: svg, iconSize: [36, 36], iconAnchor: [18, 27], className: 'bus-marker-svg' });
-}
-
-async function initMap() {
-  const el = document.getElementById('home-map');
-  if (!el || map) return;
-
-  await loadLeaflet();
-  const L = window.L as typeof import('leaflet');
-  if (!L) return;
-
-  map = L.map('home-map', {
-    center: [21.1619, -86.8515], zoom: 13,
-    zoomControl: false, attributionControl: false
-  });
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
-
-  // GPS
-  const gpsDot = document.getElementById('gps-status-dot');
-  navigator.geolocation?.watchPosition(
-    (pos) => {
-      gpsDot?.classList.add('active');
-      const latlng: L.LatLngExpression = [pos.coords.latitude, pos.coords.longitude];
-      if (userMarker) userMarker.setLatLng(latlng);
-      else {
-        userMarker = L.circleMarker(latlng, {
-          radius: 8, fillColor: '#3b82f6', fillOpacity: 1,
-          color: 'white', weight: 2
-        }).addTo(map!);
-      }
-    },
-    () => gpsDot?.classList.remove('active'),
-    { enableHighAccuracy: true }
-  );
-
-  // Buses iniciales
-  await loadBuses();
-  refreshTimer = setInterval(loadBuses, 20000);
-}
-
-async function loadBuses() {
-  try {
-    const [trackRes, routesRes] = await Promise.all([
-      fetch('/api/tracking'),
-      fetch('/api/master_routes.json')
-    ]);
-    const units: any[] = await trackRes.json();
-    const routesData = await routesRes.json();
-    const routes = routesData.rutas || routesData;
-    const colorMap: Record<string, string> = {};
-    routes.forEach((r: any) => { colorMap[r.id] = r.color || '#0d9488'; });
-
-    const activeIds = new Set(units.map(u => u.id));
-    busMarkers.forEach((m, id) => { if (!activeIds.has(id)) { m.remove(); busMarkers.delete(id); } });
-
-    units.forEach(u => {
-      const icon = createBusIconSimple(colorMap[u.route_id] || '#0d9488', u.heading || 0);
-      if (busMarkers.has(u.id)) {
-        busMarkers.get(u.id)!.setLatLng([u.lat, u.lng]).setIcon(icon);
-      } else {
-        const m = L.marker([u.lat, u.lng], { icon })
-          .bindPopup(`<b>${u.route_id}</b><br>${u.stop_name || 'En ruta'}`)
-          .addTo(map!);
-        busMarkers.set(u.id, m);
-      }
-    });
-  } catch {}
-}
-
-document.addEventListener('astro:page-load', async () => {
-  await initMap();
-
+document.addEventListener('astro:page-load', () => {
   // Sheet toggle
-  const sheet = document.getElementById('calculator-sheet')!;
-  const handle = document.getElementById('sheet-handle')!;
+  const sheet = document.getElementById('calculator-sheet');
+  const handle = document.getElementById('sheet-handle');
   const handleLabel = document.getElementById('handle-label');
+  if (!sheet || !handle) return;
+
   let isExpanded = false;
 
   function toggleSheet(force?: boolean) {
     isExpanded = force !== undefined ? force : !isExpanded;
-    sheet.classList.toggle('is-expanded', isExpanded);
-    handle.setAttribute('aria-expanded', String(isExpanded));
+    sheet!.classList.toggle('is-expanded', isExpanded);
+    handle!.setAttribute('aria-expanded', String(isExpanded));
     if (handleLabel) handleLabel.textContent = isExpanded
       ? (document.documentElement.lang === 'es' ? 'Calculador de ruta' : 'Route Calculator')
       : (document.documentElement.lang === 'es' ? '¿A dónde vas?' : 'Where to?');
+
+    // Notify map to invalidate size
+    window.dispatchEvent(new CustomEvent('SHEET_TOGGLE', { detail: { isExpanded } }));
   }
 
   handle.addEventListener('click', () => toggleSheet());
@@ -372,39 +249,11 @@ document.addEventListener('astro:page-load', async () => {
     if (Math.abs(delta) > 30) toggleSheet(delta > 0);
   }, { passive: true });
 
-  // GPS btn — con feedback visual
-  const gpsBtn = document.getElementById('btn-gps-home');
-  gpsBtn?.addEventListener('click', () => {
-    if (!navigator.geolocation) return;
-    gpsBtn.classList.add('map-ctrl-btn--active');
-    gpsBtn.setAttribute('aria-label', 'Buscando GPS…');
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        map?.flyTo([pos.coords.latitude, pos.coords.longitude], 16, { duration: 1.2 });
-        gpsBtn.classList.remove('map-ctrl-btn--active');
-        gpsBtn.setAttribute('aria-label', 'Centrar en mi ubicación');
-      },
-      () => {
-        gpsBtn.classList.remove('map-ctrl-btn--active');
-        gpsBtn.setAttribute('aria-label', 'GPS no disponible');
-      },
-      { timeout: 8000, maximumAge: 30000 }
-    );
-  });
-
   // Trip stop btn
   document.getElementById('trip-stop-btn')?.addEventListener('click', () => {
     const bar = document.getElementById('trip-status-bar');
     if (bar) { bar.hidden = true; }
     window.dispatchEvent(new CustomEvent('TRIP_STOPPED'));
-  });
-
-  // Tracking btn
-  const trackBtn = document.getElementById('btn-tracking');
-  trackBtn?.addEventListener('click', () => {
-    const lang = document.documentElement.lang || 'es';
-    trackBtn.classList.add('map-ctrl-btn--active');
-    setTimeout(() => window.location.href = `/${lang}/tracking`, 120);
   });
 
   // Live reports
