@@ -2,9 +2,9 @@
   "name": "cancunmueve-pwa",
   "version": "2.0.0-nexus-prime",
   "type": "module",
-  "packageManager": "pnpm@9.15.4",
+  "packageManager": "pnpm@9.15.9",
   "engines": {
-    "node": ">=22.21.0"
+    "node": ">=22.22.1"
   },
   "pnpm": {
     "overrides": {
