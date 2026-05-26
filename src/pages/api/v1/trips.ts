@@ -77,8 +77,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     return new Response(JSON.stringify({ error: 'action must be: start|end' }), { status: 400 });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+    console.error('POST /api/v1/trips failed:', e);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };
 
@@ -90,6 +90,7 @@ export const GET: APIRoute = async ({ url }) => {
     const trips = await sql`SELECT * FROM mc_trips WHERE device_id=${device_id} ORDER BY started_at DESC LIMIT 20`;
     return new Response(JSON.stringify(trips), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500 });
+    console.error('GET /api/v1/trips failed:', e);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };
