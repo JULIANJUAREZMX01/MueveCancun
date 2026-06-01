@@ -71,7 +71,7 @@ const isEs = Astro.url.pathname.includes("/es/");
         <circle cx="26" cy="27" r="3.5" fill="#1e293b"/>
       </g>
     </svg>`;
-    const L = (window as any).L;
+    const L = window.L;
     if (!L) return null;
     return L.divIcon({ html: svg, iconSize: [36, 36], iconAnchor: [18, 27], className: 'bus-marker-svg' });
   }
@@ -99,7 +99,7 @@ const isEs = Astro.url.pathname.includes("/es/");
         }
       });
 
-      const L = (window as any).L;
+      const L = window.L;
       if (!L) return;
 
       units.forEach(u => {
@@ -140,9 +140,10 @@ const isEs = Astro.url.pathname.includes("/es/");
       return false;
     }
 
-    const L = (window as any).L;
+    const L = window.L;
     if (!L) return false;
 
+    // Fixed default icons for Leaflet
     delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -189,8 +190,8 @@ const isEs = Astro.url.pathname.includes("/es/");
       });
     }
 
-    if ((window as any).WASM_ROUTES) updateLegend((window as any).WASM_ROUTES);
-    window.addEventListener('WASM_ENGINE_READY', (e: any) => {
+    if (window.WASM_ROUTES) updateLegend(window.WASM_ROUTES);
+    window.addEventListener('WASM_ENGINE_READY', (e) => {
       if (e.detail?.routes) updateLegend(e.detail.routes);
     });
 
@@ -226,7 +227,7 @@ const isEs = Astro.url.pathname.includes("/es/");
       }
     } catch {}
 
-    const wasmRoutes = (window as any).WASM_ROUTES ?? [];
+    const wasmRoutes = window.WASM_ROUTES ?? [];
     const landmarkMap = new Map();
     wasmRoutes.forEach((r) => {
       (r.paradas || []).forEach((p) => {
@@ -301,7 +302,7 @@ const isEs = Astro.url.pathname.includes("/es/");
         .openOn(map);
     });
 
-    window.addEventListener("SHOW_ROUTE_ON_MAP", (e: any) => {
+    window.addEventListener("SHOW_ROUTE_ON_MAP", (e) => {
       const rawJourney = e.detail?.journey;
       if (!rawJourney || !map) return;
       const journey = enrichJourneyLegs(rawJourney);
