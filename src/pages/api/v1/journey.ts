@@ -1,124 +1,58 @@
 /**
  * POST /api/v1/journey
  *
- * Multimodal journey planner — busca rutas REALES del catálogo de Cancún.
- * Acepta nombres de paradas o coordenadas.
+ * Multimodal journey planner — busca rutas REALES del catálogo.
+ * Acepta nombres de paradas o coordenadas {lat,lng}.
  * Retorna plans[] con paradas lat/lng para trazar en el mapa.
  */
 
 import type { APIRoute } from 'astro';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { join, dirname } from 'path';
+import { CATALOG_ROUTES, type CatalogRoute, type CatalogStop } from '../../../data/catalog';
 
-// ── Tipos ────────────────────────────────────────────────────────────────────
+// ── Tipos de respuesta ───────────────────────────────────────────────────────
 
-export interface JourneyStop {
-  nombre: string;
-  lat:    number;
-  lng:    number;
-  orden?: number;
+export interface JourneyStop  { nombre: string; lat: number; lng: number; orden?: number }
+export interface JourneyLeg   {
+  mode: string; route_id?: string; route_name?: string;
+  from_stop?: string; to_stop?: string; minutes: number;
+  distance_km: number; fare_mxn: number; co2_grams: number;
+  paradas?: JourneyStop[]; color?: string; transport_type?: string;
+}
+export interface JourneyPlan  {
+  id: string; legs: JourneyLeg[]; total_minutes: number;
+  total_fare_mxn: number; total_co2_grams: number;
+  eco_score: number; budget_score: number; summary: string; priority_used: string;
 }
 
-export interface JourneyLeg {
-  mode:            string;
-  route_id?:       string;
-  route_name?:     string;
-  from_stop?:      string;
-  to_stop?:        string;
-  minutes:         number;
-  distance_km:     number;
-  fare_mxn:        number;
-  co2_grams:       number;
-  paradas?:        JourneyStop[];
-  color?:          string;
-  transport_type?: string;
-}
-
-export interface JourneyPlan {
-  id:              string;
-  legs:            JourneyLeg[];
-  total_minutes:   number;
-  total_fare_mxn:  number;
-  total_co2_grams: number;
-  eco_score:       number;
-  budget_score:    number;
-  summary:         string;
-  priority_used:   string;
-}
-
-interface CatalogStop {
-  nombre?: string;
-  name?:   string;
-  lat:     number;
-  lng:     number;
-  orden?:  number;
-}
-
-interface CatalogRoute {
-  id:       string;
-  nombre?:  string;
-  tarifa?:  number;
-  tipo?:    string;
-  color?:   string;
-  paradas?: CatalogStop[];
-}
-
-// ── Constantes ───────────────────────────────────────────────────────────────
+// ── Constantes de transporte ─────────────────────────────────────────────────
 
 const SPEEDS: Record<string, number> = {
   Bus_Urbano: 22, Bus_Urban: 22, Bus_Urbano_Isla: 22, Bus_Foraneo: 55,
   Combi_Municipal: 28, Van_Foranea: 35, Transporte: 25,
   MotorTaxi: 30, Bicicleta: 15, Caminata: 5, Indriver: 40, Uber: 40,
 };
-
 const CO2: Record<string, number> = {
   Bus_Urbano: 18, Bus_Urban: 18, Bus_Urbano_Isla: 18, Bus_Foraneo: 25,
   Combi_Municipal: 35, Van_Foranea: 45,
   Caminata: 0, Bicicleta: 0, MotorTaxi: 60, Indriver: 130, Uber: 130,
 };
-
 const FARES: Record<string, number> = {
   Bus_Urbano: 14, Bus_Urban: 14, Bus_Urbano_Isla: 14, Bus_Foraneo: 45,
   Combi_Municipal: 14, Van_Foranea: 25,
   Caminata: 0, MotorTaxi: 20, Indriver: 45, Uber: 55,
 };
-
 const COLORS: Record<string, string> = {
   Bus_Urbano: '#0EA5E9', Bus_Urban: '#0EA5E9', Bus_Urbano_Isla: '#0d9488',
   Bus_Foraneo: '#6366F1', Combi_Municipal: '#10B981', Van_Foranea: '#8B5CF6',
   Caminata: '#94A3B8', MotorTaxi: '#F59E0B', Indriver: '#1D4ED8', Uber: '#1a1a1a',
 };
 
-// ── Catálogo ─────────────────────────────────────────────────────────────────
-
-let _catalog: CatalogRoute[] | null = null;
-
-function getCatalog(): CatalogRoute[] {
-  if (_catalog) return _catalog;
-  try {
-    // En SSR con @astrojs/node, __dirname no existe — usar fileURLToPath
-    const here = dirname(fileURLToPath(import.meta.url));
-    // El public/ está 4 niveles arriba: src/pages/api/v1/ -> src/pages/api -> src/pages -> src -> raíz
-    const catalogPath = join(here, '../../../../public/data/master_routes.optimized.json');
-    const raw = readFileSync(catalogPath, 'utf-8');
-    const data = JSON.parse(raw) as { rutas?: CatalogRoute[] };
-    _catalog = data.rutas ?? [];
-  } catch (e) {
-    console.error('[journey] getCatalog error:', e);
-    _catalog = [];
-  }
-  return _catalog;
-}
-
 // ── Utilidades ───────────────────────────────────────────────────────────────
 
 function hmDist(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000;
-  const f1 = lat1 * Math.PI / 180;
-  const f2 = lat2 * Math.PI / 180;
-  const df = (lat2 - lat1) * Math.PI / 180;
-  const dl = (lng2 - lng1) * Math.PI / 180;
+  const f1 = lat1 * Math.PI / 180, f2 = lat2 * Math.PI / 180;
+  const df = (lat2 - lat1) * Math.PI / 180, dl = (lng2 - lng1) * Math.PI / 180;
   const a = Math.sin(df / 2) ** 2 + Math.cos(f1) * Math.cos(f2) * Math.sin(dl / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
@@ -134,47 +68,43 @@ function tf(h: number): number {
 
 function norm(s: string): string {
   return s.trim().toLowerCase()
-    .replace(/[áà]/g, 'a').replace(/[éè]/g, 'e')
-    .replace(/[íì]/g, 'i').replace(/[óò]/g, 'o')
-    .replace(/[úùü]/g, 'u').replace(/ñ/g, 'n')
+    .replace(/[aá]/g, 'a').replace(/[eé]/g, 'e')
+    .replace(/[ií]/g, 'i').replace(/[oó]/g, 'o')
+    .replace(/[uúü]/g, 'u').replace(/ñ/g, 'n')
     .replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-// ── Resolver ubicación ───────────────────────────────────────────────────────
+// ── Resolver nombre → lat/lng ─────────────────────────────────────────────────
 
 interface Loc { lat: number; lng: number; name: string }
 
 function resolveLocation(query?: string, lat?: number, lng?: number): Loc | null {
-  const catalog = getCatalog();
-
   if (lat !== undefined && lng !== undefined && !isNaN(lat) && !isNaN(lng)) {
     let name = query ?? (lat.toFixed(4) + ',' + lng.toFixed(4));
-    let bestD = Infinity;
-    for (const r of catalog) {
+    let best = Infinity;
+    for (const r of CATALOG_ROUTES) {
       for (const p of (r.paradas ?? [])) {
         if (!p.lat || !p.lng) continue;
         const d = hmDist(lat, lng, p.lat, p.lng);
-        if (d < bestD && d < 400) { bestD = d; name = p.nombre ?? p.name ?? name; }
+        if (d < best && d < 400) { best = d; name = p.nombre ?? p.name ?? name; }
       }
     }
     return { lat, lng, name };
   }
-
   if (!query) return null;
 
   const q = norm(query);
   let bestStop: CatalogStop | null = null;
   let bestScore = 0;
 
-  for (const r of catalog) {
+  for (const r of CATALOG_ROUTES) {
     for (const p of (r.paradas ?? [])) {
       if (!p.lat || !p.lng) continue;
-      const raw = (p.nombre ?? p.name ?? '').trim();
-      const n = norm(raw);
+      const n = norm(p.nombre ?? p.name ?? '');
       let score = 0;
-      if (n === q)                        score = 100;
-      else if (n.startsWith(q))           score = 85;
-      else if (n.includes(q))             score = 70;
+      if (n === q)                          score = 100;
+      else if (n.startsWith(q))             score = 85;
+      else if (n.includes(q))               score = 70;
       else if (q.includes(n) && n.length > 4) score = 50;
       else {
         const words = q.split(' ').filter(w => w.length > 2);
@@ -186,11 +116,7 @@ function resolveLocation(query?: string, lat?: number, lng?: number): Loc | null
   }
 
   if (bestScore > 20 && bestStop) {
-    return {
-      lat:  bestStop.lat,
-      lng:  bestStop.lng,
-      name: bestStop.nombre ?? bestStop.name ?? query,
-    };
+    return { lat: bestStop.lat, lng: bestStop.lng, name: bestStop.nombre ?? bestStop.name ?? query };
   }
   return null;
 }
@@ -203,11 +129,10 @@ interface Suggestion {
 }
 
 function findRoutes(oLat: number, oLng: number, dLat: number, dLng: number): Suggestion[] {
-  const catalog = getCatalog();
   const results: Suggestion[] = [];
   const MAX_WALK = 1200;
 
-  for (const route of catalog) {
+  for (const route of CATALOG_ROUTES) {
     const stops = route.paradas ?? [];
     if (stops.length < 2) continue;
 
@@ -241,13 +166,11 @@ function findRoutes(oLat: number, oLng: number, dLat: number, dLng: number): Sug
 let _n = 0;
 
 function buildPlan(
-  s: Suggestion,
-  oLat: number, oLng: number,
-  dLat: number, dLng: number,
+  s: Suggestion, oLat: number, oLng: number, dLat: number, dLng: number,
   hour: number, priority: string,
 ): JourneyPlan {
   const { route, fromStop, toStop, paradas, walkA, walkB } = s;
-  const tipo  = route.tipo ?? 'Bus_Urbano';
+  const tipo  = route.tipo  ?? 'Bus_Urbano';
   const color = route.color ?? COLORS[tipo] ?? '#0EA5E9';
   const fare  = route.tarifa ?? FARES[tipo] ?? 14;
   const legs: JourneyLeg[] = [];
@@ -278,18 +201,13 @@ function buildPlan(
   const min = Math.max(2, Math.round((km / spd) * 60));
 
   legs.push({
-    mode: tipo, route_id: route.id,
-    route_name:     route.nombre ?? route.id,
-    from_stop:      fromStop.nombre ?? 'Parada origen',
-    to_stop:        toStop.nombre   ?? 'Parada destino',
-    minutes:        min,
-    distance_km:    Math.round(km * 100) / 100,
-    fare_mxn:       fare,
-    co2_grams:      Math.round((CO2[tipo] ?? 18) * km),
+    mode: tipo, route_id: route.id, route_name: route.nombre ?? route.id,
+    from_stop: fromStop.nombre ?? 'Parada origen', to_stop: toStop.nombre ?? 'Parada destino',
+    minutes: min, distance_km: Math.round(km * 100) / 100,
+    fare_mxn: fare, co2_grams: Math.round((CO2[tipo] ?? 18) * km),
     color, transport_type: tipo,
     paradas: paradas.map((p, i) => ({
-      nombre: p.nombre ?? p.name ?? 'Parada',
-      lat: p.lat, lng: p.lng, orden: i,
+      nombre: p.nombre ?? p.name ?? 'Parada', lat: p.lat, lng: p.lng, orden: i,
     })),
   });
 
@@ -351,7 +269,7 @@ export const POST: APIRoute = async ({ request }) => {
       .slice(0, 8)
       .map(s => buildPlan(s, orig.lat, orig.lng, dest.lat, dest.lng, hour, priority));
 
-    if (priority === 'cost')    plans.sort((a, b) => a.total_fare_mxn - b.total_fare_mxn);
+    if (priority === 'cost')     plans.sort((a, b) => a.total_fare_mxn - b.total_fare_mxn);
     else if (priority === 'eco') plans.sort((a, b) => b.eco_score - a.eco_score);
     else                         plans.sort((a, b) => a.total_minutes - b.total_minutes);
 
@@ -387,7 +305,7 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({
       plans,
       meta: {
-        origin: { name: orig.name, lat: orig.lat, lng: orig.lng },
+        origin:      { name: orig.name, lat: orig.lat, lng: orig.lng },
         destination: { name: dest.name, lat: dest.lat, lng: dest.lng },
         routes_found: suggestions.length,
         ts: new Date().toISOString(),
