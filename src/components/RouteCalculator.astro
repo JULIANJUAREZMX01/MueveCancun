@@ -160,8 +160,26 @@ const labels = ariaLabels[lang];
               const module = await WasmLoader.getModule();
               const resolvedO = resolveStopName(oVal);
               const resolvedD = resolveStopName(dVal);
-              const raw = module.calculate_route(resolvedO, resolvedD);
-              const results = typeof raw === 'string' ? JSON.parse(raw) : raw;
+              // find_route es el export real del WASM (ver route_calculator.d.ts)
+              // Retorna objeto JS directamente via externref, no string
+              const raw = typeof (module as any).find_route === 'function'
+                ? (module as any).find_route(resolvedO, resolvedD)
+                : (module as any).calculate_route(resolvedO, resolvedD);
+              // Normalizar resultado: externref puede ser objeto, array, o string JSON
+              let results: any[];
+              if (Array.isArray(raw)) {
+                results = raw;
+              } else if (typeof raw === 'string') {
+                try { results = JSON.parse(raw); } catch { results = []; }
+              } else if (raw && typeof raw === 'object' && (raw as any).routes) {
+                results = (raw as any).routes;
+              } else if (raw && typeof raw === 'object' && (raw as any).legs) {
+                results = [raw]; // objeto Journey único
+              } else if (raw && typeof raw === 'object') {
+                results = Object.values(raw);
+              } else {
+                results = [];
+              }
               const endSearch = performance.now();
 
               resultsInfo.classList.remove('hidden');
