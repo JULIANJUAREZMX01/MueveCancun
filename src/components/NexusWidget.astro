@@ -331,4 +331,14 @@ function scrollMessages() {
     messages.scrollTop = messages.scrollHeight;
   });
 }
+
+// ── Astro SPA navigation — cerrar panel en cada navegación ──────────────────
+function closeNexusPanel() {
+  const p = document.getElementById('nexus-panel');
+  const f = document.getElementById('nexus-fab');
+  if (p) { p.hidden = true; }
+  if (f) { f.setAttribute('aria-expanded', 'false'); }
+}
+document.addEventListener('astro:before-swap', closeNexusPanel);
+document.addEventListener('astro:page-load', closeNexusPanel);
 </script>
