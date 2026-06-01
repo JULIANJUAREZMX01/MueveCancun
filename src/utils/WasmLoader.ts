@@ -1,13 +1,23 @@
-/** Minimal interface for the route-calculator WASM module exports. */
+/**
+ * Nexus Prime WASM Loader - Singleton Pattern
+ * Previene condiciones de carrera en la inicialización del motor de ruteo.
+ *
+ * WASM exports reales (route_calculator.d.ts):
+ *   - find_route(origin: string, dest: string): unknown
+ *   - load_catalog(json_payload: string): void
+ */
+
 export interface RouteCalculatorWasm {
-  default(): Promise<void>;
-  validate_operator_funds(balance: number): boolean;
+  find_route(origin: string, dest: string): unknown;
   load_catalog(json_payload: string): void;
-  load_catalog_core(json_payload: string): void;
-  get_route_by_id(id: string): string;
-  get_all_routes(): string;
-  find_route(origin: string, dest: string): string;
+  // Alias de compatibilidad (añadido en runtime por el loader)
+  calculate_route?: (origin: string, dest: string) => string;
 }
+
+type WasmModuleRaw = RouteCalculatorWasm & {
+  default?: () => Promise<void>;
+  [key: string]: unknown;
+};
 
 export class WasmLoader {
   private static instance: WasmLoader;
@@ -41,19 +51,25 @@ export class WasmLoader {
     );
 
     try {
-        if (typeof window === 'undefined') throw new Error('WASM requires browser context');
-        const wasmPath = new URL('/wasm/route-calculator/route_calculator.js', window.location.href).href;
+      // Importar el glue JS generado por wasm-pack
+      const module = await import('/wasm/route-calculator/route_calculator.js') as WasmModuleRaw;
+      // Inicializar el módulo WASM (carga el .wasm binario)
+      if (typeof module.default === 'function') {
+        await module.default();
+      }
 
-        const loadPromise = (async () => {
-          const module = await import(/* @vite-ignore */ wasmPath) as RouteCalculatorWasm;
-          await module.default();
-          return module;
-        })();
+      // Alias: calculate_route → find_route para compatibilidad con código legacy
+      if (typeof module.find_route === 'function' && !module.calculate_route) {
+        module.calculate_route = (origin: string, dest: string): string => {
+          const result = module.find_route(origin, dest);
+          return typeof result === 'string' ? result : JSON.stringify(result);
+        };
+      }
 
-        return await Promise.race([loadPromise, timeoutPromise]);
-    } catch (e) {
-        console.error("Failed to load WASM module", e);
-        throw e;
+      return module;
+    } catch (err) {
+      console.error('[WasmLoader] Failed to load WASM module:', err);
+      throw err;
     }
   }
 }

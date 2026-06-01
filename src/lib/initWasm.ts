@@ -1,4 +1,4 @@
-import { WasmLoader, type RouteCalculatorWasm } from '../utils/WasmLoader';
+import { WasmLoader } from '../utils/WasmLoader';
 
 let _initPromise: Promise<boolean> | null = null;
 
@@ -7,25 +7,28 @@ export async function initWasm(): Promise<boolean> {
 
   _initPromise = (async () => {
     try {
-      const wasmModule = (await WasmLoader.getModule()) as unknown as RouteCalculatorWasm;
+      const wasmModule = await WasmLoader.getModule();
 
+      // Cargar catálogo de rutas
       const response = await fetch('/data/master_routes.optimized.json');
-      if (!response.ok) throw new Error('Catalog missing');
+      if (!response.ok) throw new Error(`[initWasm] Catalog fetch failed: ${response.status}`);
       const catalogJson = await response.text();
       const catalogData = JSON.parse(catalogJson) as { rutas?: RouteEntry[] };
 
-      if (typeof wasmModule.load_catalog_core === 'function') {
-        wasmModule.load_catalog_core(catalogJson);
-      } else if (typeof (wasmModule as unknown as Record<string, unknown>).load_catalog === 'function') {
-        (wasmModule as unknown as { load_catalog: (j: string) => void }).load_catalog(catalogJson);
+      // load_catalog es el export real del WASM (confirmado en route_calculator.d.ts)
+      if (typeof wasmModule.load_catalog === 'function') {
+        wasmModule.load_catalog(catalogJson);
+        console.log('[initWasm] Catalog loaded via load_catalog ✅');
+      } else {
+        console.warn('[initWasm] load_catalog not found in WASM module');
       }
 
-      // Exponer catálogo como mapa id→route para enriquecer legs en JS
+      // Exponer catálogo en window para enrichment de legs
       const rutas: RouteEntry[] = catalogData.rutas ?? [];
       const routeMap: Record<string, RouteEntry> = {};
       for (const r of rutas) {
         if (r.id) routeMap[r.id] = r;
-        const normName = (r.nombre ?? '').toLowerCase().trim();
+        const normName = (r.nombre ?? r.name ?? '').toLowerCase().trim();
         if (normName) routeMap[normName] = r;
       }
 
@@ -36,7 +39,7 @@ export async function initWasm(): Promise<boolean> {
         window.dispatchEvent(new CustomEvent('WASM_ENGINE_READY', { detail: { routes: rutas } }));
       }
 
-      console.log('[initWasm] ENGINE READY —', rutas.length, 'routes');
+      console.log('[initWasm] ENGINE READY —', rutas.length, 'routes loaded');
       return true;
     } catch (error) {
       console.error('[initWasm] ERROR:', error);
@@ -48,7 +51,7 @@ export async function initWasm(): Promise<boolean> {
   return _initPromise;
 }
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// ── Types ───────────────────────────────────────────────────────────────────
 
 interface RouteStop {
   id?: string;
@@ -91,12 +94,8 @@ export interface Journey {
   legs: JourneyLeg[];
 }
 
-// ── Enrichment helper ──────────────────────────────────────────────────────
+// ── Resolución de nombres de parada ─────────────────────────────────────────
 
-/**
- * Resuelve un nombre de parada ingresado por el usuario al nombre exacto del catálogo.
- * Primero intenta match exacto (normalizado), luego substring, luego token.
- */
 export function resolveStopName(query: string): string {
   const rutas: RouteEntry[] = typeof window !== 'undefined'
     ? window.WASM_ROUTES ?? []
@@ -111,14 +110,14 @@ export function resolveStopName(query: string): string {
   let best: { name: string; score: number } | null = null;
 
   for (const r of rutas) {
-    for (const p of (r as unknown as { paradas?: Array<{ nombre?: string; name?: string }> }).paradas ?? []) {
+    for (const p of ((r as unknown as { paradas?: RouteStop[] }).paradas ?? [])) {
       const raw = (p.nombre ?? p.name ?? '').trim();
       if (!raw) continue;
       const n = norm(raw);
       let score = 0;
-      if (n === q)             score = 100;
+      if (n === q)              score = 100;
       else if (n.startsWith(q)) score = 80;
-      else if (n.includes(q))  score = 60;
+      else if (n.includes(q))   score = 60;
       else if (q.includes(n) && n.length > 4) score = 50;
       else {
         const tokens = q.split(/\s+/);
@@ -132,17 +131,15 @@ export function resolveStopName(query: string): string {
   return best && best.score >= 25 ? best.name : query;
 }
 
-/**
- * Enriquece los legs de un Journey con color, paradas y tipo_transporte del catálogo.
- * Seguro de llamar antes de que WASM_ROUTE_MAP esté disponible (no-op en ese caso).
- */
+// ── Enriquecimiento de legs ──────────────────────────────────────────────────
+
 export function enrichJourneyLegs(journey: Journey): Journey {
-  const routeMap = window.WASM_ROUTE_MAP ?? {};
+  const routeMap = (typeof window !== 'undefined' ? window.WASM_ROUTE_MAP : null) ?? {};
   if (!journey?.legs?.length) return journey;
 
   const enriched: Journey = { ...journey };
   enriched.legs = journey.legs.map((leg) => {
-    if (leg.color && leg.paradas?.length) return leg; // Ya enriquecido
+    if (leg.color && leg.paradas?.length) return leg;
 
     const route: RouteEntry | undefined =
       routeMap[leg.route_id ?? ''] ??
@@ -176,6 +173,7 @@ export function enrichJourneyLegs(journey: Journey): Journey {
   return enriched;
 }
 
+// Auto-init en cliente
 if (typeof window !== 'undefined') {
   initWasm().catch(() => {});
 }
