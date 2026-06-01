@@ -1,4 +1,4 @@
-import { WasmLoader, type RouteCalculatorWasm } from '../utils/WasmLoader';
+import { WasmLoader } from '../utils/WasmLoader';
 
 let _initPromise: Promise<boolean> | null = null;
 
@@ -110,7 +110,7 @@ export function resolveStopName(query: string): string {
   let best: { name: string; score: number } | null = null;
 
   for (const r of rutas) {
-    for (const p of (r as any).paradas ?? []) {
+    for (const p of ((r as unknown as { paradas?: RouteStop[] }).paradas ?? [])) {
       const raw = (p.nombre ?? p.name ?? '').trim();
       if (!raw) continue;
       const n = norm(raw);
