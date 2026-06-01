@@ -1,0 +1,82 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getLangFromUrl } from "../../utils/i18n";
+import Card from "../../components/ui/Card.astro";
+import Button from "../../components/ui/Button.astro";
+import Input from "../../components/ui/Input.astro";
+
+export function getStaticPaths() {
+  return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
+}
+
+const lang = getLangFromUrl(Astro.url);
+---
+
+<MainLayout title={lang === "es" ? "Iniciar Sesión" : "Login"}>
+  <div class="c-login-page">
+    <Card class="c-login-card">
+      <h1 class="t-h2 u-text-center">{lang === "es" ? "Bienvenido" : "Welcome"}</h1>
+      <p class="t-body u-text-center u-mt-xs">{lang === "es" ? "Sincroniza tus boletos y recompensas." : "Sync your tickets and rewards."}</p>
+
+      <form id="login-form" class="u-mt-xl">
+        <div class="u-mb-md">
+          <label for="email" class="t-caption u-mb-xs u-block">{lang === "es" ? "Correo Electrónico" : "Email Address"}</label>
+          <Input type="email" id="email" name="email" placeholder="tu@email.com" required />
+        </div>
+        <Button type="submit" variant="primary" id="login-btn" class="u-w-full">
+          {lang === "es" ? "Enviar Enlace Mágico" : "Send Magic Link"}
+        </Button>
+      </form>
+
+      <div class="u-mt-lg u-text-center">
+        <p class="t-caption">{lang === "es" ? "¿No tienes cuenta? Se creará una automáticamente." : "Don't have an account? One will be created automatically."}</p>
+      </div>
+    </Card>
+  </div>
+
+  <script>
+    import { supabase } from "../../lib/supabaseClient";
+    import { showToast } from "../../utils/toast";
+
+    const form = document.getElementById('login-form') as HTMLFormElement;
+    const btn = document.getElementById('login-btn') as HTMLButtonElement;
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      try {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: window.location.origin,
+          },
+        });
+
+        if (error) throw error;
+        showToast('📬 Revisa tu correo para el enlace mágico', 'info');
+      } catch (err: any) {
+        showToast('❌ Error: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Reintentar';
+      }
+    });
+  </script>
+</MainLayout>
+
+<style>
+  .c-login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 1.5rem;
+  }
+  .c-login-card {
+    width: 100%;
+    max-width: 400px;
+  }
+</style>

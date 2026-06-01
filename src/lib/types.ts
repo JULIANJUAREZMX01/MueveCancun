@@ -1,30 +1,47 @@
-export interface JourneyRoute {
-  id: string;
-  name: string;
-  waypoints: Waypoint[];
-  transfers: Transfer[];
+export interface Site {
+  TITLE: string;
+  DESCRIPTION: string;
+  AUTHOR: string;
 }
-export interface Waypoint {
+
+export interface Stop {
+  nombre: string;
   lat: number;
   lng: number;
-  name: string;
-  stopId: string;
+  id?: string;
+  orden?: number;
 }
-export interface Transfer {
-  fromRouteId: string;
-  toRouteId: string;
-  stopId: string;
-  penaltySeconds: number;
-}
-export interface SyncEntry {
+
+export interface RouteData {
   id: string;
-  payload: unknown;
-  timestamp: number;
-  retries: number;
+  nombre: string;
+  paradas: Stop[];
+  color?: string;
+  tarifa?: number;
+  tipo?: string;
+  horario?: string | { inicio: string; fin: string };
 }
-export interface TrackingPoint {
-  lat: number;
-  lng: number;
-  accuracy: number;
-  timestamp: number;
+
+export interface RoutesCatalog {
+  rutas: RouteData[];
+}
+
+export interface JourneyLeg {
+  route_id: string;
+  route_name: string;
+  origin_stop: string;
+  dest_stop: string;
+  price: number;
+  color: string;
+  color_id: string;
+  transport_type: string;
+  paradas: Stop[];
+}
+
+export interface Journey {
+  id: string;
+  type: "Direct" | "Transfer";
+  total_price: number;
+  duration_minutes: number;
+  legs: JourneyLeg[];
 }

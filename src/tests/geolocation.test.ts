@@ -23,13 +23,8 @@ describe('getCurrentPosition', () => {
       coords: {
         latitude: 21.1619,
         longitude: -86.8249,
-        accuracy: 10,
-        altitude: null,
-        altitudeAccuracy: null,
-        heading: null,
-        speed: null,
-      },
-      timestamp: Date.now(),
+        accuracy: 10
+      }
     };
 
     mockGeolocation.getCurrentPosition.mockImplementationOnce((success) => {
@@ -37,34 +32,34 @@ describe('getCurrentPosition', () => {
     });
 
     const position = await getCurrentPosition();
-    expect(position).toEqual(mockPosition);
-    expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledWith(
-      expect.any(Function),
-      expect.any(Function),
-      expect.objectContaining({
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0,
-      })
-    );
+    expect(position).toEqual({
+      lat: 21.1619,
+      lng: -86.8249,
+      accuracy: 10
+    });
   });
 
-  it('should reject when geolocation fails', async () => {
+  it('should resolve with null when geolocation fails', async () => {
     const mockError = {
       code: 1,
       message: 'User denied Geolocation',
+      PERMISSION_DENIED: 1
     };
 
     mockGeolocation.getCurrentPosition.mockImplementationOnce((success, error) => {
       error(mockError);
     });
 
-    await expect(getCurrentPosition()).rejects.toEqual(mockError);
+    const position = await getCurrentPosition();
+    expect(position).toBeNull();
   });
 
   it('should use correct geolocation options', async () => {
+    const mockPosition = {
+      coords: { latitude: 0, longitude: 0, accuracy: 0 }
+    };
     mockGeolocation.getCurrentPosition.mockImplementationOnce((success) => {
-      success({});
+      success(mockPosition);
     });
 
     await getCurrentPosition();
@@ -72,11 +67,11 @@ describe('getCurrentPosition', () => {
     expect(mockGeolocation.getCurrentPosition).toHaveBeenCalledWith(
       expect.any(Function),
       expect.any(Function),
-      {
+      expect.objectContaining({
         enableHighAccuracy: true,
-        timeout: 5000,
+        timeout: 8000,
         maximumAge: 0,
-      }
+      })
     );
   });
 });

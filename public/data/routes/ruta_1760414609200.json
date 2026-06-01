@@ -1,0 +1,161 @@
+{
+  "id": "ruta_1760414609200",
+  "nombre": "RUTA 13",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1760414609200_s_1",
+      "nombre": "Parada RUTA 13 #1",
+      "lat": 21.155307832188747,
+      "lng": -86.90307319164276,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_2",
+      "nombre": "Parada RUTA 13 #2",
+      "lat": 21.162691908155747,
+      "lng": -86.90509021282196,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_3",
+      "nombre": "Parada RUTA 13 #3",
+      "lat": 21.15557298492325,
+      "lng": -86.90317511558533,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_4",
+      "nombre": "Parada RUTA 13 #4",
+      "lat": 21.15800436332787,
+      "lng": -86.8970650434494,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_5",
+      "nombre": "Parada RUTA 13 #5",
+      "lat": 21.166508870747137,
+      "lng": -86.88885748386384,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_6",
+      "nombre": "Parada RUTA 13 #6",
+      "lat": 21.1709910497464,
+      "lng": -86.87955021858215,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_7",
+      "nombre": "Parada RUTA 13 #7",
+      "lat": 21.174337588154003,
+      "lng": -86.87272667884828,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_8",
+      "nombre": "Parada RUTA 13 #8",
+      "lat": 21.169285236466813,
+      "lng": -86.87237262725831,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_9",
+      "nombre": "Parada RUTA 13 #9",
+      "lat": 21.174637722428198,
+      "lng": -86.86059236526489,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_10",
+      "nombre": "Parada RUTA 13 #10",
+      "lat": 21.180800344876438,
+      "lng": -86.84814691543579,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_11",
+      "nombre": "Parada RUTA 13 #11",
+      "lat": 21.18402161348993,
+      "lng": -86.84118390083314,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_12",
+      "nombre": "Parada RUTA 13 #12",
+      "lat": 21.18751290921653,
+      "lng": -86.83445692062378,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_13",
+      "nombre": "Parada RUTA 13 #13",
+      "lat": 21.176988753171916,
+      "lng": -86.82856678962708,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_14",
+      "nombre": "Parada RUTA 13 #14",
+      "lat": 21.171086094482625,
+      "lng": -86.82653903961183,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_15",
+      "nombre": "Parada RUTA 13 #15",
+      "lat": 21.164332763902532,
+      "lng": -86.82600259780885,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_16",
+      "nombre": "Parada RUTA 13 #16",
+      "lat": 21.15745905765302,
+      "lng": -86.82549834251405,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_17",
+      "nombre": "Parada RUTA 13 #17",
+      "lat": 21.1507001022492,
+      "lng": -86.82510137557983,
+      "orden": 17,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_18",
+      "nombre": "Parada RUTA 13 #18",
+      "lat": 21.144571249067802,
+      "lng": -86.82464003562929,
+      "orden": 18,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760414609200_s_19",
+      "nombre": "Parada RUTA 13 #19",
+      "lat": 21.146902744735616,
+      "lng": -86.82427525520326,
+      "orden": 19,
+      "landmarks": ""
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "id": "ruta_1760989478537",
+  "nombre": "RUTA 21",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1760989478537_s_1",
+      "nombre": "Parada RUTA 21 #1",
+      "lat": 21.176963742403224,
+      "lng": -86.88044607639314,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_2",
+      "nombre": "Parada RUTA 21 #2",
+      "lat": 21.179424781772422,
+      "lng": -86.87543034553529,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_3",
+      "nombre": "Parada RUTA 21 #3",
+      "lat": 21.174602706794257,
+      "lng": -86.87276959419252,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_4",
+      "nombre": "Parada RUTA 21 #4",
+      "lat": 21.169135163976023,
+      "lng": -86.87234044075014,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_5",
+      "nombre": "Parada RUTA 21 #5",
+      "lat": 21.1746777402854,
+      "lng": -86.86050653457643,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_6",
+      "nombre": "Parada RUTA 21 #6",
+      "lat": 21.165293256385855,
+      "lng": -86.85519576072694,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_7",
+      "nombre": "Parada RUTA 21 #7",
+      "lat": 21.161926502759073,
+      "lng": -86.8517678976059,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_8",
+      "nombre": "Parada RUTA 21 #8",
+      "lat": 21.146152267302398,
+      "lng": -86.83563709259035,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_9",
+      "nombre": "Parada RUTA 21 #9",
+      "lat": 21.141339114982763,
+      "lng": -86.83416724205017,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_10",
+      "nombre": "Parada RUTA 21 #10",
+      "lat": 21.136565834464257,
+      "lng": -86.83279395103455,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_11",
+      "nombre": "Parada RUTA 21 #11",
+      "lat": 21.131742363392508,
+      "lng": -86.83264374732973,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_12",
+      "nombre": "Parada RUTA 21 #12",
+      "lat": 21.131101890699096,
+      "lng": -86.82766556739809,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_13",
+      "nombre": "Parada RUTA 21 #13",
+      "lat": 21.1434705302074,
+      "lng": -86.82138919830324,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760989478537_s_14",
+      "nombre": "Parada RUTA 21 #14",
+      "lat": 21.14701781760582,
+      "lng": -86.82430207729341,
+      "orden": 14,
+      "landmarks": ""
+    }
+  ]
+}

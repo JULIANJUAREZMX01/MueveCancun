@@ -1,0 +1,169 @@
+{
+  "id": "ruta_1759866849505",
+  "nombre": "RUTA 79",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1759866849505_s_1",
+      "nombre": "Parada RUTA 79 #1",
+      "lat": 21.147157906196746,
+      "lng": -86.82430744171143,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_2",
+      "nombre": "Parada RUTA 79 #2",
+      "lat": 21.15483255723097,
+      "lng": -86.82497262954713,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_3",
+      "nombre": "Parada RUTA 79 #3",
+      "lat": 21.16299206605435,
+      "lng": -86.82569146156312,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_4",
+      "nombre": "Parada RUTA 79 #4",
+      "lat": 21.16904512040848,
+      "lng": -86.82619571685792,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_5",
+      "nombre": "Parada RUTA 79 #5",
+      "lat": 21.17385236978925,
+      "lng": -86.82652831077577,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_6",
+      "nombre": "Parada RUTA 79 #6",
+      "lat": 21.18757293077164,
+      "lng": -86.83423161506654,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_7",
+      "nombre": "Parada RUTA 79 #7",
+      "lat": 21.184781902676715,
+      "lng": -86.84031486511232,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_8",
+      "nombre": "Parada RUTA 79 #8",
+      "lat": 21.18196080997986,
+      "lng": -86.84585094451906,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_9",
+      "nombre": "Parada RUTA 79 #9",
+      "lat": 21.17489783830654,
+      "lng": -86.86045289039613,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_10",
+      "nombre": "Parada RUTA 79 #10",
+      "lat": 21.180190096642228,
+      "lng": -86.86342477798462,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_11",
+      "nombre": "Parada RUTA 79 #11",
+      "lat": 21.184106646027377,
+      "lng": -86.86588168144226,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_12",
+      "nombre": "Parada RUTA 79 #12",
+      "lat": 21.1769987574782,
+      "lng": -86.88045144081117,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_13",
+      "nombre": "Parada RUTA 79 #13",
+      "lat": 21.17212157791546,
+      "lng": -86.87774777412415,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_14",
+      "nombre": "Parada RUTA 79 #14",
+      "lat": 21.1674393342517,
+      "lng": -86.8866366147995,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_15",
+      "nombre": "Parada RUTA 79 #15",
+      "lat": 21.16242176552656,
+      "lng": -86.89719915390016,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_16",
+      "nombre": "Parada RUTA 79 #16",
+      "lat": 21.15520277153995,
+      "lng": -86.9028264284134,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_17",
+      "nombre": "Parada RUTA 79 #17",
+      "lat": 21.15295145400891,
+      "lng": -86.90737545490266,
+      "orden": 17,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_18",
+      "nombre": "Parada RUTA 79 #18",
+      "lat": 21.15098527536522,
+      "lng": -86.91422045230865,
+      "orden": 18,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_19",
+      "nombre": "Parada RUTA 79 #19",
+      "lat": 21.146327379043573,
+      "lng": -86.91400587558748,
+      "orden": 19,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759866849505_s_20",
+      "nombre": "Parada RUTA 79 #20",
+      "lat": 21.14658754467677,
+      "lng": -86.90762758255006,
+      "orden": 20,
+      "landmarks": ""
+    }
+  ]
+}

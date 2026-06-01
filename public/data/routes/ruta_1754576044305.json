@@ -1,0 +1,121 @@
+{
+  "id": "ruta_1754576044305",
+  "nombre": "RUTA 33",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1754576044305_s_1",
+      "nombre": "Parada RUTA 33 #1",
+      "lat": 21.17935975483621,
+      "lng": -86.90721452236176,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_2",
+      "nombre": "Parada RUTA 33 #2",
+      "lat": 21.173367149832828,
+      "lng": -86.90373837947845,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_3",
+      "nombre": "Parada RUTA 33 #3",
+      "lat": 21.198051320325703,
+      "lng": -86.85520112514496,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_4",
+      "nombre": "Parada RUTA 33 #4",
+      "lat": 21.195955701858257,
+      "lng": -86.85961604118347,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_5",
+      "nombre": "Parada RUTA 33 #5",
+      "lat": 21.17446264417559,
+      "lng": -86.8474441766739,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_6",
+      "nombre": "Parada RUTA 33 #6",
+      "lat": 21.167424326822232,
+      "lng": -86.84064745903017,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_7",
+      "nombre": "Parada RUTA 33 #7",
+      "lat": 21.16305209756101,
+      "lng": -86.83911323547365,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_8",
+      "nombre": "Parada RUTA 33 #8",
+      "lat": 21.160180563218887,
+      "lng": -86.83428525924684,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_9",
+      "nombre": "Parada RUTA 33 #9",
+      "lat": 21.15591318018904,
+      "lng": -86.83615744113924,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_10",
+      "nombre": "Parada RUTA 33 #10",
+      "lat": 21.147613193202194,
+      "lng": -86.84306144714357,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_11",
+      "nombre": "Parada RUTA 33 #11",
+      "lat": 21.148818946532618,
+      "lng": -86.83828175067903,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_12",
+      "nombre": "Parada RUTA 33 #12",
+      "lat": 21.142404826427896,
+      "lng": -86.83437108993532,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_13",
+      "nombre": "Parada RUTA 33 #13",
+      "lat": 21.13832706278553,
+      "lng": -86.83146357536317,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1754576044305_s_14",
+      "nombre": "Parada RUTA 33 #14",
+      "lat": 21.13935777192333,
+      "lng": -86.83308362960815,
+      "orden": 14,
+      "landmarks": ""
+    }
+  ]
+}
