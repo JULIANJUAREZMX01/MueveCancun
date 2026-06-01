@@ -332,209 +332,247 @@ const isEs = lang === 'es';
 </style>
 
 <script>
-  import { WasmLoader } from "../utils/WasmLoader";
-  import { initWasm, enrichJourneyLegs, resolveStopName } from "../lib/initWasm";
   import { escapeHtml, showToast, normalizeString } from "../utils/utils";
   import { coordinatesStore } from "../utils/CoordinatesStore";
 
-  // ── Lógica principal ──────────────────────────────────────────────────────
   const isEs = document.documentElement.lang !== "en";
 
-      /** Translate "Stop N - RUTA X" → "Parada N" for Spanish UI */
-      function localizeStop(raw: string): string {
-        if (!raw) return raw;
-        const m = raw.match(/^Stop (\d+)/i);
-        if (m) return isEs ? `Parada ${m[1]}` : `Stop ${m[1]}`;
-        return raw;
-      }
+  // ── Convertir JourneyPlan API → Journey format para drawRoute/mapa ────────
+  function planToJourney(plan: {
+    id: string;
+    legs: Array<{
+      mode: string; route_id?: string; route_name?: string;
+      from_stop?: string; to_stop?: string;
+      minutes: number; distance_km: number; fare_mxn: number; co2_grams: number;
+      paradas?: Array<{ nombre: string; lat: number; lng: number; orden?: number }>;
+      color?: string; transport_type?: string;
+    }>;
+    total_fare_mxn: number; summary: string;
+  }) {
+    return {
+      id: plan.id,
+      type: plan.legs.length > 1 ? "Transfer" : "Direct",
+      total_price: plan.total_fare_mxn,
+      legs: plan.legs.map(l => ({
+        route_id:       l.route_id ?? l.mode,
+        route_name:     l.route_name ?? l.mode,
+        origin_stop:    l.from_stop ?? "",
+        dest_stop:      l.to_stop ?? "",
+        price:          l.fare_mxn,
+        color:          l.color ?? "#0EA5E9",
+        transport_type: l.transport_type ?? l.mode,
+        paradas:        l.paradas ?? [],
+      })),
+    };
+  }
 
   async function start() {
-      const btn = document.getElementById('search-route-btn') as HTMLButtonElement;
-      const originInput = document.getElementById('origin-input') as HTMLInputElement;
-      const destInput = document.getElementById('dest-input') as HTMLInputElement;
+    const btn         = document.getElementById("search-route-btn") as HTMLButtonElement;
+    const originInput = document.getElementById("origin-input") as HTMLInputElement;
+    const destInput   = document.getElementById("dest-input") as HTMLInputElement;
+    const resultsInfo = document.getElementById("results-info");
+    const resultsContainer = document.getElementById("results-container");
+    const timeBadge   = document.getElementById("results-time-badge");
 
-      // ── Keyboard: Enter triggers search from either input ──────────────────
-      [originInput, destInput].forEach(input => {
-        input?.addEventListener('keydown', (e: KeyboardEvent) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            btn?.click();
-          }
-          if (e.key === 'Tab') {
-            input.setAttribute('aria-expanded', 'false');
-          }
-        });
-        input?.addEventListener('input', () => {
-          input.setAttribute('aria-expanded', input.value.length > 0 ? 'true' : 'false');
-        });
+    if (!btn || !originInput || !destInput || !resultsInfo || !resultsContainer) return;
+
+    // ── Rellenar datalist con paradas reales ───────────────────────────────
+    const datalist = document.getElementById("locations");
+    if (datalist && datalist.children.length < 20) {
+      coordinatesStore.init().then(() => {
+        const names = coordinatesStore.getOriginalNames?.() ?? new Map();
+        if (names.size > 0) {
+          datalist.innerHTML = "";
+          names.forEach((original: string) => {
+            const opt = document.createElement("option");
+            opt.value = original;
+            datalist.appendChild(opt);
+          });
+        }
+      }).catch(() => {});
+    }
+
+    // ── Keyboard shortcuts ─────────────────────────────────────────────────
+    [originInput, destInput].forEach(input => {
+      input?.addEventListener("keydown", (e: KeyboardEvent) => {
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); btn?.click(); }
       });
+    });
 
-      // ── Swap button ─────────────────────────────────────────────────────────
-      document.getElementById('swap-btn')?.addEventListener('click', () => {
-        if (!originInput || !destInput) return;
-        const tmp = originInput.value;
-        originInput.value = destInput.value;
-        destInput.value = tmp;
-        originInput.focus();
-        // Animate swap
-        originInput.classList.add('swap-flash');
-        destInput.classList.add('swap-flash');
-        setTimeout(() => {
-          originInput.classList.remove('swap-flash');
-          destInput.classList.remove('swap-flash');
-        }, 400);
-      });
-      const resultsInfo = document.getElementById('results-info');
-      const resultsContainer = document.getElementById('results-container');
-      const timeBadge = document.getElementById('results-time-badge');
+    // ── Swap ───────────────────────────────────────────────────────────────
+    document.getElementById("swap-btn")?.addEventListener("click", () => {
+      const tmp = originInput.value;
+      originInput.value = destInput.value;
+      destInput.value = tmp;
+      originInput.classList.add("swap-flash");
+      destInput.classList.add("swap-flash");
+      setTimeout(() => {
+        originInput.classList.remove("swap-flash");
+        destInput.classList.remove("swap-flash");
+      }, 400);
+    });
 
-      if (!btn || !originInput || !destInput || !resultsInfo || !resultsContainer) return;
+    // ── SET_STOP event desde el mapa ───────────────────────────────────────
+    window.addEventListener("MAP_SET_STOP", (e: Event) => {
+      const me = e as CustomEvent<{ type: string; name: string }>;
+      if (me.detail?.type === "origin") originInput.value = me.detail.name;
+      else if (me.detail?.type === "dest") destInput.value = me.detail.name;
+    });
 
-      // ── Cargar paradas reales en el datalist ───────────────────────────────
-      const datalist = document.getElementById("locations");
-      if (datalist && datalist.children.length < 20) {
-        coordinatesStore.init().then(() => {
-          const names = coordinatesStore.getOriginalNames();
-          if (names.size > 0) {
-            datalist.innerHTML = "";
-            names.forEach((original) => {
-              const opt = document.createElement("option");
-              opt.value = original;
-              datalist.appendChild(opt);
-            });
-          }
-        }).catch(() => {/* use static fallback */});
+    // ── Búsqueda principal ─────────────────────────────────────────────────
+    btn.addEventListener("click", async () => {
+      const oRaw = originInput.value.trim();
+      const dRaw = destInput.value.trim();
+
+      if (!oRaw || !dRaw) {
+        showToast(isEs ? "Ingresa origen y destino" : "Enter origin and destination", "warning");
+        return;
       }
 
+      btn.disabled = true;
+      const btnText = document.getElementById("btn-text");
+      if (btnText) btnText.innerHTML = isEs ? "Buscando…" : "Searching…";
 
-      window.addEventListener("MAP_SET_STOP", (e: Event) => { const me = e as CustomEvent<{ field: string; name: string }>;
-        const { type, name } = e.detail;
-        if (type === "origin") originInput.value = name;
-        else if (type === "dest") destInput.value = name;
-      });
+      const t0 = performance.now();
 
-      btn.addEventListener('click', async () => {
-          const oVal = normalizeString(originInput.value);
-          const dVal = normalizeString(destInput.value);
-          if (!oVal || !dVal) {
-            showToast(isEs ? "Ingresa origen y destino" : "Enter origin and destination", "warning");
-            return;
-          }
+      try {
+        // Llamar al API journey con nombres de texto
+        const res = await fetch("/api/v1/journey", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            origin:      { name: oRaw },
+            destination: { name: dRaw },
+            preferences: { priority: "time" },
+          }),
+        });
 
-          btn.disabled = true;
-          const startSearch = performance.now();
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-          try {
-              await initWasm();
-              const module = await WasmLoader.getModule();
-              const resolvedO = resolveStopName(oVal);
-              const resolvedD = resolveStopName(dVal);
-              // find_route es el export real del WASM (ver route_calculator.d.ts)
-              // Retorna objeto JS directamente via externref, no string
-              const raw = typeof (module as any).find_route === 'function'
-                ? (module as any).find_route(resolvedO, resolvedD)
-                : (module as any).calculate_route(resolvedO, resolvedD);
-              // Normalizar resultado: externref puede ser objeto, array, o string JSON
-              let results: any[];
-              if (Array.isArray(raw)) {
-                results = raw;
-              } else if (typeof raw === 'string') {
-                try { results = JSON.parse(raw); } catch { results = []; }
-              } else if (raw && typeof raw === 'object' && (raw as any).routes) {
-                results = (raw as any).routes;
-              } else if (raw && typeof raw === 'object' && (raw as any).legs) {
-                results = [raw]; // objeto Journey único
-              } else if (raw && typeof raw === 'object') {
-                results = Object.values(raw);
-              } else {
-                results = [];
-              }
-              const endSearch = performance.now();
+        const data = await res.json() as {
+          plans: Array<{
+            id: string; legs: Array<{
+              mode: string; route_id?: string; route_name?: string;
+              from_stop?: string; to_stop?: string;
+              minutes: number; distance_km: number; fare_mxn: number; co2_grams: number;
+              paradas?: Array<{ nombre: string; lat: number; lng: number; orden?: number }>;
+              color?: string; transport_type?: string;
+            }>;
+            total_minutes: number; total_fare_mxn: number; total_co2_grams: number;
+            eco_score: number; budget_score: number; summary: string;
+          }>;
+          meta: { origin: { name: string }; destination: { name: string }; routes_found: number };
+        };
 
-              resultsInfo.classList.remove('hidden');
-              resultsContainer.innerHTML = '';
-              if (timeBadge) timeBadge.textContent = `${(endSearch - startSearch).toFixed(2)}ms`;
+        const elapsed = (performance.now() - t0).toFixed(0);
+        resultsInfo.classList.remove("hidden");
+        resultsContainer.innerHTML = "";
+        if (timeBadge) timeBadge.textContent = `${elapsed}ms`;
 
-              if (results && results.length > 0) {
-                  results.forEach((rawR: import('../lib/initWasm').Journey) => {
-                      const r = enrichJourneyLegs(rawR);
-                      const card = document.createElement('div');
-                      card.className = 'journey-card';
+        // Actualizar label con nombres resueltos
+        const countLabel = document.getElementById("results-count-label");
+        if (countLabel && data.meta?.origin?.name) {
+          countLabel.textContent = `${data.meta.origin.name} → ${data.meta.destination?.name ?? dRaw}`;
+        }
 
-                      const leg = r.legs[0];
-                      const isTransfer = r.type === "Transfer";
+        if (data.plans?.length > 0) {
+          data.plans.forEach(plan => {
+            const leg0 = plan.legs.find(l => l.mode !== "Caminata") ?? plan.legs[0];
+            const routeColor = leg0.color ?? "#0EA5E9";
+            const isTransfer = plan.legs.filter(l => l.mode !== "Caminata").length > 1;
 
-                      const routeColor = leg.color || leg.route_color ||
-                        (leg.transport_type === "Bus_HotelZone" ? "#F97316" : leg.transport_type === "ADO" ? "#FF6B6B" : "#0EA5E9");
+            const card = document.createElement("div");
+            card.className = "journey-card";
+            card.style.borderLeft = `4px solid ${routeColor}`;
+            card.innerHTML = `
+              <div class="journey-card__header">
+                <div>
+                  <div class="journey-card__type" style="color:${routeColor}">
+                    ${leg0.mode === "Caminata" ? "🚶" : isTransfer ? "🔀 Trasbordo" : "🚌 Directo"}
+                    ${plan.legs.filter(l=>l.mode!=="Caminata").length > 1
+                      ? `<span class="journey-card__legs-badge" style="background:${routeColor}22">${plan.legs.filter(l=>l.mode!=="Caminata").length} tramos</span>`
+                      : ""}
+                  </div>
+                  <div class="journey-card__route-name">${escapeHtml(leg0.route_name ?? leg0.mode)}</div>
+                </div>
+                <div class="journey-card__price-wrap">
+                  <div class="journey-card__price">$${plan.total_fare_mxn}</div>
+                  <div class="journey-card__currency">MXN</div>
+                </div>
+              </div>
+              <div class="journey-card__path">
+                <span class="journey-card__stop journey-card__stop--origin" style="background:${routeColor}22;color:${routeColor}">
+                  ${escapeHtml(leg0.from_stop ?? oRaw)}
+                </span>
+                <svg class="journey-card__arrow" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                </svg>
+                <span class="journey-card__stop journey-card__stop--dest">
+                  ${escapeHtml(leg0.to_stop ?? dRaw)}
+                </span>
+              </div>
+              <div class="journey-card__footer">
+                <svg class="journey-card__footer-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z"/>
+                </svg>
+                <span class="journey-card__footer-text">
+                  ${plan.total_minutes} min · ${isEs ? "toca para ver en mapa" : "tap to view on map"}
+                </span>
+              </div>
+            `;
 
-                      card.style.borderLeft = `4px solid ${routeColor}`;
-                      card.innerHTML = `
-                        <div class="journey-card__header">
-                          <div>
-                            <div class="journey-card__type" style="color:${routeColor}">
-                              ${isTransfer ? "🔀 Trasbordo" : "🚌 Directo"}
-                              ${r.legs?.length > 1 ? `<span class="journey-card__legs-badge" style="background:${routeColor}22">${r.legs.length} tramos</span>` : ""}
-                            </div>
-                            <div class="journey-card__route-name">${escapeHtml(leg.route_name)}</div>
-                          </div>
-                          <div class="journey-card__price-wrap">
-                            <div class="journey-card__price">$${r.total_price}</div>
-                            <div class="journey-card__currency">MXN</div>
-                          </div>
-                        </div>
-                        <div class="journey-card__path">
-                          <span class="journey-card__stop journey-card__stop--origin" style="background:${routeColor}22; color:${routeColor}">${escapeHtml(leg.origin_stop)}</span>
-                          <svg class="journey-card__arrow" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-                          <span class="journey-card__stop journey-card__stop--dest">${escapeHtml(leg.dest_stop)}</span>
-                        </div>
-                        <div class="journey-card__footer">
-                          <svg class="journey-card__footer-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
-                          <span class="journey-card__footer-text">${isEs ? "Toca para ver en mapa" : "Tap to view on map"}</span>
-                        </div>
-                      `;
+            card.tabIndex = 0;
+            card.setAttribute("role", "button");
+            card.setAttribute("aria-label", `${leg0.route_name ?? leg0.mode} - $${plan.total_fare_mxn} MXN`);
 
-                      card.setAttribute('tabindex', '0');
-                      card.setAttribute('role', 'button');
-                      card.setAttribute('aria-label', `${leg.route_name} - $${r.total_price} MXN`);
-                      const activateCard = () => {
-                         window.dispatchEvent(new CustomEvent("SHOW_ROUTE_ON_MAP", { detail: { journey: r } }));
-                         window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED", { detail: { count: results.length, origin: resolvedO, dest: resolvedD } }));
-                      };
-                      card.addEventListener('click', activateCard);
-                      card.addEventListener('keydown', (ke: KeyboardEvent) => {
-                        if (ke.key === 'Enter' || ke.key === ' ') { ke.preventDefault(); activateCard(); }
-                      });
+            const activate = () => {
+              const journey = planToJourney(plan);
+              window.dispatchEvent(new CustomEvent("SHOW_ROUTE_ON_MAP", { detail: { journey } }));
+              window.dispatchEvent(new CustomEvent("ROUTE_CALCULATED", {
+                detail: { count: data.plans.length, origin: oRaw, dest: dRaw }
+              }));
+              // Expandir el mapa / colapsar sheet en mobile
+              window.dispatchEvent(new CustomEvent("SHEET_TOGGLE", { detail: { collapse: true } }));
+            };
+            card.addEventListener("click", activate);
+            card.addEventListener("keydown", (ke: KeyboardEvent) => {
+              if (ke.key === "Enter" || ke.key === " ") { ke.preventDefault(); activate(); }
+            });
+            resultsContainer.appendChild(card);
+          });
+        } else {
+          resultsContainer.innerHTML = `
+            <div class="journey-empty">
+              <div class="journey-empty__icon">🛸</div>
+              <p class="journey-empty__text">${isEs ? "Sin rutas encontradas" : "No routes found"}</p>
+              <p class="journey-empty__hint">${isEs
+                ? "Prueba con nombres de paradas conocidas: El Crucero, Plaza Las Américas, Terminal ADO"
+                : "Try known stop names: El Crucero, Plaza Las Américas, Terminal ADO"}</p>
+            </div>`;
+        }
 
-                      resultsContainer.appendChild(card);
-                  });
-              } else {
-                  resultsContainer.innerHTML = `
-                    <div class="journey-empty">
-                      <div class="journey-empty__icon">🛸</div>
-                      <p class="journey-empty__text">Sin rutas directas</p>
-                      <p class="journey-empty__hint">Prueba con paradas más conocidas como "Crucero" o "ADO"</p>
-                    </div>
-                  `;
-              }
-          } catch (e) {
-              console.error('[RouteCalculator] SEARCH ERROR', e);
-              showToast(isEs ? "Error en el motor de búsqueda" : "Search engine error", "danger");
-          } finally {
-              btn.disabled = false;
-          }
-      });
+      } catch (err) {
+        console.error("[RouteCalculator] ERROR:", err);
+        showToast(isEs ? "Error buscando rutas. Intenta de nuevo." : "Error searching routes. Try again.", "danger");
+      } finally {
+        btn.disabled = false;
+        if (btnText) btnText.innerHTML = isEs
+          ? 'Buscar ruta <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>'
+          : 'Find route <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>';
+      }
+    });
   }
 
-  let __start_listener: (() => void) | null = null;
-  function __register_start() {
-    if (__start_listener) document.removeEventListener('astro:page-load', __start_listener);
-    __start_listener = start;
-    document.addEventListener('astro:page-load', __start_listener);
+  // Arrancar en page-load (SPA compatible)
+  function __init() {
+    const btn = document.getElementById("search-route-btn");
+    if (btn && !btn.dataset.rcInit) {
+      btn.dataset.rcInit = "1";
+      start();
+    }
   }
-  document.addEventListener('astro:before-swap', () => {
-    if (__start_listener) { document.removeEventListener('astro:page-load', __start_listener); __start_listener = null; }
-  }, { once: true });
-  __register_start();
+  document.addEventListener("astro:page-load", __init);
+  __init();
 </script>
 
 <style>
