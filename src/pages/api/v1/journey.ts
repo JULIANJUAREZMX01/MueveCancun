@@ -97,14 +97,16 @@ interface CatalogRoute {
   color?: string; paradas?: CatalogStop[];
 }
 
+// Importar catálogo estáticamente (Vite bundle — disponible en build time)
+// Esto evita el self-fetch que falla en Vercel serverless
+import catalogJson from '../../../../public/data/master_routes.optimized.json' assert { type: 'json' };
+
 let catalogCache: CatalogRoute[] | null = null;
 
 async function getCatalog(): Promise<CatalogRoute[]> {
   if (catalogCache) return catalogCache;
   try {
-    const res = await fetch('https://mueve-cancun-sigma.vercel.app/data/master_routes.optimized.json');
-    if (!res.ok) throw new Error('catalog fetch failed');
-    const data = await res.json() as { rutas?: CatalogRoute[] };
+    const data = catalogJson as { rutas?: CatalogRoute[] };
     catalogCache = data.rutas ?? [];
   } catch {
     catalogCache = [];
@@ -358,7 +360,7 @@ function buildPlan(
   const budgetScore = Math.max(0, 100 - totalFare);
 
   const routeMinBus = legs.find(l => l.mode !== 'Caminata');
-  const summary = `${route.nombre ?? tipo} · ${totalMin} min · $${totalFare} MXN · ${totalCo2}g CO₂`;
+  const summary = (route.nombre ?? tipo) + ' · ' + totalMin + ' min · $' + totalFare + ' MXN · ' + totalCo2 + 'g CO₂';
 
   return {
     id: `plan_${route.id}_${Date.now()}`,
