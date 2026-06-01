@@ -1,0 +1,121 @@
+{
+  "id": "ruta_1760462813165",
+  "nombre": "RUTA 70",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1760462813165_s_1",
+      "nombre": "Parada RUTA 70 #1",
+      "lat": 21.169110151879423,
+      "lng": -86.82649612426758,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_2",
+      "nombre": "Parada RUTA 70 #2",
+      "lat": 21.16407763203878,
+      "lng": -86.8261206150055,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_3",
+      "nombre": "Parada RUTA 70 #3",
+      "lat": 21.15737901261427,
+      "lng": -86.82551980018617,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_4",
+      "nombre": "Parada RUTA 70 #4",
+      "lat": 21.150750132660143,
+      "lng": -86.82510673999788,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_5",
+      "nombre": "Parada RUTA 70 #5",
+      "lat": 21.144871443701252,
+      "lng": -86.82464003562929,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_6",
+      "nombre": "Parada RUTA 70 #6",
+      "lat": 21.140053246368414,
+      "lng": -86.8253481388092,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_7",
+      "nombre": "Parada RUTA 70 #7",
+      "lat": 21.122975653159287,
+      "lng": -86.83365225791933,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_8",
+      "nombre": "Parada RUTA 70 #8",
+      "lat": 21.114573736214354,
+      "lng": -86.83780431747438,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_9",
+      "nombre": "Parada RUTA 70 #9",
+      "lat": 21.107332393303302,
+      "lng": -86.83970332145691,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_10",
+      "nombre": "Parada RUTA 70 #10",
+      "lat": 21.10083640292821,
+      "lng": -86.8407654762268,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_11",
+      "nombre": "Parada RUTA 70 #11",
+      "lat": 21.09093672776495,
+      "lng": -86.84223532676698,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_12",
+      "nombre": "Parada RUTA 70 #12",
+      "lat": 21.084209777283217,
+      "lng": -86.843318939209,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_13",
+      "nombre": "Parada RUTA 70 #13",
+      "lat": 21.05644787610703,
+      "lng": -86.84769630432129,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760462813165_s_14",
+      "nombre": "Parada RUTA 70 #14",
+      "lat": 21.043010577150227,
+      "lng": -86.84973478317262,
+      "orden": 14,
+      "landmarks": ""
+    }
+  ]
+}

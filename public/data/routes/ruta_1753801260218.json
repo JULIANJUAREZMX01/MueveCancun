@@ -1,0 +1,105 @@
+{
+  "id": "ruta_1753801260218",
+  "nombre": "RUTA 31",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1753801260218_s_1",
+      "nombre": "Parada RUTA 31 #1",
+      "lat": 21.17756399968429,
+      "lng": -86.82008028030397,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753801260218_s_2",
+      "nombre": "Parada RUTA 31 #2",
+      "lat": 21.174287565715755,
+      "lng": -86.8266785144806,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753801260218_s_3",
+      "nombre": "Parada RUTA 31 #3",
+      "lat": 21.14479139185848,
+      "lng": -86.82452201843263,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753801260218_s_4",
+      "nombre": "Parada RUTA 31 #4",
+      "lat": 21.141349121698642,
+      "lng": -86.83220386505128,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753801260218_s_5",
+      "nombre": "Parada RUTA 31 #5",
+      "lat": 21.140868798573802,
+      "lng": -86.85563564300539,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753801260218_s_6",
+      "nombre": "Parada RUTA 31 #6",
+      "lat": 21.14026839247812,
+      "lng": -86.87705039978027,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753801260218_s_7",
+      "nombre": "Parada RUTA 31 #7",
+      "lat": 21.130461415238614,
+      "lng": -86.87649250030519,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753801260218_s_8",
+      "nombre": "Parada RUTA 31 #8",
+      "lat": 21.12585791645462,
+      "lng": -86.87739372253418,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753801260218_s_9",
+      "nombre": "Parada RUTA 31 #9",
+      "lat": 21.107682708280613,
+      "lng": -86.88477516174316,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753801260218_s_10",
+      "nombre": "Parada RUTA 31 #10",
+      "lat": 21.10255801819936,
+      "lng": -86.87928199768068,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753801260218_s_11",
+      "nombre": "Parada RUTA 31 #11",
+      "lat": 21.08754325956202,
+      "lng": -86.88529014587404,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1753801260218_s_12",
+      "nombre": "Parada RUTA 31 #12",
+      "lat": 21.08173714602836,
+      "lng": -86.88640594482423,
+      "orden": 12,
+      "landmarks": ""
+    }
+  ]
+}

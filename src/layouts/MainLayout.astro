@@ -115,6 +115,19 @@ const lang = getLangFromUrl(Astro.url);
             <span id="header-balance" class="c-header__balance-value">…</span>
           </button>
 
+                    <!-- User Account -->
+          <a
+            href={getRelativeLocaleUrl(lang, "login")}
+            class="c-header__pill-btn"
+            id="header-user-btn"
+            aria-label="Cuenta de usuario"
+            title="Mi Cuenta"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </a>
+
           <!-- Tema toggle -->
           <button
             id="theme-toggle"
@@ -359,6 +372,19 @@ const lang = getLangFromUrl(Astro.url);
   import { initWasm } from "../lib/initWasm";
   import { getWalletBalance } from "../utils/db";
 
+      async function checkUser() {
+      try {
+        const { supabase } = await import("../lib/supabaseClient");
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          const userBtn = document.getElementById("header-user-btn");
+          if (userBtn) {
+            userBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--sea-teal)" stroke="var(--sea-teal)" stroke-width="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+          }
+        }
+      } catch {}
+    }
+
   async function syncBalance() {
     try {
       const b = await getWalletBalance();
@@ -369,6 +395,7 @@ const lang = getLangFromUrl(Astro.url);
 
   function setupHeader() {
     syncBalance();
+    checkUser();
     enforceGuards();
     initWasm().catch(console.error);
 
