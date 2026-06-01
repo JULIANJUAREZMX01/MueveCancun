@@ -31,21 +31,21 @@ export function load_catalog(json_payload) {
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
-        __wbg___wbindgen_throw_9c31b086c2b26051: function(arg0, arg1) {
+        __wbg___wbindgen_throw_1506f2235d1bdba0: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
         },
-        __wbg_new_02d162bc6cf02f60: function() {
+        __wbg_new_ce1ab61c1c2b300d: function() {
             const ret = new Object();
             return ret;
         },
-        __wbg_new_310879b66b6e95e1: function() {
+        __wbg_new_d90091b82fdf5b91: function() {
             const ret = new Array();
             return ret;
         },
         __wbg_set_6be42768c690e380: function(arg0, arg1, arg2) {
             arg0[arg1] = arg2;
         },
-        __wbg_set_78ea6a19f4818587: function(arg0, arg1, arg2) {
+        __wbg_set_dca99999bba88a9a: function(arg0, arg1, arg2) {
             arg0[arg1 >>> 0] = arg2;
         },
         __wbindgen_cast_0000000000000001: function(arg0) {
