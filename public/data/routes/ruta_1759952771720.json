@@ -1,0 +1,145 @@
+{
+  "id": "ruta_1759952771720",
+  "nombre": "RUTA 44 COMBI",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1759952771720_s_1",
+      "nombre": "Parada RUTA 44 COMBI #1",
+      "lat": 21.173747322304806,
+      "lng": -86.90337896347047,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_2",
+      "nombre": "Parada RUTA 44 COMBI #2",
+      "lat": 21.169505342511272,
+      "lng": -86.91161870956421,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_3",
+      "nombre": "Parada RUTA 44 COMBI #3",
+      "lat": 21.165783505354515,
+      "lng": -86.91474616527559,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_4",
+      "nombre": "Parada RUTA 44 COMBI #4",
+      "lat": 21.165343281865237,
+      "lng": -86.92502975463869,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_5",
+      "nombre": "Parada RUTA 44 COMBI #5",
+      "lat": 21.161071044984574,
+      "lng": -86.91825449466707,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_6",
+      "nombre": "Parada RUTA 44 COMBI #6",
+      "lat": 21.157929321381715,
+      "lng": -86.91344261169435,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_7",
+      "nombre": "Parada RUTA 44 COMBI #7",
+      "lat": 21.15309653994834,
+      "lng": -86.91047072410585,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_8",
+      "nombre": "Parada RUTA 44 COMBI #8",
+      "lat": 21.149774536598027,
+      "lng": -86.90632939338684,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_9",
+      "nombre": "Parada RUTA 44 COMBI #9",
+      "lat": 21.144541229570997,
+      "lng": -86.90366864204408,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_10",
+      "nombre": "Parada RUTA 44 COMBI #10",
+      "lat": 21.13724130802778,
+      "lng": -86.90141022205354,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_11",
+      "nombre": "Parada RUTA 44 COMBI #11",
+      "lat": 21.140358453547567,
+      "lng": -86.8945223093033,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_12",
+      "nombre": "Parada RUTA 44 COMBI #12",
+      "lat": 21.14013830417005,
+      "lng": -86.8837022781372,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_13",
+      "nombre": "Parada RUTA 44 COMBI #13",
+      "lat": 21.13993816808849,
+      "lng": -86.86582803726196,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_14",
+      "nombre": "Parada RUTA 44 COMBI #14",
+      "lat": 21.13961794979572,
+      "lng": -86.85755610466003,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_15",
+      "nombre": "Parada RUTA 44 COMBI #15",
+      "lat": 21.14112897379305,
+      "lng": -86.83404922485353,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_16",
+      "nombre": "Parada RUTA 44 COMBI #16",
+      "lat": 21.14370068119079,
+      "lng": -86.82825565338135,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1759952771720_s_17",
+      "nombre": "Parada RUTA 44 COMBI #17",
+      "lat": 21.14543680860925,
+      "lng": -86.82417869567873,
+      "orden": 17,
+      "landmarks": ""
+    }
+  ]
+}

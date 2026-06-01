@@ -1,7 +1,7 @@
 import { openDB, type IDBPDatabase } from 'idb';
 
 const DB_NAME = 'cancunmueve-db';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 let _cryptoKey: CryptoKey | null = null;
 let _dbPromise: Promise<IDBPDatabase> | null = null;
@@ -86,6 +86,11 @@ export const initDB = async (): Promise<IDBPDatabase> => {
             db.createObjectStore('agent-memory', { keyPath: 'id' });
           }
         }
+        if (oldVersion < 6) {
+          if (!db.objectStoreNames.contains('tickets')) {
+            db.createObjectStore('tickets', { keyPath: 'id' });
+          }
+        }
       },
     });
     const balance = await db.get('wallet-status', 'current_balance');
@@ -139,6 +144,25 @@ export const setWalletBalance = async (amount: number) => {
 export const updateWalletBalance = async (amount: number) => {
   const balance = await getWalletBalance();
   if (balance) await setWalletBalance(balance.amount + amount);
+};
+
+export interface Ticket {
+  id: string;
+  routeId: string;
+  routeName: string;
+  timestamp: number;
+  qrData: string;
+  status: 'valid' | 'used' | 'expired';
+}
+
+export const saveTicket = async (ticket: Ticket) => {
+  const db = await initDB();
+  await db.put('tickets', ticket);
+};
+
+export const getTickets = async (): Promise<Ticket[]> => {
+  const db = await initDB();
+  return db.getAll('tickets');
 };
 
 export interface PendingReport {

@@ -1,0 +1,177 @@
+{
+  "id": "ruta_1760328606309",
+  "nombre": "RUTA 17",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1760328606309_s_1",
+      "nombre": "Parada RUTA 17 #1",
+      "lat": 21.174812800473557,
+      "lng": -86.90945684909822,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_2",
+      "nombre": "Parada RUTA 17 #2",
+      "lat": 21.17091601438519,
+      "lng": -86.91445112228394,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_3",
+      "nombre": "Parada RUTA 17 #3",
+      "lat": 21.165808518013463,
+      "lng": -86.91470861434937,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_4",
+      "nombre": "Parada RUTA 17 #4",
+      "lat": 21.165343281865237,
+      "lng": -86.93048000335693,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_5",
+      "nombre": "Parada RUTA 17 #5",
+      "lat": 21.161091055749228,
+      "lng": -86.91884994506837,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_6",
+      "nombre": "Parada RUTA 17 #6",
+      "lat": 21.157078843333455,
+      "lng": -86.91298127174377,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_7",
+      "nombre": "Parada RUTA 17 #7",
+      "lat": 21.152916433243604,
+      "lng": -86.9103527069092,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_8",
+      "nombre": "Parada RUTA 17 #8",
+      "lat": 21.149854585747708,
+      "lng": -86.90644741058351,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_9",
+      "nombre": "Parada RUTA 17 #9",
+      "lat": 21.15484256303528,
+      "lng": -86.89531624317169,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_10",
+      "nombre": "Parada RUTA 17 #10",
+      "lat": 21.157844273796744,
+      "lng": -86.88945293426515,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_11",
+      "nombre": "Parada RUTA 17 #11",
+      "lat": 21.172586792750216,
+      "lng": -86.85881137847902,
+      "orden": 11,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_12",
+      "nombre": "Parada RUTA 17 #12",
+      "lat": 21.17751898047271,
+      "lng": -86.84879064559937,
+      "orden": 12,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_13",
+      "nombre": "Parada RUTA 17 #13",
+      "lat": 21.18523207206274,
+      "lng": -86.83314800262453,
+      "orden": 13,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_14",
+      "nombre": "Parada RUTA 17 #14",
+      "lat": 21.177013763936362,
+      "lng": -86.82853996753694,
+      "orden": 14,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_15",
+      "nombre": "Parada RUTA 17 #15",
+      "lat": 21.17563316341128,
+      "lng": -86.82394266128541,
+      "orden": 15,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_16",
+      "nombre": "Parada RUTA 17 #16",
+      "lat": 21.171296193156554,
+      "lng": -86.82650685310364,
+      "orden": 16,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_17",
+      "nombre": "Parada RUTA 17 #17",
+      "lat": 21.164212701903796,
+      "lng": -86.82598650455475,
+      "orden": 17,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_18",
+      "nombre": "Parada RUTA 17 #18",
+      "lat": 21.157539102648517,
+      "lng": -86.82548761367799,
+      "orden": 18,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_19",
+      "nombre": "Parada RUTA 17 #19",
+      "lat": 21.15069509920717,
+      "lng": -86.82509064674377,
+      "orden": 19,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_20",
+      "nombre": "Parada RUTA 17 #20",
+      "lat": 21.144806401582283,
+      "lng": -86.8246239423752,
+      "orden": 20,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1760328606309_s_21",
+      "nombre": "Parada RUTA 17 #21",
+      "lat": 21.144826414545005,
+      "lng": -86.82411432266237,
+      "orden": 21,
+      "landmarks": ""
+    }
+  ]
+}

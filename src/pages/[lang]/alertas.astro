@@ -1,0 +1,154 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getLangFromUrl, useTranslations } from "../../utils/i18n";
+import Card from "../../components/ui/Card.astro";
+import Icon from "../../components/ui/Icon.astro";
+import Button from "../../components/ui/Button.astro";
+
+export function getStaticPaths() {
+  return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const alerts = [
+  {
+    id: 1,
+    type: "warning",
+    title: lang === "es" ? "Obras en Av. Tulum" : "Roadworks on Tulum Ave",
+    description: lang === "es" ? "Retrasos de 15 min en rutas R1, R2 y R10 debido a mantenimiento vial." : "15 min delays on routes R1, R2, and R10 due to road maintenance.",
+    date: "2026-06-01",
+    active: true
+  },
+  {
+    id: 2,
+    type: "info",
+    title: lang === "es" ? "Nueva Ruta R-510" : "New Route R-510",
+    description: lang === "es" ? "La nueva ruta R-510 ya está disponible en el buscador." : "The new R-510 route is now available in the search engine.",
+    date: "2026-05-30",
+    active: false
+  }
+];
+---
+
+<MainLayout title={lang === "es" ? "Alertas de Transporte" : "Transport Alerts"}>
+  <div class="c-alertas-page">
+    <header class="c-alertas-header">
+      <h1 class="t-h1">{lang === "es" ? "Centro de Alertas" : "Alert Center"}</h1>
+      <p class="t-body-lg u-mt-xs">{lang === "es" ? "Mantente informado sobre cambios en el transporte en tiempo real." : "Stay informed about real-time transport changes."}</p>
+    </header>
+
+    <div class="c-alertas-content">
+      <section class="c-alertas-section">
+        <h2 class="t-h3 u-mb-md">{lang === "es" ? "Notificaciones Push" : "Push Notifications"}</h2>
+        <Card>
+          <div class="c-push-config">
+            <div class="c-push-info">
+              <Icon name="alert" size={24} class="u-text-teal" />
+              <div class="u-ml-md">
+                <p class="t-subtitle">{lang === "es" ? "Alertas en tiempo real" : "Real-time Alerts"}</p>
+                <p class="t-caption">{lang === "es" ? "Recibe avisos sobre bloqueos y cambios de ruta directamente en tu móvil." : "Receive notices about blockades and route changes directly on your mobile."}</p>
+              </div>
+            </div>
+            <Button variant="primary" id="enable-push-btn" class="u-mt-md u-w-full">
+              {lang === "es" ? "Activar Notificaciones" : "Enable Notifications"}
+            </Button>
+          </div>
+        </Card>
+      </section>
+
+      <section class="c-alertas-section u-mt-xl">
+        <h2 class="t-h3 u-mb-md">{lang === "es" ? "Alertas Recientes" : "Recent Alerts"}</h2>
+        <div class="c-alerts-list">
+          {alerts.map(alert => (
+            <Card class={`c-alert-card c-alert-card--${alert.type} ${!alert.active ? 'is-muted' : ''}`}>
+              <div class="c-alert-card__header">
+                <span class={`c-alert-badge c-alert-badge--${alert.type}`}>
+                  {alert.type === 'warning' ? '⚠️' : 'ℹ️'}
+                </span>
+                <span class="t-caption u-ml-auto">{alert.date}</span>
+              </div>
+              <h3 class="t-subtitle u-mt-sm">{alert.title}</h3>
+              <p class="t-body-sm u-mt-xs">{alert.description}</p>
+            </Card>
+          ))}
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    import { requestNotifications } from "../../lib/notifications";
+    import { showToast } from "../../utils/toast";
+
+    const btn = document.getElementById('enable-push-btn');
+    if (btn) {
+      btn.addEventListener('click', async () => {
+        try {
+          const perm = await requestNotifications();
+          if (perm === 'granted') {
+            showToast('✅ Notificaciones activadas', 'success');
+            btn.textContent = 'Notificaciones Activas';
+            (btn as HTMLButtonElement).disabled = true;
+          } else {
+            showToast('⚠️ Permiso denegado', 'error');
+          }
+        } catch (e) {
+          showToast('❌ Error al configurar push', 'error');
+        }
+      });
+    }
+  </script>
+</MainLayout>
+
+<style>
+  .c-alertas-page {
+    padding: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .c-alertas-header {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  .c-push-config {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .c-push-info {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+  .c-alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .c-alert-card {
+    border-left: 4px solid var(--text-secondary);
+    transition: transform 0.2s ease;
+  }
+  .c-alert-card:hover {
+    transform: translateY(-2px);
+  }
+  .c-alert-card--warning {
+    border-left-color: #f59e0b;
+  }
+  .c-alert-card--info {
+    border-left-color: var(--sea-teal);
+  }
+  .is-muted {
+    opacity: 0.7;
+    filter: grayscale(0.5);
+  }
+  .c-alert-card__header {
+    display: flex;
+    align-items: center;
+  }
+  .c-alert-badge {
+    font-size: 1.25rem;
+  }
+</style>

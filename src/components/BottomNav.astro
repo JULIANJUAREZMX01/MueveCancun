@@ -22,21 +22,28 @@ const navItems = [
     iconFill: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/></svg>`,
   },
   {
-    href: getRelativeLocaleUrl(lang, "tracking"),
-    label: lang === "es" ? "En vivo" : "Live",
-    activePattern: /^\/(es|en)\/tracking/,
-    emoji: "📡",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="8" width="22" height="12" rx="2"/><path d="M9 8V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v3"/><circle cx="7" cy="17" r="1" fill="currentColor"/><circle cx="17" cy="17" r="1" fill="currentColor"/></svg>`,
-    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 8H4c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2zm-9-6h2v3h-2V2zM7 8V5c0-.55.45-1 1-1h8c.55 0 1 .45 1 1v3H7z"/></svg>`,
-    badge: "live",
+    href: getRelativeLocaleUrl(lang, "boletos"),
+    label: lang === "es" ? "Boletos" : "Tickets",
+    activePattern: /^\/(es|en)\/boletos/,
+    emoji: "🎟️",
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>`,
+    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-1.99.9-1.99 2v4c1.1 0 1.99.9 1.99 2s-.89 2-1.99 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zM13 17.5h-2v-2h2v2zm0-4.5h-2v-2h2v2zm0-4.5h-2v-2h2v2z"/></svg>`,
   },
   {
-    href: getRelativeLocaleUrl(lang, "community"),
-    label: lang === "es" ? "Foro" : "Forum",
-    activePattern: /^\/(es|en)\/community/,
-    emoji: "💬",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>`,
+    href: getRelativeLocaleUrl(lang, "rewards"),
+    label: lang === "es" ? "Premios" : "Rewards",
+    activePattern: /^\/(es|en)\/rewards/,
+    emoji: "🏆",
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55.47.98.97 1.21C11.47 18.44 12 19 12 19s.53-.56 1.03-.79c.5-.23.97-.66.97-1.21v-2.34c0-1.8-1.5-3.66-3-3.66h-2c-1.5 0-3 1.86-3 3.66Z"/><path d="M12 13V2"/></svg>`,
+    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2zM4.5 4c-.83 0-1.5.67-1.5 1.5S3.67 7 4.5 7H6V4H4.5zM19.5 4c.83 0 1.5.67 1.5 1.5S20.33 7 19.5 7H18V4h1.5zM12 17c-1.63 0-3 1.37-3 3v2h6v-2c0-1.63-1.37-3-3-3z"/></svg>`,
+  },
+  {
+    href: getRelativeLocaleUrl(lang, "alertas"),
+    label: lang === "es" ? "Alertas" : "Alerts",
+    activePattern: /^\/(es|en)\/alertas/,
+    emoji: "🔔",
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+    iconFill: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>`,
   },
   {
     href: getRelativeLocaleUrl(lang, "wallet"),
@@ -61,9 +68,6 @@ const navItems = [
           aria-label={item.label}
         >
           <div class="nav-icon">
-            {item.badge === 'live' && (
-              <span class="nav-live-dot" aria-hidden="true"></span>
-            )}
             <Fragment set:html={isActive ? item.iconFill : item.icon} />
           </div>
           <span class="nav-label">{item.label}</span>
@@ -83,7 +87,7 @@ const navItems = [
 }
 .bottom-nav__inner {
   display: flex; align-items: stretch;
-  max-width: 600px; margin: 0 auto;
+  max-width: 800px; margin: 0 auto;
   height: 64px; padding: 0 0.25rem;
 }
 .nav-item {
@@ -119,15 +123,5 @@ const navItems = [
 .nav-label {
   font-size: 0.6rem; font-weight: 600; letter-spacing: 0.01em;
   transition: color 0.25s, font-weight 0.1s; white-space: nowrap;
-}
-.nav-live-dot {
-  position: absolute; top: 0; right: 0;
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--danger); border: 1.5px solid var(--glass-bg);
-  animation: pulse-live 2s ease-in-out infinite;
-}
-@keyframes pulse-live {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.3); }
 }
 </style>

@@ -1,0 +1,97 @@
+{
+  "id": "ruta_1758230498578",
+  "nombre": "RUTA 19",
+  "tarifa": 12,
+  "tipo": "Autobús",
+  "empresa": "Transporte Público",
+  "paradas": [
+    {
+      "id": "ruta_1758230498578_s_1",
+      "nombre": "Parada RUTA 19 #1",
+      "lat": 21.20657352922994,
+      "lng": -86.88930809497835,
+      "orden": 1,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1758230498578_s_2",
+      "nombre": "Parada RUTA 19 #2",
+      "lat": 21.204818114440513,
+      "lng": -86.88480734825136,
+      "orden": 2,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1758230498578_s_3",
+      "nombre": "Parada RUTA 19 #3",
+      "lat": 21.19654587903971,
+      "lng": -86.88005447387697,
+      "orden": 3,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1758230498578_s_4",
+      "nombre": "Parada RUTA 19 #4",
+      "lat": 21.19584066704835,
+      "lng": -86.87504947185518,
+      "orden": 4,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1758230498578_s_5",
+      "nombre": "Parada RUTA 19 #5",
+      "lat": 21.19048894863368,
+      "lng": -86.86987280845644,
+      "orden": 5,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1758230498578_s_6",
+      "nombre": "Parada RUTA 19 #6",
+      "lat": 21.195805656436253,
+      "lng": -86.85950875282289,
+      "orden": 6,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1758230498578_s_7",
+      "nombre": "Parada RUTA 19 #7",
+      "lat": 21.179809940731413,
+      "lng": -86.85048580169678,
+      "orden": 7,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1758230498578_s_8",
+      "nombre": "Parada RUTA 19 #8",
+      "lat": 21.16444782322659,
+      "lng": -86.84607088565828,
+      "orden": 8,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1758230498578_s_9",
+      "nombre": "Parada RUTA 19 #9",
+      "lat": 21.173927403661025,
+      "lng": -86.82718276977539,
+      "orden": 9,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1758230498578_s_10",
+      "nombre": "Parada RUTA 19 #10",
+      "lat": 21.14365064839872,
+      "lng": -86.82445764541627,
+      "orden": 10,
+      "landmarks": ""
+    },
+    {
+      "id": "ruta_1758230498578_s_11",
+      "nombre": "Parada RUTA 19 #11",
+      "lat": 21.146612560578966,
+      "lng": -86.82428598403932,
+      "orden": 11,
+      "landmarks": ""
+    }
+  ]
+}
