@@ -1,13 +1,18 @@
 /**
  * Nexus Prime WASM Loader - Singleton Pattern
  * Previene condiciones de carrera en la inicialización del motor de ruteo.
+ * 
+ * WASM exports reales (route_calculator.d.ts):
+ *   - find_route(origin: string, dest: string): any
+ *   - load_catalog(json_payload: string): void
  */
 
 export interface RouteCalculatorWasm {
-  load_catalog_core(json: string): void;
-  load_catalog(json: string): void;
-  calculate_route(origin: string, dest: string): string;
-  match_stop(query: string): string;
+  find_route(origin: string, dest: string): any;
+  load_catalog(json_payload: string): void;
+  // Aliases para compatibilidad con código legacy
+  calculate_route?: (origin: string, dest: string) => string;
+  load_catalog_core?: (json: string) => void;
 }
 
 export class WasmLoader {
@@ -39,11 +44,24 @@ export class WasmLoader {
 
   private async loadWasm(): Promise<RouteCalculatorWasm> {
     try {
-      // Importamos el pegamento JS generado por wasm-pack
+      // Importar el glue JS generado por wasm-pack
       const module = await import('/wasm/route-calculator/route_calculator.js');
-      // Inicializamos el módulo WASM
+      // Inicializar el módulo WASM (carga el .wasm binario)
       await module.default();
-      return module as unknown as RouteCalculatorWasm;
+      
+      // Crear proxy con aliases para compatibilidad
+      const wasmModule = module as unknown as RouteCalculatorWasm;
+      
+      // Alias: calculate_route → find_route (el nombre real del export WASM)
+      if (typeof wasmModule.find_route === 'function' && !wasmModule.calculate_route) {
+        (wasmModule as any).calculate_route = (origin: string, dest: string) => {
+          const result = wasmModule.find_route(origin, dest);
+          // find_route retorna objeto JS directamente (externref), no string
+          return typeof result === 'string' ? result : JSON.stringify(result);
+        };
+      }
+      
+      return wasmModule;
     } catch (err) {
       console.error('[WasmLoader] Failed to load WASM module:', err);
       throw err;
