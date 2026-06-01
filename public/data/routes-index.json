@@ -1,697 +1,293 @@
 {
-  "generated": "2026-06-01T04:36:10.215Z",
-  "count": 115,
+  "generated": "2026-04-04T20:05:56.621Z",
+  "count": 41,
   "files": [
     {
       "file": "routes/ADO_AEROPUERTO_001.json",
       "ids": [
         "ADO_AEROPUERTO_001"
       ],
-      "mtime": "2026-05-31T21:27:50.645Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
       "file": "routes/CR_PTO_JUAREZ_001.json",
       "ids": [
         "CR_PTO_JUAREZ_001"
       ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/R1.json",
-      "ids": [
-        "R1"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/R10.json",
-      "ids": [
-        "R10"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/R15.json",
-      "ids": [
-        "R15_HOTELES_001"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/R19_VILLAS_OTOCH_002.json",
-      "ids": [
-        "R19_VILLAS_OTOCH_002"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/R1_ZONA_HOTELERA_001.json",
-      "ids": [
-        "R1_ZONA_HOTELERA_001"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/R2.json",
-      "ids": [
-        "R2"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/R27.json",
-      "ids": [
-        "R27_TIERRA_MAYA_001"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/R28_VILLAS_OTOCH_001.json",
-      "ids": [
-        "R28_VILLAS_OTOCH_001"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/R2_94_VILLAS_OTOCH_001.json",
-      "ids": [
-        "R2_94_VILLAS_OTOCH_001"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/R33.json",
-      "ids": [
-        "R33_REG102_001"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/R6.json",
-      "ids": [
-        "R6_WALMART_001"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/VAN_PLAYA_EXPRESS_001.json",
-      "ids": [
-        "VAN_PLAYA_EXPRESS_001"
-      ],
-      "mtime": "2026-05-31T21:27:50.645Z"
-    },
-    {
-      "file": "routes/POLYLINE_1753801260218_0.json",
-      "ids": [
-        "POLYLINE_1753801260218_0"
-      ],
-      "mtime": "2026-06-01T03:57:39.924Z"
-    },
-    {
-      "file": "routes/POLYLINE_1753802299281_0.json",
-      "ids": [
-        "POLYLINE_1753802299281_0"
-      ],
-      "mtime": "2026-06-01T03:57:39.924Z"
-    },
-    {
-      "file": "routes/POLYLINE_1759506708808.json",
-      "ids": [
-        "POLYLINE_1759506708808"
-      ],
-      "mtime": "2026-06-01T03:57:39.924Z"
-    },
-    {
-      "file": "routes/POLYLINE_1761456676914.json",
-      "ids": [
-        "POLYLINE_1761456676914"
-      ],
-      "mtime": "2026-06-01T03:57:39.924Z"
-    },
-    {
-      "file": "routes/POLYLINE_1761458818964.json",
-      "ids": [
-        "POLYLINE_1761458818964"
-      ],
-      "mtime": "2026-06-01T03:57:39.924Z"
-    },
-    {
-      "file": "routes/POLYLINE_1754576044305.json",
-      "ids": [
-        "POLYLINE_1754576044305"
-      ],
-      "mtime": "2026-06-01T03:57:39.928Z"
-    },
-    {
-      "file": "routes/POLYLINE_1756850089371.json",
-      "ids": [
-        "POLYLINE_1756850089371"
-      ],
-      "mtime": "2026-06-01T03:57:39.928Z"
-    },
-    {
-      "file": "routes/POLYLINE_1758230498578.json",
-      "ids": [
-        "POLYLINE_1758230498578"
-      ],
-      "mtime": "2026-06-01T03:57:39.928Z"
-    },
-    {
-      "file": "routes/POLYLINE_1759866137331.json",
-      "ids": [
-        "POLYLINE_1759866137331"
-      ],
-      "mtime": "2026-06-01T03:57:39.928Z"
-    },
-    {
-      "file": "routes/POLYLINE_1759866849505.json",
-      "ids": [
-        "POLYLINE_1759866849505"
-      ],
-      "mtime": "2026-06-01T03:57:39.928Z"
-    },
-    {
-      "file": "routes/POLYLINE_1759952771720.json",
-      "ids": [
-        "POLYLINE_1759952771720"
-      ],
-      "mtime": "2026-06-01T03:57:39.932Z"
-    },
-    {
-      "file": "routes/POLYLINE_1760327653692.json",
-      "ids": [
-        "POLYLINE_1760327653692"
-      ],
-      "mtime": "2026-06-01T03:57:39.932Z"
-    },
-    {
-      "file": "routes/POLYLINE_1760338237012.json",
-      "ids": [
-        "POLYLINE_1760338237012"
-      ],
-      "mtime": "2026-06-01T03:57:39.932Z"
-    },
-    {
-      "file": "routes/POLYLINE_1760328606309.json",
-      "ids": [
-        "POLYLINE_1760328606309"
-      ],
-      "mtime": "2026-06-01T03:57:39.936Z"
-    },
-    {
-      "file": "routes/POLYLINE_1760340184559.json",
-      "ids": [
-        "POLYLINE_1760340184559"
-      ],
-      "mtime": "2026-06-01T03:57:39.936Z"
-    },
-    {
-      "file": "routes/POLYLINE_1760414609200.json",
-      "ids": [
-        "POLYLINE_1760414609200"
-      ],
-      "mtime": "2026-06-01T03:57:39.936Z"
-    },
-    {
-      "file": "routes/POLYLINE_1760462813165.json",
-      "ids": [
-        "POLYLINE_1760462813165"
-      ],
-      "mtime": "2026-06-01T03:57:39.936Z"
-    },
-    {
-      "file": "routes/POLYLINE_1760462813166.json",
-      "ids": [
-        "POLYLINE_1760462813166"
-      ],
-      "mtime": "2026-06-01T03:57:39.936Z"
-    },
-    {
-      "file": "routes/POLYLINE_1761273705821.json",
-      "ids": [
-        "POLYLINE_1761273705821"
-      ],
-      "mtime": "2026-06-01T03:57:39.936Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
       "file": "routes/POLYLINE_1464274794329.json",
       "ids": [
         "POLYLINE_1464274794329"
       ],
-      "mtime": "2026-06-01T03:57:39.940Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
       "file": "routes/POLYLINE_1653475759991.json",
       "ids": [
         "POLYLINE_1653475759991"
       ],
-      "mtime": "2026-06-01T03:57:39.940Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1753801260218_0.json",
+      "ids": [
+        "POLYLINE_1753801260218_0"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1753802299281_0.json",
+      "ids": [
+        "POLYLINE_1753802299281_0"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1754576044305.json",
+      "ids": [
+        "POLYLINE_1754576044305"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1756850089371.json",
+      "ids": [
+        "POLYLINE_1756850089371"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1758230498578.json",
+      "ids": [
+        "POLYLINE_1758230498578"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1759506708808.json",
+      "ids": [
+        "POLYLINE_1759506708808"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1759866137331.json",
+      "ids": [
+        "POLYLINE_1759866137331"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1759866849505.json",
+      "ids": [
+        "POLYLINE_1759866849505"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1759952771720.json",
+      "ids": [
+        "POLYLINE_1759952771720"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1760327653692.json",
+      "ids": [
+        "POLYLINE_1760327653692"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1760328606309.json",
+      "ids": [
+        "POLYLINE_1760328606309"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
       "file": "routes/POLYLINE_1760333218631.json",
       "ids": [
         "POLYLINE_1760333218631"
       ],
-      "mtime": "2026-06-01T03:57:39.940Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1760338237012.json",
+      "ids": [
+        "POLYLINE_1760338237012"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1760340184559.json",
+      "ids": [
+        "POLYLINE_1760340184559"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1760414609200.json",
+      "ids": [
+        "POLYLINE_1760414609200"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1760462813165.json",
+      "ids": [
+        "POLYLINE_1760462813165"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1760462813166.json",
+      "ids": [
+        "POLYLINE_1760462813166"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
       "file": "routes/POLYLINE_1760989478537.json",
       "ids": [
         "POLYLINE_1760989478537"
       ],
-      "mtime": "2026-06-01T03:57:39.940Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
+    },
+    {
+      "file": "routes/POLYLINE_1761273705821.json",
+      "ids": [
+        "POLYLINE_1761273705821"
+      ],
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
       "file": "routes/POLYLINE_1761276380950.json",
       "ids": [
         "POLYLINE_1761276380950"
       ],
-      "mtime": "2026-06-01T03:57:39.940Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
       "file": "routes/POLYLINE_1761277331648.json",
       "ids": [
         "POLYLINE_1761277331648"
       ],
-      "mtime": "2026-06-01T03:57:39.940Z"
-    },
-    {
-      "file": "routes/POLYLINE_1761460735535.json",
-      "ids": [
-        "POLYLINE_1761460735535"
-      ],
-      "mtime": "2026-06-01T03:57:39.940Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
       "file": "routes/POLYLINE_1761277780965.json",
       "ids": [
         "POLYLINE_1761277780965"
       ],
-      "mtime": "2026-06-01T03:57:39.944Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
-      "file": "routes/ruta_1464274794329.json",
+      "file": "routes/POLYLINE_1761456676914.json",
       "ids": [
-        "ruta_1464274794329"
+        "POLYLINE_1761456676914"
       ],
-      "mtime": "2026-06-01T04:00:28.296Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
-      "file": "routes/ruta_1653475759991.json",
+      "file": "routes/POLYLINE_1761458818964.json",
       "ids": [
-        "ruta_1653475759991"
+        "POLYLINE_1761458818964"
       ],
-      "mtime": "2026-06-01T04:00:28.296Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
-      "file": "routes/ruta_1753801260218.json",
+      "file": "routes/POLYLINE_1761460735535.json",
       "ids": [
-        "ruta_1753801260218"
+        "POLYLINE_1761460735535"
       ],
-      "mtime": "2026-06-01T04:00:28.296Z"
+      "mtime": "2026-04-02T08:04:19.473Z"
     },
     {
-      "file": "routes/ruta_1753802299281.json",
+      "file": "routes/R1.json",
       "ids": [
-        "ruta_1753802299281"
+        "R1"
       ],
-      "mtime": "2026-06-01T04:00:28.296Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     },
     {
-      "file": "routes/ruta_1754576044305.json",
+      "file": "routes/R10.json",
       "ids": [
-        "ruta_1754576044305"
+        "R10"
       ],
-      "mtime": "2026-06-01T04:00:28.296Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     },
     {
-      "file": "routes/ruta_1756850089371.json",
+      "file": "routes/R15.json",
       "ids": [
-        "ruta_1756850089371"
+        "R15_HOTELES_001"
       ],
-      "mtime": "2026-06-01T04:00:28.300Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     },
     {
-      "file": "routes/ruta_1758230498578.json",
+      "file": "routes/R19_VILLAS_OTOCH_002.json",
       "ids": [
-        "ruta_1758230498578"
+        "R19_VILLAS_OTOCH_002"
       ],
-      "mtime": "2026-06-01T04:00:28.300Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     },
     {
-      "file": "routes/ruta_1759506708808.json",
+      "file": "routes/R1_ZONA_HOTELERA_001.json",
       "ids": [
-        "ruta_1759506708808"
+        "R1_ZONA_HOTELERA_001"
       ],
-      "mtime": "2026-06-01T04:00:28.300Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     },
     {
-      "file": "routes/ruta_1759866137331.json",
+      "file": "routes/R2.json",
       "ids": [
-        "ruta_1759866137331"
+        "R2"
       ],
-      "mtime": "2026-06-01T04:00:28.300Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     },
     {
-      "file": "routes/ruta_1759866849505.json",
+      "file": "routes/R27.json",
       "ids": [
-        "ruta_1759866849505"
+        "R27_TIERRA_MAYA_001"
       ],
-      "mtime": "2026-06-01T04:00:28.300Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     },
     {
-      "file": "routes/ruta_1759952771720.json",
+      "file": "routes/R28_VILLAS_OTOCH_001.json",
       "ids": [
-        "ruta_1759952771720"
+        "R28_VILLAS_OTOCH_001"
       ],
-      "mtime": "2026-06-01T04:00:28.300Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     },
     {
-      "file": "routes/ruta_1760327653692.json",
+      "file": "routes/R2_94_VILLAS_OTOCH_001.json",
       "ids": [
-        "ruta_1760327653692"
+        "R2_94_VILLAS_OTOCH_001"
       ],
-      "mtime": "2026-06-01T04:00:28.300Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     },
     {
-      "file": "routes/ruta_1760328606309.json",
+      "file": "routes/R33.json",
       "ids": [
-        "ruta_1760328606309"
+        "R33_REG102_001"
       ],
-      "mtime": "2026-06-01T04:00:28.300Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     },
     {
-      "file": "routes/ruta_1760333218631.json",
+      "file": "routes/R6.json",
       "ids": [
-        "ruta_1760333218631"
+        "R6_WALMART_001"
       ],
-      "mtime": "2026-06-01T04:00:28.304Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     },
     {
-      "file": "routes/ruta_1760338237012.json",
+      "file": "routes/VAN_PLAYA_EXPRESS_001.json",
       "ids": [
-        "ruta_1760338237012"
+        "VAN_PLAYA_EXPRESS_001"
       ],
-      "mtime": "2026-06-01T04:00:28.304Z"
-    },
-    {
-      "file": "routes/ruta_1760340184559.json",
-      "ids": [
-        "ruta_1760340184559"
-      ],
-      "mtime": "2026-06-01T04:00:28.304Z"
-    },
-    {
-      "file": "routes/ruta_1760414609200.json",
-      "ids": [
-        "ruta_1760414609200"
-      ],
-      "mtime": "2026-06-01T04:00:28.304Z"
-    },
-    {
-      "file": "routes/ruta_1760462813165.json",
-      "ids": [
-        "ruta_1760462813165"
-      ],
-      "mtime": "2026-06-01T04:00:28.304Z"
-    },
-    {
-      "file": "routes/ruta_1760462813166.json",
-      "ids": [
-        "ruta_1760462813166"
-      ],
-      "mtime": "2026-06-01T04:00:28.304Z"
-    },
-    {
-      "file": "routes/ruta_1760989478537.json",
-      "ids": [
-        "ruta_1760989478537"
-      ],
-      "mtime": "2026-06-01T04:00:28.304Z"
-    },
-    {
-      "file": "routes/ruta_1761273705821.json",
-      "ids": [
-        "ruta_1761273705821"
-      ],
-      "mtime": "2026-06-01T04:00:28.308Z"
-    },
-    {
-      "file": "routes/ruta_1761276380950.json",
-      "ids": [
-        "ruta_1761276380950"
-      ],
-      "mtime": "2026-06-01T04:00:28.308Z"
-    },
-    {
-      "file": "routes/ruta_1761277331648.json",
-      "ids": [
-        "ruta_1761277331648"
-      ],
-      "mtime": "2026-06-01T04:00:28.308Z"
-    },
-    {
-      "file": "routes/ruta_1761277780965.json",
-      "ids": [
-        "ruta_1761277780965"
-      ],
-      "mtime": "2026-06-01T04:00:28.308Z"
-    },
-    {
-      "file": "routes/ruta_1761456676914.json",
-      "ids": [
-        "ruta_1761456676914"
-      ],
-      "mtime": "2026-06-01T04:00:28.308Z"
-    },
-    {
-      "file": "routes/ruta_1761458818964.json",
-      "ids": [
-        "ruta_1761458818964"
-      ],
-      "mtime": "2026-06-01T04:00:28.308Z"
-    },
-    {
-      "file": "routes/ruta_1761460735535.json",
-      "ids": [
-        "ruta_1761460735535"
-      ],
-      "mtime": "2026-06-01T04:00:28.308Z"
-    },
-    {
-      "file": "routes/RUTA_31.json",
-      "ids": [
-        "RUTA_31"
-      ],
-      "mtime": "2026-06-01T04:07:35.128Z"
-    },
-    {
-      "file": "routes/RUTA_30.json",
-      "ids": [
-        "RUTA_30"
-      ],
-      "mtime": "2026-06-01T04:07:35.132Z"
-    },
-    {
-      "file": "routes/RUTA_44.json",
-      "ids": [
-        "RUTA_44"
-      ],
-      "mtime": "2026-06-01T04:07:35.132Z"
-    },
-    {
-      "file": "routes/RUTA_81.json",
-      "ids": [
-        "RUTA_81"
-      ],
-      "mtime": "2026-06-01T04:07:35.132Z"
-    },
-    {
-      "file": "routes/RUTA_29.json",
-      "ids": [
-        "RUTA_29"
-      ],
-      "mtime": "2026-06-01T04:07:35.136Z"
-    },
-    {
-      "file": "routes/RUTA_33.json",
-      "ids": [
-        "RUTA_33"
-      ],
-      "mtime": "2026-06-01T04:07:35.136Z"
-    },
-    {
-      "file": "routes/RUTA_71.json",
-      "ids": [
-        "RUTA_71"
-      ],
-      "mtime": "2026-06-01T04:07:35.136Z"
-    },
-    {
-      "file": "routes/RUTA_79.json",
-      "ids": [
-        "RUTA_79"
-      ],
-      "mtime": "2026-06-01T04:07:35.136Z"
-    },
-    {
-      "file": "routes/RUTA_18_A.json",
-      "ids": [
-        "RUTA_18_A"
-      ],
-      "mtime": "2026-06-01T04:07:35.140Z"
-    },
-    {
-      "file": "routes/RUTA_19.json",
-      "ids": [
-        "RUTA_19"
-      ],
-      "mtime": "2026-06-01T04:07:35.140Z"
-    },
-    {
-      "file": "routes/RUTA_28.json",
-      "ids": [
-        "RUTA_28"
-      ],
-      "mtime": "2026-06-01T04:07:35.140Z"
-    },
-    {
-      "file": "routes/RUTA_44_COMBI.json",
-      "ids": [
-        "RUTA_44_COMBI"
-      ],
-      "mtime": "2026-06-01T04:07:35.140Z"
-    },
-    {
-      "file": "routes/RUTA_234.json",
-      "ids": [
-        "RUTA_234"
-      ],
-      "mtime": "2026-06-01T04:07:35.144Z"
-    },
-    {
-      "file": "routes/RUTA_235_227.json",
-      "ids": [
-        "RUTA_235_227"
-      ],
-      "mtime": "2026-06-01T04:07:35.144Z"
-    },
-    {
-      "file": "routes/RUTA_510.json",
-      "ids": [
-        "RUTA_510"
-      ],
-      "mtime": "2026-06-01T04:07:35.144Z"
-    },
-    {
-      "file": "routes/RUTA_17.json",
-      "ids": [
-        "RUTA_17"
-      ],
-      "mtime": "2026-06-01T04:07:35.148Z"
-    },
-    {
-      "file": "routes/RUTA_13.json",
-      "ids": [
-        "RUTA_13"
-      ],
-      "mtime": "2026-06-01T04:07:35.152Z"
-    },
-    {
-      "file": "routes/RUTA_70.json",
-      "ids": [
-        "RUTA_70"
-      ],
-      "mtime": "2026-06-01T04:07:35.152Z"
-    },
-    {
-      "file": "routes/RUTA_CENTRAL_ABASTOS.json",
-      "ids": [
-        "RUTA_CENTRAL_ABASTOS"
-      ],
-      "mtime": "2026-06-01T04:07:35.152Z"
-    },
-    {
-      "file": "routes/RUTA_21.json",
-      "ids": [
-        "RUTA_21"
-      ],
-      "mtime": "2026-06-01T04:07:35.156Z"
-    },
-    {
-      "file": "routes/RUTA_2_TORITO.json",
-      "ids": [
-        "RUTA_2_TORITO"
-      ],
-      "mtime": "2026-06-01T04:07:35.156Z"
-    },
-    {
-      "file": "routes/RUTA_5.json",
-      "ids": [
-        "RUTA_5"
-      ],
-      "mtime": "2026-06-01T04:07:35.156Z"
-    },
-    {
-      "file": "routes/RUTA_2_LA_JOYA.json",
-      "ids": [
-        "RUTA_2_LA_JOYA"
-      ],
-      "mtime": "2026-06-01T04:07:35.160Z"
-    },
-    {
-      "file": "routes/RUTA_2_VILLAS_DEL_MAR.json",
-      "ids": [
-        "RUTA_2_VILLAS_DEL_MAR"
-      ],
-      "mtime": "2026-06-01T04:07:35.160Z"
-    },
-    {
-      "file": "routes/RUTA_1_REHOYADA.json",
-      "ids": [
-        "RUTA_1_REHOYADA"
-      ],
-      "mtime": "2026-06-01T04:07:35.164Z"
-    },
-    {
-      "file": "routes/RUTA_2_15.json",
-      "ids": [
-        "RUTA_2_15"
-      ],
-      "mtime": "2026-06-01T04:07:35.164Z"
-    },
-    {
-      "file": "routes/RUTA_2_CHACMOOL_PORTILLO.json",
-      "ids": [
-        "RUTA_2_CHACMOOL_PORTILLO"
-      ],
-      "mtime": "2026-06-01T04:07:35.164Z"
-    },
-    {
-      "file": "routes/saturmex_routes_fix_119.json",
-      "ids": [
-        "R2_94_VILLAS_OTOCH_001",
-        "CR_PTO_JUAREZ_001",
-        "R1_ZONA_HOTELERA_001",
-        "VAN_PLAYA_EXPRESS_001",
-        "R19_VILLAS_OTOCH_002",
-        "ADO_AEROPUERTO_001",
-        "R10_AEROPUERTO",
-        "R6_WALMART_001",
-        "R29_OUTLET_001",
-        "R17_LAKIN_001",
-        "R21_AMERICAS_001",
-        "R44_CENTRO_001",
-        "R5_HEROES_001",
-        "R27_TIERRA_MAYA_001",
-        "R237_RANCHO_001",
-        "R71_RESIDENCIAL_001",
-        "R31_UNIVERSIDAD_001",
-        "R30_REG103_001",
-        "R33_REG102_001",
-        "ruta_1753802299281"
-      ],
-      "mtime": "2026-06-01T04:36:08.956Z"
+      "mtime": "2026-04-02T08:04:19.477Z"
     }
   ]
 }

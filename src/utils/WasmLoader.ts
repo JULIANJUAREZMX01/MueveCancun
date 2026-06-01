@@ -22,9 +22,7 @@ type WasmModuleRaw = RouteCalculatorWasm & {
 export class WasmLoader {
   private static instance: WasmLoader;
   private wasmModule: RouteCalculatorWasm | null = null;
-  private loadingPromise: Promise<RouteCalculatorWasm> | null = null;
-
-  private constructor() {}
+  private loading: Promise<RouteCalculatorWasm> | null = null;
 
   static async getModule(): Promise<RouteCalculatorWasm> {
     if (!WasmLoader.instance) {
@@ -35,18 +33,23 @@ export class WasmLoader {
 
   private async ensureLoaded(): Promise<RouteCalculatorWasm> {
     if (this.wasmModule) return this.wasmModule;
-    if (this.loadingPromise) return this.loadingPromise;
+    if (this.loading) return this.loading;
 
-    this.loadingPromise = this.loadWasm();
+    this.loading = this.loadWasm();
     try {
-      this.wasmModule = await this.loadingPromise;
+      const module = await this.loading;
+      this.wasmModule = module;
       return this.wasmModule;
     } finally {
-      this.loadingPromise = null;
+      this.loading = null;
     }
   }
 
   private async loadWasm(): Promise<RouteCalculatorWasm> {
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("WASM load timeout (5s)")), 5000)
+    );
+
     try {
       // Importar el glue JS generado por wasm-pack
       const module = await import('/wasm/route-calculator/route_calculator.js') as WasmModuleRaw;

@@ -1,39 +1,35 @@
 ---
 import Icon from "./ui/Icon.astro";
-import { getLangFromUrl, useTranslations } from "../utils/i18n";
-import { ariaLabels } from "../utils/aria-labels";
-
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
-const isEs = lang === "es";
-const labels = ariaLabels[lang];
+const isEs = Astro.url.pathname.includes("/es/");
 ---
 
 <div class="map-wrapper">
   <div id="map-container" class="map-container">
     <div id="map-fallback" class="map-fallback">
        <div class="map-fallback__spinner"></div>
-       <p class="map-fallback__text">{t('map.loading')}</p>
+       <p class="map-fallback__text">{isEs ? "Cargando Mapa..." : "Loading Map..."}</p>
     </div>
   </div>
 
   <!-- GPS + Controls -->
   <div class="map-controls">
-    <button id="gps-center-btn" class="map-control-btn" aria-label={labels['map.gps']}>
-       <Icon name="target" class="w-5 h-5" />
+    <button id="gps-center-btn" class="map-control-btn" aria-label={isEs ? "Centrar GPS" : "Center GPS"} title={isEs ? "Centrar en mi ubicación" : "Center on my location"}>
+       <Icon name="gps" class="map-control-btn__icon" />
     </button>
     <div class="map-tooltip">{isEs ? "Mi ubicación" : "My location"}</div>
 
-    <button id="route-clear-btn" class="map-control-btn map-control-btn--danger" aria-label={labels['map.clear']}>
-       <Icon name="x" class="w-5 h-5" />
+    <button id="route-clear-btn" class="map-control-btn map-control-btn--danger" aria-label={isEs ? "Limpiar ruta" : "Clear route"} title={isEs ? "Limpiar ruta" : "Clear route"}>
+       <Icon name="x" class="map-control-btn__icon" />
     </button>
+
+    <div id="gps-status-dot" class="gps-status-dot" title="GPS"></div>
   </div>
 
   <!-- Legend -->
   <div id="route-legend" class="map-legend hidden">
     <div class="map-legend__header">
-      <span class="map-legend__title">{t('map.legend_title')}</span>
-      <button class="map-legend__close" aria-label={labels['map.legend_close']} onclick="document.getElementById('route-legend').classList.add('hidden')">
+      <span class="map-legend__title">Rutas Principales</span>
+      <button class="map-legend__close" onclick="document.getElementById('route-legend').classList.add('hidden')">
         <Icon name="x" class="w-4 h-4" />
       </button>
     </div>
@@ -43,157 +39,334 @@ const labels = ariaLabels[lang];
   <!-- Route Banner -->
   <div id="route-banner" class="map-banner hidden">
       <div class="map-banner__indicator"></div>
-      <p id="route-banner-text" class="map-banner__text">{t('map.route_drawn')}</p>
+      <p id="route-banner-text" class="map-banner__text">Ruta trazada</p>
   </div>
 </div>
 
 <script>
   import { loadLeaflet } from "../utils/leafletLoader";
-  import { initWasm, enrichJourneyLegs, type RouteEntry } from "../lib/initWasm";
+  import { initWasm, enrichJourneyLegs } from "../lib/initWasm";
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { escapeHtml, safeUrl, normalizeString } from "../utils/utils";
   import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
+  import { drawRoute } from "../utils/RouteDrawer";
 
-  import type { Map, LayerGroup, CircleMarker, Circle, Polyline } from 'leaflet';
-  let map: Map | null = null;
-  let layerGroup: LayerGroup | null = null;
-  let stopMarkersLayer: LayerGroup | null = null;
-  let activeJourney: import('../lib/initWasm').Journey | null = null;
+  let map = null;
+  let layerGroup = null;
+  let stopMarkersLayer = null;
+  let activeJourney = null;
+  let userMarker = null;
 
-  function drawRoute(mapInstance: Map, journey: import('../lib/initWasm').Journey, currentLayerGroup: LayerGroup | null, coordsDB: globalThis.Map<string,[number,number]> | Record<string,[number,number]>) {
-    if (!mapInstance || !journey) return null;
-    if (currentLayerGroup) mapInstance.removeLayer(currentLayerGroup);
+  // Tracking state
+  let busMarkers = new Map();
+  let refreshTimer = null;
 
+  function createBusIconSimple(color, heading) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
+      <g transform="rotate(${heading},18,18)">
+        <rect x="5" y="5" width="26" height="22" rx="5" fill="${color}"/>
+        <rect x="8" y="8" width="8" height="7" rx="2" fill="#e0f2fe" opacity="0.9"/>
+        <rect x="20" y="8" width="8" height="7" rx="2" fill="#e0f2fe" opacity="0.9"/>
+        <circle cx="10" cy="27" r="3.5" fill="#1e293b"/>
+        <circle cx="26" cy="27" r="3.5" fill="#1e293b"/>
+      </g>
+    </svg>`;
     const L = window.L;
-    const layers: Polyline[] = [];
-    const allCoords: [number, number][] = [];
-
-    journey.legs.forEach((leg) => {
-      const routeColor = getRouteColor(leg.route_id, leg.route_name || leg.nombre || leg.name, leg.transport_type);
-      const color = leg.color || routeColor;
-      const stops = leg.paradas || leg.stops || [];
-      const legCoords = stops
-        .map((s) => {
-          const name = normalizeString(s.nombre || s.name || "");
-          return coordsDB instanceof Map ? coordsDB.get(name) : (coordsDB as Record<string,[number,number]>)[name];
-        })
-        .filter(Boolean) as [number, number][];
-
-      if (legCoords.length >= 2) {
-        const poly = L.polyline(legCoords, { color, weight: 6, opacity: 0.85, lineJoin: "round" });
-        layers.push(poly);
-        allCoords.push(...legCoords);
-
-        layers.push(L.circleMarker(legCoords[0], { radius: 8, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2.5 })
-          .bindPopup(`<b>${escapeHtml(leg.origin_stop || "Inicio")}</b>`));
-        layers.push(L.circleMarker(legCoords[legCoords.length - 1], { radius: 8, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2.5 })
-          .bindPopup(`<b>${escapeHtml(leg.dest_stop || "Fin")}</b>`));
-      }
-    });
-
-    if (!layers.length) return null;
-
-    const lg = L.layerGroup(layers).addTo(mapInstance);
-    if (allCoords.length > 0) {
-      mapInstance.fitBounds(allCoords, { padding: [48, 48], maxZoom: 16 });
-    }
-    return lg;
+    if (!L) return null;
+    return L.divIcon({ html: svg, iconSize: [36, 36], iconAnchor: [18, 27], className: 'bus-marker-svg' });
   }
 
-  async function initMap() {
-    const mapContainer = document.getElementById("map-container");
-    if (!mapContainer || mapContainer.dataset.initialized === "true") return;
+  async function loadBuses() {
+    if (!map) return;
+    try {
+      const [trackRes, routesRes] = await Promise.all([
+        fetch('/api/tracking'),
+        fetch('/api/master_routes.json')
+      ]);
+      if (!trackRes.ok || !routesRes.ok) return;
 
-    await loadLeaflet();
-    const L = window.L;
+      const units = await trackRes.json();
+      const routesData = await routesRes.json();
+      const routes = routesData.rutas || routesData;
+      const colorMap = {};
+      routes.forEach((r) => { colorMap[r.id] = r.color || '#0d9488'; });
 
-    map = L.map('map-container', {
-      center: [21.1619, -86.8515],
-      zoom: 13,
-      zoomControl: false,
-      attributionControl: false
-    });
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      subdomains: 'abcd',
-      maxZoom: 20
-    }).addTo(map);
-
-    layerGroup = L.layerGroup().addTo(map);
-    stopMarkersLayer = L.layerGroup().addTo(map);
-
-    await coordinatesStore.init();
-    const coordsDB = coordinatesStore.getAll();
-
-    window.addEventListener("SHOW_ROUTE_ON_MAP", (e: Event) => {
-      const journey = (e as CustomEvent).detail.journey;
-      if (!map || !journey) return;
-      activeJourney = journey;
-      layerGroup = drawRoute(map, journey, layerGroup, coordsDB);
-
-      const banner = document.getElementById("route-banner");
-      const bannerText = document.getElementById("route-banner-text");
-      if (banner && bannerText) {
-        banner.classList.remove("hidden");
-        const isEs = document.documentElement.lang === "es";
-        bannerText.textContent = journey.legs?.[0]?.route_name || (isEs ? "Ruta trazada" : "Route drawn");
-      }
-    });
-
-    const gpsBtn = document.getElementById("gps-center-btn");
-    let gpsRequesting = false;
-
-    const setGpsBtnState = (state: string) => {
-      if (gpsBtn) (gpsBtn as HTMLElement).dataset.gpsState = state;
-    };
-
-    gpsBtn?.addEventListener("click", async () => {
-      if (gpsRequesting) return;
-      gpsRequesting = true;
-      setGpsBtnState('requesting');
-
-      const { getCurrentPosition } = await import("../utils/geolocation");
-      const result = await getCurrentPosition({
-        onPermissionDenied: () => {
-          setGpsBtnState('denied');
-          setTimeout(() => setGpsBtnState('idle'), 3000);
-        },
-        onError: () => {
-          setGpsBtnState('unavailable');
-          setTimeout(() => setGpsBtnState('idle'), 3000);
+      const activeIds = new Set(units.map(u => u.id));
+      busMarkers.forEach((m, id) => {
+        if (!activeIds.has(id)) {
+          m.remove();
+          busMarkers.delete(id);
         }
       });
 
-      if (result) {
-        setGpsBtnState('granted');
-        map?.setView([result.lat, result.lng], 16);
-        window.dispatchEvent(new CustomEvent('mc:position', { detail: { lat: result.lat, lng: result.lng, accuracy: result.accuracy } }));
-        setTimeout(() => setGpsBtnState('idle'), 2000);
+      const L = window.L;
+      if (!L) return;
+
+      units.forEach(u => {
+        const icon = createBusIconSimple(colorMap[u.route_id] || '#0d9488', u.heading || 0);
+        if (!icon) return;
+
+        if (busMarkers.has(u.id)) {
+          busMarkers.get(u.id).setLatLng([u.lat, u.lng]).setIcon(icon);
+        } else {
+          const m = L.marker([u.lat, u.lng], { icon })
+            .bindPopup(`<b>${escapeHtml(u.route_id)}</b><br>${escapeHtml(u.stop_name || 'En ruta')}`)
+            .addTo(map);
+          busMarkers.set(u.id, m);
+        }
+      });
+    } catch (e) {
+      console.warn("[Tracking] Failed to update buses", e);
+    }
+  }
+
+  async function initMap() {
+    if (typeof window === "undefined") return false;
+
+    const mapContainer = document.getElementById("map-container");
+    if (!mapContainer) return false;
+    if (mapContainer.dataset.initialized === "true") return true;
+
+    try {
+      await loadLeaflet();
+    } catch (err) {
+      console.error("[MapInit] Leaflet load failed:", err);
+      const fallback = document.getElementById("map-fallback");
+      if (fallback) {
+        const textEl = fallback.querySelector(".map-fallback__text");
+        if (textEl) textEl.textContent = "Error cargando mapa";
+        fallback.style.opacity = "1";
       }
-      gpsRequesting = false;
+      return false;
+    }
+
+    const L = window.L;
+    if (!L) return false;
+
+    // Fixed default icons for Leaflet
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
     });
 
+    map = L.map("map-container", {
+      center: [21.1619, -86.8515],
+      zoom: 13,
+      zoomControl: false,
+      attributionControl: false,
+    });
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      subdomains: 'abcd',
+    }).addTo(map);
+
+    layerGroup = L.layerGroup().addTo(map);
+
+    const [coordsDB] = await Promise.all([
+      coordinatesStore.init().then(() => coordinatesStore.getAll()),
+      initWasm().catch(() => null),
+    ]);
+
+    // Legend
+    function updateLegend(routes) {
+      const legendContent = document.getElementById('legend-content');
+      if (!legendContent) return;
+      legendContent.innerHTML = '';
+      [...routes].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '')).forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'map-legend__item';
+        const color = r.color || TRANSPORT_TYPE_COLORS["Bus_Urban"];
+        item.innerHTML = `<div class="map-legend__dot" style="background:${color}"></div>
+                          <span class="map-legend__item-name">${escapeHtml(r.nombre || r.name || r.id)}</span>`;
+        item.addEventListener("click", () => document.getElementById('route-legend')?.classList.add('hidden'));
+        legendContent.appendChild(item);
+      });
+    }
+
+    if (window.WASM_ROUTES) updateLegend(window.WASM_ROUTES);
+    window.addEventListener('WASM_ENGINE_READY', (e) => {
+      if (e.detail?.routes) updateLegend(e.detail.routes);
+    });
+
+    // GPS Watch
+    const gpsStatusDot = document.getElementById('gps-status-dot');
+    navigator.geolocation?.watchPosition(
+      (pos) => {
+        gpsStatusDot?.classList.add('active');
+        const latlng = [pos.coords.latitude, pos.coords.longitude];
+        if (userMarker) userMarker.setLatLng(latlng);
+        else {
+          userMarker = L.circleMarker(latlng, {
+            radius: 8, fillColor: '#3B82F6', fillOpacity: 1,
+            color: 'white', weight: 2, className: 'gps-dot'
+          }).addTo(map);
+        }
+      },
+      () => gpsStatusDot?.classList.remove('active'),
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 10000 }
+    );
+
+    // Stops
+    const allStops = coordsDB instanceof Map
+      ? Array.from(coordsDB.entries())
+      : Object.entries(coordsDB || {});
+
+    let hubSet = new Map();
+    try {
+      const hubsResp = await fetch('/data/hubs.json');
+      if (hubsResp.ok) {
+        const hubsData = await hubsResp.json();
+        hubsData.forEach(h => hubSet.set(normalizeString(h.name), h.route_count));
+      }
+    } catch {}
+
+    const wasmRoutes = window.WASM_ROUTES ?? [];
+    const landmarkMap = new Map();
+    wasmRoutes.forEach((r) => {
+      (r.paradas || []).forEach((p) => {
+        if (p.landmarks) landmarkMap.set(normalizeString(p.nombre ?? ''), p.landmarks);
+      });
+    });
+
+    const markerLayers = [];
+    allStops.forEach(([key, coords]) => {
+      const displayName = coordinatesStore.getOriginalName(key) || key;
+      const hubRouteCount = hubSet.get(key) ?? 0;
+      const isHub = hubRouteCount >= 3;
+      const landmark = landmarkMap.get(key);
+      const color = isHub ? '#F97316' : landmark ? '#8B5CF6' : TRANSPORT_TYPE_COLORS["Bus_Urban"];
+
+      markerLayers.push(
+        L.circleMarker(coords, {
+          radius: isHub ? 9 : 5,
+          fillColor: color,
+          color: "#FFFFFF",
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.9,
+        }).bindPopup(`
+          <div style="min-width:160px;padding:4px">
+            <p style="font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px">${escapeHtml(displayName)}</p>
+            <p style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+              <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
+            </div>
+          </div>
+        `)
+      );
+    });
+
+    if (markerLayers.length) {
+      stopMarkersLayer = L.layerGroup(markerLayers).addTo(map);
+    }
+
+    map.fitBounds([[21.03, -87.05], [21.35, -86.75]], { padding: [30, 30] });
+
+    const fallback = document.getElementById("map-fallback");
+    if (fallback) {
+      fallback.style.opacity = "0";
+      setTimeout(() => { fallback.style.display = "none"; }, 500);
+    }
+
+    // Map Click
+    map.on("click", (e) => {
+      const { lat, lng } = e.latlng;
+      const result = coordinatesStore.findNearestWithDistance(lat, lng);
+      if (!result || result.distanceKm > 0.8) return;
+
+      const c = (coordsDB instanceof Map
+        ? coordsDB.get(normalizeString(result.name))
+        : coordsDB[normalizeString(result.name)]) || [lat, lng];
+
+      L.popup()
+        .setLatLng(c)
+        .setContent(`
+          <div class="map-popup">
+            <p class="map-popup__title">${escapeHtml(result.name)}</p>
+            <p style="font-size:10px;color:#64748b;margin:0 0 6px">${(result.distanceKm * 1000).toFixed(0)} m</p>
+            <div class="map-popup__actions">
+              <button data-stop-name="${escapeHtml(result.name)}" data-action="origin" class="js-map-stop-action map-popup__btn map-popup__btn--origin">🟠 Salgo de aquí</button>
+              <button data-stop-name="${escapeHtml(result.name)}" data-action="dest"   class="js-map-stop-action map-popup__btn map-popup__btn--dest">🔵 Voy aquí</button>
+            </div>
+          </div>
+        `)
+        .openOn(map);
+    });
+
+    window.addEventListener("SHOW_ROUTE_ON_MAP", (e) => {
+      const rawJourney = e.detail?.journey;
+      if (!rawJourney || !map) return;
+      const journey = enrichJourneyLegs(rawJourney);
+      activeJourney = journey;
+      const newLg = drawRoute(map, journey, layerGroup, coordsDB);
+      if (newLg) layerGroup = newLg;
+
+      const bannerText = document.getElementById("route-banner-text");
+      const banner = document.getElementById("route-banner");
+      if (bannerText && banner) {
+        bannerText.textContent = journey.legs?.[0]?.route_name || "Ruta trazada";
+        banner.classList.remove("hidden");
+      }
+    });
+
+    // Tracking init
+    await loadBuses();
+    refreshTimer = setInterval(loadBuses, 20000);
+
+    // GPS feedback
+    function setGpsBtnState(state) {
+      const btn = document.getElementById('gps-center-btn');
+      if (btn) btn.dataset.gpsState = state;
+    }
+
+    document.getElementById('gps-center-btn')?.addEventListener('click', () => {
+      if (!navigator.geolocation || !map) return;
+      setGpsBtnState('requesting');
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          map.flyTo([pos.coords.latitude, pos.coords.longitude], 16, { duration: 1.2 });
+          setGpsBtnState('granted');
+          setTimeout(() => setGpsBtnState('idle'), 2000);
+        },
+        (err) => {
+          console.warn("[GPS] Error:", err);
+          setGpsBtnState('denied');
+          setTimeout(() => setGpsBtnState('idle'), 3000);
+        },
+        { timeout: 8000, maximumAge: 30000 }
+      );
+    });
+
+    // Clear route
     document.getElementById("route-clear-btn")?.addEventListener("click", () => {
-      if (layerGroup) { map?.removeLayer(layerGroup); layerGroup = L.layerGroup().addTo(map!); }
-      activeJourney = null;
-      document.getElementById("route-banner")?.classList.add("hidden");
+      if (layerGroup && map) {
+        layerGroup.clearLayers();
+        document.getElementById("route-banner")?.classList.add("hidden");
+        activeJourney = null;
+      }
     });
 
-    window.addEventListener('LANGUAGE_CHANGE', (e: Event) => {
-      const lang = (e as CustomEvent<{lang:string}>).detail?.lang;
-      if (!lang) return;
-      window.location.href = window.location.pathname.replace(/^\/(es|en)/, '/' + lang);
+    // Invalidate size
+    window.addEventListener('SHEET_TOGGLE', () => {
+      setTimeout(() => map?.invalidateSize(), 100);
+      setTimeout(() => map?.invalidateSize(), 400);
     });
-
-    setTimeout(() => map?.invalidateSize(), 400);
-    setTimeout(() => map?.invalidateSize(), 1200);
 
     mapContainer.dataset.initialized = "true";
     return true;
   }
 
-  function handleMapAction(e: Event) {
-    const btn = (e.target as HTMLElement)?.closest(".js-map-stop-action") as HTMLElement | null;
+  function handleMapAction(e) {
+    const btn = e.target?.closest(".js-map-stop-action");
     if (!btn) return;
     const name   = btn.dataset.stopName;
     const action = btn.dataset.action;
@@ -224,11 +397,12 @@ const labels = ariaLabels[lang];
   document.addEventListener('astro:page-load', scheduleInit);
   document.addEventListener("click", handleMapAction);
 
-  if (document.readyState === "complete") {
-    scheduleInit();
-  } else {
-    window.addEventListener("load", scheduleInit);
-  }
+  document.addEventListener('astro:before-swap', () => {
+    if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+  }, { once: true });
+
+  if (document.readyState === "complete") scheduleInit();
+  else window.addEventListener("load", scheduleInit);
 </script>
 
 <style>
@@ -236,6 +410,7 @@ const labels = ariaLabels[lang];
     position: relative;
     width: 100%;
     height: 100%;
+    background: var(--surface-bg);
   }
 
   .map-container {
@@ -245,6 +420,7 @@ const labels = ariaLabels[lang];
     background-image: linear-gradient(135deg, #e0f2f7 0%, #e8f4f0 50%, #d4edda 100%);
   }
 
+  /* Fallback & Loading */
   .map-fallback {
     position: absolute;
     inset: 0;
@@ -260,23 +436,24 @@ const labels = ariaLabels[lang];
     width: 2.5rem;
     height: 2.5rem;
     border: 3px solid rgba(13,148,136,0.2);
-    border-top-color: #0d9488;
+    border-top-color: var(--sea-teal);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     margin-bottom: 1rem;
   }
   .map-fallback__text {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #0d9488;
+    color: var(--sea-teal);
     opacity: 0.7;
   }
 
+  /* Map Controls Overlay */
   .map-controls {
     position: absolute;
-    right: 1rem;
+    right: 0.75rem;
     top: 1rem;
     z-index: 500;
     display: flex;
@@ -287,25 +464,43 @@ const labels = ariaLabels[lang];
   .map-control-btn {
     width: 2.75rem;
     height: 2.75rem;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.6);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    border-radius: 12px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #334155;
+    color: var(--sea-teal);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.15s var(--ease-back);
   }
   .map-control-btn:hover {
     transform: scale(1.08);
-    color: #0d9488;
-    box-shadow: 0 4px 16px rgba(13,148,136,0.25);
+    background: var(--sea-pale);
+    box-shadow: var(--shadow-md);
   }
-  .map-control-btn--danger { color: #ef4444; }
-  .map-control-btn--danger:hover { color: #dc2626; border-color: #ef4444; }
+  .map-control-btn__icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .map-control-btn--danger { color: var(--danger); }
+
+  /* GPS Status UI */
+  .map-control-btn[data-gps-state="requesting"] { animation: spin 1s linear infinite; opacity: 0.7; }
+  .map-control-btn[data-gps-state="granted"] { color: var(--jungle); border-color: var(--jungle); }
+  .map-control-btn[data-gps-state="denied"] { color: var(--danger); border-color: var(--danger); }
+
+  .gps-status-dot {
+    width: 10px; height: 10px; border-radius: 50%; background: var(--text-muted);
+    margin: 0.2rem auto; transition: background 0.3s;
+    box-shadow: 0 0 0 0 rgba(34,197,94,0.4);
+  }
+  .gps-status-dot.active {
+    background: var(--jungle);
+    animation: gps-pulse 2s ease-in-out infinite;
+  }
 
   .map-tooltip {
     position: absolute;
@@ -325,170 +520,36 @@ const labels = ariaLabels[lang];
   }
   .map-control-btn:hover + .map-tooltip { opacity: 1; }
 
-  .map-legend {
-    position: absolute;
-    right: 1rem;
-    top: 8rem;
-    z-index: 500;
-    width: 16rem;
-    max-height: 60vh;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(12px);
-    border-radius: 20px;
-    box-shadow: 0 16px 48px rgba(0,0,0,0.12);
-    border: 1px solid rgba(255,255,255,0.6);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    animation: scale-in 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  }
+  /* Legend & Banner */
+  .map-legend { position: absolute; right: 1rem; top: 8rem; z-index: 500; width: 16rem; max-height: 50vh; background: var(--glass-bg); backdrop-filter: blur(20px); border-radius: 20px; box-shadow: var(--glass-shadow); border: 1px solid var(--glass-border); display: flex; flex-direction: column; overflow: hidden; animation: scale-in 0.3s var(--ease-back); }
   .map-legend.hidden { display: none; }
-  .map-legend__header {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .map-legend__title {
-    font-size: 0.625rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #64748b;
-  }
-  .map-legend__close {
-    background: none;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 2px;
-  }
-  .map-legend__content {
-    overflow-y: auto;
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  .map-legend__item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .map-legend__item:hover { background: #f8fafc; }
-  .map-legend__dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .map-legend__item-name {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: #0f172a;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  .map-legend__header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; }
+  .map-legend__title { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-tertiary); }
+  .map-legend__close { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px; }
+  .map-legend__content { overflow-y: auto; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .map-legend__item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 10px; cursor: pointer; transition: background 0.2s; }
+  .map-legend__item:hover { background: var(--sea-xpale); }
+  .map-legend__dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; flex-shrink: 0; }
+  .map-legend__item-name { font-size: 0.7rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  .map-banner {
-    position: absolute;
-    top: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 500;
-    padding: 0.75rem 1.25rem;
-    background: rgba(15,23,42,0.92);
-    backdrop-filter: blur(12px);
-    border-radius: 14px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-    border: 1px solid rgba(255,255,255,0.1);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    min-width: 12rem;
-    animation: fade-up 0.35s ease both;
-  }
+  .map-banner { position: absolute; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 500; padding: 0.75rem 1.25rem; background: rgba(15,23,42,0.9); backdrop-filter: blur(12px); border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 0.75rem; min-width: 12rem; animation: fade-up 0.35s ease both; }
   .map-banner.hidden { display: none; }
-  .map-banner__indicator {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background: #0d9488;
-    flex-shrink: 0;
-  }
-  .map-banner__text {
-    font-size: 0.7rem;
-    font-weight: 900;
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0;
-  }
+  .map-banner__indicator { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--sea-teal); flex-shrink: 0; animation: gps-pulse 2s infinite; }
+  .map-banner__text { font-size: 0.7rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
 
+  /* Popup Styles */
   :global(.map-popup) { min-width: 11rem; padding: 0.25rem; }
-  :global(.map-popup__title) { font-weight: 900; color: #0f172a; font-size: 0.825rem; margin: 0 0 2px; }
-  :global(.map-popup__actions) { display: flex; flex-direction: column; gap: 0.25rem; }
-  :global(.map-popup__btn) { width: 100%; font-size: 0.7rem; color: white; border: none; border-radius: 8px; padding: 6px; font-weight: 700; cursor: pointer; }
-  :global(.map-popup__btn--origin) { background: #f97316; }
-  :global(.map-popup__btn--dest) { background: #0ea5e9; }
+  :global(.map-popup__title) { font-weight: 900; color: var(--text-primary); font-size: 0.85rem; margin: 0 0 2px; }
+  :global(.map-popup__actions) { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 8px; }
+  :global(.map-popup__btn) { width: 100%; font-size: 0.7rem; color: white; border: none; border-radius: 10px; padding: 8px; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
+  :global(.map-popup__btn:active) { transform: scale(0.96); }
+  :global(.map-popup__btn--origin) { background: var(--gradient-sunrise); }
+  :global(.map-popup__btn--dest) { background: var(--gradient-primary); }
 
-  :global(.gps-dot) { animation: gps-pulse 2s infinite; }
-  .map-control-btn[data-gps-state="requesting"] {
-    animation: spin 1s linear infinite;
-    opacity: 0.7;
-  }
-  .map-control-btn[data-gps-state="denied"],
-  .map-control-btn[data-gps-state="unavailable"] {
-    color: var(--coral-reef, #F97316);
-    border-color: var(--coral-reef, #F97316);
-  }
-  .map-control-btn[data-gps-state="timeout"] {
-    color: #F59E0B;
-    border-color: #F59E0B;
-  }
-  .map-control-btn[data-gps-state="granted"] {
-    color: var(--sea-teal, #2DD4BF);
-    border-color: var(--sea-teal, #2DD4BF);
-  }
+  /* Animations */
   @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes gps-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-  }
-  .map-control-btn.gps-follow-active {
-    background: var(--sea-teal);
-    color: #fff;
-    border-color: var(--sea-teal);
-    box-shadow: 0 0 0 4px rgba(45,212,191,0.25), var(--shadow-teal);
-    animation: follow-pulse 2s ease-in-out infinite;
-  }
-  @keyframes follow-pulse {
-    0%, 100% { box-shadow: 0 0 0 4px rgba(45,212,191,0.25), var(--shadow-teal); }
-    50%       { box-shadow: 0 0 0 8px rgba(45,212,191,0.10), var(--shadow-teal); }
-  }
-  .map-control-btn:active:not([disabled]) {
-    animation: press-ripple 0.6s ease-out;
-  }
-  @keyframes press-ripple {
-    0%   { box-shadow: 0 0 0 0   rgba(45,212,191,0.5); }
-    100% { box-shadow: 0 0 0 14px rgba(45,212,191,0); }
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-  @keyframes scale-in {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-  }
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
-  }
+  @keyframes scale-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+  @keyframes fade-up { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  @keyframes gps-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } }
+  :global(.gps-dot) { animation: gps-pulse 2s infinite; }
 </style>
