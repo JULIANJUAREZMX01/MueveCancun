@@ -39,7 +39,7 @@ export const ui = {
         'calc.tourist': 'Tourist',
         'calc.btn': 'CALCULATE ROUTE',
         'calc.balance.warning': 'Insufficient Balance',
-        'calc.balance.msg': 'Requires 80 MXN to operate.',
+        'calc.balance.msg': 'Requires $180 MXN to operate.',
         'calc.gps': 'Use my location',
         'calc.map': 'Select on map',
         'calc.reset': 'EDIT',
@@ -53,7 +53,7 @@ export const ui = {
         'calc.transfer': 'Transfer',
         'calc.view_map': 'View Map',
         'calc.view_route': 'View Route',
-        'calc.no_route': 'No direct routes',
+        'calc.no_route': 'No exact route found',
         'calc.no_route_msg': 'Try using keywords like "Centro", "Hotel Zone" or "Crucero".',
         'calc.view_all': 'View all routes',
         'calc.offline': 'Offline Mode',
@@ -64,18 +64,12 @@ export const ui = {
         'calc.toggle.hide': 'Hide',
         'calc.toggle.show': 'Show',
         'calc.export_gmaps': 'Open in Google Maps',
-        'calc.tap_to_view': 'Tap to view on map',
-        'calc.legs': 'legs',
-        'calc.direct': 'Direct',
         'transport.Bus': 'Bus',
         'transport.Combi': 'Combi',
         'transport.Van': 'Van',
         'transport.ADO': 'ADO',
         'transport.PlayaExpress': 'Playa Express',
-        'calc.max_passengers': 'Maximum 10 passengers',
-        'map.loading': 'Loading Map...',
-        'map.legend_title': 'Main Routes',
-        'map.route_drawn': 'Route drawn'
+        'calc.max_passengers': 'Maximum 10 passengers'
     },
     es: {
         'nav.home': 'Inicio',
@@ -105,7 +99,7 @@ export const ui = {
         'calc.tourist': 'Turista',
         'calc.btn': 'TRAZAR RUTA',
         'calc.balance.warning': 'Saldo Insuficiente',
-        'calc.balance.msg': 'Requiere 80 MXN para operar.',
+        'calc.balance.msg': 'Requiere $180 MXN para operar.',
         'calc.gps': 'Usar mi ubicación',
         'calc.map': 'Seleccionar en mapa',
         'calc.reset': 'EDITAR',
@@ -119,7 +113,7 @@ export const ui = {
         'calc.transfer': 'Transbordo',
         'calc.view_map': 'Ver Mapa',
         'calc.view_route': 'Ver Ruta',
-        'calc.no_route': 'Sin rutas directas',
+        'calc.no_route': 'No encontramos una ruta exacta',
         'calc.no_route_msg': 'Intenta usar palabras clave como "Centro", "Zona Hotelera" o "Crucero".',
         'calc.view_all': 'Ver todas las rutas',
         'calc.offline': 'Modo Offline',
@@ -130,18 +124,45 @@ export const ui = {
         'calc.toggle.hide': 'Ocultar',
         'calc.toggle.show': 'Mostrar',
         'calc.export_gmaps': 'Ver en Google Maps',
-        'calc.tap_to_view': 'Toca para ver en mapa',
-        'calc.legs': 'tramos',
-        'calc.direct': 'Directo',
         'transport.Bus': 'Autobús',
         'transport.Combi': 'Combi',
         'transport.Van': 'Van / Colectivo',
         'transport.ADO': 'ADO',
         'transport.PlayaExpress': 'Playa Express',
-        'calc.max_passengers': 'Máximo 10 pasajeros',
-        'map.loading': 'Cargando Mapa...',
-        'map.legend_title': 'Rutas Principales',
-        'map.route_drawn': 'Ruta trazada'
+        'calc.max_passengers': 'Máximo 10 pasajeros'
+    },
+    fr: {
+        'nav.home': 'Accueil',
+        'nav.routes': 'Itinéraires',
+        'nav.map': 'Carte',
+        'nav.wallet': 'Portefeuille',
+        'nav.community': 'Forum',
+        'nav.about': 'À propos',
+        'calc.question.origin': "Quel itinéraire m'emmène à?",
+        'calc.question.dest': 'Où allons-nous?',
+        'calc.btn': "CALCULER L'ITINÉRAIRE",
+        'calc.export_gmaps': 'Ouvrir dans Google Maps'
+    },
+    pt: {
+        'nav.home': 'Início',
+        'nav.routes': 'Rotas',
+        'nav.map': 'Mapa',
+        'nav.wallet': 'Carteira',
+        'nav.community': 'Fórum',
+        'nav.about': 'Sobre nós',
+        'calc.question.origin': 'Qual rota me leva para?',
+        'calc.question.dest': 'Para onde vamos?',
+        'calc.btn': 'CALCULAR ROTA',
+        'calc.export_gmaps': 'Abrir no Google Maps'
+    },
+    my: {
+        'nav.home': 'U kúuchil',
+        'nav.routes': "Bejo'ob",
+        'nav.map': 'Mapa',
+        'calc.question.origin': 'Báax bej ku bisiken?',
+        'calc.question.dest': "Tu'ux k-bin?",
+        'calc.btn': 'KAXAN BEJ',
+        'calc.export_gmaps': 'Il ichil Google Maps'
     }
 };
 
@@ -157,6 +178,7 @@ export function useTranslations(lang: keyof typeof ui) {
     }
 }
 
+// Wallet-specific translations that are not yet in the main ui object
 const walletKeys: Record<string, Record<string, string>> = {
     'wallet.title': { es: 'Mi Tarjeta', en: 'My Wallet' },
     'wallet.current_balance': { es: 'Saldo Actual', en: 'Current Balance' },

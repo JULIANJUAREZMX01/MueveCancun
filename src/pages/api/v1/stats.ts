@@ -40,7 +40,7 @@ async function ensureTables(sql: ReturnType<typeof neon>) {
       started_at TIMESTAMPTZ DEFAULT NOW(),
       ended_at TIMESTAMPTZ
     )`);
-  } catch { /* already exist */ }
+  } catch (_) { /* already exist */ }
 }
 
 // GET /api/v1/stats

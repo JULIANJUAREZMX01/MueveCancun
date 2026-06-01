@@ -86,7 +86,7 @@ pub fn find_nearest_stop_native(user_lat: f64, user_lng: f64, stops: &[Stop]) ->
     if let Ok(index_guard) = SPATIAL_INDEX.read() {
         if let Some(cached) = &*index_guard {
             if cached.hash == current_hash {
-                if let Some(nearest) = cached.rtree.nearest_neighbor(scaled_point) {
+                if let Some(nearest) = cached.rtree.nearest_neighbor(&scaled_point) {
                     return Some(create_result(user_lat, user_lng, &nearest.0));
                 }
             }
@@ -97,7 +97,7 @@ pub fn find_nearest_stop_native(user_lat: f64, user_lng: f64, stops: &[Stop]) ->
     let wrappers: Vec<StopWrapper> = stops.iter().cloned().map(StopWrapper).collect();
     let rtree = RTree::bulk_load(wrappers);
     
-    let result = if let Some(nearest) = rtree.nearest_neighbor(scaled_point) {
+    let result = if let Some(nearest) = rtree.nearest_neighbor(&scaled_point) {
         Some(create_result(user_lat, user_lng, &nearest.0))
     } else {
         None
@@ -149,7 +149,7 @@ mod tests {
         assert!(duration.as_millis() < 5);
 
         let search_start = Instant::now();
-        let nearest = rtree.nearest_neighbor([21.105, -86.805 * LNG_SCALE]);
+        let nearest = rtree.nearest_neighbor(&[21.105, -86.805 * LNG_SCALE]);
         let search_duration = search_start.elapsed();
         
         println!("Nearest neighbor search time: {:?}", search_duration);

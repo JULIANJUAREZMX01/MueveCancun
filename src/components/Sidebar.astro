@@ -7,11 +7,8 @@ const lang = getLangFromUrl(Astro.url);
 
 const navItems = [
   { href: getRelativeLocaleUrl(lang, 'home'), icon: 'home', label: lang === 'es' ? 'Inicio' : 'Home', activePattern: /^\/(es|en)\/home/ },
-    { href: getRelativeLocaleUrl(lang, 'boletos'), icon: 'credit-card', label: lang === 'es' ? 'Boletos' : 'Tickets', activePattern: /^\/(es|en)\/boletos/ },
   { href: getRelativeLocaleUrl(lang, 'rutas'), icon: 'bus', label: lang === 'es' ? 'Rutas' : 'Routes', activePattern: /^\/(es|en)\/rutas/ },
   { href: getRelativeLocaleUrl(lang, 'community'), icon: 'users', label: lang === 'es' ? 'Foro' : 'Forum', activePattern: /^\/(es|en)\/community/ },
-    { href: getRelativeLocaleUrl(lang, 'alertas'), icon: 'alert', label: lang === 'es' ? 'Alertas' : 'Alerts', activePattern: /^\/(es|en)\/alertas/ },
-    { href: getRelativeLocaleUrl(lang, 'rewards'), icon: 'camera-game', label: lang === 'es' ? 'Premios' : 'Rewards', activePattern: /^\/(es|en)\/rewards/ },
   { href: getRelativeLocaleUrl(lang, 'wallet'), icon: 'credit-card', label: lang === 'es' ? 'Tarjeta' : 'Wallet', activePattern: /^\/(es|en)\/wallet/ },
   { href: getRelativeLocaleUrl(lang, 'about'), icon: 'alert', label: lang === 'es' ? 'Acerca' : 'About', activePattern: /^\/(es|en)\/about/ },
 ];
@@ -43,9 +40,6 @@ const isDonateActive = /^\/(es|en)\/donate/.test(pathname);
   <div class="sidebar-footer">
     <a href={donateHref} class:list={["donate-link", { active: isDonateActive }]} aria-label="Donar">
       <Icon name="palm-tree" class="w-6 h-6" />
-    </a>
-        <a href={getRelativeLocaleUrl(lang, 'login')} class="theme-toggle" id="auth-link-sidebar" title={lang === 'es' ? 'Cuenta' : 'Account'}>
-      <Icon name="users" class="w-6 h-6" />
     </a>
     <button id="lang-toggle-sidebar" class="theme-toggle" aria-label="Cambiar idioma / Switch language" title={lang === 'es' ? 'Switch to English' : 'Cambiar a Español'}>
       <span style="font-size:12px;font-weight:900;letter-spacing:0.05em">{lang === 'es' ? 'EN' : 'ES'}</span>

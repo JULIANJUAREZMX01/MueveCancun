@@ -53,7 +53,7 @@ export const POST: APIRoute = async ({ request }) => {
         created_at TIMESTAMPTZ DEFAULT NOW(),
         last_seen TIMESTAMPTZ DEFAULT NOW()
       )`);
-    } catch { /* may already exist or pooler limitation */ }
+    } catch (_) { /* may already exist or pooler limitation */ }
 
     if (action === 'start') {
       const result = await sql`
@@ -66,7 +66,7 @@ export const POST: APIRoute = async ({ request }) => {
           INSERT INTO mc_users (device_id, last_seen) VALUES (${device_id}, NOW())
           ON CONFLICT (device_id) DO UPDATE SET last_seen = NOW()
         `;
-      } catch { /* ignore */ }
+      } catch (_) { /* ignore */ }
       return new Response(JSON.stringify({ trip_id: result[0]?.trip_id }), { status: 201 });
     }
 
