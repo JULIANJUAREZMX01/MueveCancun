@@ -7,40 +7,113 @@
     Funciona sin internet · Notificaciones de rutas
   </div>
   <button id="pwa-install-btn" class="pwa-install-btn">Instalar</button>
-  <button id="pwa-install-dismiss" class="pwa-install-btn" style="background:transparent;border:none;font-size:1rem;padding:0.4rem">✕</button>
+  <button id="pwa-install-dismiss" class="pwa-install-btn pwa-dismiss-x" aria-label="Cerrar">✕</button>
 </div>
 
 <script is:inline>
-let deferredPrompt = null;
-const banner = document.getElementById('pwa-install-banner');
-const installBtn = document.getElementById('pwa-install-btn');
-const dismissBtn = document.getElementById('pwa-install-dismiss');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (!localStorage.getItem('pwa_install_dismissed')) {
-    setTimeout(() => { if (banner) banner.hidden = false; }, 3000);
+(function() {
+  // Siempre ocultar el banner al cargar/navegar — solo mostrar si hay prompt pendiente
+  function hideBanner() {
+    var banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.hidden = true;
   }
-});
 
-installBtn?.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') localStorage.setItem('pwa_installed', '1');
-  deferredPrompt = null;
-  if (banner) banner.hidden = true;
-});
+  // Ocultar inmediatamente al inicio
+  hideBanner();
 
-dismissBtn?.addEventListener('click', () => {
-  if (banner) banner.hidden = true;
-  localStorage.setItem('pwa_install_dismissed', '1');
-});
+  // No mostrar si ya instalado o descartado
+  if (localStorage.getItem('pwa_installed') || localStorage.getItem('pwa_install_dismissed')) {
+    return;
+  }
 
-window.addEventListener('appinstalled', () => {
-  if (banner) banner.hidden = true;
-  localStorage.setItem('pwa_installed', '1');
-  console.log('[PWA] App instalada!');
-});
+  var deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Mostrar solo si no fue descartado/instalado
+    if (!localStorage.getItem('pwa_install_dismissed') && !localStorage.getItem('pwa_installed')) {
+      setTimeout(function() {
+        var banner = document.getElementById('pwa-install-banner');
+        if (banner) banner.hidden = false;
+      }, 4000);
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    var btn = e.target;
+    if (!btn) return;
+
+    if (btn.id === 'pwa-install-btn') {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(result) {
+        if (result.outcome === 'accepted') {
+          localStorage.setItem('pwa_installed', '1');
+        }
+        deferredPrompt = null;
+        hideBanner();
+      });
+    }
+
+    if (btn.id === 'pwa-install-dismiss') {
+      hideBanner();
+      localStorage.setItem('pwa_install_dismissed', '1');
+    }
+  });
+
+  window.addEventListener('appinstalled', function() {
+    hideBanner();
+    localStorage.setItem('pwa_installed', '1');
+  });
+
+  // Re-ocultar en cada navegación SPA de Astro
+  document.addEventListener('astro:page-load', hideBanner);
+  document.addEventListener('astro:after-swap', hideBanner);
+})();
 </script>
+
+<style>
+.pwa-install-prompt {
+  position: fixed;
+  bottom: calc(var(--bottom-nav-height, 64px) + 0.75rem);
+  left: 0.75rem;
+  right: 0.75rem;
+  background: var(--color-surface-2, #1a2a3a);
+  border: 1px solid var(--color-border, rgba(255,255,255,0.1));
+  border-radius: 1rem;
+  padding: 0.875rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 600;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  animation: slideUp 0.3s ease;
+}
+.pwa-install-prompt[hidden] { display: none !important; }
+.pwa-install-icon { font-size: 1.75rem; flex-shrink: 0; }
+.pwa-install-text { flex: 1; font-size: 0.8rem; line-height: 1.4; color: var(--color-text-secondary, #94a3b8); }
+.pwa-install-text strong { display: block; color: var(--color-text-primary, #e2e8f0); font-size: 0.875rem; }
+.pwa-install-btn {
+  background: var(--color-primary, #0d9488);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pwa-dismiss-x {
+  background: transparent !important;
+  color: var(--color-text-secondary, #94a3b8) !important;
+  font-size: 1.1rem;
+  padding: 0.25rem 0.5rem !important;
+  min-width: 2rem;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+</style>
