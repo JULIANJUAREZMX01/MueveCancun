@@ -405,6 +405,14 @@
   // Ocultar barra de progreso — ya no se usa WebLLM
   if (progressC) progressC.hidden = true;
   setStatus('idle');
+
+  // ── Cerrar panel en navegación SPA (Astro View Transitions) ─────────────
+  function resetPanel() {
+    if (isOpen) closePanel();
+  }
+  document.addEventListener('astro:before-swap', resetPanel);
+  document.addEventListener('astro:page-load', resetPanel);
+
 })();
 </script>
 
