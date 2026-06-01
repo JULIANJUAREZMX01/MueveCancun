@@ -46,9 +46,6 @@ export class WasmLoader {
   }
 
   private async loadWasm(): Promise<RouteCalculatorWasm> {
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("WASM load timeout (5s)")), 5000)
-    );
 
     try {
       // Importar el glue JS generado por wasm-pack
