@@ -1,9 +1,8 @@
 /**
- * src/data/catalog.ts — v3
+ * src/data/catalog.ts — v2 FIXED
  *
  * Carga el catálogo de rutas una sola vez por proceso (cold start cache).
  * Usa fetch al CDN propio de Vercel (funciona desde serverless).
- * SIN AbortSignal.timeout (incompatible con Node 18).
  * Fallback: URL hardcodeada del sitio.
  */
 
@@ -24,17 +23,9 @@ export interface CatalogRoute {
   paradas?: CatalogStop[];
 }
 
+// Cache a nivel de módulo — persiste entre requests en el mismo contenedor
 let _routes: CatalogRoute[] | null = null;
 let _loading: Promise<CatalogRoute[]> | null = null;
-
-function fetchWithTimeout(url: string, timeoutMs: number = 8000): Promise<Response> {
-  return Promise.race([
-    fetch(url),
-    new Promise<Response>((_, reject) =>
-      setTimeout(() => reject(new Error('Fetch timeout')), timeoutMs)
-    ),
-  ]);
-}
 
 export async function getCatalogRoutes(): Promise<CatalogRoute[]> {
   if (_routes !== null) return _routes;
@@ -48,14 +39,14 @@ export async function getCatalogRoutes(): Promise<CatalogRoute[]> {
     const url = baseUrl + '/data/master_routes.optimized.json';
 
     try {
-      const res = await fetchWithTimeout(url, 8000);
+      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = (await res.json()) as { rutas?: CatalogRoute[] };
       _routes = data.rutas ?? [];
-      console.log('[catalog] Loaded', _routes.length, 'routes from', url);
+      console.log('[catalog] Loaded', _routes.length, 'routes from CDN');
       return _routes;
     } catch (err) {
-      console.error('[catalog] fetch failed:', String(err), 'from', url);
+      console.error('[catalog] fetch failed:', err);
       _routes = [];
       return _routes;
     }
@@ -66,10 +57,12 @@ export async function getCatalogRoutes(): Promise<CatalogRoute[]> {
   return result;
 }
 
+// Función sincrónica para compatibilidad (devuelve lo que está cacheado)
 export function getCatalogSync(): CatalogRoute[] {
   return _routes ?? [];
 }
 
+// Total de paradas cacheadas (informativo)
 export function getCatalogStopCount(): number {
   return (_routes ?? []).reduce((n, r) => n + (r.paradas?.length ?? 0), 0);
 }
