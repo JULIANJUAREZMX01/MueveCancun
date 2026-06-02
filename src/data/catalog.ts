@@ -1,12 +1,10 @@
 /**
- * src/data/catalog.ts
+ * src/data/catalog.ts — v2
  *
- * Módulo singleton del catálogo de rutas.
- * Vite bundlea el JSON inline en el servidor — no requiere fs ni fetch.
+ * Carga el catálogo de rutas una sola vez por proceso (cold start cache).
+ * Usa fetch al CDN propio de Vercel (funciona desde serverless).
+ * Fallback: URL hardcodeada del sitio.
  */
-
-// @ts-ignore — Vite 7 maneja JSON import nativamente
-import rawCatalog from '../../public/data/master_routes.optimized.json';
 
 export interface CatalogStop {
   nombre?: string;
@@ -25,6 +23,48 @@ export interface CatalogRoute {
   paradas?: CatalogStop[];
 }
 
-const data = rawCatalog as { rutas?: CatalogRoute[] };
-export const CATALOG_ROUTES: CatalogRoute[] = data.rutas ?? [];
-export const CATALOG_STOP_COUNT = CATALOG_ROUTES.reduce((n, r) => n + (r.paradas?.length ?? 0), 0);
+// Cache a nivel de módulo — persiste entre requests en el mismo contenedor
+let _routes: CatalogRoute[] | null = null;
+let _loading: Promise<CatalogRoute[]> | null = null;
+
+export async function getCatalogRoutes(): Promise<CatalogRoute[]> {
+  if (_routes !== null) return _routes;
+  if (_loading !== null) return _loading;
+
+  _loading = (async (): Promise<CatalogRoute[]> => {
+    // Construir URL base del sitio
+    // VERCEL_URL no incluye protocolo, y en preview puede ser diferente
+    const baseUrl = process.env.SITE_URL
+      ?? (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : null)
+      ?? 'https://mueve-cancun-sigma.vercel.app';
+
+    const url = baseUrl + '/data/master_routes.optimized.json';
+
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = (await res.json()) as { rutas?: CatalogRoute[] };
+      _routes = data.rutas ?? [];
+      console.log('[catalog] Loaded', _routes.length, 'routes from CDN');
+      return _routes;
+    } catch (err) {
+      console.error('[catalog] fetch failed:', err);
+      _routes = [];
+      return _routes;
+    }
+  })();
+
+  const result = await _loading;
+  _loading = null;
+  return result;
+}
+
+// Sincrono solo si ya está cargado (para compatibilidad con código legacy)
+export function getCatalogSync(): CatalogRoute[] {
+  return _routes ?? [];
+}
+
+// Total de paradas (informativo)
+export function getCatalogStopCount(): number {
+  return (_routes ?? []).reduce((n, r) => n + (r.paradas?.length ?? 0), 0);
+}
