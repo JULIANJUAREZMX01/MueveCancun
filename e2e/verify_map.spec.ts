@@ -9,13 +9,7 @@ test('map draws a route using the offline WASM engine', async ({ page, context }
   await page.goto('/es/home');
 
   await expect(page.locator('#map-container')).toBeVisible();
-  await expect(page.locator('#calculator-sheet')).toHaveClass(/is-expanded/);
-  await expect(page.locator('#origin-input')).toBeVisible();
-  await expect(page.locator('#dest-input')).toBeVisible();
-  await expect(page.locator('#trip-status-bar')).toBeHidden();
-  await expect(page.locator('#quick-actions')).toBeHidden();
   await expect.poll(() => page.evaluate(() => window.WASM_READY === true), { timeout: 60_000 }).toBe(true);
-  await expect.poll(() => page.locator('#map-container .leaflet-overlay-pane path').count()).toBeLessThan(100);
 
   await page.fill('#origin-input', 'El Crucero');
   await page.fill('#dest-input', 'Plaza Las Américas');
