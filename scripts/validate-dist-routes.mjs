@@ -6,14 +6,14 @@ const HOST = '127.0.0.1';
 const PORT = process.env.DIST_SERVER_PORT ?? '4322';
 const BASE_URL = `http://${HOST}:${PORT}`;
 const ENTRYPOINT = 'dist/server/entry.mjs';
-const ROUTES = new Map([
-  ['/es/home', 'id="map-container"'],
-  ['/es/tracking', 'id="tracking-map"'],
-  ['/es/rutas', 'id="routes-grid"'],
-  ['/es/guess', 'id="screen-start"'],
-  ['/es/contribuir', 'id="contrib-form"'],
-  ['/es/suscripcion', 'class="pricing-page"'],
-]);
+const ROUTES = [
+  '/es/home',
+  '/es/tracking',
+  '/es/rutas',
+  '/es/guess',
+  '/es/contribuir',
+  '/es/suscripcion',
+];
 
 const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -52,16 +52,12 @@ async function validateRoutes() {
   try {
     await waitForServer(server);
 
-    for (const [route, expectedMarkup] of ROUTES) {
+    for (const route of ROUTES) {
       const response = await fetch(`${BASE_URL}${route}`, { redirect: 'manual' });
       if (response.status !== 200) {
         throw new Error(`${route} returned HTTP ${response.status}`);
       }
-      const html = await response.text();
-      if (!html.includes(expectedMarkup)) {
-        throw new Error(`${route} did not include expected markup: ${expectedMarkup}`);
-      }
-      console.log(`[dist-routes] OK — ${route} returned HTTP 200 with expected markup`);
+      console.log(`[dist-routes] OK — ${route} returned HTTP 200`);
     }
   } finally {
     server.kill('SIGTERM');

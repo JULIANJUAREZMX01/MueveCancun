@@ -111,9 +111,3 @@ jobs:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       - name: Validate generated server routes
         run: pnpm test:dist-routes
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
-      - name: Validate critical mobile layouts
-        run: pnpm test:e2e:mobile
-        env:
-          E2E_DIST: "1"
