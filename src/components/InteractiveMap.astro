@@ -85,7 +85,8 @@ const isEs = Astro.url.pathname.includes("/es/");
       ]);
       if (!trackRes.ok || !routesRes.ok) return;
 
-      const units = await trackRes.json();
+      const trackingPayload = await trackRes.json();
+      const units = Array.isArray(trackingPayload) ? trackingPayload : trackingPayload?.units || [];
       const routesData = await routesRes.json();
       const routes = routesData.rutas || routesData;
       const colorMap = {};
