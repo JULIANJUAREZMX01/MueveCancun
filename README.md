@@ -13,13 +13,15 @@
 
 | Recurso | URL |
 | :--- | :--- |
-| 🚌 App en producción | [mueve-cancun.vercel.app](https://mueve-cancun.vercel.app/en/home)](https://mueve-cancun.vercel.app/en/home) |
+| 🚌 App en producción (dominio canónico) | [https://mueve-cancun.vercel.app](https://mueve-cancun.vercel.app) |
 | 📦 Repositorio principal | [github.com/JULIANJUAREZMX01/MueveCancun](https://github.com/JULIANJUAREZMX01/MueveCancun) |
 | 🗺️ Roadmap | [ROADMAP.md](./ROADMAP.md) |
 | 📊 Estado del proyecto | [docs/PROJECT_STATUS.md](./docs/PROJECT_STATUS.md) |
 | 🚚 MueveRepartoEnCancún (app) | [mueverepartoencancun.onrender.com](https://mueverepartoencancun.onrender.com) |
 | 📦 MueveRepartoEnCancún (repo) | [github.com/JULIANJUAREZMX01/MueveRepartoEnCancun-](https://github.com/JULIANJUAREZMX01/MueveRepartoEnCancun-) |
 | 👤 Portfolio del autor | [portfolio-jaja-dev.onrender.com/portfolio](https://portfolio-jaja-dev.onrender.com/portfolio) |
+
+> **Dominio canónico único de producción:** `https://mueve-cancun.vercel.app`. Los enlaces públicos, metadatos y auditorías deben usar este origen.
 
 ---
 

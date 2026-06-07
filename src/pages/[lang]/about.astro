@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getLangFromUrl } from '../../utils/i18n';
+import { APP_VERSION, BUILD_DATE, BUILD_ID, CACHE_VERSION, SHORT_COMMIT } from '../../generated/buildInfo';
 const lang = getLangFromUrl(Astro.url);
 const isEs = lang === 'es';
 ---
@@ -82,6 +83,28 @@ const isEs = lang === 'es';
       </div>
     </section>
 
+    <!-- Diagnostics -->
+    <section class="about-section diagnostics-card" aria-labelledby="diagnostics-title">
+      <h2 id="diagnostics-title" class="section-title">{isEs ? 'Diagnóstico de la app' : 'App diagnostics'}</h2>
+      <dl class="diagnostics-list">
+        <div><dt>{isEs ? 'Versión' : 'Version'}</dt><dd>{APP_VERSION}</dd></div>
+        <div><dt>Commit</dt><dd><code>{SHORT_COMMIT}</code></dd></div>
+        <div><dt>Build ID</dt><dd><code>{BUILD_ID}</code></dd></div>
+        <div><dt>{isEs ? 'Caché' : 'Cache'}</dt><dd><code>{CACHE_VERSION}</code></dd></div>
+        <div><dt>{isEs ? 'Fecha de build' : 'Build date'}</dt><dd><time datetime={BUILD_DATE}>{BUILD_DATE}</time></dd></div>
+      </dl>
+      <button
+        id="reset-pwa-btn"
+        class="diagnostics-reset"
+        type="button"
+        data-confirm={isEs ? 'Se borrarán los cachés y se desregistrará el service worker. ¿Continuar?' : 'Caches will be cleared and the service worker will be unregistered. Continue?'}
+        data-working={isEs ? 'Limpiando…' : 'Clearing…'}
+      >
+        {isEs ? 'Limpiar cachés y recargar' : 'Clear caches and reload'}
+      </button>
+      <p id="reset-pwa-status" class="diagnostics-status" aria-live="polite"></p>
+    </section>
+
     <!-- Links -->
     <section class="about-section">
       <a href={`/${lang}/suscripcion`} class="btn-primary" style="width:100%;margin-bottom:0.75rem">
@@ -97,6 +120,27 @@ const isEs = lang === 'es';
     </p>
   </div>
 </MainLayout>
+
+<script>
+  function setupDiagnosticsReset() {
+    const button = document.getElementById('reset-pwa-btn') as HTMLButtonElement | null;
+    const status = document.getElementById('reset-pwa-status');
+    if (!button || button.dataset.ready === 'true') return;
+    button.dataset.ready = 'true';
+    button.addEventListener('click', async () => {
+      if (!window.confirm(button.dataset.confirm ?? 'Clear caches and reload?')) return;
+      button.disabled = true;
+      status!.textContent = button.dataset.working ?? 'Clearing…';
+      const cacheKeys = 'caches' in window ? await caches.keys() : [];
+      await Promise.allSettled(cacheKeys.map((key) => caches.delete(key)));
+      const registrations = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistrations() : [];
+      await Promise.allSettled(registrations.map((registration) => registration.unregister()));
+      window.location.reload();
+    });
+  }
+  setupDiagnosticsReset();
+  document.addEventListener('astro:page-load', setupDiagnosticsReset);
+</script>
 
 <style>
 .about-root { padding: 0 1rem 2rem; max-width: 520px; margin: 0 auto; }
@@ -122,6 +166,16 @@ const isEs = lang === 'es';
 .feature-desc { font-size: 0.72rem; color: var(--text-tertiary); margin-top: 0.1rem; }
 
 .tech-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.diagnostics-card { padding: 1rem; background: var(--surface-card); border: 1px solid var(--border-light); border-radius: 16px; }
+.diagnostics-list { display: grid; gap: 0.55rem; margin: 0 0 1rem; }
+.diagnostics-list div { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.72rem; }
+.diagnostics-list dt { color: var(--text-tertiary); }
+.diagnostics-list dd { margin: 0; color: var(--text-primary); font-family: var(--font-mono); text-align: right; overflow-wrap: anywhere; }
+.diagnostics-reset { width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border-light); border-radius: 12px; background: var(--surface-bg); color: var(--text-primary); font-weight: 800; cursor: pointer; }
+.diagnostics-reset:hover { border-color: var(--sea-bright); color: var(--sea-teal); }
+.diagnostics-reset:disabled { opacity: 0.65; cursor: wait; }
+.diagnostics-status { min-height: 1em; margin: 0.5rem 0 0; color: var(--text-tertiary); font-size: 0.7rem; text-align: center; }
 
 .about-footer { text-align: center; font-size: 0.7rem; color: var(--text-muted); padding: 0.5rem 0 1rem; }
 </style>

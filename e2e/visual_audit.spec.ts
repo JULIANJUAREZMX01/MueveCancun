@@ -1,4 +1,5 @@
 import { test } from '@playwright/test';
+import { mkdir, writeFile } from 'node:fs/promises';
 
 test.describe('Visual Audit & Snapshot Evidence', () => {
 
@@ -23,6 +24,21 @@ test.describe('Visual Audit & Snapshot Evidence', () => {
     test(`Audit Page: ${p.name} (Light & Dark)`, async ({ page }) => {
       await page.goto(p.path);
       await page.waitForLoadState('networkidle');
+
+      const buildMetadata = await page.evaluate(() => {
+        const meta = (name: string) => document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)?.content ?? 'unknown';
+        return {
+          url: window.location.href,
+          commit: meta('git-commit'),
+          shortCommit: meta('git-commit-short'),
+          buildId: meta('build-id'),
+          cacheVersion: meta('cache-version'),
+          buildDate: meta('build-date'),
+          auditedAt: new Date().toISOString(),
+        };
+      });
+      await mkdir('verification-artifacts/visual', { recursive: true });
+      await writeFile(`verification-artifacts/visual/${p.name}-metadata.json`, JSON.stringify(buildMetadata, null, 2));
 
       // Light Mode
       await page.evaluate(() => document.documentElement.classList.remove('dark'));

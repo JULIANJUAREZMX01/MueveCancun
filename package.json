@@ -26,9 +26,9 @@
     "generate-og": "node --experimental-strip-types scripts/generate_og_image.ts",
     "update-stats": "node --experimental-strip-types scripts/update-stats.ts",
     "prepare-data": "node --experimental-strip-types scripts/merge-routes.ts && node --experimental-strip-types scripts/optimize-json.ts",
-    "dev": "pnpm run prepare-data && astro dev",
-    "dev:network": "pnpm run prepare-data && astro dev --host",
-    "build": "pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec tsc -p tsconfig.client.json && pnpm exec tsc -p tsconfig.sw.json && pnpm exec astro build",
+    "dev": "pnpm run generate-build-info && pnpm run prepare-data && astro dev",
+    "dev:network": "pnpm run generate-build-info && pnpm run prepare-data && astro dev --host",
+    "build": "pnpm generate-build-info && pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec tsc -p tsconfig.client.json && pnpm exec tsc -p tsconfig.sw.json && pnpm exec astro build",
     "build:wasm": "node --experimental-strip-types scripts/build-wasm.ts",
     "compile-client": "pnpm exec tsc -p tsconfig.client.json",
     "compile-sw": "pnpm exec tsc -p tsconfig.sw.json",
@@ -42,11 +42,12 @@
     "bench": "vitest bench",
     "generate-roadmap": "node --experimental-strip-types scripts/generate-roadmap-doc.ts",
     "start": "node dist/server/entry.mjs",
-    "build:ci": "pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec tsc -p tsconfig.client.json && pnpm exec tsc -p tsconfig.sw.json && pnpm exec astro build",
+    "build:ci": "pnpm generate-build-info && pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec tsc -p tsconfig.client.json && pnpm exec tsc -p tsconfig.sw.json && pnpm exec astro build",
     "db:migrate": "node --experimental-strip-types scripts/db-migrate.ts",
-    "build:vercel": "pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec astro build",
+    "build:vercel": "pnpm generate-build-info && pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec tsc -p tsconfig.client.json && pnpm exec tsc -p tsconfig.sw.json && pnpm exec astro build",
     "check:astro-config": "node scripts/check-astro-config.mjs",
-    "test:dist-routes": "node scripts/validate-dist-routes.mjs"
+    "test:dist-routes": "node scripts/validate-dist-routes.mjs",
+    "generate-build-info": "node scripts/generate-build-info.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^6.0.1",

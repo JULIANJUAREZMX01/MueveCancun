@@ -4,6 +4,7 @@ import vercel from "@astrojs/vercel"
 import node from "@astrojs/node"
 import path from "path"
 import { fileURLToPath } from "url"
+import { APP_VERSION, BUILD_DATE, BUILD_ID, CACHE_VERSION, GIT_COMMIT, SHORT_COMMIT } from "./src/generated/buildInfo"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const isDev = process.env.NODE_ENV === 'development';
@@ -28,9 +29,12 @@ export default defineConfig({
   vite: {
     define: {
       "process.env.IS_DEV": JSON.stringify(isDev),
-      "__APP_VERSION__":    JSON.stringify("3.6.0"),
-      "__BUILD_DATE__":     JSON.stringify(new Date().toISOString()),
-      "__GIT_COMMIT__":     JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA?.slice(0,7) ?? "local"),
+      "__APP_VERSION__":    JSON.stringify(APP_VERSION),
+      "__BUILD_DATE__":     JSON.stringify(BUILD_DATE),
+      "__BUILD_ID__":       JSON.stringify(BUILD_ID),
+      "__CACHE_VERSION__":  JSON.stringify(CACHE_VERSION),
+      "__GIT_COMMIT__":     JSON.stringify(GIT_COMMIT),
+      "__SHORT_COMMIT__":   JSON.stringify(SHORT_COMMIT),
     },
     build: {
       // Raise warning limit (WASM glue is large by design)
