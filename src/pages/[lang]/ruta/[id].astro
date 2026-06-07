@@ -68,111 +68,111 @@ const schemaData = {
   <!-- Inject JSON-LD -->
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemaData).replace(/</g, '\\u003c')} />
 
-  <div class="animate-fade-in pb-20">
+  <div class="animate-fade-in u-pb-20">
     
     <!-- Header Card -->
-    <div class="glass-card p-6 md:p-10 mb-6 relative overflow-hidden group">
-      <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-        <svg class="w-24 h-24 text-slate-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
+    <div class="glass-card u-p-6 u-md-p-10 u-mb-6 u-relative u-overflow-hidden u-group">
+      <div class="u-absolute u-top-0 u-right-0 u-p-3 u-opacity-10 u-group-hover-opacity-20 u-transition-opacity">
+        <svg class="u-w-24 u-h-24 u-text-slate-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
       </div>
 
-      <div class="relative z-10">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-           <div class="space-y-1">
-                <div class="flex items-center gap-2 mb-2">
-                   <span class="px-2 py-0.5 rounded bg-primary-100 text-primary-700 text-[10px] font-bold border border-primary-200 uppercase tracking-tighter" style={`view-transition-name: route-badge-${safeId}`}>
+      <div class="u-relative u-z-10">
+        <div class="u-flex u-flex-col u-md-flex-row u-justify-between u-items-start u-md-items-center u-gap-4 u-mb-6">
+           <div class="u-space-y-1">
+                <div class="u-flex u-items-center u-gap-2 u-mb-2">
+                   <span class="u-px-2 u-py-0-5 u-rounded u-bg-primary-100 u-text-primary-700 u-text--10px u-font-bold u-border u-border-primary-200 u-uppercase u-tracking-tighter" style={`view-transition-name: route-badge-${safeId}`}>
                       {route.nombre?.split(' ').slice(0, 2).join(' ') || route.tipo || 'Ruta'}
                    </span>
-                   <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-bold border border-orange-200 uppercase tracking-tighter">
+                   <span class="u-px-2 u-py-0-5 u-rounded u-bg-orange-100 u-text-orange-700 u-text--10px u-font-bold u-border u-border-orange-200 u-uppercase u-tracking-tighter">
                       {(route.tipo || 'Ruta').replace('_', ' ')}
                    </span>
                    {route.tarifa && (
-                    <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 uppercase tracking-tighter">
+                    <span class="u-px-2 u-py-0-5 u-rounded u-bg-emerald-50 u-text-emerald-700 u-text--10px u-font-bold u-border u-border-emerald-100 u-uppercase u-tracking-tighter">
                         Tarifa Oficial
                      </span>
                    )}
                 </div>
-                <h1 class="text-3xl md:text-4xl font-display font-black text-slate-900 dark:text-white tracking-tight leading-tight" style={`view-transition-name: route-title-${safeId}`}>
+                <h1 class="u-text-3xl u-md-text-4xl u-font-display u-font-black u-text-slate-900 u-dark-text-white u-tracking-tight u-leading-tight" style={`view-transition-name: route-title-${safeId}`}>
                   {route.nombre}
                 </h1>
               </div>
-              <div class="flex flex-col items-end gap-2">
-                <button id="favorite-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-primary-600 hover:border-primary-200 transition-all font-bold text-xs uppercase tracking-widest active:scale-95">
-                   <svg class="w-5 h-5 star-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z"/></svg>
+              <div class="u-flex u-flex-col u-items-end u-gap-2">
+                <button id="favorite-btn" class="u-flex u-items-center u-gap-1-5 u-px-3 u-py-1-5 u-rounded-xl u-border u-border-slate-200 u-text-slate-500 u-hover-text-primary-600 u-hover-border-primary-200 u-transition-all u-font-bold u-text-xs u-uppercase u-tracking-widest u-active-scale-95">
+                   <svg class="u-w-5 u-h-5 star-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z"/></svg>
                    <span class="btn-text">Guardar</span>
                 </button>
-                <div class="text-3xl font-black text-emerald-600 font-mono" style={`view-transition-name: route-price-${safeId}`}>
-                  ${route.tarifa || 15}<span class="text-sm">.00</span>
+                <div class="u-text-3xl u-font-black u-text-emerald-600 u-font-mono" style={`view-transition-name: route-price-${safeId}`}>
+                  ${route.tarifa || 15}<span class="u-text-sm">.00</span>
                 </div>
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Peso Mexicano (MXN)</div>
+                <div class="u-text--10px u-font-bold u-text-slate-400 u-uppercase u-tracking-widest">Peso Mexicano (MXN)</div>
             </div>
 
             <!-- Highlights Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-100 w-full">
-               <div class="flex flex-col">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Distancia</span>
-                  <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.78 11.16l-1.42 1.42a7.462 7.462 0 01-1.02-2.24l1.93-.48c.17.71.44 1.37.81 1.96l-.3-.66zm8.22.84c0 2.34-1.14 4.33-2.89 5.6L14 16.49c1.3-.95 2.15-2.49 2.15-4.24 0-2.87-2.34-5.2-5.22-5.2-.39 0-.77.05-1.14.13l1.5 1.5C11.44 8.52 11.59 8.5 11.73 8.5c2.05 0 3.72 1.67 3.72 3.73l.55-.23zm-9-4L7.56 9.45 6.14 8.03l.01-.02L3.69 5.55 5.1 4.14l2.47 2.47C8.61 6.23 9.72 6 10.88 6c4.26 0 7.72 3.46 7.72 7.72 0 1.16-.26 2.27-.63 3.3l2.47 2.47-1.41 1.41-2.46-2.46c-1.03.39-2.14.63-3.3.63-4.26 0-7.72-3.46-7.72-7.72 0-1.16.26-2.27.63-3.3l.01-.01z"/></svg>
-                    <span class="text-lg font-bold text-slate-800 dark:text-slate-200">{route.statistics?.distance_km || '12.5'} <span class="text-xs font-medium text-slate-500">km</span></span>
+            <div class="u-grid u-grid-cols-2 u-md-grid-cols-4 u-gap-4 u-mt-8 u-pt-8 u-border-t u-border-slate-100 u-w-full">
+               <div class="u-flex u-flex-col">
+                  <span class="u-text--10px u-font-bold u-text-slate-400 u-uppercase u-tracking-widest u-mb-1">Distancia</span>
+                  <div class="u-flex u-items-center u-gap-2">
+                    <svg class="u-w-5 u-h-5 u-text-slate-300 u-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.78 11.16l-1.42 1.42a7.462 7.462 0 01-1.02-2.24l1.93-.48c.17.71.44 1.37.81 1.96l-.3-.66zm8.22.84c0 2.34-1.14 4.33-2.89 5.6L14 16.49c1.3-.95 2.15-2.49 2.15-4.24 0-2.87-2.34-5.2-5.22-5.2-.39 0-.77.05-1.14.13l1.5 1.5C11.44 8.52 11.59 8.5 11.73 8.5c2.05 0 3.72 1.67 3.72 3.73l.55-.23zm-9-4L7.56 9.45 6.14 8.03l.01-.02L3.69 5.55 5.1 4.14l2.47 2.47C8.61 6.23 9.72 6 10.88 6c4.26 0 7.72 3.46 7.72 7.72 0 1.16-.26 2.27-.63 3.3l2.47 2.47-1.41 1.41-2.46-2.46c-1.03.39-2.14.63-3.3.63-4.26 0-7.72-3.46-7.72-7.72 0-1.16.26-2.27.63-3.3l.01-.01z"/></svg>
+                    <span class="u-text-lg u-font-bold u-text-slate-800 u-dark-text-slate-200">{route.statistics?.distance_km || '12.5'} <span class="u-text-xs u-font-medium u-text-slate-500">km</span></span>
                   </div>
                </div>
-               <div class="flex flex-col">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiempo Est.</span>
-                  <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                    <span class="text-lg font-bold text-slate-800 dark:text-slate-200">{route.statistics?.avg_duration_minutes || '45'} <span class="text-xs font-medium text-slate-500">min</span></span>
+               <div class="u-flex u-flex-col">
+                  <span class="u-text--10px u-font-bold u-text-slate-400 u-uppercase u-tracking-widest u-mb-1">Tiempo Est.</span>
+                  <div class="u-flex u-items-center u-gap-2">
+                    <svg class="u-w-5 u-h-5 u-text-slate-300 u-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                    <span class="u-text-lg u-font-bold u-text-slate-800 u-dark-text-slate-200">{route.statistics?.avg_duration_minutes || '45'} <span class="u-text-xs u-font-medium u-text-slate-500">min</span></span>
                   </div>
                </div>
-               <div class="flex flex-col">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Frecuencia</span>
-                  <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.05 9.79L10 7.5v-6h2v4.59l2.59 1.96-1.54 1.74zM12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-                    <span class="text-lg font-bold text-slate-800 dark:text-slate-200">{route.horario?.frecuencia_minutos || '10'} <span class="text-xs font-medium text-slate-500">min</span></span>
+               <div class="u-flex u-flex-col">
+                  <span class="u-text--10px u-font-bold u-text-slate-400 u-uppercase u-tracking-widest u-mb-1">Frecuencia</span>
+                  <div class="u-flex u-items-center u-gap-2">
+                    <svg class="u-w-5 u-h-5 u-text-slate-300 u-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.05 9.79L10 7.5v-6h2v4.59l2.59 1.96-1.54 1.74zM12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                    <span class="u-text-lg u-font-bold u-text-slate-800 u-dark-text-slate-200">{route.horario?.frecuencia_minutos || '10'} <span class="u-text-xs u-font-medium u-text-slate-500">min</span></span>
                   </div>
                </div>
-               <div class="flex flex-col">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Operador</span>
-                  <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-slate-300 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
-                    <span class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{route.empresa || 'Consorcio Urbano'}</span>
+               <div class="u-flex u-flex-col">
+                  <span class="u-text--10px u-font-bold u-text-slate-400 u-uppercase u-tracking-widest u-mb-1">Operador</span>
+                  <div class="u-flex u-items-center u-gap-2">
+                    <svg class="u-w-5 u-h-5 u-text-slate-300 u-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+                    <span class="u-text-sm u-font-bold u-text-slate-800 u-dark-text-slate-200 u-truncate">{route.empresa || 'Consorcio Urbano'}</span>
                   </div>
                </div>
             </div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="u-grid u-grid-cols-1 u-lg-grid-cols-3 u-gap-6">
       
       <!-- Timeline Section -->
-      <div class="lg:col-span-2 space-y-6">
-          <div class="glass-card p-6">
-            <h2 class="text-xl font-display font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-              <span class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      <div class="u-lg-col-span-2 u-space-y-6">
+          <div class="glass-card u-p-6">
+            <h2 class="u-text-xl u-font-display u-font-black u-text-slate-900 u-dark-text-white u-mb-6 u-flex u-items-center u-gap-2">
+              <span class="u-w-8 u-h-8 u-rounded-lg u-bg-orange-100 u-text-orange-600 u-flex u-items-center u-justify-center">
+                <svg class="u-w-5 u-h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
               </span>
               Recorrido de Paradas
             </h2>
             
-            <div class="relative space-y-2">
-              <div class="absolute left-6 top-8 bottom-8 w-0.5 bg-slate-100"></div>
+            <div class="u-relative u-space-y-2">
+              <div class="u-absolute u-left-6 u-top-8 u-bottom-8 u-w-0-5 u-bg-slate-100"></div>
               
               {(route.paradas || []).map((stop: any, index: number) => (
-                <div class="flex gap-4 p-4 relative hover:bg-slate-50/50 transition-colors rounded-xl group">
-                  <div class="flex-shrink-0 w-12 flex justify-center pt-1 z-10">
-                    <div class="w-8 h-8 rounded-full bg-white border-2 border-slate-200 text-[10px] font-black flex items-center justify-center text-slate-500 group-hover:border-primary-400 group-hover:text-primary-600 transition-colors shadow-sm">
+                <div class="u-flex u-gap-4 u-p-4 u-relative u-hover-bg-slate-50-50 u-transition-colors u-rounded-xl u-group">
+                  <div class="u-flex-shrink-0 u-w-12 u-flex u-justify-center u-pt-1 u-z-10">
+                    <div class="u-w-8 u-h-8 u-rounded-full u-bg-white u-border-2 u-border-slate-200 u-text--10px u-font-black u-flex u-items-center u-justify-center u-text-slate-500 u-group-hover-border-primary-400 u-group-hover-text-primary-600 u-transition-colors u-shadow-sm">
                       {index + 1}
                     </div>
                   </div>
-                  <div class="flex-1">
-                    <h3 class="font-bold text-slate-800 dark:text-slate-200 group-hover:text-primary-700 transition-colors">{stop.nombre}</h3>
+                  <div class="u-flex-1">
+                    <h3 class="u-font-bold u-text-slate-800 u-dark-text-slate-200 u-group-hover-text-primary-700 u-transition-colors">{stop.nombre}</h3>
                     {stop.landmarks && (
-                      <p class="text-xs text-slate-400 font-medium mt-0.5">{stop.landmarks}</p>
+                      <p class="u-text-xs u-text-slate-400 u-font-medium u-mt-0-5">{stop.landmarks}</p>
                     )}
                     
                     {stop.amenities && stop.amenities.length > 0 && (
-                      <div class="flex gap-2 mt-2">
+                      <div class="u-flex u-gap-2 u-mt-2">
                         {stop.amenities?.map((amenity: string) => (
-                          <span class="text-[9px] font-black uppercase tracking-tighter bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200">
+                          <span class="u-text--9px u-font-black u-uppercase u-tracking-tighter u-bg-slate-100 u-text-slate-500 u-px-1-5 u-py-0-5 u-rounded u-border u-border-slate-200">
                             {(amenity || '').replace('_', ' ')}
                           </span>
                         ))}
@@ -186,33 +186,33 @@ const schemaData = {
       </div>
 
       <!-- Side Panels -->
-      <div class="space-y-6">
-          <div class="glass-card p-6">
-            <h3 class="text-sm font-black text-slate-900 dark:text-white mb-4 uppercase tracking-widest flex items-center gap-2">
-                <svg class="w-5 h-5 text-primary-500 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+      <div class="u-space-y-6">
+          <div class="glass-card u-p-6">
+            <h3 class="u-text-sm u-font-black u-text-slate-900 u-dark-text-white u-mb-4 u-uppercase u-tracking-widest u-flex u-items-center u-gap-2">
+                <svg class="u-w-5 u-h-5 u-text-primary-500 u-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
                 Horarios de Operación
             </h3>
-            <div class="space-y-4">
-               <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-3 rounded-xl">
-                  <span class="text-xs font-bold text-slate-500">Primer salida</span>
-                  <span class="text-sm font-black text-slate-900 dark:text-white">{route.horario?.inicio_oficial || '05:30 AM'}</span>
+            <div class="u-space-y-4">
+               <div class="u-flex u-justify-between u-items-center u-bg-slate-50 u-dark-bg-slate-800 u-p-3 u-rounded-xl">
+                  <span class="u-text-xs u-font-bold u-text-slate-500">Primer salida</span>
+                  <span class="u-text-sm u-font-black u-text-slate-900 u-dark-text-white">{route.horario?.inicio_oficial || '05:30 AM'}</span>
                </div>
-               <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-3 rounded-xl">
-                  <span class="text-xs font-bold text-slate-500">Última salida</span>
-                  <span class="text-sm font-black text-slate-900 dark:text-white">{route.horario?.fin_oficial || '11:45 PM'}</span>
+               <div class="u-flex u-justify-between u-items-center u-bg-slate-50 u-dark-bg-slate-800 u-p-3 u-rounded-xl">
+                  <span class="u-text-xs u-font-bold u-text-slate-500">Última salida</span>
+                  <span class="u-text-sm u-font-black u-text-slate-900 u-dark-text-white">{route.horario?.fin_oficial || '11:45 PM'}</span>
                </div>
-               <p class="text-[10px] text-slate-400 text-center font-medium p-2">
+               <p class="u-text--10px u-text-slate-400 u-text-center u-font-medium u-p-2">
                   * Los horarios pueden variar según condiciones de tráfico y disponibilidad del operador.
                </p>
             </div>
           </div>
 
-          <div class="glass-card p-6 bg-gradient-to-br from-primary-500 to-orange-500 text-white border-none">
-             <h3 class="font-display font-black text-lg mb-2">¿Cómo llegar?</h3>
-             <p class="text-xs opacity-90 leading-relaxed mb-6 font-medium">
+          <div class="glass-card u-p-6 u-bg-gradient-to-br u-from-primary-500 u-to-orange-500 u-text-white u-border-none">
+             <h3 class="u-font-display u-font-black u-text-lg u-mb-2">¿Cómo llegar?</h3>
+             <p class="u-text-xs u-opacity-90 u-leading-relaxed u-mb-6 u-font-medium">
                 Usa nuestra IA de ruteo para encontrar la mejor combinación desde tu ubicación actual.
              </p>
-             <a href={`/${lang}/home?selected_stop=${encodeURIComponent(route.nombre)}`} class="w-full py-3 bg-white text-primary-600 rounded-xl font-black text-xs uppercase tracking-widest text-center block shadow-lg active:scale-95 transition-all">
+             <a href={`/${lang}/home?selected_stop=${encodeURIComponent(route.nombre)}`} class="u-w-full u-py-3 u-bg-white u-text-primary-600 u-rounded-xl u-font-black u-text-xs u-uppercase u-tracking-widest u-text-center u-block u-shadow-lg u-active-scale-95 u-transition-all">
                 TRAZAR RUTA AQUÍ
              </a>
           </div>
@@ -253,18 +253,16 @@ const schemaData = {
           if (icon) {
             // Fill star SVG path for active state
             icon.innerHTML = '<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>';
-            icon.classList.add('text-primary-500');
           }
           if (text) text.textContent = "Guardado";
-          favoriteBtn.classList.add('bg-primary-50', 'border-primary-200');
+          favoriteBtn.classList.add('favorited');
        } else {
           if (icon) {
             // Outline star SVG path for inactive state
             icon.innerHTML = '<path d="M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z"/>';
-            icon.classList.remove('text-primary-500');
           }
           if (text) text.textContent = "Guardar";
-          favoriteBtn.classList.remove('bg-primary-50', 'border-primary-200');
+          favoriteBtn.classList.remove('favorited');
        }
     };
 
@@ -298,132 +296,6 @@ const schemaData = {
 
 <style>
   /* ═══ RUTA INDIVIDUAL — tokens v4 sin Tailwind ═══ */
-
-  /* Compat layer: Tailwind → CSS tokens */
-  .pb-20 { padding-bottom: 5rem; }
-  .p-6   { padding: 1.5rem; }
-  .p-4   { padding: 1rem; }
-  .p-3   { padding: 0.75rem; }
-  .p-2   { padding: 0.5rem; }
-  .mb-6  { margin-bottom: 1.5rem; }
-  .mb-4  { margin-bottom: 1rem; }
-  .mb-2  { margin-bottom: 0.5rem; }
-  .mb-1  { margin-bottom: 0.25rem; }
-  .mt-2  { margin-top: 0.5rem; }
-  .mt-4  { margin-top: 1rem; }
-  .gap-4 { gap: 1rem; }
-  .gap-2 { gap: 0.5rem; }
-  .gap-1 { gap: 0.25rem; }
-  .gap-6 { gap: 1.5rem; }
-  .gap-8 { gap: 2rem; }
-  .gap-1\.5 { gap: 0.375rem; }
-  .space-y-1 > * + * { margin-top: 0.25rem; }
-  .space-y-2 > * + * { margin-top: 0.5rem; }
-  .space-y-4 > * + * { margin-top: 1rem; }
-  .flex  { display: flex; }
-  .grid  { display: grid; }
-  .hidden { display: none !important; }
-  .inline-flex { display: inline-flex; }
-  .flex-col { flex-direction: column; }
-  .flex-row { flex-direction: row; }
-  .items-center { align-items: center; }
-  .items-start  { align-items: flex-start; }
-  .items-end    { align-items: flex-end; }
-  .justify-between { justify-content: space-between; }
-  .justify-center  { justify-content: center; }
-  .relative { position: relative; }
-  .absolute { position: absolute; }
-  .top-0  { top: 0; }
-  .right-0 { right: 0; }
-  .z-10 { z-index: 10; }
-  .overflow-hidden { overflow: hidden; }
-  .w-full { width: 100%; }
-  .w-5 { width: 1.25rem; height: 1.25rem; }
-  .w-4 { width: 1rem; height: 1rem; }
-  .w-6 { width: 1.5rem; height: 1.5rem; }
-  .w-24 { width: 6rem; height: 6rem; }
-  .h-24 { height: 6rem; }
-  .shrink-0 { flex-shrink: 0; }
-  .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .text-center { text-align: center; }
-  .opacity-10 { opacity: 0.1; }
-  .transition-opacity { transition: opacity 0.2s; }
-  .group:hover .group-hover\:opacity-20 { opacity: 0.2; }
-  .active\:scale-95:active { transform: scale(0.95); }
-  .transition-all { transition: all 0.2s; }
-
-  /* Typography */
-  .text-3xl { font-size: 1.875rem; line-height: 1.2; }
-  .text-4xl { font-size: 2.25rem; line-height: 1.15; }
-  .text-2xl { font-size: 1.5rem; }
-  .text-xl  { font-size: 1.25rem; }
-  .text-lg  { font-size: 1.125rem; }
-  .text-sm  { font-size: 0.875rem; }
-  .text-xs  { font-size: 0.75rem; }
-  .\[10px\] , .text-\[10px\] { font-size: 0.625rem; }
-  .font-black  { font-weight: 900; }
-  .font-bold   { font-weight: 700; }
-  .font-medium { font-weight: 500; }
-  .font-mono   { font-family: var(--font-mono); }
-  .font-display { font-family: var(--font-display); }
-  .tracking-tight { letter-spacing: -0.025em; }
-  .tracking-tighter { letter-spacing: -0.05em; }
-  .tracking-widest { letter-spacing: 0.1em; }
-  .uppercase { text-transform: uppercase; }
-  .leading-tight { line-height: 1.2; }
-
-  /* Colors (light + dark) */
-  .text-slate-900 { color: var(--text-primary); }
-  .text-slate-800 { color: var(--text-primary); }
-  .text-slate-700 { color: var(--text-secondary); }
-  .text-slate-600 { color: var(--text-secondary); }
-  .text-slate-500 { color: var(--text-tertiary); }
-  .text-slate-400 { color: var(--text-muted); }
-  .text-slate-300 { color: var(--border-medium); }
-  .text-slate-200 { color: var(--border-light); }
-  .text-white     { color: white; }
-  .text-primary-600 { color: var(--sea-teal); }
-  .text-primary-700 { color: var(--sea-deep); }
-  .text-emerald-600 { color: var(--jungle); }
-  .text-emerald-700 { color: var(--jungle); }
-  .text-orange-700  { color: var(--coral-reef); }
-
-  /* Backgrounds */
-  .bg-primary-100  { background: var(--sea-xpale); }
-  .bg-emerald-50   { background: var(--jungle-light); }
-  .bg-orange-100   { background: rgba(249,115,22,0.1); }
-
-  /* Borders */
-  .rounded      { border-radius: var(--r-sm); }
-  .rounded-xl   { border-radius: var(--r-xl); }
-  .rounded-2xl  { border-radius: var(--r-2xl); }
-  .rounded-lg   { border-radius: var(--r-lg); }
-  .rounded-full { border-radius: var(--r-full); }
-  .border { border-width: 1px; border-style: solid; }
-  .border-slate-200 { border-color: var(--border-light); }
-  .border-primary-200 { border-color: var(--border-light); }
-  .border-emerald-100 { border-color: rgba(34,197,94,0.2); }
-  .border-orange-200  { border-color: rgba(249,115,22,0.2); }
-  .border-slate-700 { border-color: var(--border-medium); }
-  .border-slate-100 { border-color: var(--border-light); }
-
-  /* Hover border */
-  .hover\:border-primary-200:hover { border-color: var(--sea-bright); }
-  .hover\:text-primary-600:hover   { color: var(--sea-teal); }
-
-  /* Padding shorthand */
-  .py-0\.5  { padding-top: 0.125rem; padding-bottom: 0.125rem; }
-  .px-2     { padding-left: 0.5rem; padding-right: 0.5rem; }
-  .px-3     { padding-left: 0.75rem; padding-right: 0.75rem; }
-  .py-1\.5  { padding-top: 0.375rem; padding-bottom: 0.375rem; }
-  .py-2     { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-  .py-3     { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-  .py-4     { padding-top: 1rem; padding-bottom: 1rem; }
-
-  /* Grid */
-  .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
-  .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
-  .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
 
   /* ═══ COMPONENTES PROPIOS DEL DETAIL ═══ */
   .animate-fade-in {
@@ -532,11 +404,6 @@ const schemaData = {
   /* Responsive */
   @media (min-width: 769px) {
     .animate-fade-in { padding: 1rem 1.5rem 6rem; }
-    .md\:p-10 { padding: 2.5rem; }
-    .md\:flex-row { flex-direction: row; }
-    .md\:items-center { align-items: center; }
-    .md\:text-4xl { font-size: 2.25rem; }
-    .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
   }
 
   /* Section titles */
