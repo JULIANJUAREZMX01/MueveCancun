@@ -146,9 +146,9 @@ const isEs = Astro.url.pathname.includes("/es/");
     // Fixed default icons for Leaflet
     delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconUrl: '/vendor/leaflet/images/marker-icon.png',
+      iconRetinaUrl: '/vendor/leaflet/images/marker-icon-2x.png',
+      shadowUrl: '/vendor/leaflet/images/marker-shadow.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
     });
@@ -162,10 +162,16 @@ const isEs = Astro.url.pathname.includes("/es/");
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    const transparentTile = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+    const baseTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       maxZoom: 19,
       subdomains: 'abcd',
-    }).addTo(map);
+    });
+    baseTiles.on('tileerror', (event) => {
+      // A broken-image grid makes the offline map unusable; keep the local map surface clean.
+      if (event?.tile && event.tile.src !== transparentTile) event.tile.src = transparentTile;
+    });
+    baseTiles.addTo(map);
 
     layerGroup = L.layerGroup().addTo(map);
 
@@ -242,34 +248,41 @@ const isEs = Astro.url.pathname.includes("/es/");
       const isHub = hubRouteCount >= 3;
       const landmark = landmarkMap.get(key);
       const color = isHub ? '#F97316' : landmark ? '#8B5CF6' : TRANSPORT_TYPE_COLORS["Bus_Urban"];
-
-      markerLayers.push(
-        L.circleMarker(coords, {
-          radius: isHub ? 9 : 5,
-          fillColor: color,
-          color: "#FFFFFF",
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.9,
-        }).bindPopup(`
-          <div style="min-width:160px;padding:4px">
-            <p style="font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px">${escapeHtml(displayName)}</p>
-            <p style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
-            <div style="display:flex;flex-direction:column;gap:4px">
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="dest"   class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
-              <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
-            </div>
+      const marker = L.circleMarker(coords, {
+        radius: isHub ? 8 : 4,
+        fillColor: color,
+        color: "#FFFFFF",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.9,
+      }).bindPopup(`
+        <div style="min-width:160px;padding:4px">
+          <p style="font-weight:900;color:#0f172a;font-size:13px;margin:0 0 4px">${escapeHtml(displayName)}</p>
+          <p style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin:0 0 8px">${isHub ? "🔀 Hub de conexión" : "📍 Parada"}</p>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <button data-stop-name="${escapeHtml(displayName)}" data-action="origin" class="js-map-stop-action" style="width:100%;font-size:11px;background:#f97316;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🟠 Salgo de aquí</button>
+            <button data-stop-name="${escapeHtml(displayName)}" data-action="dest" class="js-map-stop-action" style="width:100%;font-size:11px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">🔵 Voy aquí</button>
+            <button data-stop-name="${escapeHtml(displayName)}" data-action="routes" class="js-map-stop-action" style="width:100%;font-size:11px;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px;font-weight:700;cursor:pointer">📋 Ver rutas</button>
           </div>
-        `)
-      );
+        </div>
+      `);
+      markerLayers.push({ marker, coords, isHub });
     });
 
-    if (markerLayers.length) {
-      stopMarkersLayer = L.layerGroup(markerLayers).addTo(map);
+    stopMarkersLayer = L.layerGroup().addTo(map);
+    function refreshVisibleStops() {
+      if (!stopMarkersLayer || !map) return;
+      const showEveryStop = map.getZoom() >= 15;
+      const bounds = map.getBounds().pad(0.15);
+      stopMarkersLayer.clearLayers();
+      markerLayers.forEach(({ marker, coords, isHub }) => {
+        if (bounds.contains(coords) && (isHub || showEveryStop)) marker.addTo(stopMarkersLayer);
+      });
     }
+    map.on('zoomend moveend', refreshVisibleStops);
 
     map.fitBounds([[21.03, -87.05], [21.35, -86.75]], { padding: [30, 30] });
+    refreshVisibleStops();
 
     const fallback = document.getElementById("map-fallback");
     if (fallback) {

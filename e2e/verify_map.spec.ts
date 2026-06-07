@@ -1,33 +1,30 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
-test('verify interactive map features', async ({ page }) => {
-  await page.goto('http://localhost:4321/es/home');
-  // Set tutorial cookie
-  await page.context().addCookies([{ name: 'tutorial_completed', value: 'true', url: 'http://localhost:4321' }]);
-  await page.reload();
+test('map draws a route using the offline WASM engine', async ({ page, context }) => {
+  await context.addCookies([
+    { name: 'tutorial_completed', value: 'true', url: 'http://localhost:4321' },
+    { name: 'locale', value: 'es', url: 'http://localhost:4321' },
+  ]);
+  await page.route('**/api/v1/journey', route => route.abort());
+  await page.goto('/es/home');
 
-  // Wait for map
-  await page.waitForSelector('#map');
+  await expect(page.locator('#map-container')).toBeVisible();
+  await expect(page.locator('#calculator-sheet')).toHaveClass(/is-expanded/);
+  await expect(page.locator('#origin-input')).toBeVisible();
+  await expect(page.locator('#dest-input')).toBeVisible();
+  await expect(page.locator('#trip-status-bar')).toBeHidden();
+  await expect(page.locator('#quick-actions')).toBeHidden();
+  await expect.poll(() => page.evaluate(() => window.WASM_READY === true), { timeout: 60_000 }).toBe(true);
+  await expect.poll(() => page.locator('#map-container .leaflet-overlay-pane path').count()).toBeLessThan(100);
 
-  // Click on the map to trigger nearest stop popup
-  // Cancún center approx
-  await page.mouse.click(500, 500);
-
-  // Wait for popup
-  await page.waitForTimeout(1000);
-  await page.screenshot({ path: 'map_popup_test.png' });
-
-  // Try to search a route
-  await page.fill('#origin-input', 'Crucero');
-  await page.fill('#dest-input', 'Plaza las Americas');
+  await page.fill('#origin-input', 'El Crucero');
+  await page.fill('#dest-input', 'Plaza Las Américas');
   await page.click('#search-route-btn');
 
-  // Wait for results
-  await page.waitForSelector('#results-container .group');
-  await page.screenshot({ path: 'route_results_test.png' });
+  const firstResult = page.locator('#results-container .journey-card').first();
+  await expect(firstResult).toBeVisible({ timeout: 15_000 });
+  await firstResult.click();
 
-  // Click a result to show on map
-  await page.click('#results-container .group:first-child');
-  await page.waitForTimeout(1000);
-  await page.screenshot({ path: 'route_on_map_test.png' });
+  await expect(page.locator('#route-banner')).toBeVisible();
+  await expect(page.locator('#map-container .leaflet-overlay-pane path').first()).toBeVisible();
 });

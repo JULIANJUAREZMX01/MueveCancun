@@ -3,8 +3,9 @@
    Paleta: Caribe · Calma · Naturaleza · Cancún
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Google Fonts: Outfit (display) + Plus Jakarta Sans (body) ── */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* ── Tipografía local para mantener la PWA operativa sin red ── */
+@font-face { font-family: 'Atkinson'; src: url('/fonts/atkinson-regular.woff') format('woff'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Atkinson'; src: url('/fonts/atkinson-bold.woff') format('woff'); font-weight: 700 900; font-display: swap; }
 
 /* ══════════════════════════════════════
    DESIGN TOKENS — Fuente única de verdad
@@ -101,8 +102,8 @@
   --r-full: 9999px;
 
   /* ── Tipografía ── */
-  --font-display: "Outfit", system-ui, sans-serif;
-  --font-sans:    "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-display: "Atkinson", system-ui, sans-serif;
+  --font-sans:    "Atkinson", system-ui, -apple-system, sans-serif;
   --font-mono:    "JetBrains Mono", ui-monospace, monospace;
 
   /* ── Layout ── */

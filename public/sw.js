@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v4.0.0-nexus';
+const CACHE_VERSION = 'v4.0.1-mobile-ux';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 const CRITICAL_ASSETS = [
     '/',

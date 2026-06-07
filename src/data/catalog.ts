@@ -1,3 +1,5 @@
+import catalogData from '../../public/data/master_routes.optimized.json';
+
 /**
  * src/data/catalog.ts — v3 FIXED
  *
@@ -35,34 +37,14 @@ export async function getCatalogRoutes(): Promise<CatalogRoute[]> {
   if (_routes !== null) return _routes;
   if (_loading !== null) return _loading;
 
-  _loading = (async (): Promise<CatalogRoute[]> => {
-    // URL del archivo estático servido por el sitio
-    // Funciona en SSR/serverless porque es fetch a CDN externo
-    const url = '/data/master_routes.optimized.json';
-
-    try {
-      const res = await fetch(url, {
-        signal: AbortSignal.timeout(8000),
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status} loading catalog`);
-      }
-
-      const data = (await res.json()) as { rutas?: CatalogRoute[] };
-      _routes = data.rutas ?? [];
-
-      console.log(
-        `[catalog] Loaded ${_routes.length} routes, ${_routes.reduce((n, r) => n + (r.paradas?.length ?? 0), 0)} stops`
-      );
-
-      return _routes;
-    } catch (err) {
-      console.error('[catalog] Load failed:', err instanceof Error ? err.message : String(err));
-      _routes = [];
-      return _routes;
-    }
-  })();
+  _loading = Promise.resolve().then(() => {
+    // Import estático: funciona en SSR/serverless y no depende de un fetch relativo inválido.
+    _routes = (catalogData as { rutas?: CatalogRoute[] }).rutas ?? [];
+    console.log(
+      `[catalog] Loaded ${_routes.length} routes, ${_routes.reduce((n, r) => n + (r.paradas?.length ?? 0), 0)} stops`
+    );
+    return _routes;
+  });
 
   try {
     return await _loading;

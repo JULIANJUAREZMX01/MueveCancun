@@ -7,7 +7,7 @@
  */
 
 import type { APIRoute } from 'astro';
-import { getCatalogRoutes, type CatalogRoute, type CatalogStop } from '../../../data/catalog';
+import { getCatalogRoutes, type CatalogRoute } from '../../../data/catalog';
 import { logger } from '../../../utils/logger';
 
 export const prerender = false;

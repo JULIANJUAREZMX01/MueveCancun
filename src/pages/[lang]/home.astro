@@ -72,8 +72,8 @@ const heroStats = [
     </div>
 
     <!-- Bottom sheet calculator -->
-    <div id="calculator-sheet" class="calc-sheet">
-      <div id="sheet-handle" class="sheet-handle" role="button" aria-expanded="false" tabindex="0"
+    <div id="calculator-sheet" class="calc-sheet is-expanded">
+      <div id="sheet-handle" class="sheet-handle" role="button" aria-expanded="true" tabindex="0"
            aria-label={isEs ? 'Abrir/cerrar calculador' : 'Toggle calculator'}>
         <div class="handle-bar"></div>
         <span class="handle-label" id="handle-label">{isEs ? '¿A dónde vas?' : 'Where to?'}</span>
@@ -212,6 +212,24 @@ const heroStats = [
   align-items: center; justify-content: center; padding: 0 0.3rem;
 }
 .sheet-content { padding: 0 0.75rem 1rem; overflow-y: auto; max-height: 55vh; }
+
+.trip-status-bar[hidden] { display: none; }
+
+@media (max-width: 768px) {
+  .home-hero,
+  .quick-actions,
+  :global(.live-stats-bar) { display: none; }
+
+  .calc-sheet {
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    max-height: min(64dvh, 560px);
+  }
+
+  .calc-sheet.is-expanded { transform: translateY(0); }
+  .sheet-content { max-height: calc(64dvh - 48px); padding-bottom: 0.75rem; }
+  :global(body:has(.calc-sheet.is-expanded) .rw-fab) { display: none; }
+}
+
 </style>
 
 <script>
@@ -222,7 +240,7 @@ document.addEventListener('astro:page-load', () => {
   const handleLabel = document.getElementById('handle-label');
   if (!sheet || !handle) return;
 
-  let isExpanded = false;
+  let isExpanded = sheet.classList.contains('is-expanded');
 
   function toggleSheet(force?: boolean) {
     isExpanded = force !== undefined ? force : !isExpanded;
@@ -239,6 +257,10 @@ document.addEventListener('astro:page-load', () => {
   handle.addEventListener('click', () => toggleSheet());
   handle.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSheet(); }
+  });
+  window.addEventListener('SHEET_TOGGLE', (event: Event) => {
+    const detail = (event as CustomEvent).detail;
+    if (detail?.collapse === true) toggleSheet(false);
   });
 
   // Swipe
