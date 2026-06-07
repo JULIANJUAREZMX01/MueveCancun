@@ -15,7 +15,7 @@ const isEs = lang === 'es';
 const title = isEs ? "Adivina Dónde Estoy" : "Guess Where I Am";
 ---
 
-<MainLayout title={title}>
+<MainLayout title={title} mapMode="camera" showReportWidget={false} showNexus={false} showDonateNudge={false}>
     <div class="game-container animate-fade-in">
         <!-- Game Header -->
         <div class="game-header">

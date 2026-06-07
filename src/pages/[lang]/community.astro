@@ -4,7 +4,7 @@ import { getLangFromUrl } from '../../utils/i18n';
 const lang = getLangFromUrl(Astro.url);
 const isEs = lang === 'es';
 ---
-<MainLayout title={isEs ? "Foro Ciudadano" : "Community Forum"}>
+<MainLayout title={isEs ? "Foro Ciudadano" : "Community Forum"} mapMode="form" showReportWidget={false} showNexus={false} showDonateNudge={false}>
   <div class="community-root">
 
     <!-- Header -->

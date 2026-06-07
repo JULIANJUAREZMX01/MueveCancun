@@ -3,15 +3,8 @@ import { getLangFromUrl } from '../utils/i18n';
 import { getRelativeLocaleUrl } from '../utils/utils';
 import BottomNav from '../components/BottomNav.astro';
 import DesktopNav from '../components/DesktopNav.astro';
-import Toast from '../components/ui/Toast.astro';
-import PwaReload from '../components/ui/PwaReload.astro';
-import PwaInstallBanner from '../components/ui/PwaInstallBanner.astro';
-// NexusWidget removed — NexusAgentUI is the active widget
-import BrowserDetection from '../components/ui/BrowserDetection.astro';
-import DonateNudge from '../components/ui/DonateNudge.astro';
-import ReportWidget from '../components/ReportWidget.astro';
 import BrandAnimation from '../components/ui/BrandAnimation.astro';
-import NexusAgentUI from '../components/agent/NexusAgentUI.astro';
+import OverlayManager, { type MapMode } from '../components/OverlayManager.astro';
 import { ClientRouter } from 'astro:transitions';
 import Analytics from "@vercel/analytics/astro";
 import SpeedInsights from "@vercel/speed-insights/astro";
@@ -21,12 +14,20 @@ interface Props {
   title?: string;
   description?: string;
   hideNav?: boolean;
+  showReportWidget?: boolean;
+  showNexus?: boolean;
+  showDonateNudge?: boolean;
+  mapMode?: MapMode;
 }
 
 const {
   title = "MueveCancún",
   description = "Transporte público de Cancún — offline, rápido, ciudadano.",
-  hideNav = false
+  hideNav = false,
+  showReportWidget = true,
+  showNexus = true,
+  showDonateNudge = true,
+  mapMode = 'content'
 } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 ---
@@ -88,7 +89,7 @@ const lang = getLangFromUrl(Astro.url);
     </script>
   </head>
 
-  <body class="l-body">
+  <body class="l-body" data-map-mode={mapMode}>
 
     {!hideNav && (
       <header class="c-header" role="banner" id="app-header">
@@ -149,14 +150,8 @@ const lang = getLangFromUrl(Astro.url);
     <!-- Mobile bottom nav -->
     {!hideNav && <BottomNav />}
 
-    <!-- Widgets globales -->
-    <Toast />
-    <PwaReload />
-    <PwaInstallBanner />
-    <BrowserDetection />
-    <DonateNudge />
-    <ReportWidget />
-    <NexusAgentUI />
+    <!-- Todos los overlays globales se posicionan desde un solo administrador. -->
+    <OverlayManager {showReportWidget} {showNexus} {showDonateNudge} {mapMode} />
     <Analytics />
     <SpeedInsights />
 
@@ -220,7 +215,7 @@ const lang = getLangFromUrl(Astro.url);
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    z-index: 60;
+    z-index: var(--z-header, 1000);
     /* Glassmorphism caribe */
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
@@ -333,8 +328,8 @@ const lang = getLangFromUrl(Astro.url);
   }
 
   .l-main--with-nav {
-    padding-top: var(--header-h, 60px);
-    padding-bottom: calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom, 0px));
+    padding-top: var(--safe-header-top, var(--header-h, 60px));
+    padding-bottom: var(--safe-bottom-nav, calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom, 0px)));
   }
 
   @media (min-width: 769px) {

@@ -16,6 +16,10 @@ const heroStats = [
 <MainLayout 
   title={isEs ? "MueveCancún — Tu GPS del Caribe" : "MueveCancún — Your Caribbean GPS"}
   description={isEs ? "Encuentra tu ruta de transporte público en Cancún. Offline, rápido, ciudadano." : "Find your public transport route in Cancún. Offline, fast, community-driven."}
+  mapMode="expanded-map"
+  showReportWidget={false}
+  showNexus={false}
+  showDonateNudge={false}
 >
   <div class="home-root">
 
@@ -221,13 +225,12 @@ const heroStats = [
   :global(.live-stats-bar) { display: none; }
 
   .calc-sheet {
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    bottom: var(--safe-sheet-bottom, calc(64px + env(safe-area-inset-bottom, 0px)));
     max-height: min(64dvh, 560px);
   }
 
   .calc-sheet.is-expanded { transform: translateY(0); }
   .sheet-content { max-height: calc(64dvh - 48px); padding-bottom: 0.75rem; }
-  :global(body:has(.calc-sheet.is-expanded) .rw-fab) { display: none; }
 }
 
 </style>
