@@ -46,7 +46,8 @@
     "db:migrate": "node --experimental-strip-types scripts/db-migrate.ts",
     "build:vercel": "pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec astro build",
     "check:astro-config": "node scripts/check-astro-config.mjs",
-    "test:dist-routes": "node scripts/validate-dist-routes.mjs"
+    "test:dist-routes": "node scripts/validate-dist-routes.mjs",
+    "test:e2e:visual": "playwright test e2e/visual_audit.spec.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^6.0.1",
