@@ -28,7 +28,7 @@
     "prepare-data": "node --experimental-strip-types scripts/merge-routes.ts && node --experimental-strip-types scripts/optimize-json.ts",
     "dev": "pnpm run prepare-data && astro dev",
     "dev:network": "pnpm run prepare-data && astro dev --host",
-    "build": "pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec tsc -p tsconfig.client.json && pnpm exec tsc -p tsconfig.sw.json && pnpm exec astro build",
+    "build": "pnpm check:css && pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec tsc -p tsconfig.client.json && pnpm exec tsc -p tsconfig.sw.json && pnpm exec astro build",
     "build:wasm": "node --experimental-strip-types scripts/build-wasm.ts",
     "compile-client": "pnpm exec tsc -p tsconfig.client.json",
     "compile-sw": "pnpm exec tsc -p tsconfig.sw.json",
@@ -43,11 +43,12 @@
     "bench": "vitest bench",
     "generate-roadmap": "node --experimental-strip-types scripts/generate-roadmap-doc.ts",
     "start": "node dist/server/entry.mjs",
-    "build:ci": "pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec tsc -p tsconfig.client.json && pnpm exec tsc -p tsconfig.sw.json && pnpm exec astro build",
+    "build:ci": "pnpm check:css && pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec tsc -p tsconfig.client.json && pnpm exec tsc -p tsconfig.sw.json && pnpm exec astro build",
     "db:migrate": "node --experimental-strip-types scripts/db-migrate.ts",
-    "build:vercel": "pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec astro build",
+    "build:vercel": "pnpm check:css && pnpm prepare-data && node scripts/build-wasm.mjs && pnpm exec astro build",
     "check:astro-config": "node scripts/check-astro-config.mjs",
-    "test:dist-routes": "node scripts/validate-dist-routes.mjs"
+    "test:dist-routes": "node scripts/validate-dist-routes.mjs",
+    "check:css": "node scripts/check-css-pipeline.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^6.0.1",
