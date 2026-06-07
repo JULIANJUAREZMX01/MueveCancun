@@ -334,6 +334,7 @@ const isEs = lang === 'es';
 <script>
   import { escapeHtml, showToast, normalizeString } from "../utils/utils";
   import { coordinatesStore } from "../utils/CoordinatesStore";
+  import { findOfflineJourneyPlans } from "../lib/journeyPlanner";
 
   const isEs = document.documentElement.lang !== "en";
 
@@ -436,20 +437,17 @@ const isEs = lang === 'es';
       const t0 = performance.now();
 
       try {
-        // Llamar al API journey con nombres de texto
-        const res = await fetch("/api/v1/journey", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            origin:      { name: oRaw },
-            destination: { name: dRaw },
-            preferences: { priority: "time" },
-          }),
-        });
+        // Buscar rutas reales por nombre de parada.
+        // El motor WASM es la fuente de verdad y mantiene la búsqueda disponible offline.
+        // La API queda como fallback de compatibilidad si el navegador no puede iniciar WASM.
+        let offlinePlans;
+        try {
+          offlinePlans = await findOfflineJourneyPlans(oRaw, dRaw);
+        } catch (wasmError) {
+          console.warn("[RouteCalculator] WASM unavailable, using API fallback", wasmError);
+        }
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const data = await res.json() as {
+        let data: {
           plans: Array<{
             id: string; legs: Array<{
               mode: string; route_id?: string; route_name?: string;
@@ -463,6 +461,21 @@ const isEs = lang === 'es';
           }>;
           meta: { origin: { name: string }; destination: { name: string }; routes_found: number };
         };
+
+        if (offlinePlans) {
+          data = {
+            plans: offlinePlans,
+            meta: { origin: { name: oRaw }, destination: { name: dRaw }, routes_found: offlinePlans.length },
+          };
+        } else {
+          const res = await fetch("/api/v1/journey", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ origin: { name: oRaw }, destination: { name: dRaw } }),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          data = await res.json();
+        }
 
         const elapsed = (performance.now() - t0).toFixed(0);
         resultsInfo.classList.remove("hidden");
