@@ -45,6 +45,7 @@ const isEs = Astro.url.pathname.includes("/es/");
 
 <script>
   import { loadLeaflet } from "../utils/leafletLoader";
+  import { addBaseMap } from "../utils/baseMap";
   import { initWasm, enrichJourneyLegs } from "../lib/initWasm";
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { escapeHtml, safeUrl, normalizeString } from "../utils/utils";
@@ -162,16 +163,7 @@ const isEs = Astro.url.pathname.includes("/es/");
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    const transparentTile = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-    const baseTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      subdomains: 'abcd',
-    });
-    baseTiles.on('tileerror', (event) => {
-      // A broken-image grid makes the offline map unusable; keep the local map surface clean.
-      if (event?.tile && event.tile.src !== transparentTile) event.tile.src = transparentTile;
-    });
-    baseTiles.addTo(map);
+    addBaseMap(L, map, { locale: document.documentElement.lang === 'en' ? 'en' : 'es' });
 
     layerGroup = L.layerGroup().addTo(map);
 

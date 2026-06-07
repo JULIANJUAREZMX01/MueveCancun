@@ -26,7 +26,7 @@ const { id } = Astro.params;
     .phase-icons{idle:'🧍',walking:'🚶',waiting:'⏳',on_bus:'🚌',arrived:'✅'}
   </style>
 </head>
-<body>
+<body data-share-id={id}>
   <div class="header">
     <div class="header-logo">🚌</div>
     <div>
@@ -41,15 +41,17 @@ const { id } = Astro.params;
     <div class="person-route" id="person-route"></div>
     <div class="updated" id="updated"></div>
   </div>
-  <script define:vars={{ shareId: id }}>
+  <script>
+    import { loadLeaflet } from '../../utils/leafletLoader';
+    import { addBaseMap } from '../../utils/baseMap';
+
+    const shareId = document.body.dataset.shareId;
     let map, marker;
     async function init() {
-      const L = await import('/vendor/leaflet/leaflet.js');
-      const link = document.createElement('link');
-      link.rel='stylesheet'; link.href='/vendor/leaflet/leaflet.css';
-      document.head.appendChild(link);
+      await loadLeaflet();
+      const L = window.L;
       map = L.map('share-map', { center:[21.1619,-86.8515], zoom:14, zoomControl:false, attributionControl:false });
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+      addBaseMap(L, map, { locale: 'es', style: 'dark' });
     }
 
     async function refresh() {
@@ -63,6 +65,7 @@ const { id } = Astro.params;
         if (!map) await init();
 
         if (data.lat && data.lng) {
+          const L = window.L;
           const latlng = [data.lat, data.lng];
           if (marker) marker.setLatLng(latlng);
           else {
@@ -86,7 +89,7 @@ const { id } = Astro.params;
       }
     }
 
-    refresh();
+    init().then(refresh).catch(console.error);
     setInterval(refresh, 10000);
   </script>
 </body>

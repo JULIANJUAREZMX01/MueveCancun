@@ -105,6 +105,12 @@ Esta arquitectura de alto rendimiento está dividida en 4 sistemas secuenciales 
 - **PWA Offline**: Service Worker para funcionamiento sin conexión.
 - **defaultLang**: 'es' (español) como idioma predeterminado.
 
+### Disponibilidad real del mapa sin conexión
+
+- **Disponible offline:** Leaflet y sus controles, el motor de rutas WASM, el catálogo descargado, la posición GPS del dispositivo, las rutas trazadas, hubs, paradas y marcadores que provienen de datos locales.
+- **Mapa base:** las imágenes de calles de Carto son un recurso remoto y **no forman parte del paquete offline**. Si no hay red o Carto falla, la aplicación retira por completo la capa de tiles y muestra una superficie local simplificada con el aviso “Mapa base no disponible”; las rutas y marcadores funcionales permanecen visibles encima.
+- **No disponible offline:** calles detalladas, nombres geográficos y puntos de interés del proveedor Carto. El tracking en vivo y los enlaces de ubicación compartida también necesitan conexión para recibir posiciones nuevas, aunque el mapa conserva sus controles y marcadores ya cargados.
+
 ### 4. Capa de Persistencia: IndexedDB
 - **db.ts**: Gestiona el balance de usuario en IndexedDB (migración automática desde localStorage).
 - **Stores en src/lib/**:

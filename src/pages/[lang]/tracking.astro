@@ -144,6 +144,7 @@ const t = {
 // TRACKING PAGE — Buses en tiempo real + Heatmap
 // ═══════════════════════════════════════════════════
 import { loadLeaflet } from '../../utils/leafletLoader';
+import { addBaseMap } from '../../utils/baseMap';
 
 let map: import('leaflet').Map | null = null;
 let busMarkers: Map<string, import('leaflet').Marker> = new Map();
@@ -232,9 +233,7 @@ async function initMap() {
     zoomControl: false, attributionControl: false
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19
-  }).addTo(map);
+  addBaseMap(L, map, { locale: document.documentElement.lang === 'en' ? 'en' : 'es' });
 
   L.control.zoom({ position: 'topright' }).addTo(map);
 }
