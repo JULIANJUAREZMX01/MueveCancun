@@ -753,4 +753,13 @@ const isEs = lang === 'es';
   .route-calculator__input-group {
     margin-bottom: 0.5rem;
   }
+
+  @media (max-width: 768px) {
+    .route-calculator { padding: 0.25rem 0 0; }
+    .route-calculator__card { padding: 0.5rem; }
+    .route-calculator__fields { gap: 0.35rem; }
+    .route-calculator__input,
+    .route-calculator__submit { height: 46px; }
+    .results-info__list { max-height: 28dvh; overflow-y: auto; }
+  }
 </style>
