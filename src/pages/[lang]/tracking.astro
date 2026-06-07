@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getLangFromUrl } from '../../utils/i18n';
+import '../../styles/tracking-dynamic.css';
 const lang = getLangFromUrl(Astro.url);
 const t = {
   title: lang === 'es' ? 'Rastreo en Tiempo Real' : 'Real-Time Tracking',
@@ -78,7 +79,6 @@ const t = {
 .tracking-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0; }
 .live-badge { display: flex; align-items: center; gap: 0.3rem; background: var(--danger-light); color: var(--danger); font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 99px; letter-spacing: 0.05em; text-transform: uppercase; }
 .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--danger); animation: pulse-red 1.2s ease-in-out infinite; }
-@keyframes pulse-red { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.4); } }
 .route-select { background: var(--surface-card); border: 1.5px solid var(--border-medium); border-radius: 10px; padding: 0.4rem 0.6rem; font-size: 0.8rem; color: var(--text-primary); min-width: 120px; }
 .view-toggle { display: flex; gap: 0.25rem; background: var(--surface-inset); border-radius: 10px; padding: 0.2rem; }
 .view-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; width: 34px; height: 30px; border-radius: 8px; transition: background 0.15s; }
@@ -103,40 +103,7 @@ const t = {
 .panel-title { font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
 .badge { background: var(--sea-pale); color: var(--sea-teal); font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 99px; font-weight: 700; }
 
-.buses-list { display: flex; flex-direction: column; gap: 0.5rem; }
-.bus-item {
-  display: flex; align-items: center; gap: 0.75rem;
-  background: var(--surface-card); border-radius: 14px; padding: 0.6rem 0.75rem;
-  border: 1.5px solid var(--border-light);
-}
-.bus-svg { width: 36px; height: 36px; flex-shrink: 0; }
-.bus-info { flex: 1; min-width: 0; }
-.bus-route { font-weight: 700; font-size: 0.85rem; color: var(--text-primary); }
-.bus-details { font-size: 0.72rem; color: var(--text-tertiary); margin-top: 0.1rem; }
-.bus-occ { display: flex; align-items: center; gap: 0.4rem; }
-.occ-bar { flex: 1; height: 5px; background: var(--border-light); border-radius: 99px; overflow: hidden; }
-.occ-fill { height: 100%; border-radius: 99px; transition: width 0.5s; }
-.occ-low { background: var(--jungle); }
-.occ-mid { background: var(--sand-dark); }
-.occ-high { background: var(--danger); }
 
-.stops-list { display: flex; flex-direction: column; gap: 0.5rem; }
-.stop-item {
-  display: flex; align-items: center; gap: 0.75rem;
-  background: var(--surface-card); border-radius: 14px; padding: 0.6rem 0.75rem;
-  border: 1.5px solid var(--border-light);
-}
-.stop-demand { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.demand-low    { background: var(--jungle); }
-.demand-medium { background: var(--sand-dark); }
-.demand-high   { background: var(--coral-reef); }
-.demand-critical { background: var(--danger); animation: pulse-red 1s infinite; }
-.stop-info { flex: 1; }
-.stop-name { font-weight: 600; font-size: 0.82rem; color: var(--text-primary); }
-.stop-count { font-size: 0.7rem; color: var(--text-tertiary); }
-
-/* Bus SVG marker en el mapa */
-.bus-marker-svg { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); transition: transform 0.8s ease; }
 </style>
 
 <script>
@@ -155,16 +122,19 @@ let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 // Crear SVG bus 2D animado
 function createBusSvg(color: string, heading: number, occupancy: number): string {
-  const occColor = occupancy < 40 ? '#22c55e' : occupancy < 75 ? '#f59e0b' : '#ef4444';
+  const safeColor = /^#[0-9a-f]{3,8}$/i.test(color) ? color : '#0d9488';
+  const safeHeading = Number.isFinite(Number(heading)) ? Number(heading) : 0;
+  const safeOccupancy = Math.min(100, Math.max(0, Number(occupancy) || 0));
+  const occColor = safeOccupancy < 40 ? '#22c55e' : safeOccupancy < 75 ? '#f59e0b' : '#ef4444';
   return `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
-  <g transform="rotate(${heading},24,24)">
+  <g transform="rotate(${safeHeading},24,24)">
     <!-- Sombra -->
     <ellipse cx="24" cy="42" rx="12" ry="3" fill="rgba(0,0,0,0.2)"/>
     <!-- Cuerpo principal -->
-    <rect x="8" y="8" width="32" height="26" rx="5" fill="${color}"/>
+    <rect x="8" y="8" width="32" height="26" rx="5" fill="${safeColor}"/>
     <!-- Techo con gradiente -->
-    <rect x="10" y="6" width="28" height="8" rx="3" fill="${color}" opacity="0.85"/>
+    <rect x="10" y="6" width="28" height="8" rx="3" fill="${safeColor}" opacity="0.85"/>
     <!-- Ventanas frontales -->
     <rect x="12" y="10" width="9" height="7" rx="2" fill="#e0f2fe" opacity="0.9"/>
     <rect x="27" y="10" width="9" height="7" rx="2" fill="#e0f2fe" opacity="0.9"/>
@@ -185,15 +155,92 @@ function createBusSvg(color: string, heading: number, occupancy: number): string
     <rect x="33" y="28" width="5" height="3" rx="1.5" fill="#fef3c7"/>
     <!-- Indicador de ocupación -->
     <rect x="16" y="36" width="16" height="3" rx="1.5" fill="#e2e8f0"/>
-    <rect x="16" y="36" width="${Math.round(occupancy * 0.16)}" height="3" rx="1.5" fill="${occColor}"/>
+    <rect x="16" y="36" width="${Math.round(safeOccupancy * 0.16)}" height="3" rx="1.5" fill="${occColor}"/>
   </g>
 </svg>`;
+}
+
+function createTextElement(tag: 'div' | 'span', className: string, text: string): HTMLElement {
+  const element = document.createElement(tag);
+  element.className = className;
+  element.textContent = text;
+  return element;
+}
+
+function createBusSvgElement(color: string, heading: number, occupancy: number): SVGSVGElement {
+  const parsed = new DOMParser().parseFromString(createBusSvg(color, heading, occupancy), 'image/svg+xml');
+  return document.importNode(parsed.documentElement, true) as unknown as SVGSVGElement;
+}
+
+function createBusPopup(unit: any, occupancy: number): HTMLElement {
+  const popup = document.createElement('div');
+  popup.style.cssText = 'min-width:160px;font-family:system-ui;';
+  const route = createTextElement('div', '', String(unit.route_id));
+  route.style.cssText = 'font-weight:700;font-size:0.9rem;';
+  const details = createTextElement('div', '', `${unit.stop_name || 'En ruta'}\nVel: ${unit.speed_kmh || 0} km/h\nOcupación: ${occupancy}%`);
+  details.style.cssText = 'font-size:0.75rem;color:#64748b;margin-top:0.2rem;white-space:pre-line;';
+  popup.append(route, details);
+  if (unit.is_stub) {
+    const stub = createTextElement('div', '', '📍 Posición simulada');
+    stub.style.cssText = 'font-size:0.65rem;color:#94a3b8;margin-top:0.2rem;';
+    popup.append(stub);
+  }
+  return popup;
+}
+
+function createBusListItem(unit: any, routeColors: Record<string, string>): HTMLElement {
+  const occupancy = Math.min(100, Math.max(0, Number(unit.occupancy_pct || unit.occupancy || Math.round(Math.random() * 60 + 20))));
+  const occClass = occupancy < 40 ? 'occ-low' : occupancy < 75 ? 'occ-mid' : 'occ-high';
+  const item = document.createElement('button');
+  item.type = 'button';
+  item.className = 'bus-item';
+  item.addEventListener('click', () => map?.flyTo([Number(unit.lat), Number(unit.lng)], 15, { duration: 1 }));
+
+  const svg = document.createElement('div');
+  svg.className = 'bus-svg';
+  svg.append(createBusSvgElement(routeColors[unit.route_id] || '#0d9488', Number(unit.heading) || 0, occupancy));
+
+  const info = document.createElement('div');
+  info.className = 'bus-info';
+  const occupancyRow = document.createElement('div');
+  occupancyRow.className = 'bus-occ';
+  const bar = document.createElement('div');
+  bar.className = 'occ-bar';
+  const fill = document.createElement('div');
+  fill.className = `occ-fill ${occClass}`;
+  fill.style.width = `${occupancy}%`;
+  bar.append(fill);
+  occupancyRow.append(bar, createTextElement('span', 'occ-value', `${occupancy}%`));
+  info.append(
+    createTextElement('div', 'bus-route', `Ruta ${unit.route_id}`),
+    createTextElement('div', 'bus-details', `${unit.stop_name || 'En ruta'} · ${unit.speed_kmh || 0} km/h${unit.is_stub ? ' · demo' : ''}`),
+    occupancyRow,
+  );
+  item.append(svg, info);
+  return item;
+}
+
+function createStopListItem(stop: any): HTMLElement {
+  const item = document.createElement('button');
+  item.type = 'button';
+  item.className = 'stop-item';
+  item.addEventListener('click', () => map?.flyTo([Number(stop.lat), Number(stop.lng)], 16, { duration: 1 }));
+  const demand = document.createElement('div');
+  demand.className = `stop-demand demand-${['low', 'medium', 'high', 'critical'].includes(stop.demand_level) ? stop.demand_level : 'low'}`;
+  const info = document.createElement('div');
+  info.className = 'stop-info';
+  info.append(
+    createTextElement('div', 'stop-name', String(stop.stop_name || stop.stop_id)),
+    createTextElement('div', 'stop-count', `${stop.waiting_count || stop.live_waiting || 0} ${lang === 'es' ? 'esperando' : 'waiting'}`),
+  );
+  item.append(demand, info);
+  return item;
 }
 
 function createBusIcon(color: string, heading: number, occupancy: number): import('leaflet').DivIcon {
   const L = (window as any).L;
   return L.divIcon({
-    html: createBusSvg(color, heading, occupancy),
+    html: createBusSvgElement(color, heading, occupancy),
     iconSize: [48, 48], iconAnchor: [24, 34],
     className: 'bus-marker-svg',
     popupAnchor: [0, -34]
@@ -281,16 +328,7 @@ async function refreshBuses() {
       const occ = unit.occupancy_pct || 50;
       const icon = createBusIcon(color, heading, occ);
       
-      const popupContent = `
-        <div style="min-width:160px;font-family:system-ui;">
-          <div style="font-weight:700;font-size:0.9rem;">${unit.route_id}</div>
-          <div style="font-size:0.75rem;color:#64748b;margin-top:0.2rem;">
-            ${unit.stop_name || 'En ruta'}<br>
-            Vel: ${unit.speed_kmh || 0} km/h<br>
-            Ocupación: ${occ}%
-          </div>
-          ${unit.is_stub ? '<div style="font-size:0.65rem;color:#94a3b8;margin-top:0.2rem;">📍 Posición simulada</div>' : ''}
-        </div>`;
+      const popupContent = createBusPopup(unit, occ);
 
       if (busMarkers.has(unit.id)) {
         const marker = busMarkers.get(unit.id)!;
@@ -309,23 +347,7 @@ async function refreshBuses() {
     const listEl = document.getElementById('buses-list')!;
     const countEl = document.getElementById('bus-count')!;
     countEl.textContent = String(units.length);
-    listEl.innerHTML = units.map(u => {
-      const occ = u.occupancy_pct || u.occupancy || Math.round(Math.random() * 60 + 20);
-      const occClass = occ < 40 ? 'occ-low' : occ < 75 ? 'occ-mid' : 'occ-high';
-      const color = routeColors[u.route_id] || '#0d9488';
-      return `
-      <div class="bus-item" onclick="flyToBus(${u.lat},${u.lng})">
-        <div class="bus-svg">${createBusSvg(color, u.heading || 0, occ)}</div>
-        <div class="bus-info">
-          <div class="bus-route">Ruta ${u.route_id}</div>
-          <div class="bus-details">${u.stop_name || 'En ruta'} · ${u.speed_kmh || 0} km/h${u.is_stub ? ' · demo' : ''}</div>
-          <div class="bus-occ">
-            <div class="occ-bar"><div class="occ-fill ${occClass}" style="width:${occ}%"></div></div>
-            <span style="font-size:0.65rem;color:var(--text-tertiary)">${occ}%</span>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
+    listEl.replaceChildren(...units.map(unit => createBusListItem(unit, routeColors)));
   } catch (e) {
     console.error('[tracking] refresh buses:', e);
   }
@@ -350,14 +372,7 @@ async function refreshStops() {
     });
 
     const listEl = document.getElementById('stops-list')!;
-    listEl.innerHTML = stops.slice(0, 20).map(s => `
-      <div class="stop-item" onclick="flyToStop(${s.lat},${s.lng})">
-        <div class="stop-demand demand-${s.demand_level || 'low'}"></div>
-        <div class="stop-info">
-          <div class="stop-name">${s.stop_name || s.stop_id}</div>
-          <div class="stop-count">${s.waiting_count || s.live_waiting || 0} ${lang === 'es' ? 'esperando' : 'waiting'}</div>
-        </div>
-      </div>`).join('');
+    listEl.replaceChildren(...stops.slice(0, 20).map(createStopListItem));
   } catch {}
 }
 
@@ -386,8 +401,6 @@ async function refreshHeatmap() {
   } catch {}
 }
 
-(window as any).flyToBus = (lat: number, lng: number) => map?.flyTo([lat, lng], 15, { duration: 1 });
-(window as any).flyToStop = (lat: number, lng: number) => map?.flyTo([lat, lng], 16, { duration: 1 });
 
 // Inicializar
 document.addEventListener('astro:page-load', async () => {
