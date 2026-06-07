@@ -25,6 +25,17 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
       - run: pnpm install --frozen-lockfile
+  astro-config:
+    name: Astro Config Integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm check:astro-config
   lint:
     name: Lint & Prettier
     needs: environment
@@ -81,7 +92,7 @@ jobs:
       - run: node --experimental-strip-types scripts/validate-routes.ts
   build-vercel:
     name: Production Build (Vercel)
-    needs: [lint, ts-unit, rust-unit, data-integrity]
+    needs: [astro-config, lint, ts-unit, rust-unit, data-integrity]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -98,3 +109,11 @@ jobs:
         env:
           NODE_ENV: production
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      - name: Validate generated server routes
+        run: pnpm test:dist-routes
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Validate critical mobile layouts
+        run: pnpm test:e2e:mobile
+        env:
+          E2E_DIST: "1"
