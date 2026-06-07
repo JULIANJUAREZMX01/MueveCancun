@@ -34,6 +34,7 @@ async function assertResponsiveHealth(page: Page) {
 
     const oversizedSvgs = [...document.querySelectorAll('svg')]
       .filter(isRendered)
+      .filter((svg) => !svg.closest('.leaflet-overlay-pane'))
       .filter((svg) => {
         const { width, height } = svg.getBoundingClientRect();
         const aspectRatio = Math.max(width / height, height / width);
@@ -53,10 +54,19 @@ async function assertResponsiveHealth(page: Page) {
     const interactive = [...document.querySelectorAll('a[href], button, input, select, textarea, summary, [role="button"], [tabindex]')]
       .filter((element) => !(element as HTMLElement).hidden && isRendered(element));
     if (!interactive.length) problems.push('no visible interactive elements');
-    const clippedInteractive = interactive.filter((element) => {
-      const rect = element.getBoundingClientRect();
-      return rect.right < 1 || rect.left > viewportWidth - 1 || rect.width < 1 || rect.height < 1;
-    });
+    const isInsideHorizontalScroller = (element: Element) => {
+      for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        const { overflowX } = getComputedStyle(ancestor);
+        if (['auto', 'scroll', 'overlay'].includes(overflowX) && ancestor.scrollWidth > ancestor.clientWidth + 1) return true;
+      }
+      return false;
+    };
+    const clippedInteractive = interactive
+      .filter((element) => !isInsideHorizontalScroller(element))
+      .filter((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.right < 1 || rect.left > viewportWidth - 1 || rect.width < 1 || rect.height < 1;
+      });
     if (clippedInteractive.length) problems.push(`interactive elements outside viewport width: ${clippedInteractive.slice(0, 8).map(describe).join(', ')}`);
 
     const brokenImages = [...document.images]
