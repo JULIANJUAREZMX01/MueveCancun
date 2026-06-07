@@ -88,6 +88,9 @@ const t = {
 .tracking-map {
   flex: 1; width: 100%; min-height: 0;
   position: relative; z-index: 1;
+  background-color: var(--surface-inset);
+  background-image: radial-gradient(circle at center, rgba(13,148,136,0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 /* Buses panel */
@@ -110,6 +113,7 @@ const t = {
   border: 1.5px solid var(--border-light);
 }
 .bus-svg { width: 36px; height: 36px; flex-shrink: 0; }
+.bus-svg :global(svg), :global(.bus-marker-svg svg) { width: 100%; height: 100%; }
 .bus-info { flex: 1; min-width: 0; }
 .bus-route { font-weight: 700; font-size: 0.85rem; color: var(--text-primary); }
 .bus-details { font-size: 0.72rem; color: var(--text-tertiary); margin-top: 0.1rem; }
@@ -137,6 +141,16 @@ const t = {
 
 /* Bus SVG marker en el mapa */
 .bus-marker-svg { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); transition: transform 0.8s ease; }
+
+@media (max-width: 600px) {
+  .tracking-header { align-items: stretch; padding: 0.6rem 0.75rem; }
+  .tracking-header__left { flex: 0 0 auto; gap: 0.5rem; }
+  .tracking-title { max-width: 8rem; line-height: 1.15; }
+  .tracking-header__right { flex: 1; min-width: 0; }
+  .route-select { min-width: 0; width: 100%; }
+  .view-toggle { display: none; }
+  .buses-panel, .stops-panel { max-height: 38vh; }
+}
 </style>
 
 <script>
@@ -232,9 +246,24 @@ async function initMap() {
     zoomControl: false, attributionControl: false
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19
-  }).addTo(map);
+  // Render the route catalog locally so tracking remains legible offline and privacy
+  // browsers never show a grid of broken third-party tile images.
+  try {
+    const data = await fetch('/data/master_routes.optimized.json').then((response) => response.json());
+    const routes = data.rutas || data;
+    routes.forEach((route: any) => {
+      const points = (route.paradas || [])
+        .map((stop: any) => [Number(stop.lat), Number(stop.lng)])
+        .filter(([lat, lng]: number[]) => Number.isFinite(lat) && Number.isFinite(lng));
+      if (points.length > 1) {
+        L.polyline(points as [number, number][], {
+          color: route.color || '#0d9488', weight: 2, opacity: 0.32, interactive: false
+        }).addTo(map!);
+      }
+    });
+  } catch (error) {
+    console.warn('[tracking] local route network unavailable', error);
+  }
 
   L.control.zoom({ position: 'topright' }).addTo(map);
 }
