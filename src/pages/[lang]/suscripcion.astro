@@ -65,7 +65,7 @@ const oneTimeTiers = [
     <!-- Hero -->
     <div class="pricing-hero">
       <div class="pricing-hero__badge" aria-label="MueveCancún Guardians">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        <svg class="u-w-3-5 u-h-3-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
         MueveCancún Guardians
       </div>
       <h1 class="pricing-hero__title">
@@ -116,7 +116,7 @@ const oneTimeTiers = [
           <ul class="plan-card__features" aria-label={isEs ? "Características" : "Features"}>
             {plan.features.map((f, i) => (
               <li class={i === 0 && plan.recommended ? "plan-feature--highlight" : ""}>
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                <svg class="u-w-4 u-h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
                 {f}
               </li>
             ))}
@@ -125,7 +125,7 @@ const oneTimeTiers = [
           <a href={plan.link} target="_blank" rel="noopener noreferrer"
             class={`btn btn-lg plan-card__cta ${plan.recommended ? "btn-primary" : "btn-ghost"}`}>
             {isEs ? "Suscribirme" : "Subscribe"}
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+            <svg class="u-w-4 u-h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
           </a>
         </div>
       ))}
