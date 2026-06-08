@@ -85,7 +85,8 @@ const isEs = Astro.url.pathname.includes("/es/");
       ]);
       if (!trackRes.ok || !routesRes.ok) return;
 
-      const units = await trackRes.json();
+      const trackingPayload = await trackRes.json();
+      const units = Array.isArray(trackingPayload) ? trackingPayload : trackingPayload?.units || [];
       const routesData = await routesRes.json();
       const routes = routesData.rutas || routesData;
       const colorMap = {};
@@ -162,17 +163,8 @@ const isEs = Astro.url.pathname.includes("/es/");
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    const transparentTile = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-    const baseTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      subdomains: 'abcd',
-    });
-    baseTiles.on('tileerror', (event) => {
-      // A broken-image grid makes the offline map unusable; keep the local map surface clean.
-      if (event?.tile && event.tile.src !== transparentTile) event.tile.src = transparentTile;
-    });
-    baseTiles.addTo(map);
-
+    // The PWA must remain useful without third-party tile servers. Route geometry below
+    // provides a local, always-available geographic surface instead of broken tile images.
     layerGroup = L.layerGroup().addTo(map);
 
     const [coordsDB] = await Promise.all([
@@ -196,9 +188,33 @@ const isEs = Astro.url.pathname.includes("/es/");
       });
     }
 
-    if (window.WASM_ROUTES) updateLegend(window.WASM_ROUTES);
+    function drawOfflineNetwork(routes) {
+      if (!layerGroup || !Array.isArray(routes)) return;
+      layerGroup.clearLayers();
+      routes.forEach((route) => {
+        const points = (route.paradas || route.stops || [])
+          .map((stop) => [Number(stop.lat), Number(stop.lng)])
+          .filter(([lat, lng]) => Number.isFinite(lat) && Number.isFinite(lng));
+        if (points.length > 1) {
+          L.polyline(points, {
+            color: route.color || getRouteColor(route.id, route.nombre || route.name, route.tipo || route.transport_type),
+            weight: 2,
+            opacity: 0.34,
+            interactive: false,
+          }).addTo(layerGroup);
+        }
+      });
+    }
+
+    if (window.WASM_ROUTES) {
+      updateLegend(window.WASM_ROUTES);
+      drawOfflineNetwork(window.WASM_ROUTES);
+    }
     window.addEventListener('WASM_ENGINE_READY', (e) => {
-      if (e.detail?.routes) updateLegend(e.detail.routes);
+      if (e.detail?.routes) {
+        updateLegend(e.detail.routes);
+        drawOfflineNetwork(e.detail.routes);
+      }
     });
 
     // GPS Watch
@@ -429,8 +445,11 @@ const isEs = Astro.url.pathname.includes("/es/");
   .map-container {
     position: absolute;
     inset: 0;
-    background-color: #e8f4f0;
-    background-image: linear-gradient(135deg, #e0f2f7 0%, #e8f4f0 50%, #d4edda 100%);
+    background-color: var(--surface-inset);
+    background-image:
+      radial-gradient(circle at center, rgba(13,148,136,0.15) 1px, transparent 1px),
+      linear-gradient(135deg, rgba(224,242,247,0.8), rgba(212,237,218,0.8));
+    background-size: 24px 24px, 100% 100%;
   }
 
   /* Fallback & Loading */
