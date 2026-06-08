@@ -6,6 +6,7 @@ export function getStaticPaths() {
 import MainLayout from "../../../layouts/MainLayout.astro";
 import { getAllRoutes } from "../../../utils/routes";
 import { getTransportLabel } from "../../../utils/transport";
+import "../../../styles/route-cards-dynamic.css";
 
 const { lang } = Astro.params;
 const isEs = lang === "es";
@@ -411,31 +412,6 @@ const types = ["all", "bus", "combi", "van", "ado"];
   }
   .skel { border-radius: var(--r-sm); background: linear-gradient(90deg, var(--border-light) 25%, var(--sea-xpale) 50%, var(--border-light) 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite; }
 
-  /* ── VirtualList card (client-side rendered) ── */
-  .route-card-vl {
-    display: flex; align-items: center; gap: 1rem;
-    background: var(--surface-card); border: 1.5px solid var(--border-light);
-    border-left-width: 4px; border-radius: var(--r-xl); padding: 1rem 1.25rem;
-    text-decoration: none; color: inherit; height: 80px; box-sizing: border-box;
-    transition: transform var(--t-base) var(--ease-spring), box-shadow var(--t-base) var(--ease), border-color var(--t-fast) var(--ease);
-    will-change: transform;
-  }
-  .route-card-vl:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-right-color: var(--border-medium); border-top-color: var(--border-medium); border-bottom-color: var(--border-medium); }
-  .route-card-vl:active { transform: scale(0.98); }
-
-  .rcv-type { width: 40px; height: 40px; border-radius: var(--r-md); background: var(--sea-xpale); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
-  .rcv-info { flex: 1; min-width: 0; overflow: hidden; }
-  .rcv-name { font-family: var(--font-display); font-size: 0.92rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .rcv-route { display: flex; align-items: center; gap: 0.375rem; font-size: 0.72rem; color: var(--text-tertiary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-  .rcv-route .origin, .rcv-route .dest { overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
-  .rcv-route .arrow { flex-shrink: 0; color: var(--text-muted); }
-  .rcv-badges { display: flex; gap: 0.25rem; margin-top: 3px; flex-wrap: nowrap; overflow: hidden; }
-  .rcv-price { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; flex-shrink: 0; }
-  .price-tag { font-family: var(--font-display); font-size: 1rem; font-weight: 900; color: var(--sea-teal); }
-  .price-free { font-family: var(--font-display); font-size: 0.75rem; font-weight: 800; color: var(--jungle); background: rgba(34,197,94,0.1); padding: 2px 8px; border-radius: var(--r-full); }
-  .chevron { color: var(--text-muted); }
-
-
   /* Sort row */
   .sort-row {
     display: flex; align-items: center; gap: 0.75rem;
@@ -490,46 +466,75 @@ const types = ["all", "bus", "combi", "van", "ado"];
   let searchQuery  = "";
 
   // ── Render function para VirtualList ─────────────────────────────────
-  function renderRouteCard(route: RouteItem): HTMLElement {
-    const a = document.createElement('a');
-    a.href = `/${lang}/ruta/${encodeURIComponent(route.id)}`;
-    a.className = 'route-card-vl';
-    a.setAttribute('role', 'listitem');
-    if (route.color) a.style.borderLeftColor = route.color;
-
-    const emoji = TRANSPORT_EMOJI[route.transport_type] ?? '🚌';
-    const priceHtml = route.price > 0
-      ? `<span class="price-tag">$${route.price.toFixed(2)}</span>`
-      : `<span class="price-free">${isEs ? 'Gratis' : 'Free'}</span>`;
-
-    const routeHtml = route.origin_hub && route.dest_hub
-      ? `<div class="rcv-route">
-          <span class="origin">${escHtml(route.origin_hub)}</span>
-          <svg class="arrow" viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
-          <span class="dest">${escHtml(route.dest_hub)}</span>
-        </div>`
-      : '';
-
-    const badgesHtml = route.badges.slice(0, 3).map(b =>
-      `<span class="badge badge-teal">${escHtml(b)}</span>`
-    ).join('');
-
-    a.innerHTML = `
-      <div class="rcv-type"><span aria-hidden="true">${emoji}</span></div>
-      <div class="rcv-info">
-        <div class="rcv-name">${escHtml(route.name)}</div>
-        ${routeHtml}
-        ${badgesHtml ? `<div class="rcv-badges">${badgesHtml}</div>` : ''}
-      </div>
-      <div class="rcv-price">
-        ${priceHtml}
-        <svg class="chevron" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
-      </div>`;
-    return a;
+  function createChevron(className: string, size: number): SVGSVGElement {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add(className);
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'currentColor');
+    svg.setAttribute('width', String(size));
+    svg.setAttribute('height', String(size));
+    svg.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z');
+    svg.append(path);
+    return svg;
   }
 
-  function escHtml(str: string): string {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  function createTextElement(tag: 'div' | 'span', className: string, text: string): HTMLElement {
+    const element = document.createElement(tag);
+    element.className = className;
+    element.textContent = text;
+    return element;
+  }
+
+  // ── Render function para VirtualList ─────────────────────────────────
+  function renderRouteCard(route: RouteItem): HTMLElement {
+    const card = document.createElement('a');
+    card.href = `/${lang}/ruta/${encodeURIComponent(route.id)}`;
+    card.className = 'route-card-vl';
+    card.setAttribute('role', 'listitem');
+    if (route.color) card.style.borderLeftColor = route.color;
+
+    const type = createTextElement('div', 'rcv-type', TRANSPORT_EMOJI[route.transport_type] ?? '🚌');
+    type.setAttribute('aria-hidden', 'true');
+
+    const info = document.createElement('div');
+    info.className = 'rcv-info';
+    info.append(createTextElement('div', 'rcv-name', route.name));
+
+    if (route.origin_hub && route.dest_hub) {
+      const routeSummary = document.createElement('div');
+      routeSummary.className = 'rcv-route';
+      routeSummary.append(
+        createTextElement('span', 'origin', route.origin_hub),
+        createChevron('arrow', 14),
+        createTextElement('span', 'dest', route.dest_hub),
+      );
+      info.append(routeSummary);
+    }
+
+    if (route.badges.length > 0) {
+      const badges = document.createElement('div');
+      badges.className = 'rcv-badges';
+      route.badges.slice(0, 3).forEach(badge => {
+        badges.append(createTextElement('span', 'badge badge-teal', badge));
+      });
+      info.append(badges);
+    }
+
+    const price = document.createElement('div');
+    price.className = 'rcv-price';
+    price.append(
+      createTextElement(
+        'span',
+        route.price > 0 ? 'price-tag' : 'price-free',
+        route.price > 0 ? `$${route.price.toFixed(2)}` : (isEs ? 'Gratis' : 'Free'),
+      ),
+      createChevron('chevron', 16),
+    );
+
+    card.append(type, info, price);
+    return card;
   }
 
 

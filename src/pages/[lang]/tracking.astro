@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getLangFromUrl } from '../../utils/i18n';
+import '../../styles/tracking-dynamic.css';
 const lang = getLangFromUrl(Astro.url);
 const t = {
   title: lang === 'es' ? 'Rastreo en Tiempo Real' : 'Real-Time Tracking',
@@ -280,9 +281,9 @@ function createBusSvg(color: string, heading: number, occupancy: number, isDemo 
     <!-- Sombra -->
     <ellipse cx="24" cy="42" rx="12" ry="3" fill="rgba(0,0,0,0.2)"/>
     <!-- Cuerpo principal -->
-    <rect x="8" y="8" width="32" height="26" rx="5" fill="${color}"/>
+    <rect x="8" y="8" width="32" height="26" rx="5" fill="${safeColor}"/>
     <!-- Techo con gradiente -->
-    <rect x="10" y="6" width="28" height="8" rx="3" fill="${color}" opacity="0.85"/>
+    <rect x="10" y="6" width="28" height="8" rx="3" fill="${safeColor}" opacity="0.85"/>
     <!-- Ventanas frontales -->
     <rect x="12" y="10" width="9" height="7" rx="2" fill="#e0f2fe" opacity="0.9"/>
     <rect x="27" y="10" width="9" height="7" rx="2" fill="#e0f2fe" opacity="0.9"/>
@@ -303,7 +304,7 @@ function createBusSvg(color: string, heading: number, occupancy: number, isDemo 
     <rect x="33" y="28" width="5" height="3" rx="1.5" fill="#fef3c7"/>
     <!-- Indicador de ocupación -->
     <rect x="16" y="36" width="16" height="3" rx="1.5" fill="#e2e8f0"/>
-    <rect x="16" y="36" width="${Math.round(occupancy * 0.16)}" height="3" rx="1.5" fill="${occColor}"/>
+    <rect x="16" y="36" width="${Math.round(safeOccupancy * 0.16)}" height="3" rx="1.5" fill="${occColor}"/>
   </g>
 </svg>`;
 }
@@ -547,8 +548,6 @@ async function refreshHeatmap() {
   } catch {}
 }
 
-(window as any).flyToBus = (lat: number, lng: number) => map?.flyTo([lat, lng], 15, { duration: 1 });
-(window as any).flyToStop = (lat: number, lng: number) => map?.flyTo([lat, lng], 16, { duration: 1 });
 
 // Inicializar
 document.addEventListener('astro:page-load', async () => {
