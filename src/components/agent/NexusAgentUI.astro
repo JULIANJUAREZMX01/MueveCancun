@@ -115,15 +115,8 @@
 <style>
   /* ═══ NEXUS AGENT UI — Mar Turquesa v4 ═══ */
   .nexus-container {
-    position: fixed;
-    bottom: calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom, 0px) + 4.5rem);
-    right: 1rem; z-index: 200;
     display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem;
   }
-  @media (min-width: 769px) {
-    .nexus-container { bottom: 5rem; right: 1.5rem; }
-  }
-
   /* ── FAB ── */
   .nexus-fab {
     position: relative; width: 52px; height: 52px; border-radius: 50%;

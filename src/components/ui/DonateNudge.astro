@@ -50,13 +50,8 @@ const donateUrl = getRelativeLocaleUrl(lang, 'suscripcion');
 <style>
   /* ═══ DONATE NUDGE — Mar Turquesa v4 ═══ */
   .donate-nudge {
-    position: fixed;
-    bottom: calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom, 0px) + 1rem);
-    right: 1rem; left: 1rem; z-index: 80;
+    width: min(100%, 340px);
     animation: slide-up 0.5s var(--ease-spring) both;
-  }
-  @media (min-width: 769px) {
-    .donate-nudge { left: auto; width: 340px; bottom: 1.5rem; }
   }
   .donate-nudge.hidden { display: none !important; }
 

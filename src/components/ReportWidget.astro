@@ -99,8 +99,6 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
 
   /* FAB flotante */
   .rw-fab {
-    position: fixed; bottom: calc(var(--bottom-nav-h, 72px) + 1rem + env(safe-area-inset-bottom,0px));
-    right: 1rem; z-index: 90;
     display: flex; align-items: center; gap: 0.5rem;
     padding: 0.75rem 1.1rem 0.75rem 1rem;
     background: var(--gradient-deep); color: white;
@@ -119,10 +117,6 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
   }
   .rw-fab:active { transform: scale(0.93); animation-play-state: paused; }
 
-  @media (min-width: 769px) {
-    .rw-fab { bottom: 1.5rem; right: 1.5rem; }
-  }
-
   .rw-fab-label { font-size: 0.78rem; white-space: nowrap; }
 
   .rw-queue-badge {
@@ -136,7 +130,7 @@ const repoName = Astro.props.repoName ?? import.meta.env.GITHUB_REPO_NAME ?? "Mu
 
   /* Overlay */
   .rw-overlay {
-    position: fixed; inset: 0; z-index: 150;
+    position: fixed; inset: 0; z-index: var(--z-overlay-modal, 1300);
     background: var(--surface-overlay);
     backdrop-filter: blur(6px);
     display: flex; align-items: flex-end; justify-content: center;

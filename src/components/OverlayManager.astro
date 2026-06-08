@@ -1,0 +1,123 @@
+---
+import Toast from './ui/Toast.astro';
+import PwaReload from './ui/PwaReload.astro';
+import PwaInstallBanner from './ui/PwaInstallBanner.astro';
+import BrowserDetection from './ui/BrowserDetection.astro';
+import DonateNudge from './ui/DonateNudge.astro';
+import ReportWidget from './ReportWidget.astro';
+import NexusAgentUI from './agent/NexusAgentUI.astro';
+
+export type MapMode = 'content' | 'map' | 'expanded-map' | 'tracking' | 'form' | 'camera';
+
+interface Props {
+  showReportWidget?: boolean;
+  showNexus?: boolean;
+  showDonateNudge?: boolean;
+  mapMode?: MapMode;
+}
+
+const {
+  showReportWidget = true,
+  showNexus = true,
+  showDonateNudge = true,
+  mapMode = 'content',
+} = Astro.props;
+---
+
+<section id="overlay-manager" class="overlay-manager" data-map-mode={mapMode} aria-label="Controles flotantes">
+  <div class="overlay-manager__notices" data-overlay-zone="notices">
+    <div data-overlay-item="browser-warning"><BrowserDetection /></div>
+    <div data-overlay-item="pwa-reload"><PwaReload /></div>
+    <div data-overlay-item="pwa-install"><PwaInstallBanner /></div>
+    {showDonateNudge && <div data-overlay-item="donate"><DonateNudge /></div>}
+  </div>
+
+  <div class="overlay-manager__actions" data-overlay-zone="fabs">
+    {showNexus && <div data-overlay-item="nexus"><NexusAgentUI /></div>}
+    {showReportWidget && <div data-overlay-item="report"><ReportWidget /></div>}
+  </div>
+
+  <div class="overlay-manager__toast" data-overlay-zone="toast">
+    <Toast />
+  </div>
+</section>
+
+<style is:global>
+  :root {
+    --safe-header-top: calc(var(--header-h, 60px) + env(safe-area-inset-top, 0px));
+    --safe-bottom-nav: calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
+    --safe-sheet-bottom: var(--safe-bottom-nav);
+    --safe-inline-start: max(1rem, env(safe-area-inset-left, 0px));
+    --safe-inline-end: max(1rem, env(safe-area-inset-right, 0px));
+    --safe-fab-bottom: calc(var(--safe-bottom-nav) + 1rem);
+    --safe-notice-bottom: calc(var(--safe-fab-bottom) + 9rem);
+    --overlay-gap: 0.75rem;
+    --z-overlay-notice: 1100;
+    --z-overlay-fab: 1200;
+    --z-overlay-panel: 1250;
+    --z-overlay-modal: 1300;
+    --z-overlay-toast: 1400;
+  }
+
+  .overlay-manager { position: fixed; inset: 0; z-index: var(--z-overlay-fab); pointer-events: none; }
+  .overlay-manager [data-overlay-item] { pointer-events: auto; }
+
+  .overlay-manager__actions {
+    position: fixed;
+    right: var(--safe-inline-end);
+    bottom: var(--safe-fab-bottom);
+    z-index: var(--z-overlay-fab);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--overlay-gap);
+  }
+
+  .overlay-manager__notices {
+    position: fixed;
+    right: var(--safe-inline-end);
+    bottom: var(--safe-notice-bottom);
+    left: var(--safe-inline-start);
+    z-index: var(--z-overlay-notice);
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--overlay-gap);
+    pointer-events: none;
+  }
+  .overlay-manager__notices > [data-overlay-item] { width: min(100%, 420px); margin-left: auto; }
+
+  .overlay-manager__toast { position: fixed; inset-inline: 0; bottom: var(--safe-fab-bottom); z-index: var(--z-overlay-toast); }
+  .overlay-manager :is(.mc-toast, .pwa-popover) {
+    position: fixed;
+    bottom: var(--safe-fab-bottom);
+    left: 50%;
+    width: min(92vw, 420px);
+    z-index: var(--z-overlay-toast);
+  }
+
+  .overlay-manager :is(.rw-fab, .nexus-container, .donate-nudge, .pwa-install-prompt, .fb-warning) {
+    position: static;
+    inset: auto;
+    z-index: auto;
+    width: auto;
+  }
+  .overlay-manager .nexus-container { position: relative; }
+  .overlay-manager .nexus-panel {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + var(--overlay-gap));
+    z-index: var(--z-overlay-panel);
+  }
+  .overlay-manager .rw-overlay { z-index: var(--z-overlay-modal); }
+
+  body:has(.calc-sheet.is-expanded) .overlay-manager__actions [data-overlay-item="report"] { display: none; }
+
+  @media (min-width: 769px) {
+    :root {
+      --safe-bottom-nav: max(1.5rem, env(safe-area-inset-bottom, 0px));
+      --safe-fab-bottom: var(--safe-bottom-nav);
+      --safe-inline-start: calc(var(--sidebar-w, 76px) + 1.5rem);
+      --safe-inline-end: 1.5rem;
+    }
+  }
+</style>

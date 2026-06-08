@@ -14,13 +14,9 @@ const { id = 'toast-notification' } = Astro.props;
 
 <style>
   .mc-toast {
-    position: fixed;
-    bottom: calc(var(--bottom-nav-h, 72px) + 1.25rem + env(safe-area-inset-bottom, 0px));
-    left: 50%;
     transform: translateX(-50%) translateY(0);
     width: fit-content;
     max-width: min(92vw, 420px);
-    z-index: 9999;
     border: none;
     padding: 0;
     background: transparent;
@@ -30,13 +26,6 @@ const { id = 'toast-notification' } = Astro.props;
       transform 0.45s var(--ease-spring),
       display   0.4s allow-discrete,
       overlay   0.4s allow-discrete;
-  }
-
-  @media (min-width: 769px) {
-    .mc-toast {
-      bottom: 2rem;
-      left: calc(50% + var(--sidebar-w, 76px) / 2);
-    }
   }
 
   .mc-toast__inner {

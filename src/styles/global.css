@@ -704,7 +704,6 @@ input, textarea { font-family: inherit; }
 
 /* PWA Install prompt personalizado */
 .pwa-install-prompt {
-  position: fixed; bottom: 72px; left: 1rem; right: 1rem; z-index: 900;
   background: var(--gradient-deep); color: white;
   border-radius: 18px; padding: 1rem 1.25rem;
   display: flex; align-items: center; gap: 0.75rem;

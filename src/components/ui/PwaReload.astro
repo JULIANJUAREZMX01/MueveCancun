@@ -15,12 +15,9 @@
 <style>
   /* ═══ PWA RELOAD TOAST — Mar Turquesa v4 ═══ */
   .pwa-popover {
-    position: fixed;
-    bottom: calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom, 0px) + 1rem);
-    left: 50%; transform: translateX(-50%);
-    width: min(92vw, 400px); max-width: 400px;
+    transform: translateX(-50%);
+    max-width: 400px;
     border: none; background: transparent; padding: 0; margin: 0; overflow: visible;
-    z-index: 9998;
     opacity: 1; translate: 0 0;
     transition:
       opacity   0.4s var(--ease-spring),
@@ -28,10 +25,6 @@
       display   0.4s allow-discrete,
       overlay   0.4s allow-discrete;
   }
-  @media (min-width: 769px) {
-    .pwa-popover { bottom: 2rem; left: calc(50% + var(--sidebar-w, 76px)/2); }
-  }
-
   .pwa-popover__card {
     display: flex; align-items: center; justify-content: space-between; gap: 1rem;
     padding: 1rem 1.25rem;
