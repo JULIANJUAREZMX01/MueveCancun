@@ -36,6 +36,12 @@ const lang = getLangFromUrl(Astro.url);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <meta name="description" content={description} />
+    <meta name="app-version" content={APP_VERSION} />
+    <meta name="build-id" content={BUILD_ID} />
+    <meta name="build-date" content={BUILD_DATE} />
+    <meta name="git-commit" content={GIT_COMMIT} />
+    <meta name="git-commit-short" content={SHORT_COMMIT} />
+    <meta name="cache-version" content={CACHE_VERSION} />
     <meta name="theme-color" content="#0d9488" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#011820" media="(prefers-color-scheme: dark)" />
     <meta name="mobile-web-app-capable" content="yes" />

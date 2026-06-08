@@ -2,7 +2,7 @@
 export type {};
 declare const self: ServiceWorkerGlobalScope;
 
-const CACHE_VERSION = 'v4.0.1-mobile-ux';
+import { CACHE_VERSION } from './generated/buildInfo.js';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 
 const CRITICAL_ASSETS: string[] = [

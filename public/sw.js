@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v4.0.1-mobile-ux';
+import { CACHE_VERSION } from './generated/buildInfo.js';
 const CACHE_NAME = `cancunmueve-${CACHE_VERSION}`;
 const CRITICAL_ASSETS = [
     '/',
@@ -144,4 +144,3 @@ async function serveOffline(request) {
     }
     return new Response('Offline', { status: 503 });
 }
-export {};
