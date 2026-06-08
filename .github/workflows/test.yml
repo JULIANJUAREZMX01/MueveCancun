@@ -4,6 +4,7 @@ on:
     branches: [main, "claude/**", "jules/**"]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 permissions:
   contents: read
 concurrency:
@@ -111,3 +112,51 @@ jobs:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       - name: Validate generated server routes
         run: pnpm test:dist-routes
+  visual-audit:
+    name: Visual Audit (4 viewports)
+    needs: environment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run responsive visual audit
+        run: pnpm test:e2e:visual
+      - name: Upload visual audit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: visual-audit-${{ github.run_id }}
+          path: |
+            verification-artifacts/visual/
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
+          retention-days: 14
+  visual-snapshot-review:
+    name: Visual Snapshot Review Gate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - name: Require explicit approval for changed visual baselines
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          SNAPSHOTS_APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'visual-snapshots-approved') }}
+        run: |
+          changed_snapshots="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- 'e2e/visual_audit.spec.ts-snapshots/**')"
+          if [ -n "$changed_snapshots" ] && [ "$SNAPSHOTS_APPROVED" != "true" ]; then
+            echo "Visual baselines changed without the visual-snapshots-approved PR label:"
+            echo "$changed_snapshots"
+            exit 1
+          fi
+          echo "Visual snapshot review gate passed."

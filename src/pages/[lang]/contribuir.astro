@@ -16,17 +16,17 @@ const reportOptions = [
 ];
 ---
 
-<MainLayout title={isEs ? "Contribuir — MueveCancún" : "Contribute — MueveCancún"} mapMode="form" showReportWidget={false} showNexus={false} showDonateNudge={false}>
-  <div class="page-content px-4" style="max-width:40rem;margin-inline:auto">
+<MainLayout title={isEs ? "Contribuir — MueveCancún" : "Contribute — MueveCancún"}>
+  <div class="page-content u-px-4" style="max-width:40rem;margin-inline:auto">
 
     <!-- Header -->
     <div class="contrib-header">
       <div class="contrib-header__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        <svg class="u-w-8 u-h-8" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
       </div>
       <div>
-        <div class="section-label mb-1">
-          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        <div class="section-label u-mb-1">
+          <svg class="u-w-3 u-h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
           {isEs ? "Comunidad" : "Community"}
         </div>
         <h1 class="contrib-title">{isEs ? "Ayúdanos a mejorar" : "Help us improve"}</h1>
@@ -112,7 +112,7 @@ const reportOptions = [
         </label>
         <label class="photo-upload" for="photo-input" id="photo-label">
           <div class="photo-upload__inner">
-            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.12 4l1.83 2H20v12H4V6h4.05l1.83-2h4.24M14 4H10L8 6H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-4l-2-2zm-2 3c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5zm0 2c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            <svg class="u-w-6 u-h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.12 4l1.83 2H20v12H4V6h4.05l1.83-2h4.24M14 4H10L8 6H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-4l-2-2zm-2 3c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5zm0 2c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
             <span class="photo-upload__text">
               {isEs ? "Toca para agregar foto" : "Tap to add photo"}
             </span>
@@ -124,7 +124,7 @@ const reportOptions = [
 
       <!-- Submit -->
       <button type="submit" id="submit-btn" class="btn btn-primary btn-lg" style="width:100%;justify-content:center">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        <svg class="u-w-5 u-h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         <span id="submit-label">{isEs ? "Enviar reporte" : "Submit report"}</span>
       </button>
     </form>
@@ -132,7 +132,7 @@ const reportOptions = [
     <!-- Estado de envío -->
     <div id="success-state" class="success-state" hidden>
       <div class="success-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        <svg class="u-w-16 u-h-16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
       </div>
       <h2 class="success-title">{isEs ? "¡Gracias por contribuir!" : "Thank you for contributing!"}</h2>
       <p class="success-sub">

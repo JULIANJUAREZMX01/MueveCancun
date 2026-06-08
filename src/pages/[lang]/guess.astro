@@ -20,79 +20,79 @@ const title = isEs ? "Adivina Dónde Estoy" : "Guess Where I Am";
         <!-- Game Header -->
         <div class="game-header">
             <div class="game-icon-pulse">
-                <Icon name="camera-game" class="w-8 h-8 text-white" />
+                <Icon name="camera-game" class="u-w-8 u-h-8 u-text-white" />
             </div>
-            <h1 class="text-2xl font-black tracking-tight" data-i18n="game.title">
+            <h1 class="u-text-2xl u-font-black u-tracking-tight" data-i18n="game.title">
                 {title}
             </h1>
         </div>
 
         <!-- Game Card -->
-        <div class="glass-card game-card overflow-hidden">
+        <div class="glass-card game-card u-overflow-hidden">
             <!-- Start Screen -->
-            <div id="screen-start" class="screen flex flex-col items-center text-center p-8 gap-6">
+            <div id="screen-start" class="screen u-flex u-flex-col u-items-center u-text-center u-p-8 u-gap-6">
                 <div class="game-illustration">
                    <div class="brain-orb"></div>
-                   <Icon name="palm-tree" class="w-16 h-16 text-teal-500 absolute z-10" />
+                   <Icon name="palm-tree" class="u-w-16 u-h-16 u-text-teal-500 u-absolute u-z-10" />
                 </div>
-                <p class="text-slate-600 dark:text-slate-300 font-medium">
+                <p class="u-text-slate-600 u-dark-text-slate-300 u-font-medium">
                     {isEs
                         ? "Toma una foto de tu entorno y adivinaré exactamente dónde estás en Cancún."
                         : "Take a photo of your surroundings and I'll guess exactly where you are in Cancún."
                     }
                 </p>
-                <button id="btn-start" class="btn-game-primary w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg">
-                    <Icon name="camera-game" class="w-5 h-5" />
+                <button id="btn-start" class="btn-game-primary u-w-full u-py-4 u-rounded-2xl u-font-bold u-flex u-items-center u-justify-center u-gap-2 u-shadow-lg">
+                    <Icon name="camera-game" class="u-w-5 u-h-5" />
                     <span>{isEs ? "¡Empezar Juego!" : "Start Game!"}</span>
                 </button>
             </div>
 
             <!-- Camera Screen -->
-            <div id="screen-camera" class="screen hidden flex flex-col p-4 gap-4">
-                <div class="camera-viewport rounded-2xl overflow-hidden bg-black relative aspect-[3/4]">
-                    <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
-                    <canvas id="canvas" class="hidden"></canvas>
+            <div id="screen-camera" class="screen u-hidden u-flex u-flex-col u-p-4 u-gap-4">
+                <div class="camera-viewport u-rounded-2xl u-overflow-hidden u-bg-black u-relative u-aspect--3-4">
+                    <video id="video" autoplay playsinline class="u-w-full u-h-full u-object-cover"></video>
+                    <canvas id="canvas" class="u-hidden"></canvas>
                     <div class="camera-overlay">
                         <div class="scanner-line"></div>
                         <div class="focus-corners"></div>
                     </div>
                 </div>
-                <button id="btn-capture" class="btn-game-primary w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
-                    <Icon name="camera-game" class="w-5 h-5" />
+                <button id="btn-capture" class="btn-game-primary u-w-full u-py-4 u-rounded-2xl u-font-bold u-flex u-items-center u-justify-center u-gap-2">
+                    <Icon name="camera-game" class="u-w-5 u-h-5" />
                     <span>{isEs ? "Capturar Foto" : "Capture Photo"}</span>
                 </button>
             </div>
 
             <!-- Question Screen -->
-            <div id="screen-question" class="screen hidden flex flex-col items-center text-center p-8 gap-8">
+            <div id="screen-question" class="screen u-hidden u-flex u-flex-col u-items-center u-text-center u-p-8 u-gap-8">
                 <div class="thinking-loader">
                     <div class="dots"><span></span><span></span><span></span></div>
-                    <Icon name="loader" class="w-12 h-12 text-teal-500 animate-spin" />
+                    <Icon name="loader" class="u-w-12 u-h-12 u-text-teal-500 animate-spin" />
                 </div>
-                <h2 id="question-text" class="text-xl font-bold text-slate-800 dark:text-white"></h2>
-                <div class="flex flex-col w-full gap-3">
-                    <button class="btn-answer py-3 rounded-xl border-2 border-teal-500 text-teal-600 dark:text-teal-400 font-bold" data-answer="yes">{isEs ? 'SÍ' : 'YES'}</button>
-                    <button class="btn-answer py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold" data-answer="no">{isEs ? 'NO' : 'NO'}</button>
+                <h2 id="question-text" class="u-text-xl u-font-bold u-text-slate-800 u-dark-text-white"></h2>
+                <div class="u-flex u-flex-col u-w-full u-gap-3">
+                    <button class="btn-answer u-py-3 u-rounded-xl u-border-2 u-border-teal-500 u-text-teal-600 u-dark-text-teal-400 u-font-bold" data-answer="yes">{isEs ? 'SÍ' : 'YES'}</button>
+                    <button class="btn-answer u-py-3 u-rounded-xl u-border-2 u-border-slate-200 u-dark-border-slate-700 u-text-slate-600 u-dark-text-slate-400 u-font-bold" data-answer="no">{isEs ? 'NO' : 'NO'}</button>
                 </div>
             </div>
 
             <!-- Result Screen -->
-            <div id="screen-result" class="screen hidden flex flex-col items-center text-center p-8 gap-6">
+            <div id="screen-result" class="screen u-hidden u-flex u-flex-col u-items-center u-text-center u-p-8 u-gap-6">
                 <div class="result-badge animate-bounce">
-                    <Icon name="map-pin" class="w-12 h-12 text-white" />
+                    <Icon name="map-pin" class="u-w-12 u-h-12 u-text-white" />
                 </div>
                 <div class="result-content">
-                    <p class="text-sm font-bold text-teal-600 uppercase tracking-widest mb-1">{isEs ? "¡LO TENGO! ESTÁS EN:" : "GOT IT! YOU'RE AT:"}</p>
-                    <h2 id="result-place" class="text-3xl font-black text-slate-900 dark:text-white leading-tight"></h2>
+                    <p class="u-text-sm u-font-bold u-text-teal-600 u-uppercase u-tracking-widest u-mb-1">{isEs ? "¡LO TENGO! ESTÁS EN:" : "GOT IT! YOU'RE AT:"}</p>
+                    <h2 id="result-place" class="u-text-3xl u-font-black u-text-slate-900 u-dark-text-white u-leading-tight"></h2>
                 </div>
-                <div class="flex flex-col w-full gap-3 mt-4">
-                    <button id="btn-retry" class="btn-game-secondary py-3 rounded-xl font-bold">{isEs ? "Intentar de nuevo" : "Try again"}</button>
-                    <button id="btn-share" class="btn-game-primary py-3 rounded-xl font-bold">{isEs ? "Compartir Logro" : "Share Achievement"}</button>
+                <div class="u-flex u-flex-col u-w-full u-gap-3 u-mt-4">
+                    <button id="btn-retry" class="btn-game-secondary u-py-3 u-rounded-xl u-font-bold">{isEs ? "Intentar de nuevo" : "Try again"}</button>
+                    <button id="btn-share" class="btn-game-primary u-py-3 u-rounded-xl u-font-bold">{isEs ? "Compartir Logro" : "Share Achievement"}</button>
                 </div>
             </div>
         </div>
 
-        <div class="footer-hint mt-8 text-center text-slate-400 text-xs px-6">
+        <div class="footer-hint u-mt-8 u-text-center u-text-slate-400 u-text-xs u-px-6">
             {isEs
                 ? "* Este es un juego experimental de movilidad urbana. No guardamos tus fotografías."
                 : "* This is an experimental urban mobility game. We do not store your photos."
@@ -137,8 +137,8 @@ const title = isEs ? "Adivina Dónde Estoy" : "Guess Where I Am";
     let answers = [];
 
     function showScreen(name) {
-        Object.values(screens).forEach(s => s?.classList.add('hidden'));
-        screens[name]?.classList.remove('hidden');
+        Object.values(screens).forEach(s => s?.classList.add('u-hidden'));
+        screens[name]?.classList.remove('u-hidden');
     }
 
     function stopStream() {
