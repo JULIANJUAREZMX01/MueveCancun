@@ -4,22 +4,18 @@
  */
 import type { APIRoute } from 'astro';
 
-// Injected at build time by astro.config.ts (vite.define)
-declare const __APP_VERSION__: string;
-declare const __BUILD_DATE__: string;
-declare const __GIT_COMMIT__: string;
+import { APP_VERSION, BUILD_DATE, BUILD_ID, CACHE_VERSION, GIT_COMMIT, SHORT_COMMIT } from '../generated/buildInfo';
 
 export const GET: APIRoute = async () => {
-  const version  = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
-  const built    = typeof __BUILD_DATE__  !== 'undefined' ? __BUILD_DATE__  : new Date().toISOString();
-  const commit   = typeof __GIT_COMMIT__  !== 'undefined' ? __GIT_COMMIT__  : 'unknown';
-
   const payload = {
     status:  'ok',
     service: 'muevecancun',
-    version,
-    built,
-    commit,
+    version: APP_VERSION,
+    built: BUILD_DATE,
+    buildId: BUILD_ID,
+    cacheVersion: CACHE_VERSION,
+    commit: GIT_COMMIT,
+    shortCommit: SHORT_COMMIT,
     uptime:  process.uptime?.() ?? null,
     ts:      new Date().toISOString(),
     env:     import.meta.env.MODE,
