@@ -85,3 +85,5 @@ path/
 # WASM stubs vacíos (generados en build)
 /public/wasm/carbon-calculator/
 /public/wasm/eta-engine/
+verification-artifacts/
+playwright-report/
