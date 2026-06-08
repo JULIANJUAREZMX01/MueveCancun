@@ -45,6 +45,7 @@ const isEs = Astro.url.pathname.includes("/es/");
 
 <script>
   import { loadLeaflet } from "../utils/leafletLoader";
+  import { addBaseMap } from "../utils/baseMap";
   import { initWasm, enrichJourneyLegs } from "../lib/initWasm";
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { escapeHtml, safeUrl, normalizeString } from "../utils/utils";
