@@ -67,13 +67,13 @@ const types = ["all", "bus", "combi", "van", "ado"];
 ---
 
 <MainLayout title={isEs ? "Rutas — MueveCancún" : "Routes — MueveCancún"}>
-  <div class="page-content page-content-wide px-4">
+  <div class="page-content page-content-wide u-px-4">
 
     <!-- Header de página -->
     <div class="page-header">
       <div>
-        <div class="section-label mb-1">
-          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <div class="section-label u-mb-1">
+          <svg class="u-w-3 u-h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M4 16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8zm2-8h12v8H6V8zm2 3h3v5H8v-5zm5 0h3v5h-3v-5z"/>
           </svg>
           {isEs ? "Directorio" : "Directory"}
@@ -87,7 +87,7 @@ const types = ["all", "bus", "combi", "van", "ado"];
           {isEs ? "En vivo" : "Live"}
         </div>
         <a href={"/" + lang + "/home"} class="btn btn-ghost btn-sm" title={isEs ? "Ver en mapa" : "View on map"} aria-label={isEs ? "Ver en mapa" : "View on map"}>
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+          <svg class="u-w-4 u-h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
           {isEs ? "Mapa" : "Map"}
         </a>
       </div>
@@ -96,7 +96,7 @@ const types = ["all", "bus", "combi", "van", "ado"];
     <!-- Barra de búsqueda -->
     <div class="search-bar-wrapper">
       <div class="search-bar-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <svg class="u-w-5 u-h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
           <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
         </svg>
       </div>
@@ -109,7 +109,7 @@ const types = ["all", "bus", "combi", "van", "ado"];
         spellcheck="false"
       />
       <button id="search-clear" class="search-clear" aria-label="Limpiar" hidden>
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        <svg class="u-w-5 u-h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
     </div>
 
@@ -251,8 +251,6 @@ const types = ["all", "bus", "combi", "van", "ado"];
   }
   .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-teal-lg); }
   .btn-primary:active { transform: scale(0.96); }
-  .w-4 { width: 1rem; height: 1rem; }
-  .w-3 { width: 0.75rem; height: 0.75rem; }
 
   /* ── Search bar ── */
   .search-bar-wrapper {

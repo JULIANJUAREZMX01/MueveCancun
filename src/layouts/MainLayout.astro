@@ -15,7 +15,7 @@ import NexusAgentUI from '../components/agent/NexusAgentUI.astro';
 import { ClientRouter } from 'astro:transitions';
 import Analytics from "@vercel/analytics/astro";
 import SpeedInsights from "@vercel/speed-insights/astro";
-import "../styles/global.css";
+import "../index.css";
 
 interface Props {
   title?: string;
@@ -64,9 +64,6 @@ const lang = getLangFromUrl(Astro.url);
     <!-- Color scheme -->
     <meta name="color-scheme" content="light dark" />
     <!-- ── Resource hints for TTI < 3s ────────────────────────────── -->
-    <!-- Map tiles CDNs (Leaflet connects at map init) -->
-    <link rel="dns-prefetch" href="https://a.tile.openstreetmap.org" />
-    <link rel="dns-prefetch" href="https://a.basemaps.cartocdn.com" />
     <!-- Critical data: prefetch main routes catalog -->
     <link rel="prefetch" href="/data/master_routes.optimized.json" as="fetch" crossorigin />
     <!-- WASM glue (loaded on home/map pages) -->
