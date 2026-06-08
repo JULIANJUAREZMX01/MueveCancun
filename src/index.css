@@ -1,8 +1,5 @@
-@import './styles/tokens.css';
-@import './styles/main.css';
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import './styles/global.css';
+@import './styles/utilities.css';
 
 /* ══════════════════════════════════════
    MueveCancún — Global Component Library

@@ -46,6 +46,7 @@ PR cerrado → Neon branch eliminada automáticamente
 |---|---|---|
 | `DATABASE_URL` | `postgresql://...neon.tech/neondb?sslmode=require` | Production + Preview |
 | `DATABASE_PROVIDER` | `neon` | Production + Preview |
+| `TRACKING_STUBS_ENABLED` | `false` | Production (desactiva unidades demo) |
 | `STRIPE_SECRET_KEY` | `sk_live_...` | Production |
 | `STRIPE_SECRET_KEY` | `sk_test_...` | Preview + Development |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_...` | Production |

@@ -9,7 +9,6 @@ const t = {
   busesTitle: lang === 'es' ? 'Buses en ruta' : 'Buses on route',
   heatmap:  lang === 'es' ? 'Mapa de calor' : 'Heat map',
   stops:    lang === 'es' ? 'Paraderos' : 'Stops',
-  live:     lang === 'es' ? 'En vivo' : 'Live',
   waiting:  lang === 'es' ? 'esperando' : 'waiting',
   low: lang === 'es' ? 'Bajo' : 'Low',
   medium: lang === 'es' ? 'Medio' : 'Medium',
@@ -23,9 +22,9 @@ const t = {
     <!-- Header bar -->
     <div class="tracking-header glass-card">
       <div class="tracking-header__left">
-        <div class="live-badge">
+        <div id="tracking-mode-badge" class="live-badge mode-offline" aria-live="polite">
           <span class="live-dot"></span>
-          <span>{t.live}</span>
+          <span id="tracking-mode-label">Offline</span>
         </div>
         <h1 class="tracking-title">{t.title}</h1>
       </div>
@@ -43,6 +42,10 @@ const t = {
 
     <!-- Map container -->
     <div id="tracking-map" class="tracking-map"></div>
+    <div id="tracking-legend" class="tracking-legend" hidden>
+      <span class="legend-demo-marker">DEMO</span>
+      <span>{lang === 'es' ? 'Unidades simuladas, no posiciones reales' : 'Simulated units, not real positions'}</span>
+    </div>
 
     <!-- Bottom panel — buses list -->
     <div id="buses-panel" class="buses-panel glass-card">
@@ -76,8 +79,13 @@ const t = {
 .tracking-header__left { display: flex; align-items: center; gap: 0.75rem; }
 .tracking-header__right { display: flex; align-items: center; gap: 0.5rem; }
 .tracking-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0; }
-.live-badge { display: flex; align-items: center; gap: 0.3rem; background: var(--danger-light); color: var(--danger); font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 99px; letter-spacing: 0.05em; text-transform: uppercase; }
-.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--danger); animation: pulse-red 1.2s ease-in-out infinite; }
+.live-badge { display: flex; align-items: center; gap: 0.3rem; font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 99px; letter-spacing: 0.05em; text-transform: uppercase; }
+.live-badge.mode-live { background: #dcfce7; color: #15803d; }
+.live-badge.mode-mixed { background: #fef3c7; color: #a16207; }
+.live-badge.mode-demo { background: #ffedd5; color: #c2410c; }
+.live-badge.mode-offline { background: var(--surface-inset); color: var(--text-tertiary); }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pulse-red 1.2s ease-in-out infinite; }
+.mode-offline .live-dot { animation: none; }
 @keyframes pulse-red { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.4); } }
 .route-select { background: var(--surface-card); border: 1.5px solid var(--border-medium); border-radius: 10px; padding: 0.4rem 0.6rem; font-size: 0.8rem; color: var(--text-primary); min-width: 120px; }
 .view-toggle { display: flex; gap: 0.25rem; background: var(--surface-inset); border-radius: 10px; padding: 0.2rem; }
@@ -88,7 +96,22 @@ const t = {
 .tracking-map {
   flex: 1; width: 100%; min-height: 0;
   position: relative; z-index: 1;
+  background-color: var(--surface-inset);
+  background-image: radial-gradient(circle at center, rgba(13,148,136,0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
+.tracking-legend {
+  position: absolute; z-index: 9; top: 4.5rem; left: 0.75rem; right: 4rem;
+  display: flex; align-items: center; gap: 0.45rem; width: fit-content; max-width: calc(100% - 5rem);
+  padding: 0.45rem 0.65rem; border: 2px dashed #f59e0b; border-radius: 10px;
+  background: rgba(255, 247, 237, 0.96); color: #9a3412; box-shadow: 0 2px 8px rgba(154, 52, 18, 0.18);
+  font-size: 0.7rem; font-weight: 700;
+}
+.tracking-legend[hidden] { display: none; }
+.legend-demo-marker, .demo-pill { background: #f59e0b; color: #451a03; border-radius: 5px; padding: 0.1rem 0.3rem; font-size: 0.58rem; font-weight: 900; letter-spacing: 0.08em; }
+.bus-item--demo { border: 2px dashed #f59e0b; background: #fff7ed; }
+:global(html.dark) .tracking-legend, :global(html.dark) .bus-item--demo { background: #431407; color: #fed7aa; }
+:global(.bus-marker-demo) { filter: drop-shadow(0 2px 4px rgba(154,52,18,0.35)); }
 
 /* Buses panel */
 .buses-panel, .stops-panel {
@@ -110,6 +133,7 @@ const t = {
   border: 1.5px solid var(--border-light);
 }
 .bus-svg { width: 36px; height: 36px; flex-shrink: 0; }
+.bus-svg :global(svg), :global(.bus-marker-svg svg) { width: 100%; height: 100%; }
 .bus-info { flex: 1; min-width: 0; }
 .bus-route { font-weight: 700; font-size: 0.85rem; color: var(--text-primary); }
 .bus-details { font-size: 0.72rem; color: var(--text-tertiary); margin-top: 0.1rem; }
@@ -137,6 +161,16 @@ const t = {
 
 /* Bus SVG marker en el mapa */
 .bus-marker-svg { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); transition: transform 0.8s ease; }
+
+@media (max-width: 600px) {
+  .tracking-header { align-items: stretch; padding: 0.6rem 0.75rem; }
+  .tracking-header__left { flex: 0 0 auto; gap: 0.5rem; }
+  .tracking-title { max-width: 8rem; line-height: 1.15; }
+  .tracking-header__right { flex: 1; min-width: 0; }
+  .route-select { min-width: 0; width: 100%; }
+  .view-toggle { display: none; }
+  .buses-panel, .stops-panel { max-height: 38vh; }
+}
 </style>
 
 <script>
@@ -144,6 +178,7 @@ const t = {
 // TRACKING PAGE — Buses en tiempo real + Heatmap
 // ═══════════════════════════════════════════════════
 import { loadLeaflet } from '../../utils/leafletLoader';
+import { escapeHtml } from '../../utils/utils';
 
 let map: import('leaflet').Map | null = null;
 let busMarkers: Map<string, import('leaflet').Marker> = new Map();
@@ -154,10 +189,11 @@ let currentRoute = '';
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 // Crear SVG bus 2D animado
-function createBusSvg(color: string, heading: number, occupancy: number): string {
+function createBusSvg(color: string, heading: number, occupancy: number, isDemo = false): string {
   const occColor = occupancy < 40 ? '#22c55e' : occupancy < 75 ? '#f59e0b' : '#ef4444';
   return `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  ${isDemo ? '<circle cx="24" cy="24" r="22" fill="#fff7ed" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="4 3"/><text x="24" y="6" text-anchor="middle" fill="#9a3412" font-size="5" font-weight="900">DEMO</text>' : ''}
   <g transform="rotate(${heading},24,24)">
     <!-- Sombra -->
     <ellipse cx="24" cy="42" rx="12" ry="3" fill="rgba(0,0,0,0.2)"/>
@@ -190,12 +226,12 @@ function createBusSvg(color: string, heading: number, occupancy: number): string
 </svg>`;
 }
 
-function createBusIcon(color: string, heading: number, occupancy: number): import('leaflet').DivIcon {
+function createBusIcon(color: string, heading: number, occupancy: number, isDemo: boolean): import('leaflet').DivIcon {
   const L = (window as any).L;
   return L.divIcon({
-    html: createBusSvg(color, heading, occupancy),
+    html: createBusSvg(isDemo ? '#f59e0b' : color, heading, occupancy, isDemo),
     iconSize: [48, 48], iconAnchor: [24, 34],
-    className: 'bus-marker-svg',
+    className: isDemo ? 'bus-marker-svg bus-marker-demo' : 'bus-marker-svg',
     popupAnchor: [0, -34]
   });
 }
@@ -232,9 +268,24 @@ async function initMap() {
     zoomControl: false, attributionControl: false
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19
-  }).addTo(map);
+  // Render the route catalog locally so tracking remains legible offline and privacy
+  // browsers never show a grid of broken third-party tile images.
+  try {
+    const data = await fetch('/data/master_routes.optimized.json').then((response) => response.json());
+    const routes = data.rutas || data;
+    routes.forEach((route: any) => {
+      const points = (route.paradas || [])
+        .map((stop: any) => [Number(stop.lat), Number(stop.lng)])
+        .filter(([lat, lng]: number[]) => Number.isFinite(lat) && Number.isFinite(lng));
+      if (points.length > 1) {
+        L.polyline(points as [number, number][], {
+          color: route.color || '#0d9488', weight: 2, opacity: 0.32, interactive: false
+        }).addTo(map!);
+      }
+    });
+  } catch (error) {
+    console.warn('[tracking] local route network unavailable', error);
+  }
 
   L.control.zoom({ position: 'topright' }).addTo(map);
 }
@@ -254,12 +305,29 @@ async function loadRoutes() {
   } catch {}
 }
 
+const modeLabels: Record<string, string> = lang === 'es'
+  ? { live: 'En vivo', mixed: 'Mixto', demo: 'Demo', offline: 'Sin conexión' }
+  : { live: 'Live', mixed: 'Mixed', demo: 'Demo', offline: 'Offline' };
+
+function updateTrackingMode(mode: string, hasDemoUnits: boolean) {
+  const safeMode = ['live', 'mixed', 'demo', 'offline'].includes(mode) ? mode : 'offline';
+  const badge = document.getElementById('tracking-mode-badge');
+  const label = document.getElementById('tracking-mode-label');
+  const legend = document.getElementById('tracking-legend');
+  badge?.classList.remove('mode-live', 'mode-mixed', 'mode-demo', 'mode-offline');
+  badge?.classList.add(`mode-${safeMode}`);
+  if (label) label.textContent = modeLabels[safeMode];
+  if (legend) legend.hidden = !hasDemoUnits;
+}
+
 // Actualizar buses en el mapa
 async function refreshBuses() {
   try {
     const url = currentRoute ? `/api/tracking?route_id=${currentRoute}` : '/api/tracking';
     const res = await fetch(url);
-    const units: any[] = await res.json();
+    const payload = await res.json();
+    const units: any[] = Array.isArray(payload) ? payload : payload.units || [];
+    updateTrackingMode(Array.isArray(payload) ? 'demo' : payload.mode, units.some(unit => unit.is_stub));
 
     // Remover buses que ya no están activos
     const activeIds = new Set(units.map(u => u.id));
@@ -279,17 +347,17 @@ async function refreshBuses() {
       const color = routeColors[unit.route_id] || '#0d9488';
       const heading = unit.heading || 0;
       const occ = unit.occupancy_pct || 50;
-      const icon = createBusIcon(color, heading, occ);
+      const icon = createBusIcon(color, heading, occ, Boolean(unit.is_stub));
       
       const popupContent = `
         <div style="min-width:160px;font-family:system-ui;">
-          <div style="font-weight:700;font-size:0.9rem;">${unit.route_id}</div>
+          <div style="font-weight:700;font-size:0.9rem;">${escapeHtml(unit.route_id)}</div>
           <div style="font-size:0.75rem;color:#64748b;margin-top:0.2rem;">
-            ${unit.stop_name || 'En ruta'}<br>
+            ${escapeHtml(unit.stop_name || 'En ruta')}<br>
             Vel: ${unit.speed_kmh || 0} km/h<br>
             Ocupación: ${occ}%
           </div>
-          ${unit.is_stub ? '<div style="font-size:0.65rem;color:#94a3b8;margin-top:0.2rem;">📍 Posición simulada</div>' : ''}
+          ${unit.is_stub ? '<div style="font-size:0.7rem;color:#9a3412;font-weight:800;margin-top:0.3rem;">⚠ DEMO · Posición simulada</div>' : ''}
         </div>`;
 
       if (busMarkers.has(unit.id)) {
@@ -314,11 +382,11 @@ async function refreshBuses() {
       const occClass = occ < 40 ? 'occ-low' : occ < 75 ? 'occ-mid' : 'occ-high';
       const color = routeColors[u.route_id] || '#0d9488';
       return `
-      <div class="bus-item" onclick="flyToBus(${u.lat},${u.lng})">
-        <div class="bus-svg">${createBusSvg(color, u.heading || 0, occ)}</div>
+      <div class="bus-item ${u.is_stub ? 'bus-item--demo' : ''}" onclick="flyToBus(${Number(u.lat)},${Number(u.lng)})">
+        <div class="bus-svg">${createBusSvg(u.is_stub ? '#f59e0b' : color, Number(u.heading) || 0, occ, Boolean(u.is_stub))}</div>
         <div class="bus-info">
-          <div class="bus-route">Ruta ${u.route_id}</div>
-          <div class="bus-details">${u.stop_name || 'En ruta'} · ${u.speed_kmh || 0} km/h${u.is_stub ? ' · demo' : ''}</div>
+          <div class="bus-route">Ruta ${escapeHtml(u.route_id)} ${u.is_stub ? '<span class="demo-pill">DEMO</span>' : ''}</div>
+          <div class="bus-details">${escapeHtml(u.stop_name || 'En ruta')} · ${Number(u.speed_kmh) || 0} km/h</div>
           <div class="bus-occ">
             <div class="occ-bar"><div class="occ-fill ${occClass}" style="width:${occ}%"></div></div>
             <span style="font-size:0.65rem;color:var(--text-tertiary)">${occ}%</span>
@@ -327,6 +395,7 @@ async function refreshBuses() {
       </div>`;
     }).join('');
   } catch (e) {
+    updateTrackingMode('offline', false);
     console.error('[tracking] refresh buses:', e);
   }
 }

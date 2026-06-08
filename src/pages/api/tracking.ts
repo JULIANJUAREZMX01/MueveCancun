@@ -38,8 +38,28 @@ async function ensureSchema() {
 }
 
 // Realistic stub positions keyed by route_id
+export type TrackingMode = 'live' | 'mixed' | 'demo' | 'offline';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SqlRow = Record<string, any>;
+type TrackingUnit = SqlRow & { source: 'live' | 'demo'; is_stub: boolean };
+
+export interface TrackingPayload {
+  mode: TrackingMode;
+  units: TrackingUnit[];
+  meta: {
+    database: 'available' | 'unavailable';
+    live_units: number;
+    demo_units: number;
+    stubs_enabled: boolean;
+    generated_at: string;
+  };
+}
+
+function areStubsEnabled() {
+  const configured = process.env.TRACKING_STUBS_ENABLED ?? import.meta.env.TRACKING_STUBS_ENABLED;
+  return configured?.toLowerCase() !== 'false';
+}
 
 const STUB_POSITIONS: Record<string, Array<{lat:number;lng:number;stop:string}>> = {
   'R1':  [{lat:21.1714,lng:-86.8219,stop:'El Crucero'},{lat:21.1588,lng:-86.8455,stop:'Av. Kabah'},{lat:21.1430,lng:-86.8460,stop:'Zona Hotelera'}],
@@ -68,41 +88,67 @@ function stubUnits(routeId: string) {
       heading: (i * 120) % 360,
       stop_name: pos.stop,
       updated_at: new Date(now - i * 45000).toISOString(),
+      source: 'demo' as const,
       is_stub: true,
     };
   });
 }
 
+export function createTrackingPayload(
+  rows: SqlRow[],
+  routeId: string,
+  database: 'available' | 'unavailable',
+  stubsEnabled: boolean,
+): TrackingPayload {
+  const liveUnits: TrackingUnit[] = rows.map(row => ({ ...row, source: 'live', is_stub: false }));
+  const liveRouteIds = new Set(liveUnits.map(row => row.route_id));
+  const targetRoutes = routeId ? [routeId] : Object.keys(STUB_POSITIONS);
+  const demoUnits = stubsEnabled
+    ? targetRoutes.filter(id => !liveRouteIds.has(id)).flatMap(stubUnits)
+    : [];
+
+  let mode: TrackingMode;
+  if (liveUnits.length && demoUnits.length) mode = 'mixed';
+  else if (liveUnits.length || (database === 'available' && !demoUnits.length)) mode = 'live';
+  else if (demoUnits.length) mode = 'demo';
+  else mode = 'offline';
+
+  return {
+    mode,
+    units: [...liveUnits, ...demoUnits],
+    meta: {
+      database,
+      live_units: liveUnits.length,
+      demo_units: demoUnits.length,
+      stubs_enabled: stubsEnabled,
+      generated_at: new Date().toISOString(),
+    },
+  };
+}
+
+function jsonResponse(payload: TrackingPayload) {
+  return new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+  });
+}
+
 export const GET: APIRoute = async ({ url }) => {
-  const route_id = url.searchParams.get('route_id') || '';
+  const routeId = url.searchParams.get('route_id') || '';
+  const stubsEnabled = areStubsEnabled();
 
   try {
     await ensureSchema();
     const sql = getDb();
-    const query = route_id
-      ? sql`SELECT *, updated_at::text AS updated_at FROM tracking_units WHERE route_id = ${route_id} AND updated_at > NOW() - INTERVAL '5 minutes' ORDER BY updated_at DESC`
+    const query = routeId
+      ? sql`SELECT *, updated_at::text AS updated_at FROM tracking_units WHERE route_id = ${routeId} AND updated_at > NOW() - INTERVAL '5 minutes' ORDER BY updated_at DESC`
       : sql`SELECT *, updated_at::text AS updated_at FROM tracking_units WHERE updated_at > NOW() - INTERVAL '5 minutes' ORDER BY route_id, updated_at DESC`;
 
     const rows = await query as SqlRow[];
-
-    // Supplement with stubs for any route that has no live data
-    const liveRouteIds = new Set(rows.map((r: SqlRow) => r.route_id));
-    const targetRoutes = route_id ? [route_id] : Object.keys(STUB_POSITIONS);
-    const stubRows = targetRoutes
-      .filter(rid => !liveRouteIds.has(rid))
-      .flatMap((rid: string) => stubUnits(rid));
-
-    return new Response(JSON.stringify([...rows, ...stubRows]), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
-    });
+    return jsonResponse(createTrackingPayload(rows, routeId, 'available', stubsEnabled));
   } catch {
-    logger.warn('[API/Tracking] DB unavailable, returning stubs');
-    const units = route_id ? stubUnits(route_id) : Object.keys(STUB_POSITIONS).flatMap(stubUnits);
-    return new Response(JSON.stringify(units), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
-    });
+    logger.warn(`[API/Tracking] DB unavailable, stubs ${stubsEnabled ? 'enabled' : 'disabled'}`);
+    return jsonResponse(createTrackingPayload([], routeId, 'unavailable', stubsEnabled));
   }
 };
 

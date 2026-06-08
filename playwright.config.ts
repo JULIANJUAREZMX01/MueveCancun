@@ -30,7 +30,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm run build && pnpm run preview',
+    command: process.env.E2E_DIST ? 'pnpm start' : 'pnpm run build && pnpm run preview',
     url: 'http://localhost:4321',
     reuseExistingServer: !process.env.CI,
   },
