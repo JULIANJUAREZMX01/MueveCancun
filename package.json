@@ -39,6 +39,7 @@
     "test:e2e:smoke": "node scripts/e2e-smoke.mjs",
     "test:e2e:mobile": "playwright test e2e/mobile-critical.spec.ts",
     "check-wasm": "node scripts/check-wasm.cjs",
+    "check:css": "node scripts/check-css-pipeline.mjs",
     "validate-catalog": "node --experimental-strip-types scripts/validate-catalog.ts",
     "bench": "vitest bench",
     "generate-roadmap": "node --experimental-strip-types scripts/generate-roadmap-doc.ts",
