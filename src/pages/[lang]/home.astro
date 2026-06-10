@@ -282,9 +282,13 @@ document.addEventListener('astro:page-load', () => {
     const detail = document.getElementById('trip-status-detail');
     if (!bar || !state) return;
     bar.hidden = state.phase === 'idle';
-    if (label) label.textContent = state.phase === 'waiting'
-      ? (document.documentElement.lang === 'es' ? 'Seguimiento activo' : 'Tracking active')
-      : state.phase;
+    const gpsLabels = {
+      requesting: document.documentElement.lang === 'es' ? 'Esperando permiso GPS' : 'Waiting for GPS permission',
+      active: document.documentElement.lang === 'es' ? 'Seguimiento GPS activo' : 'GPS tracking active',
+      denied: document.documentElement.lang === 'es' ? 'GPS denegado · sin telemetría' : 'GPS denied · no telemetry',
+      unavailable: document.documentElement.lang === 'es' ? 'GPS no disponible · sin telemetría' : 'GPS unavailable · no telemetry',
+    };
+    if (label) label.textContent = gpsLabels[state.gpsStatus] ?? state.phase;
     if (detail) detail.textContent = [state.routeId, state.nearestStop].filter(Boolean).join(' · ');
   });
 

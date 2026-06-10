@@ -346,11 +346,16 @@ const isEs = Astro.url.pathname.includes("/es/");
     window.addEventListener('TRIP_STOPPED', () => { void stopTrip(); });
     window.addEventListener('mc:trip-state', (event) => {
       const phase = event.detail?.phase;
+      const gpsStatus = event.detail?.gpsStatus;
       if (!tripStartBtn) return;
       tripStartBtn.disabled = phase !== 'idle';
       tripStartBtn.textContent = phase === 'idle'
         ? (document.documentElement.lang === 'en' ? 'Start tracking' : 'Iniciar seguimiento')
-        : (document.documentElement.lang === 'en' ? 'Tracking active' : 'Seguimiento activo');
+        : gpsStatus === 'active'
+          ? (document.documentElement.lang === 'en' ? 'GPS active' : 'GPS activo')
+          : gpsStatus === 'denied' || gpsStatus === 'unavailable'
+            ? (document.documentElement.lang === 'en' ? 'No GPS telemetry' : 'Sin telemetría GPS')
+            : (document.documentElement.lang === 'en' ? 'Waiting for GPS' : 'Esperando GPS');
     });
 
     window.addEventListener("SHOW_ROUTE_ON_MAP", (e) => {
