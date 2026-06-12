@@ -21,8 +21,12 @@ test.describe('mobile tracking controls', () => {
 
     const routeSelect = page.locator('#route-select');
     await expect(routeSelect).toBeVisible();
+    await expect(page.locator('#tracking-map')).toHaveAttribute('data-local-routes', '78');
+    await expect(page.locator('#tracking-map .local-route-line').first()).toBeVisible();
     await routeSelect.selectOption('R1_ZONA_HOTELERA_001');
     await expect(routeSelect).toHaveValue('R1_ZONA_HOTELERA_001');
+    await expect(page.locator('#tracking-map')).toHaveAttribute('data-selected-route', 'R1_ZONA_HOTELERA_001');
+    await expect(page.locator('#tracking-map .selected-route-line').first()).toBeVisible();
 
     await page.locator('[data-view="heatmap"]').click();
     await expect(page.locator('#buses-panel')).toBeHidden();

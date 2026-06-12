@@ -120,7 +120,7 @@ const isEs = lang === 'es';
   }
 
   /* Input */
-  .route-calculator__input {
+  :global(.route-calculator__input) {
     height: 52px;
     font-family: var(--font-display);
     font-weight: 700;
@@ -138,12 +138,12 @@ const isEs = lang === 'es';
       box-shadow   var(--t-fast) var(--ease),
       background   var(--t-fast) var(--ease);
   }
-  .route-calculator__input:focus {
+  :global(.route-calculator__input:focus) {
     border-color: var(--sea-bright);
     box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15);
     background: var(--surface-elevated);
   }
-  .route-calculator__input::placeholder {
+  :global(.route-calculator__input::placeholder) {
     font-weight: 500;
     color: var(--text-muted);
   }

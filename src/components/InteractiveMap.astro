@@ -9,6 +9,7 @@ const isEs = Astro.url.pathname.includes("/es/");
        <div class="map-fallback__spinner"></div>
        <p class="map-fallback__text">{isEs ? "Cargando Mapa..." : "Loading Map..."}</p>
     </div>
+    <div id="local-network-status" class="local-network-status" role="status">{isEs ? "Cargando red local…" : "Loading local network…"}</div>
   </div>
 
   <!-- GPS + Controls -->
@@ -40,6 +41,7 @@ const isEs = Astro.url.pathname.includes("/es/");
   <div id="route-banner" class="map-banner hidden">
       <div class="map-banner__indicator"></div>
       <p id="route-banner-text" class="map-banner__text">Ruta trazada</p>
+      <button id="trip-start-btn" class="map-banner__action" type="button">Iniciar seguimiento</button>
   </div>
 </div>
 
@@ -49,11 +51,14 @@ const isEs = Astro.url.pathname.includes("/es/");
   import { initWasm, enrichJourneyLegs } from "../lib/initWasm";
   import { coordinatesStore } from "../utils/CoordinatesStore";
   import { escapeHtml, safeUrl, normalizeString } from "../utils/utils";
-  import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
+  import { TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
   import { drawRoute } from "../utils/RouteDrawer";
+  import { drawLocalRouteNetwork, loadLocalRouteCatalog } from "../utils/localRouteMap";
+  import { startTrip, stopTrip } from "../lib/tripTracker";
 
   let map = null;
-  let layerGroup = null;
+  let networkLayer = null;
+  let journeyLayer = null;
   let stopMarkersLayer = null;
   let activeJourney = null;
   let userMarker = null;
@@ -164,12 +169,18 @@ const isEs = Astro.url.pathname.includes("/es/");
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // The PWA must remain useful without third-party tile servers. Route geometry below
-    // provides a local, always-available geographic surface instead of broken tile images.
-    layerGroup = L.layerGroup().addTo(map);
+    // Show a recognizable street map while online and switch cleanly to the local
+    // route surface when tiles are unavailable. Route overlays always remain active.
+    addBaseMap(L, map, { locale: document.documentElement.lang === 'en' ? 'en' : 'es' });
+    networkLayer = L.layerGroup().addTo(map);
+    journeyLayer = L.layerGroup().addTo(map);
 
-    const [coordsDB] = await Promise.all([
+    const [coordsDB, localRoutes] = await Promise.all([
       coordinatesStore.init().then(() => coordinatesStore.getAll()),
+      loadLocalRouteCatalog().catch((error) => {
+        console.error('[MapInit] Local route catalog unavailable:', error);
+        return [];
+      }),
       initWasm().catch(() => null),
     ]);
 
@@ -190,29 +201,27 @@ const isEs = Astro.url.pathname.includes("/es/");
     }
 
     function drawOfflineNetwork(routes) {
-      if (!layerGroup || !Array.isArray(routes)) return;
-      layerGroup.clearLayers();
-      routes.forEach((route) => {
-        const points = (route.paradas || route.stops || [])
-          .map((stop) => [Number(stop.lat), Number(stop.lng)])
-          .filter(([lat, lng]) => Number.isFinite(lat) && Number.isFinite(lng));
-        if (points.length > 1) {
-          L.polyline(points, {
-            color: route.color || getRouteColor(route.id, route.nombre || route.name, route.tipo || route.transport_type),
-            weight: 2,
-            opacity: 0.34,
-            interactive: false,
-          }).addTo(layerGroup);
-        }
-      });
+      if (!networkLayer || !Array.isArray(routes) || routes.length === 0) return;
+      const result = drawLocalRouteNetwork(L, routes, networkLayer);
+      mapContainer.dataset.localRoutes = String(result.routes);
+      mapContainer.dataset.localPoints = String(result.points);
+      const label = document.getElementById('local-network-status');
+      if (label) {
+        label.textContent = document.documentElement.lang === 'en'
+          ? `${result.routes} local routes visible`
+          : `${result.routes} rutas locales visibles`;
+        label.classList.add('is-ready');
+      }
+      const status = document.querySelector('[data-base-map-status]');
+      if (status) status.textContent = document.documentElement.lang === 'en'
+        ? `Local route map · ${result.routes} routes`
+        : `Mapa local · ${result.routes} rutas`;
     }
 
-    if (window.WASM_ROUTES) {
-      updateLegend(window.WASM_ROUTES);
-      drawOfflineNetwork(window.WASM_ROUTES);
-    }
+    updateLegend(localRoutes);
+    drawOfflineNetwork(localRoutes);
     window.addEventListener('WASM_ENGINE_READY', (e) => {
-      if (e.detail?.routes) {
+      if (e.detail?.routes?.length && localRoutes.length === 0) {
         updateLegend(e.detail.routes);
         drawOfflineNetwork(e.detail.routes);
       }
@@ -332,13 +341,37 @@ const isEs = Astro.url.pathname.includes("/es/");
         .openOn(map);
     });
 
+    const tripStartBtn = document.getElementById("trip-start-btn");
+    tripStartBtn?.addEventListener("click", async () => {
+      const leg = activeJourney?.legs?.find((candidate) => candidate.route_id);
+      if (!leg?.route_id) return;
+      tripStartBtn.disabled = true;
+      tripStartBtn.textContent = document.documentElement.lang === 'en' ? 'Starting…' : 'Iniciando…';
+      await startTrip(leg.route_id, leg.origin_stop || '', leg.dest_stop || '');
+    });
+    window.addEventListener('TRIP_STOPPED', () => { void stopTrip(); });
+    window.addEventListener('mc:trip-state', (event) => {
+      const phase = event.detail?.phase;
+      const gpsStatus = event.detail?.gpsStatus;
+      if (!tripStartBtn) return;
+      tripStartBtn.disabled = phase !== 'idle';
+      tripStartBtn.textContent = phase === 'idle'
+        ? (document.documentElement.lang === 'en' ? 'Start tracking' : 'Iniciar seguimiento')
+        : gpsStatus === 'active'
+          ? (document.documentElement.lang === 'en' ? 'GPS active' : 'GPS activo')
+          : gpsStatus === 'denied' || gpsStatus === 'unavailable'
+            ? (document.documentElement.lang === 'en' ? 'No GPS telemetry' : 'Sin telemetría GPS')
+            : (document.documentElement.lang === 'en' ? 'Waiting for GPS' : 'Esperando GPS');
+    });
+
     window.addEventListener("SHOW_ROUTE_ON_MAP", (e) => {
       const rawJourney = e.detail?.journey;
       if (!rawJourney || !map) return;
       const journey = enrichJourneyLegs(rawJourney);
       activeJourney = journey;
-      const newLg = drawRoute(map, journey, layerGroup, coordsDB);
-      if (newLg) layerGroup = newLg;
+      const newLg = drawRoute(map, journey, journeyLayer, coordsDB);
+      if (newLg) journeyLayer = newLg;
+      mapContainer.dataset.activeJourney = journey.id || journey.legs?.[0]?.route_id || 'active';
 
       const bannerText = document.getElementById("route-banner-text");
       const banner = document.getElementById("route-banner");
@@ -378,10 +411,11 @@ const isEs = Astro.url.pathname.includes("/es/");
 
     // Clear route
     document.getElementById("route-clear-btn")?.addEventListener("click", () => {
-      if (layerGroup && map) {
-        layerGroup.clearLayers();
+      if (journeyLayer && map) {
+        journeyLayer.clearLayers();
         document.getElementById("route-banner")?.classList.add("hidden");
         activeJourney = null;
+        delete mapContainer.dataset.activeJourney;
       }
     });
 
@@ -421,6 +455,12 @@ const isEs = Astro.url.pathname.includes("/es/");
       await initMap();
     } catch (err) {
       console.error("[MapInit] Error:", err);
+      const fallback = document.getElementById("map-fallback");
+      const textEl = fallback?.querySelector(".map-fallback__text");
+      if (textEl) textEl.textContent = document.documentElement.lang === 'en'
+        ? "Map unavailable. Reload to retry."
+        : "Mapa no disponible. Recarga para reintentar.";
+      fallback?.classList.add("map-fallback--error");
     }
   }
 
@@ -482,6 +522,23 @@ const isEs = Astro.url.pathname.includes("/es/");
     color: var(--sea-teal);
     opacity: 0.7;
   }
+
+  .local-network-status {
+    position: absolute;
+    left: 0.75rem;
+    top: 0.75rem;
+    z-index: 500;
+    padding: 0.38rem 0.65rem;
+    border: 1px solid rgba(45,212,191,.32);
+    border-radius: 999px;
+    background: rgba(3,27,36,.86);
+    color: #ccfbf1;
+    font-size: 0.62rem;
+    font-weight: 800;
+    box-shadow: 0 3px 12px rgba(0,0,0,.2);
+    pointer-events: none;
+  }
+  .local-network-status.is-ready::before { content: '● '; color: #2dd4bf; }
 
   /* Map Controls Overlay */
   .map-controls {
@@ -569,6 +626,9 @@ const isEs = Astro.url.pathname.includes("/es/");
   .map-banner.hidden { display: none; }
   .map-banner__indicator { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--sea-teal); flex-shrink: 0; animation: gps-pulse 2s infinite; }
   .map-banner__text { font-size: 0.7rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+  .map-banner__action { margin-left: auto; border: 0; border-radius: 999px; padding: 0.4rem 0.65rem; background: var(--sea-teal); color: white; font-size: 0.62rem; font-weight: 800; cursor: pointer; white-space: nowrap; }
+  .map-banner__action:disabled { opacity: 0.7; cursor: default; }
+  .map-fallback--error .map-fallback__spinner { display: none; }
 
   /* Popup Styles */
   :global(.map-popup) { min-width: 11rem; padding: 0.25rem; }
