@@ -47,6 +47,6 @@ describe('addBaseMap', () => {
     expect(container.querySelectorAll('.leaflet-tile-pane img')).toHaveLength(0);
     expect(container.querySelector('[data-route-overlay="active"]')).toBe(overlay);
     expect(container.querySelector('[data-base-map-status="unavailable"]')?.textContent)
-      .toContain('Mapa base no disponible');
+      .toContain('Mapa local de rutas');
   });
 });

@@ -44,6 +44,7 @@ const t = {
 
     <!-- Map container -->
     <div id="tracking-map" class="tracking-map"></div>
+    <div id="tracking-network-status" class="tracking-network-status" role="status">{lang === 'es' ? 'Cargando red local…' : 'Loading local network…'}</div>
     <div id="tracking-legend" class="tracking-legend" hidden>
       <span class="legend-demo-marker">DEMO</span>
       <span>{lang === 'es' ? 'Unidades simuladas, no posiciones reales' : 'Simulated units, not real positions'}</span>
@@ -107,6 +108,8 @@ const t = {
   background-image: radial-gradient(circle at center, rgba(13,148,136,0.15) 1px, transparent 1px);
   background-size: 24px 24px;
 }
+.tracking-network-status { position: absolute; z-index: 700; top: 5.2rem; left: 0.75rem; padding: 0.35rem 0.6rem; border: 1px solid rgba(45,212,191,.32); border-radius: 999px; background: rgba(3,27,36,.88); color: #ccfbf1; font-size: 0.62rem; font-weight: 800; pointer-events: none; }
+.tracking-network-status::before { content: '● '; color: #2dd4bf; }
 .tracking-legend {
   position: absolute; z-index: 9; top: 4.5rem; left: 0.75rem; right: 4rem;
   display: flex; align-items: center; gap: 0.45rem; width: fit-content; max-width: calc(100% - 5rem);
@@ -148,6 +151,7 @@ const t = {
 .badge { background: var(--sea-pale); color: var(--sea-teal); font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 99px; font-weight: 700; }
 .buses-list, .stops-list { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .buses-list, .stops-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.tracking-empty { padding: 1rem; border: 1px dashed var(--border-medium); border-radius: 14px; color: var(--text-secondary); font-size: 0.78rem; line-height: 1.45; }
 .bus-item, .stop-item { display: flex; align-items: center; gap: 0.75rem; background: var(--surface-card); border-radius: 14px; padding: 0.6rem 0.75rem; border: 1.5px solid var(--border-light); }
 .bus-svg { width: 36px; height: 36px; flex-shrink: 0; }
 .bus-svg :global(svg), :global(.bus-marker-svg svg) { width: 100%; height: 100%; }
@@ -173,7 +177,7 @@ const t = {
   .tracking-title { max-width: 8rem; line-height: 1.15; }
   .tracking-header__right { flex: 1; min-width: 0; }
   .route-select { min-width: 0; width: 100%; }
-  .view-toggle { display: none; }
+  .view-toggle { display: flex; }
   .buses-panel, .stops-panel { max-height: 38vh; }
 }
 </style>
@@ -183,6 +187,8 @@ const t = {
 // TRACKING PAGE — Buses en tiempo real + Heatmap
 // ═══════════════════════════════════════════════════
 import { loadLeaflet } from '../../utils/leafletLoader';
+import { addBaseMap } from '../../utils/baseMap';
+import { drawLocalRouteNetwork, loadLocalRouteCatalog } from '../../utils/localRouteMap';
 import { escapeHtml } from '../../utils/utils';
 
 let map: import('leaflet').Map | null = null;
@@ -191,19 +197,12 @@ let stopMarkers: Map<string, import('leaflet').CircleMarker> = new Map();
 let heatLayer: import('leaflet').Layer | null = null;
 let currentView = 'buses';
 let currentRoute = '';
+let routeCatalog: any[] = [];
+let selectedRouteLayer: import('leaflet').LayerGroup | null = null;
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 type PanelState = 'collapsed' | 'medium' | 'expanded';
 const panelStateOrder: PanelState[] = ['collapsed', 'medium', 'expanded'];
 const panelStates = new Map<string, PanelState>([['buses-panel', 'medium'], ['stops-panel', 'medium']]);
-
-function escapeHtml(value: unknown): string {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
 
 function setPanelState(panel: HTMLElement, state: PanelState) {
   panel.dataset.panelState = state;
@@ -268,16 +267,15 @@ function showPanel(view: string) {
 }
 
 // Crear SVG bus 2D animado
-function createBusSvg(color: string, heading: number, occupancy: number): string {
-  color = /^#[0-9a-f]{6}$/i.test(color) ? color : '#0d9488';
-  heading = Number.isFinite(Number(heading)) ? Number(heading) : 0;
-  occupancy = Math.max(0, Math.min(100, Number(occupancy) || 0));
 function createBusSvg(color: string, heading: number, occupancy: number, isDemo = false): string {
-  const occColor = occupancy < 40 ? '#22c55e' : occupancy < 75 ? '#f59e0b' : '#ef4444';
+  const safeColor = /^#[0-9a-f]{6}$/i.test(color) ? color : '#0d9488';
+  const safeHeading = Number.isFinite(Number(heading)) ? Number(heading) : 0;
+  const safeOccupancy = Math.max(0, Math.min(100, Number(occupancy) || 0));
+  const occColor = safeOccupancy < 40 ? '#22c55e' : safeOccupancy < 75 ? '#f59e0b' : '#ef4444';
   return `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
   ${isDemo ? '<circle cx="24" cy="24" r="22" fill="#fff7ed" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="4 3"/><text x="24" y="6" text-anchor="middle" fill="#9a3412" font-size="5" font-weight="900">DEMO</text>' : ''}
-  <g transform="rotate(${heading},24,24)">
+  <g transform="rotate(${safeHeading},24,24)">
     <!-- Sombra -->
     <ellipse cx="24" cy="42" rx="12" ry="3" fill="rgba(0,0,0,0.2)"/>
     <!-- Cuerpo principal -->
@@ -351,26 +349,50 @@ async function initMap() {
     zoomControl: false, attributionControl: false
   });
 
-  // Render the route catalog locally so tracking remains legible offline and privacy
-  // browsers never show a grid of broken third-party tile images.
+  addBaseMap(L, map, { locale: document.documentElement.lang === 'en' ? 'en' : 'es', style: document.documentElement.classList.contains('dark') ? 'dark' : 'voyager' });
+
   try {
-    const data = await fetch('/data/master_routes.optimized.json').then((response) => response.json());
-    const routes = data.rutas || data;
-    routes.forEach((route: any) => {
-      const points = (route.paradas || [])
-        .map((stop: any) => [Number(stop.lat), Number(stop.lng)])
-        .filter(([lat, lng]: number[]) => Number.isFinite(lat) && Number.isFinite(lng));
-      if (points.length > 1) {
-        L.polyline(points as [number, number][], {
-          color: route.color || '#0d9488', weight: 2, opacity: 0.32, interactive: false
-        }).addTo(map!);
-      }
-    });
+    const routes = await loadLocalRouteCatalog();
+    routeCatalog = routes;
+    const networkLayer = L.layerGroup().addTo(map);
+    selectedRouteLayer = L.layerGroup().addTo(map);
+    const result = drawLocalRouteNetwork(L, routes, networkLayer);
+    el.dataset.localRoutes = String(result.routes);
+    el.dataset.localPoints = String(result.points);
+    const networkStatus = document.getElementById('tracking-network-status');
+    if (networkStatus) networkStatus.textContent = document.documentElement.lang === 'en'
+      ? `${result.routes} local routes visible`
+      : `${result.routes} rutas locales visibles`;
+    if (result.bounds) map.fitBounds(result.bounds, { padding: [24, 24] });
+    const status = el.querySelector('[data-base-map-status]');
+    if (status) status.textContent = document.documentElement.lang === 'en'
+      ? `Local route map · ${result.routes} routes`
+      : `Mapa local · ${result.routes} rutas`;
   } catch (error) {
+    el.dataset.localRoutes = '0';
     console.warn('[tracking] local route network unavailable', error);
   }
 
   L.control.zoom({ position: 'topright' }).addTo(map);
+}
+
+function showSelectedRoute(routeId: string) {
+  if (!map || !selectedRouteLayer) return;
+  selectedRouteLayer.clearLayers();
+  const el = document.getElementById('tracking-map');
+  if (!routeId) {
+    delete el?.dataset.selectedRoute;
+    return;
+  }
+  const route = routeCatalog.find(candidate => candidate.id === routeId);
+  if (!route) return;
+  const result = drawLocalRouteNetwork(window.L, [route], selectedRouteLayer);
+  selectedRouteLayer.eachLayer((layer: any) => {
+    layer.setStyle?.({ weight: layer.options?.weight > 6 ? 14 : 9, opacity: 1 });
+    layer.getElement?.()?.classList.add('selected-route-line');
+  });
+  if (result.bounds) map.fitBounds(result.bounds, { padding: [40, 40] });
+  if (el) el.dataset.selectedRoute = routeId;
 }
 
 // Cargar rutas para el select
@@ -427,6 +449,9 @@ async function refreshBuses() {
     } catch {}
 
     units.forEach(unit => {
+      const lat = Number(unit.lat);
+      const lng = Number(unit.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
       const color = routeColors[unit.route_id] || '#0d9488';
       const heading = unit.heading || 0;
       const occ = unit.occupancy_pct || 50;
@@ -460,7 +485,9 @@ async function refreshBuses() {
     const listEl = document.getElementById('buses-list')!;
     const countEl = document.getElementById('bus-count')!;
     countEl.textContent = String(units.length);
-    listEl.innerHTML = units.map(u => {
+    listEl.innerHTML = units.length === 0
+      ? `<div class="tracking-empty">${lang === 'es' ? 'Sin unidades reales conectadas. El mapa local de rutas sigue disponible.' : 'No real units connected. The local route map remains available.'}</div>`
+      : units.map(u => {
       const lat = Number(u.lat);
       const lng = Number(u.lng);
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) return '';
@@ -580,6 +607,7 @@ document.addEventListener('astro:page-load', async () => {
   // Route select
   document.getElementById('route-select')?.addEventListener('change', async (e) => {
     currentRoute = (e.target as HTMLSelectElement).value;
+    showSelectedRoute(currentRoute);
     await refreshBuses();
   });
 

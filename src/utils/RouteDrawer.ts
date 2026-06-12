@@ -33,6 +33,7 @@ interface PolylineOptions {
     weight: number;
     opacity: number;
     dashArray?: string | null;
+    className?: string;
 }
 
 interface MarkerOptions {
@@ -173,7 +174,10 @@ export function drawRoute(
             const dashArray = index === 0 ? null : '10, 10';
 
             createPolyline(L, routeCoords, {
-                color, weight: 4, opacity: 0.8, dashArray
+                color: '#ffffff', weight: 12, opacity: 0.92, dashArray, className: 'selected-route-casing'
+            }).addTo(layerGroup);
+            createPolyline(L, routeCoords, {
+                color, weight: 8, opacity: 1, dashArray, className: 'selected-route-line'
             }).addTo(layerGroup);
 
             if (index === 0) {

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 async function failCartoAndAssertCleanFallback(page: Page, path: string, mapSelector: string) {
-  await page.route('**://*.basemaps.cartocdn.com/**', route => route.abort('failed'));
+  await page.route('**/api/map-tile/**', route => route.abort('failed'));
   await page.goto(path);
 
   const map = page.locator(mapSelector);
@@ -25,13 +25,16 @@ test.beforeEach(async ({ context }) => {
 
 test('removes failed Carto tiles while keeping interactive map overlays available', async ({ page }) => {
   await failCartoAndAssertCleanFallback(page, '/es/home', '#map-container');
-  await expect(page.locator('#map-container .leaflet-overlay-pane path').first()).toBeVisible();
+  await expect(page.locator('#map-container .local-route-line').first()).toBeVisible();
+  await expect(page.locator('#map-container')).toHaveAttribute('data-local-routes', '78');
   await expect(page.locator('#gps-center-btn')).toBeVisible();
 });
 
 test('uses the same clean fallback on the tracking map', async ({ page }) => {
   await failCartoAndAssertCleanFallback(page, '/es/tracking', '#tracking-map');
   await expect(page.locator('#tracking-map .leaflet-control-zoom')).toBeVisible();
+  await expect(page.locator('#tracking-map .local-route-line').first()).toBeVisible();
+  await expect(page.locator('#tracking-map')).toHaveAttribute('data-local-routes', '78');
 });
 
 test('uses the same clean fallback on the shared-location detail map', async ({ page }) => {

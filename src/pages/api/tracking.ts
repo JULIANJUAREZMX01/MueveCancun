@@ -56,9 +56,8 @@ export interface TrackingPayload {
   };
 }
 
-function areStubsEnabled() {
-  const configured = process.env.TRACKING_STUBS_ENABLED ?? import.meta.env.TRACKING_STUBS_ENABLED;
-  return configured?.toLowerCase() !== 'false';
+export function areStubsEnabled(configured = process.env.TRACKING_STUBS_ENABLED ?? import.meta.env.TRACKING_STUBS_ENABLED) {
+  return configured?.toLowerCase() === 'true';
 }
 
 const STUB_POSITIONS: Record<string, Array<{lat:number;lng:number;stop:string}>> = {
