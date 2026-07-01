@@ -102,7 +102,15 @@ describe('RouteDrawer', () => {
                 [21.162, -86.852],
                 [21.1621, -86.8525]
             ],
-            { color: '#94A3B8', weight: 4, opacity: 0.8, dashArray: null }
+            { color: '#ffffff', weight: 12, opacity: 0.92, dashArray: null, className: 'selected-route-casing' }
+        );
+        expect(mockL.polyline).toHaveBeenNthCalledWith(2,
+            [
+                [21.1619, -86.8515],
+                [21.162, -86.852],
+                [21.1621, -86.8525]
+            ],
+            { color: '#94A3B8', weight: 8, opacity: 1, dashArray: null, className: 'selected-route-line' }
         );
 
         // Map bounds should be fitted
@@ -167,19 +175,19 @@ describe('RouteDrawer', () => {
 
         drawRoute(mockMap as unknown, routeData, null, {});
 
-        // 2 Polylines (one for each leg)
-        expect(mockL.polyline).toHaveBeenCalledTimes(2);
+        // Casing + colored line for each leg
+        expect(mockL.polyline).toHaveBeenCalledTimes(4);
 
-        // Leg 1 polyline
-        expect(mockL.polyline).toHaveBeenNthCalledWith(1,
+        // Leg 1 colored polyline
+        expect(mockL.polyline).toHaveBeenNthCalledWith(2,
             [[1, 1], [2, 2]],
-            expect.objectContaining({ color: '#94A3B8', dashArray: null })
+            expect.objectContaining({ color: '#94A3B8', dashArray: null, className: 'selected-route-line' })
         );
 
-        // Leg 2 polyline
-        expect(mockL.polyline).toHaveBeenNthCalledWith(2,
+        // Leg 2 colored polyline
+        expect(mockL.polyline).toHaveBeenNthCalledWith(4,
             [[2, 2], [3, 3]],
-            expect.objectContaining({ color: '#94A3B8', dashArray: '10, 10' })
+            expect.objectContaining({ color: '#94A3B8', dashArray: '10, 10', className: 'selected-route-line' })
         );
 
         // Markers: Start(A), Transfer(B), End(C)

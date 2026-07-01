@@ -34,3 +34,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Run route data validation
         run: node --experimental-strip-types scripts/validate-routes.ts
+      - name: Run functional reality audit
+        run: pnpm audit:reality
+      - name: Detect stale reality report
+        run: git diff --exit-code -- docs/recovery/REALITY_REPORT.md

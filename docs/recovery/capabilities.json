@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "capabilities": [
+    {
+      "id": "CAP-001",
+      "name": "Build de producción reproducible",
+      "promise": "La aplicación puede desplegarse desde el repositorio.",
+      "acceptance": "pnpm build termina con código 0.",
+      "owner": "platform",
+      "priority": "P0"
+    },
+    {
+      "id": "CAP-002",
+      "name": "Mapa y red de rutas",
+      "promise": "El usuario ve contexto geográfico y la red de rutas.",
+      "acceptance": "El mapa online agrega tiles; offline conserva rutas y marcadores sobre una superficie local.",
+      "owner": "map",
+      "priority": "P0"
+    },
+    {
+      "id": "CAP-003",
+      "name": "Trazado de viaje",
+      "promise": "Una búsqueda seleccionada puede dibujarse en el mapa.",
+      "acceptance": "SHOW_ROUTE_ON_MAP llama a drawRoute y existe una prueba E2E de trazado.",
+      "owner": "routing",
+      "priority": "P0"
+    },
+    {
+      "id": "CAP-004",
+      "name": "Tracking de unidades reales",
+      "promise": "Las unidades mostradas como vivas provienen de posiciones reales.",
+      "acceptance": "Los stubs están desactivados por defecto y toda unidad declara source/is_stub.",
+      "owner": "tracking",
+      "priority": "P0"
+    },
+    {
+      "id": "CAP-005",
+      "name": "Telemetría de viaje",
+      "promise": "Un viaje iniciado envía posiciones anónimas al backend.",
+      "acceptance": "La primera posición y actualizaciones posteriores se envían; el estado revela errores o falta de GPS.",
+      "owner": "telemetry",
+      "priority": "P1"
+    },
+    {
+      "id": "CAP-006",
+      "name": "Catálogo verificable",
+      "promise": "Las rutas publicadas tienen geometría dibujable.",
+      "acceptance": "Todas las rutas tienen al menos dos coordenadas válidas y pasan validate-routes.",
+      "owner": "data",
+      "priority": "P0"
+    },
+    {
+      "id": "CAP-007",
+      "name": "Evidencia visual automatizada",
+      "promise": "Mapa, trazado y tracking se verifican en navegador.",
+      "acceptance": "CI ejecuta Playwright para mapa y tracking y conserva artefactos.",
+      "owner": "quality",
+      "priority": "P1"
+    }
+  ]
+}

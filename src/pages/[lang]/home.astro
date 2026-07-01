@@ -274,6 +274,24 @@ document.addEventListener('astro:page-load', () => {
     if (Math.abs(delta) > 30) toggleSheet(delta > 0);
   }, { passive: true });
 
+  // Reflect the real TripTracker state instead of leaving the status UI inert.
+  window.addEventListener('mc:trip-state', (event: Event) => {
+    const state = (event as CustomEvent).detail;
+    const bar = document.getElementById('trip-status-bar');
+    const label = document.getElementById('trip-status-label');
+    const detail = document.getElementById('trip-status-detail');
+    if (!bar || !state) return;
+    bar.hidden = state.phase === 'idle';
+    const gpsLabels = {
+      requesting: document.documentElement.lang === 'es' ? 'Esperando permiso GPS' : 'Waiting for GPS permission',
+      active: document.documentElement.lang === 'es' ? 'Seguimiento GPS activo' : 'GPS tracking active',
+      denied: document.documentElement.lang === 'es' ? 'GPS denegado · sin telemetría' : 'GPS denied · no telemetry',
+      unavailable: document.documentElement.lang === 'es' ? 'GPS no disponible · sin telemetría' : 'GPS unavailable · no telemetry',
+    };
+    if (label) label.textContent = gpsLabels[state.gpsStatus] ?? state.phase;
+    if (detail) detail.textContent = [state.routeId, state.nearestStop].filter(Boolean).join(' · ');
+  });
+
   // Trip stop btn
   document.getElementById('trip-stop-btn')?.addEventListener('click', () => {
     const bar = document.getElementById('trip-status-bar');

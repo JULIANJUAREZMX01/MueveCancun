@@ -9,7 +9,8 @@ test('map draws a route using the offline WASM engine', async ({ page, context }
   await page.goto('/es/home');
 
   await expect(page.locator('#map-container')).toBeVisible();
-  await expect.poll(() => page.evaluate(() => window.WASM_READY === true), { timeout: 60_000 }).toBe(true);
+  await expect.poll(() => page.locator('#map-container').getAttribute('data-local-routes'), { timeout: 60_000 }).toBe('78');
+  await expect(page.locator('#map-container .local-route-line').first()).toBeVisible();
 
   await page.fill('#origin-input', 'El Crucero');
   await page.fill('#dest-input', 'Plaza Las Américas');
@@ -20,5 +21,6 @@ test('map draws a route using the offline WASM engine', async ({ page, context }
   await firstResult.click();
 
   await expect(page.locator('#route-banner')).toBeVisible();
-  await expect(page.locator('#map-container .leaflet-overlay-pane path').first()).toBeVisible();
+  await expect(page.locator('#map-container')).toHaveAttribute('data-active-journey', /.+/);
+  await expect(page.locator('#map-container .selected-route-line').first()).toBeVisible();
 });

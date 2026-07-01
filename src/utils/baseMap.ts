@@ -1,7 +1,7 @@
 import type * as Leaflet from 'leaflet';
 
-const CARTO_VOYAGER_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-const CARTO_DARK_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png';
+const CARTO_VOYAGER_URL = '/api/map-tile/{z}/{x}/{y}.png';
+const CARTO_DARK_URL = '/api/map-tile/{z}/{x}/{y}.png';
 const REMOTE_TILE_CLASS = 'remote-base-tiles';
 const FALLBACK_CLASS = 'map-base-unavailable';
 const STYLE_ID = 'base-map-fallback-styles';
@@ -25,16 +25,19 @@ function installFallbackStyles(): void {
     .leaflet-container.${FALLBACK_CLASS} {
       background-color: #dce9e7;
       background-image:
-        linear-gradient(32deg, transparent 46%, rgba(255,255,255,.78) 47%, rgba(255,255,255,.78) 50%, transparent 51%),
-        linear-gradient(122deg, transparent 45%, rgba(160,181,178,.48) 46%, rgba(160,181,178,.48) 49%, transparent 50%);
-      background-size: 112px 112px, 168px 168px;
+        linear-gradient(rgba(15,118,110,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15,118,110,.08) 1px, transparent 1px),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.72), transparent 65%);
+      background-size: 48px 48px, 48px 48px, 100% 100%;
     }
     .dark .leaflet-container.${FALLBACK_CLASS},
     .leaflet-container.${FALLBACK_CLASS}.base-map-dark {
-      background-color: #142827;
+      background-color: #102b2d;
       background-image:
-        linear-gradient(32deg, transparent 46%, rgba(255,255,255,.10) 47%, rgba(255,255,255,.10) 50%, transparent 51%),
-        linear-gradient(122deg, transparent 45%, rgba(94,234,212,.10) 46%, rgba(94,234,212,.10) 49%, transparent 50%);
+        linear-gradient(rgba(94,234,212,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(94,234,212,.07) 1px, transparent 1px),
+        radial-gradient(circle at 50% 50%, rgba(13,148,136,.12), transparent 65%);
+      background-size: 48px 48px, 48px 48px, 100% 100%;
     }
     .base-map-status {
       position: absolute;
@@ -102,8 +105,8 @@ export function addBaseMap(
       status.dataset.baseMapStatus = 'unavailable';
       status.setAttribute('role', 'status');
       status.textContent = locale === 'en'
-        ? 'Base map unavailable · routes and markers remain active'
-        : 'Mapa base no disponible · rutas y marcadores siguen activos';
+        ? 'Local route map · street tiles unavailable'
+        : 'Mapa local de rutas · calles no disponibles';
       container.appendChild(status);
     }
   };
@@ -116,7 +119,6 @@ export function addBaseMap(
   const url = style === 'dark' ? CARTO_DARK_URL : CARTO_VOYAGER_URL;
   tileLayer = L.tileLayer(url, {
     maxZoom: options.maxZoom ?? 19,
-    subdomains: 'abcd',
     className: REMOTE_TILE_CLASS,
   });
   tileLayer.once('tileerror', (event: Leaflet.TileErrorEvent) => {
