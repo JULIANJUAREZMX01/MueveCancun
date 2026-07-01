@@ -1,11 +1,9 @@
-import catalogData from '../../public/data/master_routes.optimized.json';
-
 /**
- * src/data/catalog.ts — v3 FIXED
+ * src/data/catalog.ts — v4 FIXED
  *
- * Carga el catálogo de rutas una sola vez por proceso (cold start cache).
- * Usa fetch al CDN del sitio propio (funciona desde serverless Vercel/Render).
- * Fallback: archivo estático se sirve automáticamente en /data/
+ * En Vercel serverless, import estático de public/ NO funciona.
+ * Solución: Fetch lazy con cache a nivel de módulo.
+ * El archivo está disponible en el CDN de Vercel, accesible desde el edge/serverless.
  */
 
 export interface CatalogStop {
@@ -25,44 +23,66 @@ export interface CatalogRoute {
   paradas?: CatalogStop[];
 }
 
-// Cache a nivel de módulo — persiste entre requests en el mismo contenedor
 let _routes: CatalogRoute[] | null = null;
 let _loading: Promise<CatalogRoute[]> | null = null;
 
 /**
- * Obtener catálogo de rutas de forma asincrónica.
- * Cacheado automáticamente a nivel de módulo.
+ * Obtener catálogo de forma asincrónica con cache automático.
  */
 export async function getCatalogRoutes(): Promise<CatalogRoute[]> {
+  // Si ya está en caché, devolver inmediatamente
   if (_routes !== null) return _routes;
+
+  // Si está cargando, esperar el resultado
   if (_loading !== null) return _loading;
 
-  _loading = Promise.resolve().then(() => {
-    // Import estático: funciona en SSR/serverless y no depende de un fetch relativo inválido.
-    _routes = (catalogData as { rutas?: CatalogRoute[] }).rutas ?? [];
-    console.log(
-      `[catalog] Loaded ${_routes.length} routes, ${_routes.reduce((n, r) => n + (r.paradas?.length ?? 0), 0)} stops`
-    );
-    return _routes;
-  });
+  // Iniciar carga
+  _loading = (async (): Promise<CatalogRoute[]> => {
+    try {
+      // Construir URL absoluta del sitio
+      const siteUrl = process.env.SITE_URL || process.env.VERCEL_URL || 'https://mueve-cancun-sigma.vercel.app';
+      const baseUrl = siteUrl.startsWith('http') ? siteUrl : `https://${siteUrl}`;
+      const catalogUrl = `${baseUrl}/data/master_routes.optimized.json`;
 
-  try {
-    return await _loading;
-  } finally {
-    _loading = null;
-  }
+      const response = await fetch(catalogUrl, {
+        signal: AbortSignal.timeout(10000),
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.error(`[catalog] HTTP ${response.status} from ${catalogUrl}`);
+        _routes = [];
+        return _routes;
+      }
+
+      const data = (await response.json()) as { rutas?: CatalogRoute[] };
+      _routes = data.rutas ?? [];
+
+      const stopCount = _routes.reduce((n, r) => n + (r.paradas?.length ?? 0), 0);
+      console.log(`[catalog] ✅ Loaded ${_routes.length} routes, ${stopCount} stops from CDN`);
+
+      return _routes;
+    } catch (error) {
+      console.error('[catalog] fetch error:', error);
+      _routes = [];
+      return _routes;
+    }
+  })();
+
+  return _loading;
 }
 
 /**
- * Obtener catálogo de forma sincrónica (solo si ya está cargado).
- * Usado para compatibilidad, pero getCatalogRoutes() es preferido.
+ * Obtener catálogo de forma sincrónica (solo si ya cargado).
  */
 export function getCatalogSync(): CatalogRoute[] {
   return _routes ?? [];
 }
 
 /**
- * Total de paradas en el catálogo.
+ * Contar total de paradas (informativo).
  */
 export function getCatalogStopCount(): number {
   return (_routes ?? []).reduce((n, r) => n + (r.paradas?.length ?? 0), 0);
