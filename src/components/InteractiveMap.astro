@@ -40,6 +40,7 @@ const isEs = Astro.url.pathname.includes("/es/");
   <div id="route-banner" class="map-banner hidden">
       <div class="map-banner__indicator"></div>
       <p id="route-banner-text" class="map-banner__text">Ruta trazada</p>
+      <button id="trip-start-btn" class="map-banner__action" type="button">Iniciar seguimiento</button>
   </div>
 </div>
 
@@ -51,6 +52,7 @@ const isEs = Astro.url.pathname.includes("/es/");
   import { escapeHtml, safeUrl, normalizeString } from "../utils/utils";
   import { getRouteColor, TRANSPORT_TYPE_COLORS } from "../utils/routeColors";
   import { drawRoute } from "../utils/RouteDrawer";
+  import { startTrip, stopTrip } from "../lib/tripTracker";
 
   let map = null;
   let layerGroup = null;
@@ -164,8 +166,9 @@ const isEs = Astro.url.pathname.includes("/es/");
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // The PWA must remain useful without third-party tile servers. Route geometry below
-    // provides a local, always-available geographic surface instead of broken tile images.
+    // Show a recognizable street map while online and switch cleanly to the local
+    // route surface when tiles are unavailable. Route overlays always remain active.
+    addBaseMap(L, map, { locale: document.documentElement.lang === 'en' ? 'en' : 'es' });
     layerGroup = L.layerGroup().addTo(map);
 
     const [coordsDB] = await Promise.all([
@@ -332,6 +335,29 @@ const isEs = Astro.url.pathname.includes("/es/");
         .openOn(map);
     });
 
+    const tripStartBtn = document.getElementById("trip-start-btn");
+    tripStartBtn?.addEventListener("click", async () => {
+      const leg = activeJourney?.legs?.find((candidate) => candidate.route_id);
+      if (!leg?.route_id) return;
+      tripStartBtn.disabled = true;
+      tripStartBtn.textContent = document.documentElement.lang === 'en' ? 'Starting…' : 'Iniciando…';
+      await startTrip(leg.route_id, leg.origin_stop || '', leg.dest_stop || '');
+    });
+    window.addEventListener('TRIP_STOPPED', () => { void stopTrip(); });
+    window.addEventListener('mc:trip-state', (event) => {
+      const phase = event.detail?.phase;
+      const gpsStatus = event.detail?.gpsStatus;
+      if (!tripStartBtn) return;
+      tripStartBtn.disabled = phase !== 'idle';
+      tripStartBtn.textContent = phase === 'idle'
+        ? (document.documentElement.lang === 'en' ? 'Start tracking' : 'Iniciar seguimiento')
+        : gpsStatus === 'active'
+          ? (document.documentElement.lang === 'en' ? 'GPS active' : 'GPS activo')
+          : gpsStatus === 'denied' || gpsStatus === 'unavailable'
+            ? (document.documentElement.lang === 'en' ? 'No GPS telemetry' : 'Sin telemetría GPS')
+            : (document.documentElement.lang === 'en' ? 'Waiting for GPS' : 'Esperando GPS');
+    });
+
     window.addEventListener("SHOW_ROUTE_ON_MAP", (e) => {
       const rawJourney = e.detail?.journey;
       if (!rawJourney || !map) return;
@@ -421,6 +447,12 @@ const isEs = Astro.url.pathname.includes("/es/");
       await initMap();
     } catch (err) {
       console.error("[MapInit] Error:", err);
+      const fallback = document.getElementById("map-fallback");
+      const textEl = fallback?.querySelector(".map-fallback__text");
+      if (textEl) textEl.textContent = document.documentElement.lang === 'en'
+        ? "Map unavailable. Reload to retry."
+        : "Mapa no disponible. Recarga para reintentar.";
+      fallback?.classList.add("map-fallback--error");
     }
   }
 
@@ -569,6 +601,9 @@ const isEs = Astro.url.pathname.includes("/es/");
   .map-banner.hidden { display: none; }
   .map-banner__indicator { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--sea-teal); flex-shrink: 0; animation: gps-pulse 2s infinite; }
   .map-banner__text { font-size: 0.7rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+  .map-banner__action { margin-left: auto; border: 0; border-radius: 999px; padding: 0.4rem 0.65rem; background: var(--sea-teal); color: white; font-size: 0.62rem; font-weight: 800; cursor: pointer; white-space: nowrap; }
+  .map-banner__action:disabled { opacity: 0.7; cursor: default; }
+  .map-fallback--error .map-fallback__spinner { display: none; }
 
   /* Popup Styles */
   :global(.map-popup) { min-width: 11rem; padding: 0.25rem; }
