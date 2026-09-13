@@ -14,7 +14,7 @@
   Este archivo consolida el seguimiento de todos los agentes en un solo lugar.
 -->
 
-> Última actualización: 2026-03-28 · Versión: 1.0.0 (Nexus Prime v3.3)
+> Última actualización: 2026-06-10 · Versión: 1.1.0 (Functional Reality Gates)
 
 ---
 
@@ -30,6 +30,7 @@
 | 2026-03-28 | claude-code    | Fix/Review      | Revisiones Copilot PR #366 corregidas          | ✅ Done  |
 | 2026-03-28 | claude-code    | Documentación   | Objetos de estudio en MDs de agentes           | ✅ Done  |
 | 2026-03-28 | copilot        | CI/Docs         | Test isolation (vi.stubGlobal), Tailwind docs corregidos, scripts temporales eliminados, spatial-index build fix — ver [ADR-2026-003](adr/ADR-2026-003.md) | ⏳ En merge |
+| 2026-06-10 | codex          | Reality/CI      | Matriz de capacidades, tracking demo opt-in, telemetría inmediata y gate automatizado — ver [ADR-2026-004](adr/ADR-2026-004-functional-reality-gates.md) | ✅ Done |
 
 ---
 

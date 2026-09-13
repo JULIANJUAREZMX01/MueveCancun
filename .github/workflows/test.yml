@@ -91,9 +91,22 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: node --experimental-strip-types scripts/validate-routes.ts
+  functional-reality:
+    name: Functional Reality Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - run: pnpm audit:reality
+      - name: Require committed reality report
+        run: git diff --exit-code -- docs/recovery/REALITY_REPORT.md
   build-vercel:
     name: Production Build (Vercel)
-    needs: [astro-config, lint, ts-unit, rust-unit, data-integrity]
+    needs: [astro-config, lint, ts-unit, rust-unit, data-integrity, functional-reality]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -126,6 +139,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
+      - name: Run critical map and tracking flows
+        run: pnpm exec playwright test e2e/verify_map.spec.ts e2e/tracking-mobile.spec.ts
       - name: Run responsive visual audit
         run: pnpm test:e2e:visual
       - name: Upload visual audit evidence

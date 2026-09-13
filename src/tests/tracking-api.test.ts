@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createTrackingPayload } from '../pages/api/tracking';
+import { areStubsEnabled, createTrackingPayload } from '../pages/api/tracking';
 
 const liveUnit = {
   id: 'real-r1-01',
@@ -46,4 +46,10 @@ describe('/api/tracking response modes', () => {
     expect(response.meta.demo_units).toBeGreaterThan(0);
     expect(new Set(response.units.map(unit => unit.source))).toEqual(new Set(['live', 'demo']));
   });
+  it('requires explicit opt-in before enabling demo tracking units', () => {
+    expect(areStubsEnabled(undefined)).toBe(false);
+    expect(areStubsEnabled('false')).toBe(false);
+    expect(areStubsEnabled('true')).toBe(true);
+  });
+
 });

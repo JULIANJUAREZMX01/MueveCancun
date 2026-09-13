@@ -196,15 +196,6 @@ type PanelState = 'collapsed' | 'medium' | 'expanded';
 const panelStateOrder: PanelState[] = ['collapsed', 'medium', 'expanded'];
 const panelStates = new Map<string, PanelState>([['buses-panel', 'medium'], ['stops-panel', 'medium']]);
 
-function escapeHtml(value: unknown): string {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
-
 function setPanelState(panel: HTMLElement, state: PanelState) {
   panel.dataset.panelState = state;
   panelStates.set(panel.id, state);
@@ -268,16 +259,15 @@ function showPanel(view: string) {
 }
 
 // Crear SVG bus 2D animado
-function createBusSvg(color: string, heading: number, occupancy: number): string {
-  color = /^#[0-9a-f]{6}$/i.test(color) ? color : '#0d9488';
-  heading = Number.isFinite(Number(heading)) ? Number(heading) : 0;
-  occupancy = Math.max(0, Math.min(100, Number(occupancy) || 0));
 function createBusSvg(color: string, heading: number, occupancy: number, isDemo = false): string {
-  const occColor = occupancy < 40 ? '#22c55e' : occupancy < 75 ? '#f59e0b' : '#ef4444';
+  const safeColor = /^#[0-9a-f]{6}$/i.test(color) ? color : '#0d9488';
+  const safeHeading = Number.isFinite(Number(heading)) ? Number(heading) : 0;
+  const safeOccupancy = Math.max(0, Math.min(100, Number(occupancy) || 0));
+  const occColor = safeOccupancy < 40 ? '#22c55e' : safeOccupancy < 75 ? '#f59e0b' : '#ef4444';
   return `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
   ${isDemo ? '<circle cx="24" cy="24" r="22" fill="#fff7ed" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="4 3"/><text x="24" y="6" text-anchor="middle" fill="#9a3412" font-size="5" font-weight="900">DEMO</text>' : ''}
-  <g transform="rotate(${heading},24,24)">
+  <g transform="rotate(${safeHeading},24,24)">
     <!-- Sombra -->
     <ellipse cx="24" cy="42" rx="12" ry="3" fill="rgba(0,0,0,0.2)"/>
     <!-- Cuerpo principal -->

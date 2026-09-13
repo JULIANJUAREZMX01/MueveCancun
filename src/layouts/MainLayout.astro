@@ -8,6 +8,7 @@ import OverlayManager, { type MapMode } from '../components/OverlayManager.astro
 import { ClientRouter } from 'astro:transitions';
 import Analytics from "@vercel/analytics/astro";
 import SpeedInsights from "@vercel/speed-insights/astro";
+import { APP_VERSION, BUILD_DATE, BUILD_ID, CACHE_VERSION, GIT_COMMIT, SHORT_COMMIT } from '../generated/buildInfo';
 import "../index.css";
 
 interface Props {
