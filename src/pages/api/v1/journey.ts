@@ -95,70 +95,129 @@ const EMISSIONS: Record<string, number> = {
   Bicicleta: 0,
 };
 
+// ── Cache y estructuras O(1) a nivel de módulo ───────────────────────────────
+
+interface IndexedStop {
+  stop: JourneyStop;
+  normalizedName: string;
+  routes: CatalogRoute[];
+}
+
+let cachedRoutesRef: CatalogRoute[] | null = null;
+let cachedIndexedStops: IndexedStop[] = [];
+let cachedExactNameMap = new Map<string, { stop: JourneyStop; routes: CatalogRoute[] }>();
+const resolveStopCache = new Map<string, { stop: JourneyStop | null; route_matches?: CatalogRoute[] }>();
+
+function normalizeText(text: string): string {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function ensureStopIndexes(routes: CatalogRoute[]): void {
+  if (cachedRoutesRef === routes) return;
+
+  cachedRoutesRef = routes;
+  cachedExactNameMap = new Map();
+  cachedIndexedStops = [];
+  resolveStopCache.clear();
+
+  for (const route of routes) {
+    for (const stop of route.paradas ?? []) {
+      const stopName = stop.nombre || stop.name || '';
+      const norm = normalizeText(stopName);
+      const journeyStop: JourneyStop = {
+        nombre: stopName,
+        lat: stop.lat,
+        lng: stop.lng,
+        orden: stop.orden,
+      };
+
+      const existingExact = cachedExactNameMap.get(norm);
+      if (existingExact) {
+        existingExact.routes.push(route);
+      } else {
+        cachedExactNameMap.set(norm, {
+          stop: journeyStop,
+          routes: [route],
+        });
+      }
+
+      cachedIndexedStops.push({
+        stop: journeyStop,
+        normalizedName: norm,
+        routes: [route],
+      });
+    }
+  }
+}
+
 // ── Resolver parada por nombre o coordenadas ─────────────────────────────────
 
 async function resolveStop(
   input: { name?: string; lat?: number; lng?: number } | string,
   routes: CatalogRoute[]
 ): Promise<{ stop: JourneyStop | null; route_matches?: CatalogRoute[] }> {
+  ensureStopIndexes(routes);
+
   const name = typeof input === 'string' ? input : input.name || '';
   const lat = typeof input !== 'string' ? input.lat : undefined;
   const lng = typeof input !== 'string' ? input.lng : undefined;
 
-  // Si vienen coordenadas, buscar parada más cercana
+  // Si vienen coordenadas, buscar parada más cercana con clave de cache O(1)
   if (lat !== undefined && lng !== undefined) {
+    const coordCacheKey = `geo:${lat.toFixed(5)},${lng.toFixed(5)}`;
+    const cachedCoord = resolveStopCache.get(coordCacheKey);
+    if (cachedCoord) return cachedCoord;
+
     let closest: JourneyStop | null = null;
     let minDist = Infinity;
 
-    for (const route of routes) {
-      for (const stop of route.paradas ?? []) {
-        const dist = Math.hypot(stop.lat - lat, stop.lng - lng);
-        if (dist < minDist) {
-          minDist = dist;
-          closest = {
-            nombre: stop.nombre || stop.name || '',
-            lat: stop.lat,
-            lng: stop.lng,
-            orden: stop.orden,
-          };
-        }
+    for (const item of cachedIndexedStops) {
+      const dist = Math.hypot(item.stop.lat - lat, item.stop.lng - lng);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = item.stop;
       }
     }
 
-    return { stop: closest && minDist < 1 ? closest : null };
+    const result = { stop: closest && minDist < 1 ? closest : null };
+    resolveStopCache.set(coordCacheKey, result);
+    return result;
   }
 
   // Búsqueda por nombre
   if (!name) return { stop: null };
 
-  const normalized = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const normalized = normalizeText(name);
+  const cached = resolveStopCache.get(normalized);
+  if (cached) return cached;
+
+  // 1. Coincidencia exacta O(1)
+  const exact = cachedExactNameMap.get(normalized);
+  if (exact) {
+    const result = { stop: exact.stop, route_matches: exact.routes };
+    resolveStopCache.set(normalized, result);
+    return result;
+  }
+
+  // 2. Coincidencia parcial pre-normalizada
   let bestMatch: JourneyStop | null = null;
   let matchRoutes: CatalogRoute[] = [];
 
-  for (const route of routes) {
-    for (const stop of route.paradas ?? []) {
-      const sn = (stop.nombre || stop.name || '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
-
-      if (sn.includes(normalized) || normalized.includes(sn)) {
-        if (!bestMatch || sn.length < (bestMatch.nombre || '').length) {
-          bestMatch = {
-            nombre: stop.nombre || stop.name || '',
-            lat: stop.lat,
-            lng: stop.lng,
-            orden: stop.orden,
-          };
-          matchRoutes = [route];
-        } else if (sn === (bestMatch.nombre || '').toLowerCase()) {
-          matchRoutes.push(route);
-        }
+  for (const item of cachedIndexedStops) {
+    const sn = item.normalizedName;
+    if (sn.includes(normalized) || normalized.includes(sn)) {
+      if (!bestMatch || sn.length < (bestMatch.nombre || '').length) {
+        bestMatch = item.stop;
+        matchRoutes = [...item.routes];
+      } else if (sn === (bestMatch.nombre || '').toLowerCase()) {
+        matchRoutes.push(...item.routes);
       }
     }
   }
 
-  return { stop: bestMatch, route_matches: matchRoutes };
+  const result = { stop: bestMatch, route_matches: matchRoutes };
+  resolveStopCache.set(normalized, result);
+  return result;
 }
 
 // ── Calcular distancia (haversine) ───────────────────────────────────────────
