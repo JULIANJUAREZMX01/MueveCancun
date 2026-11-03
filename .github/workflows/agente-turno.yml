@@ -1,0 +1,70 @@
+name: Turno de agente (agnóstico a herramienta)
+
+# Reemplaza a jules-*.yml, que dejan de funcionar el 2026-11-11.
+# Idea: GitHub Actions solo PREPARA y VIGILA. El trabajo lo hace el agente que Julián elija
+# (Claude Code, Copilot coding agent, Gemini CLI, Antigravity...). Nada se mergea solo.
+
+on:
+  schedule:
+    - cron: "0 14 * * 1"        # lunes 09:00 America/Cancun
+  workflow_dispatch:
+    inputs:
+      persona:
+        description: "Persona del turno"
+        type: choice
+        options: [sentinel, bolt, palette, speedy]
+        default: sentinel
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  guardia:
+    name: Guardia anti-avalancha
+    runs-on: ubuntu-latest
+    outputs:
+      puede_abrir: ${{ steps.contar.outputs.puede_abrir }}
+    steps:
+      - id: contar
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TOPE: "3"
+        run: |
+          abiertos=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --json number --jq 'length')
+          echo "PRs abiertos: $abiertos (tope $TOPE)"
+          if [ "$abiertos" -ge "$TOPE" ]; then
+            echo "puede_abrir=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Hay $abiertos PRs abiertos. No se crea turno nuevo hasta bajar de $TOPE."
+          else
+            echo "puede_abrir=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  preparar-turno:
+    name: Abrir issue de turno
+    needs: guardia
+    if: needs.guardia.outputs.puede_abrir == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Crear issue con instrucciones
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PERSONA: ${{ github.event.inputs.persona || 'sentinel' }}
+        run: |
+          fecha=$(date +%F)
+          cat > cuerpo.md <<BODY
+          ## Turno de **$PERSONA** · $fecha
+
+          1. Lee \`AGENTS.md\` y \`docs/agentes/MEMORIA.md\`.
+          2. Haz **una sola** mejora de tu especialidad ($PERSONA).
+          3. Verifica con los comandos de AGENTS.md. Si algo falla, revierte.
+          4. Abre **un** PR pequeño y enlázalo aquí.
+          5. Agrega una entrada a \`docs/agentes/MEMORIA.md\`.
+
+          No hagas merge. Julián decide.
+          BODY
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "Turno $PERSONA $fecha" --body-file cuerpo.md --label "agente-turno" || \
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "Turno $PERSONA $fecha" --body-file cuerpo.md
