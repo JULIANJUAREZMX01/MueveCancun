@@ -1,7 +1,6 @@
 ---
 import Icon from "./ui/Icon.astro";
 const isEs = Astro.url.pathname.includes("/es/");
-const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 ---
 
 <div class="map-wrapper">
@@ -247,7 +246,7 @@ const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 
     let hubSet = new Map();
     try {
-      const hubsResp = await fetch(`${BASE}/data/hubs.json`);
+      const hubsResp = await fetch('/data/hubs.json');
       if (hubsResp.ok) {
         const hubsData = await hubsResp.json();
         hubsData.forEach(h => hubSet.set(normalizeString(h.name), h.route_count));
@@ -437,7 +436,7 @@ const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
       map?.closePopup();
     } else if (action === "routes") {
       const lang = document.documentElement.lang || "es";
-      window.location.href = `${BASE}/${lang}/rutas?search=${safeUrl(name)}`;
+      window.location.href = `/${lang}/rutas?search=${safeUrl(name)}`;
     }
   }
 
