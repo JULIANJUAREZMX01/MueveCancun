@@ -31,7 +31,6 @@ const tiers = [
       : ["Everything above", "Roadmap priority voting", "Private Discord community", "Name in credits"],
   },
 ];
-const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 ---
 
 <MainLayout title={isEs ? "Apoyar — MueveCancún" : "Support — MueveCancún"} mapMode="form" showReportWidget={false} showNexus={false} showDonateNudge={false}>
@@ -107,7 +106,7 @@ const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
     </div>
 
     <!-- Mensual CTA -->
-    <a href={`${BASE}/${lang}/suscripcion`} class="monthly-cta">
+    <a href={`/${lang}/suscripcion`} class="monthly-cta">
       <div class="monthly-cta__icon" aria-hidden="true">🔄</div>
       <div class="monthly-cta__text">
         <strong>{isEs ? "¿Prefieres suscripción mensual?" : "Prefer a monthly subscription?"}</strong>
