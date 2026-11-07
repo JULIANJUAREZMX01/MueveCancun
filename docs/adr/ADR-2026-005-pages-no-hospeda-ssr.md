@@ -57,3 +57,7 @@ MueveCancún **no** se migra a Pages en bloque. Se parte en dos, siguiendo los c
 - `.github/workflows/pages-build.yml`: construye en cada PR que toque `src/`, y solo publica con `workflow_dispatch` y `publicar: true`, con gate de humo 200 sobre tres rutas.
 
 **Deuda detectada que la fase 1 no resuelve.** El build cuenta los enlaces absolutos a raiz (`/es/home`) y los reporta: en Pages de proyecto el sitio vive bajo `/MueveCancun`, asi que esas rutas necesitan `import.meta.env.BASE_URL`. El aviso queda en `dist/.pages-report.json` y en el resumen del job; no bloquea el build, pero si explica por que no se publica en automatico todavia.
+
+**Hallazgo al implementar la fase 1 (7-nov).** El primer intento de build fallo con `[NoAdapterInstalled]`: el sitio tiene rutas dinamicas (`[lang]/*`, `share/[id]`, `ruta/[id]`) que sin `getStaticPaths` son SSR, y cuatro paginas (`tracking`, `wallet`, `community`, `share`) leen Supabase en cada peticion. No es un problema de configuracion: es cobertura.
+
+Consecuencia para la fase siguiente: el sitio estatico solo cubre las paginas prerenderizables. Para que `/es/home` y `/es/rutas` existan en Pages hay que anadir `getStaticPaths` a las rutas `[lang]` (dos idiomas), y decidir cuales de las cuatro paginas de datos se quedan como servicio. Mientras eso no pase, el workflow construye, mide la cobertura y **no publica**: el paso de despliegue exige `index.html` y `es/home/index.html`.
