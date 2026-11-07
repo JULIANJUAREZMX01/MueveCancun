@@ -14,6 +14,7 @@ import JourneyPlanner from '../components/superapp/JourneyPlanner.astro';
 
 const title = '¿Qué Ruta Me Lleva? — Super App Cancún';
 const description = 'Plataforma de movilidad urbana de Cancún: rutas, multimodal, comunidad y carbono.';
+const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 ---
 
 <!DOCTYPE html>
@@ -35,9 +36,9 @@ const description = 'Plataforma de movilidad urbana de Cancún: rutas, multimoda
         <span class="sa-header__version">Super App v3</span>
       </a>
       <nav class="sa-header__nav">
-        <a href="/es/rutas">Rutas</a>
-        <a href="/es/tracking">En vivo</a>
-        <a href="/es/comunidad" class="sa-header__nav--new">Comunidad</a>
+        <a href={`${BASE}/es/rutas`}>Rutas</a>
+        <a href={`${BASE}/es/tracking`}>En vivo</a>
+        <a href={`${BASE}/es/comunidad`} class="sa-header__nav--new">Comunidad</a>
       </nav>
     </div>
   </header>
