@@ -10,6 +10,7 @@ import RouteCalculator from '../../components/RouteCalculator.astro';
 import LiveStatsBar from '../../components/LiveStatsBar.astro';
 import InteractiveMap from '../../components/InteractiveMap.astro';
 import { getLangFromUrl } from '../../utils/i18n';
+import { getRelativeLocaleUrl } from '../../utils/utils';
 const lang = getLangFromUrl(Astro.url);
 const isEs = lang === 'es';
 
@@ -98,19 +99,19 @@ const heroStats = [
 
     <!-- Quick actions floating row -->
     <div class="quick-actions anim-fade-up" id="quick-actions">
-      <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/tracking`} class="quick-btn quick-btn--primary ripple-container">
+      <a href={getRelativeLocaleUrl(lang, 'tracking')} class="quick-btn quick-btn--primary ripple-container">
         <span>🚌</span>
         <span>{isEs ? 'En vivo' : 'Live'}</span>
       </a>
-      <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/rutas`} class="quick-btn ripple-container">
+      <a href={getRelativeLocaleUrl(lang, 'rutas')} class="quick-btn ripple-container">
         <span>🗺️</span>
         <span>{isEs ? 'Rutas' : 'Routes'}</span>
       </a>
-      <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/community`} class="quick-btn ripple-container">
+      <a href={getRelativeLocaleUrl(lang, 'community')} class="quick-btn ripple-container">
         <span>💬</span>
         <span>{isEs ? 'Foro' : 'Forum'}</span>
       </a>
-      <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/guess`} class="quick-btn ripple-container">
+      <a href={getRelativeLocaleUrl(lang, 'guess')} class="quick-btn ripple-container">
         <span>🎯</span>
         <span>{isEs ? 'Juega' : 'Play'}</span>
       </a>
