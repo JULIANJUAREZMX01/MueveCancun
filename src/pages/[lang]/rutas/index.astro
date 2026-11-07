@@ -7,6 +7,7 @@ import MainLayout from "../../../layouts/MainLayout.astro";
 import { getAllRoutes } from "../../../utils/routes";
 import { getTransportLabel } from "../../../utils/transport";
 import "../../../styles/route-cards-dynamic.css";
+import { getRelativeLocaleUrl } from '../../../utils/utils';
 
 const { lang } = Astro.params;
 const isEs = lang === "es";
@@ -86,7 +87,7 @@ const types = ["all", "bus", "combi", "van", "ado"];
           <span class="live-dot" aria-hidden="true"></span>
           {isEs ? "En vivo" : "Live"}
         </div>
-        <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/home`} class="btn btn-ghost btn-sm" title={isEs ? "Ver en mapa" : "View on map"} aria-label={isEs ? "Ver en mapa" : "View on map"}>
+        <a href={getRelativeLocaleUrl(lang, 'home')} class="btn btn-ghost btn-sm" title={isEs ? "Ver en mapa" : "View on map"} aria-label={isEs ? "Ver en mapa" : "View on map"}>
           <svg class="u-w-4 u-h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
           {isEs ? "Mapa" : "Map"}
         </a>
@@ -433,6 +434,7 @@ const types = ["all", "bus", "combi", "van", "ado"];
 </style>
 
 <script>
+  import { getRelativeLocaleUrl } from '../../../utils/utils';
   import { VirtualList } from '../../../utils/virtualList';
 
   // ── Tipos ──────────────────────────────────────────────────────────────
@@ -490,7 +492,7 @@ const types = ["all", "bus", "combi", "van", "ado"];
   // ── Render function para VirtualList ─────────────────────────────────
   function renderRouteCard(route: RouteItem): HTMLElement {
     const card = document.createElement('a');
-    card.href = `${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/ruta/${encodeURIComponent(route.id)}`;
+    card.href = getRelativeLocaleUrl(lang, 'ruta/' + encodeURIComponent(route.id));
     card.className = 'route-card-vl';
     card.setAttribute('role', 'listitem');
     if (route.color) card.style.borderLeftColor = route.color;
