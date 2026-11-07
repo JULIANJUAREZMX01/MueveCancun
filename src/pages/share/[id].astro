@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 const { id } = Astro.params;
+const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 ---
 <!DOCTYPE html>
 <html lang="es">
@@ -8,7 +9,7 @@ const { id } = Astro.params;
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Ubicación compartida — MueveCancún</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+  <link rel="icon" href={`${BASE}/favicon.svg`} type="image/svg+xml"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:system-ui,sans-serif;background:#011820;color:white;height:100dvh;display:flex;flex-direction:column}
