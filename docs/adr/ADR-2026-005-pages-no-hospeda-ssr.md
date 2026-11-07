@@ -72,7 +72,7 @@ Con el adaptador declarado, el build avanza y falla en lo que de verdad falta:
   at validateDynamicRouteModule (astro@6.4.4)
 ```
 
-No es un error de configuracion: es que las rutas de idioma se resolvian **en el servidor** con `src/middleware.ts`, asi que nunca necesitaron `getStaticPaths`. Las 13 rutas que lo necesitan para existir en estatico:
+No es un error de configuracion: es que las rutas de idioma se resolvian **en el servidor** con `src/middleware.ts`, asi que nunca necesitaron `getStaticPaths`. Las 4 rutas que lo necesitan para existir en estatico:
 
 `[lang]/about` · `[lang]/community` · `[lang]/contribuir` · `[lang]/donate` · `[lang]/guess` · `[lang]/home` · `[lang]/offline` · `[lang]/ruta/[id]` · `[lang]/ruta/index` · `[lang]/rutas/index` · `[lang]/suscripcion` · `[lang]/tracking` · `[lang]/wallet` · `share/[id]`
 
@@ -81,3 +81,20 @@ Para las 11 de presentacion basta un `getStaticPaths()` con `es` y `en`. `ruta/[
 **Por eso el PR queda en rojo a proposito.** El workflow construye, mide y se niega a publicar. Ponerlo en verde sin ese refactor seria servir un 404 con acento de exito.
 
 **Correccion (7-nov, misma noche).** El parrafo anterior exagero el alcance. Al revisar archivo por archivo, **9 de las rutas `[lang]` ya tenian `getStaticPaths`** (`contribuir`, `donate`, `guess`, `offline`, `rutas/index`, `ruta/index`, `suscripcion`, `wallet`). Solo faltaba en cuatro: `about`, `community`, `home` y `tracking`. El bloqueo real era mucho menor de lo que decia este ADR, y el commit que lo arregla anade el mismo patron que ya usaba el resto del proyecto.
+
+## Estado de implementación (2026-11-07)
+
+Fase 1 completada. `config/astro.pages.mjs` construye con `output: 'static'` y `base: '/MueveCancun'`. `scripts/build-pages.mjs` aparta `src/pages/api`, `src/middleware.ts` y `src/pages/healthz.ts` durante el build y los restaura en `finally` aunque falle. Resultado medido en CI: 184 páginas y las tres rutas clave presentes (`index.html`, `es/home/`, `es/rutas/`).
+
+Corrección de un dato de este ADR: no eran 13 rutas sin `getStaticPaths`. Nueve ya lo tenían; solo faltaba en `about`, `community`, `home` y `tracking`. Se agregaron en el PR #599.
+
+## Bloqueo de plataforma y solución adoptada
+
+Este repo exige que toda acción de GitHub Actions esté pinneada a SHA completo. `actions/upload-pages-artifact` referencia internamente `actions/upload-artifact@v4` por etiqueta, así que el job muere en "Set up job" sin llegar a compilar. Por eso el sitio se publica empujando `dist/client` a la rama `gh-pages`, sin acciones de Pages. El workflow `pages-build.yml` construye en cada PR y solo publica bajo `workflow_dispatch`.
+
+## Reglas derivadas (obligatorias para cualquier agente)
+
+1. Los enlaces internos se construyen con `getRelativeLocaleUrl(lang, path)` de `src/utils/utils.ts`. Prohibido `import.meta.env.BASE_URL` inline y la concatenación `"/" + lang + ...`.
+2. Todo `src/pages/[lang]/*.astro` declara `getStaticPaths()` con `es` y `en`.
+3. Toda acción de GitHub Actions va pinneada a SHA completo.
+4. El sitio estático no incluye endpoints: `src/pages/api` queda fuera por diseño. Cualquier función que escriba en Supabase vive fuera de Pages.
