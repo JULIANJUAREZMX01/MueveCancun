@@ -20,6 +20,9 @@ on:
         type: boolean
         default: false
 
+# Todas las acciones van pinneadas a commit completo: el repositorio lo exige y
+# rechaza el job en 'Set up job' si alguna va por tag.
+
 permissions:
   contents: read
   pages: write
@@ -34,11 +37,11 @@ jobs:
     name: Build estatico
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
         with:
           node-version: 24
           cache: 'pnpm'
@@ -69,10 +72,10 @@ jobs:
             echo '```' >> $GITHUB_STEP_SUMMARY
           fi
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
         if: github.event_name == 'workflow_dispatch' && inputs.publicar
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         if: github.event_name == 'workflow_dispatch' && inputs.publicar
         with:
           path: dist
@@ -87,7 +90,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
 
       - name: Gate de humo
         run: |
