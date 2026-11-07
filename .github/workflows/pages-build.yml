@@ -71,18 +71,22 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.publicar
         run: |
           set -e
-          cd dist
-          if [ ! -f index.html ] && [ ! -f es/home/index.html ]; then
-            echo "dist no parece un sitio: falta index.html" >&2
-            exit 1
-          fi
+          dir=dist
+          [ -d dist/client ] && dir=dist/client
+          cd "$dir"
+          for ruta in index.html es/home/index.html; do
+            if [ ! -f "$ruta" ]; then
+              echo "Falta $ruta: el sitio no esta completo, no se publica." >&2
+              exit 1
+            fi
+          done
           git init -q
           git checkout -q -b gh-pages
           git add -A
           git -c user.name="kynikos-bot" -c user.email="bot@kynicos.local" \
               commit -q -m "deploy: sitio estatico ${GITHUB_SHA:0:7}"
           git push -q --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
-          echo "Publicado en la rama gh-pages" >> $GITHUB_STEP_SUMMARY
+          echo "Publicado desde $dir" >> $GITHUB_STEP_SUMMARY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
