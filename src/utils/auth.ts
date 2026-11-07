@@ -3,6 +3,8 @@
  * Optimized for static builds and in-app browser compatibility.
  */
 
+import { getRelativeLocaleUrl } from './utils';
+
 export const SUPPORTED_LOCALES = ['es', 'en'] as const;
 export type Locale = typeof SUPPORTED_LOCALES[number];
 
@@ -67,7 +69,7 @@ export function enforceGuards() {
 
   if (isRoot) {
     if (completed) {
-      window.location.replace(`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/home`);
+      window.location.replace(getRelativeLocaleUrl(lang, 'home'));
     }
   } else {
     // If not root, and not completed, force to root for tutorial
