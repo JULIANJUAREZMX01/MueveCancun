@@ -1,16 +1,22 @@
 name: Pages · build estatico
 
-# Fase 1 del ADR-2026-005. Construye el sitio estatico y lo publica SOLO cuando
-# se pide a mano: mientras el build tenga enlaces absolutos a raiz o ajustes
-# pendientes, publicar automatico seria servir un sitio a medias.
+# Fase 1 del ADR-2026-005.
 #
-# No reemplaza al build SSR de Vercel. Son dos destinos distintos a proposito.
+# Por que no se usan las acciones oficiales de Pages: el repositorio exige que
+# TODA accion vaya pinneada a commit completo, y `upload-pages-artifact` llama
+# internamente a `upload-artifact@v4` por tag. El job muere en "Set up job" sin
+# llegar a construir. Publicar desde la rama `gh-pages` con git evita el
+# problema y no necesita ninguna accion de terceros.
+#
+# Solo publica a mano: mientras el build tenga enlaces absolutos a raiz, un
+# despliegue automatico serviria un sitio a medias.
 
 on:
   pull_request:
     paths:
       - 'config/astro.pages.mjs'
       - 'scripts/build-pages.mjs'
+      - 'package.json'
       - 'src/**'
       - '.github/workflows/pages-build.yml'
   workflow_dispatch:
@@ -18,30 +24,23 @@ on:
       publicar:
         description: 'Publicar en GitHub Pages si el build pasa'
         type: boolean
-        default: false
-
-# Todas las acciones van pinneadas a commit completo: el repositorio lo exige y
-# rechaza el job en 'Set up job' si alguna va por tag.
+        default: true
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages-build
   cancel-in-progress: true
 
 jobs:
-  build:
+  construir:
     name: Build estatico
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
-
-      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4
         with:
           node-version: 24
           cache: 'pnpm'
@@ -55,51 +54,56 @@ jobs:
       - name: Compilar WASM
         run: node scripts/build-wasm.mjs
 
-      - name: Aviso de aislamiento
-        run: |
-          echo "Este job NO toca el build SSR de Vercel." >> $GITHUB_STEP_SUMMARY
-          echo "Si aqui falla algo, el sitio de produccion sigue intacto." >> $GITHUB_STEP_SUMMARY
-
       - name: Build estatico para Pages
         run: node scripts/build-pages.mjs
 
       - name: Resumen del build
         if: always()
         run: |
+          echo "Este job no toca el build SSR de Vercel." >> $GITHUB_STEP_SUMMARY
           if [ -f dist/.pages-report.json ]; then
             echo '```json' >> $GITHUB_STEP_SUMMARY
             cat dist/.pages-report.json >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
           fi
 
-      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Publicar en la rama gh-pages
         if: github.event_name == 'workflow_dispatch' && inputs.publicar
-
-      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
-        if: github.event_name == 'workflow_dispatch' && inputs.publicar
-        with:
-          path: dist
-
-  publicar:
-    name: Publicar en Pages
-    if: github.event_name == 'workflow_dispatch' && inputs.publicar
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
-
-      - name: Gate de humo
         run: |
-          base="${{ steps.deployment.outputs.page_url }}"
-          echo "Sitio: $base"
+          set -e
+          cd dist
+          if [ ! -f index.html ] && [ ! -f es/home/index.html ]; then
+            echo "dist no parece un sitio: falta index.html" >&2
+            exit 1
+          fi
+          git init -q
+          git checkout -q -b gh-pages
+          git add -A
+          git -c user.name="kynikos-bot" -c user.email="bot@kynicos.local" \
+              commit -q -m "deploy: sitio estatico ${GITHUB_SHA:0:7}"
+          git push -q --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+          echo "Publicado en la rama gh-pages" >> $GITHUB_STEP_SUMMARY
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  humo:
+    name: Gate de humo
+    if: github.event_name == 'workflow_dispatch' && inputs.publicar
+    needs: construir
+    runs-on: ubuntu-latest
+    steps:
+      - name: Esperar a que Pages sirva el sitio
+        run: |
+          base="https://julianjuarezmx01.github.io/Muevecancun/"
           fallos=0
           for ruta in "" "es/home" "es/rutas"; do
             url="${base}${ruta}"
-            codigo=$(curl -s -o /dev/null -w "%{http_code}" -L --retry 5 --retry-delay 5 "$url")
+            codigo=000
+            for intento in 1 2 3 4 5 6; do
+              codigo=$(curl -s -o /dev/null -w "%{http_code}" -L "$url" || echo 000)
+              [ "$codigo" = "200" ] && break
+              sleep 10
+            done
             echo "$codigo  $url"
             [ "$codigo" = "200" ] || fallos=$((fallos+1))
           done
