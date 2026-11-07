@@ -17,7 +17,7 @@ import { constants } from 'node:fs';
 import process from 'node:process';
 
 const STASH = '.pages-stash';
-const BASE = (process.env.PAGES_BASE ?? '/Muevecancun').replace(/\/+$/, '');
+const BASE = (process.env.PAGES_BASE ?? '/MueveCancun').replace(/\/+$/, '');
 
 const EXCLUIDOS = [
   { ruta: 'src/pages/api', motivo: 'endpoints que escriben en Supabase' },
