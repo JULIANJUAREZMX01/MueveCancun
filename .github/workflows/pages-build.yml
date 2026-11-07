@@ -1,0 +1,107 @@
+name: Pages · build estatico
+
+# Fase 1 del ADR-2026-005. Construye el sitio estatico y lo publica SOLO cuando
+# se pide a mano: mientras el build tenga enlaces absolutos a raiz o ajustes
+# pendientes, publicar automatico seria servir un sitio a medias.
+#
+# No reemplaza al build SSR de Vercel. Son dos destinos distintos a proposito.
+
+on:
+  pull_request:
+    paths:
+      - 'config/astro.pages.mjs'
+      - 'scripts/build-pages.mjs'
+      - 'src/**'
+      - '.github/workflows/pages-build.yml'
+  workflow_dispatch:
+    inputs:
+      publicar:
+        description: 'Publicar en GitHub Pages si el build pasa'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build estatico
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Preparar datos
+        run: pnpm prepare-data
+
+      - name: Compilar WASM
+        run: node scripts/build-wasm.mjs
+
+      - name: Aviso de aislamiento
+        run: |
+          echo "Este job NO toca el build SSR de Vercel." >> $GITHUB_STEP_SUMMARY
+          echo "Si aqui falla algo, el sitio de produccion sigue intacto." >> $GITHUB_STEP_SUMMARY
+
+      - name: Build estatico para Pages
+        run: node scripts/build-pages.mjs
+
+      - name: Resumen del build
+        if: always()
+        run: |
+          if [ -f dist/.pages-report.json ]; then
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat dist/.pages-report.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - uses: actions/configure-pages@v5
+        if: github.event_name == 'workflow_dispatch' && inputs.publicar
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name == 'workflow_dispatch' && inputs.publicar
+        with:
+          path: dist
+
+  publicar:
+    name: Publicar en Pages
+    if: github.event_name == 'workflow_dispatch' && inputs.publicar
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Gate de humo
+        run: |
+          base="${{ steps.deployment.outputs.page_url }}"
+          echo "Sitio: $base"
+          fallos=0
+          for ruta in "" "es/home" "es/rutas"; do
+            url="${base}${ruta}"
+            codigo=$(curl -s -o /dev/null -w "%{http_code}" -L --retry 5 --retry-delay 5 "$url")
+            echo "$codigo  $url"
+            [ "$codigo" = "200" ] || fallos=$((fallos+1))
+          done
+          if [ "$fallos" -ne 0 ]; then
+            echo "Hay $fallos rutas sin 200; no se da el despliegue por bueno." >&2
+            exit 1
+          fi
+          echo "Gate de humo OK" >> $GITHUB_STEP_SUMMARY
