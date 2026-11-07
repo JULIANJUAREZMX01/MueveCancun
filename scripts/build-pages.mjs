@@ -83,14 +83,20 @@ async function auditar(dir) {
     for (const m of html.matchAll(/(?:href|src)="(\/[^"]*)"/g)) {
       const destino = m[1].split('?')[0];
       if (destino.startsWith(`${BASE}/`) || destino === BASE) continue;
-      absolutos.set(destino, (absolutos.get(destino) ?? 0) + 1);
+      const entrada = absolutos.get(destino) ?? { veces: 0, archivos: new Set() };
+      entrada.veces += 1;
+      entrada.archivos.add(archivo.slice(dir.length + 1));
+      absolutos.set(destino, entrada);
     }
   }
   return {
     paginas: relativos.length,
     clave: Object.fromEntries(CLAVE.map((r) => [r, relativos.includes(r)])),
     enlaces_absolutos: absolutos.size,
-    ejemplos: [...absolutos.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10),
+    ejemplos: [...absolutos.entries()]
+      .sort((a, b) => b[1].veces - a[1].veces)
+      .slice(0, 10)
+      .map(([ruta, v]) => [ruta, v.veces, [...v.archivos].slice(0, 3)]),
     muestra: relativos.slice(0, 20),
   };
 }
@@ -124,5 +130,5 @@ for (const [ruta, hay] of Object.entries(reporte.clave)) {
 }
 if (reporte.enlaces_absolutos > 0) {
   console.warn(`[pages] ${reporte.enlaces_absolutos} enlaces absolutos a raiz no contemplan el base ${BASE}`);
-  for (const [ruta, veces] of reporte.ejemplos) console.warn(`[pages]   ${ruta} (${veces})`);
+  for (const [ruta, veces, archivos] of reporte.ejemplos) console.warn(`[pages]   ${ruta} (${veces}) en ${archivos.join(', ')}`);
 }
