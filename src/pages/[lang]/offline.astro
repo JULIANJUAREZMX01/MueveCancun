@@ -65,7 +65,7 @@ const isEs = lang === "es";
         </svg>
         {isEs ? 'Reintentar conexión' : 'Retry connection'}
       </button>
-      <a href={`/${lang}/home`} class="btn-ghost" style="width:100%;justify-content:center;margin-top:0.5rem">
+      <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/home`} class="btn-ghost" style="width:100%;justify-content:center;margin-top:0.5rem">
         {isEs ? 'Ir al inicio (offline)' : 'Go home (offline)'}
       </a>
     </div>
