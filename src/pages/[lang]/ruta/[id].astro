@@ -3,6 +3,7 @@ import MainLayout from '../../../layouts/MainLayout.astro';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { getLangFromUrl, useTranslations } from '../../../utils/i18n';
+import { getRelativeLocaleUrl } from '../../../utils/utils';
 
 export const prerender = true;
 
@@ -212,7 +213,7 @@ const schemaData = {
              <p class="u-text-xs u-opacity-90 u-leading-relaxed u-mb-6 u-font-medium">
                 Usa nuestra IA de ruteo para encontrar la mejor combinación desde tu ubicación actual.
              </p>
-             <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/home?selected_stop=${encodeURIComponent(route.nombre)}`} class="u-w-full u-py-3 u-bg-white u-text-primary-600 u-rounded-xl u-font-black u-text-xs u-uppercase u-tracking-widest u-text-center u-block u-shadow-lg u-active-scale-95 u-transition-all">
+             <a href={`${getRelativeLocaleUrl(lang, 'home')}?selected_stop=${encodeURIComponent(route.nombre)}`} class="u-w-full u-py-3 u-bg-white u-text-primary-600 u-rounded-xl u-font-black u-text-xs u-uppercase u-tracking-widest u-text-center u-block u-shadow-lg u-active-scale-95 u-transition-all">
                 TRAZAR RUTA AQUÍ
              </a>
           </div>
