@@ -380,7 +380,7 @@ const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
     if (balancePill) {
       balancePill.addEventListener("click", () => {
         const lang = document.documentElement.lang || "es";
-        window.location.href = "/" + lang + "/wallet";
+        window.location.href = getRelativeLocaleUrl(lang, 'wallet');
       });
     }
 
