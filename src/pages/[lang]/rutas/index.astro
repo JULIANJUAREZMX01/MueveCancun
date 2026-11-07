@@ -64,7 +64,6 @@ const routes: UIRoute[] = rawRoutes
   .sort((a: UIRoute, b: UIRoute) => a.name.localeCompare(b.name));
 
 const types = ["all", "bus", "combi", "van", "ado"];
-const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 ---
 
 <MainLayout title={isEs ? "Rutas — MueveCancún" : "Routes — MueveCancún"}>
@@ -491,7 +490,7 @@ const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
   // ── Render function para VirtualList ─────────────────────────────────
   function renderRouteCard(route: RouteItem): HTMLElement {
     const card = document.createElement('a');
-    card.href = `${BASE}/${lang}/ruta/${encodeURIComponent(route.id)}`;
+    card.href = `/${lang}/ruta/${encodeURIComponent(route.id)}`;
     card.className = 'route-card-vl';
     card.setAttribute('role', 'listitem');
     if (route.color) card.style.borderLeftColor = route.color;
