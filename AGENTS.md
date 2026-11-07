@@ -179,6 +179,8 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 
 ### Deployment:
 El sistema está configurado para Vercel (SSR — output:server). El middleware maneja redirecciones de idioma y completitud de tutorial.
+
+GitHub Pages **no** hospeda este proyecto mientras siga siendo SSR: `astro build` produce entradas de servidor y hay 8 endpoints que escriben en Supabase. La URL de Pages responde 404 y eso es lo esperado hasta completar la migración partida en dos (estático en Pages, servicios en proceso). Decisión y fases: `docs/adr/ADR-2026-005-pages-no-hospeda-ssr.md`.
 ```
 rama claude/* → tests pasan → PR a main → CI verde → merge
 rama jules/*  → PR abierto por Jules → revisión → merge
