@@ -1,4 +1,10 @@
 ---
+export const prerender = true;
+// Sin getStaticPaths, Astro trata [lang] como SSR y el build estatico muere con
+// [InvalidDynamicRoute]. Las demas rutas de idioma ya lo tenian; esta no.
+export function getStaticPaths() {
+  return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
+}
 import MainLayout from '../../layouts/MainLayout.astro';
 import RouteCalculator from '../../components/RouteCalculator.astro';
 import LiveStatsBar from '../../components/LiveStatsBar.astro';
