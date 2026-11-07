@@ -6,7 +6,6 @@ export function getStaticPaths() {
 import MainLayout from "../../layouts/MainLayout.astro";
 const { lang } = Astro.params;
 const isEs = lang === "es";
-const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 ---
 <MainLayout title={isEs ? "Sin conexión — MueveCancún" : "Offline — MueveCancún"}>
   <div class="offline-root">
@@ -66,7 +65,7 @@ const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
         </svg>
         {isEs ? 'Reintentar conexión' : 'Retry connection'}
       </button>
-      <a href={`${BASE}/${lang}/home`} class="btn-ghost" style="width:100%;justify-content:center;margin-top:0.5rem">
+      <a href={`/${lang}/home`} class="btn-ghost" style="width:100%;justify-content:center;margin-top:0.5rem">
         {isEs ? 'Ir al inicio (offline)' : 'Go home (offline)'}
       </a>
     </div>
