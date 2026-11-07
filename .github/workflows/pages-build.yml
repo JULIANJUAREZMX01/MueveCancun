@@ -98,7 +98,7 @@ jobs:
     steps:
       - name: Esperar a que Pages sirva el sitio
         run: |
-          base="https://julianjuarezmx01.github.io/Muevecancun/"
+          base="https://julianjuarezmx01.github.io/MueveCancun/"
           fallos=0
           for ruta in "" "es/home" "es/rutas"; do
             url="${base}${ruta}"
