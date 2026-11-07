@@ -1,4 +1,3 @@
-const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 /**
  * AUTH & NAVIGATION GUARDS (Nexus v3.3.1)
  * Optimized for static builds and in-app browser compatibility.
@@ -68,7 +67,7 @@ export function enforceGuards() {
 
   if (isRoot) {
     if (completed) {
-      window.location.replace(`${BASE}/${lang}/home`);
+      window.location.replace(`/${lang}/home`);
     }
   } else {
     // If not root, and not completed, force to root for tutorial
