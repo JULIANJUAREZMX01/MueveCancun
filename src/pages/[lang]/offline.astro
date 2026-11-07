@@ -4,6 +4,7 @@ export function getStaticPaths() {
   return [{ params: { lang: "es" } }, { params: { lang: "en" } }];
 }
 import MainLayout from "../../layouts/MainLayout.astro";
+import { getRelativeLocaleUrl } from '../../utils/utils';
 const { lang } = Astro.params;
 const isEs = lang === "es";
 ---
@@ -65,7 +66,7 @@ const isEs = lang === "es";
         </svg>
         {isEs ? 'Reintentar conexión' : 'Retry connection'}
       </button>
-      <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/home`} class="btn-ghost" style="width:100%;justify-content:center;margin-top:0.5rem">
+      <a href={getRelativeLocaleUrl(lang, 'home')} class="btn-ghost" style="width:100%;justify-content:center;margin-top:0.5rem">
         {isEs ? 'Ir al inicio (offline)' : 'Go home (offline)'}
       </a>
     </div>
