@@ -61,3 +61,21 @@ MueveCancún **no** se migra a Pages en bloque. Se parte en dos, siguiendo los c
 **Hallazgo al implementar la fase 1 (7-nov).** El primer intento de build fallo con `[NoAdapterInstalled]`: el sitio tiene rutas dinamicas (`[lang]/*`, `share/[id]`, `ruta/[id]`) que sin `getStaticPaths` son SSR, y cuatro paginas (`tracking`, `wallet`, `community`, `share`) leen Supabase en cada peticion. No es un problema de configuracion: es cobertura.
 
 Consecuencia para la fase siguiente: el sitio estatico solo cubre las paginas prerenderizables. Para que `/es/home` y `/es/rutas` existan en Pages hay que anadir `getStaticPaths` a las rutas `[lang]` (dos idiomas), y decidir cuales de las cuatro paginas de datos se quedan como servicio. Mientras eso no pase, el workflow construye, mide la cobertura y **no publica**: el paso de despliegue exige `index.html` y `es/home/index.html`.
+
+### Segundo hallazgo: el bloqueo exacto, con nombre y apellido
+
+Con el adaptador declarado, el build avanza y falla en lo que de verdad falta:
+
+```
+[InvalidDynamicRoute] getStaticPaths() is required for dynamic routes
+  Location: src/pages/[lang]/about.astro:0:0
+  at validateDynamicRouteModule (astro@6.4.4)
+```
+
+No es un error de configuracion: es que las rutas de idioma se resolvian **en el servidor** con `src/middleware.ts`, asi que nunca necesitaron `getStaticPaths`. Las 13 rutas que lo necesitan para existir en estatico:
+
+`[lang]/about` · `[lang]/community` · `[lang]/contribuir` · `[lang]/donate` · `[lang]/guess` · `[lang]/home` · `[lang]/offline` · `[lang]/ruta/[id]` · `[lang]/ruta/index` · `[lang]/rutas/index` · `[lang]/suscripcion` · `[lang]/tracking` · `[lang]/wallet` · `share/[id]`
+
+Para las 11 de presentacion basta un `getStaticPaths()` con `es` y `en`. `ruta/[id]` necesita la lista de rutas como dato de build, y `tracking`, `wallet`, `community` y `share` leen Supabase por peticion: esas se quedan como servicio, o no entran al sitio estatico.
+
+**Por eso el PR queda en rojo a proposito.** El workflow construye, mide y se niega a publicar. Ponerlo en verde sin ese refactor seria servir un 404 con acento de exito.
