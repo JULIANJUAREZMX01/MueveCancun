@@ -113,10 +113,10 @@ const isEs = lang === 'es';
 
     <!-- Links -->
     <section class="about-section">
-      <a href={`/${lang}/suscripcion`} class="btn-primary" style="width:100%;margin-bottom:0.75rem">
+      <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/suscripcion`} class="btn-primary" style="width:100%;margin-bottom:0.75rem">
         ⭐ {isEs ? 'Apoyar el proyecto' : 'Support the project'}
       </a>
-      <a href={`/${lang}/contribuir`} class="btn-ghost" style="width:100%;justify-content:center">
+      <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/contribuir`} class="btn-ghost" style="width:100%;justify-content:center">
         🗺️ {isEs ? 'Contribuir rutas' : 'Contribute routes'}
       </a>
     </section>
