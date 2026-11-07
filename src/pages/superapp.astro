@@ -30,7 +30,7 @@ const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 
   <header class="sa-header">
     <div class="sa-header__inner">
-      <a href="/" class="sa-header__logo">
+      <a href={import.meta.env.BASE_URL} class="sa-header__logo">
         <span>🚌</span>
         <span class="sa-header__name">¿Qué Ruta?</span>
         <span class="sa-header__version">Super App v3</span>
