@@ -24,8 +24,18 @@ export function readingTime(html: string) {
   return Math.ceil(words.length / wordsPerMinute);
 }
 
+// El sitio puede vivir en un subdirectorio (GitHub Pages de proyecto).
+// Sin el base, cada enlace de idioma salia como /es/home y se iba a la raiz
+// del dominio: 875 enlaces rotos en el build estatico.
+export const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+
+/** Ruta de un archivo de public/ respetando el base del despliegue. */
+export function asset(path: string) {
+  return `${BASE}/${path.replace(/^\/+/, '')}`;
+}
+
 export function getRelativeLocaleUrl(lang: string, path: string) {
-  return `/${lang}${path.startsWith('/') ? path : '/' + path}`;
+  return `${BASE}/${lang}${path.startsWith('/') ? path : '/' + path}`;
 }
 
 export function escapeHtml(unsafe: unknown): string {
