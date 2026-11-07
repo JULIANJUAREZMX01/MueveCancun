@@ -17,6 +17,7 @@
 
 import { defineConfig } from "astro/config"
 import mdx from "@astrojs/mdx"
+import node from "@astrojs/node"
 
 const base = process.env.PAGES_BASE || "/MueveCancun"
 const site = process.env.PAGES_SITE || "https://julianjuarezmx01.github.io"
@@ -38,6 +39,9 @@ export default defineConfig({
   site,
   base,
   output: "static",
+  // Ver nota al final del archivo: sin adaptador, las rutas dinamicas revientan
+  // el build con [NoAdapterInstalled].
+  adapter: node({ mode: "standalone" }),
   trailingSlash: "ignore",
   integrations: [mdx()],
   prefetch: { prefetchAll: false, defaultStrategy: "hover" },
@@ -58,3 +62,10 @@ export default defineConfig({
     },
   },
 })
+
+// Hallazgo de la fase 1: hay rutas dinamicas ([lang]/*, share/[id], ruta/[id]) y
+// cuatro paginas que leen Supabase en cada peticion. Sin getStaticPaths, Astro
+// las trata como SSR y falla con [NoAdapterInstalled]. Se declara el adaptador
+// de Node para que el build complete y las rutas prerenderizables se generen:
+// las que necesitan servidor quedan fuera del sitio publicado, que es
+// justamente lo que dice el ADR (servicios con proceso fuera de Pages).
