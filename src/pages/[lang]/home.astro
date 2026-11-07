@@ -18,6 +18,7 @@ const heroStats = [
   { value: '100%', label: isEs ? 'Offline' : 'Offline', icon: '📶' },
   { value: '0$', label: isEs ? 'Gratis' : 'Free', icon: '🎯' },
 ];
+const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 ---
 <MainLayout 
   title={isEs ? "MueveCancún — Tu GPS del Caribe" : "MueveCancún — Your Caribbean GPS"}
@@ -98,19 +99,19 @@ const heroStats = [
 
     <!-- Quick actions floating row -->
     <div class="quick-actions anim-fade-up" id="quick-actions">
-      <a href={`/${lang}/tracking`} class="quick-btn quick-btn--primary ripple-container">
+      <a href={`${BASE}/${lang}/tracking`} class="quick-btn quick-btn--primary ripple-container">
         <span>🚌</span>
         <span>{isEs ? 'En vivo' : 'Live'}</span>
       </a>
-      <a href={`/${lang}/rutas`} class="quick-btn ripple-container">
+      <a href={`${BASE}/${lang}/rutas`} class="quick-btn ripple-container">
         <span>🗺️</span>
         <span>{isEs ? 'Rutas' : 'Routes'}</span>
       </a>
-      <a href={`/${lang}/community`} class="quick-btn ripple-container">
+      <a href={`${BASE}/${lang}/community`} class="quick-btn ripple-container">
         <span>💬</span>
         <span>{isEs ? 'Foro' : 'Forum'}</span>
       </a>
-      <a href={`/${lang}/guess`} class="quick-btn ripple-container">
+      <a href={`${BASE}/${lang}/guess`} class="quick-btn ripple-container">
         <span>🎯</span>
         <span>{isEs ? 'Juega' : 'Play'}</span>
       </a>
