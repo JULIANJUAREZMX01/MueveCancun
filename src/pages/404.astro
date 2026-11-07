@@ -1,5 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 ---
 <MainLayout title="404 — Página no encontrada">
   <div class="error-page">
@@ -11,7 +12,7 @@ import MainLayout from '../layouts/MainLayout.astro';
     </div>
     <h1 class="error-title">¡Esta ruta no existe!</h1>
     <p class="error-sub">El camión que buscas no tiene parada aquí.</p>
-    <a href="/es/home" class="btn btn-primary btn-lg" style="margin-top:1.5rem;justify-content:center">
+    <a href={`${BASE}/es/home`} class="btn btn-primary btn-lg" style="margin-top:1.5rem;justify-content:center">
       <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       Volver al inicio
     </a>
