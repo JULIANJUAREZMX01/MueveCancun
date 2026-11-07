@@ -180,6 +180,12 @@ localStorage: `pending_route` (Journey JSON para dibujar al cargar el mapa).
 ### Deployment:
 El sistema está configurado para Vercel (SSR — output:server). El middleware maneja redirecciones de idioma y completitud de tutorial.
 
+**GitHub Pages (sitio público, ver `docs/adr/ADR-2026-005-pages-no-hospeda-ssr.md`):**
+- Build: `pnpm build:pages` → usa `config/astro.pages.mjs` y `scripts/build-pages.mjs`, que aparta `src/pages/api`, `src/middleware.ts` y `src/pages/healthz.ts` durante la compilación.
+- Publicación: `.github/workflows/pages-build.yml` empuja `dist/client` a la rama `gh-pages`. No usar `actions/upload-pages-artifact`: viola la política de pinneo de este repo y el job muere en "Set up job".
+- Base del sitio: `/MueveCancun`. Los enlaces internos se arman con `getRelativeLocaleUrl()` de `src/utils/utils.ts`. Prohibido `import.meta.env.BASE_URL` inline y `"/" + lang + ...`.
+- Toda acción de GitHub Actions va pinneada a SHA completo.
+
 GitHub Pages **no** hospeda este proyecto mientras siga siendo SSR: `astro build` produce entradas de servidor y hay 8 endpoints que escriben en Supabase. La URL de Pages responde 404 y eso es lo esperado hasta completar la migración partida en dos (estático en Pages, servicios en proceso). Decisión y fases: `docs/adr/ADR-2026-005-pages-no-hospeda-ssr.md`.
 ```
 rama claude/* → tests pasan → PR a main → CI verde → merge
