@@ -5,6 +5,7 @@ export function getStaticPaths() {
 }
 import MainLayout from "../../layouts/MainLayout.astro";
 import { PAYMENT_LINKS } from "../../lib/stripe";
+import { getRelativeLocaleUrl } from '../../utils/utils';
 const { lang } = Astro.params;
 const isEs = lang === "es";
 
@@ -106,7 +107,7 @@ const tiers = [
     </div>
 
     <!-- Mensual CTA -->
-    <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/suscripcion`} class="monthly-cta">
+    <a href={getRelativeLocaleUrl(lang, 'suscripcion')} class="monthly-cta">
       <div class="monthly-cta__icon" aria-hidden="true">🔄</div>
       <div class="monthly-cta__text">
         <strong>{isEs ? "¿Prefieres suscripción mensual?" : "Prefer a monthly subscription?"}</strong>
