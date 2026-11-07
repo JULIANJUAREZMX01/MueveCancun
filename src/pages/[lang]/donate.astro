@@ -106,7 +106,7 @@ const tiers = [
     </div>
 
     <!-- Mensual CTA -->
-    <a href={`/${lang}/suscripcion`} class="monthly-cta">
+    <a href={`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/suscripcion`} class="monthly-cta">
       <div class="monthly-cta__icon" aria-hidden="true">🔄</div>
       <div class="monthly-cta__text">
         <strong>{isEs ? "¿Prefieres suscripción mensual?" : "Prefer a monthly subscription?"}</strong>
