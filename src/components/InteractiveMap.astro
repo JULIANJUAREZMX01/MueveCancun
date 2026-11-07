@@ -45,6 +45,7 @@ const isEs = Astro.url.pathname.includes("/es/");
 </div>
 
 <script>
+  import { getRelativeLocaleUrl } from '../utils/utils';
   import { loadLeaflet } from "../utils/leafletLoader";
   import { addBaseMap } from "../utils/baseMap";
   import { initWasm, enrichJourneyLegs } from "../lib/initWasm";
@@ -436,7 +437,7 @@ const isEs = Astro.url.pathname.includes("/es/");
       map?.closePopup();
     } else if (action === "routes") {
       const lang = document.documentElement.lang || "es";
-      window.location.href = `${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/rutas?search=${safeUrl(name)}`;
+      window.location.href = getRelativeLocaleUrl(lang, 'rutas') + '?search=' + safeUrl(name);
     }
   }
 
