@@ -27,7 +27,6 @@ const translations = {
 		"welcome.step4.desc": "Real information from the street: roadblocks, traffic and last-minute notices."
 	}
 };
-const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 ---
 
 <MainLayout title="MueveCancún — El Pulso de la Ciudad" hideNav={true}>
@@ -204,7 +203,7 @@ const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 			document.cookie = "locale=" + encodeURIComponent(lang) + expiry;
 			localStorage.setItem('lang', lang);
 			localStorage.setItem('tutorial_completed', 'true');
-			window.location.replace(`${BASE}/${lang}/home`);
+			window.location.replace(`/${lang}/home`);
 		}
 
 		btnNext?.addEventListener('click', () => { if (currentStep < totalSteps) goToStep(currentStep + 1); });
