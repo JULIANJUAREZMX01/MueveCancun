@@ -490,7 +490,7 @@ const types = ["all", "bus", "combi", "van", "ado"];
   // ── Render function para VirtualList ─────────────────────────────────
   function renderRouteCard(route: RouteItem): HTMLElement {
     const card = document.createElement('a');
-    card.href = `/${lang}/ruta/${encodeURIComponent(route.id)}`;
+    card.href = `${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/ruta/${encodeURIComponent(route.id)}`;
     card.className = 'route-card-vl';
     card.setAttribute('role', 'listitem');
     if (route.color) card.style.borderLeftColor = route.color;
