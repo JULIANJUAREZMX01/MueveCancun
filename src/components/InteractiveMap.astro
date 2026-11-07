@@ -437,7 +437,7 @@ const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
       map?.closePopup();
     } else if (action === "routes") {
       const lang = document.documentElement.lang || "es";
-      window.location.href = `/${lang}/rutas?search=${safeUrl(name)}`;
+      window.location.href = `${BASE}/${lang}/rutas?search=${safeUrl(name)}`;
     }
   }
 
