@@ -67,7 +67,7 @@ export function enforceGuards() {
 
   if (isRoot) {
     if (completed) {
-      window.location.replace(`/${lang}/home`);
+      window.location.replace(`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/home`);
     }
   } else {
     // If not root, and not completed, force to root for tutorial
