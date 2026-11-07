@@ -10,7 +10,6 @@ import { getLangFromUrl } from '../../utils/i18n';
 import { APP_VERSION, BUILD_DATE, BUILD_ID, CACHE_VERSION, SHORT_COMMIT } from '../../generated/buildInfo';
 const lang = getLangFromUrl(Astro.url);
 const isEs = lang === 'es';
-const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 ---
 <MainLayout title={isEs ? "Acerca de MueveCancún" : "About MueveCancún"}>
   <div class="about-root safe-bottom">
@@ -114,10 +113,10 @@ const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 
     <!-- Links -->
     <section class="about-section">
-      <a href={`${BASE}/${lang}/suscripcion`} class="btn-primary" style="width:100%;margin-bottom:0.75rem">
+      <a href={`/${lang}/suscripcion`} class="btn-primary" style="width:100%;margin-bottom:0.75rem">
         ⭐ {isEs ? 'Apoyar el proyecto' : 'Support the project'}
       </a>
-      <a href={`${BASE}/${lang}/contribuir`} class="btn-ghost" style="width:100%;justify-content:center">
+      <a href={`/${lang}/contribuir`} class="btn-ghost" style="width:100%;justify-content:center">
         🗺️ {isEs ? 'Contribuir rutas' : 'Contribute routes'}
       </a>
     </section>
