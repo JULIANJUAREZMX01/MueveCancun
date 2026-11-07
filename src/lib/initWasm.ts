@@ -1,4 +1,5 @@
 import { WasmLoader } from '../utils/WasmLoader';
+const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 
 let _initPromise: Promise<boolean> | null = null;
 
@@ -10,7 +11,7 @@ export async function initWasm(): Promise<boolean> {
       const wasmModule = await WasmLoader.getModule();
 
       // Cargar catálogo de rutas
-      const response = await fetch('/data/master_routes.optimized.json');
+      const response = await fetch(`${BASE}/data/master_routes.optimized.json`);
       if (!response.ok) throw new Error(`[initWasm] Catalog fetch failed: ${response.status}`);
       const catalogJson = await response.text();
       const catalogData = JSON.parse(catalogJson) as { rutas?: RouteEntry[] };
