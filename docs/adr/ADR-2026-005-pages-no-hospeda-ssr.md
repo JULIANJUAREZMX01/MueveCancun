@@ -79,3 +79,5 @@ No es un error de configuracion: es que las rutas de idioma se resolvian **en el
 Para las 11 de presentacion basta un `getStaticPaths()` con `es` y `en`. `ruta/[id]` necesita la lista de rutas como dato de build, y `tracking`, `wallet`, `community` y `share` leen Supabase por peticion: esas se quedan como servicio, o no entran al sitio estatico.
 
 **Por eso el PR queda en rojo a proposito.** El workflow construye, mide y se niega a publicar. Ponerlo en verde sin ese refactor seria servir un 404 con acento de exito.
+
+**Correccion (7-nov, misma noche).** El parrafo anterior exagero el alcance. Al revisar archivo por archivo, **9 de las rutas `[lang]` ya tenian `getStaticPaths`** (`contribuir`, `donate`, `guess`, `offline`, `rutas/index`, `ruta/index`, `suscripcion`, `wallet`). Solo faltaba en cuatro: `about`, `community`, `home` y `tracking`. El bloqueo real era mucho menor de lo que decia este ADR, y el commit que lo arregla anade el mismo patron que ya usaba el resto del proyecto.
