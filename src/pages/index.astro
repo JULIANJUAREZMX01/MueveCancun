@@ -203,7 +203,7 @@ const translations = {
 			document.cookie = "locale=" + encodeURIComponent(lang) + expiry;
 			localStorage.setItem('lang', lang);
 			localStorage.setItem('tutorial_completed', 'true');
-			window.location.replace(`/${lang}/home`);
+			window.location.replace(`${import.meta.env.BASE_URL.replace(/\/+$/, '')}/${lang}/home`);
 		}
 
 		btnNext?.addEventListener('click', () => { if (currentStep < totalSteps) goToStep(currentStep + 1); });
