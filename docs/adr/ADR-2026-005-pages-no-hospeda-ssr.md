@@ -47,3 +47,13 @@ MueveCancún **no** se migra a Pages en bloque. Se parte en dos, siguiendo los c
 - **Eliminar los endpoints para volverse estático.** Pierde funciones que están en uso.
 - **Deshabilitar Pages.** Deja el repositorio sin ruta hacia el estándar y sin recordatorio de la deuda.
 - **Publicar `dist/` de la config SSR.** Falla en el gate de humo, o publica un sitio sin hidratación correcta.
+
+## Estado de implementación
+
+**Fase 1 — en revisión (PR `feat/pages-build-estatico`).**
+
+- `config/astro.pages.mjs`: build estatico con `base` configurable. Vive en `config/` porque `scripts/check-astro-config.mjs` exige que `astro.config.ts` sea el unico `astro.config.*` del repo: el guardia sigue intacto y el despliegue SSR no se toca.
+- `scripts/build-pages.mjs`: aparta `src/pages/api`, `src/middleware.ts` y `src/pages/healthz.ts` durante el build y los restaura en `finally`, incluso si falla. Nada se borra.
+- `.github/workflows/pages-build.yml`: construye en cada PR que toque `src/`, y solo publica con `workflow_dispatch` y `publicar: true`, con gate de humo 200 sobre tres rutas.
+
+**Deuda detectada que la fase 1 no resuelve.** El build cuenta los enlaces absolutos a raiz (`/es/home`) y los reporta: en Pages de proyecto el sitio vive bajo `/MueveCancun`, asi que esas rutas necesitan `import.meta.env.BASE_URL`. El aviso queda en `dist/.pages-report.json` y en el resumen del job; no bloquea el build, pero si explica por que no se publica en automatico todavia.
