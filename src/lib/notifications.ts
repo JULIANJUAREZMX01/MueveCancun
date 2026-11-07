@@ -1,3 +1,4 @@
+const BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
 /**
  * Notificaciones Push — MueveCancún v4.0
  * Flujo: requestPermission → subscribe → sync con servidor → recibir push
@@ -75,8 +76,8 @@ export async function showLocalNotif(opts: LocalNotif): Promise<void> {
     const reg = await navigator.serviceWorker.ready;
     await reg.showNotification(opts.title, {
       body: opts.body,
-      icon: opts.icon || '/icons/pwa-192x192.png',
-      badge: opts.badge || '/icons/bus.svg',
+      icon: opts.icon || `${BASE}/icons/pwa-192x192.png`,
+      badge: opts.badge || `${BASE}/icons/bus.svg`,
       tag: opts.tag || 'mueve-notif',
       data: opts.data,
       actions: opts.actions || [],
@@ -85,7 +86,7 @@ export async function showLocalNotif(opts: LocalNotif): Promise<void> {
     } as NotificationOptions);
   } catch {
     // Fallback: notificación directa
-    new Notification(opts.title, { body: opts.body, icon: opts.icon || '/icons/pwa-192x192.png' });
+    new Notification(opts.title, { body: opts.body, icon: opts.icon || `${BASE}/icons/pwa-192x192.png` });
   }
 }
 
