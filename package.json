@@ -78,7 +78,7 @@
     "wasm-pack": "^0.15.0"
   },
   "optionalDependencies": {
-    "@mlc-ai/web-llm": "^0.2.84",
+    "@mlc-ai/web-llm": "^0.2.87",
     "@rollup/rollup-linux-x64-gnu": "^4.61.1"
   },
   "devDependencies": {
